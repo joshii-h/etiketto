@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag, e.g. v0.1.0
+        description: Tag, e.g. v1.0.0
         required: true
       dry_run:
         description: Dry run (build only, publish nothing)

@@ -135,9 +135,18 @@
   </provides>
 
   <releases>
-    <release version="0.1.0" date="2026-11-05">
+    <release version="1.0.0" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/etiketto/releases/tag/v1.0.0</url>
       <description>
         <p>First release.</p>
+        <ul>
+          <li>Design labels with text, images, QR codes and barcodes; automatic or fixed length</li>
+          <li>Finds the printer on the network and shows the inserted cassette, remaining tape and firmware</li>
+          <li>Exact print geometry with edge-to-edge backgrounds and a safety margin per printer</li>
+          <li>Vivid, standard and black-and-white modes, colour adjustment, full, half or no cut</li>
+          <li>Clear error messages, cassette age hint, report a problem from the app</li>
+          <li>Available in 26 languages</li>
+        </ul>
       </description>
     </release>
   </releases>

@@ -44,7 +44,7 @@ jobs:
           command -v gh > /dev/null && command -v jq > /dev/null ||
             dnf install -y -q gh jq
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build the bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
