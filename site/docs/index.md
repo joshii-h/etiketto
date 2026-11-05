@@ -9,10 +9,10 @@ under Linux, the counterpart to Brother's Color Label Editor.
 - Text, images, QR codes and barcodes; backgrounds printed edge to edge
 - Preview at print resolution: what you see is what is printed
 - Cassette detection, vivid colours and cut modes over the network
-- 26 languages, follows the light or dark mode of the desktop
+- 27 languages, follows the light or dark mode of the desktop
 
-Printers: Brother VC-500W (also sold as ColAura). Further printers can be added as a backend, see
-[Contribute](contribute.md).
+Printers: Brother VC-500W (also sold as ColAura). Further printers can be
+added as a backend, see [Contribute](contribute.md).
 
 ## Install
 

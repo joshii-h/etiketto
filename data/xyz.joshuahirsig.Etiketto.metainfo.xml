@@ -40,8 +40,9 @@
   <description>
     <p>
       Etiketto is a label designer for the Brother VC-500W colour label printer
-      (also sold as ColAura), which prints on ZINK paper. It brings the workflow of Brother's own editor,
-      only available for Windows, macOS and phones, to the Linux desktop.
+      (also sold as ColAura), which prints on ZINK paper. It brings the workflow
+      of Brother's own editor, only available for Windows, macOS and phones, to
+      the Linux desktop.
     </p>
     <p>Features:</p>
     <ul>
@@ -157,7 +158,7 @@
           <li>Exact print geometry with edge-to-edge backgrounds and a safety margin per printer</li>
           <li>Vivid, standard and black-and-white modes, colour adjustment, full, half or no cut</li>
           <li>Clear error messages, cassette age hint, report a problem from the app</li>
-          <li>Available in 26 languages</li>
+          <li>Available in 27 languages</li>
         </ul>
       </description>
     </release>
