@@ -6,7 +6,8 @@
 # Branches github/pr-* come from GitHub pull requests (see
 # .github/workflows/bridge.yml) and contain code nobody has reviewed yet. CI
 # only runs them once a maintainer has added the label `safe-to-test`; the
-# bridge removes the label again when new commits arrive.
+# bridge removes the label again when new commits arrive. Until then the job
+# `result` fails, so the pull request cannot be merged untested.
 
 name: CI
 
@@ -32,24 +33,12 @@ defaults:
     shell: bash
 
 jobs:
-  # Runs instead of the other jobs for unreviewed code from GitHub.
-  untrusted:
-    if: >-
-      github.event_name == 'pull_request'
-      && startsWith(github.event.pull_request.head.ref, 'github/pr-')
-      && !contains(github.event.pull_request.labels.*.name, 'safe-to-test')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Waiting for review
-        run: |
-          echo "::warning::Code from a GitHub pull request: CI is skipped until a maintainer has reviewed it and added the 'safe-to-test' label."
-
   test:
-    # push to main; own pull requests (not re-run for labels); reviewed GitHub pull requests
+    # push to main, own pull requests, reviewed GitHub pull requests
     if: >-
       github.event_name == 'push'
-      || (!startsWith(github.event.pull_request.head.ref, 'github/pr-') && github.event.action != 'labeled')
-      || (startsWith(github.event.pull_request.head.ref, 'github/pr-') && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+      || !startsWith(github.event.pull_request.head.ref, 'github/pr-')
+      || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -109,8 +98,8 @@ jobs:
     # same conditions as test
     if: >-
       github.event_name == 'push'
-      || (!startsWith(github.event.pull_request.head.ref, 'github/pr-') && github.event.action != 'labeled')
-      || (startsWith(github.event.pull_request.head.ref, 'github/pr-') && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+      || !startsWith(github.event.pull_request.head.ref, 'github/pr-')
+      || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -160,3 +149,24 @@ jobs:
         # resolves the dependencies from pyproject.toml; the labelprinter fork is
         # not on PyPI and cannot be audited
         run: .venv/bin/pip-audit --progress-spinner off .
+
+  # The required status check for main ("CI / result (pull_request)").
+  # Forgejo reports skipped jobs as successful, so this job turns skipped tests
+  # (unreviewed GitHub code) into a failure instead.
+  result:
+    needs: [test, quality]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Result
+        env:
+          TEST: ${{ needs.test.result }}
+          QUALITY: ${{ needs.quality.result }}
+        run: |
+          echo "test: $TEST, quality: $QUALITY"
+          if [ "$TEST" = success ] && [ "$QUALITY" = success ]; then
+            exit 0
+          elif [ "$TEST" = skipped ]; then
+            echo "::error::Code from a GitHub pull request: CI runs once a maintainer has reviewed it and added the label 'safe-to-test'."
+          fi
+          exit 1

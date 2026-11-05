@@ -93,6 +93,19 @@ jobs:
             exit 0
           fi
 
+          status=0
+          existing="$(api GET "/pulls/main/$(jq -rn --arg b "$branch" '$b|@uri')")" || status=$?
+          [ "$status" -eq 0 ] || existing=""
+
+          # New code needs a new review before CI may run it: drop safe-to-test
+          # *before* pushing, otherwise the push itself would start CI.
+          if [ -n "$existing" ] && [ "$(jq -r .head.sha <<<"$existing")" != "$HEAD_SHA" ]; then
+            label_id="$(jq -r '[.labels[]? | select(.name == "safe-to-test") | .id][0] // empty' <<<"$existing")"
+            if [ -n "$label_id" ]; then
+              api DELETE "/issues/$(jq -r .number <<<"$existing")/labels/$label_id" > /dev/null
+            fi
+          fi
+
           # push the commits unchanged, so GitHub recognises them after the merge
           auth="$(printf '%s:%s' "$FORGEJO_USER" "$FORGEJO_TOKEN" | base64 -w0)"
           echo "::add-mask::$auth"
@@ -103,23 +116,17 @@ jobs:
           body="$(jq -rn --arg url "$PR_URL" --arg author "$PR_AUTHOR" --arg body "$PR_BODY" '
             "Carried over from GitHub pull request \($url) by GitHub user [\($author)](https://github.com/\($author)).\n"
             + "The commits are unchanged; merge with a merge commit (not squash) so GitHub marks the pull request as merged.\n\n"
-            + "CI does not run on this branch until a maintainer has reviewed the code and added the `safe-to-test` label.\n\n---\n\n"
+            + "CI does not run on this branch until a maintainer has reviewed the code and added the `safe-to-test` label "
+            + "(removed again automatically when new commits arrive).\n\n---\n\n"
             + $body')"
 
-          status=0
-          existing="$(api GET "/pulls/main/$(jq -rn --arg b "$branch" '$b|@uri')")" || status=$?
-          if [ "$status" -eq 0 ] && [ -n "$existing" ]; then
+          if [ -n "$existing" ]; then
             index="$(jq -r .number <<<"$existing")"
             patch="$(jq -n --arg t "$title" --arg b "$body" '{title: $t, body: $b}')"
             if [ "$ACTION" = reopened ] && [ "$(jq -r .merged <<<"$existing")" != true ]; then
               patch="$(jq '. + {state: "open"}' <<<"$patch")"
             fi
             api PATCH "/pulls/$index" "$patch" > /dev/null
-            # new code needs a new review before CI may run it again
-            label_id="$(jq -r '[.labels[]? | select(.name == "safe-to-test") | .id][0] // empty' <<<"$existing")"
-            if [ "$ACTION" = synchronize ] && [ -n "$label_id" ]; then
-              api DELETE "/issues/$index/labels/$label_id" > /dev/null
-            fi
           else
             index="$(api POST /pulls "$(jq -n --arg t "$title" --arg b "$body" --arg h "$branch" \
               '{title: $t, body: $b, head: $h, base: "main"}')" | jq -r .number)"
