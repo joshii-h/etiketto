@@ -95,6 +95,12 @@ Translations: `xgettext` → `po/etiketto.pot`, strings in
 `tools/strings_<lang>.py`, `python3 tools/fill_po.py de fr it` writes the
 `.po` files; `install.sh` compiles them.
 
+## Contributing
+
+Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests
+go to the [Forgejo repository](https://git.joshuahirsig.xyz/joshii/etiketto);
+GitHub is a mirror.
+
 ## Credits
 
 The VC-500W protocol was reverse engineered by
