@@ -1,0 +1,18 @@
+[Desktop Entry]
+Type=Application
+Name=zinklabel
+GenericName=Label Designer
+GenericName[de]=Etiketten-Designer
+GenericName[fr]=Éditeur d’étiquettes
+GenericName[it]=Editor di etichette
+Comment=Design and print labels on the Brother VC-500W
+Comment[de]=Etiketten für den Brother VC-500W gestalten und drucken
+Comment[fr]=Créer et imprimer des étiquettes avec la Brother VC-500W
+Comment[it]=Crea e stampa etichette con la Brother VC-500W
+Exec=zinklabel %f
+Icon=xyz.joshuahirsig.Zinklabel
+Terminal=false
+Categories=Graphics;GTK;
+Keywords=label;printer;Brother;VC-500W;ZINK;Etikett;étiquette;etichetta;
+MimeType=application/x-zinklabel;
+StartupNotify=true

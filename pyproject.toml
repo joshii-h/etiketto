@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zinklabel"
+version = "0.1.0"
+description = "Label designer for the Brother VC-500W colour label printer (GTK4/libadwaita)"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+    "pillow>=10",
+    "segno>=1.6",
+    "python-barcode>=0.15",
+    # native VC-500W protocol; fork until sgrimee/labelprinter-vc500w#1-#3 are merged
+    "labelprinter @ git+https://github.com/joshii-h/labelprinter-vc500w.git@cups-backend",
+]
+# PyGObject (GTK 4, libadwaita, Pango) and pycairo come from the system,
+# install with a venv that has --system-site-packages (see install.sh).
+
+[project.scripts]
+zinklabel = "zinklabel.app:main"
+
+[tool.setuptools.packages.find]
+include = ["zinklabel*"]
+
+[tool.setuptools.package-data]
+zinklabel = ["locale/*/LC_MESSAGES/*.mo"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# %-formatting stays: gettext strings use named %(...)s placeholders
+select = ["E", "F", "W", "B", "I"]
+ignore = ["E501"]  # ruff format handles line length

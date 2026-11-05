@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-zinklabel">
+    <comment>zinklabel label</comment>
+    <comment xml:lang="de">zinklabel-Etikett</comment>
+    <comment xml:lang="fr">Étiquette zinklabel</comment>
+    <comment xml:lang="it">Etichetta zinklabel</comment>
+    <sub-class-of type="application/json"/>
+    <glob pattern="*.zlabel"/>
+  </mime-type>
+</mime-info>
