@@ -35,8 +35,10 @@ Do it when stripes appear, or every 20 to 30 labels.
 
 ## Problems
 
-- [[ui:No printer found]]: printer on and in the same network? Avahi
-  running? Otherwise enter the address under [[ui:Host name or IP address]].
+- [[ui:No printer found]]: printer on and in the same network? The search
+  needs the Avahi service (installed on most desktops, any init system);
+  systemd-resolved alone resolves `.local` names but cannot search. Otherwise
+  enter the address under [[ui:Host name or IP address]].
 - [[ui:Printer not reachable]]: check the address, the printer may have a new
   IP. Switch the printer off and on again.
 - [[ui:Wrong cassette]]: the label was designed for another width. Change

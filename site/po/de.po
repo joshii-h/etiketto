@@ -366,11 +366,16 @@ msgstr "Probleme"
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:No printer found]]: printer on and in the same network? Avahi running? "
-"Otherwise enter the address under [[ui:Host name or IP address]]."
+"[[ui:No printer found]]: printer on and in the same network? The search "
+"needs the Avahi service (installed on most desktops, any init system); "
+"systemd-resolved alone resolves `.local` names but cannot search. Otherwise "
+"enter the address under [[ui:Host name or IP address]]."
 msgstr ""
-"[[ui:No printer found]]: Drucker an und im selben Netzwerk? Läuft Avahi? "
-"Sonst die Adresse unter [[ui:Host name or IP address]] eintragen."
+"[[ui:No printer found]]: Drucker an und im selben Netzwerk? Die Suche "
+"braucht den Dienst Avahi (auf den meisten Desktops installiert, mit jedem "
+"Init-System); systemd-resolved allein löst `.local`-Namen auf, kann aber "
+"nicht suchen. Sonst die Adresse unter [[ui:Host name or IP address]] "
+"eintragen."
 
 #. type: Bullet: '- '
 #: docs/printer.md

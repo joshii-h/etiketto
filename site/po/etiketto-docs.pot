@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 15:24+0100\n"
+"POT-Creation-Date: 2026-11-05 15:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -284,7 +284,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:No printer found]]: printer on and in the same network? Avahi running? Otherwise enter the address under [[ui:Host name or IP address]]."
+msgid "[[ui:No printer found]]: printer on and in the same network? The search needs the Avahi service (installed on most desktops, any init system); systemd-resolved alone resolves `.local` names but cannot search. Otherwise enter the address under [[ui:Host name or IP address]]."
 msgstr ""
 
 #. type: Bullet: '- '
