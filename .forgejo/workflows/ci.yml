@@ -37,7 +37,7 @@ jobs:
     # push to main, own pull requests, reviewed GitHub pull requests
     if: >-
       github.event_name == 'push'
-      || !startsWith(github.event.pull_request.head.ref, 'github/pr-')
+      || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.head.ref, 'github/pr-'))
       || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
     runs-on: ubuntu-latest
     container:
@@ -98,7 +98,7 @@ jobs:
     # same conditions as test
     if: >-
       github.event_name == 'push'
-      || !startsWith(github.event.pull_request.head.ref, 'github/pr-')
+      || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.head.ref, 'github/pr-'))
       || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
     runs-on: ubuntu-latest
     container:
