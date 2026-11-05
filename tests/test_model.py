@@ -20,8 +20,15 @@ def test_roundtrip(tmp_path, png_b64):
         border_mm=0.4,
         border_color="#112233",
         elements=[
-            TextElement(text="Hallo\nWelt", bold=False, italic=True, size_pt=14, color="#123456",
-                        align="right", font="Serif"),
+            TextElement(
+                text="Hallo\nWelt",
+                bold=False,
+                italic=True,
+                size_pt=14,
+                color="#123456",
+                align="right",
+                font="Serif",
+            ),
             ImageElement(data=png_b64(), name="x.png"),
             CodeElement(data="4006381333931", symbology="ean13", color="#ff0000"),
         ],
@@ -65,8 +72,11 @@ def test_defaults_from_empty_dict():
 
 def test_ignores_unknown_fields():
     label = Label.from_dict(
-        {"tape_mm": 12, "future_option": True,
-         "elements": [{"kind": "text", "text": "a", "shadow": 3}]}
+        {
+            "tape_mm": 12,
+            "future_option": True,
+            "elements": [{"kind": "text", "text": "a", "shadow": 3}],
+        }
     )
     assert label.tape_mm == 12
     assert label.elements == [TextElement(text="a")]
@@ -81,11 +91,20 @@ def test_background_image_kind_is_forced():
 @pytest.mark.parametrize(
     "field, value, expected",
     [
-        ("length_mm", 1, 15.0), ("length_mm", 5000, 1000.0), ("length_mm", 60, 60.0),
-        ("length_mm", 15, 15.0), ("length_mm", 1000, 1000.0),
-        ("margin_mm", -3, 0.0), ("margin_mm", 99, 20.0), ("margin_mm", 2.5, 2.5),
-        ("edge_mm", -1, 0.0), ("edge_mm", 11, 10.0), ("edge_mm", 10, 10.0),
-        ("border_mm", -0.1, 0.0), ("border_mm", 5.5, 5.0), ("border_mm", 0.3, 0.3),
+        ("length_mm", 1, 15.0),
+        ("length_mm", 5000, 1000.0),
+        ("length_mm", 60, 60.0),
+        ("length_mm", 15, 15.0),
+        ("length_mm", 1000, 1000.0),
+        ("margin_mm", -3, 0.0),
+        ("margin_mm", 99, 20.0),
+        ("margin_mm", 2.5, 2.5),
+        ("edge_mm", -1, 0.0),
+        ("edge_mm", 11, 10.0),
+        ("edge_mm", 10, 10.0),
+        ("border_mm", -0.1, 0.0),
+        ("border_mm", 5.5, 5.0),
+        ("border_mm", 0.3, 0.3),
     ],
 )
 def test_label_numbers_clamped(field, value, expected):
@@ -158,8 +177,7 @@ def test_not_a_document(data):
 
 def test_old_version_accepted_and_booleans_normalised():
     label = Label.from_dict(
-        {"version": 0, "auto_length": 0,
-         "elements": [{"kind": "text", "bold": 0, "italic": "yes"}]}
+        {"version": 0, "auto_length": 0, "elements": [{"kind": "text", "bold": 0, "italic": "yes"}]}
     )
     assert label.auto_length is False
     assert label.elements[0].bold is False and label.elements[0].italic is True

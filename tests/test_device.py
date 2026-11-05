@@ -109,7 +109,12 @@ def test_print_label_copies_mode_cut_and_progress(fake_printer, tmpdir_for_jpeg,
     progress = []
     image = Image.new("RGBA", (300, 120), "blue")
     device.print_label(
-        image, "p", 4321, mode="normal", cut="half", copies=copies,
+        image,
+        "p",
+        4321,
+        mode="normal",
+        cut="half",
+        copies=copies,
         progress=lambda n, total: progress.append((n, total)),
     )
     log = fake_printer.log
@@ -129,8 +134,13 @@ def test_print_label_waits_when_busy_and_vivid_dpi(fake_printer, tmpdir_for_jpeg
     device.print_label(Image.new("RGB", (10, 10)), "p", copies=2)
     names = [entry[0] for entry in fake_printer.log]
     assert names == [
-        "get_status", "wait", "print_jpeg", "wait",
-        "get_status", "print_jpeg", "wait",
+        "get_status",
+        "wait",
+        "print_jpeg",
+        "wait",
+        "get_status",
+        "print_jpeg",
+        "wait",
         "close",
     ]
     assert _calls(fake_printer.log, "print_jpeg")[0] == ("print_jpeg", "vivid", "full")
@@ -168,8 +178,12 @@ def test_connect_uses_resolved_host(monkeypatch):
         def __init__(self, connection):
             self.connection = connection
 
-    monkeypatch.setitem(sys.modules, "labelprinter.connection", types.SimpleNamespace(Connection=Connection))
-    monkeypatch.setitem(sys.modules, "labelprinter.printer", types.SimpleNamespace(LabelPrinter=LabelPrinter))
+    monkeypatch.setitem(
+        sys.modules, "labelprinter.connection", types.SimpleNamespace(Connection=Connection)
+    )
+    monkeypatch.setitem(
+        sys.modules, "labelprinter.printer", types.SimpleNamespace(LabelPrinter=LabelPrinter)
+    )
     monkeypatch.setattr(device, "resolve_host", lambda host: "192.0.2.1")
     connection, printer = real_connect("VC.local", 9100)
     assert made["args"] == ("192.0.2.1", 9100, device.PRINT_TIMEOUT)
@@ -238,7 +252,9 @@ class FakeBus:
 
     def signal_subscribe(self, sender, iface, member, path, arg0, flags, callback):
         assert (sender, iface, member) == (
-            "org.freedesktop.Avahi", "org.freedesktop.Avahi.ServiceBrowser", "ItemNew",
+            "org.freedesktop.Avahi",
+            "org.freedesktop.Avahi.ServiceBrowser",
+            "ItemNew",
         )
         self.handler = callback
         return 42
@@ -332,4 +348,3 @@ def test_avahi_resolve(bus):
     assert device._avahi_resolve("VC.local") is None
     bus(GLib.Error("no bus"))
     assert device._avahi_resolve("VC.local") is None
-

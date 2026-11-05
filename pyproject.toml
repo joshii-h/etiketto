@@ -47,6 +47,11 @@ addopts = "-ra --strict-markers"
 markers = [
     "gui: needs a display (GTK window in the test process); skipped without one",
 ]
+filterwarnings = [
+    # PyGObject's asyncio integration on Python 3.14, not our code
+    "ignore:.*EventLoopPolicy.*:DeprecationWarning:gi.events",
+    "ignore:.*get_event_loop_policy.*:DeprecationWarning:gi.events",
+]
 
 [tool.coverage.run]
 source = ["etiketto"]

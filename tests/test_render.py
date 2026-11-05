@@ -25,6 +25,11 @@ INNER = TAPE - 2 * FRAME  # 274
 PART_W = 2 * INNER  # a 40x20 image scaled to the content height
 
 
+def pixels(img):
+    """All pixel values (getdata is deprecated in newer Pillow)."""
+    return list(getattr(img, "get_flattened_data", img.getdata)())
+
+
 @pytest.fixture
 def wide_image(png_b64):
     return ImageElement(data=png_b64((40, 20), "red"), name="red.png")
@@ -99,7 +104,9 @@ LENGTH_100 = 1248  # 100 mm
     ],
 )
 def test_fixed_length_alignment(make_label, wide_image, align, x0):
-    rendered = render(make_label(auto_length=False, length_mm=100, align=align, elements=[wide_image]))
+    rendered = render(
+        make_label(auto_length=False, length_mm=100, align=align, elements=[wide_image])
+    )
     assert rendered.image.size == (LENGTH_100, TAPE)
     bbox = ink_bbox(rendered.image, WHITE)
     assert bbox == (x0, FRAME, x0 + PART_W, TAPE - FRAME)
@@ -142,7 +149,9 @@ def test_overflow_with_several_elements_keeps_scaled_gap(make_label, wide_image)
 
 
 def test_fixed_length_without_room_warns(make_label, wide_image):
-    rendered = render(make_label(auto_length=False, length_mm=15, margin_mm=20, elements=[wide_image]))
+    rendered = render(
+        make_label(auto_length=False, length_mm=15, margin_mm=20, elements=[wide_image])
+    )
     assert "the fixed length leaves no room for the content" in rendered.warnings
     assert not rendered.overflow
 
@@ -305,7 +314,7 @@ def test_text_colour_and_alignment():
         return block, lower.getchannel("A").getbbox()
 
     block, left = lower_line("left")
-    r, g, b, a = max(block.getdata(), key=lambda p: p[3])
+    r, g, b, a = max(pixels(block), key=lambda p: p[3])
     assert a == 255 and r > 200 and g < 60 and b < 60
     _block, right = lower_line("right")
     _block, centre = lower_line("center")
@@ -387,7 +396,7 @@ def test_element_errors_are_numbered(make_label, wide_image):
 def test_qr_is_square_coloured_and_transparent():
     part = R.render_code(CodeElement(data="https://example.org", color="#0000ff"), 120)
     assert part.size == (120, 120)
-    colours = {p for p in part.getdata()}
+    colours = {p for p in pixels(part)}
     assert (0, 0, 255, 255) in colours
     assert any(p[3] == 0 for p in colours)
 
@@ -396,7 +405,7 @@ def test_qr_on_label_shows_background(make_label):
     img = render(make_label(background="#00ff00", elements=[CodeElement(data="x" * 20)])).image
     x0, y0, x1, y1 = ink_bbox(img, (0, 255, 0))
     assert (x1 - x0, y1 - y0) == (INNER, INNER)
-    colours = set(img.crop((x0, y0, x1, y1)).getdata())
+    colours = set(pixels(img.crop((x0, y0, x1, y1))))
     assert colours == {(0, 0, 0), (0, 255, 0)}
 
 
@@ -404,11 +413,11 @@ def test_qr_on_label_shows_background(make_label):
 def test_barcodes_transparent_background_and_colour(symbology, data):
     part = R.render_code(CodeElement(data=data, symbology=symbology, color="#ff0000"), 100)
     assert part.height == 100 and part.width > 100
-    alphas = {p[3] for p in part.getdata()}
+    alphas = {p[3] for p in pixels(part)}
     assert alphas == {0, 255}
-    opaque = [p for p in part.getdata() if p[3] == 255]
+    opaque = [p for p in pixels(part) if p[3] == 255]
     assert all(p[0] > 150 and p[1] < 100 and p[2] < 100 for p in opaque[:50])
-    assert not [p for p in part.getdata() if p[:3] == (255, 255, 255) and p[3] == 255]
+    assert not [p for p in pixels(part) if p[:3] == (255, 255, 255) and p[3] == 255]
 
 
 @pytest.mark.parametrize(
@@ -432,3 +441,19 @@ def test_valid_codes_render_without_warnings(make_label):
         CodeElement(data="4006381333931", symbology="ean13"),
     ):
         assert render(make_label(elements=[code])).warnings == []
+
+
+def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
+    # block height not proportional to the size: the first estimate overshoots
+    sizes = []
+
+    def fake_block(element, size_px):
+        sizes.append(size_px)
+        return Image.new("RGBA", (10, round(size_px + 40)))
+
+    monkeypatch.setattr(R, "_text_block", fake_block)
+    block = R.render_text(TextElement(text="x"), 100, 317)
+    assert block.height <= 100
+    assert sizes[1] == pytest.approx(100 * 100 / 140)  # linear estimate from the probe
+    assert len(sizes) > 2 and sizes[-1] < sizes[1]
+    assert block.height > 100 * 0.9  # shrinks in small steps, not more than needed

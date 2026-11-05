@@ -15,7 +15,7 @@ import pytest
 from PIL import Image, ImageChops
 
 from etiketto import device
-from etiketto.model import Label, TextElement
+from etiketto.model import Label
 
 
 def _png_b64(size=(20, 10), color="red", mode="RGB", fmt="PNG", exif=None) -> str:
@@ -130,16 +130,19 @@ def fake_printer(monkeypatch):
 _gtk_state: dict = {}
 
 
-def _gtk_available() -> bool:
+def gtk_available() -> bool:
     if "ok" not in _gtk_state:
         try:
             import gi
 
             gi.require_version("Gtk", "4.0")
             gi.require_version("Adw", "1")
+            from gi.overrides import Gtk as gtk_override
             from gi.repository import Adw, Gtk
 
-            ok = Gtk.init_check()
+            # PyGObject's own init_check() at import time is what counts:
+            # without a display widgets refuse to be created (or crash)
+            ok = bool(getattr(gtk_override, "initialized", True)) and Gtk.init_check()
             if ok:
                 Adw.init()
             _gtk_state["ok"] = bool(ok)
@@ -166,7 +169,7 @@ def pump(condition=None, timeout=3.0) -> bool:
 
 @pytest.fixture(scope="session")
 def gtk_app():
-    if not _gtk_available():
+    if not gtk_available():
         pytest.skip("no display for GTK")
     from gi.repository import Adw, Gio
 
@@ -181,7 +184,7 @@ def gtk_app():
 @pytest.fixture
 def gui_env(monkeypatch, tmp_path):
     """Mocked device functions and config paths in tmp_path."""
-    if not _gtk_available():
+    if not gtk_available():
         pytest.skip("no display for GTK")
     from etiketto import app
 

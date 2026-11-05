@@ -81,7 +81,8 @@ def test_format():
 
 
 @pytest.mark.parametrize(
-    "width, inch_name", [(9, "3/8″"), (12, "1/2″"), (19, "3/4″"), (25, "1″"), (50, "2″"), (38, "1.50″")]
+    "width, inch_name",
+    [(9, "3/8″"), (12, "1/2″"), (19, "3/4″"), (25, "1″"), (50, "2″"), (38, "1.50″")],
 )
 def test_tape_name(width, inch_name):
     assert INCHES.tape_name(width) == inch_name
