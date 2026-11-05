@@ -1684,3 +1684,30 @@ def test_backend_and_settings_are_robust(window):
     assert window.printer_settings == {}
     window.printer_settings["safe_mm"] = "wide"
     assert window.safe_mm == 1.5
+
+
+def test_docs_url_follows_the_interface_language():
+    class Catalog:
+        def __init__(self, language):
+            self._language = language
+
+        def info(self):
+            return {"language": self._language}
+
+    assert app.docs_url(Catalog("de")) == "https://etiketto.joshuahirsig.xyz/de/"
+    assert app.docs_url(Catalog("de_CH")) == "https://etiketto.joshuahirsig.xyz/de/"
+    # no documentation in that language yet: English
+    assert app.docs_url(Catalog("ja")) == "https://etiketto.joshuahirsig.xyz/en/"
+    assert app.docs_url(object()) == "https://etiketto.joshuahirsig.xyz/en/"
+
+
+def test_month_year_is_one_translatable_pattern():
+    assert app.month_year(5, 2018) == "May 2018"
+
+
+def test_help_action_opens_the_documentation(make_window, monkeypatch):
+    win = make_window()
+    opened = []
+    monkeypatch.setattr(win, "open_url", opened.append)
+    win.activate_action("win.help", None)
+    assert opened == [app.docs_url()]

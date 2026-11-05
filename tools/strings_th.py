@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "เปิดแม่แบบ %(name)s ไม่ได้",
     "The browser cannot be opened": "เปิดเบราว์เซอร์ไม่ได้",
     "Copy link": "คัดลอกลิงก์",
+    "Help": "วิธีใช้",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

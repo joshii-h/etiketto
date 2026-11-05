@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Impossible d’ouvrir le modèle %(name)s",
     "The browser cannot be opened": "Impossible d’ouvrir le navigateur",
     "Copy link": "Copier le lien",
+    "Help": "Aide",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

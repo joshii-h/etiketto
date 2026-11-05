@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-05 15:28+0100\n"
+"PO-Revision-Date: 2026-11-05 15:34+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: tr\n"
 "Language: tr\n"
@@ -83,7 +83,7 @@ msgstr "Yalnızca yerel dosyalar kullanılabilir"
 msgid "Not an image: %s"
 msgstr "Görüntü değil: %s"
 
-#: etiketto/app.py:211 etiketto/app.py:751 etiketto/app.py:1715
+#: etiketto/app.py:211 etiketto/app.py:769 etiketto/app.py:1737
 msgid "Text"
 msgstr "Metin"
 
@@ -226,606 +226,617 @@ msgstr "%s kaydedilemiyor: disk dolu"
 msgid "Cannot save %s"
 msgstr "%s kaydedilemiyor"
 
-#: etiketto/app.py:308
+#. translators: a month and a year, e.g. "May 2018"; reorder as your language needs
+#: etiketto/app.py:320
+#, python-format
+msgid "%(month)s %(year)d"
+msgstr "%(month)s %(year)d"
+
+#: etiketto/app.py:325
 msgctxt "month name"
 msgid "January"
 msgstr "Ocak"
 
-#: etiketto/app.py:309
+#: etiketto/app.py:326
 msgctxt "month name"
 msgid "February"
 msgstr "Şubat"
 
-#: etiketto/app.py:310
+#: etiketto/app.py:327
 msgctxt "month name"
 msgid "March"
 msgstr "Mart"
 
-#: etiketto/app.py:311
+#: etiketto/app.py:328
 msgctxt "month name"
 msgid "April"
 msgstr "Nisan"
 
-#: etiketto/app.py:312
+#: etiketto/app.py:329
 msgctxt "month name"
 msgid "May"
 msgstr "Mayıs"
 
-#: etiketto/app.py:313
+#: etiketto/app.py:330
 msgctxt "month name"
 msgid "June"
 msgstr "Haziran"
 
-#: etiketto/app.py:314
+#: etiketto/app.py:331
 msgctxt "month name"
 msgid "July"
 msgstr "Temmuz"
 
-#: etiketto/app.py:315
+#: etiketto/app.py:332
 msgctxt "month name"
 msgid "August"
 msgstr "Ağustos"
 
-#: etiketto/app.py:316
+#: etiketto/app.py:333
 msgctxt "month name"
 msgid "September"
 msgstr "Eylül"
 
-#: etiketto/app.py:317
+#: etiketto/app.py:334
 msgctxt "month name"
 msgid "October"
 msgstr "Ekim"
 
-#: etiketto/app.py:318
+#: etiketto/app.py:335
 msgctxt "month name"
 msgid "November"
 msgstr "Kasım"
 
-#: etiketto/app.py:319
+#: etiketto/app.py:336
 msgctxt "month name"
 msgid "December"
 msgstr "Aralık"
 
-#: etiketto/app.py:329
+#: etiketto/app.py:346
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "Bu kasetin üretim tarihi büyük olasılıkla: %(month)s %(year)d. Eski ZINK kağıdı daha soluk renkler basar."
 
-#: etiketto/app.py:341 etiketto/app.py:647 etiketto/app.py:1619
+#: etiketto/app.py:358 etiketto/app.py:665 etiketto/app.py:1637
 msgid "Label"
 msgstr "Etiket"
 
-#: etiketto/app.py:381
+#: etiketto/app.py:398
 msgid "Open"
 msgstr "Aç"
 
-#: etiketto/app.py:388
+#: etiketto/app.py:405
 msgid "Templates"
 msgstr "Şablonlar"
 
-#: etiketto/app.py:394
+#: etiketto/app.py:411
 msgid "Save"
 msgstr "Kaydet"
 
-#: etiketto/app.py:399
+#: etiketto/app.py:416
 msgid "New label"
 msgstr "Yeni etiket"
 
-#: etiketto/app.py:400
+#: etiketto/app.py:417
 msgid "Save as…"
 msgstr "Farklı kaydet…"
 
-#: etiketto/app.py:401 etiketto/app.py:1521
+#: etiketto/app.py:418 etiketto/app.py:1539
 msgid "Save as template…"
 msgstr "Şablon olarak kaydet…"
 
-#: etiketto/app.py:402
+#: etiketto/app.py:419
 msgid "Export PNG…"
 msgstr "PNG olarak dışa aktar…"
 
-#: etiketto/app.py:403
+#: etiketto/app.py:420
+msgid "Help"
+msgstr "Yardım"
+
+#: etiketto/app.py:421
 msgid "Report a problem…"
 msgstr "Sorun bildir…"
 
-#: etiketto/app.py:404
+#: etiketto/app.py:422
 msgid "About Etiketto"
 msgstr "Etiketto Hakkında"
 
-#: etiketto/app.py:407 etiketto/app.py:1336 etiketto/app.py:1405
+#: etiketto/app.py:425 etiketto/app.py:1354 etiketto/app.py:1423
 msgid "Print"
 msgstr "Yazdır"
 
-#: etiketto/app.py:443
+#: etiketto/app.py:461
 msgid "Fit to window"
 msgstr "Pencereye sığdır"
 
-#: etiketto/app.py:447
+#: etiketto/app.py:465
 msgid "Zoom out"
 msgstr "Uzaklaştır"
 
-#: etiketto/app.py:450
+#: etiketto/app.py:468
 msgid "Zoom in"
 msgstr "Yakınlaştır"
 
-#: etiketto/app.py:526
+#: etiketto/app.py:544
 msgid "Printer model"
 msgstr "Yazıcı modeli"
 
-#: etiketto/app.py:541
+#: etiketto/app.py:559
 msgid "Printer"
 msgstr "Yazıcı"
 
-#: etiketto/app.py:544 etiketto/app.py:1158
+#: etiketto/app.py:562 etiketto/app.py:1176
 msgid "Searching…"
 msgstr "Aranıyor…"
 
-#: etiketto/app.py:547 etiketto/app.py:1196
+#: etiketto/app.py:565 etiketto/app.py:1214
 msgid "Printer details"
 msgstr "Yazıcı ayrıntıları"
 
-#: etiketto/app.py:553
+#: etiketto/app.py:571
 msgid "Refresh"
 msgstr "Yenile"
 
-#: etiketto/app.py:559
+#: etiketto/app.py:577
 msgid "Search for printers"
 msgstr "Yazıcıları ara"
 
-#: etiketto/app.py:573
+#: etiketto/app.py:591
 msgid "Host name or IP address"
 msgstr "Ana makine adı veya IP adresi"
 
-#: etiketto/app.py:581
+#: etiketto/app.py:599
 msgid "Safety margin"
 msgstr "Güvenlik payı"
 
-#: etiketto/app.py:588
+#: etiketto/app.py:606
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "İçerik ve kenarlık için boş alan (%(unit)s); arka plan kenarsız yazdırılır"
 
-#: etiketto/app.py:593 etiketto/app.py:599
+#: etiketto/app.py:611 etiketto/app.py:617
 msgid "Millimetres"
 msgstr "Milimetre"
 
-#: etiketto/app.py:593 etiketto/app.py:600
+#: etiketto/app.py:611 etiketto/app.py:618
 msgid "Inches"
 msgstr "İnç"
 
-#: etiketto/app.py:596
+#: etiketto/app.py:614
 msgid "Units"
 msgstr "Birimler"
 
-#: etiketto/app.py:598
+#: etiketto/app.py:616
 #, python-format
 msgid "Automatic (%s)"
 msgstr "Otomatik (%s)"
 
-#: etiketto/app.py:653
+#: etiketto/app.py:671
 msgid "Tape width"
 msgstr "Şerit genişliği"
 
-#: etiketto/app.py:662
+#: etiketto/app.py:680
 msgid "Spacing"
 msgstr "Aralık"
 
-#: etiketto/app.py:668
+#: etiketto/app.py:686
 #, python-format
 msgid "%(unit)s at the ends and between elements"
 msgstr "Uçlarda ve ögeler arasında (%(unit)s)"
 
-#: etiketto/app.py:673
+#: etiketto/app.py:691
 msgid "Edge spacing"
 msgstr "Kenar aralığı"
 
-#: etiketto/app.py:679
+#: etiketto/app.py:697
 #, python-format
 msgid "extra %(unit)s along the tape edges"
 msgstr "Şerit kenarları boyunca ek boşluk (%(unit)s)"
 
-#: etiketto/app.py:683
+#: etiketto/app.py:701
 msgid "Background colour"
 msgstr "Arka plan rengi"
 
-#: etiketto/app.py:687
+#: etiketto/app.py:705
 msgid "Background image"
 msgstr "Arka plan görüntüsü"
 
-#: etiketto/app.py:688 etiketto/app.py:861
+#: etiketto/app.py:706 etiketto/app.py:879
 msgid "None"
 msgstr "Yok"
 
-#: etiketto/app.py:689 etiketto/app.py:1455
+#: etiketto/app.py:707 etiketto/app.py:1473
 msgid "Choose image"
 msgstr "Görüntü seç"
 
-#: etiketto/app.py:695 etiketto/app.py:780
+#: etiketto/app.py:713 etiketto/app.py:798
 msgid "Remove"
 msgstr "Kaldır"
 
-#: etiketto/app.py:703
+#: etiketto/app.py:721
 msgid "Border"
 msgstr "Kenarlık"
 
-#: etiketto/app.py:709
+#: etiketto/app.py:727
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = yok"
 
-#: etiketto/app.py:718
+#: etiketto/app.py:736
 msgid "Automatic length"
 msgstr "Otomatik uzunluk"
 
-#: etiketto/app.py:718
+#: etiketto/app.py:736
 msgid "As long as the content"
 msgstr "İçerik kadar uzun"
 
-#: etiketto/app.py:725
+#: etiketto/app.py:743
 msgid "Length"
 msgstr "Uzunluk"
 
-#: etiketto/app.py:732
+#: etiketto/app.py:750
 msgid "Alignment"
 msgstr "Hizalama"
 
-#: etiketto/app.py:747
+#: etiketto/app.py:765
 msgid "Content"
 msgstr "İçerik"
 
-#: etiketto/app.py:748
+#: etiketto/app.py:766
 msgid "Elements are placed one after another along the tape"
 msgstr "Ögeler şerit boyunca art arda yerleştirilir"
 
-#: etiketto/app.py:752
+#: etiketto/app.py:770
 msgid "Image…"
 msgstr "Görüntü…"
 
-#: etiketto/app.py:753
+#: etiketto/app.py:771
 msgid "QR code / barcode"
 msgstr "QR kodu / barkod"
 
-#: etiketto/app.py:755
+#: etiketto/app.py:773
 msgid "Add"
 msgstr "Ekle"
 
-#: etiketto/app.py:762
+#: etiketto/app.py:780
 msgid "No content yet"
 msgstr "Henüz içerik yok"
 
-#: etiketto/app.py:762
+#: etiketto/app.py:780
 msgid "Add text, an image or a code"
 msgstr "Metin, görüntü veya kod ekleyin"
 
-#: etiketto/app.py:786
+#: etiketto/app.py:804
 msgid "Move down"
 msgstr "Geriye taşı"
 
-#: etiketto/app.py:787
+#: etiketto/app.py:805
 msgid "Move up"
 msgstr "Öne taşı"
 
-#: etiketto/app.py:821
+#: etiketto/app.py:839
 msgid "Font"
 msgstr "Yazı tipi"
 
-#: etiketto/app.py:843
+#: etiketto/app.py:861
 msgid "Size"
 msgstr "Boyut"
 
-#: etiketto/app.py:850
+#: etiketto/app.py:868
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = şerit yüksekliğini doldur"
 
-#: etiketto/app.py:856
+#: etiketto/app.py:874
 msgid "Line alignment"
 msgstr "Satır hizalama"
 
-#: etiketto/app.py:861
+#: etiketto/app.py:879
 msgid "Image file"
 msgstr "Görüntü dosyası"
 
-#: etiketto/app.py:862
+#: etiketto/app.py:880
 msgid "Choose…"
 msgstr "Seç…"
 
-#: etiketto/app.py:878
+#: etiketto/app.py:896
 msgid "Type"
 msgstr "Tür"
 
-#: etiketto/app.py:881
+#: etiketto/app.py:899
 msgid "Content (link, text, number)"
 msgstr "İçerik (bağlantı, metin, numara)"
 
-#: etiketto/app.py:885
+#: etiketto/app.py:903
 msgid "Colour"
 msgstr "Renk"
 
-#: etiketto/app.py:936
+#: etiketto/app.py:954
 msgid "Unsaved label"
 msgstr "Kaydedilmemiş etiket"
 
-#: etiketto/app.py:970
+#: etiketto/app.py:988
 msgid "content scaled down to fit"
 msgstr "içerik sığması için küçültüldü"
 
-#: etiketto/app.py:972
+#: etiketto/app.py:990
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Bu yazıcı için çok uzun: en fazla %s"
 
-#: etiketto/app.py:977
+#: etiketto/app.py:995
 #, python-format
 msgid "Problem: %s"
 msgstr "Sorun: %s"
 
-#: etiketto/app.py:984 etiketto/app.py:1577
+#: etiketto/app.py:1002 etiketto/app.py:1595
 msgid "The preview cannot be drawn"
 msgstr "Önizleme çizilemiyor"
 
-#: etiketto/app.py:1025
+#: etiketto/app.py:1043
 msgid "Searching for printers…"
 msgstr "Yazıcılar aranıyor…"
 
-#: etiketto/app.py:1039
+#: etiketto/app.py:1057
 msgid "No printer found"
 msgstr "Yazıcı bulunamadı"
 
-#: etiketto/app.py:1041
+#: etiketto/app.py:1059
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "Yazıcının açık ve aynı ağda olduğundan emin olun ya da adresini aşağıya girin"
 
-#: etiketto/app.py:1047
+#: etiketto/app.py:1065
 #, python-format
 msgid "Found %s"
 msgstr "Bulundu: %s"
 
-#: etiketto/app.py:1051 etiketto/app.py:1071
+#: etiketto/app.py:1069 etiketto/app.py:1089
 msgid "Choose a printer"
 msgstr "Yazıcı seçin"
 
-#: etiketto/app.py:1064 etiketto/app.py:1233 etiketto/app.py:1335
-#: etiketto/app.py:1631
+#: etiketto/app.py:1082 etiketto/app.py:1251 etiketto/app.py:1353
+#: etiketto/app.py:1649
 msgid "Cancel"
 msgstr "İptal"
 
-#: etiketto/app.py:1092
+#: etiketto/app.py:1110
 msgid "Connecting…"
 msgstr "Bağlanıyor…"
 
-#: etiketto/app.py:1128
+#: etiketto/app.py:1146
 msgid "Printer not reachable"
 msgstr "Yazıcıya ulaşılamıyor"
 
-#: etiketto/app.py:1136
+#: etiketto/app.py:1154
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "Kalan: %(left)s / %(total)s"
 
-#: etiketto/app.py:1143
+#: etiketto/app.py:1161
 msgid "No cassette inserted"
 msgstr "Kaset takılı değil"
 
-#: etiketto/app.py:1144
+#: etiketto/app.py:1162
 #, python-format
 msgid "%s cassette"
 msgstr "Kaset: %s"
 
-#: etiketto/app.py:1172
+#: etiketto/app.py:1190
 msgid "Model"
 msgstr "Model"
 
-#: etiketto/app.py:1173
+#: etiketto/app.py:1191
 msgid "Address"
 msgstr "Adres"
 
-#: etiketto/app.py:1174
+#: etiketto/app.py:1192
 msgid "Firmware"
 msgstr "Donanım yazılımı"
 
-#: etiketto/app.py:1177
+#: etiketto/app.py:1195
 msgid "Cassette"
 msgstr "Kaset"
 
-#: etiketto/app.py:1178
+#: etiketto/app.py:1196
 msgid "Remaining tape"
 msgstr "Kalan şerit"
 
-#: etiketto/app.py:1184
+#: etiketto/app.py:1202
 msgid "Printable width"
 msgstr "Yazdırılabilir genişlik"
 
-#: etiketto/app.py:1185
+#: etiketto/app.py:1203
 msgid "Lot number"
 msgstr "Parti numarası"
 
-#: etiketto/app.py:1186
+#: etiketto/app.py:1204
 msgid "Serial number"
 msgstr "Seri numarası"
 
-#: etiketto/app.py:1188
+#: etiketto/app.py:1206
 msgid "Probably made"
 msgstr "Tahmini üretim"
 
-#: etiketto/app.py:1208 etiketto/app.py:1432
+#: etiketto/app.py:1226 etiketto/app.py:1450
 msgid "Close"
 msgstr "Kapat"
 
-#: etiketto/app.py:1218
+#: etiketto/app.py:1236
 msgid "The label is empty"
 msgstr "Etiket boş"
 
-#: etiketto/app.py:1223
+#: etiketto/app.py:1241
 msgid "Wrong cassette"
 msgstr "Yanlış kaset"
 
-#: etiketto/app.py:1225
+#: etiketto/app.py:1243
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Etiket şu şerit için tasarlandı: %(label)s. Takılı kaset: %(tape)s. Yazıcı etiketi şeride göre ölçekler."
 
-#: etiketto/app.py:1234
+#: etiketto/app.py:1252
 msgid "Print anyway"
 msgstr "Yine de yazdır"
 
-#: etiketto/app.py:1272
+#: etiketto/app.py:1290
 msgid "Copies"
 msgstr "Kopya"
 
-#: etiketto/app.py:1276
+#: etiketto/app.py:1294
 msgid "Cut"
 msgstr "Kesim"
 
-#: etiketto/app.py:1281
+#: etiketto/app.py:1299
 msgid "Colours"
 msgstr "Renkler"
 
-#: etiketto/app.py:1290
+#: etiketto/app.py:1308
 msgid "Colour adjustment"
 msgstr "Renk ayarı"
 
-#: etiketto/app.py:1293
+#: etiketto/app.py:1311
 msgid "Reset"
 msgstr "Sıfırla"
 
-#: etiketto/app.py:1314
+#: etiketto/app.py:1332
 msgid "Not adjusted"
 msgstr "Ayarlanmadı"
 
-#: etiketto/app.py:1314
+#: etiketto/app.py:1332
 msgid "Adjusted"
 msgstr "Ayarlandı"
 
-#: etiketto/app.py:1326
+#: etiketto/app.py:1344
 msgid "Print label"
 msgstr "Etiketi yazdır"
 
-#: etiketto/app.py:1360
+#: etiketto/app.py:1378
 msgid "No printer yet – search for one or enter its address"
 msgstr "Henüz yazıcı yok – bir yazıcı arayın ya da adresini girin"
 
-#: etiketto/app.py:1365
+#: etiketto/app.py:1383
 msgid "Printing…"
 msgstr "Yazdırılıyor…"
 
-#: etiketto/app.py:1375
+#: etiketto/app.py:1393
 msgid "The label cannot be prepared for printing."
 msgstr "Etiket yazdırmaya hazırlanamıyor."
 
-#: etiketto/app.py:1389
+#: etiketto/app.py:1407
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Yazdırılıyor %(n)d/%(total)d…"
 
-#: etiketto/app.py:1412
+#: etiketto/app.py:1430
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "“%(wanted)s” renk modu bu yazıcıda kullanılamıyor, “%(used)s” ile yazdırıldı"
 
-#: etiketto/app.py:1420
+#: etiketto/app.py:1438
 msgid "Printed"
 msgstr "Yazdırıldı"
 
-#: etiketto/app.py:1427
+#: etiketto/app.py:1445
 msgid "Printing failed"
 msgstr "Yazdırma başarısız"
 
-#: etiketto/app.py:1428
+#: etiketto/app.py:1446
 msgid "Details"
 msgstr "Ayrıntılar"
 
-#: etiketto/app.py:1431 etiketto/app.py:1660
+#: etiketto/app.py:1449 etiketto/app.py:1678
 msgid "Report"
 msgstr "Bildir"
 
-#: etiketto/app.py:1449
+#: etiketto/app.py:1467
 msgid "Etiketto labels"
 msgstr "Etiketto etiketleri"
 
-#: etiketto/app.py:1457
+#: etiketto/app.py:1475
 msgid "Images"
 msgstr "Görüntüler"
 
-#: etiketto/app.py:1481
+#: etiketto/app.py:1499
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s açılamıyor"
 
-#: etiketto/app.py:1484
+#: etiketto/app.py:1502
 msgid "Open label"
 msgstr "Etiket aç"
 
-#: etiketto/app.py:1501
+#: etiketto/app.py:1519
 msgid "Save label"
 msgstr "Etiketi kaydet"
 
-#: etiketto/app.py:1502 etiketto/app.py:1523 etiketto/app.py:1554
+#: etiketto/app.py:1520 etiketto/app.py:1541 etiketto/app.py:1572
 msgid "label"
 msgstr "etiket"
 
-#: etiketto/app.py:1537 etiketto/app.py:1550
+#: etiketto/app.py:1555 etiketto/app.py:1568
 #, python-format
 msgid "Saved %s"
 msgstr "Kaydedildi: %s"
 
-#: etiketto/app.py:1553
+#: etiketto/app.py:1571
 msgid "Export PNG"
 msgstr "PNG olarak dışa aktar"
 
-#: etiketto/app.py:1584
+#: etiketto/app.py:1602
 msgid "Exported"
 msgstr "Dışa aktarıldı"
 
-#: etiketto/app.py:1590
+#: etiketto/app.py:1608
 msgid "No templates yet – use “Save as template…”"
 msgstr "Henüz şablon yok – “Şablon olarak kaydet…” seçeneğini kullanın"
 
-#: etiketto/app.py:1606
+#: etiketto/app.py:1624
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Şablon açılamıyor: %(name)s"
 
-#: etiketto/app.py:1629
+#: etiketto/app.py:1647
 msgid "Discard changes?"
 msgstr "Değişiklikler atılsın mı?"
 
-#: etiketto/app.py:1629
+#: etiketto/app.py:1647
 msgid "The current label has unsaved changes."
 msgstr "Geçerli etikette kaydedilmemiş değişiklikler var."
 
-#: etiketto/app.py:1632
+#: etiketto/app.py:1650
 msgid "Discard"
 msgstr "At"
 
-#: etiketto/app.py:1639
+#: etiketto/app.py:1657
 msgid "Please wait until printing has finished"
 msgstr "Lütfen yazdırma bitene kadar bekleyin"
 
-#: etiketto/app.py:1700
+#: etiketto/app.py:1721
 msgid "The browser cannot be opened"
 msgstr "Tarayıcı açılamıyor"
 
-#: etiketto/app.py:1701
+#: etiketto/app.py:1722
 msgid "Copy link"
 msgstr "Bağlantıyı kopyala"
 
-#: etiketto/app.py:1739
+#: etiketto/app.py:1762
 msgid "Only local files can be dropped"
 msgstr "Yalnızca yerel dosyalar bırakılabilir"
 
-#: etiketto/app.py:1859
+#: etiketto/app.py:1882
 msgid "Label designer for the Brother VC-500W"
 msgstr "Brother VC-500W için etiket tasarımcısı"
 
-#: etiketto/app.py:1864
+#. translators: replace with your name to be credited in the About dialog
+#: etiketto/app.py:1887
 msgid "translator-credits"
 msgstr "Etiketto contributors"

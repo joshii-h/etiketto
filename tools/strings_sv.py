@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Kan inte öppna mallen %(name)s",
     "The browser cannot be opened": "Webbläsaren kan inte öppnas",
     "Copy link": "Kopiera länk",
+    "Help": "Hjälp",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

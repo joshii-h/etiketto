@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "A sablon nem nyitható meg: %(name)s",
     "The browser cannot be opened": "A böngésző nem nyitható meg",
     "Copy link": "Hivatkozás másolása",
+    "Help": "Súgó",
+    "%(month)s %(year)d": "%(year)d. %(month)s",
 }

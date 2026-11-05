@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "서식을 열 수 없음: %(name)s",
     "The browser cannot be opened": "브라우저를 열 수 없습니다",
     "Copy link": "링크 복사",
+    "Help": "도움말",
+    "%(month)s %(year)d": "%(year)d년 %(month)s",
 }

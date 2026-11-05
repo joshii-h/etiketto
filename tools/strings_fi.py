@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Mallia %(name)s ei voi avata",
     "The browser cannot be opened": "Selainta ei voi avata",
     "Copy link": "Kopioi linkki",
+    "Help": "Ohje",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

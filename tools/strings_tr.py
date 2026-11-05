@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Şablon açılamıyor: %(name)s",
     "The browser cannot be opened": "Tarayıcı açılamıyor",
     "Copy link": "Bağlantıyı kopyala",
+    "Help": "Yardım",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

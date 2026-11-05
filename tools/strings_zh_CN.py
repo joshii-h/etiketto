@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "无法打开模板 %(name)s",
     "The browser cannot be opened": "无法打开浏览器",
     "Copy link": "复制链接",
+    "Help": "帮助",
+    "%(month)s %(year)d": "%(year)d年%(month)s",
 }

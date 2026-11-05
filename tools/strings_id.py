@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Tidak dapat membuka templat %(name)s",
     "The browser cannot be opened": "Peramban tidak dapat dibuka",
     "Copy link": "Salin tautan",
+    "Help": "Bantuan",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

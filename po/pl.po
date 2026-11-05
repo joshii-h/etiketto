@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-05 15:28+0100\n"
+"PO-Revision-Date: 2026-11-05 15:34+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -83,7 +83,7 @@ msgstr "Można używać tylko plików lokalnych"
 msgid "Not an image: %s"
 msgstr "To nie jest obraz: %s"
 
-#: etiketto/app.py:211 etiketto/app.py:751 etiketto/app.py:1715
+#: etiketto/app.py:211 etiketto/app.py:769 etiketto/app.py:1737
 msgid "Text"
 msgstr "Tekst"
 
@@ -226,606 +226,617 @@ msgstr "Nie można zapisać %s: dysk jest pełny"
 msgid "Cannot save %s"
 msgstr "Nie można zapisać %s"
 
-#: etiketto/app.py:308
+#. translators: a month and a year, e.g. "May 2018"; reorder as your language needs
+#: etiketto/app.py:320
+#, python-format
+msgid "%(month)s %(year)d"
+msgstr "%(month)s %(year)d"
+
+#: etiketto/app.py:325
 msgctxt "month name"
 msgid "January"
 msgstr "styczeń"
 
-#: etiketto/app.py:309
+#: etiketto/app.py:326
 msgctxt "month name"
 msgid "February"
 msgstr "luty"
 
-#: etiketto/app.py:310
+#: etiketto/app.py:327
 msgctxt "month name"
 msgid "March"
 msgstr "marzec"
 
-#: etiketto/app.py:311
+#: etiketto/app.py:328
 msgctxt "month name"
 msgid "April"
 msgstr "kwiecień"
 
-#: etiketto/app.py:312
+#: etiketto/app.py:329
 msgctxt "month name"
 msgid "May"
 msgstr "maj"
 
-#: etiketto/app.py:313
+#: etiketto/app.py:330
 msgctxt "month name"
 msgid "June"
 msgstr "czerwiec"
 
-#: etiketto/app.py:314
+#: etiketto/app.py:331
 msgctxt "month name"
 msgid "July"
 msgstr "lipiec"
 
-#: etiketto/app.py:315
+#: etiketto/app.py:332
 msgctxt "month name"
 msgid "August"
 msgstr "sierpień"
 
-#: etiketto/app.py:316
+#: etiketto/app.py:333
 msgctxt "month name"
 msgid "September"
 msgstr "wrzesień"
 
-#: etiketto/app.py:317
+#: etiketto/app.py:334
 msgctxt "month name"
 msgid "October"
 msgstr "październik"
 
-#: etiketto/app.py:318
+#: etiketto/app.py:335
 msgctxt "month name"
 msgid "November"
 msgstr "listopad"
 
-#: etiketto/app.py:319
+#: etiketto/app.py:336
 msgctxt "month name"
 msgid "December"
 msgstr "grudzień"
 
-#: etiketto/app.py:329
+#: etiketto/app.py:346
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "Prawdopodobna data produkcji kasety: %(month)s %(year)d. Stary papier ZINK drukuje bledsze kolory."
 
-#: etiketto/app.py:341 etiketto/app.py:647 etiketto/app.py:1619
+#: etiketto/app.py:358 etiketto/app.py:665 etiketto/app.py:1637
 msgid "Label"
 msgstr "Etykieta"
 
-#: etiketto/app.py:381
+#: etiketto/app.py:398
 msgid "Open"
 msgstr "Otwórz"
 
-#: etiketto/app.py:388
+#: etiketto/app.py:405
 msgid "Templates"
 msgstr "Szablony"
 
-#: etiketto/app.py:394
+#: etiketto/app.py:411
 msgid "Save"
 msgstr "Zapisz"
 
-#: etiketto/app.py:399
+#: etiketto/app.py:416
 msgid "New label"
 msgstr "Nowa etykieta"
 
-#: etiketto/app.py:400
+#: etiketto/app.py:417
 msgid "Save as…"
 msgstr "Zapisz jako…"
 
-#: etiketto/app.py:401 etiketto/app.py:1521
+#: etiketto/app.py:418 etiketto/app.py:1539
 msgid "Save as template…"
 msgstr "Zapisz jako szablon…"
 
-#: etiketto/app.py:402
+#: etiketto/app.py:419
 msgid "Export PNG…"
 msgstr "Eksportuj jako PNG…"
 
-#: etiketto/app.py:403
+#: etiketto/app.py:420
+msgid "Help"
+msgstr "Pomoc"
+
+#: etiketto/app.py:421
 msgid "Report a problem…"
 msgstr "Zgłoś problem…"
 
-#: etiketto/app.py:404
+#: etiketto/app.py:422
 msgid "About Etiketto"
 msgstr "O programie Etiketto"
 
-#: etiketto/app.py:407 etiketto/app.py:1336 etiketto/app.py:1405
+#: etiketto/app.py:425 etiketto/app.py:1354 etiketto/app.py:1423
 msgid "Print"
 msgstr "Drukuj"
 
-#: etiketto/app.py:443
+#: etiketto/app.py:461
 msgid "Fit to window"
 msgstr "Dopasuj do okna"
 
-#: etiketto/app.py:447
+#: etiketto/app.py:465
 msgid "Zoom out"
 msgstr "Pomniejsz"
 
-#: etiketto/app.py:450
+#: etiketto/app.py:468
 msgid "Zoom in"
 msgstr "Powiększ"
 
-#: etiketto/app.py:526
+#: etiketto/app.py:544
 msgid "Printer model"
 msgstr "Model drukarki"
 
-#: etiketto/app.py:541
+#: etiketto/app.py:559
 msgid "Printer"
 msgstr "Drukarka"
 
-#: etiketto/app.py:544 etiketto/app.py:1158
+#: etiketto/app.py:562 etiketto/app.py:1176
 msgid "Searching…"
 msgstr "Wyszukiwanie…"
 
-#: etiketto/app.py:547 etiketto/app.py:1196
+#: etiketto/app.py:565 etiketto/app.py:1214
 msgid "Printer details"
 msgstr "Szczegóły drukarki"
 
-#: etiketto/app.py:553
+#: etiketto/app.py:571
 msgid "Refresh"
 msgstr "Odśwież"
 
-#: etiketto/app.py:559
+#: etiketto/app.py:577
 msgid "Search for printers"
 msgstr "Wyszukaj drukarki"
 
-#: etiketto/app.py:573
+#: etiketto/app.py:591
 msgid "Host name or IP address"
 msgstr "Nazwa komputera lub adres IP"
 
-#: etiketto/app.py:581
+#: etiketto/app.py:599
 msgid "Safety margin"
 msgstr "Margines bezpieczeństwa"
 
-#: etiketto/app.py:588
+#: etiketto/app.py:606
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "%(unit)s wolnego miejsca na treść i ramkę; tło jest drukowane bez marginesów"
 
-#: etiketto/app.py:593 etiketto/app.py:599
+#: etiketto/app.py:611 etiketto/app.py:617
 msgid "Millimetres"
 msgstr "Milimetry"
 
-#: etiketto/app.py:593 etiketto/app.py:600
+#: etiketto/app.py:611 etiketto/app.py:618
 msgid "Inches"
 msgstr "Cale"
 
-#: etiketto/app.py:596
+#: etiketto/app.py:614
 msgid "Units"
 msgstr "Jednostki"
 
-#: etiketto/app.py:598
+#: etiketto/app.py:616
 #, python-format
 msgid "Automatic (%s)"
 msgstr "Automatycznie (%s)"
 
-#: etiketto/app.py:653
+#: etiketto/app.py:671
 msgid "Tape width"
 msgstr "Szerokość taśmy"
 
-#: etiketto/app.py:662
+#: etiketto/app.py:680
 msgid "Spacing"
 msgstr "Odstęp"
 
-#: etiketto/app.py:668
+#: etiketto/app.py:686
 #, python-format
 msgid "%(unit)s at the ends and between elements"
 msgstr "%(unit)s na końcach i między elementami"
 
-#: etiketto/app.py:673
+#: etiketto/app.py:691
 msgid "Edge spacing"
 msgstr "Odstęp od krawędzi"
 
-#: etiketto/app.py:679
+#: etiketto/app.py:697
 #, python-format
 msgid "extra %(unit)s along the tape edges"
 msgstr "dodatkowe %(unit)s wzdłuż krawędzi taśmy"
 
-#: etiketto/app.py:683
+#: etiketto/app.py:701
 msgid "Background colour"
 msgstr "Kolor tła"
 
-#: etiketto/app.py:687
+#: etiketto/app.py:705
 msgid "Background image"
 msgstr "Obraz tła"
 
-#: etiketto/app.py:688 etiketto/app.py:861
+#: etiketto/app.py:706 etiketto/app.py:879
 msgid "None"
 msgstr "Brak"
 
-#: etiketto/app.py:689 etiketto/app.py:1455
+#: etiketto/app.py:707 etiketto/app.py:1473
 msgid "Choose image"
 msgstr "Wybierz obraz"
 
-#: etiketto/app.py:695 etiketto/app.py:780
+#: etiketto/app.py:713 etiketto/app.py:798
 msgid "Remove"
 msgstr "Usuń"
 
-#: etiketto/app.py:703
+#: etiketto/app.py:721
 msgid "Border"
 msgstr "Ramka"
 
-#: etiketto/app.py:709
+#: etiketto/app.py:727
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = brak"
 
-#: etiketto/app.py:718
+#: etiketto/app.py:736
 msgid "Automatic length"
 msgstr "Automatyczna długość"
 
-#: etiketto/app.py:718
+#: etiketto/app.py:736
 msgid "As long as the content"
 msgstr "Tak długa jak treść"
 
-#: etiketto/app.py:725
+#: etiketto/app.py:743
 msgid "Length"
 msgstr "Długość"
 
-#: etiketto/app.py:732
+#: etiketto/app.py:750
 msgid "Alignment"
 msgstr "Wyrównanie"
 
-#: etiketto/app.py:747
+#: etiketto/app.py:765
 msgid "Content"
 msgstr "Treść"
 
-#: etiketto/app.py:748
+#: etiketto/app.py:766
 msgid "Elements are placed one after another along the tape"
 msgstr "Elementy są umieszczane kolejno wzdłuż taśmy"
 
-#: etiketto/app.py:752
+#: etiketto/app.py:770
 msgid "Image…"
 msgstr "Obraz…"
 
-#: etiketto/app.py:753
+#: etiketto/app.py:771
 msgid "QR code / barcode"
 msgstr "Kod QR / kod kreskowy"
 
-#: etiketto/app.py:755
+#: etiketto/app.py:773
 msgid "Add"
 msgstr "Dodaj"
 
-#: etiketto/app.py:762
+#: etiketto/app.py:780
 msgid "No content yet"
 msgstr "Brak treści"
 
-#: etiketto/app.py:762
+#: etiketto/app.py:780
 msgid "Add text, an image or a code"
 msgstr "Dodaj tekst, obraz lub kod"
 
-#: etiketto/app.py:786
+#: etiketto/app.py:804
 msgid "Move down"
 msgstr "Przesuń do tyłu"
 
-#: etiketto/app.py:787
+#: etiketto/app.py:805
 msgid "Move up"
 msgstr "Przesuń do przodu"
 
-#: etiketto/app.py:821
+#: etiketto/app.py:839
 msgid "Font"
 msgstr "Czcionka"
 
-#: etiketto/app.py:843
+#: etiketto/app.py:861
 msgid "Size"
 msgstr "Rozmiar"
 
-#: etiketto/app.py:850
+#: etiketto/app.py:868
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = cała wysokość taśmy"
 
-#: etiketto/app.py:856
+#: etiketto/app.py:874
 msgid "Line alignment"
 msgstr "Wyrównanie wierszy"
 
-#: etiketto/app.py:861
+#: etiketto/app.py:879
 msgid "Image file"
 msgstr "Plik obrazu"
 
-#: etiketto/app.py:862
+#: etiketto/app.py:880
 msgid "Choose…"
 msgstr "Wybierz…"
 
-#: etiketto/app.py:878
+#: etiketto/app.py:896
 msgid "Type"
 msgstr "Typ"
 
-#: etiketto/app.py:881
+#: etiketto/app.py:899
 msgid "Content (link, text, number)"
 msgstr "Treść (odnośnik, tekst, numer)"
 
-#: etiketto/app.py:885
+#: etiketto/app.py:903
 msgid "Colour"
 msgstr "Kolor"
 
-#: etiketto/app.py:936
+#: etiketto/app.py:954
 msgid "Unsaved label"
 msgstr "Niezapisana etykieta"
 
-#: etiketto/app.py:970
+#: etiketto/app.py:988
 msgid "content scaled down to fit"
 msgstr "treść pomniejszona, aby się zmieściła"
 
-#: etiketto/app.py:972
+#: etiketto/app.py:990
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Za długa dla tej drukarki: maksymalnie %s"
 
-#: etiketto/app.py:977
+#: etiketto/app.py:995
 #, python-format
 msgid "Problem: %s"
 msgstr "Problem: %s"
 
-#: etiketto/app.py:984 etiketto/app.py:1577
+#: etiketto/app.py:1002 etiketto/app.py:1595
 msgid "The preview cannot be drawn"
 msgstr "Nie można narysować podglądu"
 
-#: etiketto/app.py:1025
+#: etiketto/app.py:1043
 msgid "Searching for printers…"
 msgstr "Wyszukiwanie drukarek…"
 
-#: etiketto/app.py:1039
+#: etiketto/app.py:1057
 msgid "No printer found"
 msgstr "Nie odnaleziono drukarki"
 
-#: etiketto/app.py:1041
+#: etiketto/app.py:1059
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "Sprawdź, czy drukarka jest włączona i w tej samej sieci, lub wpisz jej adres poniżej"
 
-#: etiketto/app.py:1047
+#: etiketto/app.py:1065
 #, python-format
 msgid "Found %s"
 msgstr "Odnaleziono %s"
 
-#: etiketto/app.py:1051 etiketto/app.py:1071
+#: etiketto/app.py:1069 etiketto/app.py:1089
 msgid "Choose a printer"
 msgstr "Wybierz drukarkę"
 
-#: etiketto/app.py:1064 etiketto/app.py:1233 etiketto/app.py:1335
-#: etiketto/app.py:1631
+#: etiketto/app.py:1082 etiketto/app.py:1251 etiketto/app.py:1353
+#: etiketto/app.py:1649
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: etiketto/app.py:1092
+#: etiketto/app.py:1110
 msgid "Connecting…"
 msgstr "Łączenie…"
 
-#: etiketto/app.py:1128
+#: etiketto/app.py:1146
 msgid "Printer not reachable"
 msgstr "Drukarka jest nieosiągalna"
 
-#: etiketto/app.py:1136
+#: etiketto/app.py:1154
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "Pozostało %(left)s z %(total)s"
 
-#: etiketto/app.py:1143
+#: etiketto/app.py:1161
 msgid "No cassette inserted"
 msgstr "Nie włożono kasety"
 
-#: etiketto/app.py:1144
+#: etiketto/app.py:1162
 #, python-format
 msgid "%s cassette"
 msgstr "Kaseta %s"
 
-#: etiketto/app.py:1172
+#: etiketto/app.py:1190
 msgid "Model"
 msgstr "Model"
 
-#: etiketto/app.py:1173
+#: etiketto/app.py:1191
 msgid "Address"
 msgstr "Adres"
 
-#: etiketto/app.py:1174
+#: etiketto/app.py:1192
 msgid "Firmware"
 msgstr "Oprogramowanie sprzętowe"
 
-#: etiketto/app.py:1177
+#: etiketto/app.py:1195
 msgid "Cassette"
 msgstr "Kaseta"
 
-#: etiketto/app.py:1178
+#: etiketto/app.py:1196
 msgid "Remaining tape"
 msgstr "Pozostała taśma"
 
-#: etiketto/app.py:1184
+#: etiketto/app.py:1202
 msgid "Printable width"
 msgstr "Szerokość druku"
 
-#: etiketto/app.py:1185
+#: etiketto/app.py:1203
 msgid "Lot number"
 msgstr "Numer partii"
 
-#: etiketto/app.py:1186
+#: etiketto/app.py:1204
 msgid "Serial number"
 msgstr "Numer seryjny"
 
-#: etiketto/app.py:1188
+#: etiketto/app.py:1206
 msgid "Probably made"
 msgstr "Prawdopodobna data produkcji"
 
-#: etiketto/app.py:1208 etiketto/app.py:1432
+#: etiketto/app.py:1226 etiketto/app.py:1450
 msgid "Close"
 msgstr "Zamknij"
 
-#: etiketto/app.py:1218
+#: etiketto/app.py:1236
 msgid "The label is empty"
 msgstr "Etykieta jest pusta"
 
-#: etiketto/app.py:1223
+#: etiketto/app.py:1241
 msgid "Wrong cassette"
 msgstr "Niewłaściwa kaseta"
 
-#: etiketto/app.py:1225
+#: etiketto/app.py:1243
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Etykieta jest zaprojektowana dla taśmy %(label)s, ale włożono kasetę %(tape)s. Drukarka przeskalowałaby ją do taśmy."
 
-#: etiketto/app.py:1234
+#: etiketto/app.py:1252
 msgid "Print anyway"
 msgstr "Drukuj mimo to"
 
-#: etiketto/app.py:1272
+#: etiketto/app.py:1290
 msgid "Copies"
 msgstr "Kopie"
 
-#: etiketto/app.py:1276
+#: etiketto/app.py:1294
 msgid "Cut"
 msgstr "Cięcie"
 
-#: etiketto/app.py:1281
+#: etiketto/app.py:1299
 msgid "Colours"
 msgstr "Kolory"
 
-#: etiketto/app.py:1290
+#: etiketto/app.py:1308
 msgid "Colour adjustment"
 msgstr "Korekcja kolorów"
 
-#: etiketto/app.py:1293
+#: etiketto/app.py:1311
 msgid "Reset"
 msgstr "Przywróć"
 
-#: etiketto/app.py:1314
+#: etiketto/app.py:1332
 msgid "Not adjusted"
 msgstr "Bez korekcji"
 
-#: etiketto/app.py:1314
+#: etiketto/app.py:1332
 msgid "Adjusted"
 msgstr "Skorygowano"
 
-#: etiketto/app.py:1326
+#: etiketto/app.py:1344
 msgid "Print label"
 msgstr "Drukuj etykietę"
 
-#: etiketto/app.py:1360
+#: etiketto/app.py:1378
 msgid "No printer yet – search for one or enter its address"
 msgstr "Brak drukarki – wyszukaj ją lub wpisz jej adres"
 
-#: etiketto/app.py:1365
+#: etiketto/app.py:1383
 msgid "Printing…"
 msgstr "Drukowanie…"
 
-#: etiketto/app.py:1375
+#: etiketto/app.py:1393
 msgid "The label cannot be prepared for printing."
 msgstr "Nie można przygotować etykiety do druku."
 
-#: etiketto/app.py:1389
+#: etiketto/app.py:1407
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Drukowanie %(n)d/%(total)d…"
 
-#: etiketto/app.py:1412
+#: etiketto/app.py:1430
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Tryb kolorów „%(wanted)s” jest niedostępny w tej drukarce, wydrukowano w trybie „%(used)s”"
 
-#: etiketto/app.py:1420
+#: etiketto/app.py:1438
 msgid "Printed"
 msgstr "Wydrukowano"
 
-#: etiketto/app.py:1427
+#: etiketto/app.py:1445
 msgid "Printing failed"
 msgstr "Drukowanie się nie powiodło"
 
-#: etiketto/app.py:1428
+#: etiketto/app.py:1446
 msgid "Details"
 msgstr "Szczegóły"
 
-#: etiketto/app.py:1431 etiketto/app.py:1660
+#: etiketto/app.py:1449 etiketto/app.py:1678
 msgid "Report"
 msgstr "Zgłoś"
 
-#: etiketto/app.py:1449
+#: etiketto/app.py:1467
 msgid "Etiketto labels"
 msgstr "Etykiety Etiketto"
 
-#: etiketto/app.py:1457
+#: etiketto/app.py:1475
 msgid "Images"
 msgstr "Obrazy"
 
-#: etiketto/app.py:1481
+#: etiketto/app.py:1499
 #, python-format
 msgid "Cannot open %s"
 msgstr "Nie można otworzyć %s"
 
-#: etiketto/app.py:1484
+#: etiketto/app.py:1502
 msgid "Open label"
 msgstr "Otwórz etykietę"
 
-#: etiketto/app.py:1501
+#: etiketto/app.py:1519
 msgid "Save label"
 msgstr "Zapisz etykietę"
 
-#: etiketto/app.py:1502 etiketto/app.py:1523 etiketto/app.py:1554
+#: etiketto/app.py:1520 etiketto/app.py:1541 etiketto/app.py:1572
 msgid "label"
 msgstr "etykieta"
 
-#: etiketto/app.py:1537 etiketto/app.py:1550
+#: etiketto/app.py:1555 etiketto/app.py:1568
 #, python-format
 msgid "Saved %s"
 msgstr "Zapisano %s"
 
-#: etiketto/app.py:1553
+#: etiketto/app.py:1571
 msgid "Export PNG"
 msgstr "Eksportuj jako PNG"
 
-#: etiketto/app.py:1584
+#: etiketto/app.py:1602
 msgid "Exported"
 msgstr "Wyeksportowano"
 
-#: etiketto/app.py:1590
+#: etiketto/app.py:1608
 msgid "No templates yet – use “Save as template…”"
 msgstr "Brak szablonów – użyj „Zapisz jako szablon…”"
 
-#: etiketto/app.py:1606
+#: etiketto/app.py:1624
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Nie można otworzyć szablonu %(name)s"
 
-#: etiketto/app.py:1629
+#: etiketto/app.py:1647
 msgid "Discard changes?"
 msgstr "Odrzucić zmiany?"
 
-#: etiketto/app.py:1629
+#: etiketto/app.py:1647
 msgid "The current label has unsaved changes."
 msgstr "Bieżąca etykieta zawiera niezapisane zmiany."
 
-#: etiketto/app.py:1632
+#: etiketto/app.py:1650
 msgid "Discard"
 msgstr "Odrzuć"
 
-#: etiketto/app.py:1639
+#: etiketto/app.py:1657
 msgid "Please wait until printing has finished"
 msgstr "Proszę poczekać na zakończenie drukowania"
 
-#: etiketto/app.py:1700
+#: etiketto/app.py:1721
 msgid "The browser cannot be opened"
 msgstr "Nie można otworzyć przeglądarki"
 
-#: etiketto/app.py:1701
+#: etiketto/app.py:1722
 msgid "Copy link"
 msgstr "Skopiuj odnośnik"
 
-#: etiketto/app.py:1739
+#: etiketto/app.py:1762
 msgid "Only local files can be dropped"
 msgstr "Można upuszczać tylko pliki lokalne"
 
-#: etiketto/app.py:1859
+#: etiketto/app.py:1882
 msgid "Label designer for the Brother VC-500W"
 msgstr "Projektant etykiet dla drukarki Brother VC-500W"
 
-#: etiketto/app.py:1864
+#. translators: replace with your name to be credited in the About dialog
+#: etiketto/app.py:1887
 msgid "translator-credits"
 msgstr "Etiketto contributors"

@@ -303,6 +303,23 @@ def save_error_text(error: OSError, name: str) -> str:
     return _("Cannot save %s") % name
 
 
+DOCS_URL = "https://etiketto.joshuahirsig.xyz"
+# languages the documentation is available in (site/po/<lang>.po)
+DOCS_LANGUAGES = ("en", "de")
+
+
+def docs_url(translation=TRANSLATION) -> str:
+    """The documentation in the interface language, English otherwise."""
+    language = translation.info().get("language", "") if hasattr(translation, "info") else ""
+    short = language.split("_")[0].split("-")[0].lower()
+    return "%s/%s/" % (DOCS_URL, short if short in DOCS_LANGUAGES else "en")
+
+
+def month_year(month: int, year: int) -> str:
+    # translators: a month and a year, e.g. "May 2018"; reorder as your language needs
+    return _("%(month)s %(year)d") % {"month": month_name(month), "year": year}
+
+
 def month_name(month: int) -> str:
     return (
         pgettext("month name", "January"),
@@ -400,6 +417,7 @@ class Window(Adw.ApplicationWindow):
         menu.append(_("Save as…"), "win.save-as")
         menu.append(_("Save as template…"), "win.save-template")
         menu.append(_("Export PNG…"), "win.export")
+        menu.append(_("Help"), "win.help")
         menu.append(_("Report a problem…"), "win.report")
         menu.append(_("About Etiketto"), "app.about")
         header.pack_end(Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu))
@@ -1185,7 +1203,7 @@ class Window(Adw.ApplicationWindow):
                 (_("Lot number"), isolate(cassette.lot) if cassette.lot else ""),
                 (_("Serial number"), isolate(cassette.serial) if cassette.serial else ""),
                 # the production date is read from the serial number: a guess
-                (_("Probably made"), "%s %d" % (month_name(made.month), made.year) if made else ""),
+                (_("Probably made"), month_year(made.month, made.year) if made else ""),
             ]
         return [(title, value) for title, value in rows if value and value != isolate("")]
 
@@ -1683,7 +1701,10 @@ class Window(Adw.ApplicationWindow):
             Adw.get_major_version(),
             Adw.get_minor_version(),
         )
-        url = report.issue_url(problem, self.printer_description(), toolkit)
+        self.open_url(report.issue_url(problem, self.printer_description(), toolkit))
+
+    def open_url(self, url: str) -> None:
+        """Open a web page; if no browser can be started, offer the link."""
 
         def launched(launcher, result):
             try:
@@ -1710,6 +1731,7 @@ class Window(Adw.ApplicationWindow):
             "save-template": self.on_save_template,
             "export": self.on_export,
             "report": lambda *_a: self.report_problem(),
+            "help": lambda *_a: self.open_url(docs_url()),
             "print": self.on_print,
             "new": self.on_new,
             "add-text": lambda *_a: self.add_element(TextElement(text=_("Text"))),
@@ -1729,6 +1751,7 @@ class Window(Adw.ApplicationWindow):
         app.set_accels_for_action("win.save", ["<Control>s"])
         app.set_accels_for_action("win.save-as", ["<Control><Shift>s"])
         app.set_accels_for_action("win.print", ["<Control>p"])
+        app.set_accels_for_action("win.help", ["F1"])
         app.set_accels_for_action("win.new", ["<Control>n"])
 
     def _install_drop_target(self) -> None:

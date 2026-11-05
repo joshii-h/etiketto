@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "テンプレート %(name)s を開けません",
     "The browser cannot be opened": "ブラウザーを開けません",
     "Copy link": "リンクをコピー",
+    "Help": "ヘルプ",
+    "%(month)s %(year)d": "%(year)d年%(month)s",
 }

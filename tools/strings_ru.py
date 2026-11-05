@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Не удалось открыть шаблон %(name)s",
     "The browser cannot be opened": "Не удалось открыть браузер",
     "Copy link": "Копировать ссылку",
+    "Help": "Справка",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }

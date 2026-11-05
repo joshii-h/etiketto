@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Không thể mở mẫu %(name)s",
     "The browser cannot be opened": "Không thể mở trình duyệt",
     "Copy link": "Sao chép liên kết",
+    "Help": "Trợ giúp",
+    "%(month)s %(year)d": "%(month)s năm %(year)d",
 }

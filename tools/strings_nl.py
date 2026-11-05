@@ -191,4 +191,6 @@ TRANSLATIONS = {
     "Cannot open template %(name)s": "Kan sjabloon %(name)s niet openen",
     "The browser cannot be opened": "Kan de browser niet openen",
     "Copy link": "Link kopiëren",
+    "Help": "Hulp",
+    "%(month)s %(year)d": "%(month)s %(year)d",
 }
