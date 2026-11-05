@@ -8,6 +8,7 @@ templates live in tmp_path.
 from __future__ import annotations
 
 import errno
+import html
 import io
 import json
 from datetime import date, timedelta
@@ -629,7 +630,8 @@ def test_printer_failed(make_window, gui_env):
     assert win.printer_info is None
     assert win.printer_row.get_title() == "Printer not reachable"
     # what to do, not the host or labelprinter's English text
-    assert win.printer_row.get_subtitle() == GLib.markup_escape_text(
+    # compare plain text: GLib/libadwaita versions escape the apostrophe differently
+    assert html.unescape(win.printer_row.get_subtitle()) == (
         "The printer refuses the connection. Turn on “Port 9100” in the printer's web interface."
     )
     assert not win.details_button.get_sensitive()
@@ -1440,9 +1442,7 @@ def test_printer_stages_in_a_banner(ready, gui_env):
     assert not banner.get_revealed()
     assert ready.print_button.get_label() == "Printing 2/2…"
     ready._print_progress(Progress(2, 2, "READY_FOR_CUT"))
-    assert banner.get_title() == GLib.markup_escape_text(
-        "Swipe the printer's panel to cut the label"
-    )
+    assert html.unescape(banner.get_title()) == ("Swipe the printer's panel to cut the label")
     ready._print_done(None)
     assert not banner.get_revealed()
     ready._print_progress(Progress(1, 1, "COOLDOWN"))  # late event after the end
