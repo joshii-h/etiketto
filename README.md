@@ -67,6 +67,23 @@ IP address. Outside Flatpak the host is also read from
 `~/.config/labelprinter/config.json` if you use the `labelprinter` CLI.
 In Flatpak, `.local` names are resolved through the system's Avahi daemon.
 
+### Flatpak (build locally)
+
+```sh
+flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51
+flatpak-builder --user --install --force-clean build-dir \
+    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+flatpak run xyz.joshuahirsig.Etiketto
+```
+
+Check it like Flathub does:
+
+```sh
+flatpak install --user flathub org.flatpak.Builder
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
+    manifest build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+```
+
 ## How labels are laid out
 
 Elements (text, image, code) are placed one after another along the tape,
