@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 13:20+0100\n"
+"POT-Creation-Date: 2026-11-05 13:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,456 +17,460 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: etiketto/app.py:40
+#: etiketto/app.py:54
 msgid "Full cut"
 msgstr ""
 
-#: etiketto/app.py:40
+#: etiketto/app.py:54
 msgid "Half cut"
 msgstr ""
 
-#: etiketto/app.py:40
+#: etiketto/app.py:54
 msgid "No cut"
 msgstr ""
 
-#: etiketto/app.py:41
+#: etiketto/app.py:55
 msgid "Vivid"
 msgstr ""
 
-#: etiketto/app.py:41
+#: etiketto/app.py:55
 msgid "Normal"
 msgstr ""
 
-#: etiketto/app.py:42
+#: etiketto/app.py:56
 msgid "Start"
 msgstr ""
 
-#: etiketto/app.py:42 etiketto/app.py:43
+#: etiketto/app.py:56 etiketto/app.py:57
 msgid "Centre"
 msgstr ""
 
-#: etiketto/app.py:42
+#: etiketto/app.py:56
 msgid "End"
 msgstr ""
 
-#: etiketto/app.py:43
+#: etiketto/app.py:57
 msgid "Left"
 msgstr ""
 
-#: etiketto/app.py:43
+#: etiketto/app.py:57
 msgid "Right"
 msgstr ""
 
-#: etiketto/app.py:44
+#: etiketto/app.py:58
 msgid "QR code"
 msgstr ""
 
-#: etiketto/app.py:118
+#: etiketto/app.py:132
 msgid "Only local files can be used"
 msgstr ""
 
-#: etiketto/app.py:124
+#: etiketto/app.py:138
 #, python-format
 msgid "Not an image: %s"
 msgstr ""
 
-#: etiketto/app.py:130 etiketto/app.py:427 etiketto/app.py:1035
+#: etiketto/app.py:144 etiketto/app.py:443 etiketto/app.py:1052
 msgid "Text"
 msgstr ""
 
-#: etiketto/app.py:132
+#: etiketto/app.py:146
 msgid "Image"
 msgstr ""
 
-#: etiketto/app.py:152 etiketto/app.py:327 etiketto/app.py:990
+#: etiketto/app.py:166 etiketto/app.py:343 etiketto/app.py:1007
 msgid "Label"
 msgstr ""
 
-#: etiketto/app.py:185
+#: etiketto/app.py:201
 msgid "Open"
 msgstr ""
 
-#: etiketto/app.py:192
+#: etiketto/app.py:208
 msgid "Templates"
 msgstr ""
 
-#: etiketto/app.py:198
+#: etiketto/app.py:214
 msgid "Save"
 msgstr ""
 
-#: etiketto/app.py:203
+#: etiketto/app.py:219
 msgid "New label"
 msgstr ""
 
-#: etiketto/app.py:204
+#: etiketto/app.py:220
 msgid "Save as…"
 msgstr ""
 
-#: etiketto/app.py:205 etiketto/app.py:905
+#: etiketto/app.py:221 etiketto/app.py:922
 msgid "Save as template…"
 msgstr ""
 
-#: etiketto/app.py:206
+#: etiketto/app.py:222
 msgid "Export PNG…"
 msgstr ""
 
-#: etiketto/app.py:207
+#: etiketto/app.py:223
 msgid "About Etiketto"
 msgstr ""
 
-#: etiketto/app.py:210 etiketto/app.py:783 etiketto/app.py:826
+#: etiketto/app.py:226 etiketto/app.py:799 etiketto/app.py:843
 msgid "Print"
 msgstr ""
 
-#: etiketto/app.py:248
+#: etiketto/app.py:264
 msgid "Fit to window"
 msgstr ""
 
-#: etiketto/app.py:252
+#: etiketto/app.py:268
 msgid "Zoom out"
 msgstr ""
 
-#: etiketto/app.py:255
+#: etiketto/app.py:271
 msgid "Zoom in"
 msgstr ""
 
-#: etiketto/app.py:282
+#: etiketto/app.py:298
 msgid "Printer"
 msgstr ""
 
-#: etiketto/app.py:283 etiketto/app.py:734
+#: etiketto/app.py:299 etiketto/app.py:750
 msgid "Searching…"
 msgstr ""
 
-#: etiketto/app.py:285
+#: etiketto/app.py:301
 msgid "Refresh"
 msgstr ""
 
-#: etiketto/app.py:293
+#: etiketto/app.py:309
 msgid "Host name or IP address"
 msgstr ""
 
-#: etiketto/app.py:301
+#: etiketto/app.py:317
 msgid "Safety margin"
 msgstr ""
 
-#: etiketto/app.py:309
+#: etiketto/app.py:325
 msgid ""
 "mm kept free for content and border; the background is printed edge to edge"
 msgstr ""
 
-#: etiketto/app.py:331
+#: etiketto/app.py:347
 msgid "Tape width"
 msgstr ""
 
-#: etiketto/app.py:335
+#: etiketto/app.py:351
 msgid "Automatic length"
 msgstr ""
 
-#: etiketto/app.py:335
+#: etiketto/app.py:351
 msgid "As long as the content"
 msgstr ""
 
-#: etiketto/app.py:340
+#: etiketto/app.py:356
 msgid "Length"
 msgstr ""
 
-#: etiketto/app.py:347
+#: etiketto/app.py:363
 msgid "mm"
 msgstr ""
 
-#: etiketto/app.py:349
+#: etiketto/app.py:365
 msgid "Alignment"
 msgstr ""
 
-#: etiketto/app.py:364
+#: etiketto/app.py:380
 msgid "Spacing"
 msgstr ""
 
-#: etiketto/app.py:371
+#: etiketto/app.py:387
 msgid "mm at the ends and between elements"
 msgstr ""
 
-#: etiketto/app.py:377
+#: etiketto/app.py:393
 msgid "Edge spacing"
 msgstr ""
 
-#: etiketto/app.py:384
+#: etiketto/app.py:400
 msgid "extra mm along the tape edges"
 msgstr ""
 
-#: etiketto/app.py:388
+#: etiketto/app.py:404
 msgid "Background colour"
 msgstr ""
 
-#: etiketto/app.py:392
+#: etiketto/app.py:408
 msgid "Background image"
 msgstr ""
 
-#: etiketto/app.py:393 etiketto/app.py:537
+#: etiketto/app.py:409 etiketto/app.py:553
 msgid "None"
 msgstr ""
 
-#: etiketto/app.py:394 etiketto/app.py:841
+#: etiketto/app.py:410 etiketto/app.py:858
 msgid "Choose image"
 msgstr ""
 
-#: etiketto/app.py:400 etiketto/app.py:456
+#: etiketto/app.py:416 etiketto/app.py:472
 msgid "Remove"
 msgstr ""
 
-#: etiketto/app.py:408
+#: etiketto/app.py:424
 msgid "Border"
 msgstr ""
 
-#: etiketto/app.py:415
+#: etiketto/app.py:431
 msgid "mm, 0 = none"
 msgstr ""
 
-#: etiketto/app.py:423
+#: etiketto/app.py:439
 msgid "Content"
 msgstr ""
 
-#: etiketto/app.py:424
+#: etiketto/app.py:440
 msgid "Elements are placed one after another along the tape"
 msgstr ""
 
-#: etiketto/app.py:428
+#: etiketto/app.py:444
 msgid "Image…"
 msgstr ""
 
-#: etiketto/app.py:429
+#: etiketto/app.py:445
 msgid "QR code / barcode"
 msgstr ""
 
-#: etiketto/app.py:431
+#: etiketto/app.py:447
 msgid "Add"
 msgstr ""
 
-#: etiketto/app.py:438
+#: etiketto/app.py:454
 msgid "No content yet"
 msgstr ""
 
-#: etiketto/app.py:438
+#: etiketto/app.py:454
 msgid "Add text, an image or a code"
 msgstr ""
 
-#: etiketto/app.py:462
+#: etiketto/app.py:478
 msgid "Move down"
 msgstr ""
 
-#: etiketto/app.py:463
+#: etiketto/app.py:479
 msgid "Move up"
 msgstr ""
 
-#: etiketto/app.py:497
+#: etiketto/app.py:513
 msgid "Font"
 msgstr ""
 
-#: etiketto/app.py:519
+#: etiketto/app.py:535
 msgid "Size"
 msgstr ""
 
-#: etiketto/app.py:526
+#: etiketto/app.py:542
 msgid "pt, 0 = fill tape height"
 msgstr ""
 
-#: etiketto/app.py:532
+#: etiketto/app.py:548
 msgid "Line alignment"
 msgstr ""
 
-#: etiketto/app.py:537
+#: etiketto/app.py:553
 msgid "Image file"
 msgstr ""
 
-#: etiketto/app.py:538
+#: etiketto/app.py:554
 msgid "Choose…"
 msgstr ""
 
-#: etiketto/app.py:554
+#: etiketto/app.py:570
 msgid "Type"
 msgstr ""
 
-#: etiketto/app.py:557
+#: etiketto/app.py:573
 msgid "Content (link, text, number)"
 msgstr ""
 
-#: etiketto/app.py:561
+#: etiketto/app.py:577
 msgid "Colour"
 msgstr ""
 
-#: etiketto/app.py:612
+#: etiketto/app.py:628
 msgid "Unsaved label"
 msgstr ""
 
-#: etiketto/app.py:629 etiketto/app.py:644
+#: etiketto/app.py:645 etiketto/app.py:660
 #, python-format
 msgid "Problem: %s"
 msgstr ""
 
-#: etiketto/app.py:637 etiketto/app.py:766
+#: etiketto/app.py:653 etiketto/app.py:782
 #, python-format
 msgid "%(width)d × %(length).0f mm"
 msgstr ""
 
-#: etiketto/app.py:642
+#: etiketto/app.py:658
 msgid "content scaled down to fit"
 msgstr ""
 
-#: etiketto/app.py:683 etiketto/app.py:799
+#: etiketto/app.py:699 etiketto/app.py:816
 msgid "No printer configured"
 msgstr ""
 
-#: etiketto/app.py:683
+#: etiketto/app.py:699
 msgid "Enter its host name below"
 msgstr ""
 
-#: etiketto/app.py:685
+#: etiketto/app.py:701
 msgid "Connecting…"
 msgstr ""
 
-#: etiketto/app.py:714
+#: etiketto/app.py:730
 msgid "Printer not reachable"
 msgstr ""
 
-#: etiketto/app.py:725
+#: etiketto/app.py:741
 #, python-format
 msgid "%d mm cassette"
 msgstr ""
 
-#: etiketto/app.py:728
+#: etiketto/app.py:744
 #, python-format
 msgid "%(left)d of %(total)d mm left"
 msgstr ""
 
-#: etiketto/app.py:733
+#: etiketto/app.py:749
 msgid "No cassette inserted"
 msgstr ""
 
-#: etiketto/app.py:743
+#: etiketto/app.py:759
 msgid "The label is empty"
 msgstr ""
 
-#: etiketto/app.py:748
+#: etiketto/app.py:764
 msgid "Wrong cassette"
 msgstr ""
 
-#: etiketto/app.py:750
+#: etiketto/app.py:766
 #, python-format
 msgid ""
 "The label is designed for %(label)d mm tape, but a %(tape)d mm cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr ""
 
-#: etiketto/app.py:755 etiketto/app.py:782 etiketto/app.py:1001
+#: etiketto/app.py:771 etiketto/app.py:798 etiketto/app.py:1018
 msgid "Cancel"
 msgstr ""
 
-#: etiketto/app.py:756
+#: etiketto/app.py:772
 msgid "Print anyway"
 msgstr ""
 
-#: etiketto/app.py:765
+#: etiketto/app.py:781
 msgid "Print label"
 msgstr ""
 
-#: etiketto/app.py:776
+#: etiketto/app.py:792
 msgid "Copies"
 msgstr ""
 
-#: etiketto/app.py:777
+#: etiketto/app.py:793
 msgid "Cut"
 msgstr ""
 
-#: etiketto/app.py:779
+#: etiketto/app.py:795
 msgid "Colours"
 msgstr ""
 
-#: etiketto/app.py:804
+#: etiketto/app.py:821
 msgid "Printing…"
 msgstr ""
 
-#: etiketto/app.py:809
+#: etiketto/app.py:826
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr ""
 
-#: etiketto/app.py:827
+#: etiketto/app.py:844
 #, python-format
 msgid "Printing failed: %s"
 msgstr ""
 
-#: etiketto/app.py:827
+#: etiketto/app.py:844
 msgid "Printed"
 msgstr ""
 
-#: etiketto/app.py:835
+#: etiketto/app.py:852
 msgid "Etiketto labels"
 msgstr ""
 
-#: etiketto/app.py:843
+#: etiketto/app.py:860
 msgid "Images"
 msgstr ""
 
-#: etiketto/app.py:865
+#: etiketto/app.py:882
 #, python-format
 msgid "Cannot open %(name)s: %(error)s"
 msgstr ""
 
-#: etiketto/app.py:868
+#: etiketto/app.py:885
 msgid "Open label"
 msgstr ""
 
-#: etiketto/app.py:885
+#: etiketto/app.py:902
 msgid "Save label"
 msgstr ""
 
-#: etiketto/app.py:886 etiketto/app.py:907 etiketto/app.py:938
+#: etiketto/app.py:903 etiketto/app.py:924 etiketto/app.py:955
 msgid "label"
 msgstr ""
 
-#: etiketto/app.py:919 etiketto/app.py:929 etiketto/app.py:952
+#: etiketto/app.py:936 etiketto/app.py:946 etiketto/app.py:969
 #, python-format
 msgid "Cannot save: %s"
 msgstr ""
 
-#: etiketto/app.py:921 etiketto/app.py:934
+#: etiketto/app.py:938 etiketto/app.py:951
 #, python-format
 msgid "Saved %s"
 msgstr ""
 
-#: etiketto/app.py:937
+#: etiketto/app.py:954
 msgid "Export PNG"
 msgstr ""
 
-#: etiketto/app.py:954
+#: etiketto/app.py:971
 msgid "Exported"
 msgstr ""
 
-#: etiketto/app.py:962
+#: etiketto/app.py:979
 msgid "No templates yet – use “Save as template…”"
 msgstr ""
 
-#: etiketto/app.py:999
+#: etiketto/app.py:1016
 msgid "Discard changes?"
 msgstr ""
 
-#: etiketto/app.py:999
+#: etiketto/app.py:1016
 msgid "The current label has unsaved changes."
 msgstr ""
 
-#: etiketto/app.py:1002
+#: etiketto/app.py:1019
 msgid "Discard"
 msgstr ""
 
-#: etiketto/app.py:1009
+#: etiketto/app.py:1026
 msgid "Please wait until printing has finished"
 msgstr ""
 
-#: etiketto/app.py:1059
+#: etiketto/app.py:1076
 msgid "Only local files can be dropped"
 msgstr ""
 
-#: etiketto/app.py:1126
+#: etiketto/app.py:1195
 msgid "Label designer for the Brother VC-500W"
+msgstr ""
+
+#: etiketto/app.py:1200
+msgid "translator-credits"
 msgstr ""

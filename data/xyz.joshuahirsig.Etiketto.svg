@@ -1,20 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <!-- GNOME HIG style: frontal view, Adwaita palette, depth edge -->
+  <!-- GNOME HIG: 112 px within an 8 px margin, frontal view, Adwaita palette -->
   <!-- label strip coming out of the cassette -->
-  <rect x="56" y="62" width="66" height="44" rx="6" fill="#c0bfbc"/>
-  <rect x="56" y="56" width="66" height="44" rx="6" fill="#ffffff"/>
-  <rect x="84" y="64" width="10" height="28" rx="3" fill="#c061cb"/>
-  <rect x="96" y="64" width="10" height="28" rx="3" fill="#ff7800"/>
-  <rect x="108" y="64" width="8" height="28" rx="3" fill="#33d17a"/>
+  <rect x="52" y="64" width="68" height="42" rx="6" fill="#c0bfbc"/>
+  <rect x="52" y="58" width="68" height="42" rx="6" fill="#ffffff"/>
+  <rect x="84" y="66" width="14" height="26" rx="3" fill="#c061cb"/>
+  <rect x="102" y="66" width="14" height="26" rx="3" fill="#ff7800"/>
   <!-- cassette body -->
-  <rect x="6" y="24" width="76" height="84" rx="12" fill="#1a5fb4"/>
-  <rect x="6" y="16" width="76" height="84" rx="12" fill="#3584e4"/>
+  <rect x="8" y="26" width="74" height="84" rx="12" fill="#1a5fb4"/>
+  <rect x="8" y="18" width="74" height="84" rx="12" fill="#3584e4"/>
   <!-- window with the paper roll -->
-  <circle cx="44" cy="54" r="28" fill="#1c71d8"/>
-  <circle cx="44" cy="54" r="24" fill="#f6f5f4"/>
-  <circle cx="44" cy="54" r="17" fill="none" stroke="#deddda" stroke-width="2"/>
-  <circle cx="44" cy="54" r="10" fill="#c0bfbc"/>
-  <circle cx="44" cy="54" r="4" fill="#77767b"/>
+  <circle cx="45" cy="56" r="27" fill="#1c71d8"/>
+  <circle cx="45" cy="56" r="23" fill="#f6f5f4"/>
+  <circle cx="45" cy="56" r="16" fill="none" stroke="#deddda" stroke-width="2"/>
+  <circle cx="45" cy="56" r="9.5" fill="#c0bfbc"/>
+  <circle cx="45" cy="56" r="4" fill="#77767b"/>
   <!-- slot where the label leaves the cassette -->
-  <rect x="74" y="58" width="8" height="40" rx="2" fill="#1a5fb4"/>
+  <rect x="74" y="60" width="8" height="38" rx="2" fill="#1a5fb4"/>
 </svg>

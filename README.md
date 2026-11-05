@@ -58,12 +58,13 @@ cd etiketto
 | Debian / Ubuntu | `python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-gi-cairo python3-venv gettext` |
 | Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |
 | Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |
-| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo` |
+| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |
 
 Then start **Etiketto** from the app menu. On first start enter the
 printer's host name, e.g. `VC-500W1234.local` (needs mDNS / nss-mdns) or its
-IP address. The host is also read from
+IP address. Outside Flatpak the host is also read from
 `~/.config/labelprinter/config.json` if you use the `labelprinter` CLI.
+In Flatpak, `.local` names are resolved through the system's Avahi daemon.
 
 ## How labels are laid out
 

@@ -214,8 +214,12 @@ def render(label: Label, dpi: int = PRINT_DPI, safe_mm: float = DEFAULT_SAFE_MM)
     border = mm_to_px(label.border_mm, dpi) if label.border_mm > 0 else 0
     safe = mm_to_px(safe_mm, dpi) if safe_mm > 0 else 0
     frame = safe + border  # kept free of content on every side
-    inner_h = max(1, tape - 2 * (edge + frame))
+    inner_h = tape - 2 * (edge + frame)
     warnings: list[str] = []
+    if inner_h < mm_to_px(2, dpi):
+        warnings.append("safety margin, border and edge spacing leave almost no room")
+        frame = min(frame, max(0, tape // 2 - edge - 1))
+        inner_h = max(1, tape - 2 * (edge + frame))
 
     parts: list[Image.Image] = []
     for index, element in enumerate(label.elements, 1):
@@ -242,7 +246,9 @@ def render(label: Label, dpi: int = PRINT_DPI, safe_mm: float = DEFAULT_SAFE_MM)
     else:
         length = max(min_len, mm_to_px(label.length_mm, dpi))
         room = length - 2 * (margin + frame)
-        if parts and content_w > room > 0:
+        if parts and room <= 0:
+            warnings.append("the fixed length leaves no room for the content")
+        elif parts and content_w > room:
             overflow = True
             scale = room / content_w
             parts = [

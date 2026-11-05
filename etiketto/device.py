@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,7 +31,10 @@ def nominal_width(width_mm: float) -> int:
 
 
 def configured_host() -> str | None:
-    """Host from labelprinter's config (~/.config/labelprinter/config.json)."""
+    """Host from labelprinter's config (~/.config/labelprinter/config.json).
+
+    Not visible inside the Flatpak sandbox; there the host is entered in the app.
+    """
     config = Path.home() / ".config" / "labelprinter" / "config.json"
     try:
         return json.loads(config.read_text()).get("host") or None
@@ -38,11 +42,48 @@ def configured_host() -> str | None:
         return None
 
 
+def resolve_host(host: str) -> str:
+    """Return an address for host. Inside Flatpak the runtime has no nss-mdns,
+    so *.local names are resolved through the host's Avahi daemon over D-Bus."""
+    try:
+        socket.getaddrinfo(host, None)
+        return host
+    except socket.gaierror:
+        if not host.endswith(".local"):
+            raise
+    address = _avahi_resolve(host)
+    if not address:
+        raise OSError("cannot resolve %s (mDNS); enter the printer's IP address" % host)
+    return address
+
+
+def _avahi_resolve(host: str) -> str | None:
+    try:
+        from gi.repository import Gio, GLib
+
+        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        reply = bus.call_sync(
+            "org.freedesktop.Avahi",
+            "/",
+            "org.freedesktop.Avahi.Server",
+            "ResolveHostName",
+            # interface: any, protocol: IPv4, name, address protocol: IPv4, flags
+            GLib.Variant("(iisiu)", (-1, 0, host, 0, 0)),
+            GLib.VariantType("(iisisu)"),
+            Gio.DBusCallFlags.NONE,
+            5000,
+            None,
+        )
+        return reply.unpack()[4] or None
+    except Exception:  # noqa: BLE001 - no Avahi, no bus, not found
+        return None
+
+
 def _connect(host: str, port: int):
     from labelprinter.connection import Connection
     from labelprinter.printer import LabelPrinter
 
-    connection = Connection(host, port, PRINT_TIMEOUT)
+    connection = Connection(resolve_host(host), port, PRINT_TIMEOUT)
     return connection, LabelPrinter(connection)
 
 
@@ -74,6 +115,8 @@ def print_label(
     fd, path = tempfile.mkstemp(suffix=".jpg", prefix="etiketto-")
     os.close(fd)
     try:
+        # The printer scales the image to the tape width (autofit), so the DPI
+        # tag is informative only; it matches the mode's line density.
         dpi = 317 if mode == "vivid" else 264
         image.convert("RGB").save(path, quality=95, dpi=(dpi, dpi))
         connection, printer = _connect(host, port)

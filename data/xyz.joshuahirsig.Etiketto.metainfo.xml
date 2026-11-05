@@ -35,6 +35,7 @@
     </p>
   </description>
 
+  <translation type="gettext">etiketto</translation>
   <launchable type="desktop-id">xyz.joshuahirsig.Etiketto.desktop</launchable>
 
   <screenshots>
@@ -75,7 +76,6 @@
   <url type="homepage">https://git.joshuahirsig.xyz/joshii/etiketto</url>
   <url type="bugtracker">https://git.joshuahirsig.xyz/joshii/etiketto/issues</url>
   <url type="vcs-browser">https://git.joshuahirsig.xyz/joshii/etiketto</url>
-  <url type="translate">https://git.joshuahirsig.xyz/joshii/etiketto</url>
 
   <categories>
     <category>Office</category>
@@ -89,8 +89,8 @@
   </keywords>
 
   <branding>
-    <color type="primary" scheme_preference="light">#99c1f1</color>
-    <color type="primary" scheme_preference="dark">#1a5fb4</color>
+    <color type="primary" scheme_preference="light">#ffbe6f</color>
+    <color type="primary" scheme_preference="dark">#c64600</color>
   </branding>
 
   <content_rating type="oars-1.1"/>

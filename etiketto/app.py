@@ -30,7 +30,21 @@ from etiketto.model import (  # noqa: E402
 from etiketto.render import DEFAULT_SAFE_MM, print_image, render  # noqa: E402
 
 APP_ID = "xyz.joshuahirsig.Etiketto"
-LOCALE_DIR = Path(__file__).parent / "locale"
+
+
+def _locale_dir() -> Path:
+    """Translations: inside the package (pip, install.sh) or share/locale (Flatpak)."""
+    for candidate in (
+        Path(__file__).parent / "locale",
+        Path(sys.prefix) / "share" / "locale",
+        Path("/app/share/locale"),
+    ):
+        if any(candidate.glob("*/LC_MESSAGES/etiketto.mo")):
+            return candidate
+    return Path(__file__).parent / "locale"
+
+
+LOCALE_DIR = _locale_dir()
 _ = gettext.translation("etiketto", LOCALE_DIR, fallback=True).gettext
 
 CONFIG_DIR = Path(GLib.get_user_config_dir()) / "etiketto"
@@ -158,6 +172,7 @@ class Window(Adw.ApplicationWindow):
         self._render_source = 0
         self.zoom = 1.0
         self.fit_zoom = True
+        self._last_dialog = None
 
         self.toasts = Adw.ToastOverlay()
         toolbar = Adw.ToolbarView()
@@ -173,7 +188,8 @@ class Window(Adw.ApplicationWindow):
         self.rebuild_sidebar()
         self._update_title()
         self.schedule_render()
-        self.refresh_printer()
+        if not GLib.getenv("ETIKETTO_SCREENSHOT"):
+            self.refresh_printer()
 
     # --- layout --------------------------------------------------------------
 
@@ -791,6 +807,7 @@ class Window(Adw.ApplicationWindow):
                 self._start_print(options["copies"], options["cut"], options["mode"])
 
         dialog.connect("response", response)
+        self._last_dialog = dialog
         dialog.present(self)
 
     def _start_print(self, copies: int, cut: str, mode: str) -> None:
@@ -1102,8 +1119,18 @@ class App(Adw.Application):
         if not shot:
             return
         state = GLib.getenv("ETIKETTO_SCREENSHOT_STATE") or ""
+        delay = int(GLib.getenv("ETIKETTO_SCREENSHOT_DELAY") or "3000")
+        # GNOME defaults, whatever the developer's desktop uses
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-decoration-layout", ":close")
+        settings.set_property("gtk-font-name", "Sans 11")
 
         def prepare():
+            # a believable printer instead of the network
+            window.printer_info = device.PrinterInfo(
+                "Wedge", window.label.tape_mm, 412, 500, "IDLE"
+            )
+            window._update_printer_row()
             if state == "expand":
                 window._expand_index = len(window.label.elements) - 1
                 window.rebuild_sidebar()
@@ -1120,10 +1147,23 @@ class App(Adw.Application):
                 GLib.timeout_add(500, scroll_down)
             elif state == "print":
                 window._print_dialog()
+
+                # once the dialog is mapped, clear the selected text in the copies field
+                def unselect(widget=None):
+                    widget = widget or window._last_dialog
+                    child = widget.get_first_child() if widget else None
+                    while child:
+                        if isinstance(child, Gtk.Text):
+                            child.select_region(0, 0)
+                        unselect(child)
+                        child = child.get_next_sibling()
+                    return False
+
+                GLib.timeout_add(400, unselect)
             return False
 
-        GLib.timeout_add(1500, prepare)
-        GLib.timeout_add(3000, self._screenshot, window, shot)
+        GLib.timeout_add(max(500, delay - 1500), prepare)
+        GLib.timeout_add(delay, self._screenshot, window, shot)
 
     def _screenshot(self, window, path):
         paintable = Gtk.WidgetPaintable.new(window)
@@ -1154,6 +1194,10 @@ class App(Adw.Application):
             license_type=Gtk.License.AGPL_3_0,
             comments=_("Label designer for the Brother VC-500W"),
             website="https://git.joshuahirsig.xyz/joshii/etiketto",
+            issue_url="https://git.joshuahirsig.xyz/joshii/etiketto/issues",
+            copyright="© 2026 joshii-h",
+            # translators: replace with your name to be credited in the About dialog
+            translator_credits=_("translator-credits"),
         ).present(self.get_active_window())
 
 
