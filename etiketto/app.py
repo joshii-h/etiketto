@@ -765,7 +765,12 @@ class Window(Adw.ApplicationWindow):
         dialog.set_extra_child(box)
         dialog.add_response("cancel", _("Cancel"))
         dialog.present(self)
-        self.refresh_printer()
+        if self.host:
+            self.refresh_printer()
+        else:
+            # refresh_printer() would search again and take the first printer,
+            # overriding the choice the user is about to make
+            self._update_printer_row(_("Choose a printer"), "")
         return False
 
     def use_printer(self, host: str) -> None:
@@ -1228,7 +1233,8 @@ class App(Adw.Application):
         window.present()
         self._maybe_screenshot(window)
 
-    def _maybe_screenshot(self, window):
+    # development aid only, driven by tools/screenshots.sh: not part of the tests
+    def _maybe_screenshot(self, window):  # pragma: no cover
         """Development aid for README screenshots:
         ETIKETTO_SCREENSHOT=out.png [ETIKETTO_SCREENSHOT_STATE=expand|print]"""
         shot = GLib.getenv("ETIKETTO_SCREENSHOT")
@@ -1281,7 +1287,7 @@ class App(Adw.Application):
         GLib.timeout_add(max(500, delay - 1500), prepare)
         GLib.timeout_add(delay, self._screenshot, window, shot)
 
-    def _screenshot(self, window, path):
+    def _screenshot(self, window, path):  # pragma: no cover - see _maybe_screenshot
         paintable = Gtk.WidgetPaintable.new(window)
         width, height = window.get_width(), window.get_height()
         snapshot = Gtk.Snapshot()
@@ -1317,9 +1323,10 @@ class App(Adw.Application):
         ).present(self.get_active_window())
 
 
-def main() -> int:
+# entry points: running the real application is not part of the tests
+def main() -> int:  # pragma: no cover
     return App().run(sys.argv)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

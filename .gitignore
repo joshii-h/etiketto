@@ -11,3 +11,5 @@ po/*.pot~
 build-dir/
 repo/
 *.flatpak
+.coverage
+.pytest_cache/

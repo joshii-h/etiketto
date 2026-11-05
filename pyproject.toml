@@ -29,7 +29,7 @@ include = ["etiketto*"]
 etiketto = ["locale/*/LC_MESSAGES/*.mo"]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
 
 [tool.ruff]
 line-length = 100
@@ -66,3 +66,24 @@ disable_error_code = ["assignment", "attr-defined", "func-returns-value"]
 
 [tool.bandit]
 exclude_dirs = ["tests"]
+
+[tool.pytest.ini_options]
+# test the checkout, not an installed (editable) copy
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "gui: needs a display (GTK window in the test process); skipped without one",
+]
+filterwarnings = [
+    # PyGObject's asyncio integration on Python 3.14, not our code
+    "ignore:.*EventLoopPolicy.*:DeprecationWarning:gi.events",
+    "ignore:.*get_event_loop_policy.*:DeprecationWarning:gi.events",
+]
+
+[tool.coverage.run]
+source = ["etiketto"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
