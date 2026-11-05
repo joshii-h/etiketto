@@ -1156,6 +1156,8 @@ def test_app_activate_reuses_window(application):
     assert application.get_active_window() is first
     assert len(application.get_windows()) == 1
     assert application.get_accels_for_action("win.print") == ["<Control>p"]
+    # title bar icon for decoration layouts that show one
+    assert Gtk.Window.get_default_icon_name() == app.APP_ID
 
 
 def test_app_open_file(application, saved):

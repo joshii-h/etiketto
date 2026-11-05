@@ -138,6 +138,15 @@
   </provides>
 
   <releases>
+    <release version="1.0.2" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/etiketto/releases/tag/v1.0.2</url>
+      <description>
+        <ul>
+          <li>The window shows the Etiketto icon in title bars that display one</li>
+          <li>Also found when searching for ColAura or VC-500WCR, other names of the VC-500W</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-11-05">
       <url type="details">https://git.joshuahirsig.xyz/joshii/etiketto/releases/tag/v1.0.1</url>
       <description>

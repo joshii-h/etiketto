@@ -1788,6 +1788,8 @@ class App(Adw.Application):
 
     def do_startup(self):
         Adw.Application.do_startup(self)
+        # the window icon in the title bar (layouts like "icon:minimize,maximize,close")
+        Gtk.Window.set_default_icon_name(APP_ID)
         if translation_is_rtl():
             Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
         css = Gtk.CssProvider()

@@ -22,6 +22,9 @@ if [ "${1:-}" = "--uninstall" ]; then
         "$DATA/metainfo/$APP_ID.metainfo.xml" \
         "$DATA/mime/packages/$APP_ID.xml"
     update-mime-database "$DATA/mime" 2>/dev/null || true
+    update-desktop-database "$DATA/applications" 2>/dev/null || true
+    # a stale icon cache would still point at the removed icons
+    gtk-update-icon-cache -q -t "$DATA/icons/hicolor" 2>/dev/null || true
     echo "Etiketto removed (labels and templates in $DATA/etiketto/templates are kept)"
     exit 0
 fi
