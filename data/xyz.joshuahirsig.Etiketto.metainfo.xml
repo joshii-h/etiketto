@@ -135,6 +135,16 @@
   </provides>
 
   <releases>
+    <release version="1.0.1" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/etiketto/releases/tag/v1.0.1</url>
+      <description>
+        <p>Packaging update, no changes to the app itself.</p>
+        <ul>
+          <li>Installing with pip now also installs the desktop entry, icons, MIME type, metainfo and translations</li>
+          <li>A broken translation stops the build instead of being skipped</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-11-05">
       <url type="details">https://git.joshuahirsig.xyz/joshii/etiketto/releases/tag/v1.0.0</url>
       <description>

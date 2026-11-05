@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "etiketto"
-version = "1.0.0"
+version = "1.0.1"
 description = "Label designer for the Brother VC-500W colour label printer (GTK4/libadwaita)"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
