@@ -43,18 +43,27 @@ jobs:
             [ "$i" = 25 ] && { echo "::error::no Forgejo release for $TAG"; exit 1; }
             sleep 60
           done
+          jq -r '.body // ""' <<<"$release" > notes.md
+          title="$(jq -r --arg tag "$TAG" '.name // "" | if . == "" then $tag else . end' <<<"$release")"
+          pre=(); [ "$(jq -r '.prerelease' <<<"$release")" = true ] && pre=(--prerelease)
+          # create the release first, then add the files one by one
+          if ! gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" \
+              --title "$title" --notes-file notes.md --verify-tag "${pre[@]}"
+          fi
+          present="$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets -q '.assets[].name')"
           mkdir assets
           jq -r '.assets[] | [.name, .browser_download_url] | @tsv' <<<"$release" |
           while IFS=$'\t' read -r name url; do
             case "$name" in */*|..*) echo "::error::odd asset name"; exit 1 ;; esac
+            # flatpak-bundle.yml uploads the bundle here itself, and files that are
+            # already here stay: replacing them raced with that workflow (v1.0.1)
+            case "$name" in Etiketto-*.flatpak|Etiketto-*.flatpak.sha256) continue ;; esac
+            grep -qxF -- "$name" <<<"$present" && { echo "$name exists"; continue; }
             curl -sS --fail -L -o "assets/$name" "$url"
+            for i in 1 2 3; do  # the GitHub API sometimes answers 500
+              gh release upload "$TAG" "assets/$name" -R "$GITHUB_REPOSITORY" && break
+              [ "$i" = 3 ] && exit 1
+              sleep 20
+            done
           done
-          jq -r '.body // ""' <<<"$release" > notes.md
-          title="$(jq -r --arg tag "$TAG" '.name // "" | if . == "" then $tag else . end' <<<"$release")"
-          pre=(); [ "$(jq -r '.prerelease' <<<"$release")" = true ] && pre=(--prerelease)
-          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            gh release upload "$TAG" assets/* --clobber -R "$GITHUB_REPOSITORY"
-          else
-            gh release create "$TAG" assets/* -R "$GITHUB_REPOSITORY" \
-              --title "$title" --notes-file notes.md --verify-tag "${pre[@]}"
-          fi
