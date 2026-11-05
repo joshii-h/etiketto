@@ -27,7 +27,7 @@ from etiketto.model import (  # noqa: E402
     Label,
     TextElement,
 )
-from etiketto.render import DEFAULT_SAFE_MM, print_image, render  # noqa: E402
+from etiketto.render import DEFAULT_SAFE_MM, Rendered, print_image, render  # noqa: E402
 from etiketto.units import default_unit, unit_for  # noqa: E402
 
 APP_ID = "xyz.joshuahirsig.Etiketto"
@@ -46,7 +46,23 @@ def _locale_dir() -> Path:
 
 
 LOCALE_DIR = _locale_dir()
-_ = gettext.translation("etiketto", LOCALE_DIR, fallback=True).gettext
+TRANSLATION = gettext.translation("etiketto", LOCALE_DIR, fallback=True)
+_ = TRANSLATION.gettext
+
+RTL_LANGUAGES = {"ar", "he", "fa", "ur"}
+
+
+def translation_is_rtl(translation=TRANSLATION) -> bool:
+    """True if the loaded catalog is a right-to-left language. GTK only takes
+    the direction from the system locale, not from LANGUAGE."""
+    language = translation.info().get("language", "") if hasattr(translation, "info") else ""
+    return language.split("_")[0].split("-")[0].lower() in RTL_LANGUAGES
+
+
+def isolate(text: str) -> str:
+    """Wrap left-to-right content (links, codes) so it stays intact in RTL text."""
+    return "\u2068" + text + "\u2069"
+
 
 CONFIG_DIR = Path(GLib.get_user_config_dir()) / "etiketto"
 TEMPLATE_DIR = Path(GLib.get_user_data_dir()) / "etiketto" / "templates"
@@ -145,7 +161,11 @@ def element_title(element) -> str:
         return first[:40] or _("Text")
     if isinstance(element, ImageElement):
         return element.name or _("Image")
-    return dict(SYMBOLOGIES).get(element.symbology, element.symbology) + ": " + element.data[:30]
+    return (
+        dict(SYMBOLOGIES).get(element.symbology, element.symbology)
+        + ": "
+        + isolate(element.data[:30])
+    )
 
 
 def element_icon(element) -> str:
@@ -167,7 +187,7 @@ class Window(Adw.ApplicationWindow):
         self.label = Label(elements=[TextElement(text=_("Label"))])
         self.path: Path | None = None
         self.dirty = False
-        self.rendered = None
+        self.rendered: Rendered | None = None
         self.printer_info: device.PrinterInfo | None = None
         self.printing = False
         self._render_source = 0
@@ -209,7 +229,7 @@ class Window(Adw.ApplicationWindow):
             tooltip_text=_("Templates"),
             menu_model=self.template_menu,
         )
-        templates.connect("notify::active", lambda b, _p: b.get_active() and self._fill_templates())
+        templates.connect("notify::active", self._on_templates_menu)
         header.pack_start(templates)
 
         save_button = Gtk.Button(icon_name="document-save-symbolic", tooltip_text=_("Save"))
@@ -248,9 +268,7 @@ class Window(Adw.ApplicationWindow):
             valign=Gtk.Align.CENTER,
         )
         for adjustment in (scroller.get_hadjustment(), scroller.get_vadjustment()):
-            adjustment.connect(
-                "notify::page-size", lambda *_a: self.fit_zoom and self._apply_zoom()
-            )
+            adjustment.connect("notify::page-size", self._on_page_size)
         self.picture.set_margin_top(24)
         self.picture.set_margin_bottom(24)
         self.picture.set_margin_start(24)
@@ -288,6 +306,18 @@ class Window(Adw.ApplicationWindow):
         return paned
 
     # --- sidebar ---------------------------------------------------------------
+
+    def _on_templates_menu(self, button, _pspec) -> None:
+        if button.get_active():
+            self._fill_templates()
+
+    def _on_page_size(self, *_args) -> None:
+        if self.fit_zoom:
+            self._apply_zoom()
+
+    def _on_printer_chosen(self, _row, dialog, host: str) -> None:
+        dialog.close()
+        self.use_printer(host)
 
     def rebuild_sidebar(self) -> None:
         for group in list(getattr(self, "_groups", [])):
@@ -758,9 +788,7 @@ class Window(Adw.ApplicationWindow):
                 subtitle="%s · %s" % (printer.host, printer.address),
                 activatable=True,
             )
-            row.connect(
-                "activated", lambda _r, h=printer.host: (dialog.close(), self.use_printer(h))
-            )
+            row.connect("activated", self._on_printer_chosen, dialog, printer.host)
             box.append(row)
         dialog.set_extra_child(box)
         dialog.add_response("cancel", _("Cancel"))
@@ -865,12 +893,18 @@ class Window(Adw.ApplicationWindow):
             dialog.add_response("cancel", _("Cancel"))
             dialog.add_response("print", _("Print anyway"))
             dialog.set_response_appearance("print", Adw.ResponseAppearance.DESTRUCTIVE)
-            dialog.connect("response", lambda _d, r: r == "print" and self._print_dialog())
+            dialog.connect("response", self._on_wrong_cassette_response)
             dialog.present(self)
             return
         self._print_dialog()
 
+    def _on_wrong_cassette_response(self, _dialog, response: str) -> None:
+        if response == "print":
+            self._print_dialog()
+
     def _print_dialog(self) -> None:
+        if self.rendered is None:
+            return
         dialog = Adw.AlertDialog(
             heading=_("Print label"),
             body=self.unit.label_size(self.label.tape_mm, self.rendered.length_mm),
@@ -1220,6 +1254,8 @@ class App(Adw.Application):
 
     def do_startup(self):
         Adw.Application.do_startup(self)
+        if translation_is_rtl():
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
         css = Gtk.CssProvider()
         css.load_from_string(
             ".label-preview { border-radius: 0; box-shadow: 0 1px 4px alpha(black, 0.5); }"

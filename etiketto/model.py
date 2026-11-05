@@ -89,7 +89,7 @@ class Label:
             raise ValueError("elements must be a list")
         elements = [_element_from_dict(item) for item in items]
         background_image = data.pop("background_image", None)
-        label = cls(**_known_fields(cls, data, {"elements", "background_image"}))
+        label = cls(**_known_fields(cls, data, frozenset({"elements", "background_image"})))
         label.elements = elements
         if background_image:
             image = _element_from_dict(dict(background_image, kind="image"))
@@ -124,7 +124,7 @@ class Label:
 # --- validation helpers -----------------------------------------------------
 
 
-def _known_fields(cls, data: dict, skip: set[str] = frozenset()) -> dict:
+def _known_fields(cls, data: dict, skip: frozenset[str] = frozenset()) -> dict:
     return {k: v for k, v in data.items() if k in cls.__dataclass_fields__ and k not in skip}
 
 

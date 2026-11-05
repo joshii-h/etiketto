@@ -51,19 +51,6 @@ warn_unused_ignores = true
 module = ["gi", "gi.*", "labelprinter.*", "barcode", "barcode.*", "segno", "segno.*"]
 ignore_missing_imports = true
 
-# Known findings as of 2026-11-05, to be fixed, then remove these overrides:
-# - model.py:127 frozenset() default for a set[str] parameter
-# - app.py: `return self._fill_templates()` & co. return None-returning calls
-#   (func-returns-value); `self._rendered = None` without an Optional
-#   annotation, so later attribute access is flagged (assignment, attr-defined)
-[[tool.mypy.overrides]]
-module = "etiketto.model"
-disable_error_code = ["assignment"]
-
-[[tool.mypy.overrides]]
-module = "etiketto.app"
-disable_error_code = ["assignment", "attr-defined", "func-returns-value"]
-
 [tool.bandit]
 exclude_dirs = ["tests"]
 
