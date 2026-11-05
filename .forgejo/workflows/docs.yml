@@ -1,0 +1,155 @@
+# Builds the user documentation (site/) and publishes it on
+# https://etiketto.joshuahirsig.xyz for every release tag v*, or manually
+# (Actions -> Docs -> Run workflow) from the selected branch.
+#
+# Screenshots are taken fresh for every documentation language: the app runs
+# in screenshot mode under Xvfb (see tools/screenshots.list).
+#
+# Deploy like the website joshuahirsig.xyz: the runner mounts the host's
+# Docker socket into the job, a short-lived helper container writes the build
+# into ~/Docker/etiketto-docs/public on the vServer, then the nginx container
+# of that stack is restarted. A smoke test rolls back on failure. No secrets.
+#
+# actions/checkout does not work on this instance (the runner reaches Forgejo
+# as server:3000), so the code is fetched with plain git.
+
+name: Docs
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: false
+
+env:
+  REPO_URL: https://git.joshuahirsig.xyz/${{ github.repository }}.git
+  DEBIAN_FRONTEND: noninteractive
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  LANG: C.UTF-8
+  # match the host's Docker daemon
+  DOCKER_CLI_VERSION: "29.6.2"
+  SITE_DIR: /home/joshii/Docker/etiketto-docs
+  CONTAINER: etiketto-docs
+  DOCS_HOST: etiketto.joshuahirsig.xyz
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    timeout-minutes: 30
+    steps:
+      - name: Install system packages
+        # GTK/libadwaita for the screenshots (librsvg2-common renders the
+        # symbolic icons), fonts for every app language, po4a for the
+        # translations
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates git curl python3 python3-venv python3-gi python3-gi-cairo \
+            gir1.2-gtk-4.0 gir1.2-adw-1 adwaita-icon-theme librsvg2-common \
+            gettext po4a xvfb xauth xdotool imagemagick \
+            fonts-dejavu-core fonts-noto-core fonts-noto-cjk > /dev/null
+
+      - name: Get the code
+        run: |
+          set -euo pipefail
+          git clone -q "$REPO_URL" src
+          cd src
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            # strict: the tag ends up in paths and log lines
+            if ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$'; then
+              echo "::error::not a release tag: $GITHUB_REF_NAME"; exit 1
+            fi
+            git checkout -q --detach "refs/tags/$GITHUB_REF_NAME"
+          else
+            git checkout -q --detach "$GITHUB_SHA"
+          fi
+          git log -1 --format='%h %s'
+
+      - name: Set up the virtual environment
+        working-directory: src
+        run: |
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install -q -e . -r site/requirements.txt
+
+      - name: Screenshots
+        working-directory: src
+        env:
+          GDK_BACKEND: x11
+        run: xvfb-run -a -s "-screen 0 1280x900x24" tools/screenshots.sh --docs
+
+      - name: Build
+        working-directory: src
+        run: |
+          .venv/bin/python site/build.py --strict
+          .venv/bin/python site/check_translations.py
+          test -f site/build/public/index.html
+          test -f site/build/public/en/index.html
+          echo "Build ok: $(du -sh site/build/public | cut -f1)"
+
+      - name: Docker CLI
+        run: |
+          set -eu
+          curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_CLI_VERSION}.tgz" -o /tmp/docker.tgz
+          tar -xzf /tmp/docker.tgz -C /tmp docker/docker
+          install -m 0755 /tmp/docker/docker /usr/local/bin/docker
+          docker version --format 'Docker daemon {{.Server.Version}}'
+
+      - name: Deploy
+        working-directory: src
+        run: |
+          set -euo pipefail
+          HELPER=etiketto-docs-deploy
+          cleanup() { docker rm -f "$HELPER" > /dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          cleanup
+          # the job container cannot mount host paths itself
+          docker run -d --name "$HELPER" -v "${SITE_DIR}:/target" alpine:3.21 sleep 300 > /dev/null
+          docker exec "$HELPER" sh -c 'rm -rf /target/.public-new && mkdir -p /target/.public-new'
+          tar -C site/build/public -cf - . | docker exec -i "$HELPER" tar -C /target/.public-new -xf -
+          # swap instead of updating in place; 1001 is the host user joshii
+          docker exec "$HELPER" sh -c '
+            set -e
+            chown -R 1001:1001 /target/.public-new
+            rm -rf /target/.public-old
+            if [ -d /target/public ]; then mv /target/public /target/.public-old; fi
+            mv /target/.public-new /target/public
+          '
+          # the bind mount follows the old directory's inode until a restart
+          docker restart "$CONTAINER" > /dev/null
+
+          sleep 2
+          FAIL=""
+          for path in / $(cd site/build/public && for d in */; do printf '/%s ' "$d"; done); do
+            docker exec "$CONTAINER" wget -q -O /dev/null "http://127.0.0.1$path" || FAIL="$path does not answer"
+            [ -z "$FAIL" ] || break
+          done
+          if [ -n "$FAIL" ]; then
+            echo "::error::$FAIL, rolling back"
+            if docker exec "$HELPER" test -d /target/.public-old; then
+              docker exec "$HELPER" sh -c '
+                set -e
+                rm -rf /target/.public-broken
+                mv /target/public /target/.public-broken
+                mv /target/.public-old /target/public
+              '
+              docker restart "$CONTAINER" > /dev/null
+            fi
+            exit 1
+          fi
+          echo "Deployed $(git log -1 --format=%h) to https://${DOCS_HOST}/"
+
+      - name: Public check (informative)
+        continue-on-error: true
+        run: curl -fsS -o /dev/null -w "https://${DOCS_HOST}/en/ -> HTTP %{http_code}\n" "https://${DOCS_HOST}/en/"

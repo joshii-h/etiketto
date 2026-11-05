@@ -13,6 +13,8 @@ detected, the label grows with its content, and it prints over the network
 in the printer's own protocol, including the **vivid** colour mode and the
 **cut modes** that AirPrint does not offer.
 
+User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
+
 ## Screenshots
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/main-dark.png"><img src="docs/screenshots/main.png" alt="Main window: QR code and text on a 50 mm label"></picture>

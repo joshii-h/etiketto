@@ -1,0 +1,77 @@
+# Checks that the documentation (site/) builds and its translations are
+# consistent. Publishing happens in docs.yml on release.
+#
+# Same rules as ci.yml for untrusted code: pull requests from forks and from
+# GitHub (branches github/pr-*) only run once a maintainer has added the label
+# `safe-to-test`. Jobs on this instance can reach the host's Docker socket.
+#
+# Screenshots are not taken here (that is slow); the build falls back to the
+# README screenshots.
+
+name: Docs check
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "tools/screenshots.*", "po/**", ".forgejo/workflows/docs*.yml"]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths: ["site/**", "tools/screenshots.*", "po/**", ".forgejo/workflows/docs*.yml"]
+
+permissions:
+  contents: read
+
+env:
+  REPO_URL: https://git.joshuahirsig.xyz/${{ github.repository }}.git
+  REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+  SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  DEBIAN_FRONTEND: noninteractive
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  LANG: C.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'push'
+      || (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && !startsWith(github.event.pull_request.head.ref, 'github/pr-'))
+      || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    timeout-minutes: 15
+    steps:
+      - name: Install system packages
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates git python3 python3-venv gettext po4a > /dev/null
+
+      - name: Get the code
+        run: |
+          git init -q src
+          git -C src fetch -q --depth 1 "$REPO_URL" "$REF"
+          git -C src checkout -q --detach FETCH_HEAD
+          test "$(git -C src rev-parse HEAD)" = "$SHA" || { echo "::error::$REF is not $SHA"; exit 1; }
+          git -C src log -1 --format='%h %s'
+
+      - name: Install Zensical
+        working-directory: src
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -q -r site/requirements.txt
+
+      - name: Translations
+        working-directory: src
+        # fails on unknown [[ui:…]] terms or broken placeholders; missing or
+        # fuzzy paragraphs are listed (they stay English until translated)
+        run: .venv/bin/python site/check_translations.py
+
+      - name: Build
+        working-directory: src
+        run: .venv/bin/python site/build.py --strict

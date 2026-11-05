@@ -1,0 +1,492 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Etiketto contributors
+# This file is distributed under the same license as the etiketto-docs package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: etiketto-docs VERSION\n"
+"POT-Creation-Date: 2026-11-05 15:02+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/contribute.md
+#, markdown-text, no-wrap
+msgid "Contribute"
+msgstr ""
+
+#. type: Plain text
+#: docs/contribute.md
+#, markdown-text
+msgid "Code, bug reports, translations and tests with other cassettes are welcome.  Issues and pull requests go to [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto); GitHub is a mirror.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**App translations**: `tools/strings_<lang>.py`, see CONTRIBUTING."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).  Names of buttons and settings come from the app translation automatically."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The VC-500W protocol is described in [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)."
+msgstr ""
+
+#. type: Title #
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Etiketto"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Etiketto designs and prints colour labels on the Brother VC-500W (ZINK paper)  under Linux, the counterpart to Brother's Color Label Editor."
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "![Main window](media/main.png#only-light)  ![Main window](media/main-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Text, images, QR codes and barcodes; backgrounds printed edge to edge"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Preview at print resolution: what you see is what is printed"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Cassette detection, vivid colours and cut modes over the network"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "26 languages, follows the light or dark mode of the desktop"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Printers: Brother VC-500W. Further printers can be added as a backend, see [Contribute](contribute.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Install"
+msgstr ""
+
+#. type: Title ###
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Flatpak"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Flathub is in preparation. Until then, build it yourself:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51\n"
+"flatpak-builder --user --install --force-clean build-dir \\\n"
+"    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "install.sh"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Install the system packages, then run the script as your user (no root):"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid ""
+"| Distribution | Packages |\n"
+"|---|---|\n"
+"| Debian, Ubuntu | `python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-gi-cairo python3-venv gettext` |\n"
+"| Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |\n"
+"| Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |\n"
+"| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"./install.sh\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Uninstall: `./install.sh --uninstall` or `flatpak uninstall xyz.joshuahirsig.Etiketto`.  Saved labels and templates are kept."
+msgstr ""
+
+#. type: Title ##
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "First label"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/index.md
+#, markdown-text
+msgid "Switch the printer on. Etiketto finds it in the network (Bonjour) and detects the inserted cassette."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/index.md
+#, markdown-text
+msgid "Not found? Enter the address under [[ui:Host name or IP address]], e.g.  `VC-500W1234.local` or `192.168.1.50`. New printer: set up its Wi-Fi first, see [Printer](printer.md#wifi)."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/index.md
+#, markdown-text
+msgid "[[ui:Add]] text, an image or a code, then [[ui:Print]]."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/index.md
+#, markdown-text
+msgid "[[ui:Save]] stores the label as `.etiketto` file, [[ui:Save as template…]] adds it to [[ui:Templates]]."
+msgstr ""
+
+#. type: Title #
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Printer and troubleshooting"
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Wi-Fi setup { #wifi }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto does not set up Wi-Fi. Use a phone or the printer's web interface once:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/printer.md
+#, markdown-text
+msgid "Hold the Wi-Fi button until it turns from blue to white."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/printer.md
+#, markdown-text
+msgid "Connect phone or computer to the open network \"Brother VC-500W…\"."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/printer.md
+#, markdown-text
+msgid "Open `https://192.168.0.1` (accept the certificate warning) or Brother's Color Label Editor app."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/printer.md
+#, markdown-text
+msgid "Choose your network and enter the password. Only 2.4 GHz, WPA or open."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "If Etiketto finds the printer but cannot print, enable \"Port 9100\" in the web interface (`https://` and the printer's address). Firmware updates are also done there."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Cassettes"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid ""
+"| Cassette | Width |\n"
+"|---|---|\n"
+"| CZ-1001 | 9 mm (3/8″) |\n"
+"| CZ-1002 | 12 mm (1/2″) |\n"
+"| CZ-1003 | 19 mm (3/4″) |\n"
+"| CZ-1004 | 25 mm (1″) |\n"
+"| CZ-1005 | 50 mm (2″) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto shows the inserted cassette, remaining tape, printable width, lot number and the presumed production date. ZINK paper ages: old paper prints paler and yellowish, Etiketto warns about old cassettes. Store cassettes cool and dry."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.  Do it when stripes appear, or every 20 to 30 labels."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:No printer found]]: printer on and in the same network? Avahi running? Otherwise enter the address under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Enable Port 9100 in the web interface."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Wrong cassette]]: the label was designed for another width. Change [[ui:Tape width]] or the cassette."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:No cassette inserted]] or cassette not recognised: reinsert the cassette until it clicks."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No paper: the cassette is empty, replace it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Paper jam: open the cover, remove the jammed label, reinsert the cassette."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open: close the cover."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Warming up, cooling down, cleaning: wait, printing continues by itself."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Swipe the panel to cut: the label was printed without cut, swipe across the panel."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Pale colours, yellow tint: old paper (see the cassette's age), or [[ui:Normal]] instead of [[ui:Vivid]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Stripes: clean with the CK-1000."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Content cut off at the edge or askew: increase the [[ui:Safety margin]], insert the cassette straight."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:content scaled down to fit]]: the fixed length is too short. Make it longer or use [[ui:Automatic length]]."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Something else? [[ui:Report a problem…]] in the main menu (also offered with error messages) opens a prefilled issue in the browser with version, system and printer. You see everything before sending it."
+msgstr ""
+
+#. type: Title #
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Design and print"
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Content"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Elements are placed one after another along the tape. Order them with [[ui:Move up]] and [[ui:Move down]]."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Editing a text element](media/expand.png#only-light)  ![Editing a text element](media/expand-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the tape height, otherwise fixed in pt."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Image**: photos and graphics; drag and drop works too."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Code**: QR code, Code 128 or EAN-13."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Label"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Automatic length]]: the label is as long as its content. Off: fixed [[ui:Length]], content aligned and scaled down if needed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Spacing]]: space at the ends and between elements."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Edge spacing]]: extra space along the tape edges."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Background colour]], [[ui:Background image]]: printed edge to edge."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Units]]: millimetres or inches, by default from the system language."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the tape edges. The printer loses about 0.5 mm per side, and long labels can run up to 1 mm askew. If text is cut off at the edge, increase it."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Print"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Print dialog](media/print.png#only-light)  ![Print dialog](media/print-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Copies]]: number of labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts through the label, the backing holds them together. [[ui:No cut]]: the printer waits, swipe its panel to cut."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] (Brother: Standard) for softer ones, black and white (400 lpi) for text and codes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Colour correction: brightness and colour balance (red, green, blue), for this print only, not stored in the printer."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Export PNG…]] saves the label as image."
+msgstr ""
