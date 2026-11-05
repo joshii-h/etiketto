@@ -19,22 +19,22 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from zinklabel import __version__, device  # noqa: E402
-from zinklabel.model import (  # noqa: E402
+from etiketto import __version__, device  # noqa: E402
+from etiketto.model import (  # noqa: E402
     TAPE_WIDTHS_MM,
     CodeElement,
     ImageElement,
     Label,
     TextElement,
 )
-from zinklabel.render import DEFAULT_SAFE_MM, print_image, render  # noqa: E402
+from etiketto.render import DEFAULT_SAFE_MM, print_image, render  # noqa: E402
 
-APP_ID = "xyz.joshuahirsig.Zinklabel"
+APP_ID = "xyz.joshuahirsig.Etiketto"
 LOCALE_DIR = Path(__file__).parent / "locale"
-_ = gettext.translation("zinklabel", LOCALE_DIR, fallback=True).gettext
+_ = gettext.translation("etiketto", LOCALE_DIR, fallback=True).gettext
 
-CONFIG_DIR = Path(GLib.get_user_config_dir()) / "zinklabel"
-TEMPLATE_DIR = Path(GLib.get_user_data_dir()) / "zinklabel" / "templates"
+CONFIG_DIR = Path(GLib.get_user_config_dir()) / "etiketto"
+TEMPLATE_DIR = Path(GLib.get_user_data_dir()) / "etiketto" / "templates"
 SETTINGS_FILE = CONFIG_DIR / "settings.json"
 
 CUT_MODES = [("full", _("Full cut")), ("half", _("Half cut")), ("none", _("No cut"))]
@@ -146,7 +146,7 @@ def element_icon(element) -> str:
 
 class Window(Adw.ApplicationWindow):
     def __init__(self, app: Adw.Application):
-        super().__init__(application=app, title="zinklabel")
+        super().__init__(application=app, title="Etiketto")
         self.set_default_size(1200, 760)
         self.settings = load_settings()
         self.label = Label(elements=[TextElement(text=_("Label"))])
@@ -179,7 +179,7 @@ class Window(Adw.ApplicationWindow):
 
     def _build_header(self) -> Adw.HeaderBar:
         header = Adw.HeaderBar()
-        self.window_title = Adw.WindowTitle(title="zinklabel")
+        self.window_title = Adw.WindowTitle(title="Etiketto")
         header.set_title_widget(self.window_title)
 
         open_button = Gtk.Button(icon_name="document-open-symbolic", tooltip_text=_("Open"))
@@ -204,7 +204,7 @@ class Window(Adw.ApplicationWindow):
         menu.append(_("Save as…"), "win.save-as")
         menu.append(_("Save as template…"), "win.save-template")
         menu.append(_("Export PNG…"), "win.export")
-        menu.append(_("About zinklabel"), "app.about")
+        menu.append(_("About Etiketto"), "app.about")
         header.pack_end(Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu))
 
         self.print_button = Gtk.Button(label=_("Print"))
@@ -830,10 +830,10 @@ class Window(Adw.ApplicationWindow):
 
     # --- files -------------------------------------------------------------------------
 
-    def _zlabel_filter(self) -> Gio.ListStore:
+    def _label_filter(self) -> Gio.ListStore:
         filters = Gio.ListStore.new(Gtk.FileFilter)
-        flt = Gtk.FileFilter(name=_("zinklabel labels"))
-        flt.add_pattern("*.zlabel")
+        flt = Gtk.FileFilter(name=_("Etiketto labels"))
+        flt.add_pattern("*.etiketto")
         filters.append(flt)
         return filters
 
@@ -865,7 +865,7 @@ class Window(Adw.ApplicationWindow):
             self.toast(_("Cannot open %(name)s: %(error)s") % {"name": path.name, "error": e})
 
     def on_open(self, *_args) -> None:
-        dialog = Gtk.FileDialog(title=_("Open label"), filters=self._zlabel_filter())
+        dialog = Gtk.FileDialog(title=_("Open label"), filters=self._label_filter())
 
         def done(d, result):
             try:
@@ -882,8 +882,8 @@ class Window(Adw.ApplicationWindow):
             self.on_save_as()
 
     def on_save_as(self, *_args, folder: Path | None = None) -> None:
-        dialog = Gtk.FileDialog(title=_("Save label"), filters=self._zlabel_filter())
-        dialog.set_initial_name((self.path.stem if self.path else _("label")) + ".zlabel")
+        dialog = Gtk.FileDialog(title=_("Save label"), filters=self._label_filter())
+        dialog.set_initial_name((self.path.stem if self.path else _("label")) + ".etiketto")
         if folder:
             folder.mkdir(parents=True, exist_ok=True)
             dialog.set_initial_folder(Gio.File.new_for_path(str(folder)))
@@ -893,8 +893,8 @@ class Window(Adw.ApplicationWindow):
                 path = Path(d.save_finish(result).get_path())
             except GLib.Error:
                 return
-            if path.suffix != ".zlabel":
-                path = path.with_suffix(".zlabel")
+            if path.suffix != ".etiketto":
+                path = path.with_suffix(".etiketto")
             self._write(path)
 
         dialog.save(self, None, done)
@@ -902,17 +902,17 @@ class Window(Adw.ApplicationWindow):
     def on_save_template(self, *_args) -> None:
         """Store a copy as template; the open file and its state stay as they are."""
         TEMPLATE_DIR.mkdir(parents=True, exist_ok=True)
-        dialog = Gtk.FileDialog(title=_("Save as template…"), filters=self._zlabel_filter())
+        dialog = Gtk.FileDialog(title=_("Save as template…"), filters=self._label_filter())
         dialog.set_initial_folder(Gio.File.new_for_path(str(TEMPLATE_DIR)))
-        dialog.set_initial_name((self.path.stem if self.path else _("label")) + ".zlabel")
+        dialog.set_initial_name((self.path.stem if self.path else _("label")) + ".etiketto")
 
         def done(d, result):
             try:
                 path = Path(d.save_finish(result).get_path())
             except (GLib.Error, TypeError):
                 return
-            if path.suffix != ".zlabel":
-                path = path.with_suffix(".zlabel")
+            if path.suffix != ".etiketto":
+                path = path.with_suffix(".etiketto")
             try:
                 self.label.save(path)
             except OSError as e:
@@ -957,7 +957,7 @@ class Window(Adw.ApplicationWindow):
 
     def _fill_templates(self) -> None:
         self.template_menu.remove_all()
-        files = sorted(TEMPLATE_DIR.glob("*.zlabel")) if TEMPLATE_DIR.is_dir() else []
+        files = sorted(TEMPLATE_DIR.glob("*.etiketto")) if TEMPLATE_DIR.is_dir() else []
         if not files:
             self.template_menu.append(_("No templates yet – use “Save as template…”"), None)
             return
@@ -1059,7 +1059,7 @@ class Window(Adw.ApplicationWindow):
                 self.toast(_("Only local files can be dropped"))
                 return False
             path = Path(file.get_path())
-            if path.suffix == ".zlabel":
+            if path.suffix == ".etiketto":
                 self._confirm_discard(lambda: self.open_file(path))
                 return True
             try:
@@ -1093,7 +1093,7 @@ class App(Adw.Application):
     def do_activate(self):
         window = self.get_active_window() or Window(self)
         window.present()
-        shot = GLib.getenv("ZINKLABEL_SCREENSHOT")  # development aid
+        shot = GLib.getenv("ETIKETTO_SCREENSHOT")  # development aid
         if shot:
             GLib.timeout_add(2500, self._screenshot, window, shot)
 
@@ -1118,13 +1118,13 @@ class App(Adw.Application):
 
     def on_about(self, *_args):
         Adw.AboutDialog(
-            application_name="zinklabel",
+            application_name="Etiketto",
             application_icon=APP_ID,
             version=__version__,
             developer_name="joshii-h",
             license_type=Gtk.License.AGPL_3_0,
             comments=_("Label designer for the Brother VC-500W"),
-            website="https://git.joshuahirsig.xyz/joshii/zinklabel",
+            website="https://git.joshuahirsig.xyz/joshii/etiketto",
         ).present(self.get_active_window())
 
 

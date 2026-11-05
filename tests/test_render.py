@@ -1,7 +1,7 @@
 import pytest
 
-from zinklabel.model import CodeElement, Label, TextElement
-from zinklabel.render import MIN_LENGTH_MM, mm_to_px, print_image, render
+from etiketto.model import CodeElement, Label, TextElement
+from etiketto.render import MIN_LENGTH_MM, mm_to_px, print_image, render
 
 
 @pytest.mark.parametrize("tape", [9, 12, 19, 25, 50])

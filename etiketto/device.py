@@ -10,7 +10,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from zinklabel.model import TAPE_WIDTHS_MM
+from etiketto.model import TAPE_WIDTHS_MM
 
 DEFAULT_PORT = 9100
 PRINT_TIMEOUT = 180
@@ -71,7 +71,7 @@ def print_label(
     progress=None,
 ) -> None:
     """Print an image in printer orientation (width = tape width)."""
-    fd, path = tempfile.mkstemp(suffix=".jpg", prefix="zinklabel-")
+    fd, path = tempfile.mkstemp(suffix=".jpg", prefix="etiketto-")
     os.close(fd)
     try:
         dpi = 317 if mode == "vivid" else 264

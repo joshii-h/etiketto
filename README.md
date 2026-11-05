@@ -1,11 +1,11 @@
-# zinklabel
+# Etiketto
 
 Label designer for the **Brother VC-500W** colour label printer (ZINK
 paper), for the Linux desktop. GTK 4 and libadwaita, English, German,
 French and Italian.
 
 Brother only ships the Color Label Editor for Windows, macOS and phones.
-zinklabel brings the same workflow to Linux: the inserted cassette is
+Etiketto brings the same workflow to Linux: the inserted cassette is
 detected, the label grows with its content, and it prints over the network
 in the printer's own protocol, including the **vivid** colour mode and the
 **cut modes** that AirPrint does not offer.
@@ -20,8 +20,8 @@ in the printer's own protocol, including the **vivid** colour mode and the
 - QR codes, Code 128 and EAN-13 barcodes
 - Live preview at print resolution: what you see is what is printed
 - Print with vivid or normal colours, full cut, half cut or no cut, copies
-- Save labels as `.zlabel` files (images embedded) and reuse them as templates
-- Drag and drop images or `.zlabel` files onto the window
+- Save labels as `.etiketto` files (images embedded) and reuse them as templates
+- Drag and drop images or `.etiketto` files onto the window
 - Export as PNG
 
 ## Install
@@ -31,8 +31,8 @@ and libadwaita, pycairo, gettext. Everything else goes into a private
 virtual environment.
 
 ```sh
-git clone https://git.joshuahirsig.xyz/joshii/zinklabel.git
-cd zinklabel
+git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
+cd etiketto
 ./install.sh                # per user, no root; ./install.sh --uninstall
 ```
 
@@ -43,7 +43,7 @@ cd zinklabel
 | Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |
 | Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo` |
 
-Then start **zinklabel** from the app menu. On first start enter the
+Then start **Etiketto** from the app menu. On first start enter the
 printer's host name, e.g. `VC-500W1234.local` (needs mDNS / nss-mdns) or its
 IP address. The host is also read from
 `~/.config/labelprinter/config.json` if you use the `labelprinter` CLI.
@@ -71,10 +71,10 @@ uv venv --system-site-packages .venv
 uv pip install --python .venv/bin/python -e . pytest ruff
 .venv/bin/python -m pytest
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
-LANGUAGE=de .venv/bin/python -m zinklabel.app
+LANGUAGE=de .venv/bin/python -m etiketto.app
 ```
 
-Translations: `xgettext` → `po/zinklabel.pot`, strings in
+Translations: `xgettext` → `po/etiketto.pot`, strings in
 `tools/strings_<lang>.py`, `python3 tools/fill_po.py de fr it` writes the
 `.po` files; `install.sh` compiles them.
 
@@ -82,7 +82,7 @@ Translations: `xgettext` → `po/zinklabel.pot`, strings in
 
 The VC-500W protocol was reverse engineered by
 [m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/);
-zinklabel prints through its descendant
+Etiketto prints through its descendant
 [labelprinter](https://github.com/sgrimee/labelprinter-vc500w)
 (m7i.org → lenchan139 → sgrimee).
 

@@ -1,462 +1,462 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: zinklabel\n"
+"Project-Id-Version: etiketto\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: zinklabel/app.py:40
+#: etiketto/app.py:40
 msgid "Full cut"
 msgstr "Taglio completo"
 
-#: zinklabel/app.py:40
+#: etiketto/app.py:40
 msgid "Half cut"
 msgstr "Mezzo taglio"
 
-#: zinklabel/app.py:40
+#: etiketto/app.py:40
 msgid "No cut"
 msgstr "Senza taglio"
 
-#: zinklabel/app.py:41
+#: etiketto/app.py:41
 msgid "Vivid"
 msgstr "Vivace"
 
-#: zinklabel/app.py:41
+#: etiketto/app.py:41
 msgid "Normal"
 msgstr "Normale"
 
-#: zinklabel/app.py:42
+#: etiketto/app.py:42
 msgid "Start"
 msgstr "Inizio"
 
-#: zinklabel/app.py:42 zinklabel/app.py:43
+#: etiketto/app.py:42 etiketto/app.py:43
 msgid "Centre"
 msgstr "Centro"
 
-#: zinklabel/app.py:42
+#: etiketto/app.py:42
 msgid "End"
 msgstr "Fine"
 
-#: zinklabel/app.py:43
+#: etiketto/app.py:43
 msgid "Left"
 msgstr "Sinistra"
 
-#: zinklabel/app.py:43
+#: etiketto/app.py:43
 msgid "Right"
 msgstr "Destra"
 
-#: zinklabel/app.py:44
+#: etiketto/app.py:44
 msgid "QR code"
 msgstr "Codice QR"
 
-#: zinklabel/app.py:118
+#: etiketto/app.py:118
 msgid "Only local files can be used"
 msgstr "Sono possibili solo file locali"
 
-#: zinklabel/app.py:124
+#: etiketto/app.py:124
 #, python-format
 msgid "Not an image: %s"
 msgstr "Non è un’immagine: %s"
 
-#: zinklabel/app.py:130 zinklabel/app.py:427 zinklabel/app.py:1035
+#: etiketto/app.py:130 etiketto/app.py:427 etiketto/app.py:1035
 msgid "Text"
 msgstr "Testo"
 
-#: zinklabel/app.py:132
+#: etiketto/app.py:132
 msgid "Image"
 msgstr "Immagine"
 
-#: zinklabel/app.py:152 zinklabel/app.py:327 zinklabel/app.py:990
+#: etiketto/app.py:152 etiketto/app.py:327 etiketto/app.py:990
 msgid "Label"
 msgstr "Etichetta"
 
-#: zinklabel/app.py:185
+#: etiketto/app.py:185
 msgid "Open"
 msgstr "Apri"
 
-#: zinklabel/app.py:192
+#: etiketto/app.py:192
 msgid "Templates"
 msgstr "Modelli"
 
-#: zinklabel/app.py:198
+#: etiketto/app.py:198
 msgid "Save"
 msgstr "Salva"
 
-#: zinklabel/app.py:203
+#: etiketto/app.py:203
 msgid "New label"
 msgstr "Nuova etichetta"
 
-#: zinklabel/app.py:204
+#: etiketto/app.py:204
 msgid "Save as…"
 msgstr "Salva come…"
 
-#: zinklabel/app.py:205 zinklabel/app.py:905
+#: etiketto/app.py:205 etiketto/app.py:905
 msgid "Save as template…"
 msgstr "Salva come modello…"
 
-#: zinklabel/app.py:206
+#: etiketto/app.py:206
 msgid "Export PNG…"
 msgstr "Esporta in PNG…"
 
-#: zinklabel/app.py:207
-msgid "About zinklabel"
-msgstr "Informazioni su zinklabel"
+#: etiketto/app.py:207
+msgid "About Etiketto"
+msgstr "Informazioni su Etiketto"
 
-#: zinklabel/app.py:210 zinklabel/app.py:783 zinklabel/app.py:826
+#: etiketto/app.py:210 etiketto/app.py:783 etiketto/app.py:826
 msgid "Print"
 msgstr "Stampa"
 
-#: zinklabel/app.py:248
+#: etiketto/app.py:248
 msgid "Fit to window"
 msgstr "Adatta alla finestra"
 
-#: zinklabel/app.py:252
+#: etiketto/app.py:252
 msgid "Zoom out"
 msgstr "Riduci"
 
-#: zinklabel/app.py:255
+#: etiketto/app.py:255
 msgid "Zoom in"
 msgstr "Ingrandisci"
 
-#: zinklabel/app.py:282
+#: etiketto/app.py:282
 msgid "Printer"
 msgstr "Stampante"
 
-#: zinklabel/app.py:283 zinklabel/app.py:734
+#: etiketto/app.py:283 etiketto/app.py:734
 msgid "Searching…"
 msgstr "Ricerca…"
 
-#: zinklabel/app.py:285
+#: etiketto/app.py:285
 msgid "Refresh"
 msgstr "Aggiorna"
 
-#: zinklabel/app.py:293
+#: etiketto/app.py:293
 msgid "Host name or IP address"
 msgstr "Nome host o indirizzo IP"
 
-#: zinklabel/app.py:301
+#: etiketto/app.py:301
 msgid "Safety margin"
 msgstr "Margine di sicurezza"
 
-#: zinklabel/app.py:309
+#: etiketto/app.py:309
 msgid ""
 "mm kept free for content and border; the background is printed edge to edge"
 msgstr "mm lasciati liberi per contenuto e bordo; lo sfondo è stampato al vivo"
 
-#: zinklabel/app.py:331
+#: etiketto/app.py:331
 msgid "Tape width"
 msgstr "Larghezza del nastro"
 
-#: zinklabel/app.py:335
+#: etiketto/app.py:335
 msgid "Automatic length"
 msgstr "Lunghezza automatica"
 
-#: zinklabel/app.py:335
+#: etiketto/app.py:335
 msgid "As long as the content"
 msgstr "Lunga quanto il contenuto"
 
-#: zinklabel/app.py:340
+#: etiketto/app.py:340
 msgid "Length"
 msgstr "Lunghezza"
 
-#: zinklabel/app.py:347
+#: etiketto/app.py:347
 msgid "mm"
 msgstr "mm"
 
-#: zinklabel/app.py:349
+#: etiketto/app.py:349
 msgid "Alignment"
 msgstr "Allineamento"
 
-#: zinklabel/app.py:364
+#: etiketto/app.py:364
 msgid "Spacing"
 msgstr "Spaziatura"
 
-#: zinklabel/app.py:371
+#: etiketto/app.py:371
 msgid "mm at the ends and between elements"
 msgstr "mm alle estremità e tra gli elementi"
 
-#: zinklabel/app.py:377
+#: etiketto/app.py:377
 msgid "Edge spacing"
 msgstr "Margine laterale"
 
-#: zinklabel/app.py:384
+#: etiketto/app.py:384
 msgid "extra mm along the tape edges"
 msgstr "mm aggiuntivi lungo i bordi del nastro"
 
-#: zinklabel/app.py:388
+#: etiketto/app.py:388
 msgid "Background colour"
 msgstr "Colore di sfondo"
 
-#: zinklabel/app.py:392
+#: etiketto/app.py:392
 msgid "Background image"
 msgstr "Immagine di sfondo"
 
-#: zinklabel/app.py:393 zinklabel/app.py:537
+#: etiketto/app.py:393 etiketto/app.py:537
 msgid "None"
 msgstr "Nessuna"
 
-#: zinklabel/app.py:394 zinklabel/app.py:841
+#: etiketto/app.py:394 etiketto/app.py:841
 msgid "Choose image"
 msgstr "Scegli immagine"
 
-#: zinklabel/app.py:400 zinklabel/app.py:456
+#: etiketto/app.py:400 etiketto/app.py:456
 msgid "Remove"
 msgstr "Rimuovi"
 
-#: zinklabel/app.py:408
+#: etiketto/app.py:408
 msgid "Border"
 msgstr "Bordo"
 
-#: zinklabel/app.py:415
+#: etiketto/app.py:415
 msgid "mm, 0 = none"
 msgstr "mm, 0 = nessuno"
 
-#: zinklabel/app.py:423
+#: etiketto/app.py:423
 msgid "Content"
 msgstr "Contenuto"
 
-#: zinklabel/app.py:424
+#: etiketto/app.py:424
 msgid "Elements are placed one after another along the tape"
 msgstr "Gli elementi si susseguono lungo il nastro"
 
-#: zinklabel/app.py:428
+#: etiketto/app.py:428
 msgid "Image…"
 msgstr "Immagine…"
 
-#: zinklabel/app.py:429
+#: etiketto/app.py:429
 msgid "QR code / barcode"
 msgstr "Codice QR / codice a barre"
 
-#: zinklabel/app.py:431
+#: etiketto/app.py:431
 msgid "Add"
 msgstr "Aggiungi"
 
-#: zinklabel/app.py:438
+#: etiketto/app.py:438
 msgid "No content yet"
 msgstr "Ancora nessun contenuto"
 
-#: zinklabel/app.py:438
+#: etiketto/app.py:438
 msgid "Add text, an image or a code"
 msgstr "Aggiungi testo, un’immagine o un codice"
 
-#: zinklabel/app.py:462
+#: etiketto/app.py:462
 msgid "Move down"
 msgstr "Sposta indietro"
 
-#: zinklabel/app.py:463
+#: etiketto/app.py:463
 msgid "Move up"
 msgstr "Sposta avanti"
 
-#: zinklabel/app.py:497
+#: etiketto/app.py:497
 msgid "Font"
 msgstr "Carattere"
 
-#: zinklabel/app.py:519
+#: etiketto/app.py:519
 msgid "Size"
 msgstr "Dimensione"
 
-#: zinklabel/app.py:526
+#: etiketto/app.py:526
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = riempi l’altezza del nastro"
 
-#: zinklabel/app.py:532
+#: etiketto/app.py:532
 msgid "Line alignment"
 msgstr "Allineamento righe"
 
-#: zinklabel/app.py:537
+#: etiketto/app.py:537
 msgid "Image file"
 msgstr "File immagine"
 
-#: zinklabel/app.py:538
+#: etiketto/app.py:538
 msgid "Choose…"
 msgstr "Scegli…"
 
-#: zinklabel/app.py:554
+#: etiketto/app.py:554
 msgid "Type"
 msgstr "Tipo"
 
-#: zinklabel/app.py:557
+#: etiketto/app.py:557
 msgid "Content (link, text, number)"
 msgstr "Contenuto (link, testo, numero)"
 
-#: zinklabel/app.py:561
+#: etiketto/app.py:561
 msgid "Colour"
 msgstr "Colore"
 
-#: zinklabel/app.py:612
+#: etiketto/app.py:612
 msgid "Unsaved label"
 msgstr "Etichetta non salvata"
 
-#: zinklabel/app.py:629 zinklabel/app.py:644
+#: etiketto/app.py:629 etiketto/app.py:644
 #, python-format
 msgid "Problem: %s"
 msgstr "Problema: %s"
 
-#: zinklabel/app.py:637 zinklabel/app.py:766
+#: etiketto/app.py:637 etiketto/app.py:766
 #, python-format
 msgid "%(width)d × %(length).0f mm"
 msgstr "%(width)d × %(length).0f mm"
 
-#: zinklabel/app.py:642
+#: etiketto/app.py:642
 msgid "content scaled down to fit"
 msgstr "contenuto ridotto per starci"
 
-#: zinklabel/app.py:683 zinklabel/app.py:799
+#: etiketto/app.py:683 etiketto/app.py:799
 msgid "No printer configured"
 msgstr "Nessuna stampante configurata"
 
-#: zinklabel/app.py:683
+#: etiketto/app.py:683
 msgid "Enter its host name below"
 msgstr "Inserisci il nome host qui sotto"
 
-#: zinklabel/app.py:685
+#: etiketto/app.py:685
 msgid "Connecting…"
 msgstr "Connessione…"
 
-#: zinklabel/app.py:714
+#: etiketto/app.py:714
 msgid "Printer not reachable"
 msgstr "Stampante non raggiungibile"
 
-#: zinklabel/app.py:725
+#: etiketto/app.py:725
 #, python-format
 msgid "%d mm cassette"
 msgstr "Cassetta da %d mm"
 
-#: zinklabel/app.py:728
+#: etiketto/app.py:728
 #, python-format
 msgid "%(left)d of %(total)d mm left"
 msgstr "%(left)d mm rimasti su %(total)d"
 
-#: zinklabel/app.py:733
+#: etiketto/app.py:733
 msgid "No cassette inserted"
 msgstr "Nessuna cassetta inserita"
 
-#: zinklabel/app.py:743
+#: etiketto/app.py:743
 msgid "The label is empty"
 msgstr "L’etichetta è vuota"
 
-#: zinklabel/app.py:748
+#: etiketto/app.py:748
 msgid "Wrong cassette"
 msgstr "Cassetta errata"
 
-#: zinklabel/app.py:750
+#: etiketto/app.py:750
 #, python-format
 msgid ""
 "The label is designed for %(label)d mm tape, but a %(tape)d mm cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "L’etichetta è pensata per un nastro da %(label)d mm, ma è inserita una cassetta da %(tape)d mm. La stampante la ridimensionerebbe sul nastro."
 
-#: zinklabel/app.py:755 zinklabel/app.py:782 zinklabel/app.py:1001
+#: etiketto/app.py:755 etiketto/app.py:782 etiketto/app.py:1001
 msgid "Cancel"
 msgstr "Annulla"
 
-#: zinklabel/app.py:756
+#: etiketto/app.py:756
 msgid "Print anyway"
 msgstr "Stampa comunque"
 
-#: zinklabel/app.py:765
+#: etiketto/app.py:765
 msgid "Print label"
 msgstr "Stampa etichetta"
 
-#: zinklabel/app.py:776
+#: etiketto/app.py:776
 msgid "Copies"
 msgstr "Copie"
 
-#: zinklabel/app.py:777
+#: etiketto/app.py:777
 msgid "Cut"
 msgstr "Taglio"
 
-#: zinklabel/app.py:779
+#: etiketto/app.py:779
 msgid "Colours"
 msgstr "Colori"
 
-#: zinklabel/app.py:804
+#: etiketto/app.py:804
 msgid "Printing…"
 msgstr "Stampa in corso…"
 
-#: zinklabel/app.py:809
+#: etiketto/app.py:809
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Stampa %(n)d/%(total)d…"
 
-#: zinklabel/app.py:827
+#: etiketto/app.py:827
 #, python-format
 msgid "Printing failed: %s"
 msgstr "Stampa non riuscita: %s"
 
-#: zinklabel/app.py:827
+#: etiketto/app.py:827
 msgid "Printed"
 msgstr "Stampato"
 
-#: zinklabel/app.py:835
-msgid "zinklabel labels"
-msgstr "Etichette zinklabel"
+#: etiketto/app.py:835
+msgid "Etiketto labels"
+msgstr "Etichette Etiketto"
 
-#: zinklabel/app.py:843
+#: etiketto/app.py:843
 msgid "Images"
 msgstr "Immagini"
 
-#: zinklabel/app.py:865
+#: etiketto/app.py:865
 #, python-format
 msgid "Cannot open %(name)s: %(error)s"
 msgstr "Impossibile aprire %(name)s: %(error)s"
 
-#: zinklabel/app.py:868
+#: etiketto/app.py:868
 msgid "Open label"
 msgstr "Apri etichetta"
 
-#: zinklabel/app.py:885
+#: etiketto/app.py:885
 msgid "Save label"
 msgstr "Salva etichetta"
 
-#: zinklabel/app.py:886 zinklabel/app.py:907 zinklabel/app.py:938
+#: etiketto/app.py:886 etiketto/app.py:907 etiketto/app.py:938
 msgid "label"
 msgstr "etichetta"
 
-#: zinklabel/app.py:919 zinklabel/app.py:929 zinklabel/app.py:952
+#: etiketto/app.py:919 etiketto/app.py:929 etiketto/app.py:952
 #, python-format
 msgid "Cannot save: %s"
 msgstr "Salvataggio non riuscito: %s"
 
-#: zinklabel/app.py:921 zinklabel/app.py:934
+#: etiketto/app.py:921 etiketto/app.py:934
 #, python-format
 msgid "Saved %s"
 msgstr "%s salvato"
 
-#: zinklabel/app.py:937
+#: etiketto/app.py:937
 msgid "Export PNG"
 msgstr "Esporta in PNG"
 
-#: zinklabel/app.py:954
+#: etiketto/app.py:954
 msgid "Exported"
 msgstr "Esportato"
 
-#: zinklabel/app.py:962
+#: etiketto/app.py:962
 msgid "No templates yet – use “Save as template…”"
 msgstr "Ancora nessun modello – usa «Salva come modello…»"
 
-#: zinklabel/app.py:999
+#: etiketto/app.py:999
 msgid "Discard changes?"
 msgstr "Scartare le modifiche?"
 
-#: zinklabel/app.py:999
+#: etiketto/app.py:999
 msgid "The current label has unsaved changes."
 msgstr "L’etichetta attuale ha modifiche non salvate."
 
-#: zinklabel/app.py:1002
+#: etiketto/app.py:1002
 msgid "Discard"
 msgstr "Scarta"
 
-#: zinklabel/app.py:1009
+#: etiketto/app.py:1009
 msgid "Please wait until printing has finished"
 msgstr "Attendi la fine della stampa"
 
-#: zinklabel/app.py:1059
+#: etiketto/app.py:1059
 msgid "Only local files can be dropped"
 msgstr "Si possono trascinare solo file locali"
 
-#: zinklabel/app.py:1126
+#: etiketto/app.py:1126
 msgid "Label designer for the Brother VC-500W"
 msgstr "Editor di etichette per la Brother VC-500W"

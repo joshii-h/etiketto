@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-etiketto">
+    <comment>Etiketto label</comment>
+    <comment xml:lang="de">Etiketto-Etikett</comment>
+    <comment xml:lang="fr">Étiquette Etiketto</comment>
+    <comment xml:lang="it">Etichetta Etiketto</comment>
+    <sub-class-of type="application/json"/>
+    <glob pattern="*.etiketto"/>
+  </mime-type>
+</mime-info>

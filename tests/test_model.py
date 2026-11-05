@@ -4,7 +4,7 @@ import io
 import pytest
 from PIL import Image
 
-from zinklabel.model import CodeElement, ImageElement, Label, TextElement
+from etiketto.model import CodeElement, ImageElement, Label, TextElement
 
 
 def png_b64(size=(20, 10)):
@@ -26,10 +26,10 @@ def test_roundtrip(tmp_path):
             CodeElement(data="4006381333931", symbology="ean13"),
         ],
     )
-    path = tmp_path / "a.zlabel"
+    path = tmp_path / "a.etiketto"
     label.save(path)
     assert Label.load(path) == label
-    assert not (tmp_path / "a.zlabel.tmp").exists()
+    assert not (tmp_path / "a.etiketto.tmp").exists()
 
 
 def test_rejects_unknown_element_and_width():

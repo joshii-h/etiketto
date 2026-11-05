@@ -1,4 +1,4 @@
-"""Create po/<lang>.po from po/zinklabel.pot and tools/strings_<lang>.py.
+"""Create po/<lang>.po from po/etiketto.pot and tools/strings_<lang>.py.
 
 python3 tools/fill_po.py de fr it
 """
@@ -30,9 +30,9 @@ def unquote(lines):
 
 def build(lang):
     table = load(lang)
-    pot = (ROOT / "po" / "zinklabel.pot").read_text(encoding="utf-8")
+    pot = (ROOT / "po" / "etiketto.pot").read_text(encoding="utf-8")
     out = [
-        'msgid ""\nmsgstr ""\n"Project-Id-Version: zinklabel\\n"\n"Language: %s\\n"\n'
+        'msgid ""\nmsgstr ""\n"Project-Id-Version: etiketto\\n"\n"Language: %s\\n"\n'
         '"MIME-Version: 1.0\\n"\n"Content-Type: text/plain; charset=UTF-8\\n"\n'
         '"Content-Transfer-Encoding: 8bit\\n"\n"Plural-Forms: %s\\n"\n' % (lang, PLURALS[lang])
     ]

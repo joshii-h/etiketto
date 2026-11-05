@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "wheel"]  # PEP 639 license field
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "zinklabel"
+name = "etiketto"
 version = "0.1.0"
 description = "Label designer for the Brother VC-500W colour label printer (GTK4/libadwaita)"
 readme = "README.md"
@@ -20,13 +20,13 @@ dependencies = [
 # install with a venv that has --system-site-packages (see install.sh).
 
 [project.scripts]
-zinklabel = "zinklabel.app:main"
+etiketto = "etiketto.app:main"
 
 [tool.setuptools.packages.find]
-include = ["zinklabel*"]
+include = ["etiketto*"]
 
 [tool.setuptools.package-data]
-zinklabel = ["locale/*/LC_MESSAGES/*.mo"]
+etiketto = ["locale/*/LC_MESSAGES/*.mo"]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]

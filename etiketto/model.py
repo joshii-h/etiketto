@@ -1,4 +1,4 @@
-"""Label document model and its JSON (.zlabel) format."""
+"""Label document model and its JSON (.etiketto) format."""
 
 from __future__ import annotations
 
@@ -79,11 +79,11 @@ class Label:
         """Build a label from untrusted JSON: unknown fields are ignored,
         wrong types raise ValueError, numbers are clamped to sane ranges."""
         if not isinstance(data, dict):
-            raise ValueError("not a zinklabel file")
+            raise ValueError("not an Etiketto file")
         data = dict(data)
         version = data.pop("version", FORMAT_VERSION)
         if not isinstance(version, int) or version > FORMAT_VERSION:
-            raise ValueError("file was written by a newer zinklabel (format %s)" % version)
+            raise ValueError("file was written by a newer Etiketto (format %s)" % version)
         items = data.pop("elements", [])
         if not isinstance(items, list):
             raise ValueError("elements must be a list")

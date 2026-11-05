@@ -1,4 +1,4 @@
-from zinklabel.device import nominal_width
+from etiketto.device import nominal_width
 
 
 def test_nominal_width():

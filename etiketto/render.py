@@ -14,7 +14,7 @@ from functools import lru_cache
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
-from zinklabel.model import CodeElement, Element, ImageElement, Label, TextElement
+from etiketto.model import CodeElement, Element, ImageElement, Label, TextElement
 
 # Resolution of the vivid print mode (labelprinter: 317 lpi)
 PRINT_DPI = 317
