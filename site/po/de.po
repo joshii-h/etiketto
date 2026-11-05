@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 15:24+0100\n"
+"POT-Creation-Date: 2026-11-05 19:07+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -128,10 +128,10 @@ msgstr "26 Sprachen, folgt dem hellen oder dunklen Modus des Desktops"
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"Printers: Brother VC-500W. Further printers can be added as a backend, see "
-"[Contribute](contribute.md)."
+"Printers: Brother VC-500W (also sold as ColAura). Further printers can be "
+"added as a backend, see [Contribute](contribute.md)."
 msgstr ""
-"Drucker: Brother VC-500W. Weitere Drucker lassen sich als Backend ergänzen, "
+"Drucker: Brother VC-500W (auch als ColAura verkauft). Weitere Drucker lassen sich als Backend ergänzen, "
 "siehe [Mitmachen](contribute.md)."
 
 #. type: Title ##

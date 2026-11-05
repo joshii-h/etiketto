@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 15:38+0100\n"
+"POT-Creation-Date: 2026-11-05 19:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -97,7 +97,7 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Printers: Brother VC-500W. Further printers can be added as a backend, see [Contribute](contribute.md)."
+msgid "Printers: Brother VC-500W (also sold as ColAura). Further printers can be added as a backend, see [Contribute](contribute.md)."
 msgstr ""
 
 #. type: Title ##

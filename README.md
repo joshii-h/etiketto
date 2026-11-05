@@ -1,11 +1,12 @@
 # Etiketto
 
-Label designer for the **Brother VC-500W** colour label printer (ZINK
-paper), for the Linux desktop. GTK 4 and libadwaita, in English and 23 more
-languages: German, French, Italian, Spanish, Portuguese (Portugal and Brazil),
-Dutch, Swedish, Finnish, Estonian, Polish, Hungarian, Russian, Ukrainian,
-Turkish, Arabic, Hindi, Thai, Vietnamese, Indonesian, Malay, Korean, Japanese
-and Chinese (Traditional for Taiwan and Hong Kong, Simplified).
+Label designer for the **Brother VC-500W** colour label printer (also sold
+as ColAura; ZINK paper), for the Linux desktop. GTK 4 and libadwaita, in
+English and 23 more languages: German, French, Italian, Spanish,
+Portuguese (Portugal and Brazil), Dutch, Swedish, Finnish, Estonian,
+Polish, Hungarian, Russian, Ukrainian, Turkish, Arabic, Hindi, Thai,
+Vietnamese, Indonesian, Malay, Korean, Japanese and Chinese (Traditional
+for Taiwan and Hong Kong, Simplified).
 
 Brother only ships the Color Label Editor for Windows, macOS and phones.
 Etiketto brings the same workflow to Linux: the inserted cassette is
@@ -104,7 +105,7 @@ for the cutter.
 
 ## Printers
 
-Made for the Brother VC-500W, which is currently the only printer using
+Made for the Brother VC-500W (ColAura), which is currently the only printer using
 this protocol. Printing goes through
 [labelprinter](https://github.com/sgrimee/labelprinter-vc500w) (native
 protocol on TCP port 9100).
@@ -142,4 +143,4 @@ Etiketto prints through its descendant
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
-Brother Industries; "Brother" and "VC-500W" are trademarks of their owners.
+Brother Industries; "Brother", "ColAura" and "VC-500W" are trademarks of their owners.
