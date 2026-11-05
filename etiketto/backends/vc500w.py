@@ -30,7 +30,6 @@ from etiketto.backends.base import (
     ColorAdjust,
     CoverOpen,
     FoundPrinter,
-    LabelTooLong,
     NoCassette,
     PaperJam,
     PortClosed,
@@ -41,9 +40,11 @@ from etiketto.backends.base import (
     PrinterTimeout,
     PrintMode,
     PrintOptions,
+    PrintResult,
     Progress,
     ProgressCallback,
     Raster,
+    check_length,
 )
 from etiketto.model import TAPE_WIDTHS_MM
 from etiketto.render import PRINT_DPI
@@ -51,6 +52,11 @@ from etiketto.render import PRINT_DPI
 DEFAULT_PORT = 9100
 PRINT_TIMEOUT = 180  # seconds without any change of the printer's stage
 POLL_INTERVAL = 0.5  # like Brother's app
+SEND_RETRIES = 10  # answer code 1 (busy): try again, like Brother's app
+START_GRACE = 3.0  # seconds: a job that never shows BUSY counts as done after this
+MIN_LENGTH_MM = 15.0  # the cutter needs at least this much
+# stages in which a new job may be sent (print_state IDLE); "" = not reported
+READY_STAGES = frozenset({"SUCCESS", "READY FOR PRINT", "IDLE", ""})
 CROSSWEB_DPI = 320  # resolution across the tape (config.xml crossweb_dpi)
 BLEED_IN = 0.02  # extra width on both tape edges for rawrgb (9-25 mm)
 MAX_LENGTH_IN = 17.0
@@ -300,6 +306,11 @@ def cross_geometry(tape_mm: int, dpi: int) -> tuple[int, int]:
     return tape_px, round((inches + 2 * BLEED_IN) * dpi)
 
 
+def data_format(options: PrintOptions) -> str:
+    """rawrgb unless jpeg is asked for explicitly (the fallback setting)."""
+    return "jpeg" if options.data_format == "jpeg" else "rawrgb"
+
+
 def raster_dpi(mode_id: str) -> int:
     return max(CROSSWEB_DPI, KNOWN_MODES.get(mode_id, VIVID).lpi)
 
@@ -313,11 +324,6 @@ def encode_rawrgb(
     the printer's own lpi and crossweb dpi decide the final size."""
     rendered_dpi = raster_dpi(options.mode)
     length_in = image.width / rendered_dpi
-    if length_in > MAX_LENGTH_IN + 1e-6:
-        raise LabelTooLong(
-            "%.2f in is longer than %.0f in" % (length_in, MAX_LENGTH_IN),
-            max_mm=MAX_LENGTH_IN * 25.4,
-        )
     dpi = max(crossweb_dpi, mode.lpi)
     height = max(1, round(length_in * mode.lpi))
     width = max(1, round(image.height * dpi / rendered_dpi))
@@ -344,6 +350,15 @@ def _connect(host: str, port: int):
     from labelprinter.connection import Connection
 
     return Connection(mdns.resolve_host(host), port, PRINT_TIMEOUT)
+
+
+class _Busy(ValueError):
+    """The printer answered a print request with code 1 (busy)."""
+
+
+def _answer_code(data: str) -> int:
+    match = re.search(r"<code>\s*(-?\d+)\s*</code>", data or "")
+    return int(match.group(1)) if match else -1
 
 
 class _Session:
@@ -378,7 +393,12 @@ class _Session:
     def print(self, xml: str, data: bytes) -> None:
         from labelprinter.printer import PrintAnswer, Question
 
-        self._ask(Question(xml), PrintAnswer)
+        self.connection.send_message(Question(xml))
+        answer = self.connection.get_message()
+        if _answer_code(answer) == 1:
+            comment = _value(answer, "comment")
+            raise _Busy('The XML status code is not OK: "%s"' % comment if comment else "busy")
+        PrintAnswer(answer, self.connection.get_message)
         self.connection.send_file(io.BytesIO(data))
         # vivid prints take well over 30 s before the printer answers
         PrintAnswer(self.connection.get_message(long_timeout=True), self.connection.get_message)
@@ -415,7 +435,8 @@ class VC500W(Backend):
         reports_remaining=True,
         supports_color_adjust=True,
         continuous=True,
-        data_formats=("jpeg", "rawrgb"),
+        data_formats=("rawrgb", "jpeg"),
+        min_length_mm=MIN_LENGTH_MM,
         max_length_mm=MAX_LENGTH_IN * 25.4,
     )
 
@@ -454,11 +475,16 @@ class VC500W(Backend):
         )
 
     def raster(self, tape_mm: int, options: PrintOptions) -> Raster:
-        if options.data_format != "rawrgb":
+        if data_format(options) == "jpeg":
             return Raster(PRINT_DPI)
         dpi = raster_dpi(options.mode)
         tape_px, width = cross_geometry(tape_mm, dpi)
         return Raster(dpi, tape_px, bleed_px=math.ceil((width - tape_px) / 2), width_px=width)
+
+    def preview(self, image: Image.Image, mode: str = "") -> Image.Image:
+        if mode == "bw":
+            return image.convert("L").convert("RGB")
+        return super().preview(image, mode)
 
     def print_label(
         self,
@@ -466,9 +492,12 @@ class VC500W(Backend):
         host: str,
         options: PrintOptions,
         progress: ProgressCallback | None = None,
-    ) -> None:
-        data_format = options.data_format if options.data_format == "rawrgb" else "jpeg"
+    ) -> PrintResult | None:
+        fmt = data_format(options)
         cut = options.cut if options.cut in self.capabilities.cut_modes else "full"
+        # prepare() rendered the image at this resolution along the tape
+        rendered_dpi = raster_dpi(options.mode) if fmt == "rawrgb" else PRINT_DPI
+        check_length(image.width / rendered_dpi * 25.4, self.capabilities)
         with session(host, self.port) as s:
             config = s.config()
             if config.no_cassette:
@@ -476,17 +505,19 @@ class VC500W(Backend):
             mode = _pick_mode(config.modes or self.capabilities.modes, options.mode)
             if mode.id == "bw":
                 image = image.convert("L")
-            if data_format == "rawrgb":
+            if fmt == "rawrgb":
                 data, width, height = encode_rawrgb(image, mode, options, config.crossweb_dpi)
             else:
                 data, width, height = encode_jpeg(image, mode), 0, 0
-            xml = print_xml(mode, data_format, len(data), cut, options.color, width, height)
+            xml = print_xml(mode, fmt, len(data), cut, options.color, width, height)
             for n in range(1, options.copies + 1):
                 _report(progress, n, options.copies)
-                _wait_idle(s, progress, n, options.copies)
+                _wait_ready(s, progress, n, options.copies)
                 _send(s, xml, data)
-                _sleep(POLL_INTERVAL)  # the state turns BUSY only after a moment
-                _wait_idle(s, progress, n, options.copies)
+                _wait_done(s, progress, n, options.copies)
+        if options.mode and mode.id != options.mode:
+            return PrintResult(mode=mode.id)
+        return None
 
 
 def _is_vc500w(name: str) -> bool:
@@ -503,9 +534,14 @@ def _report(progress: ProgressCallback | None, n: int, copies: int, stage: str =
         progress(Progress(n, copies, stage))
 
 
-def _wait_idle(s: _Session, progress, n: int, copies: int) -> None:
-    """Poll until the printer is idle; stop at once on an error. The timeout
-    restarts whenever the stage changes (preheating can take a while)."""
+def _is_ready(status: DeviceStatus) -> bool:
+    """Ready for a new job, as Brother's app checks it."""
+    return status.state == "IDLE" and status.stage in READY_STAGES
+
+
+def _poll(s: _Session, progress, n: int, copies: int, done) -> None:
+    """Poll the status until done(status); stop at once on an error. The
+    timeout restarts whenever the stage changes (preheating can take a while)."""
     stage = None
     deadline = _clock() + PRINT_TIMEOUT
     while True:
@@ -513,9 +549,9 @@ def _wait_idle(s: _Session, progress, n: int, copies: int) -> None:
         error = status_error(status)
         if error:
             raise error
-        if status.state == "IDLE":
+        if done(status):
             return
-        if status.stage != stage:
+        if not _is_ready(status) and status.stage != stage:
             stage = status.stage
             deadline = _clock() + PRINT_TIMEOUT
             _report(progress, n, copies, stage)
@@ -524,13 +560,41 @@ def _wait_idle(s: _Session, progress, n: int, copies: int) -> None:
         _sleep(POLL_INTERVAL)
 
 
+def _wait_ready(s: _Session, progress, n: int, copies: int) -> None:
+    _poll(s, progress, n, copies, _is_ready)
+
+
+def _wait_done(s: _Session, progress, n: int, copies: int) -> None:
+    """After sending, the printer still reports the old, ready state for a
+    moment. Done once it was busy and is ready again, or if it showed no job
+    within START_GRACE (a job finished between two polls)."""
+    sent = _clock()
+    started = False
+
+    def done(status: DeviceStatus) -> bool:
+        nonlocal started
+        if not _is_ready(status):
+            started = True
+            return False
+        return started or _clock() - sent >= START_GRACE
+
+    _poll(s, progress, n, copies, done)
+
+
 def _send(s: _Session, xml: str, data: bytes) -> None:
-    try:
-        s.print(xml, data)
-    except ValueError as e:
-        if "status code is not OK" not in str(e):
-            raise
-        raise _rejected(s, e) from e
+    """Send one job; answer code 1 (busy) is retried SEND_RETRIES times."""
+    for attempt in range(SEND_RETRIES + 1):
+        try:
+            s.print(xml, data)
+            return
+        except _Busy as e:
+            if attempt == SEND_RETRIES:
+                raise _rejected(s, e) from e
+            _sleep(POLL_INTERVAL)
+        except ValueError as e:
+            if "status code is not OK" not in str(e):
+                raise
+            raise _rejected(s, e) from e
 
 
 def _rejected(s: _Session, error: Exception) -> PrinterError:

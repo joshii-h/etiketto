@@ -15,7 +15,6 @@ from PIL import Image, ImageChops
 from etiketto import render as R
 from etiketto.model import CodeElement, ImageElement, Label, TextElement
 from etiketto.render import (
-    MIN_LENGTH_MM,
     Rendered,
     RenderWarning,
     mm_to_px,
@@ -63,10 +62,10 @@ def test_height_matches_tape(tape, px):
 
 
 def test_empty_label_has_minimum_length():
-    rendered = render(Label(tape_mm=25))
+    rendered = render(Label(tape_mm=25), min_length_mm=15)
     assert rendered.image.size == (188, TAPE)
     assert rendered.length_mm == pytest.approx(px_to_mm(188))
-    assert rendered.length_mm >= MIN_LENGTH_MM
+    assert rendered.length_mm >= 15
     assert rendered.warnings == [] and not rendered.overflow
 
 
@@ -123,7 +122,8 @@ def test_fixed_length_alignment(make_label, wide_image, align, x0):
 
 
 def test_fixed_length_below_minimum_is_extended(make_label):
-    assert render(make_label(auto_length=False, length_mm=5)).image.width == 188
+    assert render(make_label(auto_length=False, length_mm=5), min_length_mm=15).image.width == 188
+    assert render(make_label(auto_length=False, length_mm=5)).image.width == 62  # no minimum
 
 
 def test_overflow_scales_content(make_label, wide_image):

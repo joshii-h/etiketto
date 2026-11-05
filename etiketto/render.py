@@ -20,9 +20,6 @@ from etiketto.model import CodeElement, Element, ImageElement, Label, TextElemen
 # Resolution of the vivid print mode (labelprinter: 317 lpi)
 PRINT_DPI = 317
 
-# The printer cannot cut labels shorter than this
-MIN_LENGTH_MM = 15.0
-
 # Default safety margin: content and border keep this distance from the
 # edges, the background is always printed edge to edge. Measured on a
 # VC-500W: ~0.5 mm lost per side plus up to ~1 mm feed skew on long labels.
@@ -304,9 +301,9 @@ def _content_width(parts: list[Image.Image], gap: int) -> int:
     return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
 
 
-def _fit_length(label: Label, parts, f: _Frame, dpi: int, warnings):
+def _fit_length(label: Label, parts, f: _Frame, dpi: int, warnings, min_length_mm: float):
     """Label length, the (possibly scaled) parts and the gap between them."""
-    min_len = math.ceil(MIN_LENGTH_MM / 25.4 * dpi)
+    min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     content_w = _content_width(parts, f.margin)
     if label.auto_length:
         return max(min_len, content_w + 2 * (f.margin + f.frame)), parts, f.margin, False
@@ -371,13 +368,15 @@ def render(
     safe_mm: float = DEFAULT_SAFE_MM,
     tape_px: int | None = None,
     bleed_px: int = 0,
+    min_length_mm: float = 0.0,
 ) -> Rendered:
     """tape_px overrides the tape height from the nominal width; bleed_px adds
-    background beyond both tape edges (the content keeps its place)."""
+    background beyond both tape edges (the content keeps its place);
+    min_length_mm is the printer's shortest label (Capabilities.min_length_mm)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings)
-    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings)
+    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

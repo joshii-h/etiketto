@@ -42,9 +42,12 @@ class Capabilities:
     cut_modes: tuple[str, ...] = CUT_MODES  # empty: the printer does not cut
     reports_remaining: bool = False  # remaining tape in the status
     supports_color_adjust: bool = False  # brightness / colour balance per job
-    continuous: bool = True  # endless tape (False: die-cut labels of fixed size)
-    data_formats: tuple[str, ...] = ("jpeg",)
-    max_length_mm: float | None = None
+    # endless tape; the interface offers length and alignment only for these.
+    # False (die-cut labels of fixed size) is not supported by the interface yet.
+    continuous: bool = True
+    data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
+    min_length_mm: float = 0.0  # shorter labels are extended to this length
+    max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
 
 
 @dataclass(frozen=True)
@@ -134,7 +137,14 @@ class PrintOptions:
     cut: str = "full"
     mode: str = ""  # PrintMode.id; empty = the printer's first mode
     color: ColorAdjust = field(default_factory=ColorAdjust)
-    data_format: str = "jpeg"
+    data_format: str = "rawrgb"  # backends fall back to their own default
+
+
+@dataclass(frozen=True)
+class PrintResult:
+    """What print_label() did differently from the request, if anything."""
+
+    mode: str = ""  # the mode actually used, when the requested one was not available
 
 
 @dataclass(frozen=True)
@@ -198,6 +208,13 @@ class LabelTooLong(PrinterError):
     code = "too_long"  # params: max_mm
 
 
+def check_length(length_mm: float, capabilities: Capabilities) -> None:
+    """Raise LabelTooLong if the label exceeds capabilities.max_length_mm."""
+    limit = capabilities.max_length_mm
+    if limit is not None and length_mm > limit + 0.01:
+        raise LabelTooLong("%.1f mm is longer than %.1f mm" % (length_mm, limit), max_mm=limit)
+
+
 # --- the backend ------------------------------------------------------------
 
 
@@ -225,7 +242,8 @@ class Backend(ABC):
     def raster(self, tape_mm: int, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)
 
-    def preview(self, image: Image.Image) -> Image.Image:
+    def preview(self, image: Image.Image, mode: str = "") -> Image.Image:
+        """What the printer makes of the image in the given print mode."""
         return apply_color_model(image, self.capabilities.color_model)
 
     def prepare(
@@ -239,10 +257,11 @@ class Backend(ABC):
             safe_mm=safe_mm,
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
+            min_length_mm=self.capabilities.min_length_mm,
         ).image
         if raster.width_px and image.height > raster.width_px:
             image = image.crop((0, 0, image.width, raster.width_px))
-        return self.preview(image)
+        return self.preview(image, options.mode)
 
     @abstractmethod
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
@@ -259,5 +278,6 @@ class Backend(ABC):
         host: str,
         options: PrintOptions,
         progress: ProgressCallback | None = None,
-    ) -> None:
-        """Print an image made by prepare(); raises PrinterError."""
+    ) -> PrintResult | None:
+        """Print an image made by prepare(); raises PrinterError. Returns a
+        PrintResult if something differed from the request (or None)."""

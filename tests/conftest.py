@@ -103,6 +103,7 @@ class FakeVC500W:
         self.statuses = [status()]  # one per status request, the last repeats
         self.after_print = []  # statuses after the data, before turning idle again
         self.print_code = 0
+        self.print_codes: list[int] = []  # answers to the next print requests, then print_code
         self.print_comment = ""
         self.log: list = []
         self.closed = 0
@@ -155,7 +156,8 @@ class FakeConnection:
         else:
             assert "<print>" in xml, xml
             device.log.append(("print", xml[len(XML_HEAD) :]))
-            self.pending.append(answer(device.print_code, device.print_comment))
+            code = device.print_codes.pop(0) if device.print_codes else device.print_code
+            self.pending.append(answer(code, device.print_comment))
 
     def get_message(self, long_timeout=False, buffer_size=4096):
         if not self.pending:
@@ -174,20 +176,32 @@ class FakeConnection:
         self.device.log.append(("close",))
 
 
+MAX_SLEEPS = 5000  # a polling loop that never ends fails instead of hanging
+
+
 @pytest.fixture
 def printer(monkeypatch):
-    """A fake VC-500W behind vc500w._connect; no real sleeping."""
+    """A fake VC-500W behind vc500w._connect; no real sleeping: the fake
+    clock only advances by the time vc500w sleeps."""
     device = FakeVC500W()
     calls = []
     sleeps = []
+    now = [1000.0]
 
     def connect(host, port):
         calls.append((host, port))
         return FakeConnection(device)
 
+    def sleep(seconds):
+        sleeps.append(seconds)
+        now[0] += seconds
+        if len(sleeps) > MAX_SLEEPS:
+            raise AssertionError("endless polling")
+
     monkeypatch.setattr(vc500w, "_connect", connect)
-    monkeypatch.setattr(vc500w, "_sleep", sleeps.append)
-    return SimpleNamespace(device=device, calls=calls, sleeps=sleeps)
+    monkeypatch.setattr(vc500w, "_sleep", sleep)
+    monkeypatch.setattr(vc500w, "_clock", lambda: now[0])
+    return SimpleNamespace(device=device, calls=calls, sleeps=sleeps, now=now)
 
 
 # --- GTK -------------------------------------------------------------------

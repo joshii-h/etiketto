@@ -32,6 +32,7 @@ from etiketto.backends.base import (
     PrinterTimeout,
     PrintMode,
     PrintOptions,
+    PrintResult,
     Progress,
     Raster,
 )
@@ -328,7 +329,33 @@ def test_raster_rawrgb(backend, tape, mode, dpi, tape_px, width):
 
 
 def test_raster_jpeg_is_the_preview_resolution(backend):
-    assert backend.raster(25, PrintOptions(mode="bw")) == Raster(317)
+    assert backend.raster(25, PrintOptions(mode="bw", data_format="jpeg")) == Raster(317)
+
+
+def test_rawrgb_is_the_default(backend):
+    assert PrintOptions().data_format == "rawrgb"
+    assert backend.capabilities.data_formats[0] == "rawrgb"
+    assert backend.raster(25, PrintOptions()) == backend.raster(
+        25, PrintOptions(data_format="rawrgb")
+    )
+    assert vc500w.data_format(PrintOptions(data_format="png")) == "rawrgb"
+    assert vc500w.data_format(PrintOptions(data_format="jpeg")) == "jpeg"
+
+
+def test_preview_bw_is_grey(backend):
+    image = Image.new("RGB", (4, 4), (255, 0, 0))
+    grey = backend.preview(image, "bw")
+    assert grey.mode == "RGB"
+    r, g, b = grey.getpixel((0, 0))
+    assert r == g == b and r < 128
+    assert backend.preview(image, "vivid").getpixel((0, 0)) == (255, 0, 0)
+    assert backend.preview(image).getpixel((0, 0)) == (255, 0, 0)
+
+
+def test_prepare_bw_is_grey(backend, png_b64):
+    label = Label(tape_mm=25, elements=[ImageElement(data=png_b64((10, 10), "red"))])
+    image = backend.prepare(label, PrintOptions(mode="bw"))
+    assert all(r == g == b for _n, (r, g, b) in image.getcolors(maxcolors=1 << 24))
 
 
 def test_prepare_rawrgb_has_exact_width_and_bleed(backend, png_b64):
@@ -361,7 +388,8 @@ def _label_image(width=400, height=312, split=100):
 
 
 def test_print_jpeg_request_and_data(printer, backend):
-    backend.print_label(_label_image(), "p", PrintOptions(mode="color", cut="half"))
+    options = PrintOptions(mode="color", cut="half", data_format="jpeg")
+    assert backend.print_label(_label_image(), "p", options) is None
     data = printer.device.data()
     assert printer.device.prints() == [
         HEAD % ("color", 1, 264)
@@ -439,22 +467,40 @@ def test_print_rawrgb_too_long(printer, backend):
     with pytest.raises(LabelTooLong) as info:
         backend.print_label(image, "p", PrintOptions(data_format="rawrgb"))
     assert info.value.params == {"max_mm": pytest.approx(431.8)}
-    assert printer.device.prints() == []
+    assert printer.device.prints() == [] and printer.calls == []  # checked before connecting
     exact = _label_image(width=17 * 320, height=333)
     backend.print_label(exact, "p", PrintOptions(data_format="rawrgb"))
     assert "<height>%d</height>" % (17 * 317) in printer.device.prints()[0]
 
 
+def test_print_jpeg_too_long(printer, backend):
+    image = _label_image(width=round(17.1 * 317), height=312)
+    with pytest.raises(LabelTooLong) as info:
+        backend.print_label(image, "p", PrintOptions(data_format="jpeg"))
+    assert info.value.params == {"max_mm": pytest.approx(431.8)}
+    assert printer.calls == []
+    backend.print_label(_label_image(width=17 * 317), "p", PrintOptions(data_format="jpeg"))
+    assert len(printer.device.prints()) == 1
+
+
 def test_print_unknown_format_and_cut_fall_back(printer, backend):
-    backend.print_label(_label_image(), "p", PrintOptions(cut="sideways", data_format="png"))
+    backend.print_label(
+        _label_image(height=333), "p", PrintOptions(cut="sideways", data_format="png")
+    )
     request = printer.device.prints()[0]
-    assert "<cutmode>full</cutmode>" in request and "<dataformat>jpeg</dataformat>" in request
+    assert "<cutmode>full</cutmode>" in request and "<dataformat>rawrgb</dataformat>" in request
 
 
 def test_print_mode_not_offered_by_the_printer(printer, backend):
     printer.device.modes = []  # old firmware: nothing reported, documented modes
-    backend.print_label(_label_image(), "p", PrintOptions(mode="bw"))
+    result = backend.print_label(_label_image(), "p", PrintOptions(mode="bw"))
     assert printer.device.prints()[0].startswith(HEAD % ("vivid", 0, 317))
+    assert result == PrintResult(mode="vivid")  # the interface tells the user
+
+
+def test_print_default_mode_is_no_fallback(printer, backend):
+    assert backend.print_label(_label_image(), "p", PrintOptions()) is None
+    assert backend.print_label(_label_image(), "p", PrintOptions(mode="color")) is None
 
 
 def test_print_copies_progress_and_stages(printer, backend):
@@ -477,9 +523,95 @@ def test_print_copies_progress_and_stages(printer, backend):
         Progress(2, 2, "PRINTING"),
         Progress(2, 2, "READY_FOR_CUT"),
     ]
-    # polled every 0.5 s: one pause after sending, one per busy status
-    assert printer.sleeps == [0.5] * (2 * 5)
+    # polled every 0.5 s: one pause per busy status, none once it was busy
+    assert printer.sleeps == [0.5] * (2 * 4)
     assert printer.device.closed == 1
+
+
+def _status_script(printer, script):
+    """Statuses in order, one per status request; the last one repeats.
+    Prints are recorded in the device log, so the order can be checked."""
+    printer.device.statuses = list(script)
+    printer.device.after_print = []  # the script keeps running across the print
+
+    from conftest import FakeConnection
+
+    original = FakeConnection.send_file
+
+    def send_file(self, handle):
+        statuses = self.device.statuses
+        original(self, handle)
+        self.device.statuses = statuses
+
+    return send_file
+
+
+def test_print_waits_until_the_previous_copy_is_really_done(printer, backend, monkeypatch):
+    """The race of 0.x: right after sending, the printer still says IDLE /
+    SUCCESS of the last job. The second copy must wait for BUSY and IDLE."""
+    from conftest import FakeConnection
+
+    send_file = _status_script(
+        printer,
+        [
+            status(),  # ready for copy 1
+            status(),  # still the old state after sending
+            status(),
+            status("BUSY", "PREPARING PRINT"),
+            status("BUSY", "PRINTING"),
+            status("IDLE", "COOLDOWN"),  # idle, but not ready yet
+            status(),  # done: ready for copy 2
+            status(),  # ready check before copy 2
+            status("BUSY", "PRINTING"),
+            status(),
+        ],
+    )
+    monkeypatch.setattr(FakeConnection, "send_file", send_file)
+    events = []
+    backend.print_label(_label_image(), "p", PrintOptions(copies=2), events.append)
+    names = [n for n in printer.device.names() if n in ("status", "print")]
+    assert names == ["status", "print"] + ["status"] * 7 + ["print"] + ["status"] * 2
+    assert Progress(1, 2, "COOLDOWN") in events and Progress(1, 2, "SUCCESS") not in events
+
+
+def test_print_waits_for_a_ready_stage_before_sending(printer, backend):
+    printer.device.statuses = [status("IDLE", "COOLDOWN"), status("IDLE", "READY FOR PRINT")]
+    backend.print_label(_label_image(), "p", PrintOptions())
+    names = [n for n in printer.device.names() if n in ("status", "print")]
+    assert names[:3] == ["status", "status", "print"]
+
+
+def test_print_counts_a_job_without_busy_as_done_after_the_grace(printer, backend):
+    # after_print empty: the printer never shows BUSY (job between two polls)
+    start = printer.now[0]
+    backend.print_label(_label_image(), "p", PrintOptions(copies=2))
+    assert len(printer.device.prints()) == 2
+    waited = printer.now[0] - start
+    assert waited == pytest.approx(2 * vc500w.START_GRACE)
+
+
+def test_print_retries_a_busy_answer(printer, backend):
+    printer.device.print_codes = [1, 1, 1]
+    backend.print_label(_label_image(), "p", PrintOptions())
+    assert len(printer.device.prints()) == 4  # three refused, the fourth accepted
+    assert len(printer.device.data()) == 1
+    assert printer.sleeps[:3] == [vc500w.POLL_INTERVAL] * 3
+
+
+def test_print_gives_up_after_ten_busy_answers(printer, backend):
+    printer.device.print_code = 1
+    printer.device.statuses = [status(), status("BUSY", "PRINTING")]
+    with pytest.raises(PrinterBusy) as info:
+        backend.print_label(_label_image(), "p", PrintOptions())
+    assert len(printer.device.prints()) == 1 + vc500w.SEND_RETRIES
+    assert info.value.details == "busy"  # no comment in the answer
+    assert printer.device.data() == []
+
+
+def test_answer_code():
+    assert vc500w._answer_code("<status><code>1</code></status>") == 1
+    assert vc500w._answer_code("<status><code> 0 </code></status>") == 0
+    assert vc500w._answer_code("garbage") == -1
 
 
 def test_print_waits_for_a_busy_printer_first(printer, backend):
@@ -498,6 +630,22 @@ def test_print_aborts_at_once_on_an_error_before_printing(printer, backend):
     assert "DOOR OPEN" in info.value.details
     assert printer.device.prints() == [] and printer.sleeps == []
     assert printer.device.closed == 1
+
+
+def test_print_error_state_without_error_code_aborts(printer, backend):
+    printer.device.statuses = [status("ERROR", "PRINTING", "NONE")]
+    with pytest.raises(PrinterError) as info:
+        backend.print_label(_label_image(), "p", PrintOptions())
+    assert type(info.value) is PrinterError and "print_job_error=NONE" in info.value.details
+    assert printer.device.prints() == [] and printer.sleeps == []
+
+
+def test_print_endless_busy_times_out_quickly(printer, backend):
+    printer.device.statuses = [status("BUSY", "PRINTING")]
+    with pytest.raises(PrinterTimeout):
+        backend.print_label(_label_image(), "p", PrintOptions())
+    # the fake clock ran PRINT_TIMEOUT, not the real one
+    assert len(printer.sleeps) == vc500w.PRINT_TIMEOUT / vc500w.POLL_INTERVAL + 1
 
 
 def test_print_aborts_on_an_error_while_printing(printer, backend):
@@ -568,20 +716,14 @@ def test_print_other_answer_errors_are_mapped(printer, backend, monkeypatch):
 
 
 def test_print_times_out_without_progress(printer, backend, monkeypatch):
-    now = [0.0]
-
-    def clock():
-        now[0] += 50
-        return now[0]
-
-    monkeypatch.setattr(vc500w, "_clock", clock)
+    monkeypatch.setattr(vc500w, "POLL_INTERVAL", 50)
     printer.device.after_print = [status("BUSY", "PRINTING")] * 3 + [status("BUSY", "CLEANING")]
     printer.device.after_print += [status("BUSY", "CLEANING")] * 10
     with pytest.raises(PrinterTimeout, match="CLEANING"):
         backend.print_label(_label_image(), "p", PrintOptions())
     # 1 before printing, then 3 × PRINTING; without the restart of the 180 s
-    # by the change to CLEANING it would give up at the first CLEANING
-    assert printer.device.names().count("status") == 1 + 3 + 4
+    # by the change to CLEANING it would give up at the second CLEANING
+    assert printer.device.names().count("status") == 1 + 3 + 5
 
 
 def test_discover_uses_mdns(monkeypatch, backend):
