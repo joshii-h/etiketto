@@ -22,11 +22,11 @@ PRINT_DPI = 317
 # The printer cannot cut labels shorter than this
 MIN_LENGTH_MM = 15.0
 
-# Default safety margin. The VC-500W loses about 0.5 mm on every side
-# (measured); devices and rolls vary, so the app makes this a per-printer
-# setting. Content and border keep this distance from the edges, the
-# background is always printed edge to edge.
-DEFAULT_SAFE_MM = 1.0
+# Default safety margin: content and border keep this distance from the
+# edges, the background is always printed edge to edge. Measured on a
+# VC-500W: ~0.5 mm lost per side plus up to ~1 mm feed skew on long labels.
+# Devices and rolls vary, so the app makes it a per-printer setting.
+DEFAULT_SAFE_MM = 1.5
 
 
 @dataclass
