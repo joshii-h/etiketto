@@ -85,21 +85,21 @@ interface adapts to what the printer can do.
 
    ```python
    class MyPrinter(Backend):
-       id = "myprinter"            # stored in .etiketto files, never change it
-       name = "Maker Model"        # shown in the interface
+       id = "myprinter"  # stored in .etiketto files, never change it
+       name = "Maker Model"  # shown in the interface
        capabilities = Capabilities(
            tape_widths_mm=(12, 24),
-           dpi=300,                # resolution across the tape
+           dpi=300,  # resolution across the tape
            modes=(PrintMode("standard", lpi=300),),
-           color_model="mono",     # "color", "mono" or "two-color"
-           cut_modes=("full",),    # empty: the printer has no cutter
+           color_model="mono",  # "color", "mono" or "two-color"
+           cut_modes=("full",),  # empty: the printer has no cutter
            reports_remaining=False,
            supports_color_adjust=False,
-           continuous=True,        # False for die-cut labels
+           continuous=True,  # False for die-cut labels
        )
 
-       def discover(self, timeout=3.0): ...        # -> list[FoundPrinter]
-       def query(self, host): ...                  # -> PrinterInfo
+       def discover(self, timeout=3.0): ...  # -> list[FoundPrinter]
+       def query(self, host): ...  # -> PrinterInfo
        def print_label(self, image, host, options, progress=None): ...
    ```
 

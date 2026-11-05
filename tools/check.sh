@@ -1,10 +1,14 @@
 #!/bin/sh
 # Run the same checks as the Forgejo CI (.forgejo/workflows/ci.yml), locally.
 # Keep both in sync. Exit code != 0 on failure.
+# One command per line: with `set -e` a failure inside `a && b` does not stop
+# the script, which once let a formatting error through.
 set -eu
 cd "$(dirname "$0")/.."
 PY=.venv/bin
-echo "== ruff";      $PY/ruff format --check . && $PY/ruff check .
+echo "== ruff"
+$PY/ruff format --check .
+$PY/ruff check .
 echo "== tests";     $PY/python -m pytest -q --cov=etiketto --cov-report=term
 echo "== mypy";      $PY/mypy
 echo "== bandit";    $PY/bandit -q -c pyproject.toml -r etiketto -ll
