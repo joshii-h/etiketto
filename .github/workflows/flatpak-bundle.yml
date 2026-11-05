@@ -1,0 +1,91 @@
+# Builds a single-file Flatpak bundle for each release tag and attaches it to
+# the GitHub release and to the Forgejo release (main repository).
+#
+# Runs on GitHub because Flatpak builds need a privileged container; the
+# Forgejo runner deliberately has none. Only maintainers can push tags v*,
+# so the code built here is trusted. The Forgejo upload uses FORGEJO_TOKEN of
+# the etiketto-bot user (write access to joshii/etiketto only).
+#
+# Forgejo also reads .github/workflows, hence the server_url guard.
+
+name: Flatpak bundle
+
+on:
+  push:
+    tags: ["v*"]
+  # test run: builds the bundle and keeps it as a workflow artifact, uploads nothing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    env:
+      TAG: ${{ github.event_name == 'push' && github.ref_name || 'test' }}
+      APP_ID: xyz.joshuahirsig.Etiketto
+    steps:
+      - name: Check the tag
+        if: github.event_name == 'push'
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$'; then
+            echo "::error::not a release tag: $TAG"; exit 1
+          fi
+
+      - name: Tools for the upload steps
+        run: |
+          # the build image is Fedora based; gh and jq are not always included
+          command -v gh > /dev/null && command -v jq > /dev/null ||
+            dnf install -y -q gh jq
+
+      - uses: actions/checkout@v4
+
+      - name: Build the bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+          bundle: Etiketto-${{ github.event_name == 'push' && github.ref_name || 'test' }}-x86_64.flatpak
+          cache-key: flatpak-builder-${{ github.sha }}
+          upload-artifact: ${{ github.event_name != 'push' }}
+
+      - name: Attach to the GitHub release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bundle="Etiketto-$TAG-x86_64.flatpak"
+          sha256sum "$bundle" > "$bundle.sha256"
+          # the release is created by release-mirror.yml from the Forgejo release
+          for i in $(seq 120); do
+            gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1 && break
+            [ "$i" = 120 ] && { echo "::error::no GitHub release for $TAG"; exit 1; }
+            sleep 15
+          done
+          gh release upload "$TAG" "$bundle" "$bundle.sha256" --clobber -R "$GITHUB_REPOSITORY"
+
+      - name: Attach to the Forgejo release
+        if: github.event_name == 'push'
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/etiketto
+        run: |
+          set -euo pipefail
+          bundle="Etiketto-$TAG-x86_64.flatpak"
+          auth=(-H "Authorization: token $FORGEJO_TOKEN")
+          release="$(curl -sS --fail "${auth[@]}" "$FORGEJO_API/releases/tags/$TAG")"
+          id="$(jq -r .id <<<"$release")"
+          for f in "$bundle" "$bundle.sha256"; do
+            if jq -e --arg n "$f" 'any(.assets[]?; .name == $n)' <<<"$release" > /dev/null; then
+              echo "$f exists"; continue
+            fi
+            curl -sS --fail-with-body "${auth[@]}" -F "attachment=@$f" \
+              "$FORGEJO_API/releases/$id/assets?name=$(jq -rn --arg n "$f" '$n|@uri')" > /dev/null
+            echo "$f uploaded"
+          done
