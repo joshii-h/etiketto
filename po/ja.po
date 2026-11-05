@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-05 15:22+0100\n"
+"PO-Revision-Date: 2026-11-05 15:28+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ja\n"
 "Language: ja\n"
@@ -32,23 +32,23 @@ msgstr "標準"
 
 #: etiketto/app.py:95
 msgid "Black and white (sharper)"
-msgstr ""
+msgstr "白黒 (くっきり)"
 
 #: etiketto/app.py:98
 msgid "Brightness"
-msgstr ""
+msgstr "明るさ"
 
 #: etiketto/app.py:99
 msgid "Red"
-msgstr ""
+msgstr "赤"
 
 #: etiketto/app.py:100
 msgid "Green"
-msgstr ""
+msgstr "緑"
 
 #: etiketto/app.py:101
 msgid "Blue"
-msgstr ""
+msgstr "青"
 
 #: etiketto/app.py:103
 msgid "Start"
@@ -94,204 +94,204 @@ msgstr "画像"
 #: etiketto/app.py:235
 #, python-format
 msgid "Element %(n)d: the code is empty"
-msgstr ""
+msgstr "要素 %(n)d: コードが空です"
 
 #: etiketto/app.py:236
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
-msgstr ""
+msgstr "要素 %(n)d: EAN-13 にはちょうど 12 桁の数字が必要です"
 
 #: etiketto/app.py:237
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
-msgstr ""
+msgstr "要素 %(n)d: EAN-13 のチェックデジットが正しくありません"
 
 #: etiketto/app.py:239
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
-msgstr ""
+msgstr "要素 %(n)d: Code 128 で使えるのはラテン文字、数字、記号のみです"
 
 #: etiketto/app.py:241
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
-msgstr ""
+msgstr "要素 %(n)d: 画像を読み込めません"
 
 #: etiketto/app.py:242
 #, python-format
 msgid "Element %(n)d cannot be drawn"
-msgstr ""
+msgstr "要素 %(n)d を描画できません"
 
 #: etiketto/app.py:243
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
-msgstr ""
+msgstr "安全マージン、枠線、端の余白で場所がありません。小さくしてください"
 
 #: etiketto/app.py:244
 msgid "The fixed length is shorter than the spacing – increase it"
-msgstr ""
+msgstr "固定の長さが間隔より短くなっています。長くしてください"
 
 #: etiketto/app.py:245
 msgid "The background image cannot be read"
-msgstr ""
+msgstr "背景画像を読み込めません"
 
 #: etiketto/app.py:254
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
-msgstr ""
+msgstr "プリンターが見つかりません。電源が入っていて同じネットワークにあるか確認するか、IP アドレスを入力してください。"
 
 #: etiketto/app.py:257
 msgid "The printer does not answer. Check that it is switched on and awake."
-msgstr ""
+msgstr "プリンターが応答しません。電源が入っていてスリープ状態でないか確認してください。"
 
 #: etiketto/app.py:259
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
-msgstr ""
+msgstr "プリンターが接続を拒否しました。電源を入れ直してください。Web 管理画面に「Port 9100」の項目があれば有効にしてください。"
 
 #: etiketto/app.py:262
 msgid "No cassette is inserted. Insert one and try again."
-msgstr ""
+msgstr "カセットが入っていません。カセットを入れてもう一度お試しください。"
 
 #: etiketto/app.py:263
 msgid "The printer's cover is open. Close it and try again."
-msgstr ""
+msgstr "プリンターのカバーが開いています。閉じてもう一度お試しください。"
 
 #: etiketto/app.py:264
 msgid "The label is jammed. Open the cover, remove it and try again."
-msgstr ""
+msgstr "ラベルが詰まっています。カバーを開けて取り除き、もう一度お試しください。"
 
 #: etiketto/app.py:265
 msgid "The cassette is not recognised. Insert it again or try another one."
-msgstr ""
+msgstr "カセットを認識できません。入れ直すか、別のカセットをお試しください。"
 
 #: etiketto/app.py:266
 msgid "The printer is busy. Wait a moment and try again."
-msgstr ""
+msgstr "プリンターは使用中です。しばらく待ってからもう一度お試しください。"
 
 #: etiketto/app.py:267
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
-msgstr ""
+msgstr "このプリンターにはラベルが長すぎます。最大 %(max)s です。"
 
 #: etiketto/app.py:269
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
-msgstr ""
+msgstr "プリンターが問題を報告しました。電源を入れ直してから、もう一度お試しください。"
 
 #: etiketto/app.py:283
 msgid "Warming up…"
-msgstr ""
+msgstr "ウォームアップ中…"
 
 #: etiketto/app.py:284
 msgid "Cooling down…"
-msgstr ""
+msgstr "冷却中…"
 
 #: etiketto/app.py:285
 msgid "Cleaning…"
-msgstr ""
+msgstr "クリーニング中…"
 
 #: etiketto/app.py:286
 msgid "Swipe the printer's panel to cut the label"
-msgstr ""
+msgstr "プリンターのパネルをスワイプしてラベルをカットしてください"
 
 #: etiketto/app.py:292
 msgid "This label needs a newer version of Etiketto"
-msgstr ""
+msgstr "このラベルには新しいバージョンの Etiketto が必要です"
 
 #: etiketto/app.py:294
 #, python-format
 msgid "%s is not an Etiketto label"
-msgstr ""
+msgstr "%s は Etiketto のラベルではありません"
 
 #: etiketto/app.py:295
 #, python-format
 msgid "The file is damaged: %s"
-msgstr ""
+msgstr "ファイルが壊れています: %s"
 
 #: etiketto/app.py:300
 #, python-format
 msgid "Cannot save %s: no permission to write there"
-msgstr ""
+msgstr "%s を保存できません: 書き込み権限がありません"
 
 #: etiketto/app.py:302
 #, python-format
 msgid "Cannot save %s: the disk is full"
-msgstr ""
+msgstr "%s を保存できません: ディスクがいっぱいです"
 
 #: etiketto/app.py:303
 #, python-format
 msgid "Cannot save %s"
-msgstr ""
+msgstr "%s を保存できません"
 
 #: etiketto/app.py:308
 msgctxt "month name"
 msgid "January"
-msgstr ""
+msgstr "1月"
 
 #: etiketto/app.py:309
 msgctxt "month name"
 msgid "February"
-msgstr ""
+msgstr "2月"
 
 #: etiketto/app.py:310
 msgctxt "month name"
 msgid "March"
-msgstr ""
+msgstr "3月"
 
 #: etiketto/app.py:311
 msgctxt "month name"
 msgid "April"
-msgstr ""
+msgstr "4月"
 
 #: etiketto/app.py:312
 msgctxt "month name"
 msgid "May"
-msgstr ""
+msgstr "5月"
 
 #: etiketto/app.py:313
 msgctxt "month name"
 msgid "June"
-msgstr ""
+msgstr "6月"
 
 #: etiketto/app.py:314
 msgctxt "month name"
 msgid "July"
-msgstr ""
+msgstr "7月"
 
 #: etiketto/app.py:315
 msgctxt "month name"
 msgid "August"
-msgstr ""
+msgstr "8月"
 
 #: etiketto/app.py:316
 msgctxt "month name"
 msgid "September"
-msgstr ""
+msgstr "9月"
 
 #: etiketto/app.py:317
 msgctxt "month name"
 msgid "October"
-msgstr ""
+msgstr "10月"
 
 #: etiketto/app.py:318
 msgctxt "month name"
 msgid "November"
-msgstr ""
+msgstr "11月"
 
 #: etiketto/app.py:319
 msgctxt "month name"
 msgid "December"
-msgstr ""
+msgstr "12月"
 
 #: etiketto/app.py:329
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
-msgstr ""
+msgstr "このカセットは %(year)d年%(month)s 製のようです。古い ZINK 用紙は色が薄く印刷されます。"
 
 #: etiketto/app.py:341 etiketto/app.py:647 etiketto/app.py:1619
 msgid "Label"
@@ -351,7 +351,7 @@ msgstr "拡大"
 
 #: etiketto/app.py:526
 msgid "Printer model"
-msgstr ""
+msgstr "プリンターの機種"
 
 #: etiketto/app.py:541
 msgid "Printer"
@@ -363,7 +363,7 @@ msgstr "検索中…"
 
 #: etiketto/app.py:547 etiketto/app.py:1196
 msgid "Printer details"
-msgstr ""
+msgstr "プリンターの詳細"
 
 #: etiketto/app.py:553
 msgid "Refresh"
@@ -555,7 +555,7 @@ msgstr "収まるように内容を縮小しました"
 #: etiketto/app.py:972
 #, python-format
 msgid "Too long for this printer: at most %s"
-msgstr ""
+msgstr "このプリンターには長すぎます: 最大 %s"
 
 #: etiketto/app.py:977
 #, python-format
@@ -564,7 +564,7 @@ msgstr "問題: %s"
 
 #: etiketto/app.py:984 etiketto/app.py:1577
 msgid "The preview cannot be drawn"
-msgstr ""
+msgstr "プレビューを描画できません"
 
 #: etiketto/app.py:1025
 msgid "Searching for printers…"
@@ -618,43 +618,43 @@ msgstr "%s カセット"
 
 #: etiketto/app.py:1172
 msgid "Model"
-msgstr ""
+msgstr "機種"
 
 #: etiketto/app.py:1173
 msgid "Address"
-msgstr ""
+msgstr "アドレス"
 
 #: etiketto/app.py:1174
 msgid "Firmware"
-msgstr ""
+msgstr "ファームウェア"
 
 #: etiketto/app.py:1177
 msgid "Cassette"
-msgstr ""
+msgstr "カセット"
 
 #: etiketto/app.py:1178
 msgid "Remaining tape"
-msgstr ""
+msgstr "テープの残量"
 
 #: etiketto/app.py:1184
 msgid "Printable width"
-msgstr ""
+msgstr "印刷可能な幅"
 
 #: etiketto/app.py:1185
 msgid "Lot number"
-msgstr ""
+msgstr "ロット番号"
 
 #: etiketto/app.py:1186
 msgid "Serial number"
-msgstr ""
+msgstr "シリアル番号"
 
 #: etiketto/app.py:1188
 msgid "Probably made"
-msgstr ""
+msgstr "推定製造時期"
 
 #: etiketto/app.py:1208 etiketto/app.py:1432
 msgid "Close"
-msgstr ""
+msgstr "閉じる"
 
 #: etiketto/app.py:1218
 msgid "The label is empty"
@@ -689,19 +689,19 @@ msgstr "色調"
 
 #: etiketto/app.py:1290
 msgid "Colour adjustment"
-msgstr ""
+msgstr "色の調整"
 
 #: etiketto/app.py:1293
 msgid "Reset"
-msgstr ""
+msgstr "リセット"
 
 #: etiketto/app.py:1314
 msgid "Not adjusted"
-msgstr ""
+msgstr "調整なし"
 
 #: etiketto/app.py:1314
 msgid "Adjusted"
-msgstr ""
+msgstr "調整済み"
 
 #: etiketto/app.py:1326
 msgid "Print label"
@@ -709,7 +709,7 @@ msgstr "ラベルを印刷"
 
 #: etiketto/app.py:1360
 msgid "No printer yet – search for one or enter its address"
-msgstr ""
+msgstr "プリンターがありません。検索するかアドレスを入力してください"
 
 #: etiketto/app.py:1365
 msgid "Printing…"
@@ -717,7 +717,7 @@ msgstr "印刷中…"
 
 #: etiketto/app.py:1375
 msgid "The label cannot be prepared for printing."
-msgstr ""
+msgstr "ラベルを印刷用に準備できません。"
 
 #: etiketto/app.py:1389
 #, python-format
@@ -729,7 +729,7 @@ msgstr "印刷中 %(n)d/%(total)d…"
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
-msgstr ""
+msgstr "このプリンターでは色調「%(wanted)s」を使えないため、「%(used)s」で印刷しました"
 
 #: etiketto/app.py:1420
 msgid "Printed"
@@ -737,11 +737,11 @@ msgstr "印刷しました"
 
 #: etiketto/app.py:1427
 msgid "Printing failed"
-msgstr ""
+msgstr "印刷に失敗しました"
 
 #: etiketto/app.py:1428
 msgid "Details"
-msgstr ""
+msgstr "詳細"
 
 #: etiketto/app.py:1431 etiketto/app.py:1660
 msgid "Report"
@@ -758,7 +758,7 @@ msgstr "画像"
 #: etiketto/app.py:1481
 #, python-format
 msgid "Cannot open %s"
-msgstr ""
+msgstr "%s を開けません"
 
 #: etiketto/app.py:1484
 msgid "Open label"
@@ -792,7 +792,7 @@ msgstr "テンプレートはまだありません。「テンプレートとし
 #: etiketto/app.py:1606
 #, python-format
 msgid "Cannot open template %(name)s"
-msgstr ""
+msgstr "テンプレート %(name)s を開けません"
 
 #: etiketto/app.py:1629
 msgid "Discard changes?"
@@ -812,11 +812,11 @@ msgstr "印刷が終わるまでお待ちください"
 
 #: etiketto/app.py:1700
 msgid "The browser cannot be opened"
-msgstr ""
+msgstr "ブラウザーを開けません"
 
 #: etiketto/app.py:1701
 msgid "Copy link"
-msgstr ""
+msgstr "リンクをコピー"
 
 #: etiketto/app.py:1739
 msgid "Only local files can be dropped"
