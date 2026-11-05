@@ -1,0 +1,59 @@
+# Copies a Forgejo release to GitHub (GitHub is a push mirror of
+# https://git.joshuahirsig.xyz/joshii/etiketto).
+#
+# Runs when a tag v* arrives through the mirror, waits for the Forgejo release
+# and its assets, and creates the same release here with the built-in,
+# repository-scoped GITHUB_TOKEN; no long-lived token is involved. Nothing from
+# the repository is checked out or executed.
+#
+# Forgejo also reads .github/workflows, hence the server_url guard.
+
+name: Mirror release from Forgejo
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/etiketto
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Copy the release
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$'; then
+            echo "::error::not a release tag: $TAG"; exit 1
+          fi
+          # wait for the Forgejo release and its assets (built there, up to 20 minutes)
+          for i in $(seq 120); do
+            if release="$(curl -sS --fail "$FORGEJO_API/releases/tags/$TAG")" &&
+               [ "$(jq '.assets | length' <<<"$release")" -gt 0 ]; then
+              break
+            fi
+            [ "$i" = 120 ] && { echo "::error::no Forgejo release for $TAG"; exit 1; }
+            sleep 10
+          done
+          mkdir assets
+          jq -r '.assets[] | [.name, .browser_download_url] | @tsv' <<<"$release" |
+          while IFS=$'\t' read -r name url; do
+            case "$name" in */*|..*) echo "::error::odd asset name"; exit 1 ;; esac
+            curl -sS --fail -L -o "assets/$name" "$url"
+          done
+          jq -r '.body' <<<"$release" > notes.md
+          title="$(jq -r '.name' <<<"$release")"
+          pre=(); [ "$(jq -r '.prerelease' <<<"$release")" = true ] && pre=(--prerelease)
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" assets/* --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" assets/* -R "$GITHUB_REPOSITORY" \
+              --title "$title" --notes-file notes.md --verify-tag "${pre[@]}"
+          fi
