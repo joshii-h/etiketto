@@ -18,6 +18,23 @@ $PY/xenon --max-absolute C --max-modules A --max-average A etiketto
 echo "== dependencies"; $PY/pip-audit --progress-spinner off .
 echo "== translations"
 for po in po/*.po; do msgfmt --check -o /dev/null "$po"; done
+# every string translated, nothing fuzzy; ALLOW_UNTRANSLATED=1 skips this
+# locally (e.g. before a translation round), the CI always checks it
+if [ "${ALLOW_UNTRANSLATED:-0}" = 1 ]; then
+  echo "(completeness skipped: ALLOW_UNTRANSLATED=1)"
+else
+  incomplete=0
+  for po in po/*.po; do
+    stats="$(msgfmt --statistics -o /dev/null "$po" 2>&1)"
+    case "$stats" in
+      *untranslated*|*fuzzy*) echo "$po: $stats"; incomplete=1 ;;
+    esac
+  done
+  if [ "$incomplete" = 1 ]; then
+    echo "Untranslated strings (ALLOW_UNTRANSLATED=1 skips this check locally)."
+    exit 1
+  fi
+fi
 echo "== metadata"
 appstreamcli validate --no-net data/*.metainfo.xml
 desktop-file-validate data/*.desktop

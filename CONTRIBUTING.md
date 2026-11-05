@@ -5,14 +5,22 @@ documentation and testing with other cassettes or printers.
 
 ## Where
 
-The main repository is on Forgejo:
-<https://git.joshuahirsig.xyz/joshii/etiketto>. Open issues and pull requests
-there.
+Issues and pull requests are welcome on **GitHub**
+(<https://github.com/joshii-h/etiketto>); you do not need a Forgejo account.
+The main repository is on Forgejo
+(<https://git.joshuahirsig.xyz/joshii/etiketto>); if you have an account
+there, contribute there directly.
 
-The GitHub repository (`joshii-h/etiketto`) is a read-only mirror that is
-overwritten on every push, so pull requests cannot be merged there. If you
-cannot use Forgejo, open an issue or pull request on GitHub anyway and a
-maintainer will carry it over, keeping you as the author.
+A bridge (`.github/workflows/bridge.yml`) copies GitHub pull requests and
+issues to Forgejo and comments the link on GitHub. Review and merge happen on
+Forgejo; your commits are kept, so GitHub then shows the pull request as
+merged. The discussion can stay on GitHub.
+
+- Pull requests that change CI workflow files or are based on an outdated
+  `main` are not copied: rebase onto the current `main`; workflow changes are
+  applied by a maintainer by hand.
+- CI for pull requests from contributors starts once a maintainer approves it
+  with the label `safe-to-test`.
 
 ## Review and merging
 
@@ -58,7 +66,9 @@ uv pip install --python .venv/bin/python -e . pytest pytest-cov ruff
 
 Run `tools/check.sh`: it runs the same checks as the CI (formatting, lint,
 tests with coverage, mypy, bandit, complexity, translations, metadata).
-In detail:
+It also requires every string to be translated; `ALLOW_UNTRANSLATED=1
+tools/check.sh` skips that locally, the CI does not. If you cannot translate
+new strings, say so in the pull request and a maintainer helps. In detail:
 
 ```sh
 .venv/bin/ruff format .
@@ -77,8 +87,15 @@ In detail:
 ## Adding a printer
 
 Etiketto talks to printers through backends in `etiketto/backends/`. A new
-continuous-tape (or die-cut) label printer is one new module there; the
-interface adapts to what the printer can do.
+**network** printer with **continuous tape** is one new module there; the
+interface adapts to what the printer can do (tape widths, modes, cutter,
+colour, length limits).
+
+Not supported yet: printers connected by USB or Bluetooth (the interface
+asks for a host name or IP address) and die-cut labels of a fixed size
+(`continuous=False` only hides the length settings; the interface has no
+way to choose a label size). Both need extensions of the interface first;
+please open an issue before you start.
 
 1. Create `etiketto/backends/<name>.py` with a subclass of
    `etiketto.backends.base.Backend`:
@@ -95,7 +112,10 @@ interface adapts to what the printer can do.
            cut_modes=("full",),  # empty: the printer has no cutter
            reports_remaining=False,
            supports_color_adjust=False,
-           continuous=True,  # False for die-cut labels
+           continuous=True,  # endless tape (see above)
+           data_formats=("jpeg",),  # the first one is the default
+           min_length_mm=0,  # shorter labels are extended
+           max_length_mm=None,  # longer labels are refused
        )
 
        def discover(self, timeout=3.0): ...  # -> list[FoundPrinter]
@@ -113,12 +133,17 @@ interface adapts to what the printer can do.
    - `print_label` gets the image from `prepare()`: the label rendered in
      label space (x along the tape) at `raster()`'s resolution, already
      dithered for mono printers. Rotate and encode it the way the printer
-     wants. Report each copy and printer stage through `progress(Progress(...))`.
+     wants. Check `max_length_mm` with `check_length()` before sending.
+     Report each copy and printer stage through `progress(Progress(...))`.
+     Return a `PrintResult` if something differed from the request (e.g.
+     another mode was used), else `None`.
    - Override `raster()` if the printer needs a different resolution, the
      exact tape height in pixels or background beyond the tape edges (bleed),
      and `configured_host()` if there is a CLI configuration to read.
    - `modes(info)` returns the modes the connected printer reports
      (`PrinterInfo.modes`), falling back to `capabilities.modes`.
+   - Override `preview(image, mode)` if a mode changes the result (the
+     VC-500W shows black and white as grey).
 
 2. Register it in `etiketto/backends/__init__.py` (`_load()`), or ship it as
    a separate package with an entry point in the group `etiketto.backends`

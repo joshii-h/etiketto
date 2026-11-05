@@ -6,8 +6,12 @@
 # Branches github/pr-* come from GitHub pull requests (see
 # .github/workflows/bridge.yml) and contain code nobody has reviewed yet. CI
 # only runs them once a maintainer has added the label `safe-to-test`; the
-# bridge removes the label again when new commits arrive. Until then the job
-# `result` fails, so the pull request cannot be merged untested.
+# bridge removes the label again when new commits arrive. Pull requests from
+# forks on Forgejo itself keep the label (their token cannot remove it), so a
+# label never counts for a `synchronize` event: after new commits the
+# maintainer reviews them, then removes and adds `safe-to-test` again. Until
+# then the job `result` fails, so the pull request cannot be merged untested.
+# (Forgejo reports the action as "synchronized", GitHub as "synchronize".)
 
 name: CI
 
@@ -35,13 +39,15 @@ defaults:
 jobs:
   test:
     # push to main, pull requests from branches of this repository (not forks),
-    # and reviewed GitHub pull requests
+    # and reviewed pull requests from GitHub or forks (not on new commits)
     if: >-
       github.event_name == 'push'
       || (github.event_name == 'pull_request'
           && github.event.pull_request.head.repo.full_name == github.repository
           && !startsWith(github.event.pull_request.head.ref, 'github/pr-'))
-      || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+      || (contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+          && github.event.action != 'synchronize'
+          && github.event.action != 'synchronized')
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -89,6 +95,19 @@ jobs:
             echo "$po"; msgfmt --check --statistics -o /dev/null "$po"
           done
 
+      - name: Translations complete
+        working-directory: src
+        # every string translated, nothing fuzzy (tools/check.sh: same check)
+        run: |
+          fail=0
+          for po in po/*.po; do
+            stats="$(msgfmt --statistics -o /dev/null "$po" 2>&1)"
+            case "$stats" in
+              *untranslated*|*fuzzy*) echo "::error::$po: $stats"; fail=1 ;;
+            esac
+          done
+          exit "$fail"
+
       - name: AppStream metadata
         working-directory: src
         run: appstreamcli validate --no-net --explain data/*.metainfo.xml
@@ -104,7 +123,9 @@ jobs:
       || (github.event_name == 'pull_request'
           && github.event.pull_request.head.repo.full_name == github.repository
           && !startsWith(github.event.pull_request.head.ref, 'github/pr-'))
-      || contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+      || (contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+          && github.event.action != 'synchronize'
+          && github.event.action != 'synchronized')
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -170,6 +191,6 @@ jobs:
           if [ "$TEST" = success ] && [ "$QUALITY" = success ]; then
             exit 0
           elif [ "$TEST" = skipped ]; then
-            echo "::error::Code from a GitHub pull request or a fork: CI runs once a maintainer has reviewed it and added the label 'safe-to-test'."
+            echo "::error::Code from a GitHub pull request or a fork: CI runs once a maintainer has reviewed it and added the label 'safe-to-test' (after new commits: remove the label and add it again)."
           fi
           exit 1

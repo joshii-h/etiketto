@@ -48,8 +48,8 @@ jobs:
             case "$name" in */*|..*) echo "::error::odd asset name"; exit 1 ;; esac
             curl -sS --fail -L -o "assets/$name" "$url"
           done
-          jq -r '.body' <<<"$release" > notes.md
-          title="$(jq -r '.name' <<<"$release")"
+          jq -r '.body // ""' <<<"$release" > notes.md
+          title="$(jq -r --arg tag "$TAG" '.name // "" | if . == "" then $tag else . end' <<<"$release")"
           pre=(); [ "$(jq -r '.prerelease' <<<"$release")" = true ] && pre=(--prerelease)
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             gh release upload "$TAG" assets/* --clobber -R "$GITHUB_REPOSITORY"

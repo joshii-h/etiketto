@@ -76,8 +76,8 @@ jobs:
           }
           branch="github/pr-$PR_NUMBER"
 
-          # closed on GitHub without being merged there: close the Forgejo copy
-          # and remove its branch (a merge on Forgejo shows up here as merged)
+          # closed on GitHub: without a merge close the Forgejo copy too (a merge
+          # on Forgejo shows up here as merged); either way remove its branch
           if [ "$ACTION" = closed ]; then
             if [ "$PR_MERGED" != true ]; then
               status=0
@@ -85,8 +85,8 @@ jobs:
               if [ "$status" -eq 0 ] && [ "$(jq -r .state <<<"$pr")" = open ]; then
                 api PATCH "/pulls/$(jq -r .number <<<"$pr")" '{"state":"closed"}' > /dev/null
               fi
-              api DELETE "/branches/$(jq -rn --arg b "$branch" '$b|@uri')" > /dev/null || true
             fi
+            api DELETE "/branches/$(jq -rn --arg b "$branch" '$b|@uri')" > /dev/null || true
             exit 0
           fi
 
@@ -180,4 +180,4 @@ jobs:
           link="$FORGEJO_URL/$FORGEJO_REPO/issues/$index"
           echo "Forgejo issue: $link"
           gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/comments" \
-            -f body="Thanks! This issue is tracked on Forgejo, the main repository: $link. Discussion continues there; this repository is a read-only mirror."$'\n\n'"$MARKER" > /dev/null
+            -f body="Thanks! This issue is tracked on Forgejo, the main repository: $link. You can keep discussing here; review and changes happen there."$'\n\n'"$MARKER" > /dev/null
