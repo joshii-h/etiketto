@@ -10,6 +10,21 @@ detected, the label grows with its content, and it prints over the network
 in the printer's own protocol, including the **vivid** colour mode and the
 **cut modes** that AirPrint does not offer.
 
+## Screenshots
+
+![Main window: QR code and text on a 50 mm label](docs/screenshots/main.png)
+
+| | |
+|---|---|
+| ![Full-colour label with a background image](docs/screenshots/colour.png) | ![Square sticker with an image and border](docs/screenshots/sticker.png) |
+| Full colour: background image printed edge to edge | Sticker: fixed 50 × 50 mm, image and border |
+| ![Editing a text element](docs/screenshots/expand.png) | ![Print dialog with cut and colour mode](docs/screenshots/print.png) |
+| Text with any font, colour and size | Copies, cut mode, vivid or normal colours |
+| ![German interface, 12 mm cable label](docs/screenshots/cable-de.png) | |
+| German interface (also French, Italian), 12 mm cable label | |
+
+The labels shown are in [`docs/examples`](docs/examples); open them with Etiketto.
+
 ## Features
 
 - Cassette detection (9, 12, 19, 25, 50 mm) and remaining tape

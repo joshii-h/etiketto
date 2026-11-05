@@ -1093,9 +1093,37 @@ class App(Adw.Application):
     def do_activate(self):
         window = self.get_active_window() or Window(self)
         window.present()
-        shot = GLib.getenv("ETIKETTO_SCREENSHOT")  # development aid
-        if shot:
-            GLib.timeout_add(2500, self._screenshot, window, shot)
+        self._maybe_screenshot(window)
+
+    def _maybe_screenshot(self, window):
+        """Development aid for README screenshots:
+        ETIKETTO_SCREENSHOT=out.png [ETIKETTO_SCREENSHOT_STATE=expand|print]"""
+        shot = GLib.getenv("ETIKETTO_SCREENSHOT")
+        if not shot:
+            return
+        state = GLib.getenv("ETIKETTO_SCREENSHOT_STATE") or ""
+
+        def prepare():
+            if state == "expand":
+                window._expand_index = len(window.label.elements) - 1
+                window.rebuild_sidebar()
+
+                def scroll_down():
+                    child = window.sidebar.get_first_child()
+                    while child and not isinstance(child, Gtk.ScrolledWindow):
+                        child = child.get_first_child()
+                    if child:
+                        adj = child.get_vadjustment()
+                        adj.set_value(adj.get_upper())
+                    return False
+
+                GLib.timeout_add(500, scroll_down)
+            elif state == "print":
+                window._print_dialog()
+            return False
+
+        GLib.timeout_add(1500, prepare)
+        GLib.timeout_add(3000, self._screenshot, window, shot)
 
     def _screenshot(self, window, path):
         paintable = Gtk.WidgetPaintable.new(window)
@@ -1115,6 +1143,7 @@ class App(Adw.Application):
             path = Path(files[0].get_path())
             window._confirm_discard(lambda: window.open_file(path))
         window.present()
+        self._maybe_screenshot(window)
 
     def on_about(self, *_args):
         Adw.AboutDialog(

@@ -1,0 +1,25 @@
+{
+ "tape_mm": 12,
+ "auto_length": true,
+ "length_mm": 60.0,
+ "margin_mm": 2.0,
+ "edge_mm": 0.0,
+ "align": "center",
+ "background": "#e3f2fd",
+ "background_image": null,
+ "border_mm": 0.0,
+ "border_color": "#000000",
+ "elements": [
+  {
+   "text": "LAN 3 · Büro",
+   "font": "Sans",
+   "bold": true,
+   "italic": false,
+   "size_pt": 0.0,
+   "color": "#0d47a1",
+   "align": "left",
+   "kind": "text"
+  }
+ ],
+ "version": 1
+}
