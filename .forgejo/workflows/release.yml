@@ -60,7 +60,10 @@ jobs:
       - name: Get the code
         run: |
           set -euo pipefail
-          case "$TAG" in v[0-9]*) ;; *) echo "::error::not a release tag: $TAG"; exit 1 ;; esac
+          # strict: the tag is used in URLs and API paths
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$'; then
+            echo "::error::not a release tag: $TAG"; exit 1
+          fi
           git clone -q "$REPO_URL" src
           cd src
           if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then

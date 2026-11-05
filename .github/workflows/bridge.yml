@@ -19,7 +19,7 @@ name: Bridge to Forgejo
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
     branches: [main]
   issues:
     types: [opened]
@@ -54,6 +54,7 @@ jobs:
       PR_URL: ${{ github.event.pull_request.html_url }}
       PR_AUTHOR: ${{ github.event.pull_request.user.login }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_MERGED: ${{ github.event.pull_request.merged }}
     steps:
       - name: Carry the pull request over to Forgejo
         run: |
@@ -75,6 +76,20 @@ jobs:
           }
           branch="github/pr-$PR_NUMBER"
 
+          # closed on GitHub without being merged there: close the Forgejo copy
+          # and remove its branch (a merge on Forgejo shows up here as merged)
+          if [ "$ACTION" = closed ]; then
+            if [ "$PR_MERGED" != true ]; then
+              status=0
+              pr="$(api GET "/pulls/main/$(jq -rn --arg b "$branch" '$b|@uri')")" || status=$?
+              if [ "$status" -eq 0 ] && [ "$(jq -r .state <<<"$pr")" = open ]; then
+                api PATCH "/pulls/$(jq -r .number <<<"$pr")" '{"state":"closed"}' > /dev/null
+              fi
+              api DELETE "/branches/$(jq -rn --arg b "$branch" '$b|@uri')" > /dev/null || true
+            fi
+            exit 0
+          fi
+
           # fetch only, into a bare repository: nothing from the PR is checked out or run
           git init --quiet --bare pr.git
           git -C pr.git fetch --quiet --no-tags "$FORGEJO_URL/$FORGEJO_REPO.git" "+refs/heads/main:refs/base/main"
@@ -84,12 +99,16 @@ jobs:
             exit 0
           fi
 
-          # Forgejo runs the workflows of the pushed branch: refuse workflow changes
+          # Forgejo runs the workflows of the pushed branch: they must be exactly
+          # the ones on the current main (also catches an old base whose CI
+          # still lacks the safe-to-test gate), and the PR must not change them
           if ! base="$(git -C pr.git merge-base refs/base/main "$HEAD_SHA")" ||
              ! git -C pr.git diff --quiet "$base" "$HEAD_SHA" -- \
+               .forgejo/workflows .gitea/workflows .github/workflows ||
+             ! git -C pr.git diff --quiet refs/base/main "$HEAD_SHA" -- \
                .forgejo/workflows .gitea/workflows .github/workflows; then
-            echo "::warning::Pull request changes CI workflows (or has no common history), not carried over."
-            comment_once refused "This pull request changes CI workflow files (or does not share history with \`main\`), so it is not carried over to Forgejo automatically. A maintainer will take a look and carry it over by hand."
+            echo "::warning::Pull request changes CI workflows, is based on an outdated main, or has no common history; not carried over."
+            comment_once refused "This pull request changes CI workflow files or is based on an older \`main\` whose CI files differ, so it is not carried over to Forgejo automatically. Please rebase on the current \`main\`; otherwise a maintainer will carry it over by hand."
             exit 0
           fi
 

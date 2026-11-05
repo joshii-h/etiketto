@@ -1,5 +1,6 @@
 #!/bin/sh
-# Run the same checks as the Forgejo CI, locally. Exit code != 0 on failure.
+# Run the same checks as the Forgejo CI (.forgejo/workflows/ci.yml), locally.
+# Keep both in sync. Exit code != 0 on failure.
 set -eu
 cd "$(dirname "$0")/.."
 PY=.venv/bin
@@ -7,7 +8,10 @@ echo "== ruff";      $PY/ruff format --check . && $PY/ruff check .
 echo "== tests";     $PY/python -m pytest -q --cov=etiketto --cov-report=term
 echo "== mypy";      $PY/mypy
 echo "== bandit";    $PY/bandit -q -c pyproject.toml -r etiketto -ll
-echo "== complexity"; $PY/xenon --max-absolute D --max-modules B --max-average A etiketto
+echo "== complexity"
+$PY/radon cc -s -n C etiketto
+$PY/xenon --max-absolute D --max-modules A --max-average A etiketto
+echo "== dependencies"; $PY/pip-audit --progress-spinner off .
 echo "== translations"
 for po in po/*.po; do msgfmt --check -o /dev/null "$po"; done
 echo "== metadata"
