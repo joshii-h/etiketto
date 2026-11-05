@@ -42,7 +42,7 @@ env:
 jobs:
   pull-request:
     if: github.server_url == 'https://github.com' && github.event_name == 'pull_request_target'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     env:
       FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
 
   issue:
     if: github.server_url == 'https://github.com' && github.event_name == 'issues'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     env:
       FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
