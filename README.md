@@ -125,9 +125,11 @@ Translations: `xgettext` (see CONTRIBUTING.md) → `po/etiketto.pot`, strings in
 
 ## Contributing
 
-Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests
-go to the [Forgejo repository](https://git.joshuahirsig.xyz/joshii/etiketto);
-GitHub is a mirror.
+Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Issues and
+pull requests on [GitHub](https://github.com/joshii-h/etiketto) are welcome,
+no Forgejo account needed: they are carried over automatically to the
+[Forgejo repository](https://git.joshuahirsig.xyz/joshii/etiketto), where
+review and merge happen.
 
 ## Credits
 

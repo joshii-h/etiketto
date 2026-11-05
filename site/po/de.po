@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 15:02+0100\n"
+"POT-Creation-Date: 2026-11-05 15:24+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -25,16 +25,32 @@ msgstr "Mitmachen"
 #. type: Plain text
 #: docs/contribute.md
 msgid ""
-"Code, bug reports, translations and tests with other cassettes are welcome.  "
-"Issues and pull requests go to [Forgejo](https://git.joshuahirsig.xyz/joshii/"
-"etiketto); GitHub is a mirror.  Details: [CONTRIBUTING.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+"Code, bug reports, translations and tests with other cassettes are welcome."
 msgstr ""
 "Code, Fehlermeldungen, Übersetzungen und Tests mit anderen Kassetten sind "
-"willkommen. Issues und Pull-Requests gehören auf [Forgejo](https://"
-"git.joshuahirsig.xyz/joshii/etiketto); GitHub ist ein Spiegel. Details: "
-"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/"
-"main/CONTRIBUTING.md)."
+"willkommen."
+
+#. type: Plain text
+#: docs/contribute.md
+msgid ""
+"Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) "
+"are welcome, no Forgejo account needed. They are copied automatically to "
+"[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main "
+"repository, with a link on GitHub. Review and merge happen there; your "
+"commits are kept, so GitHub shows the pull request as merged. The discussion "
+"can stay on GitHub.  With a Forgejo account you can contribute there "
+"directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/"
+"etiketto/src/branch/main/CONTRIBUTING.md)."
+msgstr ""
+"Issues und Pull-Requests auf [GitHub](https://github.com/joshii-h/etiketto) "
+"sind willkommen, ein Forgejo-Konto braucht es nicht. Sie werden automatisch "
+"nach [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), dem "
+"Hauptrepository, übertragen, mit einem Link auf GitHub. Review und Merge "
+"finden dort statt; die Commits bleiben erhalten, darum zeigt GitHub den Pull-"
+"Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit "
+"einem Forgejo-Konto geht es auch direkt dort. Details: [CONTRIBUTING.md]"
+"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/"
+"CONTRIBUTING.md)."
 
 #. type: Bullet: '- '
 #: docs/contribute.md
@@ -285,13 +301,13 @@ msgstr ""
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"If Etiketto finds the printer but cannot print, enable \"Port 9100\" in the "
-"web interface (`https://` and the printer's address). Firmware updates are "
-"also done there."
+"Later, the web interface is at `https://` and the printer's address: "
+"\"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it "
+"by hand), \"AirPrint Options\" sets name, location and firmware updates."
 msgstr ""
-"Findet Etiketto den Drucker, kann aber nicht drucken: in der Weboberfläche "
-"(`https://` und die Adresse des Druckers) „Port 9100“ aktivieren. Dort gibt "
-"es auch Firmware-Updates."
+"Später ist die Weboberfläche unter `https://` und der Adresse des Druckers "
+"erreichbar: „Network Wi-Fi Setup“ wechselt das Netz (oder „click here“ für "
+"die Eingabe von Hand), „AirPrint Options“ für Name, Ort und Firmware-Updates."
 
 #. type: Title ##
 #: docs/printer.md
@@ -360,10 +376,10 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "[[ui:Printer not reachable]]: check the address, the printer may have a new "
-"IP. Enable Port 9100 in the web interface."
+"IP. Switch the printer off and on again."
 msgstr ""
 "[[ui:Printer not reachable]]: Adresse prüfen, der Drucker hat vielleicht "
-"eine neue IP. Port 9100 in der Weboberfläche aktivieren."
+"eine neue IP. Den Drucker aus- und wieder einschalten."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -420,10 +436,21 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "Pale colours, yellow tint: old paper (see the cassette's age), or "
-"[[ui:Normal]] instead of [[ui:Vivid]]."
+"[[ui:Normal]] instead of [[ui:Vivid]]. With old cassettes try "
+"[[ui:Brightness]] −1 to −3 under [[ui:Colour adjustment]]."
 msgstr ""
 "Blasse Farben, Gelbstich: altes Papier (Alter der Kassette prüfen) oder "
-"[[ui:Normal]] statt [[ui:Vivid]]."
+"[[ui:Normal]] statt [[ui:Vivid]]. Bei alten Kassetten [[ui:Brightness]] −1 "
+"bis −3 unter [[ui:Colour adjustment]] versuchen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Background barely visible: ZINK hardly prints very light pastel shades, "
+"choose a medium shade."
+msgstr ""
+"Hintergrund kaum sichtbar: Sehr helle Pastelltöne druckt ZINK kaum, besser "
+"mittlere Töne wählen."
 
 #. type: Bullet: '- '
 #: docs/printer.md

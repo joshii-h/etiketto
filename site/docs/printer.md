@@ -11,9 +11,9 @@ once:
    Color Label Editor app.
 4. Choose your network and enter the password. Only 2.4 GHz, WPA or open.
 
-If Etiketto finds the printer but cannot print, enable "Port 9100" in the
-web interface (`https://` and the printer's address). Firmware updates are
-also done there.
+Later, the web interface is at `https://` and the printer's address:
+"Network Wi-Fi Setup" changes the network (or "click here" to enter it by
+hand), "AirPrint Options" sets name, location and firmware updates.
 
 ## Cassettes
 
@@ -38,7 +38,7 @@ Do it when stripes appear, or every 20 to 30 labels.
 - [[ui:No printer found]]: printer on and in the same network? Avahi
   running? Otherwise enter the address under [[ui:Host name or IP address]].
 - [[ui:Printer not reachable]]: check the address, the printer may have a new
-  IP. Enable Port 9100 in the web interface.
+  IP. Switch the printer off and on again.
 - [[ui:Wrong cassette]]: the label was designed for another width. Change
   [[ui:Tape width]] or the cassette.
 - [[ui:No cassette inserted]] or cassette not recognised: reinsert the
@@ -50,7 +50,10 @@ Do it when stripes appear, or every 20 to 30 labels.
 - Swipe the panel to cut: the label was printed without cut, swipe across the
   panel.
 - Pale colours, yellow tint: old paper (see the cassette's age), or
-  [[ui:Normal]] instead of [[ui:Vivid]].
+  [[ui:Normal]] instead of [[ui:Vivid]]. With old cassettes try
+  [[ui:Brightness]] −1 to −3 under [[ui:Colour adjustment]].
+- Background barely visible: ZINK hardly prints very light pastel shades,
+  choose a medium shade.
 - Stripes: clean with the CK-1000.
 - Content cut off at the edge or askew: increase the [[ui:Safety margin]],
   insert the cassette straight.

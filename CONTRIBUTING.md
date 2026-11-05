@@ -29,7 +29,8 @@ merged. The discussion can stay on GitHub.
 - A pull request needs **at least one approving review from a maintainer**
   before it can be merged. Maintainers are listed in `CODEOWNERS` and are
   requested automatically. Currently that is @joshii.
-- Maintainers merge; please do not merge your own pull request.
+- Maintainers merge on Forgejo, also pull requests that came from GitHub
+  (see above); please do not merge your own pull request.
 - Keep a pull request to one topic. Unrelated fixes go into their own pull
   request, even when they are small.
 - Review comments are part of the process, not a judgement. Please answer or

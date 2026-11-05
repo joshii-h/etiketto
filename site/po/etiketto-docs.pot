@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 15:02+0100\n"
+"POT-Creation-Date: 2026-11-05 15:24+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,13 @@ msgstr ""
 #. type: Plain text
 #: docs/contribute.md
 #, markdown-text
-msgid "Code, bug reports, translations and tests with other cassettes are welcome.  Issues and pull requests go to [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto); GitHub is a mirror.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+msgid "Code, bug reports, translations and tests with other cassettes are welcome."
+msgstr ""
+
+#. type: Plain text
+#: docs/contribute.md
+#, markdown-text
+msgid "Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) are welcome, no Forgejo account needed. They are copied automatically to [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main repository, with a link on GitHub. Review and merge happen there; your commits are kept, so GitHub shows the pull request as merged. The discussion can stay on GitHub.  With a Forgejo account you can contribute there directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -235,7 +241,7 @@ msgstr ""
 #. type: Plain text
 #: docs/printer.md
 #, markdown-text
-msgid "If Etiketto finds the printer but cannot print, enable \"Port 9100\" in the web interface (`https://` and the printer's address). Firmware updates are also done there."
+msgid "Later, the web interface is at `https://` and the printer's address: \"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it by hand), \"AirPrint Options\" sets name, location and firmware updates."
 msgstr ""
 
 #. type: Title ##
@@ -284,7 +290,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Enable Port 9100 in the web interface."
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -332,7 +338,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "Pale colours, yellow tint: old paper (see the cassette's age), or [[ui:Normal]] instead of [[ui:Vivid]]."
+msgid "Pale colours, yellow tint: old paper (see the cassette's age), or [[ui:Normal]] instead of [[ui:Vivid]]. With old cassettes try [[ui:Brightness]] −1 to −3 under [[ui:Colour adjustment]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Background barely visible: ZINK hardly prints very light pastel shades, choose a medium shade."
 msgstr ""
 
 #. type: Bullet: '- '

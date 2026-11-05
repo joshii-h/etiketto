@@ -1,8 +1,13 @@
 # Contribute
 
 Code, bug reports, translations and tests with other cassettes are welcome.
-Issues and pull requests go to
-[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto); GitHub is a mirror.
+
+Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) are
+welcome, no Forgejo account needed. They are copied automatically to
+[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main repository,
+with a link on GitHub. Review and merge happen there; your commits are kept,
+so GitHub shows the pull request as merged. The discussion can stay on GitHub.
+With a Forgejo account you can contribute there directly.
 Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md).
 
 - **App translations**: `tools/strings_<lang>.py`, see CONTRIBUTING.
