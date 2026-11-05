@@ -1,0 +1,24 @@
+{#-
+  Language selector that stays on the same page: every language has the
+  same pages under /<lang>/, so the current page path is appended.
+-#}
+{%- set path = page.url if page and page.url and "404" not in page.url else "" -%}
+<div class="md-header__option">
+  <div class="md-select">
+    {% set icon = config.theme.icon.alternate or "material/translate" %}
+    <button class="md-header__button md-icon" aria-label="{{ lang.t('select.language') }}">
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        {% for alt in config.extra.alternate %}
+          <li class="md-select__item">
+            <a href="{{ alt.link ~ path }}" hreflang="{{ alt.lang }}" lang="{{ alt.lang }}" class="md-select__link">
+              {{ alt.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

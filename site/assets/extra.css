@@ -1,0 +1,15 @@
+/* Adwaita blue, as in the app icon */
+:root,
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #1c71d8;
+  --md-primary-fg-color--light: #3584e4;
+  --md-primary-fg-color--dark: #1a5fb4;
+  --md-accent-fg-color: #1c71d8;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #3584e4;
+  --md-primary-fg-color--light: #62a0ea;
+  --md-primary-fg-color--dark: #1c71d8;
+  --md-accent-fg-color: #78aeed;
+}

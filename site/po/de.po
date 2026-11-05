@@ -1,0 +1,620 @@
+# German translations for etiketto-docs package
+# Copyright (C) 2026 Etiketto contributors
+# This file is distributed under the same license as the etiketto-docs package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: etiketto-docs VERSION\n"
+"POT-Creation-Date: 2026-11-05 15:02+0100\n"
+"PO-Revision-Date: 2026-11-05 14:51+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. type: Title #
+#: docs/contribute.md
+#, no-wrap
+msgid "Contribute"
+msgstr "Mitmachen"
+
+#. type: Plain text
+#: docs/contribute.md
+msgid ""
+"Code, bug reports, translations and tests with other cassettes are welcome.  "
+"Issues and pull requests go to [Forgejo](https://git.joshuahirsig.xyz/joshii/"
+"etiketto); GitHub is a mirror.  Details: [CONTRIBUTING.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+msgstr ""
+"Code, Fehlermeldungen, Übersetzungen und Tests mit anderen Kassetten sind "
+"willkommen. Issues und Pull-Requests gehören auf [Forgejo](https://"
+"git.joshuahirsig.xyz/joshii/etiketto); GitHub ist ein Spiegel. Details: "
+"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/"
+"main/CONTRIBUTING.md)."
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+msgid "**App translations**: `tools/strings_<lang>.py`, see CONTRIBUTING."
+msgstr "**App-Übersetzungen**: `tools/strings_<lang>.py`, siehe CONTRIBUTING."
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+msgid ""
+"**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).  Names "
+"of buttons and settings come from the app translation automatically."
+msgstr ""
+"**Diese Dokumentation**: `site/po/<lang>.po`, siehe [site/README.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md). Namen "
+"von Knöpfen und Einstellungen kommen automatisch aus der App-Übersetzung."
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+msgid ""
+"**Other printers**: printing goes through a backend interface; a new printer "
+"is a new backend. The VC-500W protocol is described in [docs/protocol.md]"
+"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/"
+"protocol.md)."
+msgstr ""
+"**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein "
+"neuer Drucker ist ein neues Backend. Das Protokoll des VC-500W steht in "
+"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/"
+"main/docs/protocol.md)."
+
+#. type: Title #
+#: docs/index.md
+#, no-wrap
+msgid "Etiketto"
+msgstr "Etiketto"
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
+"Etiketto designs and prints colour labels on the Brother VC-500W (ZINK "
+"paper)  under Linux, the counterpart to Brother's Color Label Editor."
+msgstr ""
+"Etiketto gestaltet und druckt Farbetiketten auf dem Brother VC-500W (ZINK-"
+"Papier) unter Linux – das Gegenstück zu Brothers Color Label Editor."
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
+"![Main window](media/main.png#only-light)  ![Main window](media/main-"
+"dark.png#only-dark)"
+msgstr ""
+"![Hauptfenster](media/main.png#only-light)  ![Hauptfenster](media/main-"
+"dark.png#only-dark)"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid "Text, images, QR codes and barcodes; backgrounds printed edge to edge"
+msgstr "Text, Bilder, QR-Codes und Barcodes; Hintergründe randlos gedruckt"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid "Preview at print resolution: what you see is what is printed"
+msgstr "Vorschau in Druckauflösung: Gedruckt wird, was zu sehen ist"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid "Cassette detection, vivid colours and cut modes over the network"
+msgstr "Kassettenerkennung, kräftige Farben und Schnittarten über das Netzwerk"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid "26 languages, follows the light or dark mode of the desktop"
+msgstr "26 Sprachen, folgt dem hellen oder dunklen Modus des Desktops"
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
+"Printers: Brother VC-500W. Further printers can be added as a backend, see "
+"[Contribute](contribute.md)."
+msgstr ""
+"Drucker: Brother VC-500W. Weitere Drucker lassen sich als Backend ergänzen, "
+"siehe [Mitmachen](contribute.md)."
+
+#. type: Title ##
+#: docs/index.md
+#, no-wrap
+msgid "Install"
+msgstr "Installation"
+
+#. type: Title ###
+#: docs/index.md
+#, no-wrap
+msgid "Flatpak"
+msgstr "Flatpak"
+
+#. type: Plain text
+#: docs/index.md
+msgid "Flathub is in preparation. Until then, build it yourself:"
+msgstr "Flathub ist in Vorbereitung. Bis dahin selbst bauen:"
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51\n"
+"flatpak-builder --user --install --force-clean build-dir \\\n"
+"    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/index.md
+#, no-wrap
+msgid "install.sh"
+msgstr "install.sh"
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
+"Install the system packages, then run the script as your user (no root):"
+msgstr ""
+"Systempakete installieren, dann das Skript als normaler Benutzer ausführen "
+"(ohne root):"
+
+#. type: Plain text
+#: docs/index.md
+#, no-wrap
+msgid ""
+"| Distribution | Packages |\n"
+"|---|---|\n"
+"| Debian, Ubuntu | `python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-gi-cairo python3-venv gettext` |\n"
+"| Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |\n"
+"| Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |\n"
+"| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |\n"
+msgstr ""
+"| Distribution | Pakete |\n"
+"|---|---|\n"
+"| Debian, Ubuntu | `python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-gi-cairo python3-venv gettext` |\n"
+"| Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |\n"
+"| Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |\n"
+"| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |\n"
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"./install.sh\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
+"Uninstall: `./install.sh --uninstall` or `flatpak uninstall "
+"xyz.joshuahirsig.Etiketto`.  Saved labels and templates are kept."
+msgstr ""
+"Deinstallieren: `./install.sh --uninstall` oder `flatpak uninstall "
+"xyz.joshuahirsig.Etiketto`. Gespeicherte Etiketten und Vorlagen bleiben "
+"erhalten."
+
+#. type: Title ##
+#: docs/index.md
+#, no-wrap
+msgid "First label"
+msgstr "Erstes Etikett"
+
+#. type: Bullet: '1. '
+#: docs/index.md
+msgid ""
+"Switch the printer on. Etiketto finds it in the network (Bonjour) and "
+"detects the inserted cassette."
+msgstr ""
+"Drucker einschalten. Etiketto findet ihn im Netzwerk (Bonjour) und erkennt "
+"die eingelegte Kassette."
+
+#. type: Bullet: '2. '
+#: docs/index.md
+msgid ""
+"Not found? Enter the address under [[ui:Host name or IP address]], e.g.  "
+"`VC-500W1234.local` or `192.168.1.50`. New printer: set up its Wi-Fi first, "
+"see [Printer](printer.md#wifi)."
+msgstr ""
+"Nicht gefunden? Die Adresse unter [[ui:Host name or IP address]] eintragen, "
+"z. B. `VC-500W1234.local` oder `192.168.1.50`. Neuer Drucker: zuerst das "
+"WLAN einrichten, siehe [Drucker](printer.md#wifi)."
+
+#. type: Bullet: '3. '
+#: docs/index.md
+msgid "[[ui:Add]] text, an image or a code, then [[ui:Print]]."
+msgstr "Text, Bild oder Code über [[ui:Add]] einfügen, dann [[ui:Print]]."
+
+#. type: Bullet: '4. '
+#: docs/index.md
+msgid ""
+"[[ui:Save]] stores the label as `.etiketto` file, [[ui:Save as template…]] "
+"adds it to [[ui:Templates]]."
+msgstr ""
+"[[ui:Save]] legt das Etikett als `.etiketto`-Datei ab, [[ui:Save as "
+"template…]] nimmt es in die [[ui:Templates]] auf."
+
+#. type: Title #
+#: docs/printer.md
+#, no-wrap
+msgid "Printer and troubleshooting"
+msgstr "Drucker und Fehlerbehebung"
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Wi-Fi setup { #wifi }"
+msgstr "WLAN einrichten { #wifi }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto does not set up Wi-Fi. Use a phone or the printer's web interface "
+"once:"
+msgstr ""
+"Etiketto richtet kein WLAN ein. Einmalig per Smartphone oder Weboberfläche "
+"des Druckers:"
+
+#. type: Bullet: '1. '
+#: docs/printer.md
+msgid "Hold the Wi-Fi button until it turns from blue to white."
+msgstr "WLAN-Taste gedrückt halten, bis sie von blau auf weiss wechselt."
+
+#. type: Bullet: '2. '
+#: docs/printer.md
+msgid "Connect phone or computer to the open network \"Brother VC-500W…\"."
+msgstr ""
+"Smartphone oder Computer mit dem offenen Netz „Brother VC-500W…“ verbinden."
+
+#. type: Bullet: '3. '
+#: docs/printer.md
+msgid ""
+"Open `https://192.168.0.1` (accept the certificate warning) or Brother's "
+"Color Label Editor app."
+msgstr ""
+"`https://192.168.0.1` öffnen (Zertifikatswarnung bestätigen) oder Brothers "
+"App Color Label Editor."
+
+#. type: Bullet: '4. '
+#: docs/printer.md
+msgid "Choose your network and enter the password. Only 2.4 GHz, WPA or open."
+msgstr ""
+"Eigenes Netz wählen und Passwort eingeben. Nur 2,4 GHz, WPA oder offen."
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"If Etiketto finds the printer but cannot print, enable \"Port 9100\" in the "
+"web interface (`https://` and the printer's address). Firmware updates are "
+"also done there."
+msgstr ""
+"Findet Etiketto den Drucker, kann aber nicht drucken: in der Weboberfläche "
+"(`https://` und die Adresse des Druckers) „Port 9100“ aktivieren. Dort gibt "
+"es auch Firmware-Updates."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Cassettes"
+msgstr "Kassetten"
+
+#. type: Plain text
+#: docs/printer.md
+#, no-wrap
+msgid ""
+"| Cassette | Width |\n"
+"|---|---|\n"
+"| CZ-1001 | 9 mm (3/8″) |\n"
+"| CZ-1002 | 12 mm (1/2″) |\n"
+"| CZ-1003 | 19 mm (3/4″) |\n"
+"| CZ-1004 | 25 mm (1″) |\n"
+"| CZ-1005 | 50 mm (2″) |\n"
+msgstr ""
+"| Kassette | Breite |\n"
+"|---|---|\n"
+"| CZ-1001 | 9 mm (3/8″) |\n"
+"| CZ-1002 | 12 mm (1/2″) |\n"
+"| CZ-1003 | 19 mm (3/4″) |\n"
+"| CZ-1004 | 25 mm (1″) |\n"
+"| CZ-1005 | 50 mm (2″) |\n"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto shows the inserted cassette, remaining tape, printable width, lot "
+"number and the presumed production date. ZINK paper ages: old paper prints "
+"paler and yellowish, Etiketto warns about old cassettes. Store cassettes "
+"cool and dry."
+msgstr ""
+"Etiketto zeigt die eingelegte Kassette, das restliche Band, die bedruckbare "
+"Breite, die Chargennummer und das vermutete Herstellungsdatum. ZINK-Papier "
+"altert: Altes Papier druckt blasser und gelblich, Etiketto warnt vor alten "
+"Kassetten. Kassetten kühl und trocken lagern."
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.  "
+"Do it when stripes appear, or every 20 to 30 labels."
+msgstr ""
+"Reinigung: Reinigungskassette CK-1000 einlegen, die Reinigung startet von "
+"selbst. Bei Streifen oder alle 20 bis 30 Etiketten."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Problems"
+msgstr "Probleme"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:No printer found]]: printer on and in the same network? Avahi running? "
+"Otherwise enter the address under [[ui:Host name or IP address]]."
+msgstr ""
+"[[ui:No printer found]]: Drucker an und im selben Netzwerk? Läuft Avahi? "
+"Sonst die Adresse unter [[ui:Host name or IP address]] eintragen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Printer not reachable]]: check the address, the printer may have a new "
+"IP. Enable Port 9100 in the web interface."
+msgstr ""
+"[[ui:Printer not reachable]]: Adresse prüfen, der Drucker hat vielleicht "
+"eine neue IP. Port 9100 in der Weboberfläche aktivieren."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Wrong cassette]]: the label was designed for another width. Change "
+"[[ui:Tape width]] or the cassette."
+msgstr ""
+"[[ui:Wrong cassette]]: Das Etikett ist für eine andere Breite gestaltet. "
+"[[ui:Tape width]] oder die Kassette wechseln."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:No cassette inserted]] or cassette not recognised: reinsert the "
+"cassette until it clicks."
+msgstr ""
+"[[ui:No cassette inserted]] oder Kassette nicht erkannt: Kassette neu "
+"einlegen, bis sie einrastet."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "No paper: the cassette is empty, replace it."
+msgstr "Kein Papier: Die Kassette ist leer, eine neue einlegen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Paper jam: open the cover, remove the jammed label, reinsert the cassette."
+msgstr ""
+"Papierstau: Deckel öffnen, das gestaute Etikett entfernen, Kassette neu "
+"einlegen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Cover open: close the cover."
+msgstr "Deckel offen: Deckel schliessen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Warming up, cooling down, cleaning: wait, printing continues by itself."
+msgstr ""
+"Aufwärmen, Abkühlen, Reinigung: warten, der Druck geht von selbst weiter."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Swipe the panel to cut: the label was printed without cut, swipe across the "
+"panel."
+msgstr ""
+"Panel wischen zum Schneiden: Das Etikett wurde ohne Schnitt gedruckt, über "
+"das Panel wischen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Pale colours, yellow tint: old paper (see the cassette's age), or "
+"[[ui:Normal]] instead of [[ui:Vivid]]."
+msgstr ""
+"Blasse Farben, Gelbstich: altes Papier (Alter der Kassette prüfen) oder "
+"[[ui:Normal]] statt [[ui:Vivid]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Stripes: clean with the CK-1000."
+msgstr "Streifen: mit der CK-1000 reinigen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Content cut off at the edge or askew: increase the [[ui:Safety margin]], "
+"insert the cassette straight."
+msgstr ""
+"Inhalt am Rand abgeschnitten oder schief: [[ui:Safety margin]] erhöhen, "
+"Kassette gerade einlegen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:content scaled down to fit]]: the fixed length is too short. Make it "
+"longer or use [[ui:Automatic length]]."
+msgstr ""
+"[[ui:content scaled down to fit]]: Die feste Länge ist zu kurz. Länger "
+"machen oder [[ui:Automatic length]] verwenden."
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Something else? [[ui:Report a problem…]] in the main menu (also offered with "
+"error messages) opens a prefilled issue in the browser with version, system "
+"and printer. You see everything before sending it."
+msgstr ""
+"Etwas anderes? [[ui:Report a problem…]] im Hauptmenü (auch bei "
+"Fehlermeldungen angeboten) öffnet im Browser ein vorausgefülltes Issue mit "
+"Version, System und Drucker. Vor dem Absenden ist alles sichtbar."
+
+#. type: Title #
+#: docs/use.md
+#, no-wrap
+msgid "Design and print"
+msgstr "Gestalten und drucken"
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Content"
+msgstr "Inhalt"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Elements are placed one after another along the tape. Order them with "
+"[[ui:Move up]] and [[ui:Move down]]."
+msgstr ""
+"Elemente stehen nacheinander entlang des Bandes. Reihenfolge mit [[ui:Move "
+"up]] und [[ui:Move down]]."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"![Editing a text element](media/expand.png#only-light)  ![Editing a text "
+"element](media/expand-dark.png#only-dark)"
+msgstr ""
+"![Textelement bearbeiten](media/expand.png#only-light)  ![Textelement "
+"bearbeiten](media/expand-dark.png#only-dark)"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the "
+"tape height, otherwise fixed in pt."
+msgstr ""
+"**Text**: jede installierte Schrift, Farbe, mehrere Zeilen. [[ui:Size]] 0 "
+"füllt die Bandhöhe, sonst fest in pt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "**Image**: photos and graphics; drag and drop works too."
+msgstr "**Bild**: Fotos und Grafiken; Ziehen und Ablegen geht auch."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "**Code**: QR code, Code 128 or EAN-13."
+msgstr "**Code**: QR-Code, Code 128 oder EAN-13."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Label"
+msgstr "Etikett"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Automatic length]]: the label is as long as its content. Off: fixed "
+"[[ui:Length]], content aligned and scaled down if needed."
+msgstr ""
+"[[ui:Automatic length]]: Das Etikett ist so lang wie sein Inhalt. Aus: feste "
+"[[ui:Length]], Inhalt ausgerichtet und bei Bedarf verkleinert."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Spacing]]: space at the ends and between elements."
+msgstr "[[ui:Spacing]]: Platz an den Enden und zwischen Elementen."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Edge spacing]]: extra space along the tape edges."
+msgstr "[[ui:Edge spacing]]: zusätzlicher Platz an den Bandkanten."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Background colour]], [[ui:Background image]]: printed edge to edge."
+msgstr "[[ui:Background colour]], [[ui:Background image]]: randlos gedruckt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin."
+msgstr ""
+"[[ui:Border]]: Breite, 0 = keiner; immer innerhalb des Sicherheitsabstands."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Units]]: millimetres or inches, by default from the system language."
+msgstr "[[ui:Units]]: Millimeter oder Zoll, standardmässig nach Systemsprache."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border "
+"keep this distance from the tape edges. The printer loses about 0.5 mm per "
+"side, and long labels can run up to 1 mm askew. If text is cut off at the "
+"edge, increase it."
+msgstr ""
+"[[ui:Safety margin]] (Druckereinstellung, Standard 1,5 mm): Inhalt und "
+"Rahmen halten diesen Abstand zu den Bandkanten. Der Drucker verliert etwa "
+"0,5 mm pro Seite, lange Etiketten laufen bis zu 1 mm schief. Wird Text am "
+"Rand abgeschnitten, den Wert erhöhen."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Print"
+msgstr "Drucken"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"![Print dialog](media/print.png#only-light)  ![Print dialog](media/print-"
+"dark.png#only-dark)"
+msgstr ""
+"![Druckdialog](media/print.png#only-light)  ![Druckdialog](media/print-"
+"dark.png#only-dark)"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Copies]]: number of labels."
+msgstr "[[ui:Copies]]: Anzahl Etiketten."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts "
+"through the label, the backing holds them together. [[ui:No cut]]: the "
+"printer waits, swipe its panel to cut."
+msgstr ""
+"[[ui:Cut]]: [[ui:Full cut]] trennt die Etiketten. [[ui:Half cut]] schneidet "
+"durch das Etikett, das Trägerpapier hält sie zusammen. [[ui:No cut]]: Der "
+"Drucker wartet, zum Schneiden über sein Panel wischen."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] "
+"(Brother: Standard) for softer ones, black and white (400 lpi) for text and "
+"codes."
+msgstr ""
+"[[ui:Colours]]: [[ui:Vivid]] für die stärksten Farben, [[ui:Normal]] (bei "
+"Brother: Standard) für sanftere, Schwarzweiss (400 lpi) für Text und Codes."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Colour correction: brightness and colour balance (red, green, blue), for "
+"this print only, not stored in the printer."
+msgstr ""
+"Farbkorrektur: Helligkeit und Farbbalance (Rot, Grün, Blau), nur für diesen "
+"Druck, nicht im Drucker gespeichert."
+
+#. type: Plain text
+#: docs/use.md
+msgid "[[ui:Export PNG…]] saves the label as image."
+msgstr "[[ui:Export PNG…]] speichert das Etikett als Bild."

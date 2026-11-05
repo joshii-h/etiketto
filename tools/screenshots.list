@@ -1,0 +1,17 @@
+# Screenshots, read by tools/screenshots.sh (locally and in the docs workflow).
+# Every image is taken light and dark: <name>.png and <name>-dark.png.
+#
+# name      example file from docs/examples, without .etiketto
+# state     ETIKETTO_SCREENSHOT_STATE: - (main window), expand, print
+# targets   readme      README and Flathub, English: docs/screenshots/
+#           readme:LL   README in language LL: docs/screenshots/
+#           docs        user documentation, every documentation language:
+#                       site/build/screenshots/<lang>/ (not committed)
+#
+# name      example   state    targets
+main        spice     -        readme docs
+expand      spice     expand   readme docs
+print       spice     print    readme docs
+colour      party     -        readme
+sticker     sticker   -        readme
+cable-de    cable     -        readme:de

@@ -1,0 +1,2 @@
+# Python packages for building the documentation (site/build.py)
+zensical==0.0.74
