@@ -1,0 +1,514 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: etiketto\n"
+"PO-Revision-Date: 2026-11-05 13:56+0100\n"
+"Last-Translator: Etiketto contributors\n"
+"Language-Team: hi\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: etiketto/app.py:55
+msgid "Full cut"
+msgstr "पूरा कट"
+
+#: etiketto/app.py:55
+msgid "Half cut"
+msgstr "आधा कट"
+
+#: etiketto/app.py:55
+msgid "No cut"
+msgstr "कट नहीं"
+
+#: etiketto/app.py:56
+msgid "Vivid"
+msgstr "चटक"
+
+#: etiketto/app.py:56
+msgid "Normal"
+msgstr "सामान्य"
+
+#: etiketto/app.py:57
+msgid "Start"
+msgstr "शुरू"
+
+#: etiketto/app.py:57 etiketto/app.py:58
+msgid "Centre"
+msgstr "मध्य"
+
+#: etiketto/app.py:57
+msgid "End"
+msgstr "अंत"
+
+#: etiketto/app.py:58
+msgid "Left"
+msgstr "बायाँ"
+
+#: etiketto/app.py:58
+msgid "Right"
+msgstr "दायाँ"
+
+#: etiketto/app.py:59
+msgid "QR code"
+msgstr "QR कोड"
+
+#: etiketto/app.py:133
+msgid "Only local files can be used"
+msgstr "केवल स्थानीय फ़ाइलें इस्तेमाल की जा सकती हैं"
+
+#: etiketto/app.py:139
+#, python-format
+msgid "Not an image: %s"
+msgstr "छवि नहीं है: %s"
+
+#: etiketto/app.py:145 etiketto/app.py:480 etiketto/app.py:1168
+msgid "Text"
+msgstr "पाठ"
+
+#: etiketto/app.py:147
+msgid "Image"
+msgstr "छवि"
+
+#: etiketto/app.py:167 etiketto/app.py:391 etiketto/app.py:1098
+msgid "Label"
+msgstr "लेबल"
+
+#: etiketto/app.py:202
+msgid "Open"
+msgstr "खोलें"
+
+#: etiketto/app.py:209
+msgid "Templates"
+msgstr "टेम्पलेट"
+
+#: etiketto/app.py:215
+msgid "Save"
+msgstr "सहेजें"
+
+#: etiketto/app.py:220
+msgid "New label"
+msgstr "नया लेबल"
+
+#: etiketto/app.py:221
+msgid "Save as…"
+msgstr "ऐसे सहेजें…"
+
+#: etiketto/app.py:222 etiketto/app.py:1013
+msgid "Save as template…"
+msgstr "टेम्पलेट के रूप में सहेजें…"
+
+#: etiketto/app.py:223
+msgid "Export PNG…"
+msgstr "PNG में निर्यात करें…"
+
+#: etiketto/app.py:224
+msgid "Report a problem…"
+msgstr "समस्या की रिपोर्ट करें…"
+
+#: etiketto/app.py:225
+msgid "About Etiketto"
+msgstr "Etiketto के बारे में"
+
+#: etiketto/app.py:228 etiketto/app.py:887 etiketto/app.py:931
+msgid "Print"
+msgstr "प्रिंट करें"
+
+#: etiketto/app.py:266
+msgid "Fit to window"
+msgstr "विंडो में फ़िट करें"
+
+#: etiketto/app.py:270
+msgid "Zoom out"
+msgstr "छोटा करें"
+
+#: etiketto/app.py:273
+msgid "Zoom in"
+msgstr "बड़ा करें"
+
+#: etiketto/app.py:300
+msgid "Printer"
+msgstr "प्रिंटर"
+
+#: etiketto/app.py:301 etiketto/app.py:836
+msgid "Searching…"
+msgstr "खोजा जा रहा है…"
+
+#: etiketto/app.py:303
+msgid "Refresh"
+msgstr "ताज़ा करें"
+
+#: etiketto/app.py:309
+msgid "Search for printers"
+msgstr "प्रिंटर खोजें"
+
+#: etiketto/app.py:318
+msgid "Host name or IP address"
+msgstr "होस्ट नाम या IP पता"
+
+#: etiketto/app.py:326
+msgid "Safety margin"
+msgstr "सुरक्षा हाशिया"
+
+#: etiketto/app.py:333
+#, python-format
+msgid ""
+"%(unit)s kept free for content and border; the background is printed edge to "
+"edge"
+msgstr "सामग्री और बॉर्डर के लिए खाली जगह (%(unit)s); पृष्ठभूमि किनारे तक प्रिंट होती है"
+
+#: etiketto/app.py:338 etiketto/app.py:344
+msgid "Millimetres"
+msgstr "मिलीमीटर"
+
+#: etiketto/app.py:338 etiketto/app.py:345
+msgid "Inches"
+msgstr "इंच"
+
+#: etiketto/app.py:341
+msgid "Units"
+msgstr "इकाइयाँ"
+
+#: etiketto/app.py:343
+#, python-format
+msgid "Automatic (%s)"
+msgstr "स्वचालित (%s)"
+
+#: etiketto/app.py:395
+msgid "Tape width"
+msgstr "टेप की चौड़ाई"
+
+#: etiketto/app.py:399
+msgid "Automatic length"
+msgstr "स्वचालित लंबाई"
+
+#: etiketto/app.py:399
+msgid "As long as the content"
+msgstr "सामग्री जितनी लंबी"
+
+#: etiketto/app.py:404
+msgid "Length"
+msgstr "लंबाई"
+
+#: etiketto/app.py:406
+msgid "Alignment"
+msgstr "संरेखण"
+
+#: etiketto/app.py:421
+msgid "Spacing"
+msgstr "अंतराल"
+
+#: etiketto/app.py:427
+#, python-format
+msgid "%(unit)s at the ends and between elements"
+msgstr "सिरों पर और तत्वों के बीच (%(unit)s)"
+
+#: etiketto/app.py:432
+msgid "Edge spacing"
+msgstr "किनारे का अंतराल"
+
+#: etiketto/app.py:438
+#, python-format
+msgid "extra %(unit)s along the tape edges"
+msgstr "टेप के किनारों पर अतिरिक्त जगह (%(unit)s)"
+
+#: etiketto/app.py:442
+msgid "Background colour"
+msgstr "पृष्ठभूमि का रंग"
+
+#: etiketto/app.py:446
+msgid "Background image"
+msgstr "पृष्ठभूमि छवि"
+
+#: etiketto/app.py:447 etiketto/app.py:590
+msgid "None"
+msgstr "कोई नहीं"
+
+#: etiketto/app.py:448 etiketto/app.py:949
+msgid "Choose image"
+msgstr "छवि चुनें"
+
+#: etiketto/app.py:454 etiketto/app.py:509
+msgid "Remove"
+msgstr "हटाएँ"
+
+#: etiketto/app.py:462
+msgid "Border"
+msgstr "बॉर्डर"
+
+#: etiketto/app.py:468
+#, python-format
+msgid "%(unit)s, 0 = none"
+msgstr "%(unit)s, 0 = कोई नहीं"
+
+#: etiketto/app.py:476
+msgid "Content"
+msgstr "सामग्री"
+
+#: etiketto/app.py:477
+msgid "Elements are placed one after another along the tape"
+msgstr "तत्व टेप पर एक के बाद एक रखे जाते हैं"
+
+#: etiketto/app.py:481
+msgid "Image…"
+msgstr "छवि…"
+
+#: etiketto/app.py:482
+msgid "QR code / barcode"
+msgstr "QR कोड / बारकोड"
+
+#: etiketto/app.py:484
+msgid "Add"
+msgstr "जोड़ें"
+
+#: etiketto/app.py:491
+msgid "No content yet"
+msgstr "अभी कोई सामग्री नहीं"
+
+#: etiketto/app.py:491
+msgid "Add text, an image or a code"
+msgstr "पाठ, छवि या कोड जोड़ें"
+
+#: etiketto/app.py:515
+msgid "Move down"
+msgstr "पीछे ले जाएँ"
+
+#: etiketto/app.py:516
+msgid "Move up"
+msgstr "आगे ले जाएँ"
+
+#: etiketto/app.py:550
+msgid "Font"
+msgstr "फ़ॉन्ट"
+
+#: etiketto/app.py:572
+msgid "Size"
+msgstr "आकार"
+
+#: etiketto/app.py:579
+msgid "pt, 0 = fill tape height"
+msgstr "pt, 0 = टेप की पूरी ऊँचाई"
+
+#: etiketto/app.py:585
+msgid "Line alignment"
+msgstr "पंक्ति संरेखण"
+
+#: etiketto/app.py:590
+msgid "Image file"
+msgstr "छवि फ़ाइल"
+
+#: etiketto/app.py:591
+msgid "Choose…"
+msgstr "चुनें…"
+
+#: etiketto/app.py:607
+msgid "Type"
+msgstr "प्रकार"
+
+#: etiketto/app.py:610
+msgid "Content (link, text, number)"
+msgstr "सामग्री (लिंक, पाठ, संख्या)"
+
+#: etiketto/app.py:614
+msgid "Colour"
+msgstr "रंग"
+
+#: etiketto/app.py:665
+msgid "Unsaved label"
+msgstr "बिना सहेजा लेबल"
+
+#: etiketto/app.py:682 etiketto/app.py:694
+#, python-format
+msgid "Problem: %s"
+msgstr "समस्या: %s"
+
+#: etiketto/app.py:692
+msgid "content scaled down to fit"
+msgstr "फ़िट करने के लिए सामग्री छोटी की गई"
+
+#: etiketto/app.py:731
+msgid "Searching for printers…"
+msgstr "प्रिंटर खोजे जा रहे हैं…"
+
+#: etiketto/app.py:742
+msgid "No printer found"
+msgstr "कोई प्रिंटर नहीं मिला"
+
+#: etiketto/app.py:744
+msgid ""
+"Make sure the printer is switched on and in the same network, or enter its "
+"address below"
+msgstr "जाँचें कि प्रिंटर चालू है और उसी नेटवर्क में है, या नीचे उसका पता दर्ज करें"
+
+#: etiketto/app.py:750
+#, python-format
+msgid "Found %s"
+msgstr "%s मिला"
+
+#: etiketto/app.py:752
+msgid "Choose a printer"
+msgstr "प्रिंटर चुनें"
+
+#: etiketto/app.py:766 etiketto/app.py:860 etiketto/app.py:886
+#: etiketto/app.py:1109
+msgid "Cancel"
+msgstr "रद्द करें"
+
+#: etiketto/app.py:783
+msgid "Connecting…"
+msgstr "कनेक्ट हो रहा है…"
+
+#: etiketto/app.py:812
+msgid "Printer not reachable"
+msgstr "प्रिंटर तक पहुँच नहीं"
+
+#: etiketto/app.py:824
+#, python-format
+msgid "%s cassette"
+msgstr "%s कैसेट"
+
+#: etiketto/app.py:827
+#, python-format
+msgid "%(left)s of %(total)s left"
+msgstr "%(total)s में से %(left)s बाकी"
+
+#: etiketto/app.py:835
+msgid "No cassette inserted"
+msgstr "कोई कैसेट नहीं लगी है"
+
+#: etiketto/app.py:845
+msgid "The label is empty"
+msgstr "लेबल खाली है"
+
+#: etiketto/app.py:850
+msgid "Wrong cassette"
+msgstr "गलत कैसेट"
+
+#: etiketto/app.py:852
+#, python-format
+msgid ""
+"The label is designed for %(label)s tape, but a %(tape)s cassette is "
+"inserted. The printer would scale it to the tape."
+msgstr "लेबल %(label)s टेप के लिए बनाया गया है, लेकिन %(tape)s कैसेट लगी है। प्रिंटर इसे टेप के अनुसार छोटा-बड़ा कर देगा।"
+
+#: etiketto/app.py:861
+msgid "Print anyway"
+msgstr "फिर भी प्रिंट करें"
+
+#: etiketto/app.py:870
+msgid "Print label"
+msgstr "लेबल प्रिंट करें"
+
+#: etiketto/app.py:880
+msgid "Copies"
+msgstr "प्रतियाँ"
+
+#: etiketto/app.py:881
+msgid "Cut"
+msgstr "कट"
+
+#: etiketto/app.py:883
+msgid "Colours"
+msgstr "रंग"
+
+#: etiketto/app.py:904
+msgid "No printer configured"
+msgstr "कोई प्रिंटर सेट नहीं है"
+
+#: etiketto/app.py:909
+msgid "Printing…"
+msgstr "प्रिंट हो रहा है…"
+
+#: etiketto/app.py:914
+#, python-format
+msgid "Printing %(n)d/%(total)d…"
+msgstr "प्रिंट हो रहा है %(n)d/%(total)d…"
+
+#: etiketto/app.py:933
+#, python-format
+msgid "Printing failed: %s"
+msgstr "प्रिंट विफल: %s"
+
+#: etiketto/app.py:935
+msgid "Printed"
+msgstr "प्रिंट हो गया"
+
+#: etiketto/app.py:943
+msgid "Etiketto labels"
+msgstr "Etiketto लेबल"
+
+#: etiketto/app.py:951
+msgid "Images"
+msgstr "छवियाँ"
+
+#: etiketto/app.py:973
+#, python-format
+msgid "Cannot open %(name)s: %(error)s"
+msgstr "%(name)s नहीं खुल सका: %(error)s"
+
+#: etiketto/app.py:976
+msgid "Open label"
+msgstr "लेबल खोलें"
+
+#: etiketto/app.py:993
+msgid "Save label"
+msgstr "लेबल सहेजें"
+
+#: etiketto/app.py:994 etiketto/app.py:1015 etiketto/app.py:1046
+msgid "label"
+msgstr "लेबल"
+
+#: etiketto/app.py:1027 etiketto/app.py:1037 etiketto/app.py:1060
+#, python-format
+msgid "Cannot save: %s"
+msgstr "सहेजा नहीं जा सका: %s"
+
+#: etiketto/app.py:1029 etiketto/app.py:1042
+#, python-format
+msgid "Saved %s"
+msgstr "%s सहेजा गया"
+
+#: etiketto/app.py:1045
+msgid "Export PNG"
+msgstr "PNG में निर्यात करें"
+
+#: etiketto/app.py:1062
+msgid "Exported"
+msgstr "निर्यात किया गया"
+
+#: etiketto/app.py:1070
+msgid "No templates yet – use “Save as template…”"
+msgstr "अभी कोई टेम्पलेट नहीं – “टेम्पलेट के रूप में सहेजें…” इस्तेमाल करें"
+
+#: etiketto/app.py:1107
+msgid "Discard changes?"
+msgstr "बदलाव छोड़ें?"
+
+#: etiketto/app.py:1107
+msgid "The current label has unsaved changes."
+msgstr "मौजूदा लेबल में बिना सहेजे बदलाव हैं।"
+
+#: etiketto/app.py:1110
+msgid "Discard"
+msgstr "छोड़ें"
+
+#: etiketto/app.py:1117
+msgid "Please wait until printing has finished"
+msgstr "कृपया प्रिंटिंग पूरी होने तक प्रतीक्षा करें"
+
+#: etiketto/app.py:1137
+msgid "Report"
+msgstr "रिपोर्ट करें"
+
+#: etiketto/app.py:1192
+msgid "Only local files can be dropped"
+msgstr "केवल स्थानीय फ़ाइलें छोड़ी जा सकती हैं"
+
+#: etiketto/app.py:1311
+msgid "Label designer for the Brother VC-500W"
+msgstr "Brother VC-500W के लिए लेबल डिज़ाइनर"
+
+#: etiketto/app.py:1316
+msgid "translator-credits"
+msgstr "Etiketto contributors"
