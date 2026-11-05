@@ -161,8 +161,9 @@ def test_element_titles_and_icons():
     assert app.element_title(TextElement(text="")) == "Text"
     assert app.element_title(ImageElement(name="foto.png")) == "foto.png"
     assert app.element_title(ImageElement()) == "Image"
-    assert app.element_title(CodeElement(data="y" * 50)) == "QR code: " + "y" * 30
-    assert app.element_title(CodeElement(data="123", symbology="ean13")) == "EAN-13: 123"
+    # the code content is isolated so it stays intact inside right-to-left text
+    assert app.element_title(CodeElement(data="y" * 50)) == "QR code: \u2068" + "y" * 30 + "\u2069"
+    assert app.element_title(CodeElement(data="123", symbology="ean13")) == "EAN-13: \u2068123\u2069"
     assert app.element_icon(TextElement()) == "format-text-bold-symbolic"
     assert app.element_icon(ImageElement()) == "image-x-generic-symbolic"
     assert app.element_icon(CodeElement()) == "view-grid-symbolic"
@@ -298,7 +299,7 @@ def test_code_element_widgets(window):
     colour_row = one(window.sidebar, Adw.ActionRow, title="Colour")
     one(colour_row, Gtk.ColorDialogButton).set_rgba(app.hex_to_rgba("#0000ff"))
     assert element.color == "#0000ff"
-    assert find(window.sidebar, Adw.ExpanderRow)[1].get_title() == "Code 128: ABC"
+    assert find(window.sidebar, Adw.ExpanderRow)[1].get_title() == "Code 128: \u2068ABC\u2069"
 
 
 def test_image_element_widgets(window, file_dialog, tmp_path):
@@ -1059,3 +1060,18 @@ def test_about_dialog(application):
     assert dialog.get_application_name() == "Etiketto"
     assert dialog.get_version() == app.__version__
     assert dialog.get_license_type() == Gtk.License.AGPL_3_0
+
+
+def test_rtl_detection_follows_the_loaded_catalog():
+    class Catalog:
+        def __init__(self, language):
+            self._language = language
+
+        def info(self):
+            return {"language": self._language}
+
+    assert app.translation_is_rtl(Catalog("ar"))
+    assert app.translation_is_rtl(Catalog("he_IL"))
+    assert not app.translation_is_rtl(Catalog("de"))
+    assert not app.translation_is_rtl(Catalog(""))
+    assert not app.translation_is_rtl(object())  # NullTranslations without info()

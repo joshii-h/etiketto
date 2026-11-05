@@ -1,0 +1,137 @@
+# Brother VC-500W network protocol
+
+What Etiketto knows about the printer's native protocol. Sources: the
+reverse-engineering work of [m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/),
+queries against a VC-500W with firmware 2026031504, and an interoperability
+analysis of Brother's Android app "Color Label Editor 2" 1.1.6 (permitted
+for interoperability under Swiss URG Art. 21 / EU Directive 2009/24/EC
+Art. 6). This is our own description; no Brother code is included.
+
+Markers: **[confirmed]** seen on the device or unambiguous in the app,
+**[assumed]** likely but untested, **[open]** unknown.
+
+## Transport
+
+- TCP port 9100, UTF-8 XML. Brother's app opens a new connection per
+  operation (status queries included) with a 5 s connect timeout. [confirmed]
+- Every answer starts with
+  `<status><code>C</code><comment>…</comment>[<datasize>N</datasize>]</status>`;
+  read requests are followed by one separator byte and N bytes of payload.
+- `code`: 0 ready/OK, 1 busy (retry, up to 10 times), 2 temporary error,
+  3 permanent error (while printing with no `cassette_type`: no cassette),
+  4 other error. [confirmed]
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `<read><path>/config.xml</path></read>` | device and media information |
+| `<read><path>/status.xml</path></read>` | state, job stage, errors, remaining tape |
+| `<print>…</print>` + data | print one label |
+| `<write><path>P</path><datasize>N</datasize></write>` + N bytes | upload a file (two steps, wait for code 0 after each) |
+| `<lock>`, `<release>`, `<job_token>` | exist (m7i.org), unused by Brother's app [open] |
+
+`<write>` targets used by Brother's app: `/etc/ssidpass.txt`
+(`SSID\r\nPASSWORD\r\n`, Wi-Fi setup), `/dev/tmp/wificonfig.txt`
+(`infrastructure`), `/dev/tmp/<firmware file>`. Send the byte length as
+`datasize`, not the character count. There is **no command to change
+settings permanently**, and none for cleaning, calibration or reset.
+Writing to other paths is untested and may brick the device. [confirmed]
+
+## Printing
+
+```
+<print>
+<mode>vivid|color|bw</mode><speed>S</speed><lpi>L</lpi>
+<width>W</width><height>H</height>
+<dataformat>rawrgb|jpeg</dataformat><datasize>N</datasize>
+<cutmode>full|half|none|default</cutmode>
+<brightness>x</brightness>
+<color_balance_red>x</color_balance_red>
+<color_balance_green>x</color_balance_green>
+<color_balance_blue>x</color_balance_blue>
+[<autofit>1</autofit>]
+</print>
+```
+
+- `mode`/`speed`/`lpi` come as a triple from `media_mode` in config.xml:
+  `vivid 0 317`, `color 1 264` (Brother calls it "Standard"),
+  `bw 2 400` (supported by the firmware, not offered by Brother's app).
+- **Colour correction per job**: `brightness` and `color_balance_*` from
+  −0.5 to +0.5 (Brother's sliders: −3…+3 divided by 6), two decimals.
+  They are not stored in the printer. [confirmed]
+- `rawrgb` (what Brother's app always sends): 3 bytes per pixel, row by
+  row, no header; `datasize = W × H × 3`. `jpeg` with `autofit=1` and
+  `width/height = 0` also works (m7i.org, Etiketto ≤ 0.1). [confirmed]
+- Geometry for rawrgb: x across the tape, y along it.
+  `dpi = max(crossweb_dpi, lpi)`;
+  `W = tape inches × dpi + 2 × 0.02″ × dpi` (bleed) for 9–25 mm,
+  `2.0″ × dpi` for 50 mm; `H = length inches × lpi`; at most 17″.
+  Tape widths: 0.375, 0.5, 0.75, 1.0, 1.968504″. [confirmed]
+- Copies are separate jobs; Brother's app sends `half` for all but the
+  last one. Without auto cut the printer waits in stage `READY_FOR_CUT`
+  ("swipe the panel to cut"). [assumed]
+- No ICC profile or sharpening on the host side; send sRGB. [assumed]
+
+Brother's job flow: wait for `print_state=IDLE` and stage `SUCCESS` or
+`READY FOR PRINT` (poll every 500 ms), send the XML, answer within 5 s,
+send the data in 4 KiB blocks, answer within 30 s, then poll until done.
+
+## config.xml
+
+Device: `model_name` (`Wedge`), `serial_number`, `fw_version_number`
+(`YYYYMMDDnn`), `wlan0_mac_address`, `crossweb_dpi` (320), `user_speed`,
+`brightness`, `color_balance_red/green/blue`, `sharpness`, `autoexpose`,
+`idle_off_timeout` (minutes), `cutmode`, `kisscut_trim_lead`,
+`kisscut_trim_trail`, `fullcut_trim`, `tracking_width_offset`,
+`tab_length_mm`, `maxprintsize`, `media_mode` list.
+
+`media_features`:
+
+| Field | Meaning |
+|---|---|
+| `cassette_type` | `3/8`, `1/2`, `3/4`, `1`, `2` (inches) → 9, 12, 19, 25, 50 mm; empty = no cassette [confirmed] |
+| `width_inches` / `width_inches_media` | nominal / printable width (2.000 / 1.927 on 50 mm) |
+| `media_id` | first 9 characters = cassette lot number, as shown by Brother's app [confirmed] |
+| `cassette_sn` | e.g. `180529-0116G133390-0084`; the first part looks like a production date YYMMDD [assumed] |
+| `media_length_initial` | initial length in inches (197 = 5 m) |
+| `topcoat`, `adhesive`, `tape_lane_id` | e.g. `glossy`, `Permanent`, `Z`; not used by Brother's app [open] |
+
+Brother's app has no expiry or age warning.
+
+## status.xml
+
+| Field | Values |
+|---|---|
+| `print_state` | `NO_INIT`, `IDLE`, `BUSY`, `ERROR`, `POWEROFF`, `REBOOT` |
+| `print_job_stage` | `PREPARING PRINT`, `PRINTING`, `IDLE`, `READY FOR PRINT`, `PREHEATING`, `COOLDOWN`, `READY_FOR_CUT`, `SUCCESS`, `CLEANING` |
+| `print_job_error` | `NONE`, `NO MEDIA`, `JAM`, `EJECT JAM`, `DOOR OPEN`, `BAD CASSETTE`, `SEQUENCE ERROR` |
+| `remain` | remaining tape in inches |
+| `print_num`, `print_line` | counters / progress [assumed] |
+
+`IDLE` with stage `IDLE` means "no cassette" in Brother's app.
+
+## Discovery and Wi-Fi setup
+
+- mDNS service `_ipp._tcp`, name contains "vc-500w"; first IPv4 address,
+  port 9100. Display name: "Brother VC-500W " + last 4 serial digits.
+- Newer firmware has a web interface at `https://<ip>` where "Port 9100"
+  must be enabled; Brother's app links there if the port is closed.
+- Setup mode: hold the Wi-Fi button until it turns from blue to white; the
+  printer opens an open network "Brother VC-500W…" at 192.168.0.1:9100
+  (printing works there too). Write `/etc/ssidpass.txt` and
+  `/dev/tmp/wificonfig.txt`; the printer then joins the network (2.4 GHz,
+  WPA or open).
+
+## Firmware updates (description only)
+
+Version lists on `cdn.zinkapps.com` (`brother-secure-versions-v1.js` for
+firmware newer than 2025060100); files `brotherupgrade-<version>.tgz.gpg`
+are uploaded with `<write>` to `/dev/tmp/`. The printer's web interface
+offers the same update. Etiketto does not implement this.
+
+## Open questions
+
+Range accepted for brightness/colour balance beyond ±0.5; exact meaning of
+`topcoat`, `adhesive`, `tape_lane_id`, `cassette_sn`; `print_num` and
+`print_line`; `tape_length_remaining` vs. `remain`; what triggers cleaning.
