@@ -185,6 +185,9 @@ adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 
 ## Translations
 
+German uses Swiss spelling ("ss", not "ß") on purpose, for everyone. A
+separate `de_DE` with "ß" is welcome as its own catalog.
+
 Etiketto is translated into German (`de`), French (`fr`), Italian (`it`),
 Spanish (`es`), Portuguese (`pt`, Brazil: `pt_BR`), Dutch (`nl`), Swedish
 (`sv`), Finnish (`fi`), Estonian (`et`), Polish (`pl`), Hungarian (`hu`),
