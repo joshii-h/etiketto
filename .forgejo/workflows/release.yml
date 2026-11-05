@@ -126,12 +126,7 @@ jobs:
         working-directory: src
         run: |
           set -euo pipefail
-          # compiled translations go into the wheel (package-data)
-          for po in po/*.po; do
-            lang="$(basename "$po" .po)"
-            mkdir -p "etiketto/locale/$lang/LC_MESSAGES"
-            msgfmt --check -o "etiketto/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
-          done
+          # setup.py compiles the translations into the wheel (share/locale)
           python3 -m venv ../buildenv
           ../buildenv/bin/pip install -q build
           ../buildenv/bin/python -m build --outdir ../dist .

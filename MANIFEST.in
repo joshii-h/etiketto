@@ -1,0 +1,7 @@
+# sources the build needs when it starts from the sdist (see setup.py)
+include data/xyz.joshuahirsig.Etiketto.desktop
+include data/xyz.joshuahirsig.Etiketto.metainfo.xml
+include data/xyz.joshuahirsig.Etiketto.svg
+include data/xyz.joshuahirsig.Etiketto-symbolic.svg
+include data/xyz.joshuahirsig.Etiketto.xml
+include po/*.po

@@ -47,7 +47,7 @@ APP_ID = "xyz.joshuahirsig.Etiketto"
 
 
 def _locale_dir() -> Path:
-    """Translations: inside the package (pip, install.sh) or share/locale (Flatpak)."""
+    """Translations: <prefix>/share/locale (pip, install.sh, Flatpak) or a checkout's etiketto/locale."""
     for candidate in (
         Path(__file__).parent / "locale",
         Path(sys.prefix) / "share" / "locale",

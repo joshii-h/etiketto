@@ -25,9 +25,6 @@ etiketto = "etiketto.app:main"
 [tool.setuptools.packages.find]
 include = ["etiketto*"]
 
-[tool.setuptools.package-data]
-etiketto = ["locale/*/LC_MESSAGES/*.mo"]
-
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
 

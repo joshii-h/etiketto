@@ -108,19 +108,9 @@ modules:
   - name: etiketto
     buildsystem: simple
     build-commands:
+      # setup.py also installs desktop file, metainfo, icons, MIME type and translations
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         .
-      - install -Dm644 data/${FLATPAK_ID}.desktop -t ${FLATPAK_DEST}/share/applications
-      - install -Dm644 data/${FLATPAK_ID}.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
-      - install -Dm644 data/${FLATPAK_ID}.svg -t ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps
-      - install -Dm644 data/${FLATPAK_ID}-symbolic.svg -t ${FLATPAK_DEST}/share/icons/hicolor/symbolic/apps
-      - install -Dm644 data/${FLATPAK_ID}.xml -t ${FLATPAK_DEST}/share/mime/packages
-      - |
-        for po in po/*.po; do
-          lang="$(basename "$po" .po)"
-          install -d "${FLATPAK_DEST}/share/locale/$lang/LC_MESSAGES"
-          msgfmt --check-format -o "${FLATPAK_DEST}/share/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
-        done
     sources:
       # local checkout, for development builds
       - type: dir
@@ -132,6 +122,7 @@ modules:
           - build-dir
           - repo
           - etiketto/locale
+          - build
       # for Flathub, replace the dir source with the release tag:
       # - type: git
       #   url: https://git.joshuahirsig.xyz/joshii/etiketto.git

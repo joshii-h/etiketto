@@ -33,17 +33,13 @@ PYTHON="$(command -v python3)" || { echo "error: python3 not found" >&2; exit 1;
 }
 command -v msgfmt >/dev/null || { echo "error: msgfmt (gettext) not found" >&2; exit 1; }
 
-# translations
-for po in "$SRC"/po/*.po; do
-    lang="$(basename "$po" .po)"
-    mkdir -p "$SRC/etiketto/locale/$lang/LC_MESSAGES"
-    msgfmt -o "$SRC/etiketto/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
-done
-
 # private venv that can see the system's GTK bindings; build from a copy
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
-cp -r "$SRC/pyproject.toml" "$SRC/README.md" "$SRC/LICENSE" "$SRC/etiketto" "$BUILD/"
+# the build compiles the translations into the venv (setup.py)
+cp -r "$SRC/pyproject.toml" "$SRC/setup.py" "$SRC/MANIFEST.in" "$SRC/README.md" "$SRC/LICENSE" \
+    "$SRC/etiketto" "$SRC/data" "$SRC/po" "$BUILD/"
+rm -rf "$BUILD/etiketto/locale"  # left over from older install.sh versions
 if command -v uv >/dev/null; then
     # the system python3, which has the GTK bindings
     uv venv --quiet --allow-existing --system-site-packages --python "$PYTHON" "$VENV"
