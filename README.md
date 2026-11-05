@@ -78,6 +78,14 @@ Translations: `xgettext` → `po/zinklabel.pot`, strings in
 `tools/strings_<lang>.py`, `python3 tools/fill_po.py de fr it` writes the
 `.po` files; `install.sh` compiles them.
 
+## Credits
+
+The VC-500W protocol was reverse engineered by
+[m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/);
+zinklabel prints through its descendant
+[labelprinter](https://github.com/sgrimee/labelprinter-vc500w)
+(m7i.org → lenchan139 → sgrimee).
+
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
