@@ -90,7 +90,9 @@ uv pip install --python .venv/bin/python -e . pytest pytest-cov ruff
 
 ## Translations
 
-Etiketto is translated into German, French and Italian.
+Etiketto is translated into German, French, Italian, Spanish, Dutch,
+Swedish, Japanese and Chinese (Traditional: `zh_TW`, also built as
+`zh_HK` from the same strings; Simplified: `zh_CN`).
 
 - Wrap every user-facing string in `_()`. Use named placeholders
   (`%(width)d`) so translators can reorder them.
@@ -102,7 +104,7 @@ Etiketto is translated into German, French and Italian.
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run
-  `python3 tools/fill_po.py de fr it`. Missing strings are listed.
+  `python3 tools/fill_po.py de fr it es nl sv ja zh_TW zh_HK zh_CN`. Missing strings are listed.
 - New languages are welcome: add `tools/strings_<lang>.py`, the plural rule
   in `tools/fill_po.py`, and the language to the desktop and metainfo files.
 

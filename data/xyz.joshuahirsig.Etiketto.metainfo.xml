@@ -9,6 +9,13 @@
   <summary xml:lang="de">Farbetiketten gestalten und drucken</summary>
   <summary xml:lang="fr">Créer et imprimer des étiquettes</summary>
   <summary xml:lang="it">Crea e stampa etichette a colori</summary>
+  <summary xml:lang="es">Diseñe e imprima etiquetas en color</summary>
+  <summary xml:lang="nl">Kleurenetiketten maken en afdrukken</summary>
+  <summary xml:lang="sv">Designa och skriv ut färgetiketter</summary>
+  <summary xml:lang="ja">カラーラベルをデザインして印刷</summary>
+  <summary xml:lang="zh_TW">設計並列印彩色標籤</summary>
+  <summary xml:lang="zh_HK">設計並列印彩色標籤</summary>
+  <summary xml:lang="zh_CN">设计并打印彩色标签</summary>
 
   <developer id="xyz.joshuahirsig">
     <name>joshii-h</name>

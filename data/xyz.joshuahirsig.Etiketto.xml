@@ -5,6 +5,13 @@
     <comment xml:lang="de">Etiketto-Etikett</comment>
     <comment xml:lang="fr">Étiquette Etiketto</comment>
     <comment xml:lang="it">Etichetta Etiketto</comment>
+    <comment xml:lang="es">Etiqueta de Etiketto</comment>
+    <comment xml:lang="nl">Etiketto-etiket</comment>
+    <comment xml:lang="sv">Etiketto-etikett</comment>
+    <comment xml:lang="ja">Etiketto ラベル</comment>
+    <comment xml:lang="zh_TW">Etiketto 標籤</comment>
+    <comment xml:lang="zh_HK">Etiketto 標籤</comment>
+    <comment xml:lang="zh_CN">Etiketto 标签</comment>
     <sub-class-of type="application/json"/>
     <glob pattern="*.etiketto"/>
   </mime-type>
