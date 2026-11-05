@@ -53,11 +53,13 @@ mkdir -p "$BIN" "$DATA/applications" "$DATA/icons/hicolor/scalable/apps" \
     "$DATA/icons/hicolor/symbolic/apps" "$DATA/mime/packages" "$DATA/metainfo"
 ln -sf "$VENV/bin/etiketto" "$BIN/etiketto"
 # absolute Exec: ~/.local/bin is often not in the session PATH
-sed "s|^Exec=etiketto |Exec=$BIN/etiketto |" "$SRC/data/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
-cp "$SRC/data/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
-cp "$SRC/data/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
-cp "$SRC/data/$APP_ID.metainfo.xml" "$DATA/metainfo/"
-cp "$SRC/data/$APP_ID.xml" "$DATA/mime/packages/"
+# the package installed these into the venv; make them visible to the desktop
+SHARE="$VENV/share"
+sed "s|^Exec=etiketto |Exec=$BIN/etiketto |" "$SHARE/applications/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
+cp "$SHARE/icons/hicolor/scalable/apps/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
+cp "$SHARE/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
+cp "$SHARE/metainfo/$APP_ID.metainfo.xml" "$DATA/metainfo/"
+cp "$SHARE/mime/packages/$APP_ID.xml" "$DATA/mime/packages/"
 update-mime-database "$DATA/mime" 2>/dev/null || true
 update-desktop-database "$DATA/applications" 2>/dev/null || true
 gtk-update-icon-cache -q -t "$DATA/icons/hicolor" 2>/dev/null || true
