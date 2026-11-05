@@ -1,0 +1,201 @@
+# Publishes a release for a tag v* on Forgejo and mirrors it to GitHub.
+#
+# Notes come from the matching <release> in the AppStream metainfo, otherwise
+# from the tag annotation. Assets: sdist, wheel and SHA256SUMS. The tag must
+# match the version in pyproject.toml.
+#
+# Manual run (Actions -> Release -> Run workflow): `tag` picks an existing tag;
+# with `dry_run` (default) everything is built and printed, nothing published.
+# A dry run without that tag builds the selected branch instead.
+#
+# Secrets: GH_RELEASE_TOKEN (GitHub token with contents:write on
+# joshii-h/etiketto). Forgejo uses the automatic Actions token.
+# Re-runs are safe: existing releases are reused, existing assets skipped.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag, e.g. v0.1.0
+        required: true
+      dry_run:
+        description: Dry run (build only, publish nothing)
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+env:
+  FORGEJO_URL: https://git.joshuahirsig.xyz
+  REPO_URL: https://git.joshuahirsig.xyz/${{ github.repository }}.git
+  GITHUB_REPO: joshii-h/etiketto
+  DEBIAN_FRONTEND: noninteractive
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.dry_run) != 'false' }}
+    steps:
+      - name: Install system packages
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates git curl jq python3 python3-venv gettext > /dev/null
+
+      - name: Get the code
+        run: |
+          set -euo pipefail
+          case "$TAG" in v[0-9]*) ;; *) echo "::error::not a release tag: $TAG"; exit 1 ;; esac
+          git clone -q "$REPO_URL" src
+          cd src
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then
+            git checkout -q --detach "refs/tags/$TAG"
+          elif [ "$DRY_RUN" = true ]; then
+            echo "::warning::Tag $TAG does not exist, dry run builds ${GITHUB_SHA} instead"
+            git checkout -q --detach "$GITHUB_SHA"
+          else
+            echo "::error::Tag $TAG does not exist"; exit 1
+          fi
+          echo "SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          git log -1 --format='%h %s'
+
+      - name: Version and release notes
+        working-directory: src
+        run: |
+          set -euo pipefail
+          python3 - <<'EOF'
+          import os, pathlib, subprocess, sys, tomllib
+          import xml.etree.ElementTree as ET
+
+          tag = os.environ["TAG"]
+          version = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"]
+          if tag != f"v{version}":
+              msg = f"tag {tag} does not match the version {version} in pyproject.toml"
+              if os.environ["DRY_RUN"] != "true":
+                  sys.exit(f"::error::{msg}")
+              print(f"::warning::{msg}")
+
+          def text(el):
+              return " ".join("".join(el.itertext()).split())
+
+          notes = []
+          for path in pathlib.Path("data").glob("*.metainfo.xml"):
+              for rel in ET.parse(path).getroot().iterfind("releases/release"):
+                  if rel.get("version") != version:
+                      continue
+                  desc = rel.find("description")
+                  for el in desc if desc is not None else []:
+                      if el.tag == "p":
+                          notes.append(text(el))
+                      elif el.tag in ("ul", "ol"):
+                          notes.append("\n".join(f"- {text(li)}" for li in el.iterfind("li")))
+          if not notes:  # fall back to the tag annotation (empty for lightweight tags)
+              ann = subprocess.run(
+                  ["git", "for-each-ref", f"refs/tags/{tag}", "--format=%(contents)"],
+                  capture_output=True, text=True, check=True,
+              ).stdout.strip()
+              if ann:
+                  notes.append(ann)
+          body = "\n\n".join(notes) or f"Etiketto {version}"
+
+          pathlib.Path("../release-notes.md").write_text(body + "\n")
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              env.write(f"VERSION={version}\nTITLE=Etiketto {version}\n")
+              env.write(f"PRERELEASE={'true' if '-' in tag else 'false'}\n")
+          EOF
+          echo "--- release notes ---"; cat ../release-notes.md
+
+      - name: Build sdist and wheel
+        working-directory: src
+        run: |
+          set -euo pipefail
+          # compiled translations go into the wheel (package-data)
+          for po in po/*.po; do
+            lang="$(basename "$po" .po)"
+            mkdir -p "etiketto/locale/$lang/LC_MESSAGES"
+            msgfmt --check -o "etiketto/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
+          done
+          python3 -m venv ../buildenv
+          ../buildenv/bin/pip install -q build
+          ../buildenv/bin/python -m build --outdir ../dist .
+          # Later: a Flatpak bundle (etiketto-$VERSION.flatpak, built by
+          # flatpak-builder --repo + flatpak build-bundle) goes into ../dist as
+          # well; everything in ../dist is uploaded to both releases.
+          cd ../dist
+          sha256sum -- * > SHA256SUMS
+          ls -l; cat SHA256SUMS
+
+      - name: Publish on Forgejo
+        if: env.DRY_RUN != 'true'
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="$FORGEJO_URL/api/v1/repos/$GITHUB_REPOSITORY"
+          auth=(-H "Authorization: token $TOKEN")
+          if ! release="$(curl -sS --fail "${auth[@]}" "$api/releases/tags/$TAG")"; then
+            release="$(curl -sS --fail-with-body "${auth[@]}" -H "Content-Type: application/json" \
+              --data "$(jq -n --arg tag "$TAG" --arg name "$TITLE" --rawfile body release-notes.md \
+                --argjson pre "$PRERELEASE" '{tag_name: $tag, name: $name, body: $body, prerelease: $pre}')" \
+              "$api/releases")"
+          fi
+          id="$(jq -r .id <<<"$release")"
+          for f in dist/*; do
+            name="$(basename "$f")"
+            if jq -e --arg n "$name" 'any(.assets[]?; .name == $n)' <<<"$release" > /dev/null; then
+              echo "$name exists"; continue
+            fi
+            curl -sS --fail-with-body "${auth[@]}" -F "attachment=@$f" \
+              "$api/releases/$id/assets?name=$(jq -rn --arg n "$name" '$n|@uri')" > /dev/null
+            echo "$name uploaded"
+          done
+          echo "$FORGEJO_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
+
+      - name: Mirror the release to GitHub
+        if: env.DRY_RUN != 'true'
+        env:
+          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$GITHUB_REPO"
+          auth=(-H "Authorization: Bearer $GH_RELEASE_TOKEN" -H "Accept: application/vnd.github+json"
+                -H "X-GitHub-Api-Version: 2022-11-28")
+          # the push mirror brings the tag over; wait for it (up to 10 minutes)
+          for i in $(seq 60); do
+            curl -sS --fail -o /dev/null "${auth[@]}" "$api/git/ref/tags/$TAG" && break
+            [ "$i" = 60 ] && echo "::warning::tag $TAG not on GitHub yet, it is created at $SHA"
+            sleep 10
+          done
+          if ! release="$(curl -sS --fail "${auth[@]}" "$api/releases/tags/$TAG")"; then
+            release="$(curl -sS --fail-with-body "${auth[@]}" \
+              --data "$(jq -n --arg tag "$TAG" --arg sha "$SHA" --arg name "$TITLE" \
+                --rawfile body release-notes.md --argjson pre "$PRERELEASE" \
+                '{tag_name: $tag, target_commitish: $sha, name: $name, body: $body, prerelease: $pre}')" \
+              "$api/releases")"
+          fi
+          upload="$(jq -r '.upload_url | sub("\\{.*\\}$"; "")' <<<"$release")"
+          for f in dist/*; do
+            name="$(basename "$f")"
+            if jq -e --arg n "$name" 'any(.assets[]?; .name == $n)' <<<"$release" > /dev/null; then
+              echo "$name exists"; continue
+            fi
+            curl -sS --fail-with-body "${auth[@]}" -H "Content-Type: application/octet-stream" \
+              --data-binary "@$f" "$upload?name=$(jq -rn --arg n "$name" '$n|@uri')" > /dev/null
+            echo "$name uploaded"
+          done
+          jq -r .html_url <<<"$release"
