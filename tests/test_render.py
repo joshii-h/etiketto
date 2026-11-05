@@ -54,3 +54,36 @@ def test_print_orientation():
     out = print_image(rendered)
     assert out.width == rendered.image.height
     assert out.height == rendered.image.width
+
+
+def test_border_is_inset_from_the_edges():
+    rendered = render(
+        Label(tape_mm=25, border_mm=0.5, border_color="#ff0000", elements=[]), safe_mm=1.5
+    )
+    img = rendered.image
+    inset = mm_to_px(1.5)
+    assert img.getpixel((img.width // 2, 0)) == (255, 255, 255)  # tape edge stays free
+    assert img.getpixel((img.width // 2, inset + 1)) == (255, 0, 0)  # border inside
+    assert img.getpixel((inset + 1, img.height // 2)) == (255, 0, 0)
+
+
+def test_background_is_edge_to_edge_and_content_respects_safe_margin():
+    label = Label(
+        tape_mm=25, background="#00ff00", margin_mm=0, elements=[TextElement(text="Wide")]
+    )
+    img = render(label, safe_mm=2).image
+    inset = mm_to_px(2) - 1
+    green = (0, 255, 0)
+    for x in range(0, img.width, 7):
+        assert img.getpixel((x, 0)) == green and img.getpixel((x, inset)) == green
+        assert img.getpixel((x, img.height - 1 - inset)) == green
+    for y in range(0, img.height, 7):
+        assert (
+            img.getpixel((inset, y)) == green and img.getpixel((img.width - 1 - inset, y)) == green
+        )
+
+
+def test_trailing_newline_does_not_shrink_text():
+    plain = render(Label(elements=[TextElement(text="Hello world")]))
+    newline = render(Label(elements=[TextElement(text="Hello world\n")]))
+    assert abs(plain.length_mm - newline.length_mm) < 1

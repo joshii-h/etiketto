@@ -10,6 +10,7 @@ from __future__ import annotations
 import io
 import math
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
@@ -20,6 +21,12 @@ PRINT_DPI = 317
 
 # The printer cannot cut labels shorter than this
 MIN_LENGTH_MM = 15.0
+
+# Default safety margin. The VC-500W loses about 0.5 mm on every side
+# (measured); devices and rolls vary, so the app makes this a per-printer
+# setting. Content and border keep this distance from the edges, the
+# background is always printed edge to edge.
+DEFAULT_SAFE_MM = 1.0
 
 
 @dataclass
@@ -71,7 +78,8 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
             "right": Pango.Alignment.RIGHT,
         }.get(element.align, Pango.Alignment.LEFT)
     )
-    layout.set_text(element.text or " ", -1)
+    # a trailing newline (easy to type) would add an empty line and halve the text
+    layout.set_text(element.text.rstrip("\n") or " ", -1)
     _ink, logical = layout.get_pixel_extents()
     width = max(1, logical.width)
     height = max(1, logical.height)
@@ -109,11 +117,28 @@ def render_text(element: TextElement, height: int, dpi: int) -> Image.Image:
     return block
 
 
-def render_image(element: ImageElement, height: int) -> Image.Image:
-    with Image.open(io.BytesIO(element.raw())) as src:
-        img = ImageOps.exif_transpose(src).convert("RGBA")
+# Decoding a large photo (base64 + EXIF + resample) takes far longer than the
+# rest of a render; cache it so typing in a text field stays smooth.
+Image.MAX_IMAGE_PIXELS = 80_000_000  # refuse decompression bombs early
+
+
+@lru_cache(maxsize=8)
+def _decoded(data: str) -> Image.Image:
+    import base64
+
+    with Image.open(io.BytesIO(base64.b64decode(data))) as src:
+        return ImageOps.exif_transpose(src).convert("RGBA")
+
+
+@lru_cache(maxsize=16)
+def _scaled(data: str, height: int) -> Image.Image:
+    img = _decoded(data)
     width = max(1, round(img.width * height / img.height))
     return img.resize((width, height), Image.Resampling.LANCZOS)
+
+
+def render_image(element: ImageElement, height: int) -> Image.Image:
+    return _scaled(element.data, height).copy()
 
 
 def render_code(element: CodeElement, height: int) -> Image.Image:
@@ -182,12 +207,14 @@ def _cover(img: Image.Image, size: tuple[int, int]) -> Image.Image:
 # --- label ------------------------------------------------------------------
 
 
-def render(label: Label, dpi: int = PRINT_DPI) -> Rendered:
+def render(label: Label, dpi: int = PRINT_DPI, safe_mm: float = DEFAULT_SAFE_MM) -> Rendered:
     tape = mm_to_px(label.tape_mm, dpi)
     edge = mm_to_px(label.edge_mm, dpi) if label.edge_mm > 0 else 0
     margin = mm_to_px(label.margin_mm, dpi) if label.margin_mm > 0 else 0
     border = mm_to_px(label.border_mm, dpi) if label.border_mm > 0 else 0
-    inner_h = max(1, tape - 2 * (edge + border))
+    safe = mm_to_px(safe_mm, dpi) if safe_mm > 0 else 0
+    frame = safe + border  # kept free of content on every side
+    inner_h = max(1, tape - 2 * (edge + frame))
     warnings: list[str] = []
 
     parts: list[Image.Image] = []
@@ -211,10 +238,10 @@ def render(label: Label, dpi: int = PRINT_DPI) -> Rendered:
     margin_scaled = margin
 
     if label.auto_length:
-        length = max(min_len, content_w + 2 * (margin + border))
+        length = max(min_len, content_w + 2 * (margin + frame))
     else:
         length = max(min_len, mm_to_px(label.length_mm, dpi))
-        room = length - 2 * (margin + border)
+        room = length - 2 * (margin + frame)
         if parts and content_w > room > 0:
             overflow = True
             scale = room / content_w
@@ -231,28 +258,27 @@ def render(label: Label, dpi: int = PRINT_DPI) -> Rendered:
     img = Image.new("RGB", (length, tape), _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
-            with Image.open(io.BytesIO(label.background_image.raw())) as src:
-                bg = ImageOps.exif_transpose(src).convert("RGB")
+            bg = _decoded(label.background_image.data).convert("RGB")
             img.paste(_cover(bg, img.size), (0, 0))
         except Exception as e:  # noqa: BLE001
             warnings.append("background image: %s" % e)
 
-    free = length - 2 * border - content_w
+    free = length - 2 * frame - content_w
     if label.auto_length or label.align == "center":
-        x = border + free // 2
+        x = frame + free // 2
     elif label.align == "end":
-        x = length - border - margin - content_w
+        x = length - frame - margin - content_w
     else:
-        x = border + margin
+        x = frame + margin
     for part in parts:
         y = (tape - part.height) // 2
         img.paste(part, (x, y), part)
         x += part.width + margin_scaled
 
-    if border:
+    if border:  # inside the safety margin so it is never cut off
         draw = ImageDraw.Draw(img)
         draw.rectangle(
-            (border // 2, border // 2, length - 1 - border // 2, tape - 1 - border // 2),
+            (safe, safe, length - 1 - safe, tape - 1 - safe),
             outline=_color(label.border_color),
             width=border,
         )

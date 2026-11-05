@@ -105,4 +105,12 @@ TRANSLATIONS = {
     "The current label has unsaved changes.": "Das aktuelle Etikett hat ungespeicherte Änderungen.",
     "Discard": "Verwerfen",
     "Label designer for the Brother VC-500W": "Etiketten-Designer für den Brother VC-500W",
+    "Only local files can be used": "Nur lokale Dateien sind möglich",
+    "Not an image: %s": "Kein Bild: %s",
+    "Safety margin": "Sicherheitsabstand",
+    "mm kept free for content and border; the background is printed edge to edge": "mm frei für Inhalt und Rahmen; der Hintergrund wird randlos gedruckt",
+    "Edge spacing": "Randabstand",
+    "extra mm along the tape edges": "zusätzliche mm an den Bandkanten",
+    "Please wait until printing has finished": "Bitte warten, bis der Druck fertig ist",
+    "Only local files can be dropped": "Nur lokale Dateien können abgelegt werden",
 }

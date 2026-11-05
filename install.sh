@@ -24,10 +24,12 @@ if [ "${1:-}" = "--uninstall" ]; then
     exit 0
 fi
 
-python3 -c 'import gi; gi.require_version("Gtk", "4.0"); gi.require_version("Adw", "1")' 2>/dev/null || {
-    echo "error: PyGObject with GTK 4 and libadwaita is missing" >&2
+PYTHON="$(command -v python3)" || { echo "error: python3 not found" >&2; exit 1; }
+"$PYTHON" -c 'import gi, cairo; gi.require_version("Gtk", "4.0"); gi.require_version("Adw", "1"); gi.require_version("PangoCairo", "1.0")' 2>/dev/null || {
+    echo "error: PyGObject with GTK 4, libadwaita, PangoCairo and pycairo is missing" >&2
     exit 1
 }
+command -v msgfmt >/dev/null || { echo "error: msgfmt (gettext) not found" >&2; exit 1; }
 
 # translations
 for po in "$SRC"/po/*.po; do
@@ -41,16 +43,18 @@ BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 cp -r "$SRC/pyproject.toml" "$SRC/README.md" "$SRC/LICENSE" "$SRC/zinklabel" "$BUILD/"
 if command -v uv >/dev/null; then
-    uv venv --quiet --allow-existing --system-site-packages "$VENV"
+    # the system python3, which has the GTK bindings
+    uv venv --quiet --allow-existing --system-site-packages --python "$PYTHON" "$VENV"
     uv pip install --quiet --python "$VENV/bin/python" --reinstall-package zinklabel "$BUILD"
 else
-    python3 -m venv --system-site-packages "$VENV"
+    "$PYTHON" -m venv --system-site-packages "$VENV"
     "$VENV/bin/pip" install --quiet --upgrade "$BUILD"
 fi
 
 mkdir -p "$BIN" "$DATA/applications" "$DATA/icons/hicolor/scalable/apps" "$DATA/mime/packages"
 ln -sf "$VENV/bin/zinklabel" "$BIN/zinklabel"
-cp "$SRC/data/$APP_ID.desktop" "$DATA/applications/"
+# absolute Exec: ~/.local/bin is often not in the session PATH
+sed "s|^Exec=zinklabel |Exec=$BIN/zinklabel |" "$SRC/data/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
 cp "$SRC/data/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
 cp "$SRC/data/$APP_ID.xml" "$DATA/mime/packages/"
 update-mime-database "$DATA/mime" 2>/dev/null || true

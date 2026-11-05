@@ -27,7 +27,7 @@ from zinklabel.model import (  # noqa: E402
     Label,
     TextElement,
 )
-from zinklabel.render import print_image, render  # noqa: E402
+from zinklabel.render import DEFAULT_SAFE_MM, print_image, render  # noqa: E402
 
 APP_ID = "xyz.joshuahirsig.Zinklabel"
 LOCALE_DIR = Path(__file__).parent / "locale"
@@ -110,13 +110,27 @@ def spin_row(title, value, lower, upper, step, digits, on_change, subtitle=None)
     return row
 
 
+def image_from_path(path) -> ImageElement:
+    """Read an image file into an element; ValueError if it is not an image."""
+    from PIL import Image
+
+    if not path:
+        raise ValueError(_("Only local files can be used"))
+    try:
+        with Image.open(path) as img:
+            img.verify()
+        return ImageElement.from_file(path)
+    except Exception as e:  # noqa: BLE001 - PIL raises many kinds
+        raise ValueError(_("Not an image: %s") % Path(path).name) from e
+
+
 def element_title(element) -> str:
     if isinstance(element, TextElement):
         first = (element.text.splitlines() or [""])[0]
         return first[:40] or _("Text")
     if isinstance(element, ImageElement):
         return element.name or _("Image")
-    return dict(SYMBOLOGIES)[element.symbology] + ": " + element.data[:30]
+    return dict(SYMBOLOGIES).get(element.symbology, element.symbology) + ": " + element.data[:30]
 
 
 def element_icon(element) -> str:
@@ -157,6 +171,7 @@ class Window(Adw.ApplicationWindow):
         self.connect("close-request", self._on_close_request)
 
         self.rebuild_sidebar()
+        self._update_title()
         self.schedule_render()
         self.refresh_printer()
 
@@ -280,7 +295,32 @@ class Window(Adw.ApplicationWindow):
         host.set_show_apply_button(True)
         host.connect("apply", self._on_host_apply)
         group.add(host)
+
+        group.add(
+            spin_row(
+                _("Safety margin"),
+                self.safe_mm,
+                0,
+                3,
+                0.1,
+                1,
+                self._on_safe_margin,
+                subtitle=_(
+                    "mm kept free for content and border; the background is printed edge to edge"
+                ),
+            )
+        )
         return group
+
+    @property
+    def safe_mm(self) -> float:
+        return float(self.settings.get("safe_mm", DEFAULT_SAFE_MM))
+
+    def _on_safe_margin(self, value: float) -> None:
+        # a printer setting, not part of the label: no dirty flag
+        self.settings["safe_mm"] = round(value, 1)
+        save_settings(self.settings)
+        self.schedule_render()
 
     def _label_group(self) -> Adw.PreferencesGroup:
         lab = self.label
@@ -329,6 +369,19 @@ class Window(Adw.ApplicationWindow):
                 1,
                 lambda v: self.change(margin_mm=v),
                 subtitle=_("mm at the ends and between elements"),
+            )
+        )
+
+        group.add(
+            spin_row(
+                _("Edge spacing"),
+                lab.edge_mm,
+                0,
+                10,
+                0.5,
+                1,
+                lambda v: self.change(edge_mm=v),
+                subtitle=_("extra mm along the tape edges"),
             )
         )
 
@@ -568,7 +621,13 @@ class Window(Adw.ApplicationWindow):
 
     def _do_render(self) -> bool:
         self._render_source = 0
-        self.rendered = render(self.label)
+        try:
+            self.rendered = render(self.label, safe_mm=self.safe_mm)
+        except Exception as e:  # noqa: BLE001 - keep the app usable, show the reason
+            self.rendered = None
+            self.picture.set_paintable(None)
+            self.size_label.set_text(_("Problem: %s") % e)
+            return False
         buf = io.BytesIO()
         self.rendered.image.save(buf, format="PNG")
         texture = Gdk.Texture.new_from_bytes(GLib.Bytes.new(buf.getvalue()))
@@ -591,8 +650,8 @@ class Window(Adw.ApplicationWindow):
             return
         length, tape = self.rendered.length_mm, self.label.tape_mm
         if self.fit_zoom:
-            avail_w = self.preview_scroller.get_width() - 56
-            avail_h = self.preview_scroller.get_height() - 56
+            avail_w = self.preview_scroller.get_hadjustment().get_page_size() - 56
+            avail_h = self.preview_scroller.get_vadjustment().get_page_size() - 56
             if avail_w > 0 and avail_h > 0:
                 px_per_mm = min(avail_w / length, avail_h / tape, PREVIEW_PX_PER_MM * 4)
                 self.zoom = px_per_mm / PREVIEW_PX_PER_MM
@@ -637,7 +696,12 @@ class Window(Adw.ApplicationWindow):
     def _printer_found(self, info: device.PrinterInfo) -> bool:
         self.printer_info = info
         self._update_printer_row()
-        if info.tape_mm and info.tape_mm != self.label.tape_mm and not self.dirty:
+        if (
+            info.tape_mm
+            and info.tape_mm != self.label.tape_mm
+            and self.path is None
+            and not self.dirty
+        ):
             self.label.tape_mm = info.tape_mm
             self.tape_row.set_selected(TAPE_WIDTHS_MM.index(info.tape_mm))
             self.dirty = False
@@ -647,7 +711,7 @@ class Window(Adw.ApplicationWindow):
     def _printer_failed(self, host: str, error: str) -> bool:
         self.printer_info = None
         self._update_printer_row(
-            _("Printer not reachable"), "%s: %s" % (host, error.splitlines()[0])
+            _("Printer not reachable"), "%s: %s" % (host, (error.splitlines() or [""])[0])
         )
         return False
 
@@ -734,7 +798,7 @@ class Window(Adw.ApplicationWindow):
         if not host:
             self.toast(_("No printer configured"))
             return
-        image = print_image(render(copy.deepcopy(self.label)))
+        image = print_image(render(copy.deepcopy(self.label), safe_mm=self.safe_mm))
         self.printing = True
         self.print_button.set_sensitive(False)
         self.print_button.set_label(_("Printing…"))
@@ -788,8 +852,8 @@ class Window(Adw.ApplicationWindow):
             except GLib.Error:
                 return
             try:
-                callback(ImageElement.from_file(file.get_path()))
-            except OSError as e:
+                callback(image_from_path(file.get_path()))
+            except ValueError as e:
                 self.toast(str(e))
 
         dialog.open(self, None, done)
@@ -835,6 +899,29 @@ class Window(Adw.ApplicationWindow):
 
         dialog.save(self, None, done)
 
+    def on_save_template(self, *_args) -> None:
+        """Store a copy as template; the open file and its state stay as they are."""
+        TEMPLATE_DIR.mkdir(parents=True, exist_ok=True)
+        dialog = Gtk.FileDialog(title=_("Save as template…"), filters=self._zlabel_filter())
+        dialog.set_initial_folder(Gio.File.new_for_path(str(TEMPLATE_DIR)))
+        dialog.set_initial_name((self.path.stem if self.path else _("label")) + ".zlabel")
+
+        def done(d, result):
+            try:
+                path = Path(d.save_finish(result).get_path())
+            except (GLib.Error, TypeError):
+                return
+            if path.suffix != ".zlabel":
+                path = path.with_suffix(".zlabel")
+            try:
+                self.label.save(path)
+            except OSError as e:
+                self.toast(_("Cannot save: %s") % e)
+                return
+            self.toast(_("Saved %s") % path.name)
+
+        dialog.save(self, None, done)
+
     def _write(self, path: Path) -> None:
         try:
             self.label.save(path)
@@ -852,10 +939,18 @@ class Window(Adw.ApplicationWindow):
 
         def done(d, result):
             try:
-                path = d.save_finish(result).get_path()
-            except GLib.Error:
+                path = Path(d.save_finish(result).get_path())
+            except (GLib.Error, TypeError):
                 return
-            render(self.label).image.save(path, dpi=(317, 317))
+            if path.suffix.lower() != ".png":
+                path = path.with_suffix(".png")
+            try:
+                render(self.label, safe_mm=self.safe_mm).image.save(
+                    path, format="PNG", dpi=(317, 317)
+                )
+            except Exception as e:  # noqa: BLE001
+                self.toast(_("Cannot save: %s") % e)
+                return
             self.toast(_("Exported"))
 
         dialog.save(self, None, done)
@@ -910,6 +1005,9 @@ class Window(Adw.ApplicationWindow):
         dialog.present(self)
 
     def _on_close_request(self, _window) -> bool:
+        if self.printing:
+            self.toast(_("Please wait until printing has finished"))
+            return True
         if not self.dirty:
             return False
 
@@ -930,7 +1028,7 @@ class Window(Adw.ApplicationWindow):
             "open": self.on_open,
             "save": self.on_save,
             "save-as": self.on_save_as,
-            "save-template": lambda *_a: self.on_save_as(folder=TEMPLATE_DIR),
+            "save-template": self.on_save_template,
             "export": self.on_export,
             "print": self.on_print,
             "new": self.on_new,
@@ -957,13 +1055,16 @@ class Window(Adw.ApplicationWindow):
         target = Gtk.DropTarget.new(Gio.File, Gdk.DragAction.COPY)
 
         def dropped(_t, file, _x, _y):
-            path = Path(file.get_path() or "")
+            if not file.get_path():
+                self.toast(_("Only local files can be dropped"))
+                return False
+            path = Path(file.get_path())
             if path.suffix == ".zlabel":
                 self._confirm_discard(lambda: self.open_file(path))
                 return True
             try:
-                self.add_element(ImageElement.from_file(path))
-            except OSError as e:
+                self.add_element(image_from_path(path))
+            except ValueError as e:
                 self.toast(str(e))
                 return False
             return True
@@ -1010,8 +1111,9 @@ class App(Adw.Application):
 
     def do_open(self, files, _n_files, _hint):
         window = self.get_active_window() or Window(self)
-        if files:
-            window.open_file(Path(files[0].get_path()))
+        if files and files[0].get_path():
+            path = Path(files[0].get_path())
+            window._confirm_discard(lambda: window.open_file(path))
         window.present()
 
     def on_about(self, *_args):
