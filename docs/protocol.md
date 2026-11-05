@@ -44,25 +44,34 @@ Writing to other paths is untested and may brick the device. [confirmed]
 <print>
 <mode>vivid|color|bw</mode><speed>S</speed><lpi>L</lpi>
 <width>W</width><height>H</height>
-<dataformat>rawrgb|jpeg</dataformat><datasize>N</datasize>
+<dataformat>rawrgb|jpeg</dataformat>[<autofit>1</autofit>]<datasize>N</datasize>
 <cutmode>full|half|none|default</cutmode>
 <brightness>x</brightness>
 <color_balance_red>x</color_balance_red>
 <color_balance_green>x</color_balance_green>
 <color_balance_blue>x</color_balance_blue>
-[<autofit>1</autofit>]
 </print>
 ```
+
+Etiketto sends the elements in this order (`autofit` only with `jpeg`, the
+colour elements only when something is adjusted).
 
 - `mode`/`speed`/`lpi` come as a triple from `media_mode` in config.xml:
   `vivid 0 317`, `color 1 264` (Brother calls it "Standard"),
   `bw 2 400` (supported by the firmware, not offered by Brother's app).
+  All three, including `bw`, are reported in config.xml and print on the
+  device. [confirmed]
 - **Colour correction per job**: `brightness` and `color_balance_*` from
   −0.5 to +0.5 (Brother's sliders: −3…+3 divided by 6), two decimals.
-  They are not stored in the printer. [confirmed]
+  They are not stored in the printer. [confirmed] On the device the effect
+  is visible but subtle: brightness −2 prints noticeably more saturated.
 - `rawrgb` (what Brother's app always sends): 3 bytes per pixel, row by
   row, no header; `datasize = W × H × 3`. `jpeg` with `autofit=1` and
   `width/height = 0` also works (m7i.org, Etiketto ≤ 0.1). [confirmed]
+  Etiketto sends rawrgb by default; on the device the channel order is R, G,
+  B, the orientation (first row = label start) and the geometry below are
+  right: borders and backgrounds sit where the preview shows them.
+  [confirmed]
 - Geometry for rawrgb: x across the tape, y along it.
   `dpi = max(crossweb_dpi, lpi)`;
   `W = tape inches × dpi + 2 × 0.02″ × dpi` (bleed) for 9–25 mm,
@@ -76,6 +85,13 @@ Writing to other paths is untested and may brick the device. [confirmed]
 Brother's job flow: wait for `print_state=IDLE` and stage `SUCCESS` or
 `READY FOR PRINT` (poll every 500 ms), send the XML, answer within 5 s,
 send the data in 4 KiB blocks, answer within 30 s, then poll until done.
+
+Etiketto does the same for every copy: before sending it waits for
+`IDLE` with stage `SUCCESS`, `READY FOR PRINT` or `IDLE`; answer code 1 is
+retried up to 10 times every 500 ms. Right after the data the printer may
+still report the old `IDLE`/`SUCCESS`, so a copy counts as done only after
+the state has left that (e.g. `BUSY`) and returned, or after 3 s without
+any sign of a job. [assumed, to be confirmed with several copies]
 
 ## config.xml
 
@@ -106,7 +122,7 @@ Brother's app has no expiry or age warning.
 | `print_state` | `NO_INIT`, `IDLE`, `BUSY`, `ERROR`, `POWEROFF`, `REBOOT` |
 | `print_job_stage` | `PREPARING PRINT`, `PRINTING`, `IDLE`, `READY FOR PRINT`, `PREHEATING`, `COOLDOWN`, `READY_FOR_CUT`, `SUCCESS`, `CLEANING` |
 | `print_job_error` | `NONE`, `NO MEDIA`, `JAM`, `EJECT JAM`, `DOOR OPEN`, `BAD CASSETTE`, `SEQUENCE ERROR` |
-| `remain` | remaining tape in inches |
+| `remain` | remaining tape in inches [confirmed] |
 | `print_num`, `print_line` | counters / progress [assumed] |
 
 `IDLE` with stage `IDLE` means "no cassette" in Brother's app.
@@ -115,8 +131,12 @@ Brother's app has no expiry or age warning.
 
 - mDNS service `_ipp._tcp`, name contains "vc-500w"; first IPv4 address,
   port 9100. Display name: "Brother VC-500W " + last 4 serial digits.
-- Newer firmware has a web interface at `https://<ip>` where "Port 9100"
-  must be enabled; Brother's app links there if the port is closed.
+- Newer firmware has a web interface at `https://<ip>`. Brother's app
+  links there if port 9100 is closed and speaks of a "Port 9100" option, but
+  the web interface of firmware 2026031504 has no such option: only
+  "Network Wi-Fi Setup" (network list, "click here" for manual entry) and
+  "AirPrint Options" (name, location, geo location, firmware, borderless,
+  TLS, admin password, firmware update). [confirmed]
 - Setup mode: hold the Wi-Fi button until it turns from blue to white; the
   printer opens an open network "Brother VC-500W…" at 192.168.0.1:9100
   (printing works there too). Write `/etc/ssidpass.txt` and
