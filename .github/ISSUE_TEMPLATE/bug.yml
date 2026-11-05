@@ -1,0 +1,45 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tip: **Menu → Report a problem…** in Etiketto fills in most of this for you.
+        Please remove anything private (names, addresses) before sending.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message
+      description: Copy it from the error dialog (Details), if there was one.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Etiketto version and installation
+      placeholder: e.g. 1.0.0, Flatpak
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Distribution
+      placeholder: e.g. Fedora 43, Ubuntu 26.04, Arch
+  - type: input
+    id: printer
+    attributes:
+      label: Printer firmware and cassette width
+      description: Firmware is shown in Etiketto's printer details or the printer's web interface.
+      placeholder: e.g. 2026031504, 50 mm
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo or screenshot
+      description: For print problems a photo of the label helps a lot.

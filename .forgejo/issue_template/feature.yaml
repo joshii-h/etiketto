@@ -1,0 +1,16 @@
+name: Feature request
+description: An idea for Etiketto
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to do?
+      description: Describe the task you want to get done, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What is hard or impossible today?
