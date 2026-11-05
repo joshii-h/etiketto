@@ -275,6 +275,7 @@ def gui_env(monkeypatch, tmp_path):
         query_result=PrinterInfo("Wedge", 25, 4000, 5000, "IDLE"),
         query_error=None,
         print_error=None,
+        print_result=None,
         stages=[],  # printer stages reported while printing
         found=[],
         configured=None,
@@ -294,6 +295,7 @@ def gui_env(monkeypatch, tmp_path):
             progress(Progress(1, options.copies, stage))
         if env.print_error:
             raise env.print_error
+        return env.print_result
 
     def discover(timeout=3.0):
         env.discovers += 1

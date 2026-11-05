@@ -7,6 +7,7 @@ import errno
 import gettext
 import io
 import json
+import math
 import sys
 import threading
 from datetime import date
@@ -29,6 +30,7 @@ from etiketto.backends.base import (  # noqa: E402
     PrinterError,
     PrinterInfo,
     PrintOptions,
+    PrintResult,
     Progress,
 )
 from etiketto.model import (  # noqa: E402
@@ -59,6 +61,12 @@ def _locale_dir() -> Path:
 LOCALE_DIR = _locale_dir()
 TRANSLATION = gettext.translation("etiketto", LOCALE_DIR, fallback=True)
 _ = TRANSLATION.gettext
+
+
+def pgettext(context: str, message: str) -> str:
+    """A translation with context, for words with several meanings ("May")."""
+    return TRANSLATION.pgettext(context, message)
+
 
 RTL_LANGUAGES = {"ar", "he", "fa", "ur"}
 
@@ -248,8 +256,8 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
         ),
         "timeout": _("The printer does not answer. Check that it is switched on and awake."),
         "port_closed": _(
-            "The printer refuses the connection. Turn on “Port 9100” in the printer's "
-            "web interface."
+            "The printer refuses the connection. Switch it off and on again. If its web "
+            "interface offers a “Port 9100” option, turn it on."
         ),
         "no_cassette": _("No cassette is inserted. Insert one and try again."),
         "cover_open": _("The printer's cover is open. Close it and try again."),
@@ -297,18 +305,18 @@ def save_error_text(error: OSError, name: str) -> str:
 
 def month_name(month: int) -> str:
     return (
-        _("January"),
-        _("February"),
-        _("March"),
-        _("April"),
-        _("May"),
-        _("June"),
-        _("July"),
-        _("August"),
-        _("September"),
-        _("October"),
-        _("November"),
-        _("December"),
+        pgettext("month name", "January"),
+        pgettext("month name", "February"),
+        pgettext("month name", "March"),
+        pgettext("month name", "April"),
+        pgettext("month name", "May"),
+        pgettext("month name", "June"),
+        pgettext("month name", "July"),
+        pgettext("month name", "August"),
+        pgettext("month name", "September"),
+        pgettext("month name", "October"),
+        pgettext("month name", "November"),
+        pgettext("month name", "December"),
     )[month - 1]
 
 
@@ -342,6 +350,7 @@ class Window(Adw.ApplicationWindow):
         self.zoom = 1.0
         self.fit_zoom = True
         self._last_dialog = None
+        self._chooser: Adw.AlertDialog | None = None  # the open "Choose a printer" dialog
 
         self.toasts = Adw.ToastOverlay()
         toolbar = Adw.ToolbarView()
@@ -506,9 +515,11 @@ class Window(Adw.ApplicationWindow):
 
     @property
     def data_format(self) -> str:
-        """ "jpeg" or "rawrgb" (exact geometry); only in settings.json for now."""
-        value = self.printer_settings.get("data_format", "jpeg")
-        return value if value in self.backend.capabilities.data_formats else "jpeg"
+        """The backend's default format (rawrgb for the VC-500W) unless
+        settings.json names another supported one ("data_format": "jpeg")."""
+        formats = self.backend.capabilities.data_formats
+        value = self.printer_settings.get("data_format")
+        return value if value in formats else formats[0]
 
     def _backend_row(self) -> Adw.ComboRow:
         items = [(b.id, b.name) for b in backends()]
@@ -643,25 +654,8 @@ class Window(Adw.ApplicationWindow):
         )
         group.add(self.tape_row)
 
-        auto = Adw.SwitchRow(title=_("Automatic length"), subtitle=_("As long as the content"))
-        auto.set_active(lab.auto_length)
-        group.add(auto)
-
-        length = self.length_row(
-            _("Length"), lab.length_mm, 15, 1000, 1, lambda v: self.change(length_mm=v)
-        )
-        align = combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: self.change(align=v))
-        length.set_sensitive(not lab.auto_length)
-        align.set_sensitive(not lab.auto_length)
-
-        def on_auto(row, _p):
-            self.change(auto_length=row.get_active())
-            length.set_sensitive(not row.get_active())
-            align.set_sensitive(not row.get_active())
-
-        auto.connect("notify::active", on_auto)
-        group.add(length)
-        group.add(align)
+        if self.backend.capabilities.continuous:
+            self._add_length_rows(group)
 
         group.add(
             self.length_row(
@@ -717,6 +711,36 @@ class Window(Adw.ApplicationWindow):
         border.add_suffix(color_button(lab.border_color, lambda v: self.change(border_color=v)))
         group.add(border)
         return group
+
+    def _add_length_rows(self, group: Adw.PreferencesGroup) -> None:
+        """Length, automatic length and alignment: only for endless tape."""
+        lab, caps = self.label, self.backend.capabilities
+        auto = Adw.SwitchRow(title=_("Automatic length"), subtitle=_("As long as the content"))
+        auto.set_active(lab.auto_length)
+        group.add(auto)
+
+        lower = max(15.0, caps.min_length_mm)  # 15 mm: the smallest length a file may have
+        upper = float(math.floor(min(1000.0, caps.max_length_mm or 1000.0)))
+        length = self.length_row(
+            _("Length"),
+            min(max(lab.length_mm, lower), upper),
+            lower,
+            upper,
+            1,
+            lambda v: self.change(length_mm=v),
+        )
+        align = combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: self.change(align=v))
+        length.set_sensitive(not lab.auto_length)
+        align.set_sensitive(not lab.auto_length)
+
+        def on_auto(row, _p):
+            self.change(auto_length=row.get_active())
+            length.set_sensitive(not row.get_active())
+            align.set_sensitive(not row.get_active())
+
+        auto.connect("notify::active", on_auto)
+        group.add(length)
+        group.add(align)
 
     def _elements_group(self) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup(
@@ -922,9 +946,15 @@ class Window(Adw.ApplicationWindow):
     def _do_render(self) -> bool:
         self._render_source = 0
         backend = self.backend
+        caps = backend.capabilities
         try:
-            self.rendered = render(self.label, dpi=backend.capabilities.dpi, safe_mm=self.safe_mm)
-            preview = backend.preview(self.rendered.image)
+            self.rendered = render(
+                self.label,
+                dpi=caps.dpi,
+                safe_mm=self.safe_mm,
+                min_length_mm=caps.min_length_mm,
+            )
+            preview = backend.preview(self.rendered.image, self.print_mode)
         except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
             self._render_failed(e)
             return False
@@ -938,6 +968,10 @@ class Window(Adw.ApplicationWindow):
         info = self.unit.label_size(self.label.tape_mm, self.rendered.length_mm)
         if self.rendered.overflow:
             info += " · " + _("content scaled down to fit")
+        if caps.max_length_mm and self.rendered.length_mm > caps.max_length_mm + 0.01:
+            info += " · " + _("Too long for this printer: at most %s") % self.unit.format(
+                caps.max_length_mm
+            )
         if self.rendered.warnings:
             problems = "; ".join(warning_text(w) for w in self.rendered.warnings)
             info += " · " + _("Problem: %s") % problems
@@ -986,17 +1020,20 @@ class Window(Adw.ApplicationWindow):
 
     def discover_printers(self, choose: bool = False) -> None:
         """Look for printers of the current model on the network."""
-        self._query_generation += 1  # a pending status answer is outdated now
+        self._query_generation += 1  # a pending status answer or search is outdated now
+        generation = self._query_generation
         self._update_printer_row(_("Searching for printers…"), "")
         backend = self.backend
 
         def work():
             found = backend.discover()
-            GLib.idle_add(self._printers_discovered, found, choose)
+            GLib.idle_add(self._printers_discovered, found, choose, generation)
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _printers_discovered(self, found, choose: bool) -> bool:
+    def _printers_discovered(self, found, choose: bool, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
         if not found:
             self._update_printer_row(
                 _("No printer found"),
@@ -1009,7 +1046,10 @@ class Window(Adw.ApplicationWindow):
             self.use_printer(found[0].host)
             self.toast(_("Found %s") % found[0].name)
             return False
-        dialog = Adw.AlertDialog(heading=_("Choose a printer"))
+        if self._chooser is not None:  # never two choosers at once
+            self._chooser.force_close()
+        dialog = self._chooser = Adw.AlertDialog(heading=_("Choose a printer"))
+        dialog.connect("closed", self._on_chooser_closed)
         box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         box.add_css_class("boxed-list")
         for printer in found:
@@ -1030,6 +1070,10 @@ class Window(Adw.ApplicationWindow):
             # overriding the choice the user is about to make
             self._update_printer_row(_("Choose a printer"), "")
         return False
+
+    def _on_chooser_closed(self, dialog) -> None:
+        if self._chooser is dialog:
+            self._chooser = None
 
     def use_printer(self, host: str) -> None:
         self.save_printer_setting(host=host)
@@ -1198,6 +1242,16 @@ class Window(Adw.ApplicationWindow):
         if response == "print":
             self._print_dialog()
 
+    @property
+    def print_mode(self) -> str:
+        """The print mode of the last print (what the preview shows)."""
+        return self._print_choices()["mode"]
+
+    def _on_print_mode(self, choices: dict, mode: str) -> None:
+        choices.update(mode=mode)
+        self.save_printer_setting(mode=mode)
+        self.schedule_render()  # black and white shows grey
+
     def _print_choices(self) -> dict:
         """Copies, cut and mode for the print dialog, from the last print."""
         caps = self.backend.capabilities
@@ -1223,7 +1277,9 @@ class Window(Adw.ApplicationWindow):
         modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self.backend.modes(self.printer_info)]
         if len(modes) > 1:
             rows.append(
-                combo_row(_("Colours"), modes, choices["mode"], lambda v: choices.update(mode=v))
+                combo_row(
+                    _("Colours"), modes, choices["mode"], lambda v: self._on_print_mode(choices, v)
+                )
             )
         if caps.supports_color_adjust:
             rows.append(self._color_adjust_row())
@@ -1319,10 +1375,11 @@ class Window(Adw.ApplicationWindow):
                 GLib.idle_add(self._print_done, e, _("The label cannot be prepared for printing."))
                 return
             try:
-                backend.print_label(image, host, options, progress)
-                GLib.idle_add(self._print_done, None)
+                result = backend.print_label(image, host, options, progress)
             except Exception as e:  # noqa: BLE001
                 GLib.idle_add(self._print_done, e)
+                return
+            GLib.idle_add(self._print_done, None, None, options, result)
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -1336,13 +1393,29 @@ class Window(Adw.ApplicationWindow):
             self.banner.set_revealed(text is not None)
         return False
 
-    def _print_done(self, error: Exception | None, message: str | None = None) -> bool:
+    def _print_done(
+        self,
+        error: Exception | None,
+        message: str | None = None,
+        options: PrintOptions | None = None,
+        result: PrintResult | None = None,
+    ) -> bool:
         self.printing = False
         self.print_button.set_sensitive(True)
         self.print_button.set_label(_("Print"))
         self.banner.set_revealed(False)
         if error:
             self.print_failed(error, message or printer_error_text(error, self.unit))
+        elif options and result and result.mode and result.mode != options.mode:
+            self.toast(
+                _(
+                    "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
+                )
+                % {
+                    "wanted": MODE_NAMES.get(options.mode, options.mode),
+                    "used": MODE_NAMES.get(result.mode, result.mode),
+                }
+            )
         else:
             self.toast(_("Printed"))
         self.refresh_printer()
@@ -1493,9 +1566,13 @@ class Window(Adw.ApplicationWindow):
 
     def export_png(self, path: Path) -> None:
         backend = self.backend
-        dpi = backend.capabilities.dpi
+        caps = backend.capabilities
+        dpi = caps.dpi
         try:
-            image = backend.preview(render(self.label, dpi=dpi, safe_mm=self.safe_mm).image)
+            rendered = render(
+                self.label, dpi=dpi, safe_mm=self.safe_mm, min_length_mm=caps.min_length_mm
+            )
+            image = backend.preview(rendered.image, self.print_mode)
         except Exception as e:  # noqa: BLE001
             self.error(_("The preview cannot be drawn"), "%s: %s" % (type(e).__name__, e))
             return

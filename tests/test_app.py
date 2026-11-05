@@ -45,6 +45,7 @@ from etiketto.backends.base import (  # noqa: E402
     PrinterTimeout,
     PrintMode,
     PrintOptions,
+    PrintResult,
     Progress,
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
@@ -632,7 +633,8 @@ def test_printer_failed(make_window, gui_env):
     # what to do, not the host or labelprinter's English text
     # compare plain text: GLib/libadwaita versions escape the apostrophe differently
     assert html.unescape(win.printer_row.get_subtitle()) == (
-        "The printer refuses the connection. Turn on “Port 9100” in the printer's web interface."
+        "The printer refuses the connection. Switch it off and on again. If its web interface "
+        "offers a “Port 9100” option, turn it on."
     )
     assert not win.details_button.get_sensitive()
 
@@ -701,6 +703,28 @@ def test_discover_several_lets_the_user_choose(window, gui_env):
     assert window.host == "VC-B.local"
     assert pump(lambda: "VC-B.local" in gui_env.queries)
     assert window.get_visible_dialog() is None
+
+
+def test_discover_outdated_results_are_dropped(window, gui_env):
+    window.discover_printers(choose=True)
+    first = window._query_generation
+    window.discover_printers(choose=True)  # searched again before the answer came
+    assert pump(lambda: window.printer_row.get_title() == "No printer found")
+    assert window._printers_discovered(found("A", "B"), True, first) is False
+    assert window.get_visible_dialog() is None and window.host is None
+
+
+def test_discover_never_opens_two_choosers(window, gui_env):
+    window._printers_discovered(found("A", "B"), True, window._query_generation)
+    first = window.get_visible_dialog()
+    window._printers_discovered(found("A", "B", "C"), True, window._query_generation)
+    second = window.get_visible_dialog()
+    assert second is not first and window._chooser is second
+    assert len(find(second.get_extra_child(), Adw.ActionRow)) == 3
+    window._on_chooser_closed(first)  # a late signal of the old one changes nothing
+    assert window._chooser is second
+    second.force_close()
+    assert pump(lambda: window._chooser is None)
 
 
 def test_discover_several_with_host_refreshes_current(make_window, gui_env):
@@ -791,10 +815,9 @@ def test_print_flow(ready, gui_env):
     assert len(gui_env.prints) == 1
     image, host, options = gui_env.prints[0]
     assert host == "VC.local"
-    assert options == PrintOptions(copies=3, cut="half", mode="color", data_format="jpeg")
-    # rendered in the worker for the printer: label space at the preview resolution
-    assert image.size == ready.rendered.image.size
-    assert image.height == mm_to_px(25)
+    assert options == PrintOptions(copies=3, cut="half", mode="color", data_format="rawrgb")
+    # rendered in the worker for the printer: rawrgb, 25 mm at 320 dpi with bleed
+    assert image.height == 333
     assert ready.print_button.get_sensitive()
     assert ready.print_button.get_label() == "Print"
     assert toast_titles(ready) == ["Printed"]
@@ -1275,6 +1298,15 @@ def test_cassette_age_hint():
     assert [app.month_name(m) for m in (1, 12)] == ["January", "December"]
 
 
+def test_month_names_have_a_context(monkeypatch):
+    class Catalog:
+        def pgettext(self, context, message):
+            return "%s|%s" % (context, message)
+
+    monkeypatch.setattr(app, "TRANSLATION", Catalog())
+    assert app.month_name(5) == "month name|May"
+
+
 # --- printer details and the cassette ------------------------------------------------------
 
 ALL_MODES = (PrintMode("vivid", 317, 0), PrintMode("color", 264, 1), PrintMode("bw", 400, 2))
@@ -1419,10 +1451,13 @@ def test_colour_adjustment(ready, gui_env):
     respond(ready._last_dialog, "cancel")
 
 
-@pytest.mark.parametrize("setting, expected", [("rawrgb", "rawrgb"), ("png", "jpeg")])
+@pytest.mark.parametrize(
+    "setting, expected", [(None, "rawrgb"), ("png", "rawrgb"), ("jpeg", "jpeg")]
+)
 def test_data_format_setting(make_window, gui_env, setting, expected):
     gui_env.configured = "VC.local"
-    win = make_window(settings={"printers": {"vc500w": {"data_format": setting}}})
+    printer = {} if setting is None else {"data_format": setting}
+    win = make_window(settings={"printers": {"vc500w": printer}})
     win.on_print()
     win._last_dialog.emit("response", "print")
     assert pump(lambda: not win.printing)
@@ -1430,6 +1465,60 @@ def test_data_format_setting(make_window, gui_env, setting, expected):
     assert options.data_format == expected
     # rawrgb: rendered with bleed for the exact width (25 mm at 320 dpi: 333 px)
     assert image.height == (333 if expected == "rawrgb" else mm_to_px(25))
+
+
+def test_print_with_another_mode_is_reported(ready, gui_env):
+    gui_env.print_result = PrintResult(mode="vivid")
+    ready._start_print(PrintOptions(mode="bw"))
+    assert pump(lambda: not ready.printing)
+    assert toast_titles(ready) == [
+        "Colour mode “Black and white (sharper)” is not available on this printer, "
+        "printed with “Vivid”"
+    ]
+
+
+def test_print_result_with_the_requested_mode_is_just_printed(ready, gui_env):
+    gui_env.print_result = PrintResult(mode="color")
+    ready._start_print(PrintOptions(mode="color"))
+    assert pump(lambda: not ready.printing)
+    assert toast_titles(ready) == ["Printed"]
+
+
+def test_bw_mode_shows_a_grey_preview(make_window, gui_env):
+    from PIL import Image
+
+    gui_env.configured = "VC.local"
+    gui_env.query_result = PrinterInfo("Wedge", 25, 4000, 5000, "IDLE", modes=ALL_MODES)
+    win = make_window(settings={"printers": {"vc500w": {"mode": "bw"}}})
+    win.change(background="#ff0000")
+    render_now(win)
+    assert win.print_mode == "bw"
+    png = win.picture.get_paintable().save_to_png_bytes().get_data()
+    assert all(r == g == b for r, g, b, *_ in _colours(Image.open(io.BytesIO(png))))
+    # choosing a colour mode in the print dialog shows colours again
+    win.on_print()
+    mode = win._last_dialog.get_extra_child().get_row_at_index(2)
+    mode.set_selected(0)
+    assert app.load_settings()["printers"]["vc500w"]["mode"] == "vivid"
+    render_now(win)
+    png = win.picture.get_paintable().save_to_png_bytes().get_data()
+    assert (255, 0, 0) in {c[:3] for c in _colours(Image.open(io.BytesIO(png)))}
+    respond(win._last_dialog, "cancel")
+
+
+def test_length_row_is_limited_by_the_printer(window):
+    length = one(window.sidebar, Adw.SpinRow, title="Length")
+    adjustment = length.get_adjustment()
+    assert (adjustment.get_lower(), adjustment.get_upper()) == (15, 431)
+
+
+def test_too_long_label_is_reported(window):
+    window.change(auto_length=False, length_mm=600)
+    render_now(window)
+    assert "Too long for this printer: at most 431.8 mm" in window.size_label.get_text()
+    window.change(length_mm=400)
+    render_now(window)
+    assert "Too long" not in window.size_label.get_text()
 
 
 def test_printer_stages_in_a_banner(ready, gui_env):
@@ -1567,6 +1656,18 @@ def test_mono_printer(make_window, mono, gui_env):
     win.printer_info = None
     win.on_new()
     assert win.label.tape_mm == 24  # no 50 mm here: the widest tape
+
+
+def test_no_length_rows_for_die_cut_printers(make_window, mono, monkeypatch):
+    from dataclasses import replace
+
+    monkeypatch.setattr(mono, "capabilities", replace(mono.capabilities, continuous=False))
+    win = make_window()
+    assert find(win.sidebar, Adw.SpinRow, title="Length")
+    win._on_backend("fake-mono")
+    assert not find(win.sidebar, Adw.SpinRow, title="Length")
+    assert not find(win.sidebar, Adw.SwitchRow, title="Automatic length")
+    assert not find(win.sidebar, Adw.ComboRow, title="Alignment")
 
 
 def test_choosing_the_same_model_changes_nothing(window, mono):
