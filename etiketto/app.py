@@ -1306,12 +1306,12 @@ class App(Adw.Application):
             application_name="Etiketto",
             application_icon=APP_ID,
             version=__version__,
-            developer_name="joshii-h",
+            developer_name="Joshua Hirsig",
             license_type=Gtk.License.AGPL_3_0,
             comments=_("Label designer for the Brother VC-500W"),
             website="https://git.joshuahirsig.xyz/joshii/etiketto",
             issue_url="https://git.joshuahirsig.xyz/joshii/etiketto/issues",
-            copyright="© 2026 joshii-h",
+            copyright="© 2026 Joshua Hirsig",
             # translators: replace with your name to be credited in the About dialog
             translator_credits=_("translator-credits"),
         ).present(self.get_active_window())
