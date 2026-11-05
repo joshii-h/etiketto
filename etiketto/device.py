@@ -42,6 +42,83 @@ def configured_host() -> str | None:
         return None
 
 
+@dataclass
+class FoundPrinter:
+    name: str  # service name, e.g. "Brother VC-500W (Etikettendrucker)"
+    host: str  # mDNS host name, e.g. "VC-500W6382.local"
+    address: str  # IPv4 address
+
+
+def discover(timeout: float = 3.0) -> list[FoundPrinter]:
+    """Find VC-500W printers announced over Bonjour, via the system's Avahi
+    daemon on D-Bus (works inside Flatpak with --system-talk-name)."""
+    try:
+        from gi.repository import Gio, GLib
+    except ImportError:  # pragma: no cover - PyGObject is a hard dependency
+        return []
+    context = GLib.MainContext.new()
+    context.push_thread_default()
+    seen: dict[str, tuple] = {}
+    try:
+        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+
+        def on_item(_conn, _sender, _path, _iface, _signal, params):
+            interface, protocol, name, stype, domain, _flags = params.unpack()
+            if "VC-500W" in name.upper().replace(" ", "-") or "VC500W" in name.upper():
+                seen[name] = (interface, protocol, name, stype, domain)
+
+        # subscribe before creating the browser so no announcement is missed
+        sub = bus.signal_subscribe(
+            "org.freedesktop.Avahi",
+            "org.freedesktop.Avahi.ServiceBrowser",
+            "ItemNew",
+            None,
+            None,
+            Gio.DBusSignalFlags.NONE,
+            on_item,
+        )
+        try:
+            bus.call_sync(
+                "org.freedesktop.Avahi",
+                "/",
+                "org.freedesktop.Avahi.Server",
+                "ServiceBrowserNew",
+                GLib.Variant("(iissu)", (-1, 0, "_ipp._tcp", "local", 0)),
+                GLib.VariantType("(o)"),
+                Gio.DBusCallFlags.NONE,
+                3000,
+                None,
+            )
+            deadline = GLib.get_monotonic_time() + int(timeout * 1_000_000)
+            while GLib.get_monotonic_time() < deadline:
+                context.iteration(False) or GLib.usleep(20_000)
+        finally:
+            bus.signal_unsubscribe(sub)
+
+        found = []
+        for interface, protocol, name, stype, domain in seen.values():
+            try:
+                reply = bus.call_sync(
+                    "org.freedesktop.Avahi",
+                    "/",
+                    "org.freedesktop.Avahi.Server",
+                    "ResolveService",
+                    GLib.Variant("(iisssiu)", (interface, protocol, name, stype, domain, 0, 0)),
+                    GLib.VariantType("(iissssisqaayu)"),
+                    Gio.DBusCallFlags.NONE,
+                    3000,
+                    None,
+                ).unpack()
+            except GLib.Error:
+                continue
+            found.append(FoundPrinter(name=name, host=reply[5], address=reply[7]))
+        return sorted(found, key=lambda f: f.name)
+    except GLib.Error:
+        return []
+    finally:
+        context.pop_thread_default()
+
+
 def resolve_host(host: str) -> str:
     """Return an address for host. Inside Flatpak the runtime has no nss-mdns,
     so *.local names are resolved through the host's Avahi daemon over D-Bus."""
