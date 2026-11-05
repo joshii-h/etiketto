@@ -6,3 +6,8 @@ dist/
 *.mo
 po/*.pot~
 .claude/
+# flatpak-builder
+.flatpak-builder/
+build-dir/
+repo/
+*.flatpak

@@ -1,0 +1,142 @@
+app-id: xyz.joshuahirsig.Etiketto
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: etiketto
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # raw TCP 9100 to the printer
+  - --share=network
+  # resolve VC-500W*.local and browse for printers via the host's Avahi daemon
+  - --system-talk-name=org.freedesktop.Avahi
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - '*.a'
+  - '*.la'
+
+# The runtime already ships PyGObject and pycairo. All Python packages are
+# installed offline from the sources below (Flathub builds without network).
+build-options:
+  env:
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+
+modules:
+  # build-only: Pillow's setup.py imports pybind11.setup_helpers
+  - name: python3-pybind11
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        pybind11-*.whl
+    cleanup:
+      - '*'
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/33/fd/8762f7ee3e4e4be6d1d846cffb4916dd9bb02b2f800d3603718a0efe494c/pybind11-3.1.0-py3-none-any.whl
+        sha256: b8488090f8acffbcb6b5d6a85571a6827a0a2981ffb75e5a0b27b87c4a6b7dd0
+
+  - name: python3-pillow
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/ce/a4/9cc30690a394a8305e8be4c9036aa16d0dfddadd09079860b582f562496d/pillow-13.0.0.tar.gz
+        sha256: cdcd1ba258178f7356d74170c9a81ba4eab6a5d55748bc402a5a2a6fe6be3510
+        x-checker-data:
+          type: pypi
+          name: pillow
+
+  # pure Python
+  - name: python3-segno
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        segno-*.whl
+    cleanup:
+      - /bin/segno
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/d6/02/12c73fd423eb9577b97fc1924966b929eff7074ae6b2e15dd3d30cb9e4ae/segno-1.6.6-py3-none-any.whl
+        sha256: 28c7d081ed0cf935e0411293a465efd4d500704072cdb039778a2ab8736190c7
+        x-checker-data:
+          type: pypi
+          name: segno
+          packagetype: bdist_wheel
+
+  # pure Python
+  - name: python3-python-barcode
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        python_barcode-*.whl
+    cleanup:
+      - /bin/python-barcode
+      # the 0.16.1 wheel also ships its docs/ and tests/ as top-level packages
+      - /lib/python3*/site-packages/docs
+      - /lib/python3*/site-packages/tests
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/b2/34/810885dca784b02e5ad0f71ced9c06ba5e9d33a6493bc886f7470ce82a39/python_barcode-0.16.1-py3-none-any.whl
+        sha256: 5776567478c9a0dae473374bb86631ba0b5ea99aaf302763b364e367ac51f367
+        x-checker-data:
+          type: pypi
+          name: python-barcode
+          packagetype: bdist_wheel
+
+  # native VC-500W protocol; fork until sgrimee/labelprinter-vc500w#1-#3 are merged
+  - name: python3-labelprinter
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+    cleanup:
+      # CLI tools and the CUPS backend are not used by the app
+      - /bin/label-*
+      - /bin/vc500w-cups-backend
+    sources:
+      - type: git
+        url: https://github.com/joshii-h/labelprinter-vc500w.git
+        commit: a6f2957de323f71f364b3acd6624da8b9885587a
+
+  - name: etiketto
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+      - install -Dm644 data/${FLATPAK_ID}.desktop -t ${FLATPAK_DEST}/share/applications
+      - install -Dm644 data/${FLATPAK_ID}.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
+      - install -Dm644 data/${FLATPAK_ID}.svg -t ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps
+      - install -Dm644 data/${FLATPAK_ID}-symbolic.svg -t ${FLATPAK_DEST}/share/icons/hicolor/symbolic/apps
+      - install -Dm644 data/${FLATPAK_ID}.xml -t ${FLATPAK_DEST}/share/mime/packages
+      - |
+        for po in po/*.po; do
+          lang="$(basename "$po" .po)"
+          install -d "${FLATPAK_DEST}/share/locale/$lang/LC_MESSAGES"
+          msgfmt --check-format -o "${FLATPAK_DEST}/share/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
+        done
+    sources:
+      # local checkout, for development builds
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - .venv
+          - .flatpak-builder
+          - build-dir
+          - repo
+          - etiketto/locale
+      # for Flathub, replace the dir source with the release tag:
+      # - type: git
+      #   url: https://git.joshuahirsig.xyz/joshii/etiketto.git
+      #   tag: v0.1.0
+      #   commit: <commit of v0.1.0>
+      #   x-checker-data:
+      #     type: git
+      #     tag-pattern: ^v([\d.]+)$
