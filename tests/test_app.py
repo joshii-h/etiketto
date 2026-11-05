@@ -7,7 +7,11 @@ templates live in tmp_path.
 
 from __future__ import annotations
 
+import errno
+import io
 import json
+from datetime import date, timedelta
+from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -22,7 +26,26 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto import app, device  # noqa: E402
+from etiketto import app  # noqa: E402
+from etiketto.backends.base import (  # noqa: E402
+    BadCassette,
+    CassetteInfo,
+    ColorAdjust,
+    CoverOpen,
+    FoundPrinter,
+    LabelTooLong,
+    NoCassette,
+    PaperJam,
+    PortClosed,
+    PrinterBusy,
+    PrinterError,
+    PrinterInfo,
+    PrinterNotFound,
+    PrinterTimeout,
+    PrintMode,
+    PrintOptions,
+    Progress,
+)
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
 from etiketto.render import mm_to_px, render  # noqa: E402
 from etiketto.units import INCHES, MILLIMETRES  # noqa: E402
@@ -130,7 +153,18 @@ def launched(monkeypatch):
 
         def launch(self, parent, cancellable, callback):
             urls.append(self.url)
+            callback(self, "result")
 
+        def launch_finish(self, result):
+            assert result == "result"
+            if urls.fail:
+                raise GLib.Error("no browser")
+            return True
+
+    class Urls(list):
+        fail = False
+
+    urls = Urls()
     monkeypatch.setattr(Gtk, "UriLauncher", Launcher)
     return urls
 
@@ -183,11 +217,33 @@ def test_image_from_path(tmp_path):
 
 def test_settings_roundtrip(gui_env):
     assert app.load_settings() == {}
-    app.save_settings({"host": "p", "units": "in"})
-    assert app.load_settings() == {"host": "p", "units": "in"}
+    settings = {"units": "in", "printers": {"vc500w": {"host": "p"}}}
+    app.save_settings(settings)
+    assert app.load_settings() == settings
     assert not app.SETTINGS_FILE.with_suffix(".tmp").exists()
     app.SETTINGS_FILE.write_text("{broken")
     assert app.load_settings() == {}
+    app.SETTINGS_FILE.write_text("[1, 2]")
+    assert app.load_settings() == {}
+
+
+def test_settings_of_etiketto_0_1_are_migrated(gui_env):
+    app.save_settings({"host": "p", "safe_mm": 1.0, "cut": "half", "mode": "normal", "units": "mm"})
+    assert app.load_settings() == {
+        "units": "mm",
+        "printers": {"vc500w": {"host": "p", "safe_mm": 1.0, "cut": "half", "mode": "color"}},
+    }
+
+
+def test_migrate_settings_keeps_newer_values():
+    settings = {"host": "old", "mode": "vivid", "printers": {"vc500w": {"host": "new"}}}
+    assert app.migrate_settings(settings) == {
+        "printers": {"vc500w": {"host": "new", "mode": "vivid"}}
+    }
+    assert app.migrate_settings({"host": "h", "printers": "junk"}) == {
+        "printers": {"vc500w": {"host": "h"}}
+    }
+    assert app.migrate_settings({"units": "in"}) == {"units": "in"}
 
 
 def test_locale_dir(tmp_path, monkeypatch):
@@ -233,7 +289,7 @@ def test_write_failure_keeps_dirty(window, tmp_path):
     window.change(tape_mm=12)
     window._write(tmp_path / "missing" / "x.etiketto")
     assert window.dirty and window.path is None
-    assert toast_titles(window)[0].startswith("Cannot save: ")
+    assert toast_titles(window) == ["Cannot save x.etiketto"]  # no path, no errno
     assert window.toast_log[0].get_button_label() == "Report"
 
 
@@ -391,7 +447,7 @@ def test_render_info_overflow_and_warnings(window):
     info = window.size_label.get_text()
     assert info.startswith("25 × 20 mm")
     assert "content scaled down to fit" in info
-    assert "Problem: element 2: empty code" in info
+    assert "Problem: Element 2: the code is empty" in info
 
 
 def test_render_failure_is_shown(window, monkeypatch):
@@ -402,8 +458,12 @@ def test_render_failure_is_shown(window, monkeypatch):
     render_now(window)
     assert window.rendered is None
     assert window.picture.get_paintable() is None
-    assert window.size_label.get_text() == "Problem: kaputt"
+    assert window.size_label.get_text() == "The preview cannot be drawn"
     window._apply_zoom()  # nothing rendered: no crash, no size change
+    # one toast with a report button, not one per keystroke
+    render_now(window)
+    assert toast_titles(window) == ["The preview cannot be drawn"]
+    assert window.toast_log[0].get_button_label() == "Report"
 
 
 def test_debounced_render(window):
@@ -479,7 +539,7 @@ def test_units_automatic_follows_locale(make_window, gui_env, monkeypatch):
         ("mm", 25.0, 1, 25.0, 0, 30.0),
         ("mm", 1.5, 0.1, 1.5, 1, 30.0),
         ("in", 25.4, 1, 1.0, 2, 762.0),
-        ("in", 1.5, 0.1, 0.059, 2, 762.0),
+        ("in", 1.5, 0.1, 0.06, 2, 762.0),
     ],
 )
 def test_length_row_converts(make_window, units, mm, step, value, digits, back):
@@ -499,7 +559,7 @@ def test_safety_margin_is_not_part_of_the_label(window):
     assert window.safe_mm == 1.5
     one(window.sidebar, Adw.SpinRow, title="Safety margin").set_value(0.04)
     assert window.safe_mm == 0.0
-    assert app.load_settings()["safe_mm"] == 0.0
+    assert app.load_settings()["printers"]["vc500w"]["safe_mm"] == 0.0
     assert not window.dirty
     render_now(window)
     assert window.rendered.image.tobytes() == render(window.label, safe_mm=0).image.tobytes()
@@ -511,7 +571,7 @@ def test_host_entry(window, gui_env):
     assert entry.get_text() == ""
     entry.set_text("  192.0.2.5 ")
     entry.emit("apply")
-    assert app.load_settings()["host"] == "192.0.2.5"
+    assert app.load_settings()["printers"]["vc500w"]["host"] == "192.0.2.5"
     assert pump(lambda: window.printer_info is not None)
     assert gui_env.queries == ["192.0.2.5"]
 
@@ -536,7 +596,7 @@ def test_printer_found_adopts_tape_of_new_label(make_window, gui_env):
     assert win.tape_row.get_selected() == 3
     assert not win.dirty and subtitle(win) == "Unsaved label"
     assert win.printer_row.get_title() == "Brother VC-500W"
-    assert win.printer_row.get_subtitle() == "25 mm cassette · 400 mm of 500 mm left"
+    assert win.printer_row.get_subtitle() == "\u206825 mm\u2069 cassette · 4 m of 5 m left"
 
 
 @pytest.mark.parametrize("state", ["dirty", "path"])
@@ -545,13 +605,13 @@ def test_printer_found_keeps_changed_or_saved_label(window, tmp_path, state):
         window.change(margin_mm=1.0)
     else:
         window.path = tmp_path / "x.etiketto"
-    window._printer_found(device.PrinterInfo("Wedge", 12, None, None, "IDLE"))
+    window._printer_found(PrinterInfo("Wedge", 12, None, None, "IDLE"))
     assert window.label.tape_mm == 50
-    assert window.printer_row.get_subtitle() == "12 mm cassette"
+    assert window.printer_row.get_subtitle() == "\u206812 mm\u2069 cassette"
 
 
 def test_printer_without_cassette(window):
-    window._printer_found(device.PrinterInfo("Wedge", None, None, None, "IDLE"))
+    window._printer_found(PrinterInfo("Wedge", None, None, None, "IDLE"))
     assert window.label.tape_mm == 50
     assert window.printer_row.get_subtitle() == "No cassette inserted"
 
@@ -559,16 +619,20 @@ def test_printer_without_cassette(window):
 def test_printer_status_in_inches(make_window, gui_env):
     gui_env.configured = "p"
     win = make_window(settings={"units": "in"})
-    assert win.printer_row.get_subtitle() == "1″ cassette · 1.3 ft of 1.6 ft left"
+    assert win.printer_row.get_subtitle() == "\u20681″\u2069 cassette · 13.1 ft of 16.4 ft left"
 
 
 def test_printer_failed(make_window, gui_env):
     gui_env.configured = "p"
-    gui_env.query_error = OSError("connection refused\ndetails")
+    gui_env.query_error = PortClosed("Connection to 'p:9100' was refused.\nPossible solutions")
     win = make_window()
     assert win.printer_info is None
     assert win.printer_row.get_title() == "Printer not reachable"
-    assert win.printer_row.get_subtitle() == "p: connection refused"
+    # what to do, not the host or labelprinter's English text
+    assert win.printer_row.get_subtitle() == GLib.markup_escape_text(
+        "The printer refuses the connection. Turn on “Port 9100” in the printer's web interface."
+    )
+    assert not win.details_button.get_sensitive()
 
 
 def test_refresh_button(make_window, gui_env):
@@ -584,7 +648,7 @@ def test_refresh_button(make_window, gui_env):
 
 def found(*names):
     return [
-        device.FoundPrinter("Brother VC-500W (%s)" % n, "VC-%s.local" % n, "192.0.2.%d" % i)
+        FoundPrinter("Brother VC-500W (%s)" % n, "VC-%s.local" % n, "192.0.2.%d" % i)
         for i, n in enumerate(names, 10)
     ]
 
@@ -594,14 +658,14 @@ def test_discover_none(window, gui_env):
     assert window.printer_row.get_title() == "Searching for printers…"
     assert pump(lambda: window.printer_row.get_title() == "No printer found")
     assert window.printer_row.get_subtitle().startswith("Make sure the printer is switched on")
-    assert "host" not in window.settings
+    assert window.host is None
 
 
 def test_discover_one_is_used(window, gui_env):
     gui_env.found = found("A")
     one(window.sidebar, Gtk.Button, tooltip="Search for printers").emit("clicked")
     assert pump(lambda: window.printer_info is not None)
-    assert app.load_settings()["host"] == "VC-A.local"
+    assert app.load_settings()["printers"]["vc500w"]["host"] == "VC-A.local"
     assert gui_env.queries == ["VC-A.local"]
     assert toast_titles(window) == ["Found Brother VC-500W (A)"]
     entry = one(window.sidebar, Adw.EntryRow, title="Host name or IP address")
@@ -612,7 +676,7 @@ def test_discover_several_without_choice_takes_first(window, gui_env):
     gui_env.found = found("A", "B")
     window.discover_printers(choose=False)
     assert pump(lambda: window.printer_info is not None)
-    assert window.settings["host"] == "VC-A.local"
+    assert window.host == "VC-A.local"
     assert window.get_visible_dialog() is None
 
 
@@ -624,15 +688,15 @@ def test_discover_several_lets_the_user_choose(window, gui_env):
     assert dialog.get_heading() == "Choose a printer"
     rows = find(dialog.get_extra_child(), Adw.ActionRow)
     assert [r.get_subtitle() for r in rows] == [
-        "VC-A.local · 192.0.2.10",
-        "VC-B.local · 192.0.2.11",
+        "\u2068VC-A.local\u2069 · \u2068192.0.2.10\u2069",
+        "\u2068VC-B.local\u2069 · \u2068192.0.2.11\u2069",
     ]
     # no second search that would take the first printer behind the dialog
     pump(timeout=0.2)
-    assert "host" not in window.settings and gui_env.queries == []
+    assert window.host is None and gui_env.queries == []
     assert window.printer_row.get_title() == "Choose a printer"
     rows[1].emit("activated")
-    assert window.settings["host"] == "VC-B.local"
+    assert window.host == "VC-B.local"
     assert pump(lambda: "VC-B.local" in gui_env.queries)
     assert window.get_visible_dialog() is None
 
@@ -707,7 +771,10 @@ def test_print_flow(ready, gui_env):
     assert dialog.get_heading() == "Print label"
     assert dialog.get_body() == MILLIMETRES.label_size(25, ready.rendered.length_mm)
     box = dialog.get_extra_child()
-    copies, cut, mode = (box.get_row_at_index(i) for i in range(3))
+    copies, cut, mode, colour = (box.get_row_at_index(i) for i in range(4))
+    assert box.get_row_at_index(4) is None
+    assert [mode.get_model().get_string(i) for i in range(2)] == ["Vivid", "Normal"]
+    assert colour.get_title() == "Colour adjustment"
     copies.set_value(3)
     cut.set_selected(1)
     mode.set_selected(1)
@@ -716,19 +783,16 @@ def test_print_flow(ready, gui_env):
     assert ready.printing
     assert not ready.print_button.get_sensitive()
     assert ready.print_button.get_label() == "Printing…"
-    assert app.load_settings() == {"cut": "half", "mode": "normal"}
+    assert app.load_settings()["printers"]["vc500w"] == {"cut": "half", "mode": "color"}
 
     assert pump(lambda: not ready.printing)
     assert len(gui_env.prints) == 1
-    image, host, kwargs = gui_env.prints[0]
+    image, host, options = gui_env.prints[0]
     assert host == "VC.local"
-    assert {k: kwargs[k] for k in ("mode", "cut", "copies")} == {
-        "mode": "normal",
-        "cut": "half",
-        "copies": 3,
-    }
-    # printer orientation: width = tape width
-    assert image.size == (mm_to_px(25), ready.rendered.image.width)
+    assert options == PrintOptions(copies=3, cut="half", mode="color", data_format="jpeg")
+    # rendered in the worker for the printer: label space at the preview resolution
+    assert image.size == ready.rendered.image.size
+    assert image.height == mm_to_px(25)
     assert ready.print_button.get_sensitive()
     assert ready.print_button.get_label() == "Print"
     assert toast_titles(ready) == ["Printed"]
@@ -747,23 +811,35 @@ def test_print_dialog_cancel(ready, gui_env):
 
 
 def test_print_without_host(window, gui_env):
-    window._start_print(1, "full", "vivid")
-    assert toast_titles(window) == ["No printer configured"]
+    window._start_print(PrintOptions())
+    assert toast_titles(window) == ["No printer yet – search for one or enter its address"]
     assert not window.printing and gui_env.prints == []
 
 
-def test_print_error_offers_report(ready, gui_env, launched):
-    gui_env.print_error = OSError("paper jam")
-    ready._start_print(2, "full", "vivid")
+def test_print_error_dialog_with_details_and_report(ready, gui_env, launched):
+    gui_env.print_error = PaperJam("print_state=ERROR print_job_error=JAM")
+    ready._start_print(PrintOptions(copies=2))
     assert pump(lambda: not ready.printing)
-    toast = ready.toast_log[-1]
-    assert toast.get_title() == "Printing failed: paper jam"
-    assert toast.get_button_label() == "Report"
     assert ready.print_button.get_label() == "Print"
-    toast.emit("button-clicked")
+    assert ready.toast_log == []  # a dialog, not a toast
+    dialog = ready.get_visible_dialog()
+    assert dialog is ready._last_dialog
+    assert dialog.get_heading() == "Printing failed"
+    assert dialog.get_body() == "The label is jammed. Open the cover, remove it and try again."
+    expander = dialog.get_extra_child()
+    assert isinstance(expander, Gtk.Expander) and not expander.get_expanded()
+    assert expander.get_child().get_label() == "print_state=ERROR print_job_error=JAM"
+    respond(dialog, "close")
+    assert launched == []
+    ready._print_done(PaperJam("print_state=ERROR print_job_error=JAM"))
+    respond(ready.get_visible_dialog(), "report")
     query = parse_qs(urlparse(launched[0]).query)
-    assert query["title"] == ["Problem: Printing failed: paper jam"]
-    assert "- Printer: VC-500W, 25 mm cassette, IDLE" in query["body"][0]
+    assert query["title"] == [
+        "Problem: The label is jammed. Open the cover, remove it and try again."
+    ]
+    body = query["body"][0]
+    assert "print_job_error=JAM" in body
+    assert "- Printer: Brother VC-500W, 25 mm cassette, IDLE" in body
 
 
 def test_report_problem(window, launched):
@@ -784,9 +860,11 @@ def test_report_problem(window, launched):
         )
         in body
     )
-    window.printer_info = device.PrinterInfo("Wedge", None, None, None, "ERROR")
+    window.printer_info = PrinterInfo("Wedge", None, None, None, "ERROR", firmware="2026031504")
     window.report_problem("boom")
-    assert "VC-500W, no cassette, ERROR" in parse_qs(urlparse(launched[1]).query)["body"][0]
+    body = parse_qs(urlparse(launched[1]).query)["body"][0]
+    assert "- Printer: Brother VC-500W, no cassette, ERROR, firmware 2026031504" in body
+    assert window.toast_log == []  # the browser opened
 
 
 # --- files -----------------------------------------------------------------------------
@@ -811,14 +889,15 @@ def test_open_broken_file(window, tmp_path):
     for name, content in (("bad.etiketto", "{"), ("wide.etiketto", json.dumps({"tape_mm": 7}))):
         (tmp_path / name).write_text(content)
         window.open_file(tmp_path / name)
+    (tmp_path / "new.etiketto").write_text(json.dumps({"version": 99}))
+    window.open_file(tmp_path / "new.etiketto")
     window.open_file(tmp_path / "missing.etiketto")
-    titles = toast_titles(window)
-    assert [t.split(":")[0] for t in titles] == [
-        "Cannot open bad.etiketto",
-        "Cannot open wide.etiketto",
+    assert toast_titles(window) == [
+        "bad.etiketto is not an Etiketto label",
+        "The file is damaged: wide.etiketto",
+        "This label needs a newer version of Etiketto",
         "Cannot open missing.etiketto",
     ]
-    assert "unsupported tape width 7 mm" in titles[1]
     assert window.path is None
 
 
@@ -882,7 +961,7 @@ def test_save_template(window, file_dialog, gui_env):
     assert window.path is None and window.dirty  # the open label is unchanged
     file_dialog.result = gui_env.tmp / "missing" / "x.etiketto"
     window.on_save_template()
-    assert toast_titles(window)[-1].startswith("Cannot save: ")
+    assert toast_titles(window)[-1] == "Cannot save x.etiketto"
 
 
 def test_export_png(window, file_dialog, tmp_path):
@@ -899,7 +978,17 @@ def test_export_png(window, file_dialog, tmp_path):
     assert toast_titles(window) == ["Exported"]
     file_dialog.result = tmp_path / "missing" / "x.PNG"
     window.on_export()
-    assert toast_titles(window)[-1].startswith("Cannot save: ")
+    assert toast_titles(window)[-1] == "Cannot save x.PNG"
+
+
+def test_export_png_render_failure(window, tmp_path, monkeypatch):
+    def broken(*_args, **_kwargs):
+        raise RuntimeError("kaputt")
+
+    monkeypatch.setattr(app, "render", broken)
+    window.export_png(tmp_path / "x.png")
+    assert toast_titles(window) == ["The preview cannot be drawn"]
+    assert not (tmp_path / "x.png").exists()
 
 
 def test_templates_menu(window, gui_env):
@@ -932,7 +1021,7 @@ def test_open_template_starts_unsaved_label(window, gui_env, tmp_path):
     window.activate_action("win.open-template", GLib.Variant.new_string(str(path)))
     assert window.label.tape_mm == 9 and window.path is None and not window.dirty
     window.activate_action("win.open-template", GLib.Variant.new_string(str(tmp_path / "no")))
-    assert toast_titles(window) and window.label.tape_mm == 9
+    assert toast_titles(window) == ["Cannot open template no"] and window.label.tape_mm == 9
 
 
 def test_new_label(window):
@@ -940,7 +1029,7 @@ def test_new_label(window):
     window.activate_action("win.new", None)
     respond(window.get_visible_dialog(), "discard")
     assert window.label == Label(tape_mm=50, elements=[TextElement(text="Label")])
-    window.printer_info = device.PrinterInfo("Wedge", 19, None, None, "IDLE")
+    window.printer_info = PrinterInfo("Wedge", 19, None, None, "IDLE")
     window.on_new()
     assert window.label.tape_mm == 19 and not window.dirty
 
@@ -1077,3 +1166,420 @@ def test_rtl_detection_follows_the_loaded_catalog():
     assert not app.translation_is_rtl(Catalog("de"))
     assert not app.translation_is_rtl(Catalog(""))
     assert not app.translation_is_rtl(object())  # NullTranslations without info()
+
+
+# --- messages ---------------------------------------------------------------------------
+
+I = "⁨%s⁩"  # noqa: E741 - isolated text, as in the interface
+
+
+def test_warning_texts():
+    from etiketto.render import RenderWarning
+
+    texts = {
+        "code_empty": "Element 2: the code is empty",
+        "ean13_digits": "Element 2: EAN-13 needs exactly 12 digits",
+        "ean13_check": "Element 2: the EAN-13 check digit is wrong",
+        "code128_charset": "Element 2: Code 128 only accepts Latin letters, digits and punctuation",
+        "image_unreadable": "Element 2: the image cannot be read",
+        "element_failed": "Element 2 cannot be drawn",
+    }
+    for key, text in texts.items():
+        assert app.warning_text(RenderWarning(key, {"n": 2})) == text
+    assert app.warning_text(RenderWarning("no_room")) == (
+        "Safety margin, border and edge spacing leave no room – reduce them"
+    )
+    assert app.warning_text(RenderWarning("fixed_too_short")) == (
+        "The fixed length is shorter than the spacing – increase it"
+    )
+    assert app.warning_text(RenderWarning("background_unreadable")) == (
+        "The background image cannot be read"
+    )
+    assert app.warning_text(RenderWarning("from_the_future")) == "from_the_future"
+
+
+@pytest.mark.parametrize(
+    "error, start",
+    [
+        (PrinterNotFound(), "The printer cannot be found."),
+        (PrinterTimeout(), "The printer does not answer."),
+        (PortClosed(), "The printer refuses the connection."),
+        (NoCassette(), "No cassette is inserted."),
+        (CoverOpen(), "The printer's cover is open."),
+        (PaperJam(), "The label is jammed."),
+        (BadCassette(), "The cassette is not recognised."),
+        (PrinterBusy(), "The printer is busy."),
+        (PrinterError("SEQUENCE ERROR"), "The printer reported a problem."),
+        (OSError("anything else"), "The printer reported a problem."),
+    ],
+)
+def test_printer_error_texts(error, start):
+    text = app.printer_error_text(error, MILLIMETRES)
+    assert text.startswith(start)
+    assert "SEQUENCE" not in text and "anything" not in text  # details stay out
+
+
+def test_printer_error_too_long_uses_the_unit():
+    error = LabelTooLong("17.5 in", max_mm=431.8)
+    assert app.printer_error_text(error, MILLIMETRES) == (
+        "The label is too long for this printer: at most 431.8 mm."
+    )
+    assert app.printer_error_text(error, INCHES).endswith("at most 17.00 in.")
+
+
+def test_stage_texts():
+    assert app.stage_text("PREHEATING") == "Warming up…"
+    assert app.stage_text("COOLDOWN") == "Cooling down…"
+    assert app.stage_text("CLEANING") == "Cleaning…"
+    assert app.stage_text("READY_FOR_CUT") == "Swipe the printer's panel to cut the label"
+    assert app.stage_text("PRINTING") is None and app.stage_text("") is None
+
+
+def test_label_and_save_error_texts():
+    from etiketto.model import LabelError
+
+    assert app.label_error_text(LabelError("not_label", "x"), "a.etiketto") == (
+        "a.etiketto is not an Etiketto label"
+    )
+    assert app.label_error_text(LabelError("newer", "x"), "a.etiketto") == (
+        "This label needs a newer version of Etiketto"
+    )
+    assert app.label_error_text(LabelError("damaged", "x"), "a.etiketto") == (
+        "The file is damaged: a.etiketto"
+    )
+    for code in (errno.EACCES, errno.EPERM, errno.EROFS):
+        assert app.save_error_text(OSError(code, "x"), "a") == (
+            "Cannot save a: no permission to write there"
+        )
+    for code in (errno.ENOSPC, errno.EDQUOT):
+        assert app.save_error_text(OSError(code, "x"), "a") == "Cannot save a: the disk is full"
+    assert app.save_error_text(OSError(errno.EIO, "x"), "a") == "Cannot save a"
+
+
+def _with_cassette(made):
+    return PrinterInfo("Wedge", 25, None, None, "IDLE", cassette=CassetteInfo(made=made))
+
+
+def test_cassette_age_hint():
+    today = date(2026, 11, 5)
+    assert app.cassette_age_hint(_with_cassette(date(2018, 5, 29)), today) == (
+        "This cassette seems to be from May 2018. Old ZINK paper prints paler colours."
+    )
+    assert app.cassette_age_hint(_with_cassette(today - timedelta(days=731)), today)
+    assert app.cassette_age_hint(_with_cassette(today - timedelta(days=730)), today) is None
+    assert app.cassette_age_hint(_with_cassette(None), today) is None
+    assert app.cassette_age_hint(PrinterInfo("Wedge", 25, None, None, "IDLE"), today) is None
+    assert app.cassette_age_hint(None, today) is None
+    assert [app.month_name(m) for m in (1, 12)] == ["January", "December"]
+
+
+# --- printer details and the cassette ------------------------------------------------------
+
+ALL_MODES = (PrintMode("vivid", 317, 0), PrintMode("color", 264, 1), PrintMode("bw", 400, 2))
+
+
+@pytest.fixture
+def detailed(make_window, gui_env):
+    """Connected to a printer that reports modes, firmware and an old cassette."""
+    gui_env.configured = "VC.local"
+    gui_env.query_result = PrinterInfo(
+        "Wedge",
+        25,
+        4000,
+        5000,
+        "IDLE",
+        modes=ALL_MODES,
+        firmware="2026031504",
+        cassette=CassetteInfo("ABC123456", "180529-0116G", date(2018, 5, 29), 24.1),
+    )
+    return make_window()
+
+
+def test_printer_details_dialog(detailed):
+    assert detailed.details_button.get_sensitive()
+    one(detailed.sidebar, Gtk.Button, tooltip="Printer details").emit("clicked")
+    dialog = detailed.get_visible_dialog()
+    assert dialog is detailed._last_dialog and dialog.get_heading() == "Printer details"
+    rows = find(dialog.get_extra_child(), Adw.ActionRow)
+    assert {r.get_title(): r.get_subtitle() for r in rows} == {
+        "Model": "Brother VC-500W",
+        "Address": I % "VC.local",
+        "Firmware": "2026031504",
+        "Cassette": I % "25 mm",
+        "Remaining tape": "4 m of 5 m left",
+        "Printable width": "24.1 mm",
+        "Lot number": I % "ABC123456",
+        "Serial number": I % "180529-0116G",
+        "Probably made": "May 2018",
+    }
+    assert all(r.has_css_class("property") for r in rows)
+    assert dialog.get_body().startswith("This cassette seems to be from May 2018.")
+    respond(dialog, "close")
+
+
+def test_printer_details_only_what_is_known(window):
+    window.show_printer_details()  # not connected: nothing to show
+    assert window.get_visible_dialog() is None
+    window.printer_info = PrinterInfo("Wedge", None, None, None, "IDLE")
+    assert window.printer_details() == [("Model", "Brother VC-500W")]
+    window.show_printer_details()
+    assert window.get_visible_dialog().get_body() == ""
+    respond(window.get_visible_dialog(), "close")
+
+
+def test_old_cassette_hint_row(detailed, gui_env):
+    hint = detailed.cassette_hint
+    assert hint.get_visible()
+    assert hint.get_title() == (
+        "This cassette seems to be from May 2018. Old ZINK paper prints paler colours."
+    )
+    gui_env.query_result = PrinterInfo("Wedge", 25, None, None, "IDLE")
+    detailed.refresh_printer()
+    assert pump(lambda: not hint.get_visible())
+    detailed._printer_found(_with_cassette(date(2018, 1, 1)))
+    assert hint.get_visible()
+    detailed._printer_failed(PrinterTimeout())
+    assert not hint.get_visible()
+
+
+def test_old_printer_answers_are_dropped(make_window, gui_env):
+    gui_env.configured = "p"
+    win = make_window()
+    current = win._query_generation
+    win._printer_found(PrinterInfo("Wedge", 12, None, None, "IDLE"), current - 1)
+    assert win.printer_info.tape_mm == 25
+    win._printer_failed(PortClosed(), current - 1)
+    assert win.printer_row.get_title() == "Brother VC-500W"
+    win.discover_printers()  # a search makes a pending status answer outdated, too
+    assert win._query_generation == current + 1
+    win._printer_found(PrinterInfo("Wedge", 12, None, None, "IDLE"), current)
+    assert win.printer_info.tape_mm == 25
+    assert pump(lambda: not win.printer_row.get_title().startswith("Searching"))
+
+
+# --- printing: options from the capabilities -------------------------------------------------
+
+
+def test_print_dialog_offers_the_printers_modes(detailed, gui_env):
+    detailed.on_print()
+    box = detailed._last_dialog.get_extra_child()
+    mode = box.get_row_at_index(2)
+    assert [mode.get_model().get_string(i) for i in range(3)] == [
+        "Vivid",
+        "Normal",
+        "Black and white (sharper)",
+    ]
+    mode.set_selected(2)
+    detailed._last_dialog.emit("response", "print")
+    assert pump(lambda: not detailed.printing)
+    assert gui_env.prints[0][2].mode == "bw"
+
+
+def test_saved_mode_the_printer_lacks_falls_back(ready):
+    ready.save_printer_setting(mode="bw", cut="sideways")
+    assert ready._print_choices() == {"copies": 1, "cut": "full", "mode": "vivid"}
+
+
+def test_colour_adjustment(ready, gui_env):
+    ready.on_print()
+    colour = ready._last_dialog.get_extra_child().get_row_at_index(3)
+    assert colour.get_subtitle() == "Not adjusted"
+    reset = [b for b in find(colour, Gtk.Button) if b.get_label() == "Reset"][0]
+    assert not reset.get_sensitive()  # nothing to reset
+    spins = find(colour, Adw.SpinRow)
+    assert [s.get_title() for s in spins] == ["Brightness", "Red", "Green", "Blue"]
+    assert all(s.get_adjustment().get_lower() == -3 for s in spins)
+    assert all(s.get_adjustment().get_upper() == 3 for s in spins)
+    spins[0].set_value(2)
+    spins[2].set_value(-3)
+    assert app.load_settings()["printers"]["vc500w"]["color_adjust"] == {
+        "brightness": 2,
+        "red": 0,
+        "green": -3,
+        "blue": 0,
+    }
+    assert colour.get_subtitle() == "Adjusted" and reset.get_sensitive()
+    assert not ready.dirty  # a printer setting, not part of the label
+    ready._last_dialog.emit("response", "print")
+    assert pump(lambda: not ready.printing)
+    assert gui_env.prints[0][2].color == ColorAdjust(2, 0, -3, 0)
+
+    ready.on_print()  # remembered; the reset button puts everything back
+    colour = ready._last_dialog.get_extra_child().get_row_at_index(3)
+    spins = find(colour, Adw.SpinRow)
+    assert [s.get_value() for s in spins] == [2, 0, -3, 0]
+    reset = [b for b in find(colour, Gtk.Button) if b.get_label() == "Reset"][0]
+    assert reset.get_sensitive()
+    reset.emit("clicked")
+    assert [s.get_value() for s in spins] == [0, 0, 0, 0]
+    assert ready.color_adjust.is_neutral() and colour.get_subtitle() == "Not adjusted"
+    assert not reset.get_sensitive()
+    respond(ready._last_dialog, "cancel")
+
+
+@pytest.mark.parametrize("setting, expected", [("rawrgb", "rawrgb"), ("png", "jpeg")])
+def test_data_format_setting(make_window, gui_env, setting, expected):
+    gui_env.configured = "VC.local"
+    win = make_window(settings={"printers": {"vc500w": {"data_format": setting}}})
+    win.on_print()
+    win._last_dialog.emit("response", "print")
+    assert pump(lambda: not win.printing)
+    image, _host, options = gui_env.prints[0]
+    assert options.data_format == expected
+    # rawrgb: rendered with bleed for the exact width (25 mm at 320 dpi: 333 px)
+    assert image.height == (333 if expected == "rawrgb" else mm_to_px(25))
+
+
+def test_printer_stages_in_a_banner(ready, gui_env):
+    banner = ready.banner
+    ready.printing = True
+    ready._print_progress(Progress(1, 2, "PREHEATING"))
+    assert banner.get_revealed() and banner.get_title() == "Warming up…"
+    assert ready.print_button.get_label() == "Printing 1/2…"
+    ready._print_progress(Progress(2, 2, "PRINTING"))
+    assert not banner.get_revealed()
+    assert ready.print_button.get_label() == "Printing 2/2…"
+    ready._print_progress(Progress(2, 2, "READY_FOR_CUT"))
+    assert banner.get_title() == GLib.markup_escape_text(
+        "Swipe the printer's panel to cut the label"
+    )
+    ready._print_done(None)
+    assert not banner.get_revealed()
+    ready._print_progress(Progress(1, 1, "COOLDOWN"))  # late event after the end
+    assert not banner.get_revealed() and ready.print_button.get_label() == "Print"
+
+    gui_env.stages = ["COOLDOWN"]
+    ready._start_print(PrintOptions())
+    assert pump(lambda: not ready.printing)
+    assert not banner.get_revealed()
+    assert toast_titles(ready)[-1] == "Printed"
+
+
+def test_print_prepare_failure(ready, gui_env, monkeypatch):
+    def broken(label, options, safe_mm):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(gui_env.backend, "prepare", broken)
+    ready._start_print(PrintOptions())
+    assert pump(lambda: not ready.printing)
+    dialog = ready.get_visible_dialog()
+    assert dialog.get_body() == "The label cannot be prepared for printing."
+    assert dialog.get_extra_child().get_child().get_label() == "RuntimeError: boom"
+    assert gui_env.prints == []
+    respond(dialog, "close")
+
+
+def test_print_too_long(ready, gui_env):
+    gui_env.print_error = LabelTooLong("17.5 in", max_mm=431.8)
+    ready._start_print(PrintOptions())
+    assert pump(lambda: not ready.printing)
+    dialog = ready.get_visible_dialog()
+    assert dialog.get_body() == "The label is too long for this printer: at most 431.8 mm."
+    assert dialog.get_extra_child().get_child().get_label() == "17.5 in"
+    respond(dialog, "close")
+
+
+def test_report_without_browser_offers_the_link(window, launched, monkeypatch):
+    launched.fail = True
+    window.report_problem("broken")
+    toast = window.toast_log[-1]
+    assert toast.get_title() == "The browser cannot be opened"
+    assert toast.get_button_label() == "Copy link"
+    copied = []
+    monkeypatch.setattr(window, "get_clipboard", lambda: SimpleNamespace(set=copied.append))
+    toast.emit("button-clicked")
+    assert copied == [launched[0]]
+
+
+def test_length_rows_do_not_change_on_focus(window):
+    """The spin button rounds to its digits when it loses focus: the value it
+    shows must already be rounded, or the label would become "changed"."""
+    got = []
+    for mm in (15.0, 60.25):
+        row = window.length_row("Length", mm, 15, 1000, 1, got.append)
+        row.update()
+        assert row.get_value() == round(mm)
+    assert got == []
+
+
+# --- other printer models ------------------------------------------------------------------
+
+
+@pytest.fixture
+def mono(gui_env):
+    from fake_backends import FakeMono
+
+    import etiketto.backends as registry
+
+    backend = FakeMono()
+    registry.register(backend)
+    yield backend
+    registry.unregister(backend.id)
+
+
+def _colours(image):
+    return {c for _n, c in image.convert("RGB").getcolors(maxcolors=1 << 24)}
+
+
+def test_mono_printer(make_window, mono, gui_env):
+    from PIL import Image
+
+    win = make_window()
+    model = one(win.sidebar, Adw.ComboRow, title="Printer model")
+    assert [model.get_model().get_string(i) for i in range(2)] == [
+        "Brother VC-500W",
+        "Fake Mono 200",
+    ]
+    model.set_selected(1)
+    assert win.label.printer == "fake-mono" and win.backend is mono
+    assert win.label.tape_mm == 24 and win.dirty  # nearest width the printer has
+    tape = win.tape_row.get_model()
+    assert [tape.get_string(i) for i in range(tape.get_n_items())] == ["12 mm", "24 mm"]
+    # no host for this printer yet: searched, found and remembered for it alone
+    assert pump(lambda: win.printer_info is mono.info)
+    assert app.load_settings()["printers"]["fake-mono"]["host"] == "mono.local"
+    assert mono.queries == ["mono.local"]
+    assert "host" not in app.load_settings()["printers"].get("vc500w", {})
+    # no remaining tape: the printer does not report it
+    assert win.printer_row.get_subtitle() == "⁨12 mm⁩ cassette"
+
+    render_now(win)
+    png = win.picture.get_paintable().save_to_png_bytes().get_data()
+    assert _colours(Image.open(io.BytesIO(png))) <= {(0, 0, 0), (255, 255, 255)}
+
+    win.change(tape_mm=12)
+    render_now(win)
+    win.on_print()
+    box = win._last_dialog.get_extra_child()
+    assert box.get_row_at_index(0).get_title() == "Copies"
+    assert box.get_row_at_index(1) is None  # no cut, a single mode, no colour correction
+    win._last_dialog.emit("response", "print")
+    assert pump(lambda: not win.printing)
+    image, host, options = mono.jobs[0]
+    assert host == "mono.local"
+    assert (options.cut, options.mode, options.data_format) == ("", "standard", "jpeg")
+    assert _colours(image) <= {(0, 0, 0), (255, 255, 255)}
+    assert image.height == mm_to_px(12, 203)
+
+    win.dirty = False
+    win.on_new()  # a new label stays with this printer
+    assert win.label.printer == "fake-mono" and win.label.tape_mm == 12
+    win.printer_info = None
+    win.on_new()
+    assert win.label.tape_mm == 24  # no 50 mm here: the widest tape
+
+
+def test_choosing_the_same_model_changes_nothing(window, mono):
+    window._on_backend("vc500w")
+    assert not window.dirty
+
+
+def test_backend_and_settings_are_robust(window):
+    window.label.printer = "plugin-gone"
+    assert window.backend.id == "vc500w"
+    window.settings["printers"] = "junk"
+    assert window.printer_settings == {}
+    window.settings["printers"]["vc500w"] = 5
+    assert window.printer_settings == {}
+    window.printer_settings["safe_mm"] = "wide"
+    assert window.safe_mm == 1.5

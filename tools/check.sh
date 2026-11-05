@@ -7,7 +7,7 @@ echo "== ruff";      $PY/ruff format --check . && $PY/ruff check .
 echo "== tests";     $PY/python -m pytest -q --cov=etiketto --cov-report=term
 echo "== mypy";      $PY/mypy
 echo "== bandit";    $PY/bandit -q -c pyproject.toml -r etiketto -ll
-echo "== complexity"; $PY/xenon --max-absolute D --max-modules B --max-average A etiketto
+echo "== complexity"; $PY/xenon --max-absolute C --max-modules A --max-average A etiketto
 echo "== translations"
 for po in po/*.po; do msgfmt --check -o /dev/null "$po"; done
 echo "== metadata"

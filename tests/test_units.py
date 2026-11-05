@@ -61,9 +61,12 @@ def test_unit_for(setting, environ, expected):
 
 def test_conversion():
     assert INCHES.to_display(25.4) == 1.0
-    assert INCHES.to_display(10) == 0.394  # digits + 1 decimals
+    assert INCHES.to_display(10) == 0.39  # the digits the spin button shows
+    assert INCHES.to_display(10, 3) == 0.394
     assert INCHES.from_display(2) == pytest.approx(50.8)
-    assert MILLIMETRES.to_display(12.345) == 12.35
+    assert MILLIMETRES.to_display(12.345) == 12.3
+    assert MILLIMETRES.to_display(15.0, 0) == 15  # 15 mm stays 15 mm
+    assert MILLIMETRES.to_display(14.6, 0) == 15
     assert MILLIMETRES.from_display(7.5) == 7.5
 
 
@@ -76,7 +79,12 @@ def test_step(mm_step, expected):
 def test_format():
     assert MILLIMETRES.format(12.34) == "12.3 mm"
     assert INCHES.format(25.4) == "1.00 in"
-    assert MILLIMETRES.format_long(4999.6) == "5000 mm"
+    # like on the cassette box: metres
+    assert MILLIMETRES.format_long(5000) == "5 m"
+    assert MILLIMETRES.format_long(4100) == "4.1 m"
+    assert MILLIMETRES.format_long(4149) == "4.1 m"
+    assert MILLIMETRES.format_long(380) == "0.4 m"
+    assert MILLIMETRES.format_long(4999.6) == "5 m"
     assert INCHES.format_long(5000) == "16.4 ft"
 
 

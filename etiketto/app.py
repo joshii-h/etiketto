@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import copy
+import errno
 import gettext
 import io
 import json
 import sys
 import threading
+from datetime import date
 from pathlib import Path
 
 import gi
@@ -19,16 +21,25 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto import __version__, device, report  # noqa: E402
+from etiketto import __version__, report  # noqa: E402
+from etiketto.backends import DEFAULT_BACKEND, backends, get_backend  # noqa: E402
+from etiketto.backends.base import (  # noqa: E402
+    Backend,
+    ColorAdjust,
+    PrinterError,
+    PrinterInfo,
+    PrintOptions,
+    Progress,
+)
 from etiketto.model import (  # noqa: E402
-    TAPE_WIDTHS_MM,
     CodeElement,
     ImageElement,
     Label,
+    LabelError,
     TextElement,
 )
-from etiketto.render import DEFAULT_SAFE_MM, Rendered, print_image, render  # noqa: E402
-from etiketto.units import default_unit, unit_for  # noqa: E402
+from etiketto.render import DEFAULT_SAFE_MM, Rendered, RenderWarning, render  # noqa: E402
+from etiketto.units import Unit, default_unit, unit_for  # noqa: E402
 
 APP_ID = "xyz.joshuahirsig.Etiketto"
 
@@ -69,7 +80,18 @@ TEMPLATE_DIR = Path(GLib.get_user_data_dir()) / "etiketto" / "templates"
 SETTINGS_FILE = CONFIG_DIR / "settings.json"
 
 CUT_MODES = [("full", _("Full cut")), ("half", _("Half cut")), ("none", _("No cut"))]
-PRINT_MODES = [("vivid", _("Vivid")), ("normal", _("Normal"))]
+# print modes by protocol name; unknown modes are shown by their name
+MODE_NAMES = {
+    "vivid": _("Vivid"),
+    "color": _("Normal"),
+    "bw": _("Black and white (sharper)"),
+}
+COLOR_ADJUST_ROWS = [
+    ("brightness", _("Brightness")),
+    ("red", _("Red")),
+    ("green", _("Green")),
+    ("blue", _("Blue")),
+]
 ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
 SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13")]
@@ -81,11 +103,31 @@ PREVIEW_PX_PER_MM = 6.0
 # --- small helpers ----------------------------------------------------------
 
 
+# settings of Etiketto 0.1 that belong to the VC-500W
+LEGACY_PRINTER_KEYS = ("host", "safe_mm", "cut", "mode")
+
+
+def migrate_settings(settings: dict) -> dict:
+    """Move the printer settings of Etiketto 0.1 to settings["printers"]["vc500w"]."""
+    legacy = {key: settings.pop(key) for key in LEGACY_PRINTER_KEYS if key in settings}
+    if not legacy:
+        return settings
+    if not isinstance(settings.get("printers"), dict):
+        settings["printers"] = {}
+    entry = settings["printers"].setdefault(DEFAULT_BACKEND, {})
+    if legacy.get("mode") == "normal":  # labelprinter's name for "color"
+        legacy["mode"] = "color"
+    for key, value in legacy.items():
+        entry.setdefault(key, value)
+    return settings
+
+
 def load_settings() -> dict:
     try:
-        return json.loads(SETTINGS_FILE.read_text())
+        settings = json.loads(SETTINGS_FILE.read_text())
     except (OSError, ValueError):
         return {}
+    return migrate_settings(settings) if isinstance(settings, dict) else {}
 
 
 def save_settings(settings: dict) -> None:
@@ -176,6 +218,110 @@ def element_icon(element) -> str:
     return "view-grid-symbolic"
 
 
+# --- messages ---------------------------------------------------------------
+# Lower layers report codes; the texts are made (and translated) here.
+
+
+def warning_text(warning: RenderWarning) -> str:
+    texts = {
+        "code_empty": _("Element %(n)d: the code is empty"),
+        "ean13_digits": _("Element %(n)d: EAN-13 needs exactly 12 digits"),
+        "ean13_check": _("Element %(n)d: the EAN-13 check digit is wrong"),
+        "code128_charset": _(
+            "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
+        ),
+        "image_unreadable": _("Element %(n)d: the image cannot be read"),
+        "element_failed": _("Element %(n)d cannot be drawn"),
+        "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
+        "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
+        "background_unreadable": _("The background image cannot be read"),
+    }
+    return texts.get(warning.key, warning.key) % warning.params
+
+
+def printer_error_text(error: Exception, unit: Unit) -> str:
+    """What went wrong and what to do, for any error from a backend."""
+    texts = {
+        "not_found": _(
+            "The printer cannot be found. Check that it is switched on and in the same "
+            "network, or enter its IP address."
+        ),
+        "timeout": _("The printer does not answer. Check that it is switched on and awake."),
+        "port_closed": _(
+            "The printer refuses the connection. Turn on “Port 9100” in the printer's "
+            "web interface."
+        ),
+        "no_cassette": _("No cassette is inserted. Insert one and try again."),
+        "cover_open": _("The printer's cover is open. Close it and try again."),
+        "jam": _("The label is jammed. Open the cover, remove it and try again."),
+        "bad_cassette": _("The cassette is not recognised. Insert it again or try another one."),
+        "busy": _("The printer is busy. Wait a moment and try again."),
+        "too_long": _("The label is too long for this printer: at most %(max)s."),
+        "generic": _(
+            "The printer reported a problem. Switch it off and on again, then try once more."
+        ),
+    }
+    if not isinstance(error, PrinterError):
+        return texts["generic"]
+    text = texts.get(error.code, texts["generic"])
+    if error.code == "too_long":
+        text %= {"max": unit.format(float(error.params.get("max_mm", 0)))}
+    return text
+
+
+def stage_text(stage: str) -> str | None:
+    """Printer stages worth telling the user about."""
+    return {
+        "PREHEATING": _("Warming up…"),
+        "COOLDOWN": _("Cooling down…"),
+        "CLEANING": _("Cleaning…"),
+        "READY_FOR_CUT": _("Swipe the printer's panel to cut the label"),
+    }.get(stage)
+
+
+def label_error_text(error: LabelError, name: str) -> str:
+    if error.code == "newer":
+        return _("This label needs a newer version of Etiketto")
+    if error.code == "not_label":
+        return _("%s is not an Etiketto label") % name
+    return _("The file is damaged: %s") % name
+
+
+def save_error_text(error: OSError, name: str) -> str:
+    if error.errno in (errno.EACCES, errno.EPERM, errno.EROFS):
+        return _("Cannot save %s: no permission to write there") % name
+    if error.errno in (errno.ENOSPC, errno.EDQUOT):
+        return _("Cannot save %s: the disk is full") % name
+    return _("Cannot save %s") % name
+
+
+def month_name(month: int) -> str:
+    return (
+        _("January"),
+        _("February"),
+        _("March"),
+        _("April"),
+        _("May"),
+        _("June"),
+        _("July"),
+        _("August"),
+        _("September"),
+        _("October"),
+        _("November"),
+        _("December"),
+    )[month - 1]
+
+
+def cassette_age_hint(info: PrinterInfo | None, today: date | None = None) -> str | None:
+    """A hint for cassettes that seem to be more than two years old."""
+    made = info.cassette.made if info and info.cassette else None
+    if made is None or ((today or date.today()) - made).days <= 730:
+        return None
+    return _(
+        "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints paler colours."
+    ) % {"month": month_name(made.month), "year": made.year}
+
+
 # --- window -----------------------------------------------------------------
 
 
@@ -188,9 +334,11 @@ class Window(Adw.ApplicationWindow):
         self.path: Path | None = None
         self.dirty = False
         self.rendered: Rendered | None = None
-        self.printer_info: device.PrinterInfo | None = None
+        self.printer_info: PrinterInfo | None = None
         self.printing = False
         self._render_source = 0
+        self._render_error: str | None = None
+        self._query_generation = 0  # answers of older printer queries are dropped
         self.zoom = 1.0
         self.fit_zoom = True
         self._last_dialog = None
@@ -198,6 +346,8 @@ class Window(Adw.ApplicationWindow):
         self.toasts = Adw.ToastOverlay()
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(self._build_header())
+        self.banner = Adw.Banner(revealed=False)  # printer stage while printing
+        toolbar.add_top_bar(self.banner)
         toolbar.set_content(self._build_body())
         self.toasts.set_child(toolbar)
         self.set_content(self.toasts)
@@ -326,10 +476,69 @@ class Window(Adw.ApplicationWindow):
         for group in self._groups:
             self.sidebar.add(group)
 
+    # --- printer backend and its settings -----------------------------------------
+
+    @property
+    def backend(self) -> Backend:
+        try:
+            return get_backend(self.label.printer)
+        except KeyError:  # a plugin that went away since the label was opened
+            return get_backend(DEFAULT_BACKEND)
+
+    @property
+    def printer_settings(self) -> dict:
+        """Settings of the current printer model (settings["printers"][id])."""
+        printers = self.settings.get("printers")
+        if not isinstance(printers, dict):
+            printers = self.settings["printers"] = {}
+        entry = printers.get(self.backend.id)
+        if not isinstance(entry, dict):
+            entry = printers[self.backend.id] = {}
+        return entry
+
+    def save_printer_setting(self, **values) -> None:
+        self.printer_settings.update(values)
+        save_settings(self.settings)
+
+    @property
+    def color_adjust(self) -> ColorAdjust:
+        return ColorAdjust.from_dict(self.printer_settings.get("color_adjust"))
+
+    @property
+    def data_format(self) -> str:
+        """ "jpeg" or "rawrgb" (exact geometry); only in settings.json for now."""
+        value = self.printer_settings.get("data_format", "jpeg")
+        return value if value in self.backend.capabilities.data_formats else "jpeg"
+
+    def _backend_row(self) -> Adw.ComboRow:
+        items = [(b.id, b.name) for b in backends()]
+        return combo_row(_("Printer model"), items, self.backend.id, self._on_backend)
+
+    def _on_backend(self, backend_id: str) -> None:
+        if backend_id == self.label.printer:
+            return
+        self.label.printer = backend_id
+        widths = self.backend.capabilities.tape_widths_mm
+        if self.label.tape_mm not in widths:
+            self.label.tape_mm = min(widths, key=lambda w: abs(w - self.label.tape_mm))
+        self.printer_info = None
+        self.rebuild_sidebar()
+        self.mark_changed()
+        self.refresh_printer()
+
     def _printer_group(self) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup(title=_("Printer"))
+        if len(backends()) > 1:
+            group.add(self._backend_row())
         self.printer_row = Adw.ActionRow(title=_("Searching…"))
-        self.printer_row.set_subtitle_lines(2)
+        self.printer_row.set_subtitle_lines(3)
+        self.details_button = Gtk.Button(
+            icon_name="dialog-information-symbolic", tooltip_text=_("Printer details")
+        )
+        self.details_button.add_css_class("flat")
+        self.details_button.set_valign(Gtk.Align.CENTER)
+        self.details_button.connect("clicked", lambda _b: self.show_printer_details())
+        self.printer_row.add_suffix(self.details_button)
         refresh = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text=_("Refresh"))
         refresh.add_css_class("flat")
         refresh.set_valign(Gtk.Align.CENTER)
@@ -343,6 +552,11 @@ class Window(Adw.ApplicationWindow):
         search.connect("clicked", lambda _b: self.discover_printers(choose=True))
         self.printer_row.add_suffix(search)
         group.add(self.printer_row)
+        self.cassette_hint = Adw.ActionRow(visible=False, activatable=False)
+        self.cassette_hint.set_title_lines(0)
+        self.cassette_hint.add_css_class("dim-label")
+        self.cassette_hint.add_prefix(Gtk.Image(icon_name="dialog-information-symbolic"))
+        group.add(self.cassette_hint)
         self._update_printer_row()
 
         host = Adw.EntryRow(title=_("Host name or IP address"))
@@ -394,13 +608,14 @@ class Window(Adw.ApplicationWindow):
     def length_row(self, title, mm, lower_mm, upper_mm, step_mm, on_change_mm, subtitle=None):
         """A spin row that shows a millimetre value in the chosen unit."""
         unit = self.unit
+        digits = unit.digits if step_mm < 1 or unit.key == "in" else 0
         row = spin_row(
             title,
-            unit.to_display(mm),
-            unit.to_display(lower_mm),
-            unit.to_display(upper_mm),
+            unit.to_display(mm, digits),
+            unit.to_display(lower_mm, digits),
+            unit.to_display(upper_mm, digits),
             unit.step(step_mm),
-            unit.digits if step_mm < 1 or unit.key == "in" else 0,
+            digits,
             lambda v: on_change_mm(round(unit.from_display(v), 3)),
             subtitle=(subtitle % {"unit": unit.symbol}) if subtitle else unit.symbol,
         )
@@ -408,19 +623,21 @@ class Window(Adw.ApplicationWindow):
 
     @property
     def safe_mm(self) -> float:
-        return float(self.settings.get("safe_mm", DEFAULT_SAFE_MM))
+        value = self.printer_settings.get("safe_mm", DEFAULT_SAFE_MM)
+        return float(value) if isinstance(value, (int, float)) else DEFAULT_SAFE_MM
 
     def _on_safe_margin(self, value: float) -> None:
         # a printer setting, not part of the label: no dirty flag
-        self.settings["safe_mm"] = round(value, 1)
-        save_settings(self.settings)
+        self.save_printer_setting(safe_mm=round(value, 1))
         self.schedule_render()
 
     def _label_group(self) -> Adw.PreferencesGroup:
         lab = self.label
         group = Adw.PreferencesGroup(title=_("Label"))
 
-        widths = [(str(w), self.unit.tape_name(w)) for w in TAPE_WIDTHS_MM]
+        widths = [
+            (str(w), self.unit.tape_name(w)) for w in self.backend.capabilities.tape_widths_mm
+        ]
         self.tape_row = combo_row(
             _("Tape width"), widths, str(lab.tape_mm), lambda v: self.change(tape_mm=int(v))
         )
@@ -704,15 +921,16 @@ class Window(Adw.ApplicationWindow):
 
     def _do_render(self) -> bool:
         self._render_source = 0
+        backend = self.backend
         try:
-            self.rendered = render(self.label, safe_mm=self.safe_mm)
-        except Exception as e:  # noqa: BLE001 - keep the app usable, show the reason
-            self.rendered = None
-            self.picture.set_paintable(None)
-            self.size_label.set_text(_("Problem: %s") % e)
+            self.rendered = render(self.label, dpi=backend.capabilities.dpi, safe_mm=self.safe_mm)
+            preview = backend.preview(self.rendered.image)
+        except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
+            self._render_failed(e)
             return False
+        self._render_error = None
         buf = io.BytesIO()
-        self.rendered.image.save(buf, format="PNG")
+        preview.save(buf, format="PNG")
         texture = Gdk.Texture.new_from_bytes(GLib.Bytes.new(buf.getvalue()))
         self.picture.set_paintable(texture)
         self._apply_zoom()
@@ -721,9 +939,20 @@ class Window(Adw.ApplicationWindow):
         if self.rendered.overflow:
             info += " · " + _("content scaled down to fit")
         if self.rendered.warnings:
-            info += " · " + _("Problem: %s") % "; ".join(self.rendered.warnings)
+            problems = "; ".join(warning_text(w) for w in self.rendered.warnings)
+            info += " · " + _("Problem: %s") % problems
         self.size_label.set_text(info)
         return False
+
+    def _render_failed(self, error: Exception) -> None:
+        self.rendered = None
+        self.picture.set_paintable(None)
+        message = _("The preview cannot be drawn")
+        self.size_label.set_text(message)
+        details = "%s: %s" % (type(error).__name__, error)
+        if details != self._render_error:  # once, not on every keystroke
+            self._render_error = details
+            self.error(message, details)
 
     def _apply_zoom(self) -> None:
         if not self.rendered:
@@ -749,19 +978,20 @@ class Window(Adw.ApplicationWindow):
 
     @property
     def host(self) -> str | None:
-        return self.settings.get("host") or device.configured_host()
+        return self.printer_settings.get("host") or self.backend.configured_host()
 
     def _on_host_apply(self, row: Adw.EntryRow) -> None:
-        self.settings["host"] = row.get_text().strip()
-        save_settings(self.settings)
+        self.save_printer_setting(host=row.get_text().strip())
         self.refresh_printer()
 
     def discover_printers(self, choose: bool = False) -> None:
-        """Look for VC-500W printers on the network (Bonjour via Avahi)."""
+        """Look for printers of the current model on the network."""
+        self._query_generation += 1  # a pending status answer is outdated now
         self._update_printer_row(_("Searching for printers…"), "")
+        backend = self.backend
 
         def work():
-            found = device.discover()
+            found = backend.discover()
             GLib.idle_add(self._printers_discovered, found, choose)
 
         threading.Thread(target=work, daemon=True).start()
@@ -785,7 +1015,7 @@ class Window(Adw.ApplicationWindow):
         for printer in found:
             row = Adw.ActionRow(
                 title=GLib.markup_escape_text(printer.name),
-                subtitle="%s · %s" % (printer.host, printer.address),
+                subtitle="%s · %s" % (isolate(printer.host), isolate(printer.address)),
                 activatable=True,
             )
             row.connect("activated", self._on_printer_chosen, dialog, printer.host)
@@ -802,8 +1032,7 @@ class Window(Adw.ApplicationWindow):
         return False
 
     def use_printer(self, host: str) -> None:
-        self.settings["host"] = host
-        save_settings(self.settings)
+        self.save_printer_setting(host=host)
         self.rebuild_sidebar()
         self.refresh_printer()
 
@@ -813,61 +1042,128 @@ class Window(Adw.ApplicationWindow):
             # nothing configured yet: look for one on the network
             self.discover_printers()
             return
-        self._update_printer_row(_("Connecting…"), host)
+        self._query_generation += 1
+        generation = self._query_generation
+        backend = self.backend
+        self._update_printer_row(_("Connecting…"), isolate(host))
 
         def work():
             try:
-                info = device.query(host)
-                GLib.idle_add(self._printer_found, info)
+                info = backend.query(host)
+                GLib.idle_add(self._printer_found, info, generation)
             except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self._printer_failed, host, str(e))
+                GLib.idle_add(self._printer_failed, e, generation)
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _printer_found(self, info: device.PrinterInfo) -> bool:
+    def _outdated(self, generation: int | None) -> bool:
+        return generation is not None and generation != self._query_generation
+
+    def _printer_found(self, info: PrinterInfo, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
         self.printer_info = info
         self._update_printer_row()
+        widths = self.backend.capabilities.tape_widths_mm
         if (
-            info.tape_mm
+            info.tape_mm in widths
             and info.tape_mm != self.label.tape_mm
             and self.path is None
             and not self.dirty
         ):
             self.label.tape_mm = info.tape_mm
-            self.tape_row.set_selected(TAPE_WIDTHS_MM.index(info.tape_mm))
+            self.tape_row.set_selected(widths.index(info.tape_mm))
             self.dirty = False
             self._update_title()
         return False
 
-    def _printer_failed(self, host: str, error: str) -> bool:
+    def _printer_failed(self, error: Exception, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
         self.printer_info = None
-        self._update_printer_row(
-            _("Printer not reachable"), "%s: %s" % (host, (error.splitlines() or [""])[0])
-        )
+        self._update_printer_row(_("Printer not reachable"), printer_error_text(error, self.unit))
         return False
+
+    def _remaining_text(self, info: PrinterInfo) -> str | None:
+        if not self.backend.capabilities.reports_remaining:
+            return None
+        if info.remaining_mm is None or not info.total_mm:
+            return None
+        return _("%(left)s of %(total)s left") % {
+            "left": self.unit.format_long(info.remaining_mm),
+            "total": self.unit.format_long(info.total_mm),
+        }
+
+    def _printer_summary(self, info: PrinterInfo) -> str:
+        if not info.tape_mm:
+            return _("No cassette inserted")
+        parts = [_("%s cassette") % isolate(self.unit.tape_name(info.tape_mm))]
+        remaining = self._remaining_text(info)
+        if remaining:
+            parts.append(remaining)
+        return " · ".join(parts)
 
     def _update_printer_row(self, title: str | None = None, subtitle: str | None = None) -> None:
         if not hasattr(self, "printer_row"):
             return
         info = self.printer_info
-        if title is None and info:
-            title = "Brother VC-500W"  # the printer reports its codename ("Wedge")
-            if info.tape_mm:
-                unit = self.unit
-                parts = [_("%s cassette") % unit.tape_name(info.tape_mm)]
-                if info.remaining_mm is not None and info.total_mm:
-                    parts.append(
-                        _("%(left)s of %(total)s left")
-                        % {
-                            "left": unit.format_long(info.remaining_mm),
-                            "total": unit.format_long(info.total_mm),
-                        }
-                    )
-                subtitle = " · ".join(parts)
-            else:
-                subtitle = _("No cassette inserted")
+        connected = False
+        if title is None and info is not None:
+            # the printer itself reports a codename (the VC-500W says "Wedge")
+            title, subtitle, connected = self.backend.name, self._printer_summary(info), True
         self.printer_row.set_title(GLib.markup_escape_text(title or _("Searching…")))
         self.printer_row.set_subtitle(GLib.markup_escape_text(subtitle or ""))
+        self.details_button.set_sensitive(connected)
+        hint = cassette_age_hint(info) if connected else None
+        self.cassette_hint.set_title(GLib.markup_escape_text(hint or ""))
+        self.cassette_hint.set_visible(hint is not None)
+
+    def printer_details(self) -> list[tuple[str, str]]:
+        """(title, value) pairs for the details dialog; empty values left out."""
+        info = self.printer_info
+        if info is None:
+            return []
+        unit = self.unit
+        rows = [
+            (_("Model"), self.backend.name),
+            (_("Address"), isolate(self.host or "")),
+            (_("Firmware"), info.firmware),
+        ]
+        if info.tape_mm:
+            rows.append((_("Cassette"), isolate(unit.tape_name(info.tape_mm))))
+        rows.append((_("Remaining tape"), self._remaining_text(info) or ""))
+        cassette = info.cassette
+        if cassette:
+            printable = unit.format(cassette.printable_mm) if cassette.printable_mm else ""
+            made = cassette.made
+            rows += [
+                (_("Printable width"), printable),
+                (_("Lot number"), isolate(cassette.lot) if cassette.lot else ""),
+                (_("Serial number"), isolate(cassette.serial) if cassette.serial else ""),
+                # the production date is read from the serial number: a guess
+                (_("Probably made"), "%s %d" % (month_name(made.month), made.year) if made else ""),
+            ]
+        return [(title, value) for title, value in rows if value and value != isolate("")]
+
+    def show_printer_details(self) -> None:
+        details = self.printer_details()
+        if not details:
+            return
+        dialog = Adw.AlertDialog(heading=_("Printer details"))
+        box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        box.add_css_class("boxed-list")
+        for title, value in details:
+            row = Adw.ActionRow(title=title, subtitle=GLib.markup_escape_text(value))
+            row.add_css_class("property")
+            row.set_subtitle_selectable(True)
+            box.append(row)
+        hint = cassette_age_hint(self.printer_info)
+        if hint:
+            dialog.set_body(hint)
+        dialog.set_extra_child(box)
+        dialog.add_response("close", _("Close"))
+        self._last_dialog = dialog
+        dialog.present(self)
 
     # --- printing ----------------------------------------------------------------------
 
@@ -886,8 +1182,8 @@ class Window(Adw.ApplicationWindow):
                     "inserted. The printer would scale it to the tape."
                 )
                 % {
-                    "label": self.unit.tape_name(self.label.tape_mm),
-                    "tape": self.unit.tape_name(info.tape_mm),
+                    "label": isolate(self.unit.tape_name(self.label.tape_mm)),
+                    "tape": isolate(self.unit.tape_name(info.tape_mm)),
                 },
             )
             dialog.add_response("cancel", _("Cancel"))
@@ -902,6 +1198,71 @@ class Window(Adw.ApplicationWindow):
         if response == "print":
             self._print_dialog()
 
+    def _print_choices(self) -> dict:
+        """Copies, cut and mode for the print dialog, from the last print."""
+        caps = self.backend.capabilities
+        cut = self.printer_settings.get("cut", "full")
+        modes = [m.id for m in self.backend.modes(self.printer_info)]
+        mode = self.printer_settings.get("mode")
+        return {
+            "copies": 1,
+            "cut": cut if cut in caps.cut_modes else (caps.cut_modes or ("",))[0],
+            "mode": mode if mode in modes else modes[0],
+        }
+
+    def _print_rows(self, choices: dict) -> list[Gtk.Widget]:
+        """Only what the printer can do: no cut row for printers without a
+        cutter, no mode row with a single mode, colour correction if supported."""
+        caps = self.backend.capabilities
+        rows: list[Gtk.Widget] = [
+            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
+        ]
+        if caps.cut_modes:
+            cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
+            rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
+        modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self.backend.modes(self.printer_info)]
+        if len(modes) > 1:
+            rows.append(
+                combo_row(_("Colours"), modes, choices["mode"], lambda v: choices.update(mode=v))
+            )
+        if caps.supports_color_adjust:
+            rows.append(self._color_adjust_row())
+        return rows
+
+    def _color_adjust_row(self) -> Adw.ExpanderRow:
+        """Brightness and colour balance, a printer setting kept in settings.json."""
+        row = Adw.ExpanderRow(title=_("Colour adjustment"))
+        adjust = self.color_adjust
+        spins = []
+        reset = Gtk.Button(label=_("Reset"), valign=Gtk.Align.CENTER)
+        for name, title in COLOR_ADJUST_ROWS:
+            spin = spin_row(
+                title,
+                getattr(adjust, name),
+                -ColorAdjust.STEPS,
+                ColorAdjust.STEPS,
+                1,
+                0,
+                lambda v, n=name: self._set_color_adjust(row, reset, n, int(v)),
+            )
+            spins.append(spin)
+            row.add_row(spin)
+        reset.add_css_class("flat")
+        reset.connect("clicked", lambda _b: [spin.set_value(0) for spin in spins])
+        row.add_suffix(reset)
+        self._show_color_adjust(row, reset)
+        return row
+
+    def _show_color_adjust(self, row: Adw.ExpanderRow, reset: Gtk.Button) -> None:
+        neutral = self.color_adjust.is_neutral()
+        row.set_subtitle(_("Not adjusted") if neutral else _("Adjusted"))
+        reset.set_sensitive(not neutral)
+
+    def _set_color_adjust(self, row, reset, name: str, value: int) -> None:
+        values = dict(self.color_adjust.to_dict(), **{name: value})
+        self.save_printer_setting(color_adjust=ColorAdjust.from_dict(values).to_dict())
+        self._show_color_adjust(row, reset)
+
     def _print_dialog(self) -> None:
         if self.rendered is None:
             return
@@ -911,16 +1272,9 @@ class Window(Adw.ApplicationWindow):
         )
         box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         box.add_css_class("boxed-list")
-        options = {
-            "copies": 1,
-            "cut": self.settings.get("cut", "full"),
-            "mode": self.settings.get("mode", "vivid"),
-        }
-        box.append(spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: options.update(copies=int(v))))
-        box.append(combo_row(_("Cut"), CUT_MODES, options["cut"], lambda v: options.update(cut=v)))
-        box.append(
-            combo_row(_("Colours"), PRINT_MODES, options["mode"], lambda v: options.update(mode=v))
-        )
+        choices = self._print_choices()
+        for row in self._print_rows(choices):
+            box.append(row)
         dialog.set_extra_child(box)
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("print", _("Print"))
@@ -929,51 +1283,91 @@ class Window(Adw.ApplicationWindow):
 
         def response(_d, result):
             if result == "print":
-                self.settings.update(cut=options["cut"], mode=options["mode"])
-                save_settings(self.settings)
-                self._start_print(options["copies"], options["cut"], options["mode"])
+                self.save_printer_setting(cut=choices["cut"], mode=choices["mode"])
+                self._start_print(
+                    PrintOptions(
+                        copies=choices["copies"],
+                        cut=choices["cut"],
+                        mode=choices["mode"],
+                        color=self.color_adjust,
+                        data_format=self.data_format,
+                    )
+                )
 
         dialog.connect("response", response)
         self._last_dialog = dialog
         dialog.present(self)
 
-    def _start_print(self, copies: int, cut: str, mode: str) -> None:
+    def _start_print(self, options: PrintOptions) -> None:
         host = self.host
         if not host:
-            self.toast(_("No printer configured"))
+            self.toast(_("No printer yet – search for one or enter its address"))
             return
-        image = print_image(render(copy.deepcopy(self.label), safe_mm=self.safe_mm))
+        backend, label, safe_mm = self.backend, copy.deepcopy(self.label), self.safe_mm
         self.printing = True
         self.print_button.set_sensitive(False)
         self.print_button.set_label(_("Printing…"))
 
-        def progress(n, total):
-            GLib.idle_add(
-                self.print_button.set_label,
-                _("Printing %(n)d/%(total)d…") % {"n": n, "total": total},
-            )
+        def progress(event: Progress):
+            GLib.idle_add(self._print_progress, event)
 
         def work():
+            # rendering a long label takes a moment: not in the main loop
             try:
-                device.print_label(
-                    image, host, mode=mode, cut=cut, copies=copies, progress=progress
-                )
+                image = backend.prepare(label, options, safe_mm)
+            except Exception as e:  # noqa: BLE001
+                GLib.idle_add(self._print_done, e, _("The label cannot be prepared for printing."))
+                return
+            try:
+                backend.print_label(image, host, options, progress)
                 GLib.idle_add(self._print_done, None)
             except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self._print_done, str(e))
+                GLib.idle_add(self._print_done, e)
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _print_done(self, error: str | None) -> bool:
+    def _print_progress(self, event: Progress) -> bool:
+        if self.printing:
+            self.print_button.set_label(
+                _("Printing %(n)d/%(total)d…") % {"n": event.copy, "total": event.copies}
+            )
+            text = stage_text(event.stage)
+            self.banner.set_title(GLib.markup_escape_text(text or ""))
+            self.banner.set_revealed(text is not None)
+        return False
+
+    def _print_done(self, error: Exception | None, message: str | None = None) -> bool:
         self.printing = False
         self.print_button.set_sensitive(True)
         self.print_button.set_label(_("Print"))
+        self.banner.set_revealed(False)
         if error:
-            self.error(_("Printing failed: %s") % error)
+            self.print_failed(error, message or printer_error_text(error, self.unit))
         else:
             self.toast(_("Printed"))
         self.refresh_printer()
         return False
+
+    def print_failed(self, error: Exception, message: str) -> None:
+        """A dialog: what happened and what to do, the original text on request."""
+        details = getattr(error, "details", "") or "%s: %s" % (type(error).__name__, error)
+        dialog = Adw.AlertDialog(heading=_("Printing failed"), body=message)
+        expander = Gtk.Expander(label=_("Details"))
+        expander.set_child(Gtk.Label(label=details, wrap=True, selectable=True, xalign=0))
+        dialog.set_extra_child(expander)
+        dialog.add_response("report", _("Report"))
+        dialog.add_response("close", _("Close"))
+        dialog.set_default_response("close")
+        dialog.set_close_response("close")
+        problem = message + "\n\n" + details
+
+        def response(_dialog, result):
+            if result == "report":
+                self.report_problem(problem)
+
+        dialog.connect("response", response)
+        self._last_dialog = dialog
+        dialog.present(self)
 
     # --- files -------------------------------------------------------------------------
 
@@ -1008,8 +1402,10 @@ class Window(Adw.ApplicationWindow):
     def open_file(self, path: Path) -> None:
         try:
             self.set_label(Label.load(path), path)
-        except (OSError, ValueError, TypeError) as e:
-            self.error(_("Cannot open %(name)s: %(error)s") % {"name": path.name, "error": e})
+        except LabelError as e:
+            self.error(label_error_text(e, path.name), str(e))
+        except OSError as e:
+            self.error(_("Cannot open %s") % path.name, str(e))
 
     def on_open(self, *_args) -> None:
         dialog = Gtk.FileDialog(title=_("Open label"), filters=self._label_filter())
@@ -1063,7 +1459,7 @@ class Window(Adw.ApplicationWindow):
             try:
                 self.label.save(path)
             except OSError as e:
-                self.error(_("Cannot save: %s") % e)
+                self.error(save_error_text(e, path.name), str(e))
                 return
             self.toast(_("Saved %s") % path.name)
 
@@ -1073,7 +1469,7 @@ class Window(Adw.ApplicationWindow):
         try:
             self.label.save(path)
         except OSError as e:
-            self.error(_("Cannot save: %s") % e)
+            self.error(save_error_text(e, path.name), str(e))
             return
         self.path = path
         self.dirty = False
@@ -1091,16 +1487,24 @@ class Window(Adw.ApplicationWindow):
                 return
             if path.suffix.lower() != ".png":
                 path = path.with_suffix(".png")
-            try:
-                render(self.label, safe_mm=self.safe_mm).image.save(
-                    path, format="PNG", dpi=(317, 317)
-                )
-            except Exception as e:  # noqa: BLE001
-                self.error(_("Cannot save: %s") % e)
-                return
-            self.toast(_("Exported"))
+            self.export_png(path)
 
         dialog.save(self, None, done)
+
+    def export_png(self, path: Path) -> None:
+        backend = self.backend
+        dpi = backend.capabilities.dpi
+        try:
+            image = backend.preview(render(self.label, dpi=dpi, safe_mm=self.safe_mm).image)
+        except Exception as e:  # noqa: BLE001
+            self.error(_("The preview cannot be drawn"), "%s: %s" % (type(e).__name__, e))
+            return
+        try:
+            image.save(path, format="PNG", dpi=(dpi, dpi))
+        except OSError as e:
+            self.error(save_error_text(e, path.name), str(e))
+            return
+        self.toast(_("Exported"))
 
     def _fill_templates(self) -> None:
         self.template_menu.remove_all()
@@ -1121,8 +1525,8 @@ class Window(Adw.ApplicationWindow):
         def load():
             try:
                 label = Label.load(path)
-            except (OSError, ValueError, TypeError) as e:
-                self.toast(str(e))
+            except (OSError, LabelError) as e:
+                self.error(_("Cannot open template %(name)s") % {"name": path.stem}, str(e))
                 return
             # a template starts a new, unsaved label
             self.set_label(label, None)
@@ -1131,10 +1535,12 @@ class Window(Adw.ApplicationWindow):
 
     def on_new(self, *_args) -> None:
         def reset():
-            tape = (
-                self.printer_info.tape_mm if self.printer_info and self.printer_info.tape_mm else 50
-            )
-            self.set_label(Label(tape_mm=tape, elements=[TextElement(text=_("Label"))]), None)
+            widths = self.backend.capabilities.tape_widths_mm
+            inserted = self.printer_info.tape_mm if self.printer_info else None
+            tape = inserted if inserted in widths else (50 if 50 in widths else widths[-1])
+            label = Label(tape_mm=tape, printer=self.backend.id)
+            label.elements = [TextElement(text=_("Label"))]
+            self.set_label(label, None)
 
         self._confirm_discard(reset)
 
@@ -1170,29 +1576,54 @@ class Window(Adw.ApplicationWindow):
     def toast(self, text: str) -> None:
         self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(text), timeout=4))
 
-    def error(self, text: str) -> None:
-        """A toast for problems, with a button to report them."""
+    def error(self, text: str, details: str | None = None) -> None:
+        """A toast for problems, with a button to report them; the details
+        (original error text) only go into the report."""
         toast = Adw.Toast(title=GLib.markup_escape_text(text), timeout=8)
         toast.set_button_label(_("Report"))
-        toast.connect("button-clicked", lambda _t: self.report_problem(text))
+        problem = text + ("\n\n" + details if details else "")
+        toast.connect("button-clicked", lambda _t: self.report_problem(problem))
         self.toasts.add_toast(toast)
 
-    def report_problem(self, problem: str | None = None) -> None:
+    def printer_description(self) -> str | None:
+        """For bug reports: model, cassette, state and firmware (in English)."""
         info = self.printer_info
-        printer = None
-        if info:
-            printer = "VC-500W, %s cassette, %s" % (
-                "%d mm" % info.tape_mm if info.tape_mm else "no",
-                info.state,
-            )
+        if not info:
+            return None
+        parts = [
+            self.backend.name,
+            "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no"),
+            info.state,
+        ]
+        if info.firmware:
+            parts.append("firmware " + info.firmware)
+        return ", ".join(parts)
+
+    def report_problem(self, problem: str | None = None) -> None:
         toolkit = "GTK %d.%d, libadwaita %d.%d" % (
             Gtk.get_major_version(),
             Gtk.get_minor_version(),
             Adw.get_major_version(),
             Adw.get_minor_version(),
         )
-        url = report.issue_url(problem, printer, toolkit)
-        Gtk.UriLauncher.new(url).launch(self, None, None)
+        url = report.issue_url(problem, self.printer_description(), toolkit)
+
+        def launched(launcher, result):
+            try:
+                ok = launcher.launch_finish(result)
+            except GLib.Error:
+                ok = False
+            if not ok:
+                self.offer_link(url)
+
+        Gtk.UriLauncher.new(url).launch(self, None, launched)
+
+    def offer_link(self, url: str) -> None:
+        """No browser could be opened: let the user copy the address."""
+        toast = Adw.Toast(title=_("The browser cannot be opened"), timeout=0)
+        toast.set_button_label(_("Copy link"))
+        toast.connect("button-clicked", lambda _t: self.get_clipboard().set(url))
+        self.toasts.add_toast(toast)
 
     def _install_actions(self) -> None:
         actions = {
@@ -1285,9 +1716,7 @@ class App(Adw.Application):
 
         def prepare():
             # a believable printer instead of the network
-            window.printer_info = device.PrinterInfo(
-                "Wedge", window.label.tape_mm, 412, 500, "IDLE"
-            )
+            window.printer_info = PrinterInfo("Wedge", window.label.tape_mm, 4120, 5000, "IDLE")
             window._update_printer_row()
             if state == "expand":
                 window._expand_index = len(window.label.elements) - 1

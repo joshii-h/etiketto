@@ -4,7 +4,14 @@ import json
 import pytest
 
 from etiketto import model
-from etiketto.model import FORMAT_VERSION, CodeElement, ImageElement, Label, TextElement
+from etiketto.model import (
+    FORMAT_VERSION,
+    CodeElement,
+    ImageElement,
+    Label,
+    LabelError,
+    TextElement,
+)
 
 
 def test_roundtrip(tmp_path, png_b64):
@@ -171,8 +178,59 @@ def test_invalid_values_raise(data):
 
 @pytest.mark.parametrize("data", [[], "x", None, 5])
 def test_not_a_document(data):
-    with pytest.raises(ValueError, match="not an Etiketto file"):
+    with pytest.raises(LabelError, match="not an Etiketto file") as info:
         Label.from_dict(data)
+    assert info.value.code == "not_label"
+
+
+@pytest.mark.parametrize(
+    "data, code",
+    [
+        ({"version": FORMAT_VERSION + 1}, "newer"),
+        ({"printer": "brother-ql-800"}, "newer"),  # a printer this version does not know
+        ({"elements": [{"kind": "video"}]}, "newer"),  # an element kind added later
+        ({"elements": [{"kind": None}]}, "damaged"),
+        ({"elements": [{"text": "no kind"}]}, "damaged"),
+        ({"version": "1"}, "damaged"),
+        ({"version": True}, "damaged"),
+        ({"printer": 5}, "damaged"),
+        ({"tape_mm": 7}, "damaged"),
+        ({"tape_mm": True}, "damaged"),
+        ({"background_image": "abc"}, "damaged"),
+        ({"background_image": [1, 2]}, "damaged"),
+        ({"margin_mm": "1"}, "damaged"),
+    ],
+)
+def test_error_codes(data, code):
+    with pytest.raises(LabelError) as info:
+        Label.from_dict(data)
+    assert info.value.code == code
+    assert str(info.value)  # English detail for bug reports
+
+
+def test_printer_field(tmp_path):
+    assert Label().printer == "vc500w"
+    path = tmp_path / "p.etiketto"
+    Label(tape_mm=12).save(path)
+    assert json.loads(path.read_text())["printer"] == "vc500w"
+    # files of Etiketto 0.1 have no printer: they are for the VC-500W
+    path.write_text(json.dumps({"version": 1, "tape_mm": 19, "elements": []}))
+    assert Label.load(path).printer == "vc500w"
+
+
+def test_tape_widths_come_from_the_printer(monkeypatch):
+    from fake_backends import FakeMono
+
+    import etiketto.backends as registry
+
+    registry.register(FakeMono())
+    try:
+        assert Label.from_dict({"printer": "fake-mono", "tape_mm": 24}).tape_mm == 24
+        with pytest.raises(LabelError) as info:
+            Label.from_dict({"printer": "fake-mono", "tape_mm": 50})
+        assert info.value.code == "damaged"
+    finally:
+        registry.unregister("fake-mono")
 
 
 def test_old_version_accepted_and_booleans_normalised():
@@ -189,11 +247,18 @@ def test_from_dict_does_not_modify_input():
     assert data == {"version": 1, "elements": [], "tape_mm": 12}
 
 
-def test_load_rejects_invalid_json(tmp_path):
+@pytest.mark.parametrize("content", [b"{", b"\xff\xfe\x00binary", b"", b"[1, 2]"])
+def test_load_rejects_what_is_not_a_label(tmp_path, content):
     path = tmp_path / "bad.etiketto"
-    path.write_text("{")
-    with pytest.raises(ValueError):
+    path.write_bytes(content)
+    with pytest.raises(LabelError) as info:
         Label.load(path)
+    assert info.value.code == "not_label"
+
+
+def test_load_missing_file_is_an_os_error(tmp_path):
+    with pytest.raises(OSError):
+        Label.load(tmp_path / "missing.etiketto")
 
 
 def test_image_from_file_and_raw(tmp_path):

@@ -142,7 +142,7 @@ jobs:
         # --max-absolute to C.
         run: |
           .venv/bin/radon cc -s -n C etiketto
-          .venv/bin/xenon --max-absolute D --max-modules A --max-average A etiketto
+          .venv/bin/xenon --max-absolute C --max-modules A --max-average A etiketto
 
       - name: pip-audit (dependencies)
         working-directory: src
