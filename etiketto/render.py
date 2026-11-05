@@ -11,6 +11,7 @@ import io
 import math
 from dataclasses import dataclass, field
 from functools import lru_cache
+from typing import NamedTuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
@@ -29,11 +30,29 @@ MIN_LENGTH_MM = 15.0
 DEFAULT_SAFE_MM = 1.5
 
 
+class RenderWarning(NamedTuple):
+    """A problem with the label; the interface turns key and params into a
+    translated message (keys: code_empty, ean13_digits, ean13_check,
+    code128_charset, image_unreadable, element_failed, no_room,
+    fixed_too_short, background_unreadable)."""
+
+    key: str
+    params: dict = {}
+
+
+class CodeError(ValueError):
+    """The content cannot be encoded in the chosen symbology."""
+
+    def __init__(self, key: str):
+        super().__init__(key)
+        self.key = key
+
+
 @dataclass
 class Rendered:
     image: Image.Image  # label space, RGB
     length_mm: float
-    warnings: list[str] = field(default_factory=list)
+    warnings: list[RenderWarning] = field(default_factory=list)
     overflow: bool = False  # content was scaled down to fit a fixed length
 
 
@@ -141,9 +160,30 @@ def render_image(element: ImageElement, height: int) -> Image.Image:
     return _scaled(element.data, height).copy()
 
 
+def _ean13_ok(data: str) -> bool:
+    digits = [int(c) for c in data[:12]]
+    check = (10 - sum(d * (3 if i % 2 else 1) for i, d in enumerate(digits)) % 10) % 10
+    return int(data[12]) == check
+
+
+def check_code(element: CodeElement) -> None:
+    """Raise CodeError if the content cannot be encoded (python-barcode would
+    silently drop characters or replace a wrong check digit)."""
+    data = element.data
+    if not data:
+        raise CodeError("code_empty")
+    if element.symbology == "ean13":
+        if not data.isascii() or not data.isdigit() or len(data) not in (12, 13):
+            raise CodeError("ean13_digits")
+        if len(data) == 13 and not _ean13_ok(data):
+            raise CodeError("ean13_check")
+    elif element.symbology == "code128":
+        if any(not 32 <= ord(c) <= 126 for c in data):
+            raise CodeError("code128_charset")
+
+
 def render_code(element: CodeElement, height: int) -> Image.Image:
-    if not element.data:
-        raise ValueError("empty code")
+    check_code(element)
     if element.symbology == "qr":
         import segno
 
@@ -207,88 +247,140 @@ def _cover(img: Image.Image, size: tuple[int, int]) -> Image.Image:
 # --- label ------------------------------------------------------------------
 
 
-def render(label: Label, dpi: int = PRINT_DPI, safe_mm: float = DEFAULT_SAFE_MM) -> Rendered:
-    tape = mm_to_px(label.tape_mm, dpi)
+@dataclass
+class _Frame:
+    """Pixel geometry across the tape."""
+
+    tape: int  # printable tape height
+    bleed: int  # background beyond each tape edge
+    margin: int  # spacing at the ends and between elements
+    safe: int
+    border: int
+    frame: int  # kept free of content on every side (safety margin + border)
+    inner: int  # content height
+
+
+def _frame(label: Label, dpi: int, safe_mm: float, tape_px, bleed_px, warnings) -> _Frame:
+    tape = tape_px or mm_to_px(label.tape_mm, dpi)
     edge = mm_to_px(label.edge_mm, dpi) if label.edge_mm > 0 else 0
     margin = mm_to_px(label.margin_mm, dpi) if label.margin_mm > 0 else 0
     border = mm_to_px(label.border_mm, dpi) if label.border_mm > 0 else 0
     safe = mm_to_px(safe_mm, dpi) if safe_mm > 0 else 0
-    frame = safe + border  # kept free of content on every side
-    inner_h = tape - 2 * (edge + frame)
-    warnings: list[str] = []
-    if inner_h < mm_to_px(2, dpi):
-        warnings.append("safety margin, border and edge spacing leave almost no room")
+    frame = safe + border
+    inner = tape - 2 * (edge + frame)
+    if inner < mm_to_px(2, dpi):
+        warnings.append(RenderWarning("no_room"))
         frame = min(frame, max(0, tape // 2 - edge - 1))
-        inner_h = max(1, tape - 2 * (edge + frame))
+        inner = max(1, tape - 2 * (edge + frame))
+    return _Frame(tape, max(0, bleed_px), margin, safe, border, frame, inner)
 
-    parts: list[Image.Image] = []
+
+def _element_warning(element: Element, index: int, error: Exception) -> RenderWarning:
+    if isinstance(error, CodeError):
+        return RenderWarning(error.key, {"n": index})
+    if isinstance(element, ImageElement):
+        return RenderWarning("image_unreadable", {"n": index})
+    return RenderWarning("element_failed", {"n": index})
+
+
+def _parts(label: Label, f: _Frame, dpi: int, warnings) -> list[Image.Image]:
+    parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, inner_h, dpi)
+            part = render_element(element, f.inner, dpi)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
-            warnings.append("element %d: %s" % (index, e))
-            part = _placeholder(inner_h)
-        if part.height > inner_h:  # fixed-size text taller than the tape
+            warnings.append(_element_warning(element, index, e))
+            part = _placeholder(f.inner)
+        if part.height > f.inner:  # fixed-size text taller than the tape
             part = part.resize(
-                (max(1, round(part.width * inner_h / part.height)), inner_h),
+                (max(1, round(part.width * f.inner / part.height)), f.inner),
                 Image.Resampling.LANCZOS,
             )
         parts.append(part)
+    return parts
 
-    gaps = margin * max(0, len(parts) - 1)
-    content_w = sum(p.width for p in parts) + gaps
+
+def _content_width(parts: list[Image.Image], gap: int) -> int:
+    return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
+
+
+def _fit_length(label: Label, parts, f: _Frame, dpi: int, warnings):
+    """Label length, the (possibly scaled) parts and the gap between them."""
     min_len = math.ceil(MIN_LENGTH_MM / 25.4 * dpi)
-    overflow = False
-    margin_scaled = margin
-
+    content_w = _content_width(parts, f.margin)
     if label.auto_length:
-        length = max(min_len, content_w + 2 * (margin + frame))
-    else:
-        length = max(min_len, mm_to_px(label.length_mm, dpi))
-        room = length - 2 * (margin + frame)
-        if parts and room <= 0:
-            warnings.append("the fixed length leaves no room for the content")
-        elif parts and content_w > room:
-            overflow = True
-            scale = room / content_w
-            parts = [
-                p.resize(
-                    (max(1, round(p.width * scale)), max(1, round(p.height * scale))),
-                    Image.Resampling.LANCZOS,
-                )
-                for p in parts
-            ]
-            margin_scaled = round(margin * scale)
-            content_w = sum(p.width for p in parts) + margin_scaled * (len(parts) - 1)
+        return max(min_len, content_w + 2 * (f.margin + f.frame)), parts, f.margin, False
+    length = max(min_len, mm_to_px(label.length_mm, dpi))
+    room = length - 2 * (f.margin + f.frame)
+    if parts and room <= 0:
+        warnings.append(RenderWarning("fixed_too_short"))
+    elif parts and content_w > room:
+        scale = room / content_w
+        parts = [
+            p.resize(
+                (max(1, round(p.width * scale)), max(1, round(p.height * scale))),
+                Image.Resampling.LANCZOS,
+            )
+            for p in parts
+        ]
+        return length, parts, round(f.margin * scale), True
+    return length, parts, f.margin, False
 
-    img = Image.new("RGB", (length, tape), _color(label.background, "#ffffff"))
+
+def _background(label: Label, size: tuple[int, int], warnings) -> Image.Image:
+    img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
             bg = _decoded(label.background_image.data).convert("RGB")
             img.paste(_cover(bg, img.size), (0, 0))
-        except Exception as e:  # noqa: BLE001
-            warnings.append("background image: %s" % e)
+        except Exception:  # noqa: BLE001
+            warnings.append(RenderWarning("background_unreadable"))
+    return img
 
-    free = length - 2 * frame - content_w
+
+def _place(img: Image.Image, label: Label, parts, gap: int, f: _Frame) -> None:
+    length = img.width
+    content_w = _content_width(parts, gap)
     if label.auto_length or label.align == "center":
-        x = frame + free // 2
+        x = f.frame + (length - 2 * f.frame - content_w) // 2
     elif label.align == "end":
-        x = length - frame - margin - content_w
+        x = length - f.frame - f.margin - content_w
     else:
-        x = frame + margin
+        x = f.frame + f.margin
     for part in parts:
-        y = (tape - part.height) // 2
+        y = f.bleed + (f.tape - part.height) // 2
         img.paste(part, (x, y), part)
-        x += part.width + margin_scaled
+        x += part.width + gap
 
-    if border:  # inside the safety margin so it is never cut off
-        draw = ImageDraw.Draw(img)
-        draw.rectangle(
-            (safe, safe, length - 1 - safe, tape - 1 - safe),
-            outline=_color(label.border_color),
-            width=border,
-        )
 
+def _draw_border(img: Image.Image, label: Label, f: _Frame) -> None:
+    if not f.border:
+        return
+    # inside the safety margin so it is never cut off
+    top, bottom = f.bleed + f.safe, f.bleed + f.tape - 1 - f.safe
+    ImageDraw.Draw(img).rectangle(
+        (f.safe, top, img.width - 1 - f.safe, bottom),
+        outline=_color(label.border_color),
+        width=f.border,
+    )
+
+
+def render(
+    label: Label,
+    dpi: int = PRINT_DPI,
+    safe_mm: float = DEFAULT_SAFE_MM,
+    tape_px: int | None = None,
+    bleed_px: int = 0,
+) -> Rendered:
+    """tape_px overrides the tape height from the nominal width; bleed_px adds
+    background beyond both tape edges (the content keeps its place)."""
+    warnings: list[RenderWarning] = []
+    f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
+    parts = _parts(label, f, dpi, warnings)
+    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings)
+    img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
+    _place(img, label, parts, gap, f)
+    _draw_border(img, label, f)
     return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
 
 

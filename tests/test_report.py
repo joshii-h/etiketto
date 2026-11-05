@@ -68,6 +68,7 @@ def test_issue_url_without_problem(root):
     assert "Error message" not in body
     assert "- Printer: not connected" in body
     assert body.startswith("**What happened?**")
+    assert "Please remove anything private (names, addresses) before sending." in body
 
 
 def test_issue_url_title_is_shortened(root):

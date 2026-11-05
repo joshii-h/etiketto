@@ -1,20 +1,23 @@
-"""Shared fixtures: images, labels, a fake label printer and a GTK window.
+"""Shared fixtures: images, labels, a fake VC-500W and a GTK window.
 
-The printer is never contacted: device._connect (and for the GUI tests
-device.query/print_label/discover) are always replaced by fakes.
+The printer is never contacted: vc500w._connect is always replaced, either by
+a refusal (autouse) or by FakeVC500W, which answers the protocol like the
+device does. The GUI tests replace the backend's query/print/discover.
 """
 
 from __future__ import annotations
 
 import base64
 import io
+import socket
 import time
 from types import SimpleNamespace
 
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto import device
+from etiketto.backends import get_backend, vc500w
+from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
 
@@ -59,70 +62,132 @@ def _no_network(monkeypatch):
     def refuse(*_args, **_kwargs):
         raise AssertionError("network access to the printer in a test")
 
-    monkeypatch.setattr(device, "_connect", refuse)
+    monkeypatch.setattr(vc500w, "_connect", refuse)
 
 
-# --- fake labelprinter -----------------------------------------------------
+# --- fake VC-500W on the protocol level ------------------------------------
+
+XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>\n'
+
+
+def answer(code=0, comment="", payload=None) -> str:
+    """A status answer as the printer sends it; read answers carry a payload
+    after the status block (labelprinter skips two bytes before it)."""
+    head = XML_HEAD + "<status>\n<code>%d</code>\n<comment>%s</comment>\n" % (code, comment)
+    if payload is None:
+        return head + "</status>\n"
+    return head + "<datasize>%d</datasize>\n</status>\n\n" % (len(payload) + 1) + payload
+
+
+def status(state="IDLE", stage="SUCCESS", error="NONE", remain=150.0) -> dict:
+    return {"state": state, "stage": stage, "error": error, "remain": remain}
+
+
+class FakeVC500W:
+    """Answers config/status/print requests; records everything."""
+
+    def __init__(self):
+        self.config = {
+            "model_name": "Wedge",
+            "serial_number": "B0123456789",
+            "fw_version_number": "2026031504",
+            "crossweb_dpi": "320",
+            "cassette_type": "1",
+            "width_inches": "1.000",
+            "width_inches_media": "0.950",
+            "media_id": "ABC123456XYZ",
+            "cassette_sn": "180529-0116G133390-0084",
+            "media_length_initial": "197",
+        }
+        self.modes = [("vivid", 0, 317), ("color", 1, 264), ("bw", 2, 400)]
+        self.statuses = [status()]  # one per status request, the last repeats
+        self.after_print = []  # statuses after the data, before turning idle again
+        self.print_code = 0
+        self.print_comment = ""
+        self.log: list = []
+        self.closed = 0
+
+    def config_xml(self) -> str:
+        fields = "".join("<%s>%s</%s>\n" % (k, v, k) for k, v in self.config.items())
+        modes = "".join(
+            "<media_mode>\n<mode>%s</mode>\n<speed>%d</speed>\n<lpi>%d</lpi>\n</media_mode>\n" % m
+            for m in self.modes
+        )
+        return XML_HEAD + "<config>\n" + fields + modes + "</config>\n"
+
+    def status_xml(self) -> str:
+        s = self.statuses.pop(0) if len(self.statuses) > 1 else self.statuses[0]
+        remain = "" if s["remain"] is None else "<remain>%s</remain>\n" % s["remain"]
+        return (
+            XML_HEAD
+            + "<status>\n<print_state>%(state)s</print_state>\n" % s
+            + "<print_job_stage>%(stage)s</print_job_stage>\n" % s
+            + "<print_job_error>%(error)s</print_job_error>\n" % s
+            + remain
+            + "</status>\n"
+        )
+
+    def prints(self) -> list[str]:
+        return [entry[1] for entry in self.log if entry[0] == "print"]
+
+    def data(self) -> list[bytes]:
+        return [entry[1] for entry in self.log if entry[0] == "data"]
+
+    def names(self) -> list[str]:
+        return [entry[0] for entry in self.log]
 
 
 class FakeConnection:
-    def __init__(self, log):
-        self.log = log
-        self.closed = False
+    def __init__(self, device: FakeVC500W):
+        self.device = device
+        self.pending: list[str] = []
+
+    def send_message(self, question):
+        xml = question.get_data()
+        assert xml.startswith(XML_HEAD)
+        device = self.device
+        if "<path>/config.xml</path>" in xml:
+            device.log.append(("config",))
+            self.pending.append(answer(payload=device.config_xml()))
+        elif "<path>/status.xml</path>" in xml:
+            device.log.append(("status",))
+            self.pending.append(answer(payload=device.status_xml()))
+        else:
+            assert "<print>" in xml, xml
+            device.log.append(("print", xml[len(XML_HEAD) :]))
+            self.pending.append(answer(device.print_code, device.print_comment))
+
+    def get_message(self, long_timeout=False, buffer_size=4096):
+        if not self.pending:
+            raise socket.timeout("timed out")
+        self.device.log.append(("read", long_timeout))
+        return self.pending.pop(0)
+
+    def send_file(self, handle):
+        device = self.device
+        device.log.append(("data", handle.read()))
+        device.statuses = list(device.after_print) + [status()]
+        self.pending.append(answer())
 
     def close(self):
-        self.closed = True
-        self.log.append(("close",))
-
-
-class FakeLabelPrinter:
-    """Records every call; states/config/status are set by the test."""
-
-    def __init__(self, log):
-        self.log = log
-        self.states = ["IDLE"]  # print_state returned by successive get_status() calls
-        self.config = SimpleNamespace(model="Wedge", tape_width=2.0, tape_length_initial=100.0)
-        self.remaining = 40.0
-        self.fail_on_print = None  # exception raised by print_jpeg
-        self.jpeg_paths = []
-        self.jpeg_sizes = []
-
-    def get_configuration(self):
-        self.log.append(("get_configuration",))
-        return self.config
-
-    def get_status(self):
-        state = self.states.pop(0) if len(self.states) > 1 else self.states[0]
-        self.log.append(("get_status",))
-        return SimpleNamespace(print_state=state, tape_length_remaining=self.remaining)
-
-    def wait_to_turn_idle(self, timeout):
-        self.log.append(("wait", timeout))
-
-    def print_jpeg(self, handle, mode, cut):
-        self.jpeg_paths.append(handle.name)
-        data = handle.read()
-        with Image.open(io.BytesIO(data)) as img:
-            self.jpeg_sizes.append((img.format, img.size, img.info.get("dpi")))
-        self.log.append(("print_jpeg", mode, cut))
-        if self.fail_on_print:
-            raise self.fail_on_print
+        self.device.closed += 1
+        self.device.log.append(("close",))
 
 
 @pytest.fixture
-def fake_printer(monkeypatch):
-    """Replace device._connect; returns (printer, connection, log, connect_calls)."""
-    log: list = []
-    connection = FakeConnection(log)
-    printer = FakeLabelPrinter(log)
+def printer(monkeypatch):
+    """A fake VC-500W behind vc500w._connect; no real sleeping."""
+    device = FakeVC500W()
     calls = []
+    sleeps = []
 
     def connect(host, port):
         calls.append((host, port))
-        return connection, printer
+        return FakeConnection(device)
 
-    monkeypatch.setattr(device, "_connect", connect)
-    return SimpleNamespace(printer=printer, connection=connection, log=log, calls=calls)
+    monkeypatch.setattr(vc500w, "_connect", connect)
+    monkeypatch.setattr(vc500w, "_sleep", sleeps.append)
+    return SimpleNamespace(device=device, calls=calls, sleeps=sleeps)
 
 
 # --- GTK -------------------------------------------------------------------
@@ -183,33 +248,36 @@ def gtk_app():
 
 @pytest.fixture
 def gui_env(monkeypatch, tmp_path):
-    """Mocked device functions and config paths in tmp_path."""
+    """The VC-500W backend with faked query/print/discover; config in tmp_path."""
     if not gtk_available():
         pytest.skip("no display for GTK")
     from etiketto import app
 
+    backend = get_backend("vc500w")
     env = SimpleNamespace(
         queries=[],
         prints=[],
         discovers=0,
-        query_result=device.PrinterInfo("Wedge", 25, 400, 500, "IDLE"),
+        query_result=PrinterInfo("Wedge", 25, 4000, 5000, "IDLE"),
         query_error=None,
         print_error=None,
+        stages=[],  # printer stages reported while printing
         found=[],
         configured=None,
         tmp=tmp_path,
+        backend=backend,
     )
 
-    def query(host, port=device.DEFAULT_PORT):
+    def query(host):
         env.queries.append(host)
         if env.query_error:
             raise env.query_error
         return env.query_result
 
-    def print_label(image, host, **kwargs):
-        env.prints.append((image, host, kwargs))
-        if kwargs.get("progress"):
-            kwargs["progress"](1, kwargs.get("copies", 1))
+    def print_label(image, host, options, progress=None):
+        env.prints.append((image, host, options))
+        for stage in [""] + env.stages:
+            progress(Progress(1, options.copies, stage))
         if env.print_error:
             raise env.print_error
 
@@ -217,10 +285,10 @@ def gui_env(monkeypatch, tmp_path):
         env.discovers += 1
         return list(env.found)
 
-    monkeypatch.setattr(device, "query", query)
-    monkeypatch.setattr(device, "print_label", print_label)
-    monkeypatch.setattr(device, "discover", discover)
-    monkeypatch.setattr(device, "configured_host", lambda: env.configured)
+    monkeypatch.setattr(backend, "query", query)
+    monkeypatch.setattr(backend, "print_label", print_label)
+    monkeypatch.setattr(backend, "discover", discover)
+    monkeypatch.setattr(backend, "configured_host", lambda: env.configured)
     monkeypatch.setattr(app, "CONFIG_DIR", tmp_path / "config")
     monkeypatch.setattr(app, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
     monkeypatch.setattr(app, "TEMPLATE_DIR", tmp_path / "templates")

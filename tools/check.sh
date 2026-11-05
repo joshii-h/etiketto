@@ -10,7 +10,7 @@ echo "== mypy";      $PY/mypy
 echo "== bandit";    $PY/bandit -q -c pyproject.toml -r etiketto -ll
 echo "== complexity"
 $PY/radon cc -s -n C etiketto
-$PY/xenon --max-absolute D --max-modules A --max-average A etiketto
+$PY/xenon --max-absolute C --max-modules A --max-average A etiketto
 echo "== dependencies"; $PY/pip-audit --progress-spinner off .
 echo "== translations"
 for po in po/*.po; do msgfmt --check -o /dev/null "$po"; done

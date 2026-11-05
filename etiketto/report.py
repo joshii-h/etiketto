@@ -44,6 +44,8 @@ def issue_url(problem: str | None, printer: str | None, toolkit: str, root: str 
         "",
         "<!-- Describe what you did and what you expected. -->",
         "",
+        "_Please remove anything private (names, addresses) before sending._",
+        "",
     ]
     if problem:
         lines += ["**Error message**", "", "```", problem.strip()[:2000], "```", ""]

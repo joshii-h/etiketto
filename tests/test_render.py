@@ -14,7 +14,15 @@ from PIL import Image, ImageChops
 
 from etiketto import render as R
 from etiketto.model import CodeElement, ImageElement, Label, TextElement
-from etiketto.render import MIN_LENGTH_MM, Rendered, mm_to_px, print_image, px_to_mm, render
+from etiketto.render import (
+    MIN_LENGTH_MM,
+    Rendered,
+    RenderWarning,
+    mm_to_px,
+    print_image,
+    px_to_mm,
+    render,
+)
 
 WHITE = (255, 255, 255)
 TAPE = 312  # 25 mm
@@ -152,7 +160,7 @@ def test_fixed_length_without_room_warns(make_label, wide_image):
     rendered = render(
         make_label(auto_length=False, length_mm=15, margin_mm=20, elements=[wide_image])
     )
-    assert "the fixed length leaves no room for the content" in rendered.warnings
+    assert rendered.warnings == [RenderWarning("fixed_too_short")]
     assert not rendered.overflow
 
 
@@ -178,11 +186,11 @@ def test_safe_zero_uses_the_whole_tape(make_label, wide_image):
 
 def test_too_little_room_warns(make_label, wide_image):
     rendered = render(Label(tape_mm=9, edge_mm=1, elements=[wide_image]), safe_mm=3)
-    assert rendered.warnings == ["safety margin, border and edge spacing leave almost no room"]
+    assert rendered.warnings == [RenderWarning("no_room")]
     assert rendered.image.height == 112
     # extreme: the edge spacing alone is wider than the tape
     rendered = render(Label(tape_mm=9, edge_mm=10, elements=[wide_image]), safe_mm=3)
-    assert rendered.warnings[0].startswith("safety margin")
+    assert rendered.warnings == [RenderWarning("no_room")]
     assert rendered.image.height == 112
 
 
@@ -240,8 +248,7 @@ def test_background_image_covers_label(make_label, png_b64):
 
 def test_broken_background_image_warns(make_label):
     rendered = render(make_label(background="#00ff00", background_image=ImageElement(data="Zm9v")))
-    assert len(rendered.warnings) == 1
-    assert rendered.warnings[0].startswith("background image: ")
+    assert rendered.warnings == [RenderWarning("background_unreadable")]
     assert rendered.image.getpixel((0, 0)) == (0, 255, 0)
     # an image element without data is ignored
     assert render(make_label(background_image=ImageElement())).warnings == []
@@ -378,7 +385,7 @@ def test_exif_orientation_is_applied():
 
 def test_garbage_image_gives_warning_and_placeholder(make_label):
     rendered = render(make_label(margin_mm=0, elements=[ImageElement(data="!!not base64!!")]))
-    assert len(rendered.warnings) == 1 and rendered.warnings[0].startswith("element 1: ")
+    assert rendered.warnings == [RenderWarning("image_unreadable", {"n": 1})]
     img = rendered.image
     assert img.width == INNER + 2 * FRAME
     assert img.getpixel((FRAME + INNER // 2, FRAME + 5)) == (255, 230, 230)
@@ -387,7 +394,7 @@ def test_garbage_image_gives_warning_and_placeholder(make_label):
 
 def test_element_errors_are_numbered(make_label, wide_image):
     rendered = render(make_label(elements=[wide_image, CodeElement(data="")]))
-    assert rendered.warnings == ["element 2: empty code"]
+    assert rendered.warnings == [RenderWarning("code_empty", {"n": 2})]
 
 
 # --- codes ---------------------------------------------------------------------
@@ -421,17 +428,41 @@ def test_barcodes_transparent_background_and_colour(symbology, data):
 
 
 @pytest.mark.parametrize(
-    "code, message",
+    "symbology, data, key",
     [
-        (CodeElement(data=""), "empty code"),
-        (CodeElement(data="", symbology="code128"), "empty code"),
-        (CodeElement(data="abc", symbology="ean13"), ""),
+        ("qr", "", "code_empty"),
+        ("code128", "", "code_empty"),
+        ("ean13", "", "code_empty"),
+        ("ean13", "abc", "ean13_digits"),
+        ("ean13", "40063813339", "ean13_digits"),  # 11 digits
+        ("ean13", "40063813339310", "ean13_digits"),  # 14 digits
+        ("ean13", "４００６３８１３３３９３", "ean13_digits"),  # full-width digits
+        ("ean13", "4006381333932", "ean13_check"),  # library would "correct" it
+        ("code128", "Grüße", "code128_charset"),
+        ("code128", "tab\there", "code128_charset"),  # would be dropped silently
+        ("code128", "日本", "code128_charset"),
     ],
 )
-def test_invalid_codes_warn(make_label, code, message):
-    rendered = render(make_label(elements=[code]))
-    assert len(rendered.warnings) == 1
-    assert rendered.warnings[0].startswith("element 1: " + message)
+def test_invalid_codes_warn(make_label, symbology, data, key):
+    rendered = render(make_label(elements=[CodeElement(data=data, symbology=symbology)]))
+    assert rendered.warnings == [RenderWarning(key, {"n": 1})]
+
+
+@pytest.mark.parametrize(
+    "symbology, data",
+    [("ean13", "400638133393"), ("ean13", "4006381333931"), ("code128", " ~Az09!")],
+)
+def test_check_code_accepts(symbology, data):
+    R.check_code(CodeElement(data=data, symbology=symbology))  # no exception
+
+
+def test_other_element_errors(make_label, monkeypatch):
+    def broken(element, height):
+        raise RuntimeError("segno broke")
+
+    monkeypatch.setattr(R, "render_code", broken)
+    rendered = render(make_label(elements=[CodeElement(data="x")]))
+    assert rendered.warnings == [RenderWarning("element_failed", {"n": 1})]
 
 
 def test_valid_codes_render_without_warnings(make_label):
@@ -457,3 +488,36 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     assert sizes[1] == pytest.approx(100 * 100 / 140)  # linear estimate from the probe
     assert len(sizes) > 2 and sizes[-1] < sizes[1]
     assert block.height > 100 * 0.9  # shrinks in small steps, not more than needed
+
+
+# --- exact print geometry: tape height and bleed ---------------------------------
+
+
+def test_tape_px_and_bleed(make_label, png_b64):
+    square = ImageElement(data=png_b64((10, 10), "red"))
+    label = make_label(background="#00ff00", margin_mm=0, border_mm=0.5, elements=[square])
+    rendered = render(label, dpi=320, safe_mm=1.5, tape_px=320, bleed_px=7)
+    img = rendered.image
+    safe, border = mm_to_px(1.5, 320), mm_to_px(0.5, 320)  # 19, 6
+    frame = safe + border
+    assert img.height == 320 + 2 * 7
+    # background across the bleed, content and border keep their place on the tape
+    assert img.getpixel((img.width // 2, 0)) == (0, 255, 0)
+    assert img.getpixel((img.width // 2, img.height - 1)) == (0, 255, 0)
+    assert ink_bbox(img, (0, 255, 0))[1] == 7 + safe  # border top edge
+    inner = 320 - 2 * frame
+    assert img.getpixel((frame + 2, 7 + frame + 2)) == (255, 0, 0)
+    assert img.getpixel((frame + 2, 7 + frame - 1)) != (255, 0, 0)
+    assert img.getpixel((frame + 2, 7 + frame + inner - 1)) == (255, 0, 0)
+    assert img.getpixel((frame + 2, 7 + frame + inner)) != (255, 0, 0)
+    # the border is drawn on the tape, not in the bleed
+    assert img.getpixel((img.width // 2, 7 + safe)) == (0, 0, 0)
+    assert img.getpixel((img.width // 2, 7 + 320 - 1 - safe)) == (0, 0, 0)
+    assert img.getpixel((img.width // 2, 7 + safe - 1)) == (0, 255, 0)
+
+
+def test_bleed_zero_is_the_default(make_label, wide_image):
+    label = make_label(elements=[wide_image])
+    plain = render(label).image
+    assert ImageChops.difference(plain, render(label, bleed_px=0).image).getbbox() is None
+    assert render(label, bleed_px=-3).image.size == plain.size

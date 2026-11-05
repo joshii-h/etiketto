@@ -41,8 +41,10 @@ class Unit:
     factor: float  # display units per millimetre
     digits: int
 
-    def to_display(self, mm: float) -> float:
-        return round(mm * self.factor, self.digits + 1)
+    def to_display(self, mm: float, digits: int | None = None) -> float:
+        """Rounded to the digits the spin button shows, so that focusing it
+        does not change the value (and mark the label as changed)."""
+        return round(mm * self.factor, self.digits if digits is None else digits)
 
     def from_display(self, value: float) -> float:
         return value / self.factor
@@ -59,7 +61,7 @@ class Unit:
     def format_long(self, mm: float) -> str:
         """Tape lengths: metres or feet like on the cassette box."""
         if self.key == "mm":
-            return "%d mm" % round(mm)
+            return "%s m" % ("%.1f" % (mm / 1000)).removesuffix(".0")
         return "%.1f ft" % (mm / MM_PER_INCH / 12)
 
     def tape_name(self, width_mm: int) -> str:
