@@ -172,7 +172,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 - After changing strings:
 
   ```sh
-  xgettext --language=Python --keyword=_ --from-code=UTF-8 \
+  xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --from-code=UTF-8 \
       --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/backends/*.py
   ```
 

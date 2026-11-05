@@ -2,6 +2,9 @@
 
 python3 tools/fill_po.py          # all languages in PLURALS
 python3 tools/fill_po.py de fr   # only these
+
+Strings with a context (pgettext("month name", "May")) are keyed
+"month name\x04May" in strings_<lang>.py, as gettext stores them.
 """
 
 import importlib.util
@@ -72,12 +75,17 @@ def build(lang):
         m = re.search(r'msgid ((?:".*"\n?)+)msgstr', block)
         if not m:
             continue
-        msgid = unquote(m.group(1))
-        if msgid not in table:
-            missing.append(msgid)
-        esc = table.get(msgid, "").replace("\\", "\\\\").replace('"', '\\"')
+        context = re.search(r'msgctxt ((?:".*"\n?)+)msgid', block)
+        key = unquote(m.group(1))
+        ctxt_line = ""
+        if context:
+            key = unquote(context.group(1)) + "\x04" + key
+            ctxt_line = "msgctxt " + context.group(1)
+        if key not in table:
+            missing.append(key)
+        esc = table.get(key, "").replace("\\", "\\\\").replace('"', '\\"')
         comments = "\n".join(line for line in block.splitlines() if line.startswith("#"))
-        out.append('%s\nmsgid %smsgstr "%s"\n' % (comments, m.group(1), esc))
+        out.append('%s\n%smsgid %smsgstr "%s"\n' % (comments, ctxt_line, m.group(1), esc))
     (ROOT / "po" / ("%s.po" % lang)).write_text("\n".join(out), encoding="utf-8")
     return missing
 

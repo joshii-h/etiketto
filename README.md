@@ -34,17 +34,22 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 
 ## Features
 
-- Cassette detection (9, 12, 19, 25, 50 mm) and remaining tape
-- Automatic length (as long as the content) or a fixed length in mm
+- Finds the printer on the network by itself
+- Cassette detection (9, 12, 19, 25, 50 mm), remaining tape and cassette details
+- Automatic length (as long as the content) or a fixed length, in mm or inches
 - Text with any installed font, bold/italic, colour, multiple lines,
   size fitted to the tape or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
 - QR codes, Code 128 and EAN-13 barcodes
 - Live preview at print resolution: what you see is what is printed
-- Print with vivid or normal colours, full cut, half cut or no cut, copies
+- Print with vivid or normal colours or in black and white, full cut, half
+  cut or no cut, copies; colour adjustment (brightness, colour balance)
+- Printer problems explained in plain words, with what to do;
+  *Report a problem* prepares an issue with all the details
 - Save labels as `.etiketto` files (images embedded) and reuse them as templates
 - Drag and drop images or `.etiketto` files onto the window
 - Export as PNG
+- [User documentation](https://etiketto.joshuahirsig.xyz) in English and German
 
 ## Install
 
@@ -114,7 +119,7 @@ uv pip install --python .venv/bin/python -e . pytest ruff
 LANGUAGE=de .venv/bin/python -m etiketto.app
 ```
 
-Translations: `xgettext` → `po/etiketto.pot`, strings in
+Translations: `xgettext` (see CONTRIBUTING.md) → `po/etiketto.pot`, strings in
 `tools/strings_<lang>.py`, `python3 tools/fill_po.py` writes the
 `.po` files; `install.sh` compiles them.
 

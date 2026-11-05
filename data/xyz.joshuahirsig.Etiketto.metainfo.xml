@@ -45,12 +45,15 @@
     </p>
     <p>Features:</p>
     <ul>
-      <li>Detects the inserted cassette (9 to 50 mm) and the remaining tape</li>
-      <li>Automatic length that grows with the content, or a fixed length</li>
+      <li>Finds the printer on the network by itself</li>
+      <li>Detects the inserted cassette (9 to 50 mm), the remaining tape and cassette details</li>
+      <li>Automatic length that grows with the content, or a fixed length in millimetres or inches</li>
       <li>Text in any installed font, images and photos, QR codes and barcodes</li>
       <li>Background colours and images printed edge to edge, borders</li>
-      <li>Vivid colour mode and full, half or no cut, over the network</li>
+      <li>Vivid colours or black and white, full, half or no cut, colour adjustment</li>
+      <li>Printer problems explained in plain words, with a way to report a problem</li>
       <li>Live preview at print resolution, templates, PNG export</li>
+      <li>User documentation in English and German</li>
     </ul>
     <p>
       Etiketto is not affiliated with Brother Industries. Brother and VC-500W are
