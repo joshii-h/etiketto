@@ -163,7 +163,9 @@ def test_element_titles_and_icons():
     assert app.element_title(ImageElement()) == "Image"
     # the code content is isolated so it stays intact inside right-to-left text
     assert app.element_title(CodeElement(data="y" * 50)) == "QR code: \u2068" + "y" * 30 + "\u2069"
-    assert app.element_title(CodeElement(data="123", symbology="ean13")) == "EAN-13: \u2068123\u2069"
+    assert (
+        app.element_title(CodeElement(data="123", symbology="ean13")) == "EAN-13: \u2068123\u2069"
+    )
     assert app.element_icon(TextElement()) == "format-text-bold-symbolic"
     assert app.element_icon(ImageElement()) == "image-x-generic-symbolic"
     assert app.element_icon(CodeElement()) == "view-grid-symbolic"

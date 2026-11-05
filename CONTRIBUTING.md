@@ -56,6 +56,10 @@ uv pip install --python .venv/bin/python -e . pytest pytest-cov ruff
 
 ## Before you open a pull request
 
+Run `tools/check.sh`: it runs the same checks as the CI (formatting, lint,
+tests with coverage, mypy, bandit, complexity, translations, metadata).
+In detail:
+
 ```sh
 .venv/bin/ruff format .
 .venv/bin/ruff check .
