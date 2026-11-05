@@ -5,3 +5,8 @@ dist/
 .venv/
 *.mo
 po/*.pot~
+# flatpak-builder
+.flatpak-builder/
+build-dir/
+repo/
+*.flatpak
