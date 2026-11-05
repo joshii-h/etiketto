@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>xyz.joshuahirsig.Etiketto</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+
+  <name>Etiketto</name>
+  <summary>Design and print colour labels</summary>
+  <summary xml:lang="de">Farbetiketten gestalten und drucken</summary>
+  <summary xml:lang="fr">Créer et imprimer des étiquettes</summary>
+  <summary xml:lang="it">Crea e stampa etichette a colori</summary>
+
+  <developer id="xyz.joshuahirsig">
+    <name>joshii-h</name>
+  </developer>
+
+  <description>
+    <p>
+      Etiketto is a label designer for the Brother VC-500W colour label printer,
+      which prints on ZINK paper. It brings the workflow of Brother's own editor,
+      only available for Windows, macOS and phones, to the Linux desktop.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Detects the inserted cassette (9 to 50 mm) and the remaining tape</li>
+      <li>Automatic length that grows with the content, or a fixed length</li>
+      <li>Text in any installed font, images and photos, QR codes and barcodes</li>
+      <li>Background colours and images printed edge to edge, borders</li>
+      <li>Vivid colour mode and full, half or no cut, over the network</li>
+      <li>Live preview at print resolution, templates, PNG export</li>
+    </ul>
+    <p>
+      Etiketto is not affiliated with Brother Industries. Brother and VC-500W are
+      trademarks of their owners; ZINK is a trademark of ZINK Holdings LLC.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">xyz.joshuahirsig.Etiketto.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default" environment="gnome">
+      <caption>A label with a QR code and text</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/main.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>A label with a QR code and text</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/main-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>Full colour background printed edge to edge</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/colour.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>Full colour background printed edge to edge</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/colour-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>A square sticker with an image and a border</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/sticker.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>A square sticker with an image and a border</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/sticker-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>Print options: copies, cut mode and colour mode</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/print.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>Print options: copies, cut mode and colour mode</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/etiketto/raw/branch/main/docs/screenshots/print-dark.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://git.joshuahirsig.xyz/joshii/etiketto</url>
+  <url type="bugtracker">https://git.joshuahirsig.xyz/joshii/etiketto/issues</url>
+  <url type="vcs-browser">https://git.joshuahirsig.xyz/joshii/etiketto</url>
+  <url type="translate">https://git.joshuahirsig.xyz/joshii/etiketto</url>
+
+  <categories>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>label</keyword>
+    <keyword>printer</keyword>
+    <keyword>sticker</keyword>
+    <keyword>Brother</keyword>
+    <keyword>VC-500W</keyword>
+  </keywords>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#99c1f1</color>
+    <color type="primary" scheme_preference="dark">#1a5fb4</color>
+  </branding>
+
+  <content_rating type="oars-1.1"/>
+
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+
+  <provides>
+    <mediatype>application/x-etiketto</mediatype>
+  </provides>
+
+  <releases>
+    <release version="0.1.0" date="2026-11-05">
+      <description>
+        <p>First release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

@@ -12,16 +12,18 @@ in the printer's own protocol, including the **vivid** colour mode and the
 
 ## Screenshots
 
-![Main window: QR code and text on a 50 mm label](docs/screenshots/main.png)
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/main-dark.png"><img src="docs/screenshots/main.png" alt="Main window: QR code and text on a 50 mm label"></picture>
 
 | | |
 |---|---|
-| ![Full-colour label with a background image](docs/screenshots/colour.png) | ![Square sticker with an image and border](docs/screenshots/sticker.png) |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/colour-dark.png"><img src="docs/screenshots/colour.png" alt="Full-colour label with a background image"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/sticker-dark.png"><img src="docs/screenshots/sticker.png" alt="Square sticker with an image and border"></picture> |
 | Full colour: background image printed edge to edge | Sticker: fixed 50 × 50 mm, image and border |
-| ![Editing a text element](docs/screenshots/expand.png) | ![Print dialog with cut and colour mode](docs/screenshots/print.png) |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/expand-dark.png"><img src="docs/screenshots/expand.png" alt="Editing a text element"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/print-dark.png"><img src="docs/screenshots/print.png" alt="Print dialog with cut and colour mode"></picture> |
 | Text with any font, colour and size | Copies, cut mode, vivid or normal colours |
-| ![German interface, 12 mm cable label](docs/screenshots/cable-de.png) | |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/cable-de-dark.png"><img src="docs/screenshots/cable-de.png" alt="German interface, 12 mm cable label"></picture> | |
 | German interface (also French, Italian), 12 mm cable label | |
+
+Screenshots use the default GNOME style; Etiketto follows your desktop's light or dark mode and accent colour.
 
 The labels shown are in [`docs/examples`](docs/examples); open them with Etiketto.
 

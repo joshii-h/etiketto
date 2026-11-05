@@ -18,6 +18,8 @@ if [ "${1:-}" = "--uninstall" ]; then
     rm -rf "$DATA/etiketto/venv" "$BIN/etiketto" \
         "$DATA/applications/$APP_ID.desktop" \
         "$DATA/icons/hicolor/scalable/apps/$APP_ID.svg" \
+        "$DATA/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" \
+        "$DATA/metainfo/$APP_ID.metainfo.xml" \
         "$DATA/mime/packages/$APP_ID.xml"
     update-mime-database "$DATA/mime" 2>/dev/null || true
     echo "Etiketto removed (labels and templates in $DATA/etiketto/templates are kept)"
@@ -51,11 +53,14 @@ else
     "$VENV/bin/pip" install --quiet --upgrade "$BUILD"
 fi
 
-mkdir -p "$BIN" "$DATA/applications" "$DATA/icons/hicolor/scalable/apps" "$DATA/mime/packages"
+mkdir -p "$BIN" "$DATA/applications" "$DATA/icons/hicolor/scalable/apps" \
+    "$DATA/icons/hicolor/symbolic/apps" "$DATA/mime/packages" "$DATA/metainfo"
 ln -sf "$VENV/bin/etiketto" "$BIN/etiketto"
 # absolute Exec: ~/.local/bin is often not in the session PATH
 sed "s|^Exec=etiketto |Exec=$BIN/etiketto |" "$SRC/data/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
 cp "$SRC/data/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
+cp "$SRC/data/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
+cp "$SRC/data/$APP_ID.metainfo.xml" "$DATA/metainfo/"
 cp "$SRC/data/$APP_ID.xml" "$DATA/mime/packages/"
 update-mime-database "$DATA/mime" 2>/dev/null || true
 update-desktop-database "$DATA/applications" 2>/dev/null || true
