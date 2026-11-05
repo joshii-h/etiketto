@@ -5,3 +5,5 @@ dist/
 .venv/
 *.mo
 po/*.pot~
+.coverage
+.pytest_cache/
