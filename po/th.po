@@ -1,0 +1,514 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: etiketto\n"
+"PO-Revision-Date: 2026-11-05 13:56+0100\n"
+"Last-Translator: Etiketto contributors\n"
+"Language-Team: th\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: etiketto/app.py:55
+msgid "Full cut"
+msgstr "ตัดขาด"
+
+#: etiketto/app.py:55
+msgid "Half cut"
+msgstr "ตัดครึ่ง"
+
+#: etiketto/app.py:55
+msgid "No cut"
+msgstr "ไม่ตัด"
+
+#: etiketto/app.py:56
+msgid "Vivid"
+msgstr "สดใส"
+
+#: etiketto/app.py:56
+msgid "Normal"
+msgstr "ปกติ"
+
+#: etiketto/app.py:57
+msgid "Start"
+msgstr "ต้น"
+
+#: etiketto/app.py:57 etiketto/app.py:58
+msgid "Centre"
+msgstr "กลาง"
+
+#: etiketto/app.py:57
+msgid "End"
+msgstr "ท้าย"
+
+#: etiketto/app.py:58
+msgid "Left"
+msgstr "ซ้าย"
+
+#: etiketto/app.py:58
+msgid "Right"
+msgstr "ขวา"
+
+#: etiketto/app.py:59
+msgid "QR code"
+msgstr "รหัส QR"
+
+#: etiketto/app.py:133
+msgid "Only local files can be used"
+msgstr "ใช้ได้เฉพาะไฟล์ในเครื่องเท่านั้น"
+
+#: etiketto/app.py:139
+#, python-format
+msgid "Not an image: %s"
+msgstr "ไม่ใช่รูปภาพ: %s"
+
+#: etiketto/app.py:145 etiketto/app.py:480 etiketto/app.py:1168
+msgid "Text"
+msgstr "ข้อความ"
+
+#: etiketto/app.py:147
+msgid "Image"
+msgstr "รูปภาพ"
+
+#: etiketto/app.py:167 etiketto/app.py:391 etiketto/app.py:1098
+msgid "Label"
+msgstr "ฉลาก"
+
+#: etiketto/app.py:202
+msgid "Open"
+msgstr "เปิด"
+
+#: etiketto/app.py:209
+msgid "Templates"
+msgstr "แม่แบบ"
+
+#: etiketto/app.py:215
+msgid "Save"
+msgstr "บันทึก"
+
+#: etiketto/app.py:220
+msgid "New label"
+msgstr "ฉลากใหม่"
+
+#: etiketto/app.py:221
+msgid "Save as…"
+msgstr "บันทึกเป็น…"
+
+#: etiketto/app.py:222 etiketto/app.py:1013
+msgid "Save as template…"
+msgstr "บันทึกเป็นแม่แบบ…"
+
+#: etiketto/app.py:223
+msgid "Export PNG…"
+msgstr "ส่งออกเป็น PNG…"
+
+#: etiketto/app.py:224
+msgid "Report a problem…"
+msgstr "รายงานปัญหา…"
+
+#: etiketto/app.py:225
+msgid "About Etiketto"
+msgstr "เกี่ยวกับ Etiketto"
+
+#: etiketto/app.py:228 etiketto/app.py:887 etiketto/app.py:931
+msgid "Print"
+msgstr "พิมพ์"
+
+#: etiketto/app.py:266
+msgid "Fit to window"
+msgstr "พอดีหน้าต่าง"
+
+#: etiketto/app.py:270
+msgid "Zoom out"
+msgstr "ซูมออก"
+
+#: etiketto/app.py:273
+msgid "Zoom in"
+msgstr "ซูมเข้า"
+
+#: etiketto/app.py:300
+msgid "Printer"
+msgstr "เครื่องพิมพ์"
+
+#: etiketto/app.py:301 etiketto/app.py:836
+msgid "Searching…"
+msgstr "กำลังค้นหา…"
+
+#: etiketto/app.py:303
+msgid "Refresh"
+msgstr "รีเฟรช"
+
+#: etiketto/app.py:309
+msgid "Search for printers"
+msgstr "ค้นหาเครื่องพิมพ์"
+
+#: etiketto/app.py:318
+msgid "Host name or IP address"
+msgstr "ชื่อโฮสต์หรือที่อยู่ IP"
+
+#: etiketto/app.py:326
+msgid "Safety margin"
+msgstr "ระยะขอบปลอดภัย"
+
+#: etiketto/app.py:333
+#, python-format
+msgid ""
+"%(unit)s kept free for content and border; the background is printed edge to "
+"edge"
+msgstr "เว้นว่างไว้สำหรับเนื้อหาและกรอบ (%(unit)s) พื้นหลังจะพิมพ์เต็มขอบ"
+
+#: etiketto/app.py:338 etiketto/app.py:344
+msgid "Millimetres"
+msgstr "มิลลิเมตร"
+
+#: etiketto/app.py:338 etiketto/app.py:345
+msgid "Inches"
+msgstr "นิ้ว"
+
+#: etiketto/app.py:341
+msgid "Units"
+msgstr "หน่วย"
+
+#: etiketto/app.py:343
+#, python-format
+msgid "Automatic (%s)"
+msgstr "อัตโนมัติ (%s)"
+
+#: etiketto/app.py:395
+msgid "Tape width"
+msgstr "ความกว้างเทป"
+
+#: etiketto/app.py:399
+msgid "Automatic length"
+msgstr "ความยาวอัตโนมัติ"
+
+#: etiketto/app.py:399
+msgid "As long as the content"
+msgstr "ยาวเท่ากับเนื้อหา"
+
+#: etiketto/app.py:404
+msgid "Length"
+msgstr "ความยาว"
+
+#: etiketto/app.py:406
+msgid "Alignment"
+msgstr "การจัดแนว"
+
+#: etiketto/app.py:421
+msgid "Spacing"
+msgstr "ระยะห่าง"
+
+#: etiketto/app.py:427
+#, python-format
+msgid "%(unit)s at the ends and between elements"
+msgstr "ระยะที่ปลายและระหว่างองค์ประกอบ (%(unit)s)"
+
+#: etiketto/app.py:432
+msgid "Edge spacing"
+msgstr "ระยะขอบ"
+
+#: etiketto/app.py:438
+#, python-format
+msgid "extra %(unit)s along the tape edges"
+msgstr "ระยะเพิ่มตามขอบเทป (%(unit)s)"
+
+#: etiketto/app.py:442
+msgid "Background colour"
+msgstr "สีพื้นหลัง"
+
+#: etiketto/app.py:446
+msgid "Background image"
+msgstr "รูปพื้นหลัง"
+
+#: etiketto/app.py:447 etiketto/app.py:590
+msgid "None"
+msgstr "ไม่มี"
+
+#: etiketto/app.py:448 etiketto/app.py:949
+msgid "Choose image"
+msgstr "เลือกรูปภาพ"
+
+#: etiketto/app.py:454 etiketto/app.py:509
+msgid "Remove"
+msgstr "เอาออก"
+
+#: etiketto/app.py:462
+msgid "Border"
+msgstr "กรอบ"
+
+#: etiketto/app.py:468
+#, python-format
+msgid "%(unit)s, 0 = none"
+msgstr "%(unit)s, 0 = ไม่มี"
+
+#: etiketto/app.py:476
+msgid "Content"
+msgstr "เนื้อหา"
+
+#: etiketto/app.py:477
+msgid "Elements are placed one after another along the tape"
+msgstr "องค์ประกอบจะเรียงต่อกันไปตามเทป"
+
+#: etiketto/app.py:481
+msgid "Image…"
+msgstr "รูปภาพ…"
+
+#: etiketto/app.py:482
+msgid "QR code / barcode"
+msgstr "รหัส QR / บาร์โค้ด"
+
+#: etiketto/app.py:484
+msgid "Add"
+msgstr "เพิ่ม"
+
+#: etiketto/app.py:491
+msgid "No content yet"
+msgstr "ยังไม่มีเนื้อหา"
+
+#: etiketto/app.py:491
+msgid "Add text, an image or a code"
+msgstr "เพิ่มข้อความ รูปภาพ หรือรหัส"
+
+#: etiketto/app.py:515
+msgid "Move down"
+msgstr "ย้ายไปข้างหลัง"
+
+#: etiketto/app.py:516
+msgid "Move up"
+msgstr "ย้ายไปข้างหน้า"
+
+#: etiketto/app.py:550
+msgid "Font"
+msgstr "แบบอักษร"
+
+#: etiketto/app.py:572
+msgid "Size"
+msgstr "ขนาด"
+
+#: etiketto/app.py:579
+msgid "pt, 0 = fill tape height"
+msgstr "pt, 0 = เต็มความสูงเทป"
+
+#: etiketto/app.py:585
+msgid "Line alignment"
+msgstr "การจัดแนวบรรทัด"
+
+#: etiketto/app.py:590
+msgid "Image file"
+msgstr "ไฟล์รูปภาพ"
+
+#: etiketto/app.py:591
+msgid "Choose…"
+msgstr "เลือก…"
+
+#: etiketto/app.py:607
+msgid "Type"
+msgstr "ชนิด"
+
+#: etiketto/app.py:610
+msgid "Content (link, text, number)"
+msgstr "เนื้อหา (ลิงก์ ข้อความ ตัวเลข)"
+
+#: etiketto/app.py:614
+msgid "Colour"
+msgstr "สี"
+
+#: etiketto/app.py:665
+msgid "Unsaved label"
+msgstr "ฉลากที่ยังไม่บันทึก"
+
+#: etiketto/app.py:682 etiketto/app.py:694
+#, python-format
+msgid "Problem: %s"
+msgstr "ปัญหา: %s"
+
+#: etiketto/app.py:692
+msgid "content scaled down to fit"
+msgstr "ย่อเนื้อหาให้พอดีแล้ว"
+
+#: etiketto/app.py:731
+msgid "Searching for printers…"
+msgstr "กำลังค้นหาเครื่องพิมพ์…"
+
+#: etiketto/app.py:742
+msgid "No printer found"
+msgstr "ไม่พบเครื่องพิมพ์"
+
+#: etiketto/app.py:744
+msgid ""
+"Make sure the printer is switched on and in the same network, or enter its "
+"address below"
+msgstr "ตรวจสอบว่าเครื่องพิมพ์เปิดอยู่และอยู่ในเครือข่ายเดียวกัน หรือป้อนที่อยู่ด้านล่าง"
+
+#: etiketto/app.py:750
+#, python-format
+msgid "Found %s"
+msgstr "พบ %s"
+
+#: etiketto/app.py:752
+msgid "Choose a printer"
+msgstr "เลือกเครื่องพิมพ์"
+
+#: etiketto/app.py:766 etiketto/app.py:860 etiketto/app.py:886
+#: etiketto/app.py:1109
+msgid "Cancel"
+msgstr "ยกเลิก"
+
+#: etiketto/app.py:783
+msgid "Connecting…"
+msgstr "กำลังเชื่อมต่อ…"
+
+#: etiketto/app.py:812
+msgid "Printer not reachable"
+msgstr "ติดต่อเครื่องพิมพ์ไม่ได้"
+
+#: etiketto/app.py:824
+#, python-format
+msgid "%s cassette"
+msgstr "ตลับ %s"
+
+#: etiketto/app.py:827
+#, python-format
+msgid "%(left)s of %(total)s left"
+msgstr "เหลือ %(left)s จาก %(total)s"
+
+#: etiketto/app.py:835
+msgid "No cassette inserted"
+msgstr "ไม่ได้ใส่ตลับ"
+
+#: etiketto/app.py:845
+msgid "The label is empty"
+msgstr "ฉลากว่างเปล่า"
+
+#: etiketto/app.py:850
+msgid "Wrong cassette"
+msgstr "ตลับไม่ถูกต้อง"
+
+#: etiketto/app.py:852
+#, python-format
+msgid ""
+"The label is designed for %(label)s tape, but a %(tape)s cassette is "
+"inserted. The printer would scale it to the tape."
+msgstr "ฉลากนี้ออกแบบสำหรับเทป %(label)s แต่ใส่ตลับ %(tape)s อยู่ เครื่องพิมพ์จะย่อหรือขยายให้พอดีกับเทป"
+
+#: etiketto/app.py:861
+msgid "Print anyway"
+msgstr "พิมพ์ต่อไป"
+
+#: etiketto/app.py:870
+msgid "Print label"
+msgstr "พิมพ์ฉลาก"
+
+#: etiketto/app.py:880
+msgid "Copies"
+msgstr "จำนวนสำเนา"
+
+#: etiketto/app.py:881
+msgid "Cut"
+msgstr "การตัด"
+
+#: etiketto/app.py:883
+msgid "Colours"
+msgstr "สี"
+
+#: etiketto/app.py:904
+msgid "No printer configured"
+msgstr "ยังไม่ได้ตั้งค่าเครื่องพิมพ์"
+
+#: etiketto/app.py:909
+msgid "Printing…"
+msgstr "กำลังพิมพ์…"
+
+#: etiketto/app.py:914
+#, python-format
+msgid "Printing %(n)d/%(total)d…"
+msgstr "กำลังพิมพ์ %(n)d/%(total)d…"
+
+#: etiketto/app.py:933
+#, python-format
+msgid "Printing failed: %s"
+msgstr "พิมพ์ไม่สำเร็จ: %s"
+
+#: etiketto/app.py:935
+msgid "Printed"
+msgstr "พิมพ์แล้ว"
+
+#: etiketto/app.py:943
+msgid "Etiketto labels"
+msgstr "ฉลาก Etiketto"
+
+#: etiketto/app.py:951
+msgid "Images"
+msgstr "รูปภาพ"
+
+#: etiketto/app.py:973
+#, python-format
+msgid "Cannot open %(name)s: %(error)s"
+msgstr "เปิด %(name)s ไม่ได้: %(error)s"
+
+#: etiketto/app.py:976
+msgid "Open label"
+msgstr "เปิดฉลาก"
+
+#: etiketto/app.py:993
+msgid "Save label"
+msgstr "บันทึกฉลาก"
+
+#: etiketto/app.py:994 etiketto/app.py:1015 etiketto/app.py:1046
+msgid "label"
+msgstr "ฉลาก"
+
+#: etiketto/app.py:1027 etiketto/app.py:1037 etiketto/app.py:1060
+#, python-format
+msgid "Cannot save: %s"
+msgstr "บันทึกไม่ได้: %s"
+
+#: etiketto/app.py:1029 etiketto/app.py:1042
+#, python-format
+msgid "Saved %s"
+msgstr "บันทึก %s แล้ว"
+
+#: etiketto/app.py:1045
+msgid "Export PNG"
+msgstr "ส่งออกเป็น PNG"
+
+#: etiketto/app.py:1062
+msgid "Exported"
+msgstr "ส่งออกแล้ว"
+
+#: etiketto/app.py:1070
+msgid "No templates yet – use “Save as template…”"
+msgstr "ยังไม่มีแม่แบบ – ใช้ “บันทึกเป็นแม่แบบ…”"
+
+#: etiketto/app.py:1107
+msgid "Discard changes?"
+msgstr "ละทิ้งการเปลี่ยนแปลงหรือไม่?"
+
+#: etiketto/app.py:1107
+msgid "The current label has unsaved changes."
+msgstr "ฉลากปัจจุบันมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก"
+
+#: etiketto/app.py:1110
+msgid "Discard"
+msgstr "ละทิ้ง"
+
+#: etiketto/app.py:1117
+msgid "Please wait until printing has finished"
+msgstr "โปรดรอจนกว่าการพิมพ์จะเสร็จ"
+
+#: etiketto/app.py:1137
+msgid "Report"
+msgstr "รายงาน"
+
+#: etiketto/app.py:1192
+msgid "Only local files can be dropped"
+msgstr "วางได้เฉพาะไฟล์ในเครื่องเท่านั้น"
+
+#: etiketto/app.py:1311
+msgid "Label designer for the Brother VC-500W"
+msgstr "โปรแกรมออกแบบฉลากสำหรับ Brother VC-500W"
+
+#: etiketto/app.py:1316
+msgid "translator-credits"
+msgstr "Etiketto contributors"

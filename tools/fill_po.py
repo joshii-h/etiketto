@@ -1,6 +1,7 @@
 """Create po/<lang>.po from po/etiketto.pot and tools/strings_<lang>.py.
 
-python3 tools/fill_po.py de fr it es nl sv ja zh_TW zh_HK zh_CN
+python3 tools/fill_po.py          # all languages in PLURALS
+python3 tools/fill_po.py de fr   # only these
 """
 
 import importlib.util
@@ -20,6 +21,22 @@ PLURALS = {
     "zh_TW": "nplurals=1; plural=0;",
     "zh_HK": "nplurals=1; plural=0;",
     "zh_CN": "nplurals=1; plural=0;",
+    "pl": "nplurals=3; plural=(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : 2);",
+    "pt": "nplurals=2; plural=(n != 1);",
+    "pt_BR": "nplurals=2; plural=(n > 1);",
+    "ru": "nplurals=3; plural=(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : 2);",
+    "uk": "nplurals=3; plural=(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : 2);",
+    "tr": "nplurals=2; plural=(n != 1);",
+    "ko": "nplurals=1; plural=0;",
+    "fi": "nplurals=2; plural=(n != 1);",
+    "hu": "nplurals=2; plural=(n != 1);",
+    "et": "nplurals=2; plural=(n != 1);",
+    "id": "nplurals=1; plural=0;",
+    "ms": "nplurals=1; plural=0;",
+    "th": "nplurals=1; plural=0;",
+    "vi": "nplurals=1; plural=0;",
+    "hi": "nplurals=2; plural=(n > 1);",
+    "ar": "nplurals=6; plural=(n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5);",
 }
 # languages built from another language's word list (Hong Kong uses the
 # Traditional Chinese strings of Taiwan)
@@ -66,5 +83,5 @@ def build(lang):
 
 
 if __name__ == "__main__":
-    for lang in sys.argv[1:]:
+    for lang in sys.argv[1:] or PLURALS:
         print(lang, "missing:", build(lang))

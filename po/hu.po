@@ -1,0 +1,514 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: etiketto\n"
+"PO-Revision-Date: 2026-11-05 13:56+0100\n"
+"Last-Translator: Etiketto contributors\n"
+"Language-Team: hu\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: etiketto/app.py:55
+msgid "Full cut"
+msgstr "Teljes vágás"
+
+#: etiketto/app.py:55
+msgid "Half cut"
+msgstr "Félvágás"
+
+#: etiketto/app.py:55
+msgid "No cut"
+msgstr "Nincs vágás"
+
+#: etiketto/app.py:56
+msgid "Vivid"
+msgstr "Élénk"
+
+#: etiketto/app.py:56
+msgid "Normal"
+msgstr "Normál"
+
+#: etiketto/app.py:57
+msgid "Start"
+msgstr "Eleje"
+
+#: etiketto/app.py:57 etiketto/app.py:58
+msgid "Centre"
+msgstr "Közép"
+
+#: etiketto/app.py:57
+msgid "End"
+msgstr "Vége"
+
+#: etiketto/app.py:58
+msgid "Left"
+msgstr "Balra"
+
+#: etiketto/app.py:58
+msgid "Right"
+msgstr "Jobbra"
+
+#: etiketto/app.py:59
+msgid "QR code"
+msgstr "QR-kód"
+
+#: etiketto/app.py:133
+msgid "Only local files can be used"
+msgstr "Csak helyi fájlok használhatók"
+
+#: etiketto/app.py:139
+#, python-format
+msgid "Not an image: %s"
+msgstr "Nem kép: %s"
+
+#: etiketto/app.py:145 etiketto/app.py:480 etiketto/app.py:1168
+msgid "Text"
+msgstr "Szöveg"
+
+#: etiketto/app.py:147
+msgid "Image"
+msgstr "Kép"
+
+#: etiketto/app.py:167 etiketto/app.py:391 etiketto/app.py:1098
+msgid "Label"
+msgstr "Címke"
+
+#: etiketto/app.py:202
+msgid "Open"
+msgstr "Megnyitás"
+
+#: etiketto/app.py:209
+msgid "Templates"
+msgstr "Sablonok"
+
+#: etiketto/app.py:215
+msgid "Save"
+msgstr "Mentés"
+
+#: etiketto/app.py:220
+msgid "New label"
+msgstr "Új címke"
+
+#: etiketto/app.py:221
+msgid "Save as…"
+msgstr "Mentés másként…"
+
+#: etiketto/app.py:222 etiketto/app.py:1013
+msgid "Save as template…"
+msgstr "Mentés sablonként…"
+
+#: etiketto/app.py:223
+msgid "Export PNG…"
+msgstr "Exportálás PNG-ként…"
+
+#: etiketto/app.py:224
+msgid "Report a problem…"
+msgstr "Probléma jelentése…"
+
+#: etiketto/app.py:225
+msgid "About Etiketto"
+msgstr "Az Etiketto névjegye"
+
+#: etiketto/app.py:228 etiketto/app.py:887 etiketto/app.py:931
+msgid "Print"
+msgstr "Nyomtatás"
+
+#: etiketto/app.py:266
+msgid "Fit to window"
+msgstr "Igazítás az ablakhoz"
+
+#: etiketto/app.py:270
+msgid "Zoom out"
+msgstr "Kicsinyítés"
+
+#: etiketto/app.py:273
+msgid "Zoom in"
+msgstr "Nagyítás"
+
+#: etiketto/app.py:300
+msgid "Printer"
+msgstr "Nyomtató"
+
+#: etiketto/app.py:301 etiketto/app.py:836
+msgid "Searching…"
+msgstr "Keresés…"
+
+#: etiketto/app.py:303
+msgid "Refresh"
+msgstr "Frissítés"
+
+#: etiketto/app.py:309
+msgid "Search for printers"
+msgstr "Nyomtatók keresése"
+
+#: etiketto/app.py:318
+msgid "Host name or IP address"
+msgstr "Gépnév vagy IP-cím"
+
+#: etiketto/app.py:326
+msgid "Safety margin"
+msgstr "Biztonsági margó"
+
+#: etiketto/app.py:333
+#, python-format
+msgid ""
+"%(unit)s kept free for content and border; the background is printed edge to "
+"edge"
+msgstr "Szabadon hagyott hely a tartalomnak és a keretnek (%(unit)s); a háttér szegély nélkül nyomtatódik"
+
+#: etiketto/app.py:338 etiketto/app.py:344
+msgid "Millimetres"
+msgstr "Milliméter"
+
+#: etiketto/app.py:338 etiketto/app.py:345
+msgid "Inches"
+msgstr "Hüvelyk"
+
+#: etiketto/app.py:341
+msgid "Units"
+msgstr "Mértékegység"
+
+#: etiketto/app.py:343
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Automatikus (%s)"
+
+#: etiketto/app.py:395
+msgid "Tape width"
+msgstr "Szalagszélesség"
+
+#: etiketto/app.py:399
+msgid "Automatic length"
+msgstr "Automatikus hossz"
+
+#: etiketto/app.py:399
+msgid "As long as the content"
+msgstr "Olyan hosszú, mint a tartalom"
+
+#: etiketto/app.py:404
+msgid "Length"
+msgstr "Hossz"
+
+#: etiketto/app.py:406
+msgid "Alignment"
+msgstr "Igazítás"
+
+#: etiketto/app.py:421
+msgid "Spacing"
+msgstr "Térköz"
+
+#: etiketto/app.py:427
+#, python-format
+msgid "%(unit)s at the ends and between elements"
+msgstr "Térköz a végeken és az elemek között (%(unit)s)"
+
+#: etiketto/app.py:432
+msgid "Edge spacing"
+msgstr "Szélső térköz"
+
+#: etiketto/app.py:438
+#, python-format
+msgid "extra %(unit)s along the tape edges"
+msgstr "További hely a szalag szélei mentén (%(unit)s)"
+
+#: etiketto/app.py:442
+msgid "Background colour"
+msgstr "Háttérszín"
+
+#: etiketto/app.py:446
+msgid "Background image"
+msgstr "Háttérkép"
+
+#: etiketto/app.py:447 etiketto/app.py:590
+msgid "None"
+msgstr "Nincs"
+
+#: etiketto/app.py:448 etiketto/app.py:949
+msgid "Choose image"
+msgstr "Kép kiválasztása"
+
+#: etiketto/app.py:454 etiketto/app.py:509
+msgid "Remove"
+msgstr "Eltávolítás"
+
+#: etiketto/app.py:462
+msgid "Border"
+msgstr "Keret"
+
+#: etiketto/app.py:468
+#, python-format
+msgid "%(unit)s, 0 = none"
+msgstr "%(unit)s, 0 = nincs"
+
+#: etiketto/app.py:476
+msgid "Content"
+msgstr "Tartalom"
+
+#: etiketto/app.py:477
+msgid "Elements are placed one after another along the tape"
+msgstr "Az elemek egymás után következnek a szalag mentén"
+
+#: etiketto/app.py:481
+msgid "Image…"
+msgstr "Kép…"
+
+#: etiketto/app.py:482
+msgid "QR code / barcode"
+msgstr "QR-kód / vonalkód"
+
+#: etiketto/app.py:484
+msgid "Add"
+msgstr "Hozzáadás"
+
+#: etiketto/app.py:491
+msgid "No content yet"
+msgstr "Még nincs tartalom"
+
+#: etiketto/app.py:491
+msgid "Add text, an image or a code"
+msgstr "Adjon hozzá szöveget, képet vagy kódot"
+
+#: etiketto/app.py:515
+msgid "Move down"
+msgstr "Mozgatás hátra"
+
+#: etiketto/app.py:516
+msgid "Move up"
+msgstr "Mozgatás előre"
+
+#: etiketto/app.py:550
+msgid "Font"
+msgstr "Betűkészlet"
+
+#: etiketto/app.py:572
+msgid "Size"
+msgstr "Méret"
+
+#: etiketto/app.py:579
+msgid "pt, 0 = fill tape height"
+msgstr "pt, 0 = a szalag magasságának kitöltése"
+
+#: etiketto/app.py:585
+msgid "Line alignment"
+msgstr "Sorigazítás"
+
+#: etiketto/app.py:590
+msgid "Image file"
+msgstr "Képfájl"
+
+#: etiketto/app.py:591
+msgid "Choose…"
+msgstr "Kiválasztás…"
+
+#: etiketto/app.py:607
+msgid "Type"
+msgstr "Típus"
+
+#: etiketto/app.py:610
+msgid "Content (link, text, number)"
+msgstr "Tartalom (hivatkozás, szöveg, szám)"
+
+#: etiketto/app.py:614
+msgid "Colour"
+msgstr "Szín"
+
+#: etiketto/app.py:665
+msgid "Unsaved label"
+msgstr "Mentetlen címke"
+
+#: etiketto/app.py:682 etiketto/app.py:694
+#, python-format
+msgid "Problem: %s"
+msgstr "Probléma: %s"
+
+#: etiketto/app.py:692
+msgid "content scaled down to fit"
+msgstr "a tartalom kicsinyítve, hogy elférjen"
+
+#: etiketto/app.py:731
+msgid "Searching for printers…"
+msgstr "Nyomtatók keresése…"
+
+#: etiketto/app.py:742
+msgid "No printer found"
+msgstr "Nem található nyomtató"
+
+#: etiketto/app.py:744
+msgid ""
+"Make sure the printer is switched on and in the same network, or enter its "
+"address below"
+msgstr "Ellenőrizze, hogy a nyomtató be van-e kapcsolva és ugyanazon a hálózaton van-e, vagy adja meg alább a címét"
+
+#: etiketto/app.py:750
+#, python-format
+msgid "Found %s"
+msgstr "Megtalálva: %s"
+
+#: etiketto/app.py:752
+msgid "Choose a printer"
+msgstr "Nyomtató kiválasztása"
+
+#: etiketto/app.py:766 etiketto/app.py:860 etiketto/app.py:886
+#: etiketto/app.py:1109
+msgid "Cancel"
+msgstr "Mégse"
+
+#: etiketto/app.py:783
+msgid "Connecting…"
+msgstr "Kapcsolódás…"
+
+#: etiketto/app.py:812
+msgid "Printer not reachable"
+msgstr "A nyomtató nem érhető el"
+
+#: etiketto/app.py:824
+#, python-format
+msgid "%s cassette"
+msgstr "Kazetta: %s"
+
+#: etiketto/app.py:827
+#, python-format
+msgid "%(left)s of %(total)s left"
+msgstr "Hátralévő: %(left)s / %(total)s"
+
+#: etiketto/app.py:835
+msgid "No cassette inserted"
+msgstr "Nincs behelyezett kazetta"
+
+#: etiketto/app.py:845
+msgid "The label is empty"
+msgstr "A címke üres"
+
+#: etiketto/app.py:850
+msgid "Wrong cassette"
+msgstr "Nem megfelelő kazetta"
+
+#: etiketto/app.py:852
+#, python-format
+msgid ""
+"The label is designed for %(label)s tape, but a %(tape)s cassette is "
+"inserted. The printer would scale it to the tape."
+msgstr "A címke szalagszélessége %(label)s, de a behelyezett kazettáé %(tape)s. A nyomtató a szalaghoz méretezné."
+
+#: etiketto/app.py:861
+msgid "Print anyway"
+msgstr "Nyomtatás mégis"
+
+#: etiketto/app.py:870
+msgid "Print label"
+msgstr "Címke nyomtatása"
+
+#: etiketto/app.py:880
+msgid "Copies"
+msgstr "Példányszám"
+
+#: etiketto/app.py:881
+msgid "Cut"
+msgstr "Vágás"
+
+#: etiketto/app.py:883
+msgid "Colours"
+msgstr "Színek"
+
+#: etiketto/app.py:904
+msgid "No printer configured"
+msgstr "Nincs beállított nyomtató"
+
+#: etiketto/app.py:909
+msgid "Printing…"
+msgstr "Nyomtatás…"
+
+#: etiketto/app.py:914
+#, python-format
+msgid "Printing %(n)d/%(total)d…"
+msgstr "Nyomtatás: %(n)d/%(total)d…"
+
+#: etiketto/app.py:933
+#, python-format
+msgid "Printing failed: %s"
+msgstr "A nyomtatás sikertelen: %s"
+
+#: etiketto/app.py:935
+msgid "Printed"
+msgstr "Kinyomtatva"
+
+#: etiketto/app.py:943
+msgid "Etiketto labels"
+msgstr "Etiketto-címkék"
+
+#: etiketto/app.py:951
+msgid "Images"
+msgstr "Képek"
+
+#: etiketto/app.py:973
+#, python-format
+msgid "Cannot open %(name)s: %(error)s"
+msgstr "Nem nyitható meg: %(name)s: %(error)s"
+
+#: etiketto/app.py:976
+msgid "Open label"
+msgstr "Címke megnyitása"
+
+#: etiketto/app.py:993
+msgid "Save label"
+msgstr "Címke mentése"
+
+#: etiketto/app.py:994 etiketto/app.py:1015 etiketto/app.py:1046
+msgid "label"
+msgstr "címke"
+
+#: etiketto/app.py:1027 etiketto/app.py:1037 etiketto/app.py:1060
+#, python-format
+msgid "Cannot save: %s"
+msgstr "A mentés sikertelen: %s"
+
+#: etiketto/app.py:1029 etiketto/app.py:1042
+#, python-format
+msgid "Saved %s"
+msgstr "Mentve: %s"
+
+#: etiketto/app.py:1045
+msgid "Export PNG"
+msgstr "Exportálás PNG-ként"
+
+#: etiketto/app.py:1062
+msgid "Exported"
+msgstr "Exportálva"
+
+#: etiketto/app.py:1070
+msgid "No templates yet – use “Save as template…”"
+msgstr "Még nincsenek sablonok – használja a „Mentés sablonként…” lehetőséget"
+
+#: etiketto/app.py:1107
+msgid "Discard changes?"
+msgstr "Elveti a módosításokat?"
+
+#: etiketto/app.py:1107
+msgid "The current label has unsaved changes."
+msgstr "A jelenlegi címke mentetlen módosításokat tartalmaz."
+
+#: etiketto/app.py:1110
+msgid "Discard"
+msgstr "Elvetés"
+
+#: etiketto/app.py:1117
+msgid "Please wait until printing has finished"
+msgstr "Várjon, amíg a nyomtatás befejeződik"
+
+#: etiketto/app.py:1137
+msgid "Report"
+msgstr "Jelentés"
+
+#: etiketto/app.py:1192
+msgid "Only local files can be dropped"
+msgstr "Csak helyi fájlok húzhatók ide"
+
+#: etiketto/app.py:1311
+msgid "Label designer for the Brother VC-500W"
+msgstr "Címketervező a Brother VC-500W nyomtatóhoz"
+
+#: etiketto/app.py:1316
+msgid "translator-credits"
+msgstr "Etiketto contributors"

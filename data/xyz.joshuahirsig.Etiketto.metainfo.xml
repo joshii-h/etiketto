@@ -16,6 +16,22 @@
   <summary xml:lang="zh_TW">設計並列印彩色標籤</summary>
   <summary xml:lang="zh_HK">設計並列印彩色標籤</summary>
   <summary xml:lang="zh_CN">设计并打印彩色标签</summary>
+  <summary xml:lang="pl">Twórz i drukuj kolorowe etykiety</summary>
+  <summary xml:lang="pt">Crie e imprima etiquetas a cores</summary>
+  <summary xml:lang="pt_BR">Crie e imprima etiquetas coloridas</summary>
+  <summary xml:lang="ru">Создание и печать цветных этикеток</summary>
+  <summary xml:lang="uk">Дизайн і друк кольорових етикеток</summary>
+  <summary xml:lang="tr">Renkli etiket tasarla ve yazdır</summary>
+  <summary xml:lang="ko">컬러 라벨 디자인 및 인쇄</summary>
+  <summary xml:lang="fi">Suunnittele ja tulosta väritarroja</summary>
+  <summary xml:lang="hu">Színes címkék tervezése, nyomtatása</summary>
+  <summary xml:lang="et">Kujunda ja prindi värvilisi silte</summary>
+  <summary xml:lang="id">Rancang dan cetak label berwarna</summary>
+  <summary xml:lang="ms">Reka dan cetak label berwarna</summary>
+  <summary xml:lang="th">ออกแบบและพิมพ์ฉลากสี</summary>
+  <summary xml:lang="vi">Thiết kế và in nhãn màu</summary>
+  <summary xml:lang="hi">रंगीन लेबल डिज़ाइन और प्रिंट करें</summary>
+  <summary xml:lang="ar">تصميم الملصقات الملونة وطباعتها</summary>
 
   <developer id="xyz.joshuahirsig">
     <name>Joshua Hirsig</name>

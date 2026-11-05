@@ -1,9 +1,11 @@
 # Etiketto
 
 Label designer for the **Brother VC-500W** colour label printer (ZINK
-paper), for the Linux desktop. GTK 4 and libadwaita, English, German,
-French, Italian, Spanish, Dutch, Swedish, Japanese and Chinese
-(Traditional for Taiwan and Hong Kong, Simplified).
+paper), for the Linux desktop. GTK 4 and libadwaita, in English and 23 more
+languages: German, French, Italian, Spanish, Portuguese (Portugal and Brazil),
+Dutch, Swedish, Finnish, Estonian, Polish, Hungarian, Russian, Ukrainian,
+Turkish, Arabic, Hindi, Thai, Vietnamese, Indonesian, Malay, Korean, Japanese
+and Chinese (Traditional for Taiwan and Hong Kong, Simplified).
 
 Brother only ships the Color Label Editor for Windows, macOS and phones.
 Etiketto brings the same workflow to Linux: the inserted cassette is
@@ -22,7 +24,7 @@ in the printer's own protocol, including the **vivid** colour mode and the
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/expand-dark.png"><img src="docs/screenshots/expand.png" alt="Editing a text element"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/print-dark.png"><img src="docs/screenshots/print.png" alt="Print dialog with cut and colour mode"></picture> |
 | Text with any font, colour and size | Copies, cut mode, vivid or normal colours |
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/cable-de-dark.png"><img src="docs/screenshots/cable-de.png" alt="German interface, 12 mm cable label"></picture> | |
-| German interface (also French, Italian, Spanish, Dutch, Swedish, Japanese, Chinese), 12 mm cable label | |
+| German interface (24 languages in total), 12 mm cable label | |
 
 Screenshots use the default GNOME style; Etiketto follows your desktop's light or dark mode and accent colour.
 
@@ -111,7 +113,7 @@ LANGUAGE=de .venv/bin/python -m etiketto.app
 ```
 
 Translations: `xgettext` → `po/etiketto.pot`, strings in
-`tools/strings_<lang>.py`, `python3 tools/fill_po.py de fr it es nl sv ja zh_TW zh_HK zh_CN` writes the
+`tools/strings_<lang>.py`, `python3 tools/fill_po.py` writes the
 `.po` files; `install.sh` compiles them.
 
 ## Contributing
