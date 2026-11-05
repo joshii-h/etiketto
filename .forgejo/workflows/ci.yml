@@ -1,0 +1,162 @@
+# Tests, lint and static analysis on Forgejo.
+#
+# actions/checkout does not work on this instance (the runner reaches Forgejo
+# as server:3000), so the code is fetched with plain git.
+#
+# Branches github/pr-* come from GitHub pull requests (see
+# .github/workflows/bridge.yml) and contain code nobody has reviewed yet. CI
+# only runs them once a maintainer has added the label `safe-to-test`; the
+# bridge removes the label again when new commits arrive.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+env:
+  REPO_URL: https://git.joshuahirsig.xyz/${{ github.repository }}.git
+  # what to test: the pushed commit, or the head of the pull request
+  REF: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+  SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  DEBIAN_FRONTEND: noninteractive
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Runs instead of the other jobs for unreviewed code from GitHub.
+  untrusted:
+    if: >-
+      github.event_name == 'pull_request'
+      && startsWith(github.event.pull_request.head.ref, 'github/pr-')
+      && !contains(github.event.pull_request.labels.*.name, 'safe-to-test')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Waiting for review
+        run: |
+          echo "::warning::Code from a GitHub pull request: CI is skipped until a maintainer has reviewed it and added the 'safe-to-test' label."
+
+  test:
+    # push to main; own pull requests (not re-run for labels); reviewed GitHub pull requests
+    if: >-
+      github.event_name == 'push'
+      || (!startsWith(github.event.pull_request.head.ref, 'github/pr-') && github.event.action != 'labeled')
+      || (startsWith(github.event.pull_request.head.ref, 'github/pr-') && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    timeout-minutes: 30
+    steps:
+      - name: Install system packages
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates git python3 python3-venv python3-gi python3-gi-cairo \
+            gir1.2-gtk-4.0 gir1.2-adw-1 gettext appstream desktop-file-utils \
+            xvfb xauth fonts-dejavu-core > /dev/null
+
+      - name: Get the code
+        run: |
+          git init -q src
+          git -C src fetch -q --depth 1 "$REPO_URL" "$REF"
+          git -C src checkout -q --detach FETCH_HEAD
+          test "$(git -C src rev-parse HEAD)" = "$SHA" || { echo "::error::$REF is not $SHA"; exit 1; }
+          git -C src log -1 --format='%h %s'
+
+      - name: Set up the virtual environment
+        working-directory: src
+        run: |
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install -q -e . pytest pytest-cov ruff
+
+      - name: ruff format
+        working-directory: src
+        run: .venv/bin/ruff format --check .
+
+      - name: ruff check
+        working-directory: src
+        run: .venv/bin/ruff check --output-format=full .
+
+      - name: pytest
+        working-directory: src
+        # fail_under for the coverage comes from pyproject.toml
+        run: xvfb-run -a .venv/bin/python -m pytest --cov=etiketto --cov-report=term-missing
+
+      - name: Translations
+        working-directory: src
+        run: |
+          for po in po/*.po; do
+            echo "$po"; msgfmt --check --statistics -o /dev/null "$po"
+          done
+
+      - name: AppStream metadata
+        working-directory: src
+        run: appstreamcli validate --no-net --explain data/*.metainfo.xml
+
+      - name: Desktop file
+        working-directory: src
+        run: desktop-file-validate data/*.desktop
+
+  quality:
+    # same conditions as test
+    if: >-
+      github.event_name == 'push'
+      || (!startsWith(github.event.pull_request.head.ref, 'github/pr-') && github.event.action != 'labeled')
+      || (startsWith(github.event.pull_request.head.ref, 'github/pr-') && contains(github.event.pull_request.labels.*.name, 'safe-to-test'))
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    timeout-minutes: 30
+    steps:
+      - name: Install system packages
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates git python3 python3-venv python3-gi python3-gi-cairo \
+            gir1.2-gtk-4.0 gir1.2-adw-1 > /dev/null
+
+      - name: Get the code
+        run: |
+          git init -q src
+          git -C src fetch -q --depth 1 "$REPO_URL" "$REF"
+          git -C src checkout -q --detach FETCH_HEAD
+          test "$(git -C src rev-parse HEAD)" = "$SHA" || { echo "::error::$REF is not $SHA"; exit 1; }
+
+      - name: Set up the virtual environment
+        working-directory: src
+        run: |
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install -q -e . mypy bandit radon xenon pip-audit
+
+      - name: mypy (types)
+        working-directory: src
+        # configuration and documented exceptions in pyproject.toml [tool.mypy]
+        run: .venv/bin/mypy
+
+      - name: bandit (security)
+        working-directory: src
+        # medium and high severity only; low (e.g. assert) is noise for a desktop app
+        run: .venv/bin/bandit -c pyproject.toml -r etiketto -ll
+
+      - name: xenon (complexity)
+        working-directory: src
+        # No function above D, every module and the project on average A.
+        # render.render() is D (25) today; once it is split up, lower
+        # --max-absolute to C.
+        run: |
+          .venv/bin/radon cc -s -n C etiketto
+          .venv/bin/xenon --max-absolute D --max-modules A --max-average A etiketto
+
+      - name: pip-audit (dependencies)
+        working-directory: src
+        # resolves the dependencies from pyproject.toml; the labelprinter fork is
+        # not on PyPI and cannot be audited
+        run: .venv/bin/pip-audit --progress-spinner off .

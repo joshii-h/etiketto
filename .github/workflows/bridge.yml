@@ -1,0 +1,157 @@
+# Carries GitHub pull requests and issues over to Forgejo, the main repository.
+#
+# GitHub (joshii-h/etiketto) is a push mirror of
+# https://git.joshuahirsig.xyz/joshii/etiketto. Review and merge happen on
+# Forgejo; once the merge commit is mirrored back, GitHub marks the pull request
+# as merged because its commits are part of main (Forgejo must merge with a
+# merge commit, not squash).
+#
+# Security: pull_request_target runs with a token and the FORGEJO_TOKEN secret,
+# so nothing from the pull request is ever checked out or executed. Its commits
+# are only fetched into a bare repository and pushed on. Pull requests that
+# change CI workflows are not carried over automatically, because Forgejo would
+# run the workflow files from the pushed branch. Event data (titles, bodies) is
+# passed through environment variables and jq only, never into the script.
+#
+# Forgejo also reads .github/workflows, hence the server_url guard on each job.
+
+name: Bridge to Forgejo
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: bridge-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+env:
+  FORGEJO_URL: https://git.joshuahirsig.xyz
+  FORGEJO_REPO: joshii/etiketto
+  FORGEJO_USER: etiketto-bot
+  MARKER: "<!-- forgejo-bridge -->"
+
+jobs:
+  pull-request:
+    if: github.server_url == 'https://github.com' && github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      ACTION: ${{ github.event.action }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Carry the pull request over to Forgejo
+        run: |
+          set -euo pipefail
+          api() {  # api METHOD PATH [JSON] -> response body; fails on HTTP errors
+            local data=()
+            if [ $# -ge 3 ]; then data=(--data "$3"); fi
+            curl -sS --fail-with-body -X "$1" \
+              -H "Authorization: token $FORGEJO_TOKEN" -H "Content-Type: application/json" \
+              "${data[@]}" "$FORGEJO_URL/api/v1/repos/$FORGEJO_REPO$2"
+          }
+          comment_once() {  # comment_once KEY TEXT: one comment per KEY on the GitHub PR
+            local marker="$MARKER<!-- $1 -->"
+            if [ -z "$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+                --jq ".[] | select(.body | contains(\"$marker\")) | .id")" ]; then
+              gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+                -f body="$2"$'\n\n'"$marker" > /dev/null
+            fi
+          }
+          branch="github/pr-$PR_NUMBER"
+
+          # fetch only, into a bare repository: nothing from the PR is checked out or run
+          git init --quiet --bare pr.git
+          git -C pr.git fetch --quiet --no-tags "$FORGEJO_URL/$FORGEJO_REPO.git" "+refs/heads/main:refs/base/main"
+          git -C pr.git fetch --quiet --no-tags "https://github.com/$GITHUB_REPOSITORY.git" "+refs/pull/$PR_NUMBER/head:refs/pr/head"
+          if [ "$(git -C pr.git rev-parse refs/pr/head)" != "$HEAD_SHA" ]; then
+            echo "Pull request head moved on, the next synchronize event carries it over."
+            exit 0
+          fi
+
+          # Forgejo runs the workflows of the pushed branch: refuse workflow changes
+          if ! base="$(git -C pr.git merge-base refs/base/main "$HEAD_SHA")" ||
+             ! git -C pr.git diff --quiet "$base" "$HEAD_SHA" -- \
+               .forgejo/workflows .gitea/workflows .github/workflows; then
+            echo "::warning::Pull request changes CI workflows (or has no common history), not carried over."
+            comment_once refused "This pull request changes CI workflow files (or does not share history with \`main\`), so it is not carried over to Forgejo automatically. A maintainer will take a look and carry it over by hand."
+            exit 0
+          fi
+
+          # push the commits unchanged, so GitHub recognises them after the merge
+          auth="$(printf '%s:%s' "$FORGEJO_USER" "$FORGEJO_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth"
+          git -C pr.git -c http.extraHeader="Authorization: Basic $auth" push --quiet --force \
+            "$FORGEJO_URL/$FORGEJO_REPO.git" "$HEAD_SHA:refs/heads/$branch"
+
+          title="$PR_TITLE (GitHub #$PR_NUMBER)"
+          body="$(jq -rn --arg url "$PR_URL" --arg author "$PR_AUTHOR" --arg body "$PR_BODY" '
+            "Carried over from GitHub pull request \($url) by GitHub user [\($author)](https://github.com/\($author)).\n"
+            + "The commits are unchanged; merge with a merge commit (not squash) so GitHub marks the pull request as merged.\n\n"
+            + "CI does not run on this branch until a maintainer has reviewed the code and added the `safe-to-test` label.\n\n---\n\n"
+            + $body')"
+
+          status=0
+          existing="$(api GET "/pulls/main/$(jq -rn --arg b "$branch" '$b|@uri')")" || status=$?
+          if [ "$status" -eq 0 ] && [ -n "$existing" ]; then
+            index="$(jq -r .number <<<"$existing")"
+            patch="$(jq -n --arg t "$title" --arg b "$body" '{title: $t, body: $b}')"
+            if [ "$ACTION" = reopened ] && [ "$(jq -r .merged <<<"$existing")" != true ]; then
+              patch="$(jq '. + {state: "open"}' <<<"$patch")"
+            fi
+            api PATCH "/pulls/$index" "$patch" > /dev/null
+            # new code needs a new review before CI may run it again
+            label_id="$(jq -r '[.labels[]? | select(.name == "safe-to-test") | .id][0] // empty' <<<"$existing")"
+            if [ "$ACTION" = synchronize ] && [ -n "$label_id" ]; then
+              api DELETE "/issues/$index/labels/$label_id" > /dev/null
+            fi
+          else
+            index="$(api POST /pulls "$(jq -n --arg t "$title" --arg b "$body" --arg h "$branch" \
+              '{title: $t, body: $b, head: $h, base: "main"}')" | jq -r .number)"
+          fi
+          link="$FORGEJO_URL/$FORGEJO_REPO/pulls/$index"
+          echo "Forgejo pull request: $link"
+          comment_once pr "Review and merge happen on Forgejo: $link. Your commits are kept, so this PR is marked merged here automatically."
+
+  issue:
+    if: github.server_url == 'https://github.com' && github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+    steps:
+      - name: Carry the issue over to Forgejo
+        run: |
+          set -euo pipefail
+          payload="$(jq -n --arg t "$ISSUE_TITLE (GitHub #$ISSUE_NUMBER)" --arg url "$ISSUE_URL" \
+            --arg author "$ISSUE_AUTHOR" --arg body "$ISSUE_BODY" '{title: $t, body: (
+              "Carried over from GitHub issue \($url) by GitHub user [\($author)](https://github.com/\($author)).\n\n---\n\n"
+              + $body)}')"
+          index="$(curl -sS --fail-with-body -X POST \
+            -H "Authorization: token $FORGEJO_TOKEN" -H "Content-Type: application/json" \
+            --data "$payload" "$FORGEJO_URL/api/v1/repos/$FORGEJO_REPO/issues" | jq -r .number)"
+          link="$FORGEJO_URL/$FORGEJO_REPO/issues/$index"
+          echo "Forgejo issue: $link"
+          gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/comments" \
+            -f body="Thanks! This issue is tracked on Forgejo, the main repository: $link. Discussion continues there; this repository is a read-only mirror."$'\n\n'"$MARKER" > /dev/null
