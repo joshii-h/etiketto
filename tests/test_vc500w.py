@@ -674,7 +674,9 @@ def test_print_when_the_firmware_does_not_report_the_cassette(printer, backend):
     [
         (status("BUSY", "PRINTING"), PrinterBusy),
         (status("ERROR", "IDLE", "NO MEDIA"), NoCassette),
-        (status("IDLE", "IDLE"), PrinterError),
+        # IDLE/IDLE without error after a refusal: no cassette (as in Brother's app)
+        (status("IDLE", "IDLE"), NoCassette),
+        (status("IDLE", "SUCCESS"), PrinterError),
     ],
 )
 def test_print_rejected_asks_the_status_why(printer, backend, after, cls):
@@ -686,6 +688,15 @@ def test_print_rejected_asks_the_status_why(printer, backend, after, cls):
     assert type(info.value) is cls
     assert 'The XML status code is not OK: "refused"' in info.value.details
     assert printer.device.data() == []  # no data after a refused request
+
+
+def test_print_rejected_with_no_media_comment(printer, backend):
+    # seen on the device with the cassette ejected: the refusal says "no media"
+    printer.device.print_code = 3
+    printer.device.print_comment = "no media"
+    printer.device.statuses = [status(), status("IDLE", "SUCCESS")]
+    with pytest.raises(NoCassette):
+        backend.print_label(_label_image(), "p", PrintOptions())
 
 
 def test_print_rejected_and_status_unreadable(printer, backend, monkeypatch):

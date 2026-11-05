@@ -609,4 +609,9 @@ def _rejected(s: _Session, error: Exception) -> PrinterError:
         return found
     if status.state == "BUSY":
         return PrinterBusy(str(error))
+    # The printer rejects the job with comment "no media" when no cassette is
+    # inserted; status.xml then reads IDLE/IDLE without an error (seen on a
+    # VC-500W with firmware 2026031504)
+    if "no media" in str(error).lower() or (status.state == "IDLE" and status.stage == "IDLE"):
+        return NoCassette(str(error))
     return PrinterError(str(error))
