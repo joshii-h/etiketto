@@ -1711,3 +1711,10 @@ def test_help_action_opens_the_documentation(make_window, monkeypatch):
     monkeypatch.setattr(win, "open_url", opened.append)
     win.activate_action("win.help", None)
     assert opened == [app.docs_url()]
+
+
+def test_too_long_fixed_length_from_a_file_is_clamped_consistently(make_window):
+    win = make_window()
+    win.set_label(Label(auto_length=False, length_mm=1000), None)
+    # the row shows the printer's maximum, and the label really uses it
+    assert win.label.length_mm == pytest.approx(431, abs=1)

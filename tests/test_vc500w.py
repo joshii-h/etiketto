@@ -523,8 +523,8 @@ def test_print_copies_progress_and_stages(printer, backend):
         Progress(2, 2, "PRINTING"),
         Progress(2, 2, "READY_FOR_CUT"),
     ]
-    # polled every 0.5 s: one pause per busy status, none once it was busy
-    assert printer.sleeps == [0.5] * (2 * 4)
+    # polled every 0.5 s; READY_FOR_CUT ends the copy at once (printed, cut by hand)
+    assert printer.sleeps == [0.5] * (2 * 3)
     assert printer.device.closed == 1
 
 
@@ -598,7 +598,21 @@ def test_print_retries_a_busy_answer(printer, backend):
     assert printer.sleeps[:3] == [vc500w.POLL_INTERVAL] * 3
 
 
-def test_print_gives_up_after_ten_busy_answers(printer, backend):
+def test_waiting_for_the_panel_swipe_has_no_time_limit(printer, backend):
+    # half cut: after the first copy the printer waits until someone swipes
+    # the panel, here for longer than PRINT_TIMEOUT; that is not a timeout
+    waiting = int(vc500w.PRINT_TIMEOUT / vc500w.POLL_INTERVAL) + 20
+    printer.device.after_print = [status("BUSY", "PRINTING")] + [
+        status("BUSY", "READY_FOR_CUT")
+    ] * waiting
+    events = []
+    backend.print_label(_label_image(), "p", PrintOptions(copies=2, cut="half"), events.append)
+    assert len(printer.device.prints()) == 2
+    assert Progress(1, 2, "READY_FOR_CUT") in events
+    assert sum(printer.sleeps) > vc500w.PRINT_TIMEOUT
+
+
+def test_print_gives_up_after_the_retries_of_a_busy_answer(printer, backend):
     printer.device.print_code = 1
     printer.device.statuses = [status(), status("BUSY", "PRINTING")]
     with pytest.raises(PrinterBusy) as info:

@@ -806,7 +806,7 @@ msgstr "テンプレート %(name)s を開けません"
 
 #: etiketto/app.py:1647
 msgid "Discard changes?"
-msgstr "変更を破棄しますか?"
+msgstr "変更を破棄しますか？"
 
 #: etiketto/app.py:1647
 msgid "The current label has unsaved changes."

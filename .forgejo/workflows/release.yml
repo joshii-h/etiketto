@@ -135,9 +135,8 @@ jobs:
           python3 -m venv ../buildenv
           ../buildenv/bin/pip install -q build
           ../buildenv/bin/python -m build --outdir ../dist .
-          # Later: a Flatpak bundle (etiketto-$VERSION.flatpak, built by
-          # flatpak-builder --repo + flatpak build-bundle) goes into ../dist as
-          # well; everything in ../dist is uploaded to both releases.
+          # The Flatpak bundle (Etiketto-$TAG-x86_64.flatpak) is built on GitHub
+          # by .github/workflows/flatpak-bundle.yml and attached to both releases.
           cd ../dist
           sha256sum -- * > SHA256SUMS
           ls -l; cat SHA256SUMS

@@ -57,6 +57,8 @@ START_GRACE = 3.0  # seconds: a job that never shows BUSY counts as done after t
 MIN_LENGTH_MM = 15.0  # the cutter needs at least this much
 # stages in which a new job may be sent (print_state IDLE); "" = not reported
 READY_STAGES = frozenset({"SUCCESS", "READY FOR PRINT", "IDLE", ""})
+# half cut / no cut: the label is printed and the printer waits for the panel swipe
+CUT_STAGE = "READY_FOR_CUT"
 CROSSWEB_DPI = 320  # resolution across the tape (config.xml crossweb_dpi)
 BLEED_IN = 0.02  # extra width on both tape edges for rawrgb (9-25 mm)
 MAX_LENGTH_IN = 17.0
@@ -549,12 +551,15 @@ def _poll(s: _Session, progress, n: int, copies: int, done) -> None:
         error = status_error(status)
         if error:
             raise error
-        if done(status):
-            return
         if not _is_ready(status) and status.stage != stage:
             stage = status.stage
             deadline = _clock() + PRINT_TIMEOUT
             _report(progress, n, copies, stage)
+        if done(status):
+            return
+        if status.stage == CUT_STAGE:
+            # waiting for someone to swipe the panel: no time limit
+            deadline = _clock() + PRINT_TIMEOUT
         if _clock() > deadline:
             raise PrinterTimeout("printer stayed in %s / %s" % (status.state, status.stage))
         _sleep(POLL_INTERVAL)
@@ -573,6 +578,8 @@ def _wait_done(s: _Session, progress, n: int, copies: int) -> None:
 
     def done(status: DeviceStatus) -> bool:
         nonlocal started
+        if status.stage == CUT_STAGE:
+            return True  # printed; only the cut (by hand) is left
         if not _is_ready(status):
             started = True
             return False

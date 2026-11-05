@@ -109,7 +109,7 @@ TRANSLATIONS = {
     "Export PNG": "PNG にエクスポート",
     "Exported": "エクスポートしました",
     "No templates yet – use “Save as template…”": "テンプレートはまだありません。「テンプレートとして保存…」を使ってください",
-    "Discard changes?": "変更を破棄しますか?",
+    "Discard changes?": "変更を破棄しますか？",
     "The current label has unsaved changes.": "現在のラベルには未保存の変更があります。",
     "Discard": "破棄",
     "Please wait until printing has finished": "印刷が終わるまでお待ちください",

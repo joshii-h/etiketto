@@ -81,7 +81,7 @@ msgstr "Seuls les fichiers locaux sont possibles"
 #: etiketto/app.py:205
 #, python-format
 msgid "Not an image: %s"
-msgstr "Pas une image : %s"
+msgstr "Pas une image : %s"
 
 #: etiketto/app.py:211 etiketto/app.py:769 etiketto/app.py:1737
 msgid "Text"
@@ -94,28 +94,28 @@ msgstr "Image"
 #: etiketto/app.py:235
 #, python-format
 msgid "Element %(n)d: the code is empty"
-msgstr "Élément %(n)d : le code est vide"
+msgstr "Élément %(n)d : le code est vide"
 
 #: etiketto/app.py:236
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
-msgstr "Élément %(n)d : EAN-13 exige exactement 12 chiffres"
+msgstr "Élément %(n)d : EAN-13 exige exactement 12 chiffres"
 
 #: etiketto/app.py:237
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
-msgstr "Élément %(n)d : la clé de contrôle EAN-13 est fausse"
+msgstr "Élément %(n)d : la clé de contrôle EAN-13 est fausse"
 
 #: etiketto/app.py:239
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
-msgstr "Élément %(n)d : Code 128 n’accepte que les lettres latines, les chiffres et la ponctuation"
+msgstr "Élément %(n)d : Code 128 n’accepte que les lettres latines, les chiffres et la ponctuation"
 
 #: etiketto/app.py:241
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
-msgstr "Élément %(n)d : l’image est illisible"
+msgstr "Élément %(n)d : l’image est illisible"
 
 #: etiketto/app.py:242
 #, python-format
@@ -173,7 +173,7 @@ msgstr "L’imprimante est occupée. Patientez un instant et réessayez."
 #: etiketto/app.py:267
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
-msgstr "L’étiquette est trop longue pour cette imprimante : %(max)s au maximum."
+msgstr "L’étiquette est trop longue pour cette imprimante : %(max)s au maximum."
 
 #: etiketto/app.py:269
 msgid ""
@@ -209,17 +209,17 @@ msgstr "%s n’est pas une étiquette Etiketto"
 #: etiketto/app.py:295
 #, python-format
 msgid "The file is damaged: %s"
-msgstr "Le fichier est endommagé : %s"
+msgstr "Le fichier est endommagé : %s"
 
 #: etiketto/app.py:300
 #, python-format
 msgid "Cannot save %s: no permission to write there"
-msgstr "Impossible d’enregistrer %s : pas d’autorisation d’écriture"
+msgstr "Impossible d’enregistrer %s : pas d’autorisation d’écriture"
 
 #: etiketto/app.py:302
 #, python-format
 msgid "Cannot save %s: the disk is full"
-msgstr "Impossible d’enregistrer %s : le disque est plein"
+msgstr "Impossible d’enregistrer %s : le disque est plein"
 
 #: etiketto/app.py:303
 #, python-format
@@ -396,7 +396,7 @@ msgstr "Marge de sécurité"
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
-msgstr "%(unit)s laissés libres pour le contenu et la bordure ; le fond est imprimé à fond perdu"
+msgstr "%(unit)s laissés libres pour le contenu et la bordure ; le fond est imprimé à fond perdu"
 
 #: etiketto/app.py:611 etiketto/app.py:617
 msgid "Millimetres"
@@ -565,12 +565,12 @@ msgstr "contenu réduit pour tenir"
 #: etiketto/app.py:990
 #, python-format
 msgid "Too long for this printer: at most %s"
-msgstr "Trop longue pour cette imprimante : %s au maximum"
+msgstr "Trop longue pour cette imprimante : %s au maximum"
 
 #: etiketto/app.py:995
 #, python-format
 msgid "Problem: %s"
-msgstr "Problème : %s"
+msgstr "Problème : %s"
 
 #: etiketto/app.py:1002 etiketto/app.py:1595
 msgid "The preview cannot be drawn"
@@ -593,7 +593,7 @@ msgstr "Vérifiez que l’imprimante est allumée et sur le même réseau, ou sa
 #: etiketto/app.py:1065
 #, python-format
 msgid "Found %s"
-msgstr "Imprimante trouvée : %s"
+msgstr "Imprimante trouvée : %s"
 
 #: etiketto/app.py:1069 etiketto/app.py:1089
 msgid "Choose a printer"
@@ -806,7 +806,7 @@ msgstr "Impossible d’ouvrir le modèle %(name)s"
 
 #: etiketto/app.py:1647
 msgid "Discard changes?"
-msgstr "Abandonner les modifications ?"
+msgstr "Abandonner les modifications ?"
 
 #: etiketto/app.py:1647
 msgid "The current label has unsaved changes."

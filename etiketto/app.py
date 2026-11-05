@@ -739,6 +739,9 @@ class Window(Adw.ApplicationWindow):
 
         lower = max(15.0, caps.min_length_mm)  # 15 mm: the smallest length a file may have
         upper = float(math.floor(min(1000.0, caps.max_length_mm or 1000.0)))
+        if not lower <= lab.length_mm <= upper:
+            # a file made for another printer: show and keep the same value
+            lab.length_mm = min(max(lab.length_mm, lower), upper)
         length = self.length_row(
             _("Length"),
             min(max(lab.length_mm, lower), upper),
