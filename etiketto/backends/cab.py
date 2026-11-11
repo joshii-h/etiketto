@@ -15,8 +15,7 @@ import io
 import re
 import socket
 import time
-from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager
 from dataclasses import dataclass, replace
 
 from PIL import Image
@@ -30,7 +29,6 @@ from etiketto.backends.base import (
     LabelNotFound,
     LabelSize,
     OutOfLabels,
-    PortClosed,
     PrinterBusy,
     PrinterError,
     PrinterInfo,
@@ -40,11 +38,14 @@ from etiketto.backends.base import (
     PrintMode,
     PrintOptions,
     PrintResult,
-    Progress,
     ProgressCallback,
     Raster,
     RibbonError,
     check_width,
+    error_text,
+    network_error,
+    open_session,
+    report,
 )
 from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM
@@ -227,16 +228,13 @@ def _connect(host: str, port: int):
 
 
 def map_error(error: Exception) -> PrinterError:
-    if isinstance(error, PrinterError):
-        return error
-    text = str(error) or type(error).__name__
-    if isinstance(error, socket.gaierror) or "resolve" in text.lower():
-        return PrinterNotFound(text)
-    if isinstance(error, ConnectionRefusedError):
-        return PortClosed(text)
-    if isinstance(error, (TimeoutError, socket.timeout)):
-        return PrinterTimeout(text)
-    if isinstance(error, OSError):
+    mapped = network_error(error)
+    if mapped:
+        return mapped
+    text = error_text(error)
+    # mdns.resolve_host() fails with "cannot resolve", any other OSError means
+    # the network is unreachable
+    if isinstance(error, OSError) or "resolve" in text.lower():
         return PrinterNotFound(text)
     return PrinterError(text)
 
@@ -282,20 +280,8 @@ class _Session:
             pass  # the connection is gone; nothing more to do
 
 
-@contextmanager
-def session(host: str, port: int = DEFAULT_PORT) -> Iterator[_Session]:
-    try:
-        sock = _connect(host, port)
-    except Exception as e:  # noqa: BLE001
-        raise map_error(e) from e
-    try:
-        yield _Session(sock)
-    except PrinterError:
-        raise
-    except Exception as e:  # noqa: BLE001
-        raise map_error(e) from e
-    finally:
-        sock.close()
+def session(host: str, port: int = DEFAULT_PORT) -> AbstractContextManager[_Session]:
+    return open_session(lambda: _connect(host, port), _Session, map_error)
 
 
 # --- the backend ------------------------------------------------------------------
@@ -382,7 +368,7 @@ class Cab(Backend):
         check_width(image.width / rendered, self.capabilities)
         copies = max(1, options.copies)
         with session(host, self.port) as s:
-            _report(progress, 1, copies)
+            report(progress, 1, copies)
             # the printer may not have been asked yet (switched on later)
             version = s.version()
             dots = version.dots_per_mm if version.model else rendered
@@ -409,11 +395,6 @@ def _rescale(image: Image.Image, factor: float) -> Image.Image:
 
 def _is_cab(name: str) -> bool:
     return name.lower().startswith("cab ")
-
-
-def _report(progress: ProgressCallback | None, n: int, copies: int) -> None:
-    if progress:
-        progress(Progress(n, copies))
 
 
 def _checked(s: _Session) -> Status:
@@ -450,13 +431,13 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
             if done != last:
                 last = done
                 deadline = _clock() + PRINT_TIMEOUT
-                _report(progress, min(copies, done + 1), copies)
+                report(progress, min(copies, done + 1), copies)
         elif status.running:
             idle_since = None
         else:
             idle_since = _clock() if idle_since is None else idle_since
             if started or _clock() - idle_since >= START_GRACE:
-                _report(progress, copies, copies)
+                report(progress, copies, copies)
                 return
         if _clock() > deadline:
             raise PrinterTimeout("printer stayed busy: %s" % status.raw)

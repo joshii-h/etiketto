@@ -8,8 +8,10 @@ continuous-tape printer means adding one module (see CONTRIBUTING.md).
 
 from __future__ import annotations
 
+import socket
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal
@@ -243,6 +245,48 @@ class RibbonError(PrinterError):
 
 class PrinterPaused(PrinterError):
     code = "paused"
+
+
+def error_text(error: Exception) -> str:
+    return str(error) or type(error).__name__
+
+
+def network_error(error: Exception) -> PrinterError | None:
+    """The PrinterError for a printer error or a plain network problem; None
+    for anything else, which each backend maps from its own messages."""
+    if isinstance(error, PrinterError):
+        return error
+    if isinstance(error, socket.gaierror):
+        return PrinterNotFound(error_text(error))
+    if isinstance(error, ConnectionRefusedError):
+        return PortClosed(error_text(error))
+    if isinstance(error, TimeoutError):  # socket.timeout too
+        return PrinterTimeout(error_text(error))
+    return None
+
+
+@contextmanager
+def open_session(connect, wrap, map_error) -> Iterator:
+    """Connect, hand out wrap(connection), close it again; every exception on
+    the way, also from the caller's block, becomes a PrinterError."""
+    try:
+        connection = connect()
+    except Exception as e:  # noqa: BLE001 - libraries raise all kinds
+        raise map_error(e) from e
+    try:
+        yield wrap(connection)
+    except PrinterError:
+        raise
+    except Exception as e:  # noqa: BLE001
+        raise map_error(e) from e
+    finally:
+        connection.close()
+
+
+def report(progress: ProgressCallback | None, n: int, copies: int, stage: str = "") -> None:
+    """Tell the caller which copy is printing, if it asked to know."""
+    if progress:
+        progress(Progress(n, copies, stage))
 
 
 def check_length(length_mm: float, capabilities: Capabilities) -> None:

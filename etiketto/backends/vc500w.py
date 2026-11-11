@@ -11,10 +11,8 @@ import io
 import json
 import math
 import re
-import socket
 import time
-from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -41,10 +39,13 @@ from etiketto.backends.base import (
     PrintMode,
     PrintOptions,
     PrintResult,
-    Progress,
     ProgressCallback,
     Raster,
     check_length,
+    error_text,
+    network_error,
+    open_session,
+    report,
 )
 from etiketto.model import TAPE_WIDTHS_MM
 from etiketto.render import PRINT_DPI
@@ -246,19 +247,18 @@ def status_error(status: DeviceStatus) -> PrinterError | None:
 def map_error(error: Exception) -> PrinterError:
     """labelprinter reports everything as ValueError with English advice;
     turn it into a PrinterError, keeping the original text as details."""
-    if isinstance(error, PrinterError):
-        return error
-    text = str(error)
-    first = text.splitlines()[0] if text else type(error).__name__
-    if isinstance(error, socket.gaierror) or "resolve" in first.lower():
+    mapped = network_error(error)
+    if mapped:
+        return mapped
+    text = error_text(error)
+    first = text.splitlines()[0]
+    if "resolve" in first.lower() or "Cannot connect" in first:
         return PrinterNotFound(text)
-    if isinstance(error, ConnectionRefusedError) or "refused" in first:
+    if "refused" in first:
         return PortClosed(text)
-    if isinstance(error, TimeoutError) or "timed out" in first:
+    if "timed out" in first:
         return PrinterTimeout(text)
-    if "Cannot connect" in first:
-        return PrinterNotFound(text)
-    return PrinterError(text or first)
+    return PrinterError(text)
 
 
 # --- print request ------------------------------------------------------------
@@ -406,20 +406,8 @@ class _Session:
         PrintAnswer(self.connection.get_message(long_timeout=True), self.connection.get_message)
 
 
-@contextmanager
-def session(host: str, port: int = DEFAULT_PORT) -> Iterator[_Session]:
-    try:
-        connection = _connect(host, port)
-    except Exception as e:  # noqa: BLE001 - labelprinter raises ValueError for everything
-        raise map_error(e) from e
-    try:
-        yield _Session(connection)
-    except PrinterError:
-        raise
-    except Exception as e:  # noqa: BLE001
-        raise map_error(e) from e
-    finally:
-        connection.close()
+def session(host: str, port: int = DEFAULT_PORT) -> AbstractContextManager[_Session]:
+    return open_session(lambda: _connect(host, port), _Session, map_error)
 
 
 # --- the backend --------------------------------------------------------------------
@@ -513,7 +501,7 @@ class VC500W(Backend):
                 data, width, height = encode_jpeg(image, mode), 0, 0
             xml = print_xml(mode, fmt, len(data), cut, options.color, width, height)
             for n in range(1, options.copies + 1):
-                _report(progress, n, options.copies)
+                report(progress, n, options.copies)
                 _wait_ready(s, progress, n, options.copies)
                 _send(s, xml, data)
                 _wait_done(s, progress, n, options.copies)
@@ -529,11 +517,6 @@ def _is_vc500w(name: str) -> bool:
 
 def _pick_mode(modes: tuple[PrintMode, ...], wanted: str) -> PrintMode:
     return next((m for m in modes if m.id == wanted), modes[0])
-
-
-def _report(progress: ProgressCallback | None, n: int, copies: int, stage: str = "") -> None:
-    if progress:
-        progress(Progress(n, copies, stage))
 
 
 def _is_ready(status: DeviceStatus) -> bool:
@@ -554,7 +537,7 @@ def _poll(s: _Session, progress, n: int, copies: int, done) -> None:
         if not _is_ready(status) and status.stage != stage:
             stage = status.stage
             deadline = _clock() + PRINT_TIMEOUT
-            _report(progress, n, copies, stage)
+            report(progress, n, copies, stage)
         if done(status):
             return
         if status.stage == CUT_STAGE:
