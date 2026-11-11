@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 22:47+0100\n"
+"POT-Creation-Date: 2026-11-11 22:53+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -875,6 +875,13 @@ msgstr "**Bild**: Fotos und Grafiken; Ziehen und Ablegen geht auch."
 msgid "**Code**: QR code, Code 128 or EAN-13."
 msgstr "**Code**: QR-Code, Code 128 oder EAN-13."
 
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Texts and codes can contain [variables](#variables), e.g. a date or a "
+"running number."
+msgstr "Texte und Codes können [Variablen](#variables) enthalten, z. B. ein Datum oder eine fortlaufende Nummer."
+
 #. type: Title ##
 #: docs/use.md
 #, no-wrap
@@ -1029,3 +1036,169 @@ msgstr ""
 #: docs/use.md
 msgid "[[ui:Export PNG…]] saves the label as image."
 msgstr "[[ui:Export PNG…]] speichert das Etikett als Bild."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Variables { #variables }"
+msgstr "Variablen { #variables }"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Variables are filled in when printing, in texts and in the content of codes. "
+"[[ui:Insert variable]] next to the text or the content offers the common "
+"ones; type the others."
+msgstr "Variablen werden beim Drucken eingesetzt, in Texten und im Inhalt von Codes. [[ui:Insert variable]] neben dem Text oder dem Inhalt bietet die gängigen an; die übrigen tippen Sie ein."
+
+#. type: Plain text
+#: docs/use.md
+#, no-wrap
+msgid ""
+"| Variable | Result |\n"
+"|---|---|\n"
+"| `{=date}` | today, as the system language writes dates |\n"
+"| `{=date:%d.%m.%Y}` | today in a format of your own, e.g. 31.12.2026 |\n"
+"| `{=date+30d}` | in 30 days, e.g. \"best before\"; also `w` (weeks), `m` (months), `y` (years), `h` (hours), combined like `{=date+1m-1d}` |\n"
+"| `{=time}`, `{=time:%H:%M}` | the time |\n"
+"| `{=counter}` | a running number |\n"
+"| `{=counter:0001}` | with leading zeros, as many digits as the pattern |\n"
+"| `{=copy}`, `{=copies}` | number of this copy and of all copies |\n"
+"| `{=id}`, `{=id:12}` | a short random ID, 8 characters by default |\n"
+"| `{=uuid}` | a random UUID |\n"
+msgstr ""
+"| Variable | Ergebnis |\n"
+"|---|---|\n"
+"| `{=date}` | heute, so wie die Systemsprache Daten schreibt |\n"
+"| `{=date:%d.%m.%Y}` | heute in einem eigenen Format, z. B. 31.12.2026 |\n"
+"| `{=date+30d}` | in 30 Tagen, z. B. «mindestens haltbar bis»; auch `w` (Wochen), `m` (Monate), `y` (Jahre), `h` (Stunden), kombiniert wie `{=date+1m-1d}` |\n"
+"| `{=time}`, `{=time:%H:%M}` | die Uhrzeit |\n"
+"| `{=counter}` | eine fortlaufende Nummer |\n"
+"| `{=counter:0001}` | mit führenden Nullen, so viele Stellen wie das Muster |\n"
+"| `{=copy}`, `{=copies}` | Nummer dieses Exemplars und Anzahl aller Exemplare |\n"
+"| `{=id}`, `{=id:12}` | eine kurze zufällige ID, standardmässig 8 Zeichen |\n"
+"| `{=uuid}` | eine zufällige UUID |\n"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Formats use the letters of [strftime](https://docs.python.org/3/library/"
+"datetime.html#format-codes): `%d` day, `%m` month, `%Y` year, `%H:%M` hours "
+"and minutes, `%B` the name of the month."
+msgstr "Formate verwenden die Buchstaben von [strftime](https://docs.python.org/3/library/datetime.html#format-codes): `%d` Tag, `%m` Monat, `%Y` Jahr, `%H:%M` Stunden und Minuten, `%B` der Name des Monats."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"The counter goes up with every printed label, also from copy to copy: 5 "
+"copies get 5 numbers. Set the [[ui:Next number]] and the [[ui:Step]] in the "
+"[[ui:Counter]] group below the content; it appears once a text uses the "
+"counter. After printing the label remembers the next number: save it to keep "
+"it."
+msgstr "Der Zähler steigt mit jedem gedruckten Etikett, auch von Exemplar zu Exemplar: 5 Exemplare erhalten 5 Nummern. [[ui:Next number]] und [[ui:Step]] stellen Sie in der Gruppe [[ui:Counter]] unter dem Inhalt ein; sie erscheint, sobald ein Text den Zähler verwendet. Nach dem Drucken merkt sich das Etikett die nächste Nummer: Speichern Sie es, damit sie erhalten bleibt."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"On one label every variable has one value: a counter or an ID used in the "
+"text and in the QR code is the same number. The preview shows the values the "
+"next print uses."
+msgstr "Auf einem Etikett hat jede Variable einen Wert: Ein Zähler oder eine ID im Text und im QR-Code ist dieselbe Nummer. Die Vorschau zeigt die Werte, die der nächste Druck verwendet."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without "
+"variables print exactly as typed."
+msgstr "Um eine geschweifte Klammer zu drucken, verdoppeln Sie sie: `{{=date}}` druckt `{=date}`. Texte ohne Variablen werden genau so gedruckt, wie sie eingegeben wurden."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Command line { #command-line }"
+msgstr "Befehlszeile { #command-line }"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"`etiketto print` prints a saved label without opening a window, also on a "
+"computer without a screen:"
+msgstr "`etiketto print` druckt ein gespeichertes Etikett, ohne ein Fenster zu öffnen, auch auf einem Computer ohne Bildschirm:"
+
+#. type: Fenced code block (sh)
+#: docs/use.md
+#, no-wrap
+msgid ""
+"etiketto print label.etiketto\n"
+"etiketto print label.etiketto --copies 5 --counter-start 100\n"
+"etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
+"etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
+"etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
+"etiketto list-printers\n"
+"etiketto --version\n"
+msgstr ""
+"etiketto print label.etiketto\n"
+"etiketto print label.etiketto --copies 5 --counter-start 100\n"
+"etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
+"etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
+"etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
+"etiketto list-printers\n"
+"etiketto --version\n"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Without `--host` Etiketto uses the printer set in the app, or the only one "
+"it finds on the network. `etiketto list-printers` shows model, address and "
+"name of each printer found."
+msgstr "Ohne `--host` verwendet Etiketto den in der App eingestellten Drucker oder den einzigen, den es im Netzwerk findet. `etiketto list-printers` zeigt Modell, Adresse und Name jedes gefundenen Druckers."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"`--set NAME=VALUE` replaces the text of the element with that [[ui:Name for "
+"the command line]] (in the element's settings), or fills in a variable of "
+"your own: `{=lot}` in the label, `--set lot=A12` when printing. `--set "
+"date=2026-12-31` prints with another date."
+msgstr "`--set NAME=WERT` ersetzt den Text des Elements mit diesem [[ui:Name for the command line]] (in den Einstellungen des Elements) oder setzt eine eigene Variable ein: `{=lot}` im Etikett, `--set lot=A12` beim Drucken. `--set date=2026-12-31` druckt mit einem anderen Datum."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"With a counter the next number is saved in the label file after printing."
+msgstr "Mit einem Zähler wird die nächste Nummer nach dem Drucken in der Etikettendatei gespeichert."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"`--dry-run` only checks and renders: it lists the texts of each label; `--"
+"output file.png` saves the images as the printer would get them "
+"(`file-1.png`, `file-2.png` … if they differ; `-` writes the first to "
+"standard output)."
+msgstr "`--dry-run` prüft und zeichnet nur: Es listet die Texte jedes Etiketts auf; `--output datei.png` speichert die Bilder so, wie der Drucker sie bekäme (`datei-1.png`, `datei-2.png` …, wenn sie sich unterscheiden; `-` schreibt das erste in die Standardausgabe)."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong "
+"arguments, 3 label file cannot be read or output not written, 4 the label "
+"cannot be printed (empty, unknown variable), 5 printed, but the counter "
+"could not be saved."
+msgstr "Exit-Codes: 0 gedruckt, 1 Problem mit dem Drucker oder kein Drucker gefunden, 2 falsche Argumente, 3 Etikettendatei nicht lesbar oder Ausgabe nicht geschrieben, 4 das Etikett lässt sich nicht drucken (leer, unbekannte Variable), 5 gedruckt, aber der Zähler konnte nicht gespeichert werden."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"In the Flatpak the label file has to be handed over with `--file-"
+"forwarding`; write images to standard output:"
+msgstr "Im Flatpak muss die Etikettendatei mit `--file-forwarding` übergeben werden; Bilder schreiben Sie in die Standardausgabe:"
+
+#. type: Fenced code block (sh)
+#: docs/use.md
+#, no-wrap
+msgid ""
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
+msgstr ""
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"

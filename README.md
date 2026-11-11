@@ -54,6 +54,11 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
 - QR codes, Code 128 and EAN-13 barcodes
+- Variables in texts and codes: date with formats and "best before"
+  arithmetic, time, a counter that goes up with every printed label (also
+  across copies), copy number, random ID and UUID
+- Command line: `etiketto print` prints a label file without a window or
+  display, with copies, counter start and texts set per job
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
@@ -105,6 +110,50 @@ Check it like Flathub does:
 flatpak install --user flathub org.flatpak.Builder
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
     manifest build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+```
+
+## Variables and command line
+
+Texts and code contents can contain variables, filled in when printing:
+
+| Variable | Result |
+|---|---|
+| `{=date}`, `{=date:%d.%m.%Y}` | today, in the system language's or a strftime format |
+| `{=date+30d}` | in 30 days; units `d`, `w`, `m`, `y`, `h`, combined like `+1m-1d` |
+| `{=time}`, `{=time:%H:%M}` | the time |
+| `{=counter}`, `{=counter:0001}` | running number, optionally with leading zeros |
+| `{=copy}`, `{=copies}` | number of this copy, of all copies |
+| `{=id}`, `{=id:12}`, `{=uuid}` | short random ID (Crockford base 32), UUID 4 |
+| `{=NAME}` | a value given on the command line |
+
+The counter goes up by its step with every printed label, also across
+copies, and the label file keeps the next number. All variables of one
+label have one value, so a counter in the text and in the QR code match.
+`{{` and `}}` are literal braces. The `=` keeps variables apart from the
+`{Column}` placeholders of serial labels: a column named "Date" never
+changes what `{=date}` means.
+
+```sh
+etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
+                    [--set NAME=VALUE ...] [--counter-start N]
+                    [--dry-run [--output out.png]]
+etiketto list-printers [--printer ID]
+etiketto --version
+```
+
+`etiketto print` needs no display. `--set` replaces the text of the
+element with that name (set in the element's settings) or fills in
+`{=NAME}`; `--set date=2026-12-31` prints with another date. Without
+`--host` the printer set in the app is used, or the only one found.
+`--dry-run` lists the texts of every label and with `--output` saves the
+images the printer would get (`-`: standard output). Exit codes: 0 printed,
+1 printer problem, 2 wrong arguments, 3 file problem, 4 label cannot be
+printed (empty, unknown variable), 5 printed but the counter was not saved.
+
+In the Flatpak, hand the file over with `--file-forwarding`:
+
+```sh
+flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
 ```
 
 ## How labels are laid out
