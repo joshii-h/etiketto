@@ -96,7 +96,7 @@ def configured_host() -> str | None:
     """
     config = Path.home() / ".config" / "labelprinter" / "config.json"
     try:
-        return json.loads(config.read_text()).get("host") or None
+        return json.loads(config.read_text(encoding="utf-8")).get("host") or None
     except (OSError, ValueError, AttributeError):
         return None
 

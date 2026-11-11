@@ -150,7 +150,7 @@ class Printer:
             found = backend.discover()
             GLib.idle_add(self.discovered, found, choose, generation)
 
-        threading.Thread(target=work, daemon=True).start()
+        threading.Thread(target=work, name="etiketto-discover", daemon=True).start()
 
     def discovered(self, found, choose: bool, generation: int | None = None) -> bool:
         if self._outdated(generation):
@@ -225,7 +225,7 @@ class Printer:
             else:
                 GLib.idle_add(self.found, info, generation)
 
-        threading.Thread(target=work, daemon=True).start()
+        threading.Thread(target=work, name="etiketto-query", daemon=True).start()
 
     def _next_generation(self) -> int:
         self.generation += 1  # a pending status answer or search is outdated now

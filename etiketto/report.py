@@ -21,7 +21,7 @@ def os_name(root: str = "/") -> str:
     """Pretty name of the (host) distribution; inside Flatpak via /run/host."""
     for path in ("run/host/os-release", "etc/os-release", "usr/lib/os-release"):
         try:
-            for line in (Path(root) / path).read_text().splitlines():
+            for line in (Path(root) / path).read_text(encoding="utf-8").splitlines():
                 if line.startswith("PRETTY_NAME="):
                     return line.split("=", 1)[1].strip().strip('"')
         except OSError:

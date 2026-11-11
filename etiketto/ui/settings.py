@@ -43,7 +43,7 @@ class Settings:
     @classmethod
     def load(cls) -> Settings:
         try:
-            data = json.loads(SETTINGS_FILE.read_text())
+            data = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return cls()
         return cls(migrate(data) if isinstance(data, dict) else {})
@@ -51,7 +51,7 @@ class Settings:
     def save(self) -> None:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         tmp = SETTINGS_FILE.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self.data, indent=1))
+        tmp.write_text(json.dumps(self.data, indent=1), encoding="utf-8")
         tmp.replace(SETTINGS_FILE)
 
     @property

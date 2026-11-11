@@ -164,7 +164,8 @@ def label_error_text(error: LabelError, name: str) -> str:
 
 
 def save_error_text(error: OSError, name: str) -> str:
-    if error.errno in (errno.EACCES, errno.EPERM, errno.EROFS):
+    # PermissionError covers EACCES and EPERM; a read-only disk has no class
+    if isinstance(error, PermissionError) or error.errno == errno.EROFS:
         return _("Cannot save %s: no permission to write there") % name
     if error.errno in (errno.ENOSPC, errno.EDQUOT):
         return _("Cannot save %s: the disk is full") % name

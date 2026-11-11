@@ -236,7 +236,7 @@ class PrintFlow:
                 return
             GLib.idle_add(self.done, None, None, options, result)
 
-        threading.Thread(target=work, daemon=True).start()
+        threading.Thread(target=work, name="etiketto-print", daemon=True).start()
 
     def progress(self, event: Progress) -> bool:
         if self.busy:

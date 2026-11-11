@@ -7,6 +7,7 @@ image width matches the tape width, which is what the printer expects.
 
 from __future__ import annotations
 
+import base64
 import io
 import math
 from collections.abc import Mapping
@@ -143,8 +144,6 @@ Image.MAX_IMAGE_PIXELS = 80_000_000  # refuse decompression bombs early
 
 @lru_cache(maxsize=8)
 def _decoded(data: str) -> Image.Image:
-    import base64
-
     with Image.open(io.BytesIO(base64.b64decode(data))) as src:
         return ImageOps.exif_transpose(src).convert("RGBA")
 

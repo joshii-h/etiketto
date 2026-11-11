@@ -15,6 +15,9 @@ MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may 
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
+# a label file is read whole before it is parsed: refuse absurd sizes (the
+# json documentation advises a limit for data from untrusted sources)
+MAX_FILE_BYTES = 200 * 1024 * 1024
 # what a printer model decides about a label: kept per model when switching
 GEOMETRY_FIELDS = ("tape_mm", "auto_length", "length_mm", "orientation", "gap_mm")
 
@@ -240,7 +243,10 @@ class Label:
     @classmethod
     def load(cls, path: str | Path) -> Label:
         """OSError if the file cannot be read, LabelError for its content."""
-        raw = Path(path).read_bytes()
+        path = Path(path)
+        if path.stat().st_size > MAX_FILE_BYTES:
+            raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
+        raw = path.read_bytes()
         try:
             data = json.loads(raw.decode("utf-8"))
         except ValueError as e:  # JSON syntax or not UTF-8 at all

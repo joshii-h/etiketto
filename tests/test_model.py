@@ -362,3 +362,12 @@ def test_element_kind_that_is_no_text_is_damaged(kind):
     with pytest.raises(LabelError) as info:
         Label.from_dict({"elements": [{"kind": kind}]})
     assert info.value.code == "damaged"
+
+
+def test_a_huge_file_is_refused_before_reading(tmp_path, monkeypatch):
+    path = tmp_path / "huge.etiketto"
+    path.write_text("{}")
+    monkeypatch.setattr(model, "MAX_FILE_BYTES", 1)
+    with pytest.raises(LabelError) as info:
+        Label.load(path)
+    assert info.value.code == "damaged" and "larger" in str(info.value)
