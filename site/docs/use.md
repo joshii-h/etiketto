@@ -47,6 +47,42 @@ keep this distance from the label edges. Printers lose a little at the
 edges, and long labels can run slightly askew. If text is cut off at the
 edge, increase it.
 
+## Shipping labels
+
+Carriers and marketplaces send shipping labels as a PDF or an image,
+often an A4 page with the label in one half or quarter and a receipt or
+instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF
+dropped onto the window) opens such a file and makes a new label of it.
+
+- Etiketto looks for the label on the page: a printed frame first, then
+  the largest block that has the shape of a label. Check the selection:
+  drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows
+  other areas that could be the label, [[ui:Whole page]] selects all of it.
+- [[ui:Page]]: the page of a PDF with several pages.
+- [[ui:Label size]]: 4 × 6 in (101.6 × 152.4 mm), 100 × 150 mm,
+  100 × 200 mm, a 62 mm roll that is as long as the label needs, or A6 and
+  A4 paper on the system printer. Only sizes the printer can print are
+  offered; on endless tape the label runs along the tape.
+- A label printed sideways on the page is turned upright for the size;
+  [[ui:Rotate left]] and [[ui:Rotate right]] turn it by hand.
+- [[ui:Scale]]: [[ui:Whole area, centred]] keeps all of the area,
+  [[ui:Fill the label, edges cut off]] fills the label completely.
+- [[ui:Create label]] replaces the open label. The area stays an element
+  of the label: [[ui:Area]] in its row opens the selection again.
+
+A PDF page is drawn right at the printer's resolution, without smoothing:
+bars and text come out as whole printer dots, so barcodes stay readable.
+Images are enlarged by whole pixels; a scan or photo of a label should
+have at least the printer's resolution (200 to 300 dpi).
+
+Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
+along, otherwise install it from your distribution (see the README).
+
+Most shipping label rolls are direct thermal labels: they need no ribbon,
+but the print fades in heat and sunlight within months. That is fine for
+a parcel on its way; for labels that must last, use thermal transfer
+labels with a ribbon.
+
 ## Print
 
 ![Print dialog](media/print.png#only-light)

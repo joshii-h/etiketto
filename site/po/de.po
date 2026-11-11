@@ -1168,6 +1168,122 @@ msgstr ""
 #. type: Title ##
 #: docs/use.md
 #, no-wrap
+msgid "Shipping labels"
+msgstr "Versandetiketten"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Carriers and marketplaces send shipping labels as a PDF or an image, often "
+"an A4 page with the label in one half or quarter and a receipt or "
+"instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF "
+"dropped onto the window) opens such a file and makes a new label of it."
+msgstr ""
+"Paketdienste und Marktplätze schicken Versandetiketten als PDF oder Bild, "
+"oft als A4-Seite mit dem Etikett in einer Hälfte oder einem Viertel und "
+"einer Quittung oder Anleitung daneben. [[ui:Shipping label…]] im Hauptmenü "
+"(oder ein PDF, das auf das Fenster gezogen wird) öffnet eine solche Datei "
+"und macht daraus ein neues Etikett."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Etiketto looks for the label on the page: a printed frame first, then the "
+"largest block that has the shape of a label. Check the selection: drag it, "
+"drag its edges, or draw a new one. [[ui:Next suggestion]] shows other areas "
+"that could be the label, [[ui:Whole page]] selects all of it."
+msgstr ""
+"Etiketto sucht das Etikett auf der Seite: zuerst einen gedruckten Rahmen, "
+"dann den grössten Block mit der Form eines Etiketts. Die Auswahl prüfen: sie "
+"verschieben, ihre Kanten ziehen oder eine neue aufziehen. [[ui:Next "
+"suggestion]] zeigt weitere Bereiche, die das Etikett sein könnten, "
+"[[ui:Whole page]] wählt die ganze Seite."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Page]]: the page of a PDF with several pages."
+msgstr "[[ui:Page]]: die Seite eines PDFs mit mehreren Seiten."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Label size]]: 4 × 6 in (101.6 × 152.4 mm), 100 × 150 mm, 100 × 200 mm, "
+"a 62 mm roll that is as long as the label needs, or A6 and A4 paper on the "
+"system printer. Only sizes the printer can print are offered; on endless "
+"tape the label runs along the tape."
+msgstr ""
+"[[ui:Label size]]: 4 × 6 Zoll (101,6 × 152,4 mm), 100 × 150 mm, 100 × 200 "
+"mm, eine 62-mm-Rolle, die so lang wird, wie das Etikett es braucht, oder A6- "
+"und A4-Papier auf dem Systemdrucker. Angeboten werden nur Grössen, die der "
+"Drucker drucken kann; auf Endlosband läuft das Etikett entlang des Bands."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A label printed sideways on the page is turned upright for the size; "
+"[[ui:Rotate left]] and [[ui:Rotate right]] turn it by hand."
+msgstr ""
+"Ein quer auf die Seite gedrucktes Etikett wird für die Grösse aufgerichtet; "
+"[[ui:Rotate left]] und [[ui:Rotate right]] drehen es von Hand."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Scale]]: [[ui:Whole area, centred]] keeps all of the area, [[ui:Fill "
+"the label, edges cut off]] fills the label completely."
+msgstr ""
+"[[ui:Scale]]: [[ui:Whole area, centred]] behält den ganzen Bereich, "
+"[[ui:Fill the label, edges cut off]] füllt das Etikett vollständig."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Create label]] replaces the open label. The area stays an element of "
+"the label: [[ui:Area]] in its row opens the selection again."
+msgstr ""
+"[[ui:Create label]] ersetzt das offene Etikett. Der Bereich bleibt ein "
+"Element des Etiketts: [[ui:Area]] in seiner Zeile öffnet die Auswahl wieder."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"A PDF page is drawn right at the printer's resolution, without smoothing: "
+"bars and text come out as whole printer dots, so barcodes stay readable.  "
+"Images are enlarged by whole pixels; a scan or photo of a label should have "
+"at least the printer's resolution (200 to 300 dpi)."
+msgstr ""
+"Eine PDF-Seite wird direkt in der Auflösung des Druckers gezeichnet, ohne "
+"Glättung: Striche und Text bestehen aus ganzen Druckpunkten, so bleiben "
+"Strichcodes lesbar. Bilder werden um ganze Pixel vergrössert; ein Scan oder "
+"Foto eines Etiketts sollte mindestens die Auflösung des Druckers haben (200 "
+"bis 300 dpi)."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, "
+"otherwise install it from your distribution (see the README)."
+msgstr ""
+"Zum Öffnen von PDF-Dateien braucht es Poppler (poppler-glib); das Flatpak "
+"bringt es mit, sonst aus der eigenen Distribution installieren (siehe "
+"README)."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Most shipping label rolls are direct thermal labels: they need no ribbon, "
+"but the print fades in heat and sunlight within months. That is fine for a "
+"parcel on its way; for labels that must last, use thermal transfer labels "
+"with a ribbon."
+msgstr ""
+"Die meisten Rollen für Versandetiketten sind Thermodirekt-Etiketten: Sie "
+"brauchen kein Farbband, aber der Druck verblasst bei Wärme und Sonnenlicht "
+"innert Monaten. Für ein Paket unterwegs genügt das; für Etiketten, die "
+"halten müssen, Thermotransfer-Etiketten mit Farbband verwenden."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
 msgid "Print"
 msgstr "Drucken"
 
