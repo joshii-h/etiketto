@@ -1,4 +1,4 @@
-"""Brother VC-500W: native protocol on TCP port 9100 (see docs/protocol.md).
+"""Brother VC-500W: native protocol on TCP port 9100 (see docs/vc500w.md).
 
 The connection and the answer parsing come from labelprinter; the print
 request is built here, so colour correction, the "bw" mode and the exact
@@ -210,7 +210,7 @@ def parse_status(xml: str) -> DeviceStatus:
 def cassette_date(serial: str, today: date | None = None) -> date | None:
     """Production date from a cassette serial like "180529-0116G…" (YYMMDD).
 
-    An assumption (docs/protocol.md): only dates that make sense are returned."""
+    An assumption (docs/vc500w.md): only dates that make sense are returned."""
     match = re.match(r"(\d{2})(\d{2})(\d{2})(?!\d)", serial or "")
     if not match:
         return None
