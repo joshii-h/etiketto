@@ -134,8 +134,12 @@ label is printed as one page of exactly its size, unscaled.
 
 ### Problems { #system-problems }
 
-- Out of paper, paper jam, cover open, out of toner or ink: fix it as the
+- Out of paper, paper jam or cover open while printing: Etiketto shows it
+  and waits. Fix it at the printer within 5 minutes and printing goes on.
+- Out of toner or ink, or a problem before printing: fix it as the
   printer's display shows, then [[ui:Refresh]].
+- Printing fails after some copies: the message says how many labels were
+  already printed. The rest is canceled, nothing prints later on its own.
 - The label is printed smaller or moved: the printer or its driver scales
   the page. Turn off "fit to page" in the printer's setup.
 - Other jobs are printing first: Etiketto says the label was sent, and the

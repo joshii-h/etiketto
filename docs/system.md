@@ -35,8 +35,8 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 ## Printing
 
 - `Get-Printer-Attributes` first: state, `printer-state-reasons`, the
-  formats, `print-scaling-supported`, `media-size-supported` and
-  `copies-supported`. A printer that reports a problem, or whose
+  formats, `print-scaling-supported`, `media-size-supported`,
+  `copies-supported` and `operations-supported`. A printer that reports a problem, or whose
   `printer-state` is stopped (a paused CUPS queue: `cupsdisable`), gets no
   job. [spec] [confirmed with a paused CUPS queue]
 - The page size comes from the label in millimetres (A4 is exactly 21000 ×
@@ -47,12 +47,21 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   so before sending anything, instead of the printer silently using its
   default paper. [spec] [confirmed with an HP LaserJet Pro 4002: 50 × 30
   mm is below its range]
+- `Validate-Job` before the first `Print-Job`, with the same attributes
+  and no document, if `operations-supported` lists it (0x0004): an
+  ignored `media-col` (status 0x0001 or 0x040b with the attribute in the
+  unsupported-attributes group) is the paper size message before
+  anything prints; an ignored `copies` sends the copies one by one from
+  the start. Any other error status means the printer cannot validate
+  this job; `Print-Job` then decides. [spec] [confirmed: an HP LaserJet
+  Pro 4002 answers 0x0001 with `media-col` for 100 × 50 mm, and 0x0000 for
+  A4 with 3 copies; `ippeveprinter` and CUPS queues accept it]
 - A printer that answers `Print-Job` with 0x0001
   (successful-ok-ignored-or-substituted-attributes) lists what it ignored
-  in the unsupported-attributes group: an ignored `media-col` would print on
-  its default paper, so the job is canceled with the paper size message;
-  an ignored `copies` means it prints one, the others follow as below.
-  [spec]
+  in the unsupported-attributes group (the fallback for printers without
+  `Validate-Job`): an ignored `media-col` would print on its default
+  paper, so the job is canceled with the paper size message; an ignored
+  `copies` means it prints one, the others follow as below. [spec]
 - `Print-Job` with one page in the label's exact size: PDF if the printer
   or CUPS takes it (Pillow's JPEG inside at quality 95 without chroma
   subsampling, so that small text stays sharp), else PWG Raster, which
@@ -62,30 +71,57 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   `copies` is the number of labels, `requesting-user-name` the login
   name. [spec]
 - Copies: if the upper bound of `copies-supported` is below the number of
-  labels, PWG Raster carries the page that many times in one job
-  (`TotalPageCount`), PDF and JPEG go as one job per label. A printer that
-  does not list `copies-supported` is trusted to make the copies. [spec]
+  labels, PWG Raster carries the page several times in one job
+  (`TotalPageCount`), at most 10 pages per job (the document is made in
+  memory: 10 noisy A4 pages are about 260 MB), so 23 labels are jobs of
+  10, 10 and 3 pages; PDF and JPEG go as one job per label. The document
+  is made once and sent again for every job of the same size. A printer
+  that does not list `copies-supported` is trusted to make the copies.
+  [spec]
+- If a step fails after jobs were sent (a later `Print-Job` refused, a
+  job canceled or stopped), every job sent and not seen completed is
+  canceled, so that none of them prints later on its own. The message
+  then says how many labels were already printed (finished jobs, and the
+  pages a failed job finished), if the printer said so. [spec]
 - `Get-Job-Attributes` every second, together with the printer's state;
-  the job's own state decides:
-  - completed is done, canceled or aborted is an error;
-  - processing-stopped: the printer's reason is read, then the job is
-    canceled (also if the printer does not answer any more);
+  the job's own state decides. An answer without a valid `job-state`
+  (missing, 0) is a missed answer, not a finished job:
+  - completed is done;
+  - canceled (by someone at the printer or in the queue), or aborted with
+    a `job-canceled-…` reason: "the print job was canceled at the printer
+    or in the queue"; aborted otherwise is the generic message, with the
+    `job-state-reasons` in the details;
+  - a problem the user fixes at the printer and that it then goes on
+    from by itself: `media-empty`, `media-needed`, `media-jam`,
+    `door-open`, `cover-open`, `interlock-open` while the job prints, or
+    as the reason of a processing-stopped job or a stopped printer. The
+    interface shows it while printing ("Out of paper – load paper to
+    continue") and Etiketto waits up to 5 minutes since the problem last
+    changed; not fixed by then, the job is canceled with that problem.
+    Once it is fixed, the clock for progress (below) starts again;
+  - processing-stopped for any other reason: the printer's reason is
+    read, then the job is canceled (also if the printer does not answer
+    any more);
   - held (`job-state` 4, e.g. `job-hold-until-specified`,
     `cups-held-for-authentication`) for three answers in a row: canceled,
     with a message to check the queue;
   - pending while the printer or queue is stopped (`printer-state` 5, or
     `printer-stopped` in `job-state-reasons`) for three answers: canceled
     as paused;
-  - processing while the printer reports a problem Etiketto knows (the
-    table below, without a suffix or with `-error`) or is stopped, for
-    three answers: canceled with that problem. Unknown keywords do not
-    stop a printing job;
-  - processing without progress for 5 minutes: canceled. The clock starts
-    again whenever `job-impressions-completed` (or
-    `job-media-sheets-completed`) rises, so a long job is not cut short;
-  - pending (waiting behind other jobs) for 30 seconds: Etiketto stops
-    watching and says the label was sent and prints when its turn comes;
-    the job stays. Further single-copy jobs are then sent without waiting.
+  - processing while the printer reports another problem Etiketto knows
+    (the table below, without a suffix or with `-error`) or is stopped,
+    for three answers: canceled with that problem. Unknown keywords do
+    not stop a printing job;
+  - processing without progress: once `job-impressions-completed` (or
+    `job-media-sheets-completed`) has risen above 0, 5 minutes without
+    the next page cancel the job, so a long job is not cut short. A
+    printer without these counters, or one that keeps them at 0
+    (`ippeveprinter` does), gets 5 minutes plus 30 seconds per label for
+    the whole job instead;
+  - pending (waiting behind other jobs) for 30 seconds, counted from when
+    the job last became pending: Etiketto stops watching and says the
+    label was sent and prints when its turn comes; the job stays. Further
+    jobs are then sent without waiting.
   While a job prints, CUPS reports `connecting-to-device` and
   `cups-waiting-for-job-completed` without a suffix: routine, not a
   problem. A few missed answers (network errors included) are tolerated.
@@ -93,7 +129,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   counts as done: it forgot the job already (some keep no history). A
   refused connection or a name that does not resolve is a missed answer,
   never "printed". [spec] [confirmed through a CUPS queue to
-  ippeveprinter]
+  ippeveprinter, also a job canceled with `cancel` in the queue]
 - `ipps://` printers bring self-signed certificates. Etiketto does not
   check them at all (CUPS remembers a printer's certificate the first time
   and warns if it changes); the risk is someone in the same network
@@ -116,9 +152,9 @@ error (RFC 8011 5.4.12). Keywords ending in `-low` (`toner-low`,
 
 | Keyword | Etiketto's message |
 |---|---|
-| `media-empty`, `media-needed` | out of paper |
-| `media-jam` | paper jammed |
-| `door-open`, `cover-open`, `interlock-open` | cover open |
+| `media-empty`, `media-needed` | out of paper (waits while printing) |
+| `media-jam` | paper jammed (waits while printing) |
+| `door-open`, `cover-open`, `interlock-open` | cover open (waits while printing) |
 | `toner-empty`, `marker-supply-empty` | out of toner or ink |
 | `paused`, `moving-to-paused`, printer state "stopped" | paused (a queue on this computer: resume it in the system settings) |
 | `offline`, `timed-out` | printer does not answer |

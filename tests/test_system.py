@@ -16,6 +16,7 @@ from etiketto.backends import get_backend, ipp, mdns, pwg, system
 from etiketto.backends.base import (
     CoverOpen,
     FoundPrinter,
+    JobCanceled,
     JobHeld,
     MediaJam,
     NoFormat,
@@ -47,11 +48,16 @@ class FakeIpp:
         self.pwg_resolutions = [(300, 300, 3), (600, 600, 3)]
         self.sizes = [A4, CUSTOM]
         self.scaling = ["auto", "fit", "none"]
-        self.job_states: list = [5, 9]  # processing, then completed; or (state, pages done)
+        # processing, then completed; or (state, pages done); None: no such attribute
+        self.job_states: list = [5, 9]
         self.job_reasons = ["none"]
         self.job_errors: list = []  # IPP status (or exception) of the next job queries
         self.copies_supported: tuple[int, int] | None = (1, 999)
         self.ignored: list[str] = []  # Print-Job answers 0x0001 with these unsupported
+        self.operations_supported = [0x0002, 0x0004, 0x0008, 0x0009, 0x000B]
+        self.validate_status: int | None = None  # Validate-Job: else as Print-Job
+        self.print_errors: list[int] = []  # IPP status of the next Print-Jobs (0: fine)
+        self.canceled: list[int] = []
         self.later: dict = {}  # printer state and reasons once a job was sent
         self.now = 0.0  # the clock system.py sees; each poll is a second
         self.job_id = 11
@@ -94,9 +100,23 @@ class FakeIpp:
             )
         if sizes:
             attrs.append(ipp.Attribute(ipp.BEGIN_COLLECTION, "media-size-supported", sizes))
+        attrs.append(ipp.Attribute(ipp.ENUM, "operations-supported", self.operations_supported))
         return _answer(0, [(ipp.PRINTER_GROUP, attrs)])
 
+    def _unsupported(self) -> list:
+        if not self.ignored:
+            return []
+        attributes = [ipp.Attribute(0x10, name, [b""]) for name in self.ignored]
+        return [(ipp.UNSUPPORTED_GROUP, attributes)]
+
+    def _op_0004(self, _body, _ops, _job):  # Validate-Job
+        if self.validate_status is not None:
+            return _answer(self.validate_status, [(ipp.OPERATION_GROUP, []), *self._unsupported()])
+        return _answer(1 if self.ignored else 0, [(ipp.OPERATION_GROUP, []), *self._unsupported()])
+
     def _op_0002(self, body, ops, job):  # Print-Job
+        if self.print_errors and self.print_errors.pop(0):
+            return _answer(0x0500, [(ipp.OPERATION_GROUP, [])])
         mime = ops["document-format"][0]
         start = {"application/pdf": b"%PDF", "image/pwg-raster": pwg.SYNC}.get(mime, b"\xff\xd8")
         document = body[body.find(start) :]
@@ -105,9 +125,7 @@ class FakeIpp:
         self.printed += copies * max(1, document.count(b"PwgRaster"))
         self.job_id += 1
         groups = [(ipp.JOB_GROUP, [ipp.Attribute(ipp.INTEGER, "job-id", [self.job_id])])]
-        if self.ignored:
-            unsupported = [ipp.Attribute(0x10, name, [b""]) for name in self.ignored]
-            groups.append((ipp.UNSUPPORTED_GROUP, unsupported))
+        groups += self._unsupported()
         self.state = self.later.get("state", self.state)
         self.reasons = self.later.get("reasons", self.reasons)
         return _answer(1 if self.ignored else 0, groups)
@@ -121,14 +139,15 @@ class FakeIpp:
             return _answer(error, [(ipp.OPERATION_GROUP, [])])
         state = self.job_states.pop(0) if len(self.job_states) > 1 else self.job_states[0]
         state, done = state if isinstance(state, tuple) else (state, 1)
-        attrs = [
-            ipp.Attribute(ipp.ENUM, "job-state", [state]),
-            ipp.Attribute(ipp.KEYWORD, "job-state-reasons", self.job_reasons),
-            ipp.Attribute(ipp.INTEGER, "job-impressions-completed", [done]),
-        ]
+        attrs = [ipp.Attribute(ipp.KEYWORD, "job-state-reasons", self.job_reasons)]
+        if state is not None:
+            attrs.append(ipp.Attribute(ipp.ENUM, "job-state", [state]))
+        if done is not None:
+            attrs.append(ipp.Attribute(ipp.INTEGER, "job-impressions-completed", [done]))
         return _answer(0, [(ipp.JOB_GROUP, attrs)])
 
-    def _op_0008(self, _body, _ops, _job):  # Cancel-Job
+    def _op_0008(self, _body, ops, _job):  # Cancel-Job
+        self.canceled += ops["job-id"]
         return _answer(0, [])
 
     def _op_4002(self, _body, _ops, _job):  # CUPS-Get-Printers
@@ -537,6 +556,7 @@ def test_takes_copies(supported, takes):
 
 
 def test_ignored_copies_are_printed_one_by_one(fake):
+    fake.operations_supported = [0x0002, 0x0008, 0x0009, 0x000B]  # no Validate-Job
     fake.ignored = ["copies"]  # accepted, but it prints one
     _print(copies=3)
     assert fake.operations().count(ipp.PRINT_JOB) == 3
@@ -544,10 +564,44 @@ def test_ignored_copies_are_printed_one_by_one(fake):
 
 
 def test_ignored_paper_size_is_an_error(fake):
+    fake.operations_supported = [0x0002, 0x0008, 0x0009, 0x000B]  # no Validate-Job
     fake.ignored = ["media-col"]  # it would print on its default paper
     with pytest.raises(UnsupportedSize, match="media-col ignored"):
         _print()
-    assert fake.operations()[-1] == ipp.CANCEL_JOB
+    assert fake.operations()[-1] == ipp.CANCEL_JOB and fake.canceled == [12]
+
+
+@pytest.mark.parametrize("status", [None, 0x040B])
+def test_validate_job_finds_an_ignored_paper_size_before_printing(fake, status):
+    fake.ignored, fake.validate_status = ["media-col"], status
+    with pytest.raises(UnsupportedSize, match="Validate-Job"):
+        _print()
+    assert ipp.PRINT_JOB not in fake.operations() and not fake.canceled
+
+
+def test_validate_job_finds_ignored_copies_before_printing(fake):
+    fake.ignored = ["copies"]
+    _print(copies=3)
+    ops = fake.operations()
+    assert ops.index(ipp.VALIDATE_JOB) < ops.index(ipp.PRINT_JOB)
+    jobs = [r[3] for r in fake.requests if r[0] == ipp.PRINT_JOB]
+    assert len(jobs) == 3 and all("copies" not in job for job in jobs)
+    validate = next(r for r in fake.requests if r[0] == ipp.VALIDATE_JOB)
+    assert validate[3]["copies"] == [3] and "media-col" in validate[3]
+    assert validate[2]["document-format"] == ["application/pdf"]
+    assert fake.printed == 3
+
+
+def test_a_printer_that_cannot_validate_the_job_still_prints(fake):
+    fake.validate_status = 0x0501  # server-error-operation-not-supported
+    _print()
+    assert fake.printed == 1 and ipp.VALIDATE_JOB in fake.operations()
+
+
+def test_no_validate_job_for_a_printer_without_it(fake):
+    fake.operations_supported = [0x0002, 0x0008, 0x0009, 0x000B]
+    _print()
+    assert ipp.VALIDATE_JOB not in fake.operations() and fake.printed == 1
 
 
 def test_copies_after_a_queued_one_are_sent_without_waiting(fake):
@@ -589,7 +643,7 @@ def test_aborted_and_canceled_jobs(fake):
         _print()
 
 
-def test_a_stopped_job_is_canceled_with_the_printers_reason(fake):
+def test_a_stopped_job_is_canceled_with_the_printers_reason(fake):  # one nobody fixes
     fake.job_states = [5, 6]  # processing, then processing-stopped
     fake.reasons = ["none"]
     original = FakeIpp._op_000b
@@ -597,12 +651,12 @@ def test_a_stopped_job_is_canceled_with_the_printers_reason(fake):
 
     def attributes(self, body, ops, job):
         calls.append(1)
-        self.reasons = ["none"] if len(calls) == 1 else ["media-jam-error"]
+        self.reasons = ["none"] if len(calls) == 1 else ["marker-supply-empty-error"]
         return original(self, body, ops, job)
 
     FakeIpp._op_000b, saved = attributes, original
     try:
-        with pytest.raises(MediaJam):
+        with pytest.raises(SuppliesEmpty):
             _print()
     finally:
         FakeIpp._op_000b = saved
@@ -698,21 +752,84 @@ def test_a_job_that_says_the_printer_stopped(fake):
         _print()
 
 
-@pytest.mark.parametrize(
-    "reasons, cls",
-    [
-        (["media-empty-error"], OutOfPaper),
-        (["media-jam"], MediaJam),
-        (["cover-open-error", "toner-low"], CoverOpen),
-    ],
-)
-def test_a_known_problem_while_printing_cancels_the_job(fake, reasons, cls):
+def test_a_known_problem_while_printing_cancels_the_job(fake):
     fake.job_states = [5]
-    fake.later = {"reasons": reasons}
-    with pytest.raises(cls):
+    fake.later = {"reasons": ["toner-empty-error", "media-low"]}
+    with pytest.raises(SuppliesEmpty):
         _print()
     assert fake.operations()[-1] == ipp.CANCEL_JOB
     assert fake.operations().count(ipp.GET_JOB_ATTRIBUTES) == system.PROBLEM_POLLS
+
+
+RECOVERABLE = [
+    (["media-empty-error"], OutOfPaper, "OUT_OF_PAPER"),
+    (["media-needed"], OutOfPaper, "OUT_OF_PAPER"),
+    (["media-jam"], MediaJam, "MEDIA_JAM"),
+    (["cover-open-error", "toner-low"], CoverOpen, "COVER_OPEN"),
+    (["door-open"], CoverOpen, "COVER_OPEN"),
+]
+
+
+@pytest.mark.parametrize("reasons, cls, stage", RECOVERABLE)
+def test_a_problem_the_user_can_fix_is_shown_and_waited_for(fake, reasons, cls, stage):
+    fake.job_states = [5] * 60 + [(5, 2), 9]  # a minute without paper, then it goes on
+    fake.later = {"reasons": reasons}
+    original = FakeIpp._op_0009
+
+    def fixed(self, body, ops, job):
+        if self.now >= 60:
+            self.reasons = ["none"]
+        return original(self, body, ops, job)
+
+    FakeIpp._op_0009, saved = fixed, original
+    events = []
+    try:
+        _print(copies=2, events=events)
+    finally:
+        FakeIpp._op_0009 = saved
+    assert ipp.CANCEL_JOB not in fake.operations()
+    stages = [e.stage for e in events]
+    assert stage in stages and stages[-1] == ""
+    assert fake.now > system.PRINT_TIMEOUT / 5
+
+
+@pytest.mark.parametrize("reasons, cls, stage", RECOVERABLE)
+def test_a_problem_not_fixed_in_time_cancels_the_job(fake, reasons, cls, stage):
+    fake.job_states = [5]
+    fake.later = {"reasons": reasons}
+    events = []
+    with pytest.raises(cls, match="not fixed within"):
+        _print(events=events)
+    assert fake.operations()[-1] == ipp.CANCEL_JOB
+    assert fake.now == pytest.approx(system.RECOVERY_LIMIT + 1)
+    assert events[-1].stage == stage
+
+
+def test_a_new_problem_gets_its_own_time(fake, monkeypatch):
+    monkeypatch.setattr(system, "RECOVERY_LIMIT", 10)
+    fake.job_states = [5] * 30 + [9]
+    original = FakeIpp._op_000b
+    calls = []
+
+    def changing(self, body, ops, job):  # 8 s out of paper, 8 s cover open, 8 s paper again
+        calls.append(1)
+        if len(calls) > 1:
+            self.reasons = [["media-empty"], ["cover-open"]][(len(calls) - 2) // 8 % 2]
+        return original(self, body, ops, job)
+
+    monkeypatch.setattr(FakeIpp, "_op_000b", changing)
+    _print()
+    assert ipp.CANCEL_JOB not in fake.operations() and fake.now > 20
+
+
+@pytest.mark.parametrize("reasons, cls, stage", RECOVERABLE)
+def test_a_job_the_printer_stopped_for_a_fixable_problem_waits(fake, reasons, cls, stage):
+    fake.job_states = [5] + [6] * 20 + [5, 9]  # stopped for 20 s, then on again
+    fake.later = {"reasons": reasons}
+    events = []
+    _print(events=events)
+    assert ipp.CANCEL_JOB not in fake.operations()
+    assert stage in [e.stage for e in events]
 
 
 def test_a_short_or_unknown_problem_while_printing_is_not_one(fake):
@@ -812,6 +929,136 @@ def test_prepare_gives_a_portrait_page_with_its_size():
     along = backend.prepare(label, PrintOptions())
     assert across.size == along.size == (2480, 3508)  # A4 at 300 dpi, portrait
     assert across.info["size_mm"] == along.info["size_mm"] == (210, 297)
+
+
+# --- several jobs, partly printed ---------------------------------------------------------
+
+
+def test_a_failed_copy_cancels_the_queued_jobs_sent_before(fake):
+    fake.copies_supported, fake.job_states = (1, 1), [(3, 0)]  # one job per copy, queued
+    fake.print_errors = [0, 0, 0x0500]  # the third Print-Job is refused
+    with pytest.raises(PrinterError, match="0x0500") as info:
+        _print(copies=3)
+    assert fake.canceled == [12, 13]  # nothing of them printed yet: they never will
+    assert "printed" not in info.value.params
+
+
+def test_a_failed_copy_says_how_many_were_printed(fake):
+    fake.copies_supported = (1, 1)
+    fake.job_states = [5, 9, 9, 8]  # two copies printed, the third aborted
+    with pytest.raises(PrinterError, match="aborted") as info:
+        _print(copies=3)
+    assert info.value.params == {"printed": 2, "copies": 3}
+    assert 12 not in fake.canceled and 13 not in fake.canceled
+
+
+def test_pages_finished_of_a_failed_job_count_as_printed(fake):
+    fake.copies_supported = (1, 1)
+    fake.job_states = [(5, 0), (5, 1), (5, 2), 6]  # stopped on page 3 of 5
+    fake.formats, fake.sizes = ["image/pwg-raster"], []
+    fake.later = {"reasons": ["vendor-thing-error"]}  # only a stopped job shows it
+    with pytest.raises(PrinterError, match="vendor-thing") as info:
+        _print(_image(118, 59, size_mm=(10, 5)), copies=5)
+    assert info.value.params == {"printed": 2, "copies": 5}
+    assert fake.canceled == [12, 12]  # by the watch, then once more (harmless)
+
+
+def test_a_job_that_fails_before_a_page_is_done_says_nothing_about_copies(fake):
+    fake.job_states = [8]
+    with pytest.raises(PrinterError) as info:
+        _print()
+    assert info.value.params == {}
+
+
+def test_canceled_jobs(fake):
+    fake.job_states = [7]
+    with pytest.raises(JobCanceled, match="canceled") as info:
+        _print()
+    assert info.value.code == "job_canceled"
+    fake.job_states, fake.job_reasons = [8], ["job-canceled-at-device"]
+    with pytest.raises(JobCanceled, match="aborted"):
+        _print()
+    fake.job_states, fake.job_reasons = [8], ["aborted-by-system"]
+    with pytest.raises(PrinterError, match="aborted-by-system") as aborted:
+        _print()
+    assert type(aborted.value) is PrinterError
+
+
+# --- page counters and time limits ----------------------------------------------------------
+
+
+@pytest.mark.parametrize("done", [None, 0])  # no counter, or one that stays 0 (ippeveprinter)
+def test_a_printer_that_counts_no_pages_gets_time_per_label(fake, monkeypatch, done):
+    monkeypatch.setattr(system, "PRINT_TIMEOUT", 10)
+    monkeypatch.setattr(system, "TIME_PER_LABEL", 2)
+    fake.job_states = [(5, done)]
+    with pytest.raises(PrinterTimeout, match="no progress for 16 s"):
+        _print(copies=3)
+    assert fake.now == 17 and fake.operations()[-1] == ipp.CANCEL_JOB
+
+
+def test_a_long_job_without_page_counter_is_not_cut_short(fake, monkeypatch):
+    monkeypatch.setattr(system, "PRINT_TIMEOUT", 10)
+    monkeypatch.setattr(system, "TIME_PER_LABEL", 2)
+    fake.job_states = [(5, 0)] * 15 + [9]  # 15 s for 3 labels: below 10 + 3 × 2
+    _print(copies=3)
+    assert ipp.CANCEL_JOB not in fake.operations()
+
+
+@pytest.mark.parametrize("state", [None, 0])
+def test_an_answer_without_a_job_state_is_a_missed_one(fake, state):
+    fake.job_states = [(state, 1), (state, 1), 5, 9]
+    _print()
+    assert ipp.CANCEL_JOB not in fake.operations()
+    assert fake.operations().count(ipp.GET_JOB_ATTRIBUTES) == 4
+    fake.job_states = [(state, 1)]
+    with pytest.raises(PrinterError, match="no job-state"):
+        _print()
+
+
+def test_pending_time_counts_from_when_the_job_became_pending(fake):
+    # pending 20 s, printing a moment, then pending again (a printer that
+    # took another job in between): 30 s from then on
+    fake.job_states = [3] * 20 + [(5, 0)] + [3]
+    result = get_backend("system").print_label(_image(), "HP_Office", PrintOptions())
+    assert result == PrintResult(queued=True)
+    assert fake.now == pytest.approx(21 + system.PENDING_LIMIT + 1)
+
+
+# --- documents ----------------------------------------------------------------------------
+
+
+def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
+    fake.copies_supported, fake.formats, fake.sizes = (1, 1), ["image/pwg-raster"], []
+    made = []
+    original = system.document
+
+    def document(image, attrs, pages=1):
+        made.append(pages)
+        return original(image, attrs, pages)
+
+    monkeypatch.setattr(system, "document", document)
+    events = []
+    _print(_image(118, 59, size_mm=(10, 5)), copies=23, events=events)
+    pages = [data.count(b"PwgRaster") for _mime, data in fake.documents]
+    assert pages == [10, 10, 3] and fake.printed == 23
+    assert made == [10, 3]  # made once for both jobs of 10
+    assert events[-1].copy == 23
+
+
+def test_the_document_is_made_once_for_all_copies(fake, monkeypatch):
+    fake.copies_supported = (1, 1)
+    made = []
+    original = system.document
+
+    def document(image, attrs, pages=1):
+        made.append(pages)
+        return original(image, attrs, pages)
+
+    monkeypatch.setattr(system, "document", document)
+    _print(copies=4)
+    assert made == [1] and len(fake.documents) == 4
+    assert len({data for _mime, data in fake.documents}) == 1
 
 
 # --- discovery -----------------------------------------------------------------------------

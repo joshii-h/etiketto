@@ -102,7 +102,14 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
     """What went wrong and what to do, for any error from a backend."""
     if not isinstance(error, PrinterError):
         return code_text("generic", unit)
-    return code_text(error.code, unit, float(error.params.get("max_mm", 0)))
+    text = code_text(error.code, unit, float(error.params.get("max_mm", 0)))
+    printed = error.params.get("printed")
+    if printed:  # some of the copies came out before the problem
+        text += " " + _("Labels already printed: %(n)d of %(total)d.") % {
+            "n": printed,
+            "total": error.params.get("copies", printed),
+        }
+    return text
 
 
 def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
@@ -154,6 +161,7 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "password is entered. Check the queue in the system's printer settings and try "
             "again."
         ),
+        "job_canceled": _("The print job was canceled at the printer or in the queue."),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),
@@ -171,6 +179,10 @@ def stage_text(stage: str) -> str | None:
         "COOLDOWN": _("Cooling down…"),
         "CLEANING": _("Cleaning…"),
         "READY_FOR_CUT": _("Swipe the printer's panel to cut the label"),
+        # the system printer waits until the user fixes it
+        "OUT_OF_PAPER": _("Out of paper – load paper to continue"),
+        "COVER_OPEN": _("Cover open – close it to continue"),
+        "MEDIA_JAM": _("Paper jammed – remove it to continue"),
     }.get(stage)
 
 

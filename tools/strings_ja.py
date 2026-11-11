@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "プリンターのキューが一時停止中です。システムのプリンター設定で再開してから、もう一度お試しください。",
     "Sent to the printer – it prints when its turn comes": "プリンターに送信しました – 順番が来ると印刷されます",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "印刷ジョブがキューで保留されました（例: 解除されるまで、またはパスワードが入力されるまで）。システムのプリンター設定でキューを確認してから、もう一度お試しください。",
+    "Labels already printed: %(n)d of %(total)d.": "印刷済みのラベル: %(total)d 枚中 %(n)d 枚。",
+    "The print job was canceled at the printer or in the queue.": "印刷ジョブがプリンターまたはキューでキャンセルされました。",
+    "Out of paper – load paper to continue": "用紙がありません – 用紙をセットすると続行します",
+    "Cover open – close it to continue": "カバーが開いています – 閉じると続行します",
+    "Paper jammed – remove it to continue": "紙詰まり – 取り除くと続行します",
 }

@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Чергу принтера призупинено. Відновіть її в налаштуваннях принтера системи та повторіть спробу.",
     "Sent to the printer – it prints when its turn comes": "Надіслано на принтер – буде надруковано, коли надійде черга",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Завдання друку було затримано в черзі, наприклад до його звільнення або введення пароля. Перевірте чергу в налаштуваннях принтера системи та повторіть спробу.",
+    "Labels already printed: %(n)d of %(total)d.": "Уже надруковано етикеток: %(n)d з %(total)d.",
+    "The print job was canceled at the printer or in the queue.": "Завдання друку скасовано на принтері або в черзі.",
+    "Out of paper – load paper to continue": "Немає паперу – завантажте папір, щоб продовжити",
+    "Cover open – close it to continue": "Кришку відкрито – закрийте її, щоб продовжити",
+    "Paper jammed – remove it to continue": "Папір застряг – вийміть його, щоб продовжити",
 }

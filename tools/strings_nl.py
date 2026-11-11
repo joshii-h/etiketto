@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "De wachtrij van de printer is gepauzeerd. Hervat hem in de printerinstellingen van het systeem en probeer het opnieuw.",
     "Sent to the printer – it prints when its turn comes": "Naar de printer gestuurd – wordt afgedrukt zodra het aan de beurt is",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "De afdruktaak is in de wachtrij vastgehouden, bijvoorbeeld tot hij wordt vrijgegeven of er een wachtwoord wordt ingevoerd. Controleer de wachtrij in de printerinstellingen van het systeem en probeer het opnieuw.",
+    "Labels already printed: %(n)d of %(total)d.": "Al afgedrukte etiketten: %(n)d van %(total)d.",
+    "The print job was canceled at the printer or in the queue.": "De afdruktaak is op de printer of in de wachtrij geannuleerd.",
+    "Out of paper – load paper to continue": "Papier op – plaats papier om verder te gaan",
+    "Cover open – close it to continue": "Klep open – sluit hem om verder te gaan",
+    "Paper jammed – remove it to continue": "Papier vastgelopen – verwijder het om verder te gaan",
 }

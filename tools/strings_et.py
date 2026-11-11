@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Printeri järjekord on peatatud. Jätka seda süsteemi printeriseadetes ja proovi uuesti.",
     "Sent to the printer – it prints when its turn comes": "Saadetud printerile – prinditakse, kui selle järg kätte jõuab",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Prinditöö peeti järjekorras kinni, näiteks kuni see vabastatakse või sisestatakse parool. Kontrolli järjekorda süsteemi printeriseadetes ja proovi uuesti.",
+    "Labels already printed: %(n)d of %(total)d.": "Juba prinditud silte: %(n)d/%(total)d.",
+    "The print job was canceled at the printer or in the queue.": "Prinditöö tühistati printeris või järjekorras.",
+    "Out of paper – load paper to continue": "Paber on otsas – jätkamiseks pane paberit juurde",
+    "Cover open – close it to continue": "Kaas on lahti – jätkamiseks sulge see",
+    "Paper jammed – remove it to continue": "Paber on kinni jäänud – jätkamiseks eemalda see",
 }

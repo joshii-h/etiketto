@@ -1318,6 +1318,10 @@ def test_stage_texts():
     assert texts.stage_text("CLEANING") == "Cleaning…"
     assert texts.stage_text("READY_FOR_CUT") == "Swipe the printer's panel to cut the label"
     assert texts.stage_text("PRINTING") is None and texts.stage_text("") is None
+    # the system printer waits for these to be fixed
+    assert texts.stage_text("OUT_OF_PAPER") == "Out of paper – load paper to continue"
+    assert texts.stage_text("COVER_OPEN") == "Cover open – close it to continue"
+    assert texts.stage_text("MEDIA_JAM") == "Paper jammed – remove it to continue"
 
 
 def test_label_and_save_error_texts():
@@ -2085,8 +2089,18 @@ def test_system_printer_has_a_translated_name_and_paper_texts():
         ("media_jam", "The paper is jammed."),
         ("supplies", "The printer is out of toner or ink."),
         ("job_held", "The print job was held in the queue"),
+        ("job_canceled", "The print job was canceled at the printer or in the queue."),
     ):
         assert texts.code_text(code, MILLIMETRES).startswith(start)
+
+
+def test_a_partly_printed_job_says_how_many_labels_came_out():
+    error = PrinterError("aborted", printed=2, copies=5)
+    assert texts.printer_error_text(error, MILLIMETRES) == (
+        "The printer reported a problem. Switch it off and on again, then try once more. "
+        "Labels already printed: 2 of 5."
+    )
+    assert "already printed" not in texts.printer_error_text(PrinterError("x"), MILLIMETRES)
 
 
 def test_switching_to_a_page_printer_turns_the_content_across(window):

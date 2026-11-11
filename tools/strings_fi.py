@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen.",
     "Sent to the printer – it prints when its turn comes": "Lähetetty tulostimelle – tulostuu, kun on sen vuoro",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Tulostustyö pidätettiin jonossa, esimerkiksi kunnes se vapautetaan tai salasana annetaan. Tarkista jono järjestelmän tulostinasetuksissa ja yritä uudelleen.",
+    "Labels already printed: %(n)d of %(total)d.": "Jo tulostetut tarrat: %(n)d/%(total)d.",
+    "The print job was canceled at the printer or in the queue.": "Tulostustyö peruttiin tulostimessa tai jonossa.",
+    "Out of paper – load paper to continue": "Paperi loppu – jatka lisäämällä paperia",
+    "Cover open – close it to continue": "Kansi auki – jatka sulkemalla se",
+    "Paper jammed – remove it to continue": "Paperi jumissa – jatka poistamalla se",
 }

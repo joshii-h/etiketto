@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Antrean pencetak dijeda. Lanjutkan di pengaturan pencetak sistem lalu coba lagi.",
     "Sent to the printer – it prints when its turn comes": "Terkirim ke pencetak – akan dicetak saat tiba gilirannya",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Tugas cetak ditahan di antrean, misalnya sampai dilepaskan atau kata sandi dimasukkan. Periksa antrean di pengaturan pencetak sistem lalu coba lagi.",
+    "Labels already printed: %(n)d of %(total)d.": "Label yang sudah dicetak: %(n)d dari %(total)d.",
+    "The print job was canceled at the printer or in the queue.": "Tugas cetak dibatalkan di pencetak atau di antrean.",
+    "Out of paper – load paper to continue": "Kertas habis – isi kertas untuk melanjutkan",
+    "Cover open – close it to continue": "Penutup terbuka – tutup untuk melanjutkan",
+    "Paper jammed – remove it to continue": "Kertas macet – keluarkan untuk melanjutkan",
 }

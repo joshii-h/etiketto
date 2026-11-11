@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "La cola de la impresora está en pausa. Reanúdela en los ajustes de impresoras del sistema e inténtelo de nuevo.",
     "Sent to the printer – it prints when its turn comes": "Enviado a la impresora: se imprimirá cuando le llegue el turno",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "El trabajo de impresión quedó retenido en la cola, por ejemplo hasta que se libere o se introduzca una contraseña. Revise la cola en los ajustes de impresoras del sistema e inténtelo de nuevo.",
+    "Labels already printed: %(n)d of %(total)d.": "Etiquetas ya impresas: %(n)d de %(total)d.",
+    "The print job was canceled at the printer or in the queue.": "El trabajo de impresión se canceló en la impresora o en la cola.",
+    "Out of paper – load paper to continue": "Sin papel: cargue papel para continuar",
+    "Cover open – close it to continue": "Tapa abierta: ciérrela para continuar",
+    "Paper jammed – remove it to continue": "Atasco de papel: retírelo para continuar",
 }

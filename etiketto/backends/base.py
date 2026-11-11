@@ -300,6 +300,12 @@ class JobHeld(PrinterError):
     code = "job_held"
 
 
+class JobCanceled(PrinterError):
+    """Someone canceled the job at the printer or in the queue."""
+
+    code = "job_canceled"
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 

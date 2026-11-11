@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 22:28+0100\n"
+"POT-Creation-Date: 2026-11-11 22:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -548,7 +548,19 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "Out of paper, paper jam, cover open, out of toner or ink: fix it as the printer's display shows, then [[ui:Refresh]]."
+msgid "Out of paper, paper jam or cover open while printing: Etiketto shows it and waits. Fix it at the printer within 5 minutes and printing goes on."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of toner or ink, or a problem before printing: fix it as the printer's display shows, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Printing fails after some copies: the message says how many labels were already printed. The rest is canceled, nothing prints later on its own."
 msgstr ""
 
 #. type: Bullet: '- '

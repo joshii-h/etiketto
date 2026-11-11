@@ -227,4 +227,9 @@ TRANSLATIONS = {
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "打印机队列已暂停。请在系统的打印机设置中恢复后重试。",
     "Sent to the printer – it prints when its turn comes": "已发送到打印机 – 轮到时就会打印",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "打印作业在队列中被暂挂，例如直到被释放或输入密码为止。请在系统的打印机设置中检查队列后重试。",
+    "Labels already printed: %(n)d of %(total)d.": "已打印的标签：%(n)d/%(total)d。",
+    "The print job was canceled at the printer or in the queue.": "打印作业已在打印机上或队列中被取消。",
+    "Out of paper – load paper to continue": "缺纸 – 装入纸张后继续",
+    "Cover open – close it to continue": "盖板已打开 – 关上后继续",
+    "Paper jammed – remove it to continue": "卡纸 – 取出纸张后继续",
 }
