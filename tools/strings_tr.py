@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "Yazıcıya gönderildi – sırası geldiğinde yazdırılacak",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Yazdırma işi kuyrukta bekletildi, örneğin serbest bırakılana veya bir parola girilene kadar. Sistemin yazıcı ayarlarında kuyruğu kontrol edin ve yeniden deneyin.",
     "Labels already printed: %(n)d of %(total)d.": "Zaten yazdırılan etiketler: %(total)d etiketten %(n)d.",
+    "The labels still waiting in the queue were canceled.": "Kuyrukta hâlâ bekleyen etiketler iptal edildi.",
     "The print job was canceled at the printer or in the queue.": "Yazdırma işi yazıcıda veya kuyrukta iptal edildi.",
     "Out of paper – load paper to continue": "Kağıt bitti – devam etmek için kağıt yükleyin",
     "Cover open – close it to continue": "Kapak açık – devam etmek için kapatın",

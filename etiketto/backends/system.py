@@ -15,7 +15,6 @@ import ipaddress
 import ssl
 import time
 from collections.abc import Callable
-from contextlib import suppress
 from dataclasses import dataclass, replace
 from typing import Any
 from urllib.parse import quote, urlsplit
@@ -34,6 +33,7 @@ from etiketto.backends.base import (
     MediaJam,
     NoFormat,
     OutOfPaper,
+    PrinterBusy,
     PrinterError,
     PrinterInfo,
     PrinterNotFound,
@@ -58,7 +58,11 @@ DPI = 300.0
 TIMEOUT = 10.0  # one IPP request
 PRINT_TIMEOUT = 300.0  # a printing job whose page counter moved: this long without a page
 TIME_PER_LABEL = 30.0  # no page counter: PRINT_TIMEOUT plus this per label, for the whole job
-RECOVERY_LIMIT = 300.0  # out of paper, cover open, jam: this long for the user to fix it
+RECOVERY_LIMIT = 300.0  # out of paper, cover open, jam: this long for the user to fix each
+RECOVERY_TOTAL = 900.0  # and this long for all of them together, both since the last page
+BUSY_LIMIT = 30.0  # a printer that answers Print-Job with "busy": asked again this long
+BUSY_PAUSE = 3.0
+BUSY = 0x0507  # server-error-busy: no job was made
 PENDING_LIMIT = 30.0  # waiting behind other jobs: then it prints on its own
 PAGES_PER_JOB = 10  # copies as PWG Raster pages: the document is made in memory
 POLL_INTERVAL = 1.0
@@ -251,7 +255,10 @@ def _send(uri: str, operation: int, attributes: list[ipp.Attribute], **kwargs) -
 
 def _request(uri: str, operation: int, attributes: list[ipp.Attribute], **kwargs) -> ipp.Response:
     """The printer's answer; PrinterError unless it is successful."""
-    answer = _send(uri, operation, attributes, **kwargs)
+    return _checked(_send(uri, operation, attributes, **kwargs))
+
+
+def _checked(answer: ipp.Response) -> ipp.Response:
     if not answer.ok:
         message = _text(answer.group(ipp.OPERATION_GROUP), "status-message")
         if answer.status == 0x0406:  # client-error-not-found
@@ -583,7 +590,7 @@ class _Jobs:
     else the page repeated in jobs of up to PAGES_PER_JOB pages (PWG
     Raster) or one job per copy. Each job is followed until it is done;
     once one waits in the queue, the others are sent behind it without
-    waiting. If a step fails, the jobs sent and not finished are canceled,
+    waiting. If a step fails, the jobs sent and not over are canceled,
     so that they do not print later on their own."""
 
     def __init__(
@@ -593,7 +600,7 @@ class _Jobs:
         self.copies, self.progress = copies, progress
         self.queued = False
         self.sent: list[int] = []  # job ids
-        self.finished: set[int] = set()
+        self.over: set[int] = set()  # nothing left to cancel: done, ended or canceled
         self.printed = 0  # labels the printer said it finished
         self._document: tuple[int, bytes, str] | None = None  # pages, data, format
 
@@ -601,13 +608,23 @@ class _Jobs:
         try:
             self._send_all()
         except Exception as e:
-            for job_id in self.sent:
-                if job_id not in self.finished:
-                    _cancel(self.uri, job_id)
+            canceled = self._cancel_unfinished()
             if isinstance(e, PrinterError) and self.printed:
                 e.params.update(printed=self.printed, copies=self.copies)
+            if isinstance(e, PrinterError) and canceled and self.queued:
+                e.params["queue_canceled"] = True
             raise
         return PrintResult(queued=True) if self.queued else None
+
+    def _cancel_unfinished(self) -> bool:
+        """Cancel-Job for the jobs sent and not over; whether there were
+        any and the printer could be reached. Once it cannot, trying the
+        others is no use: each would wait TIMEOUT."""
+        unfinished = [job_id for job_id in self.sent if job_id not in self.over]
+        for job_id in unfinished:
+            if not _cancel(self.uri, job_id):
+                return False
+        return bool(unfinished)
 
     def _send_all(self) -> None:
         together = self.copies == 1 or takes_copies(self.attrs, self.copies)
@@ -677,14 +694,7 @@ class _Jobs:
         """Print-Job for count labels (copies or pages) after done ones; the
         names of the attributes the printer ignored."""
         report_progress(self.progress, done + 1, self.copies)
-        data, mime = self.data(pages)
-        answer = _request(
-            self.uri,
-            ipp.PRINT_JOB,
-            self._operation(mime),
-            job_attributes=self._template(copies),
-            data=data,
-        )
+        answer = self._print_job(pages, copies)
         job_id = _int(answer.group(ipp.JOB_GROUP), "job-id")
         if job_id is not None:
             self.sent.append(job_id)
@@ -696,14 +706,38 @@ class _Jobs:
             self._wait(job_id, done, 1 if "copies" in ignored else count)
         return ignored
 
+    def _print_job(self, pages: int, copies: int) -> ipp.Response:
+        """Print-Job; a printer that is busy (with the last job, or another
+        computer's) makes no job and is asked again for up to BUSY_LIMIT."""
+        data, mime = self.data(pages)
+        start = _clock()
+        while True:
+            answer = _send(
+                self.uri,
+                ipp.PRINT_JOB,
+                self._operation(mime),
+                job_attributes=self._template(copies),
+                data=data,
+            )
+            if answer.status != BUSY:
+                return _checked(answer)
+            if _clock() - start >= BUSY_LIMIT:
+                raise PrinterBusy("IPP status 0x%04x for %g s" % (BUSY, BUSY_LIMIT))
+            _sleep(BUSY_PAUSE)
+
     def _wait(self, job_id: int, done: int, count: int) -> None:
         def report(completed: int, stage: str) -> None:
             self.printed = max(self.printed, done + min(count, completed))
             report_progress(self.progress, done + min(count, completed + 1), self.copies, stage)
 
-        self.queued = _wait_done(self.uri, job_id, count, report)
+        watch = _Watch(self.uri, job_id, count)
+        try:
+            self.queued = _wait_done(watch, report)
+        finally:
+            if watch.over:
+                self.over.add(job_id)
         if not self.queued:
-            self.finished.add(job_id)
+            self.over.add(job_id)
             self.printed = done + count
             report_progress(self.progress, done + count, self.copies)
 
@@ -726,11 +760,17 @@ class _Watch:
         self.local = _is_local_queue(uri)
         self.pending: float | None = None  # since when the job waits in the queue
         self.progressed: float | None = None  # when it started, or did its last page
+        self.polled: float | None = None  # when it was last judged
         self.completed = 0  # pages done, as the printer counts them
         self.counting = False  # the printer's page counter moved
         self.failures = 0  # answers missed in a row
         self.problems = 0  # answers in a row that show a problem
-        self.recovery: tuple[str, float] | None = None  # the problem to fix, since when
+        self.problem: PrinterError | None = None  # the printer's, at its last answer
+        # the kind of problem to fix and since when; the time spent waiting
+        # for fixes: both since the last page
+        self.recovery: tuple[type[PrinterError], float] | None = None
+        self.waited = 0.0
+        self.over = False  # ended, or canceled here: nothing more to cancel
         self.stage = ""  # for the interface: what the user has to do
 
     def attributes(self) -> Any:
@@ -762,91 +802,113 @@ class _Watch:
         if state == JOB_COMPLETED:
             return DONE
         if state in (JOB_CANCELED, JOB_ABORTED):
+            self.over = True
             raise _ended(self.job_id, state, reasons)
         if state != JOB_PENDING:
             self.pending = None
-        if state == JOB_STOPPED:
-            problem: PrinterError | None = self._stopped_reason()
-        elif state == JOB_HELD:
-            problem = JobHeld("job-state: held; job-state-reasons: " + ", ".join(reasons))
-        else:
-            problem = self._printer_problem(state, reasons)
+        now = _clock()
+        step = self._follow(attrs, now)
+        problem = self._problem(state, reasons)
         if problem is not None and type(problem) in RECOVERABLE:
-            self._recover(problem)
+            self._recover(problem, now, step)
             return WAITING
-        self.recovery, self.stage = None, ""
-        if state == JOB_STOPPED:
-            _cancel(self.uri, self.job_id)
-            raise problem or PrinterError("job %s stopped" % self.job_id)
         self._suspect(problem)
         if state == JOB_PROCESSING:
-            self._check_progress(attrs)
-        return self._queued() if state == JOB_PENDING else WAITING
+            self._check_progress(now)
+        return self._queued(now) if state == JOB_PENDING else WAITING
 
-    def _stopped_reason(self) -> PrinterError:
-        """Why the printer stopped the job."""
-        try:
-            reasons = _texts(
-                _printer_attributes(self.uri, STATE_ATTRIBUTES), "printer-state-reasons"
-            )
-        except PrinterError:
-            reasons = []
-        return reasons_error(reasons, self.local) or PrinterError("job %s stopped" % self.job_id)
+    def _follow(self, attrs: dict, now: float) -> float:
+        """Notes the page counter; the time since the last answer. A page
+        that comes out starts the time for fixes again: a problem the
+        printer reports while it prints (paper out in another tray) does
+        not hold the job up."""
+        step = 0.0 if self.polled is None else now - self.polled
+        self.polled = now
+        done = _completed(attrs)
+        if done is not None and done > self.completed:
+            self.completed, self.counting, self.progressed = done, True, now
+            self.waited = 0.0
+            if self.recovery is not None:
+                self.recovery = (self.recovery[0], now)
+        return step
 
-    def _printer_problem(self, state: int, job_reasons: list[str]) -> PrinterError | None:
-        """A stopped printer (or queue) holds up every job; while the job
-        prints, a problem Etiketto knows (out of paper, jam ...) too."""
+    def _problem(self, state: int, job_reasons: list[str]) -> PrinterError | None:
+        """What holds the job up. Without the printer's answer nothing
+        changes: the problem it reported last stays. A stopped job without
+        a reason is one too."""
+        if state == JOB_HELD:
+            return JobHeld("job-state: held; job-state-reasons: " + ", ".join(job_reasons))
         try:
             printer = _printer_attributes(self.uri, STATE_ATTRIBUTES)
         except PrinterError:
-            return None  # the job's own answers decide about a printer that is gone
+            problem = self.problem
+        else:
+            problem = self.problem = self._printer_problem(state, job_reasons, printer)
+        if problem is None and state == JOB_STOPPED:
+            return PrinterError("job %s stopped" % self.job_id)
+        return problem
+
+    def _printer_problem(
+        self, state: int, job_reasons: list[str], printer: dict
+    ) -> PrinterError | None:
+        """The printer's reason for a stopped job; a stopped printer (or
+        queue) holds up every job; while the job prints, a problem Etiketto
+        knows (out of paper, jam ...) too."""
         reasons = _texts(printer, "printer-state-reasons")
-        stopped = _int(printer, "printer-state", IDLE) == STOPPED
-        if stopped or "printer-stopped" in job_reasons:
+        if state == JOB_STOPPED:
+            return reasons_error(reasons, self.local)
+        if _int(printer, "printer-state", IDLE) == STOPPED or "printer-stopped" in job_reasons:
             return reasons_error(reasons, self.local) or _paused(self.local, "printer stopped")
         return known_error(reasons, self.local) if state == JOB_PROCESSING else None
 
-    def _recover(self, problem: PrinterError) -> None:
-        """Wait for the user to fix the problem: up to RECOVERY_LIMIT since
-        it last changed, then the job is canceled."""
-        key, now = "%s %s" % (problem.code, problem), _clock()
-        if self.recovery is None or self.recovery[0] != key:
-            self.recovery = (key, now)
-        elif now - self.recovery[1] > RECOVERY_LIMIT:
-            _cancel(self.uri, self.job_id)
-            raise type(problem)("%s; not fixed within %g s" % (problem, RECOVERY_LIMIT))
+    def _recover(self, problem: PrinterError, now: float, step: float) -> None:
+        """Wait for the user to fix the problem: RECOVERY_LIMIT for each kind
+        of problem, RECOVERY_TOTAL for all together, both since the last
+        page; then the job is canceled."""
+        kind = type(problem)
+        if self.recovery is None or self.recovery[0] is not kind:
+            self.recovery = (kind, now)
+        self.waited += step
+        if now - self.recovery[1] > RECOVERY_LIMIT or self.waited > RECOVERY_TOTAL:
+            self._cancel()
+            limit = RECOVERY_TOTAL if self.waited > RECOVERY_TOTAL else RECOVERY_LIMIT
+            raise kind("%s; not fixed within %g s" % (problem, limit))
         # the clock for progress starts again once the printer goes on
-        self.stage, self.progressed, self.problems = RECOVERABLE[type(problem)], None, 0
+        self.stage, self.progressed, self.problems = RECOVERABLE[kind], None, 0
 
     def _suspect(self, problem: PrinterError | None) -> None:
         """A problem counts once it lasts PROBLEM_POLLS answers: then the job
-        is canceled."""
-        self.problems = self.problems + 1 if problem else 0
-        if problem and self.problems >= PROBLEM_POLLS:
-            _cancel(self.uri, self.job_id)
+        is canceled. An answer without one ends the wait for a fix."""
+        self.stage = ""
+        if problem is None:
+            self.recovery, self.problems = None, 0
+            return
+        self.problems += 1
+        if self.problems >= PROBLEM_POLLS:
+            self._cancel()
             raise problem
 
-    def _check_progress(self, attrs: dict) -> None:
+    def _check_progress(self, now: float) -> None:
         """Once the page counter moves, PRINT_TIMEOUT without a page is too
         long; a printer that counts nothing (or keeps 0) gets PRINT_TIMEOUT
         plus TIME_PER_LABEL per label for the whole job."""
-        done, now = _completed(attrs), _clock()
-        if done is not None and done > self.completed:
-            self.completed, self.counting, self.progressed = done, True, now
-        elif self.progressed is None:
+        if self.progressed is None:
             self.progressed = now
         limit = PRINT_TIMEOUT if self.counting else PRINT_TIMEOUT + TIME_PER_LABEL * self.labels
         if now - self.progressed > limit:
-            _cancel(self.uri, self.job_id)
+            self._cancel()
             raise PrinterTimeout("job %s made no progress for %g s" % (self.job_id, limit))
 
-    def _queued(self) -> str:
+    def _queued(self, now: float) -> str:
         """QUEUED once the job waited PENDING_LIMIT behind others, counted
         from when it last became pending."""
-        now = _clock()
         if self.pending is None:
             self.pending = now
         return QUEUED if now - self.pending > PENDING_LIMIT else WAITING
+
+    def _cancel(self) -> None:
+        self.over = True
+        _cancel(self.uri, self.job_id)
 
 
 def _ended(job_id: int, state: int, reasons: list[str]) -> PrinterError:
@@ -859,11 +921,10 @@ def _ended(job_id: int, state: int, reasons: list[str]) -> PrinterError:
     return PrinterError(details)
 
 
-def _wait_done(uri: str, job_id: int, labels: int, report: Callable[[int, str], None]) -> bool:
+def _wait_done(watch: _Watch, report: Callable[[int, str], None]) -> bool:
     """Until the job is done (False) or left in the queue (True), see
     _Watch; report gets the number of pages finished so far and the stage
     (a problem the user can fix, or "")."""
-    watch = _Watch(uri, job_id, labels)
     while True:
         attrs = watch.attributes()
         if attrs is None:
@@ -876,7 +937,13 @@ def _wait_done(uri: str, job_id: int, labels: int, report: Callable[[int, str], 
         _sleep(POLL_INTERVAL)
 
 
-def _cancel(uri: str, job_id: int) -> None:
-    # gone already, or the printer refuses: nothing more to do
-    with suppress(PrinterError):
+def _cancel(uri: str, job_id: int) -> bool:
+    """Cancel-Job; False if the printer cannot be reached. A printer that
+    refuses, or no longer knows the job, has nothing more to cancel."""
+    try:
         _request(uri, ipp.CANCEL_JOB, [ipp.Attribute(ipp.INTEGER, "job-id", [job_id]), _user()])
+    except (PrinterTimeout, PrinterNotFound) as e:  # a network error, or IppNotFound
+        return isinstance(e, IppNotFound)
+    except PrinterError:
+        pass
+    return True

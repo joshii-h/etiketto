@@ -109,6 +109,8 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
             "n": printed,
             "total": error.params.get("copies", printed),
         }
+    if error.params.get("queue_canceled"):  # sent behind other jobs, not printed yet
+        text += " " + _("The labels still waiting in the queue were canceled.")
     return text
 
 

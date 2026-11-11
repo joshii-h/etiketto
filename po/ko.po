@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:43+0100\n"
+"PO-Revision-Date: 2026-11-11 23:07+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ko\n"
 "Language: ko\n"
@@ -767,180 +767,184 @@ msgstr "배경 이미지를 읽을 수 없습니다"
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "이미 인쇄된 라벨: %(total)d개 중 %(n)d개."
 
-#: etiketto/ui/texts.py:120
+#: etiketto/ui/texts.py:113
+msgid "The labels still waiting in the queue were canceled."
+msgstr "대기열에서 기다리던 라벨은 취소되었습니다."
+
+#: etiketto/ui/texts.py:122
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "프린터를 찾을 수 없습니다. 프린터가 켜져 있고 같은 네트워크에 있는지 확인하거나 IP 주소를 입력하십시오."
 
-#: etiketto/ui/texts.py:123
+#: etiketto/ui/texts.py:125
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "프린터가 응답하지 않습니다. 프린터가 켜져 있고 절전 상태가 아닌지 확인하십시오."
 
-#: etiketto/ui/texts.py:125
+#: etiketto/ui/texts.py:127
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "프린터가 연결을 거부합니다. 프린터를 껐다가 다시 켜십시오. 웹 인터페이스에 “Port 9100” 옵션이 있으면 켜십시오."
 
-#: etiketto/ui/texts.py:128
+#: etiketto/ui/texts.py:130
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "카세트가 없습니다. 카세트를 넣고 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:129
+#: etiketto/ui/texts.py:131
 msgid "The printer's cover is open. Close it and try again."
 msgstr "프린터 덮개가 열려 있습니다. 덮개를 닫고 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:132
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "라벨이 걸렸습니다. 덮개를 열고 라벨을 빼낸 뒤 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:131
+#: etiketto/ui/texts.py:133
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "카세트를 인식할 수 없습니다. 다시 넣거나 다른 카세트를 사용하십시오."
 
-#: etiketto/ui/texts.py:132
+#: etiketto/ui/texts.py:134
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "프린터가 사용 중입니다. 잠시 후 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:135
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "이 프린터에는 라벨이 너무 깁니다. 최대 %(max)s입니다."
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:136
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "라벨이 이 프린터에는 너무 넓습니다. 최대 %(max)s입니다."
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:137
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "프린터에 라벨이 없습니다. 새 롤을 넣고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:136
+#: etiketto/ui/texts.py:138
 msgid "The print head is open. Close it and try again."
 msgstr "프린트 헤드가 열려 있습니다. 닫고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:140
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "프린터가 다음 라벨을 찾지 못합니다. 라벨이 올바르게 들어 있고 라벨 센서를 통과하는지 확인하세요."
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:144
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "리본에 문제가 있습니다. 올바르게 끼워졌는지, 프린터에 설정된 인쇄 방식과 맞는지 확인하세요."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:147
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "프린터가 일시 정지되었습니다. 프린터 화면에서 다시 시작한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:148
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "프린터에 용지가 없습니다. 용지를 넣고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:148
+#: etiketto/ui/texts.py:150
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "용지가 걸렸습니다. 프린터 화면의 안내에 따라 제거한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:152
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "프린터의 토너 또는 잉크가 떨어졌습니다. 교체한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:151
+#: etiketto/ui/texts.py:153
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "프린터가 이 크기를 인쇄할 수 없습니다. 프린터가 지원하는 용지 크기를 선택하세요."
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:155
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "프린터가 Etiketto에서 보낼 수 있는 형식(PDF, PWG Raster, JPEG)을 하나도 받지 않습니다."
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:158
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "프린터 대기열이 일시 정지되었습니다. 시스템 프린터 설정에서 다시 시작한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:162
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "인쇄 작업이 대기열에서 보류되었습니다. 예를 들어 해제되거나 암호가 입력될 때까지입니다. 시스템 프린터 설정에서 대기열을 확인한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:166
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "인쇄 작업이 프린터 또는 대기열에서 취소되었습니다."
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:168
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "프린터에서 문제를 보고했습니다. 프린터를 껐다가 다시 켠 뒤 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:180
 msgid "Warming up…"
 msgstr "예열 중…"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:181
 msgid "Cooling down…"
 msgstr "냉각 중…"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:182
 msgid "Cleaning…"
 msgstr "청소 중…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:183
 msgid "Swipe the printer's panel to cut the label"
 msgstr "프린터 패널을 밀어 라벨을 자르십시오"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:185
 msgid "Out of paper – load paper to continue"
 msgstr "용지 없음 – 계속하려면 용지를 넣으세요"
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:186
 msgid "Cover open – close it to continue"
 msgstr "덮개 열림 – 계속하려면 덮개를 닫으세요"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:187
 msgid "Paper jammed – remove it to continue"
 msgstr "용지 걸림 – 계속하려면 용지를 제거하세요"
 
-#: etiketto/ui/texts.py:196
+#: etiketto/ui/texts.py:198
 msgid "This label needs a newer version of Etiketto"
 msgstr "이 라벨을 열려면 새 버전의 Etiketto가 필요합니다"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "Etiketto 라벨이 아님: %s"
 
-#: etiketto/ui/texts.py:199
+#: etiketto/ui/texts.py:201
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "파일이 손상됨: %s"
 
-#: etiketto/ui/texts.py:205
+#: etiketto/ui/texts.py:207
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "저장할 수 없음: %s (쓰기 권한 없음)"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:209
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "저장할 수 없음: %s (디스크 공간 부족)"
 
-#: etiketto/ui/texts.py:208
+#: etiketto/ui/texts.py:210
 #, python-format
 msgid "Cannot save %s"
 msgstr "저장할 수 없음: %s"
 
-#: etiketto/ui/texts.py:217
+#: etiketto/ui/texts.py:219
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

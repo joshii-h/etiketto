@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "An den Drucker gesendet – wird gedruckt, sobald der Auftrag an der Reihe ist",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Der Druckauftrag wurde in der Warteschlange zurückgehalten, zum Beispiel bis er freigegeben oder ein Passwort eingegeben wird. Die Warteschlange in den Druckereinstellungen des Systems prüfen und erneut versuchen.",
     "Labels already printed: %(n)d of %(total)d.": "Bereits gedruckte Etiketten: %(n)d von %(total)d.",
+    "The labels still waiting in the queue were canceled.": "Die Etiketten, die noch in der Warteschlange standen, wurden abgebrochen.",
     "The print job was canceled at the printer or in the queue.": "Der Druckauftrag wurde am Drucker oder in der Warteschlange abgebrochen.",
     "Out of paper – load paper to continue": "Kein Papier – Papier einlegen, dann geht es weiter",
     "Cover open – close it to continue": "Abdeckung offen – schliessen, dann geht es weiter",

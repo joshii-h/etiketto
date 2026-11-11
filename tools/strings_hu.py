@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "Elküldve a nyomtatónak – akkor nyomtatja, amikor sorra kerül",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "A nyomtatási feladatot visszatartotta a várólista, például amíg fel nem oldják, vagy meg nem adnak egy jelszót. Ellenőrizze a várólistát a rendszer nyomtatóbeállításaiban, és próbálja újra.",
     "Labels already printed: %(n)d of %(total)d.": "Már kinyomtatott címkék: %(n)d / %(total)d.",
+    "The labels still waiting in the queue were canceled.": "A sorban még várakozó címkék nyomtatása megszakadt.",
     "The print job was canceled at the printer or in the queue.": "A nyomtatási feladatot a nyomtatón vagy a várólistában megszakították.",
     "Out of paper – load paper to continue": "Kifogyott a papír – a folytatáshoz töltsön be papírt",
     "Cover open – close it to continue": "A fedél nyitva – a folytatáshoz csukja be",

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:43+0100\n"
+"PO-Revision-Date: 2026-11-11 23:07+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ms\n"
 "Language: ms\n"
@@ -767,180 +767,184 @@ msgstr "Imej latar tidak dapat dibaca"
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Label yang sudah dicetak: %(n)d daripada %(total)d."
 
-#: etiketto/ui/texts.py:120
+#: etiketto/ui/texts.py:113
+msgid "The labels still waiting in the queue were canceled."
+msgstr "Label yang masih menunggu dalam baris gilir telah dibatalkan."
+
+#: etiketto/ui/texts.py:122
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Pencetak tidak ditemui. Pastikan pencetak dihidupkan dan berada dalam rangkaian yang sama, atau masukkan alamat IP-nya."
 
-#: etiketto/ui/texts.py:123
+#: etiketto/ui/texts.py:125
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Pencetak tidak menjawab. Pastikan pencetak dihidupkan dan tidak dalam mod tidur."
 
-#: etiketto/ui/texts.py:125
+#: etiketto/ui/texts.py:127
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Pencetak menolak sambungan. Matikan dan hidupkan semula. Jika antara muka webnya menawarkan pilihan “Port 9100”, hidupkan pilihan itu."
 
-#: etiketto/ui/texts.py:128
+#: etiketto/ui/texts.py:130
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Tiada kaset dimasukkan. Masukkan kaset dan cuba lagi."
 
-#: etiketto/ui/texts.py:129
+#: etiketto/ui/texts.py:131
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Penutup pencetak terbuka. Tutup penutup dan cuba lagi."
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:132
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Label tersekat. Buka penutup, keluarkan label dan cuba lagi."
 
-#: etiketto/ui/texts.py:131
+#: etiketto/ui/texts.py:133
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Kaset tidak dikenali. Masukkan semula atau cuba kaset lain."
 
-#: etiketto/ui/texts.py:132
+#: etiketto/ui/texts.py:134
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Pencetak sedang sibuk. Tunggu sebentar dan cuba lagi."
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:135
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Label terlalu panjang untuk pencetak ini: maksimum %(max)s."
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:136
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Label terlalu lebar untuk pencetak ini: maksimum %(max)s."
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:137
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Label pencetak telah habis. Masukkan gulungan baharu dan cuba lagi."
 
-#: etiketto/ui/texts.py:136
+#: etiketto/ui/texts.py:138
 msgid "The print head is open. Close it and try again."
 msgstr "Kepala cetak terbuka. Tutupkannya dan cuba lagi."
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:140
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Pencetak tidak dapat mencari label seterusnya. Semak bahawa label dimuatkan dengan betul dan melalui penderia label."
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:144
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Terdapat masalah dengan reben. Semak bahawa ia dimasukkan dengan betul dan sepadan dengan kaedah cetakan yang ditetapkan pada pencetak."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:147
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Pencetak dijeda. Sambungkannya pada paparannya dan cuba lagi."
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:148
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Pencetak kehabisan kertas. Masukkan kertas dan cuba lagi."
 
-#: etiketto/ui/texts.py:148
+#: etiketto/ui/texts.py:150
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Kertas tersekat. Keluarkan seperti yang ditunjukkan pada paparan pencetak dan cuba lagi."
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:152
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Pencetak kehabisan toner atau dakwat. Gantikannya dan cuba lagi."
 
-#: etiketto/ui/texts.py:151
+#: etiketto/ui/texts.py:153
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Pencetak tidak dapat mencetak saiz ini. Pilih saiz kertas yang ditawarkannya."
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:155
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Pencetak tidak menerima mana-mana format yang boleh dihantar oleh Etiketto (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:158
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Baris gilir pencetak dijeda. Sambungkannya dalam tetapan pencetak sistem dan cuba lagi."
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:162
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Kerja cetak ditahan dalam baris gilir, contohnya sehingga ia dilepaskan atau kata laluan dimasukkan. Semak baris gilir dalam tetapan pencetak sistem dan cuba lagi."
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:166
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Kerja cetak telah dibatalkan pada pencetak atau dalam baris gilir."
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:168
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Pencetak melaporkan masalah. Matikan dan hidupkan semula, kemudian cuba sekali lagi."
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:180
 msgid "Warming up…"
 msgstr "Memanaskan…"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:181
 msgid "Cooling down…"
 msgstr "Menyejukkan…"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:182
 msgid "Cleaning…"
 msgstr "Membersihkan…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:183
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Leret panel pencetak untuk memotong label"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:185
 msgid "Out of paper – load paper to continue"
 msgstr "Kehabisan kertas – masukkan kertas untuk meneruskan"
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:186
 msgid "Cover open – close it to continue"
 msgstr "Penutup terbuka – tutup untuk meneruskan"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:187
 msgid "Paper jammed – remove it to continue"
 msgstr "Kertas tersekat – keluarkan untuk meneruskan"
 
-#: etiketto/ui/texts.py:196
+#: etiketto/ui/texts.py:198
 msgid "This label needs a newer version of Etiketto"
 msgstr "Label ini memerlukan versi Etiketto yang lebih baharu"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s bukan label Etiketto"
 
-#: etiketto/ui/texts.py:199
+#: etiketto/ui/texts.py:201
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Fail rosak: %s"
 
-#: etiketto/ui/texts.py:205
+#: etiketto/ui/texts.py:207
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Tidak dapat menyimpan %s: tiada kebenaran untuk menulis di situ"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:209
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Tidak dapat menyimpan %s: cakera penuh"
 
-#: etiketto/ui/texts.py:208
+#: etiketto/ui/texts.py:210
 #, python-format
 msgid "Cannot save %s"
 msgstr "Tidak dapat menyimpan %s"
 
-#: etiketto/ui/texts.py:217
+#: etiketto/ui/texts.py:219
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

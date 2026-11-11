@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "أُرسل إلى الطابعة – ستتم طباعته عندما يحين دوره",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "احتُجزت مهمة الطباعة في قائمة الانتظار، مثلًا إلى أن يُفرج عنها أو تُدخل كلمة مرور. تحقق من قائمة الانتظار في إعدادات الطابعة في النظام وحاول مجددًا.",
     "Labels already printed: %(n)d of %(total)d.": "الملصقات المطبوعة بالفعل: %(n)d من %(total)d.",
+    "The labels still waiting in the queue were canceled.": "أُلغيت الملصقات التي كانت لا تزال تنتظر في قائمة الانتظار.",
     "The print job was canceled at the printer or in the queue.": "أُلغيت مهمة الطباعة في الطابعة أو في قائمة الانتظار.",
     "Out of paper – load paper to continue": "نفد الورق – حمّل الورق للمتابعة",
     "Cover open – close it to continue": "الغطاء مفتوح – أغلقه للمتابعة",

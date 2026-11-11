@@ -80,9 +80,18 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   [spec]
 - If a step fails after jobs were sent (a later `Print-Job` refused, a
   job canceled or stopped), every job sent and not seen completed is
-  canceled, so that none of them prints later on its own. The message
-  then says how many labels were already printed (finished jobs, and the
-  pages a failed job finished), if the printer said so. [spec]
+  canceled, so that none of them prints later on its own; a job that
+  ended (canceled, aborted) or that the watch canceled already is not
+  canceled again, and once the printer cannot be reached (timeout,
+  connection refused, name does not resolve) the remaining jobs are not
+  tried, each would wait 10 s. The message then says how many labels were
+  already printed (finished jobs, and the pages a failed job finished), if
+  the printer said so, and, if jobs waited in the queue, that these were
+  canceled. [spec]
+- `Print-Job` answered 0x0507 (server-error-busy, e.g. still busy with the
+  last job or with another computer's) makes no job: it is sent again
+  every 3 seconds for up to 30 seconds, then the message is "the printer
+  is busy" with the number of labels already printed. [spec]
 - `Get-Job-Attributes` every second, together with the printer's state;
   the job's own state decides. An answer without a valid `job-state`
   (missing, 0) is a missed answer, not a finished job:
@@ -96,12 +105,20 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
     `door-open`, `cover-open`, `interlock-open` while the job prints, or
     as the reason of a processing-stopped job or a stopped printer. The
     interface shows it while printing ("Out of paper – load paper to
-    continue") and Etiketto waits up to 5 minutes since the problem last
-    changed; not fixed by then, the job is canceled with that problem.
-    Once it is fixed, the clock for progress (below) starts again;
-  - processing-stopped for any other reason: the printer's reason is
-    read, then the job is canceled (also if the printer does not answer
-    any more);
+    continue") and Etiketto waits up to 5 minutes for each kind of
+    problem (out of paper, cover open, jam: other keywords for the same
+    kind keep its time) and up to 15 minutes for all of them together,
+    both counted since the last page that came out. A page that comes out
+    starts both again, so a job that goes on printing while the printer
+    reports such a problem (out of paper in another tray) is not canceled.
+    Not fixed in time, the job is canceled with that problem. Once it is
+    fixed, the clock for progress (below) starts again. If the printer
+    does not answer `Get-Printer-Attributes` once, the problem it reported
+    last stays: a missed answer neither ends the wait nor restarts it;
+  - processing-stopped for any other reason, or without a reason (the
+    printer may clear its reason one answer before the job goes on), for
+    three answers in a row: the job is canceled with the printer's reason
+    (also if the printer does not answer any more);
   - held (`job-state` 4, e.g. `job-hold-until-specified`,
     `cups-held-for-authentication`) for three answers in a row: canceled,
     with a message to check the queue;

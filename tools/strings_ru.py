@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "Отправлено на принтер – будет напечатано, когда подойдёт очередь",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Задание печати было задержано в очереди, например до его освобождения или ввода пароля. Проверьте очередь в настройках принтера системы и повторите попытку.",
     "Labels already printed: %(n)d of %(total)d.": "Уже напечатано этикеток: %(n)d из %(total)d.",
+    "The labels still waiting in the queue were canceled.": "Этикетки, ещё ожидавшие в очереди, отменены.",
     "The print job was canceled at the printer or in the queue.": "Задание печати было отменено на принтере или в очереди.",
     "Out of paper – load paper to continue": "Нет бумаги – загрузите бумагу, чтобы продолжить",
     "Cover open – close it to continue": "Крышка открыта – закройте её, чтобы продолжить",

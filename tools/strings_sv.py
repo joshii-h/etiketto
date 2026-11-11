@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "Skickad till skrivaren – skrivs ut när det är dess tur",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Utskriftsjobbet hölls kvar i kön, till exempel tills det släpps eller ett lösenord anges. Kontrollera kön i systemets skrivarinställningar och försök igen.",
     "Labels already printed: %(n)d of %(total)d.": "Redan utskrivna etiketter: %(n)d av %(total)d.",
+    "The labels still waiting in the queue were canceled.": "Etiketterna som fortfarande väntade i kön avbröts.",
     "The print job was canceled at the printer or in the queue.": "Utskriftsjobbet avbröts på skrivaren eller i kön.",
     "Out of paper – load paper to continue": "Slut på papper – fyll på papper för att fortsätta",
     "Cover open – close it to continue": "Locket är öppet – stäng det för att fortsätta",

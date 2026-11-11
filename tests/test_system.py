@@ -21,6 +21,7 @@ from etiketto.backends.base import (
     MediaJam,
     NoFormat,
     OutOfPaper,
+    PrinterBusy,
     PrinterError,
     PrinterNotFound,
     PrinterPaused,
@@ -115,8 +116,9 @@ class FakeIpp:
         return _answer(1 if self.ignored else 0, [(ipp.OPERATION_GROUP, []), *self._unsupported()])
 
     def _op_0002(self, body, ops, job):  # Print-Job
-        if self.print_errors and self.print_errors.pop(0):
-            return _answer(0x0500, [(ipp.OPERATION_GROUP, [])])
+        status = self.print_errors.pop(0) if self.print_errors else 0
+        if status:
+            return _answer(status, [(ipp.OPERATION_GROUP, [])])
         mime = ops["document-format"][0]
         start = {"application/pdf": b"%PDF", "image/pwg-raster": pwg.SYNC}.get(mime, b"\xff\xd8")
         document = body[body.find(start) :]
@@ -668,6 +670,7 @@ def test_a_stopped_job_without_a_reason(fake):
     with pytest.raises(PrinterError, match="stopped"):
         _print()
     assert fake.operations()[-1] == ipp.CANCEL_JOB
+    assert fake.operations().count(ipp.GET_JOB_ATTRIBUTES) == system.PROBLEM_POLLS
 
 
 def test_a_stopped_job_is_canceled_even_if_the_printer_does_not_answer(fake, monkeypatch):
@@ -960,7 +963,7 @@ def test_pages_finished_of_a_failed_job_count_as_printed(fake):
     with pytest.raises(PrinterError, match="vendor-thing") as info:
         _print(_image(118, 59, size_mm=(10, 5)), copies=5)
     assert info.value.params == {"printed": 2, "copies": 5}
-    assert fake.canceled == [12, 12]  # by the watch, then once more (harmless)
+    assert fake.canceled == [12]  # by the watch, not once more
 
 
 def test_a_job_that_fails_before_a_page_is_done_says_nothing_about_copies(fake):
@@ -1059,6 +1062,215 @@ def test_the_document_is_made_once_for_all_copies(fake, monkeypatch):
     _print(copies=4)
     assert made == [1] and len(fake.documents) == 4
     assert len({data for _mime, data in fake.documents}) == 1
+
+
+# --- waiting for fixes: the time limits hold ------------------------------------------------
+
+
+def _printer_answers(monkeypatch, answer):
+    """Get-Printer-Attributes after the first (the check before sending):
+    answer(self, n) sets the printer's reasons, or returns an IPP status
+    to fail with; n counts from 1."""
+    original = FakeIpp._op_000b
+    calls = []
+
+    def attributes(self, body, ops, job):
+        calls.append(1)
+        if len(calls) > 1:
+            status = answer(self, len(calls) - 1)
+            if status:
+                return _answer(status, [(ipp.OPERATION_GROUP, [])])
+        return original(self, body, ops, job)
+
+    monkeypatch.setattr(FakeIpp, "_op_000b", attributes)
+
+
+def test_a_stopped_job_whose_reason_clears_a_moment_early_prints(fake, monkeypatch):
+    # out of paper 20 s; paper loaded: the printer's reason goes one answer
+    # before the job leaves processing-stopped
+    fake.job_states = [5] + [6] * 21 + [5, 9]
+    fake.later = {"reasons": ["media-empty-error"]}
+
+    def answer(self, n):
+        self.reasons = ["none"] if n >= 22 else self.reasons
+
+    _printer_answers(monkeypatch, answer)
+    _print()
+    assert ipp.CANCEL_JOB not in fake.operations()
+
+
+def test_a_missed_printer_answer_changes_nothing(fake, monkeypatch):
+    fake.job_states = [5] + [6] * 20 + [5, 9]  # stopped for paper
+    fake.later = {"reasons": ["media-empty-error"]}
+    _printer_answers(monkeypatch, lambda self, n: 0x0507 if n == 7 else 0)
+    events = []
+    _print(events=events)
+    assert ipp.CANCEL_JOB not in fake.operations()
+    assert events[7].stage == "OUT_OF_PAPER"  # also while the printer did not answer
+
+
+def test_a_printer_that_misses_answers_cannot_put_off_the_limit(fake, monkeypatch):
+    fake.job_states = [5]
+    fake.later = {"reasons": ["media-empty-error"]}
+    _printer_answers(monkeypatch, lambda self, n: 0x0507 if n % 50 == 0 else 0)
+    with pytest.raises(OutOfPaper, match="not fixed within 300 s"):
+        _print()
+    assert fake.now == pytest.approx(system.RECOVERY_LIMIT + 1)
+
+
+def test_other_words_for_the_same_problem_keep_its_time(fake, monkeypatch):
+    fake.job_states = [5]
+
+    def answer(self, n):
+        self.reasons = [["media-empty-error"], ["media-needed"]][n % 2]
+
+    _printer_answers(monkeypatch, answer)
+    with pytest.raises(OutOfPaper, match="not fixed within"):
+        _print()
+    assert fake.now == pytest.approx(system.RECOVERY_LIMIT + 1)
+
+
+def test_changing_problems_have_a_limit_in_all(fake, monkeypatch):
+    monkeypatch.setattr(system, "RECOVERY_LIMIT", 10)
+    monkeypatch.setattr(system, "RECOVERY_TOTAL", 30)
+    fake.job_states = [5]
+
+    def answer(self, n):  # 8 s out of paper, 8 s cover open, and so on
+        self.reasons = [["media-empty"], ["cover-open"]][(n - 1) // 8 % 2]
+
+    _printer_answers(monkeypatch, answer)
+    with pytest.raises(CoverOpen, match="not fixed within 30 s"):
+        _print()
+    assert fake.now == pytest.approx(31)
+    assert fake.operations()[-1] == ipp.CANCEL_JOB
+
+
+def test_a_problem_that_comes_and_goes_has_a_limit_in_all(fake, monkeypatch):
+    monkeypatch.setattr(system, "RECOVERY_TOTAL", 30)
+    fake.job_states = [5]
+
+    def answer(self, n):  # every other answer: out of paper
+        self.reasons = ["media-empty"] if n % 2 else ["none"]
+
+    _printer_answers(monkeypatch, answer)
+    with pytest.raises(OutOfPaper, match="not fixed within 30 s"):
+        _print()
+    assert fake.now < 2 * 30 + 3
+
+
+def test_pages_coming_out_while_the_printer_reports_a_problem(fake, monkeypatch):
+    # out of paper in another tray: the job still prints, a page every 40 s
+    monkeypatch.setattr(system, "RECOVERY_LIMIT", 60)
+    fake.job_states = [(5, second // 40) for second in range(400)] + [9]
+    fake.later = {"reasons": ["media-empty-error"]}
+    _print(copies=10)
+    assert ipp.CANCEL_JOB not in fake.operations() and fake.now >= 399
+
+
+def test_no_page_while_the_problem_lasts_cancels_the_job(fake, monkeypatch):
+    monkeypatch.setattr(system, "RECOVERY_LIMIT", 60)
+    fake.job_states = [(5, 0)] * 30 + [(5, 1)]  # a page after 30 s, then none
+    fake.later = {"reasons": ["media-empty-error"]}
+    with pytest.raises(OutOfPaper):
+        _print(copies=2)
+    assert fake.now == pytest.approx(30 + 60 + 1)
+
+
+# --- canceling the rest -------------------------------------------------------------------
+
+
+def test_canceling_stops_once_the_printer_cannot_be_reached(fake, monkeypatch):
+    fake.copies_supported, fake.formats, fake.job_states = (1, 1), ["application/pdf"], [3]
+    send = fake.send
+    tries = []
+
+    def gone(uri, body, timeout):  # the network goes after the fifth job
+        operation = ipp.decode(body).status
+        if operation == ipp.CANCEL_JOB:
+            tries.append(1)
+        if fake.operations().count(ipp.PRINT_JOB) >= 5 and operation != ipp.GET_JOB_ATTRIBUTES:
+            raise TimeoutError("timed out")
+        return send(uri, body, timeout)
+
+    monkeypatch.setattr(ipp, "send", gone)
+    with pytest.raises(PrinterTimeout) as info:
+        _print(copies=20)
+    assert len(tries) == 1
+    assert "queue_canceled" not in info.value.params  # they could not be
+
+
+@pytest.mark.parametrize("status", [0x0406, 0x0400])
+def test_canceling_goes_on_after_a_printer_refuses_one(fake, status):
+    fake.copies_supported, fake.formats, fake.job_states = (1, 1), ["application/pdf"], [(3, 0)]
+    fake.print_errors = [0, 0, 0, 0x0500]
+    original = FakeIpp._op_0008
+
+    def cancel(self, body, ops, job):
+        if ops["job-id"] == [12]:
+            return _answer(status, [(ipp.OPERATION_GROUP, [])])
+        return original(self, body, ops, job)
+
+    FakeIpp._op_0008, saved = cancel, original
+    try:
+        with pytest.raises(PrinterError, match="0x0500"):
+            _print(copies=4)
+    finally:
+        FakeIpp._op_0008 = saved
+    assert fake.canceled == [13, 14]
+
+
+@pytest.mark.parametrize("state", [7, 8])
+def test_a_job_that_ended_is_not_canceled(fake, state):
+    fake.copies_supported, fake.formats = (1, 1), ["application/pdf"]
+    fake.job_states = [5, 9, 5, state]
+    with pytest.raises(PrinterError):
+        _print(copies=3)
+    assert ipp.CANCEL_JOB not in fake.operations()
+
+
+def test_a_failure_after_queued_jobs_says_they_were_canceled(fake):
+    fake.copies_supported, fake.formats, fake.job_states = (1, 1), ["application/pdf"], [(3, 0)]
+    fake.print_errors = [0, 0, 0x0500]
+    with pytest.raises(PrinterError) as info:
+        _print(copies=3)
+    assert fake.canceled == [12, 13]
+    assert info.value.params == {"queue_canceled": True}
+
+
+# --- a busy printer -------------------------------------------------------------------------
+
+
+def test_a_busy_printer_is_asked_again(fake):
+    fake.copies_supported, fake.formats = (1, 1), ["application/pdf"]
+    fake.job_states = [5, 9]
+    fake.print_errors = [0, 0x0507, 0x0507, 0]  # busy twice before the second copy
+    _print(copies=2)
+    assert fake.printed == 2 and fake.operations().count(ipp.PRINT_JOB) == 4
+    assert ipp.CANCEL_JOB not in fake.operations()
+
+
+def test_a_printer_busy_for_too_long(fake):
+    fake.copies_supported, fake.formats = (1, 1), ["application/pdf"]
+    fake.job_states = [5, 9]
+    fake.print_errors = [0, 0, *[0x0507] * 100]
+    start = []
+    original = FakeIpp._op_0002
+
+    def print_job(self, body, ops, job):
+        if len(fake.print_errors) == 100:
+            start.append(self.now)
+        return original(self, body, ops, job)
+
+    FakeIpp._op_0002, saved = print_job, original
+    try:
+        with pytest.raises(PrinterBusy) as info:
+            _print(copies=3)
+    finally:
+        FakeIpp._op_0002 = saved
+    assert info.value.code == "busy"
+    assert info.value.params == {"printed": 2, "copies": 3}
+    assert fake.now - start[0] == pytest.approx(system.BUSY_LIMIT)
+    assert fake.printed == 2 and ipp.CANCEL_JOB not in fake.operations()
 
 
 # --- discovery -----------------------------------------------------------------------------

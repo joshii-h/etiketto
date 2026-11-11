@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "프린터로 보냄 – 차례가 되면 인쇄됩니다",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "인쇄 작업이 대기열에서 보류되었습니다. 예를 들어 해제되거나 암호가 입력될 때까지입니다. 시스템 프린터 설정에서 대기열을 확인한 뒤 다시 시도하세요.",
     "Labels already printed: %(n)d of %(total)d.": "이미 인쇄된 라벨: %(total)d개 중 %(n)d개.",
+    "The labels still waiting in the queue were canceled.": "대기열에서 기다리던 라벨은 취소되었습니다.",
     "The print job was canceled at the printer or in the queue.": "인쇄 작업이 프린터 또는 대기열에서 취소되었습니다.",
     "Out of paper – load paper to continue": "용지 없음 – 계속하려면 용지를 넣으세요",
     "Cover open – close it to continue": "덮개 열림 – 계속하려면 덮개를 닫으세요",

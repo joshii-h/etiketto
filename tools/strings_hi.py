@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "प्रिंटर को भेज दिया गया – बारी आने पर प्रिंट होगा",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "प्रिंट जॉब कतार में रोक दिया गया, उदाहरण के लिए जब तक उसे जारी न किया जाए या पासवर्ड न डाला जाए। सिस्टम की प्रिंटर सेटिंग में कतार जाँचें और दोबारा कोशिश करें।",
     "Labels already printed: %(n)d of %(total)d.": "पहले ही प्रिंट हो चुके लेबल: %(total)d में से %(n)d।",
+    "The labels still waiting in the queue were canceled.": "कतार में अभी भी प्रतीक्षा कर रहे लेबल रद्द कर दिए गए।",
     "The print job was canceled at the printer or in the queue.": "प्रिंट जॉब प्रिंटर पर या कतार में रद्द कर दिया गया।",
     "Out of paper – load paper to continue": "कागज़ खत्म – जारी रखने के लिए कागज़ डालें",
     "Cover open – close it to continue": "ढक्कन खुला है – जारी रखने के लिए उसे बंद करें",

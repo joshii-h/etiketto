@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "Đã gửi đến máy in – sẽ được in khi đến lượt",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại.",
     "Labels already printed: %(n)d of %(total)d.": "Số nhãn đã in: %(n)d trên %(total)d.",
+    "The labels still waiting in the queue were canceled.": "Các nhãn còn chờ trong hàng đợi đã bị hủy.",
     "The print job was canceled at the printer or in the queue.": "Lệnh in đã bị hủy trên máy in hoặc trong hàng đợi.",
     "Out of paper – load paper to continue": "Hết giấy – hãy nạp giấy để tiếp tục",
     "Cover open – close it to continue": "Nắp đang mở – hãy đóng nắp để tiếp tục",

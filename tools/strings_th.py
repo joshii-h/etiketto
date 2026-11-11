@@ -228,6 +228,7 @@ TRANSLATIONS = {
     "Sent to the printer – it prints when its turn comes": "ส่งไปยังเครื่องพิมพ์แล้ว – จะพิมพ์เมื่อถึงคิว",
     "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "งานพิมพ์ถูกพักไว้ในคิว เช่น จนกว่าจะถูกปล่อยหรือมีการป้อนรหัสผ่าน ตรวจสอบคิวในการตั้งค่าเครื่องพิมพ์ของระบบแล้วลองอีกครั้ง",
     "Labels already printed: %(n)d of %(total)d.": "ฉลากที่พิมพ์แล้ว: %(n)d จาก %(total)d",
+    "The labels still waiting in the queue were canceled.": "ฉลากที่ยังรออยู่ในคิวถูกยกเลิกแล้ว",
     "The print job was canceled at the printer or in the queue.": "งานพิมพ์ถูกยกเลิกที่เครื่องพิมพ์หรือในคิว",
     "Out of paper – load paper to continue": "กระดาษหมด – ใส่กระดาษเพื่อดำเนินการต่อ",
     "Cover open – close it to continue": "ฝาเปิดอยู่ – ปิดฝาเพื่อดำเนินการต่อ",

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:43+0100\n"
+"PO-Revision-Date: 2026-11-11 23:07+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: nl\n"
 "Language: nl\n"
@@ -767,180 +767,184 @@ msgstr "De achtergrondafbeelding kan niet worden gelezen"
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Al afgedrukte etiketten: %(n)d van %(total)d."
 
-#: etiketto/ui/texts.py:120
+#: etiketto/ui/texts.py:113
+msgid "The labels still waiting in the queue were canceled."
+msgstr "De etiketten die nog in de wachtrij stonden, zijn geannuleerd."
+
+#: etiketto/ui/texts.py:122
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "De printer is niet gevonden. Controleer of hij aan staat en in hetzelfde netwerk zit, of voer zijn IP-adres in."
 
-#: etiketto/ui/texts.py:123
+#: etiketto/ui/texts.py:125
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "De printer reageert niet. Controleer of hij aan staat en niet in de slaapstand is."
 
-#: etiketto/ui/texts.py:125
+#: etiketto/ui/texts.py:127
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "De printer weigert de verbinding. Zet hem uit en weer aan. Biedt zijn webinterface een optie ‘Port 9100’, schakel die dan in."
 
-#: etiketto/ui/texts.py:128
+#: etiketto/ui/texts.py:130
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Er is geen cassette geplaatst. Plaats er een en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:129
+#: etiketto/ui/texts.py:131
 msgid "The printer's cover is open. Close it and try again."
 msgstr "De klep van de printer is open. Sluit hem en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:132
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Het etiket zit vast. Open de klep, verwijder het en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:131
+#: etiketto/ui/texts.py:133
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "De cassette wordt niet herkend. Plaats hem opnieuw of probeer een andere."
 
-#: etiketto/ui/texts.py:132
+#: etiketto/ui/texts.py:134
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "De printer is bezig. Wacht even en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:135
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Het etiket is te lang voor deze printer: maximaal %(max)s."
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:136
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Het etiket is te breed voor deze printer: maximaal %(max)s."
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:137
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "De printer heeft geen etiketten meer. Plaats een nieuwe rol en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:136
+#: etiketto/ui/texts.py:138
 msgid "The print head is open. Close it and try again."
 msgstr "De printkop is open. Sluit hem en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:140
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "De printer kan het volgende etiket niet vinden. Controleer of de etiketten goed zijn geplaatst en door de etiketsensor lopen."
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:144
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Er is een probleem met het lint. Controleer of het goed is geplaatst en overeenkomt met de printmethode die op de printer is ingesteld."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:147
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "De printer is gepauzeerd. Hervat hem op het display en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:148
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "De printer heeft geen papier meer. Plaats papier en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:148
+#: etiketto/ui/texts.py:150
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Het papier is vastgelopen. Verwijder het zoals het display van de printer aangeeft en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:152
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "De printer heeft geen toner of inkt meer. Vervang het en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:151
+#: etiketto/ui/texts.py:153
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "De printer kan dit formaat niet afdrukken. Kies een papierformaat dat de printer aanbiedt."
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:155
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "De printer accepteert geen van de formaten die Etiketto kan sturen (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:158
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "De wachtrij van de printer is gepauzeerd. Hervat hem in de printerinstellingen van het systeem en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:162
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "De afdruktaak is in de wachtrij vastgehouden, bijvoorbeeld tot hij wordt vrijgegeven of er een wachtwoord wordt ingevoerd. Controleer de wachtrij in de printerinstellingen van het systeem en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:166
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "De afdruktaak is op de printer of in de wachtrij geannuleerd."
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:168
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "De printer meldt een probleem. Zet hem uit en weer aan en probeer het daarna nog eens."
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:180
 msgid "Warming up…"
 msgstr "Opwarmen…"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:181
 msgid "Cooling down…"
 msgstr "Afkoelen…"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:182
 msgid "Cleaning…"
 msgstr "Reinigen…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:183
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Veeg over het paneel van de printer om het etiket af te snijden"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:185
 msgid "Out of paper – load paper to continue"
 msgstr "Papier op – plaats papier om verder te gaan"
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:186
 msgid "Cover open – close it to continue"
 msgstr "Klep open – sluit hem om verder te gaan"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:187
 msgid "Paper jammed – remove it to continue"
 msgstr "Papier vastgelopen – verwijder het om verder te gaan"
 
-#: etiketto/ui/texts.py:196
+#: etiketto/ui/texts.py:198
 msgid "This label needs a newer version of Etiketto"
 msgstr "Dit etiket vereist een nieuwere versie van Etiketto"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s is geen Etiketto-etiket"
 
-#: etiketto/ui/texts.py:199
+#: etiketto/ui/texts.py:201
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Het bestand is beschadigd: %s"
 
-#: etiketto/ui/texts.py:205
+#: etiketto/ui/texts.py:207
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kan %s niet opslaan: geen schrijfrechten"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:209
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kan %s niet opslaan: de schijf is vol"
 
-#: etiketto/ui/texts.py:208
+#: etiketto/ui/texts.py:210
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kan %s niet opslaan"
 
-#: etiketto/ui/texts.py:217
+#: etiketto/ui/texts.py:219
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
