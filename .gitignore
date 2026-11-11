@@ -13,4 +13,5 @@ repo/
 *.flatpak
 .coverage
 .pytest_cache/
+.hypothesis/
 site/build/
