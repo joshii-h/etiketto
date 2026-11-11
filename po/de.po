@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:08+0100\n"
+"PO-Revision-Date: 2026-11-11 22:27+0100\n"
 "Last-Translator: joshii-h\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -518,7 +518,7 @@ msgstr "Seriennummer"
 msgid "Probably made"
 msgstr "Vermutlich hergestellt"
 
-#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:290
+#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:292
 msgid "Close"
 msgstr "Schliessen"
 
@@ -608,25 +608,29 @@ msgid "Printing %(n)d/%(total)d…"
 msgstr "Drucke %(n)d/%(total)d …"
 
 #: etiketto/ui/printing.py:274
+msgid "Sent to the printer – it prints when its turn comes"
+msgstr "An den Drucker gesendet – wird gedruckt, sobald er an der Reihe ist"
+
+#: etiketto/ui/printing.py:276
 msgid "Printed"
 msgstr "Gedruckt"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:278
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Farbmodus „%(wanted)s“ ist auf diesem Drucker nicht verfügbar, gedruckt mit „%(used)s“"
 
-#: etiketto/ui/printing.py:285
+#: etiketto/ui/printing.py:287
 msgid "Printing failed"
 msgstr "Drucken fehlgeschlagen"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:288
 msgid "Details"
 msgstr "Details"
 
-#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:291 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "Melden"
 
@@ -859,56 +863,63 @@ msgstr "Die Warteschlange des Druckers ist angehalten. In den Druckereinstellung
 
 #: etiketto/ui/texts.py:153
 msgid ""
+"The print job was held in the queue, for example until it is released or a "
+"password is entered. Check the queue in the system's printer settings and "
+"try again."
+msgstr "Der Druckauftrag wurde in der Warteschlange zurückgehalten, zum Beispiel bis er freigegeben oder ein Passwort eingegeben wird. Die Warteschlange in den Druckereinstellungen des Systems prüfen und erneut versuchen."
+
+#: etiketto/ui/texts.py:158
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Der Drucker hat ein Problem gemeldet. Schalten Sie ihn aus und wieder ein und versuchen Sie es dann noch einmal."
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:170
 msgid "Warming up…"
 msgstr "Aufwärmen …"
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:171
 msgid "Cooling down…"
 msgstr "Abkühlen …"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:172
 msgid "Cleaning…"
 msgstr "Reinigen …"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:173
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Zum Abschneiden über das Bedienfeld des Druckers streichen"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:184
 msgid "This label needs a newer version of Etiketto"
 msgstr "Dieses Etikett braucht eine neuere Version von Etiketto"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:186
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s ist kein Etiketto-Etikett"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Die Datei ist beschädigt: %s"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:193
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s lässt sich nicht speichern: keine Schreibrechte"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:195
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s lässt sich nicht speichern: der Datenträger ist voll"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:196
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s lässt sich nicht speichern"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

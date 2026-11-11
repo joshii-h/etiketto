@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "De printer kan dit formaat niet afdrukken. Kies een papierformaat dat de printer aanbiedt.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "De printer accepteert geen van de formaten die Etiketto kan sturen (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "De wachtrij van de printer is gepauzeerd. Hervat hem in de printerinstellingen van het systeem en probeer het opnieuw.",
+    "Sent to the printer – it prints when its turn comes": "Naar de printer gestuurd – wordt afgedrukt zodra het aan de beurt is",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "De afdruktaak is in de wachtrij vastgehouden, bijvoorbeeld tot hij wordt vrijgegeven of er een wachtwoord wordt ingevoerd. Controleer de wachtrij in de printerinstellingen van het systeem en probeer het opnieuw.",
 }

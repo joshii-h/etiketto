@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "プリンターはこのサイズを印刷できません。プリンターが対応する用紙サイズを選んでください。",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "プリンターは、Etiketto が送信できる形式（PDF、PWG Raster、JPEG）のいずれにも対応していません。",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "プリンターのキューが一時停止中です。システムのプリンター設定で再開してから、もう一度お試しください。",
+    "Sent to the printer – it prints when its turn comes": "プリンターに送信しました – 順番が来ると印刷されます",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "印刷ジョブがキューで保留されました（例: 解除されるまで、またはパスワードが入力されるまで）。システムのプリンター設定でキューを確認してから、もう一度お試しください。",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:08+0100\n"
+"PO-Revision-Date: 2026-11-11 22:27+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -518,7 +518,7 @@ msgstr "सीरियल नंबर"
 msgid "Probably made"
 msgstr "संभावित निर्माण"
 
-#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:290
+#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:292
 msgid "Close"
 msgstr "बंद करें"
 
@@ -608,25 +608,29 @@ msgid "Printing %(n)d/%(total)d…"
 msgstr "प्रिंट हो रहा है %(n)d/%(total)d…"
 
 #: etiketto/ui/printing.py:274
+msgid "Sent to the printer – it prints when its turn comes"
+msgstr "प्रिंटर को भेज दिया गया – बारी आने पर प्रिंट होगा"
+
+#: etiketto/ui/printing.py:276
 msgid "Printed"
 msgstr "प्रिंट हो गया"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:278
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "रंग मोड “%(wanted)s” इस प्रिंटर पर उपलब्ध नहीं है, “%(used)s” से प्रिंट किया गया"
 
-#: etiketto/ui/printing.py:285
+#: etiketto/ui/printing.py:287
 msgid "Printing failed"
 msgstr "प्रिंट विफल"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:288
 msgid "Details"
 msgstr "विवरण"
 
-#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:291 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "रिपोर्ट करें"
 
@@ -859,56 +863,63 @@ msgstr "प्रिंटर की कतार रुकी हुई है�
 
 #: etiketto/ui/texts.py:153
 msgid ""
+"The print job was held in the queue, for example until it is released or a "
+"password is entered. Check the queue in the system's printer settings and "
+"try again."
+msgstr "प्रिंट जॉब कतार में रोक दिया गया, उदाहरण के लिए जब तक उसे जारी न किया जाए या पासवर्ड न डाला जाए। सिस्टम की प्रिंटर सेटिंग में कतार जाँचें और दोबारा कोशिश करें।"
+
+#: etiketto/ui/texts.py:158
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "प्रिंटर ने एक समस्या बताई। उसे बंद करके फिर चालू करें, फिर एक बार और प्रयास करें।"
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:170
 msgid "Warming up…"
 msgstr "गर्म हो रहा है…"
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:171
 msgid "Cooling down…"
 msgstr "ठंडा हो रहा है…"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:172
 msgid "Cleaning…"
 msgstr "सफ़ाई हो रही है…"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:173
 msgid "Swipe the printer's panel to cut the label"
 msgstr "लेबल काटने के लिए प्रिंटर के पैनल पर स्वाइप करें"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:184
 msgid "This label needs a newer version of Etiketto"
 msgstr "इस लेबल के लिए Etiketto का नया संस्करण चाहिए"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:186
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s कोई Etiketto लेबल नहीं है"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:193
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:195
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:196
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

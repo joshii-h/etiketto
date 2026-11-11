@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:08+0100\n"
+"PO-Revision-Date: 2026-11-11 22:27+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: vi\n"
 "Language: vi\n"
@@ -518,7 +518,7 @@ msgstr "Số sê-ri"
 msgid "Probably made"
 msgstr "Sản xuất (ước tính)"
 
-#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:290
+#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:292
 msgid "Close"
 msgstr "Đóng"
 
@@ -608,25 +608,29 @@ msgid "Printing %(n)d/%(total)d…"
 msgstr "Đang in %(n)d/%(total)d…"
 
 #: etiketto/ui/printing.py:274
+msgid "Sent to the printer – it prints when its turn comes"
+msgstr "Đã gửi đến máy in – sẽ được in khi đến lượt"
+
+#: etiketto/ui/printing.py:276
 msgid "Printed"
 msgstr "Đã in"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:278
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Chế độ màu “%(wanted)s” không có trên máy in này, đã in bằng “%(used)s”"
 
-#: etiketto/ui/printing.py:285
+#: etiketto/ui/printing.py:287
 msgid "Printing failed"
 msgstr "In thất bại"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:288
 msgid "Details"
 msgstr "Chi tiết"
 
-#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:291 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "Báo cáo"
 
@@ -859,56 +863,63 @@ msgstr "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong p
 
 #: etiketto/ui/texts.py:153
 msgid ""
+"The print job was held in the queue, for example until it is released or a "
+"password is entered. Check the queue in the system's printer settings and "
+"try again."
+msgstr "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại."
+
+#: etiketto/ui/texts.py:158
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Máy in báo có sự cố. Hãy tắt rồi bật lại máy in, sau đó thử lại lần nữa."
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:170
 msgid "Warming up…"
 msgstr "Đang làm nóng…"
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:171
 msgid "Cooling down…"
 msgstr "Đang làm nguội…"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:172
 msgid "Cleaning…"
 msgstr "Đang làm sạch…"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:173
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Vuốt trên bảng điều khiển của máy in để cắt nhãn"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:184
 msgid "This label needs a newer version of Etiketto"
 msgstr "Nhãn này cần phiên bản Etiketto mới hơn"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:186
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s không phải là nhãn Etiketto"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tệp bị hỏng: %s"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:193
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Không thể lưu %s: không có quyền ghi vào đó"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:195
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Không thể lưu %s: đĩa đã đầy"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:196
 #, python-format
 msgid "Cannot save %s"
 msgstr "Không thể lưu %s"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

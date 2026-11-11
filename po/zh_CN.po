@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:08+0100\n"
+"PO-Revision-Date: 2026-11-11 22:27+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: zh_CN\n"
 "Language: zh_CN\n"
@@ -518,7 +518,7 @@ msgstr "序列号"
 msgid "Probably made"
 msgstr "推测生产时间"
 
-#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:290
+#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:292
 msgid "Close"
 msgstr "关闭"
 
@@ -608,25 +608,29 @@ msgid "Printing %(n)d/%(total)d…"
 msgstr "正在打印 %(n)d/%(total)d…"
 
 #: etiketto/ui/printing.py:274
+msgid "Sent to the printer – it prints when its turn comes"
+msgstr "已发送到打印机 – 轮到时就会打印"
+
+#: etiketto/ui/printing.py:276
 msgid "Printed"
 msgstr "已打印"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:278
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "此打印机不支持色彩模式“%(wanted)s”，已改用“%(used)s”打印"
 
-#: etiketto/ui/printing.py:285
+#: etiketto/ui/printing.py:287
 msgid "Printing failed"
 msgstr "打印失败"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:288
 msgid "Details"
 msgstr "详细信息"
 
-#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:291 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "报告"
 
@@ -859,56 +863,63 @@ msgstr "打印机队列已暂停。请在系统的打印机设置中恢复后重
 
 #: etiketto/ui/texts.py:153
 msgid ""
+"The print job was held in the queue, for example until it is released or a "
+"password is entered. Check the queue in the system's printer settings and "
+"try again."
+msgstr "打印作业在队列中被暂挂，例如直到被释放或输入密码为止。请在系统的打印机设置中检查队列后重试。"
+
+#: etiketto/ui/texts.py:158
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "打印机报告了问题。请关机后重新开机，然后再试一次。"
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:170
 msgid "Warming up…"
 msgstr "正在预热…"
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:171
 msgid "Cooling down…"
 msgstr "正在冷却…"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:172
 msgid "Cleaning…"
 msgstr "正在清洁…"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:173
 msgid "Swipe the printer's panel to cut the label"
 msgstr "请滑动打印机面板以切割标签"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:184
 msgid "This label needs a newer version of Etiketto"
 msgstr "此标签需要更新版本的 Etiketto"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:186
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s 不是 Etiketto 标签"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "文件已损坏：%s"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:193
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "无法保存 %s：没有写入权限"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:195
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "无法保存 %s：磁盘已满"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:196
 #, python-format
 msgid "Cannot save %s"
 msgstr "无法保存 %s"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

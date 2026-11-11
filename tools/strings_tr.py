@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Yazıcı bu boyutu yazdıramıyor. Yazıcının sunduğu bir kağıt boyutu seçin.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Yazıcı, Etiketto'nun gönderebildiği biçimlerin (PDF, PWG Raster, JPEG) hiçbirini kabul etmiyor.",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Yazıcının kuyruğu duraklatıldı. Sistemin yazıcı ayarlarından devam ettirin ve yeniden deneyin.",
+    "Sent to the printer – it prints when its turn comes": "Yazıcıya gönderildi – sırası geldiğinde yazdırılacak",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Yazdırma işi kuyrukta bekletildi, örneğin serbest bırakılana veya bir parola girilene kadar. Sistemin yazıcı ayarlarında kuyruğu kontrol edin ve yeniden deneyin.",
 }

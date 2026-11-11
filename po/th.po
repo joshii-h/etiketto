@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 22:08+0100\n"
+"PO-Revision-Date: 2026-11-11 22:27+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: th\n"
 "Language: th\n"
@@ -518,7 +518,7 @@ msgstr "หมายเลขซีเรียล"
 msgid "Probably made"
 msgstr "น่าจะผลิตเมื่อ"
 
-#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:290
+#: etiketto/ui/printer.py:378 etiketto/ui/printing.py:292
 msgid "Close"
 msgstr "ปิด"
 
@@ -608,25 +608,29 @@ msgid "Printing %(n)d/%(total)d…"
 msgstr "กำลังพิมพ์ %(n)d/%(total)d…"
 
 #: etiketto/ui/printing.py:274
+msgid "Sent to the printer – it prints when its turn comes"
+msgstr "ส่งไปยังเครื่องพิมพ์แล้ว – จะพิมพ์เมื่อถึงคิว"
+
+#: etiketto/ui/printing.py:276
 msgid "Printed"
 msgstr "พิมพ์แล้ว"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:278
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "เครื่องพิมพ์นี้ไม่มีโหมดสี “%(wanted)s” จึงพิมพ์ด้วย “%(used)s”"
 
-#: etiketto/ui/printing.py:285
+#: etiketto/ui/printing.py:287
 msgid "Printing failed"
 msgstr "พิมพ์ไม่สำเร็จ"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:288
 msgid "Details"
 msgstr "รายละเอียด"
 
-#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:291 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "รายงาน"
 
@@ -859,56 +863,63 @@ msgstr "คิวของเครื่องพิมพ์หยุดชั
 
 #: etiketto/ui/texts.py:153
 msgid ""
+"The print job was held in the queue, for example until it is released or a "
+"password is entered. Check the queue in the system's printer settings and "
+"try again."
+msgstr "งานพิมพ์ถูกพักไว้ในคิว เช่น จนกว่าจะถูกปล่อยหรือมีการป้อนรหัสผ่าน ตรวจสอบคิวในการตั้งค่าเครื่องพิมพ์ของระบบแล้วลองอีกครั้ง"
+
+#: etiketto/ui/texts.py:158
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "เครื่องพิมพ์รายงานปัญหา ปิดแล้วเปิดเครื่องพิมพ์ใหม่ จากนั้นลองอีกครั้ง"
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:170
 msgid "Warming up…"
 msgstr "กำลังอุ่นเครื่อง…"
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:171
 msgid "Cooling down…"
 msgstr "กำลังลดอุณหภูมิ…"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:172
 msgid "Cleaning…"
 msgstr "กำลังทำความสะอาด…"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:173
 msgid "Swipe the printer's panel to cut the label"
 msgstr "ปัดแผงของเครื่องพิมพ์เพื่อตัดฉลาก"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:184
 msgid "This label needs a newer version of Etiketto"
 msgstr "ฉลากนี้ต้องใช้ Etiketto รุ่นที่ใหม่กว่า"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:186
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s ไม่ใช่ฉลาก Etiketto"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "ไฟล์เสียหาย: %s"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:193
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "บันทึก %s ไม่ได้: ไม่มีสิทธิ์เขียนที่นั่น"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:195
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "บันทึก %s ไม่ได้: ดิสก์เต็ม"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:196
 #, python-format
 msgid "Cannot save %s"
 msgstr "บันทึก %s ไม่ได้"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

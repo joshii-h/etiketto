@@ -270,6 +270,8 @@ class PrintFlow:
 
     @staticmethod
     def _printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
+        if result and result.queued:  # other jobs first: not printed yet, nothing wrong
+            return _("Sent to the printer – it prints when its turn comes")
         if not (options and result and result.mode and result.mode != options.mode):
             return _("Printed")
         return _(

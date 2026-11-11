@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Skrivaren kan inte skriva ut den här storleken. Välj en pappersstorlek som den erbjuder.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Skrivaren tar inte emot något av de format som Etiketto kan skicka (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Skrivarens kö är pausad. Återuppta den i systemets skrivarinställningar och försök igen.",
+    "Sent to the printer – it prints when its turn comes": "Skickad till skrivaren – skrivs ut när det är dess tur",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Utskriftsjobbet hölls kvar i kön, till exempel tills det släpps eller ett lösenord anges. Kontrollera kön i systemets skrivarinställningar och försök igen.",
 }

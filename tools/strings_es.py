@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "La impresora no puede imprimir este tamaño. Elija un tamaño de papel que ofrezca.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "La impresora no acepta ninguno de los formatos que Etiketto puede enviar (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "La cola de la impresora está en pausa. Reanúdela en los ajustes de impresoras del sistema e inténtelo de nuevo.",
+    "Sent to the printer – it prints when its turn comes": "Enviado a la impresora: se imprimirá cuando le llegue el turno",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "El trabajo de impresión quedó retenido en la cola, por ejemplo hasta que se libere o se introduzca una contraseña. Revise la cola en los ajustes de impresoras del sistema e inténtelo de nuevo.",
 }

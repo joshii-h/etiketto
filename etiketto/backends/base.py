@@ -174,6 +174,9 @@ class PrintResult:
     """What print_label() did differently from the request, if anything."""
 
     mode: str = ""  # the mode actually used, when the requested one was not available
+    # the job waits in the printer's queue: it prints when its turn comes,
+    # nothing went wrong (yet)
+    queued: bool = False
 
 
 @dataclass(frozen=True)
@@ -289,6 +292,12 @@ class QueuePaused(PrinterError):
     """A print queue on this computer is paused (not the printer itself)."""
 
     code = "queue_paused"
+
+
+class JobHeld(PrinterError):
+    """The queue holds the job (until released, a set time or a password)."""
+
+    code = "job_held"
 
 
 def error_text(error: Exception) -> str:

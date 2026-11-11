@@ -357,6 +357,24 @@ def test_switch_printer_with_and_without_geometry():
     assert (label.tape_mm, label.auto_length) == (12, False)
 
 
+def test_a_page_printer_turns_the_content_across():
+    # cab with the content along the roll: the page has no roll, no direction row
+    label = Label(printer="cab", tape_mm=50, length_mm=30, orientation="along", auto_length=False)
+    label.switch_printer("system")
+    assert label.orientation == "across" and label.media_size() == (50, 30)
+    cab = label.geometry() | {"orientation": "along", "tape_mm": 50, "length_mm": 30}
+    label.switch_printer("system", cab)  # also with a geometry from before
+    assert label.orientation == "across" and label.media_size() == (50, 30)
+    label.switch_printer("cab")  # the roll printer keeps what it has
+    assert label.orientation == "across"
+
+
+def test_a_page_file_with_the_content_along_opens_across():
+    data = Label(printer="system", orientation="along", tape_mm=210, length_mm=297).to_dict()
+    label = Label.from_dict(data)
+    assert label.orientation == "across" and label.media_size() == (210, 297)
+
+
 @pytest.mark.parametrize("kind", [[], ["text"], {}, {"a": 1}, 5, None, ""])
 def test_element_kind_that_is_no_text_is_damaged(kind):
     with pytest.raises(LabelError) as info:

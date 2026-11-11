@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Принтер не может напечатать этот размер. Выберите размер бумаги, который он поддерживает.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Принтер не принимает ни один из форматов, которые может отправить Etiketto (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Очередь принтера приостановлена. Возобновите её в настройках принтера системы и повторите попытку.",
+    "Sent to the printer – it prints when its turn comes": "Отправлено на принтер – будет напечатано, когда подойдёт очередь",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Задание печати было задержано в очереди, например до его освобождения или ввода пароля. Проверьте очередь в настройках принтера системы и повторите попытку.",
 }

@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "打印机无法打印此大小。请选择打印机提供的纸张尺寸。",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "打印机不接受 Etiketto 能发送的任何格式（PDF、PWG Raster、JPEG）。",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "打印机队列已暂停。请在系统的打印机设置中恢复后重试。",
+    "Sent to the printer – it prints when its turn comes": "已发送到打印机 – 轮到时就会打印",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "打印作业在队列中被暂挂，例如直到被释放或输入密码为止。请在系统的打印机设置中检查队列后重试。",
 }

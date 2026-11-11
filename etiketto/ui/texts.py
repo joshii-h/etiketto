@@ -149,6 +149,11 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "The printer's queue is paused. Resume it in the system's printer settings and "
             "try again."
         ),
+        "job_held": _(
+            "The print job was held in the queue, for example until it is released or a "
+            "password is entered. Check the queue in the system's printer settings and try "
+            "again."
+        ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Máy in không thể in cỡ này. Hãy chọn cỡ giấy mà máy in hỗ trợ.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Máy in không nhận định dạng nào mà Etiketto có thể gửi (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong phần cài đặt máy in của hệ thống rồi thử lại.",
+    "Sent to the printer – it prints when its turn comes": "Đã gửi đến máy in – sẽ được in khi đến lượt",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại.",
 }

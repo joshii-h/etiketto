@@ -1,5 +1,5 @@
 """PWG Raster (PWG 5102.4): the page format every IPP Everywhere printer
-takes. One page: the "RaS2" sync word, a 1796-byte header, then the pixel
+takes. The "RaS2" sync word, then per page a 1796-byte header and the pixel
 rows, compressed line by line (repeated lines, then runs of equal or of
 different pixels).
 """
@@ -16,7 +16,7 @@ SRGB, SGRAY = 19, 18  # cupsColorSpace values PWG uses
 MAX_RUN = 128
 
 
-def header(image: Image.Image, dpi: int, media_name: str = "") -> bytes:
+def header(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -> bytes:
     """The page header for an 8-bit sRGB ("RGB") or sGray ("L") image."""
     colors = 3 if image.mode == "RGB" else 1
     width, height = image.size
@@ -32,7 +32,7 @@ def header(image: Image.Image, dpi: int, media_name: str = "") -> bytes:
     put(384, "III", 8, 8 * colors, width * colors)  # bits per colour, per pixel, bytes/line
     put(400, "I", SRGB if colors == 3 else SGRAY)  # cupsColorSpace
     put(420, "I", colors)  # cupsNumColors
-    put(452, "III", 1, 1, 1)  # TotalPageCount, CrossFeedTransform, FeedTransform
+    put(452, "III", pages, 1, 1)  # TotalPageCount, CrossFeedTransform, FeedTransform
     name = media_name.encode("ascii", "replace")[:63]
     out[1732 : 1732 + len(name)] = name  # cupsPageSizeName
     return bytes(out)
@@ -77,15 +77,16 @@ def _line(row: bytes, step: int) -> bytes:
     return bytes(out)
 
 
-def encode(image: Image.Image, dpi: int, media_name: str = "") -> bytes:
-    """A one-page PWG Raster document for an "RGB" or "L" image."""
+def encode(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -> bytes:
+    """A PWG Raster document for an "RGB" or "L" image: the page once, or
+    several times (copies for a printer that cannot make them itself)."""
     if image.mode not in ("RGB", "L"):
         image = image.convert("RGB")
     step = 3 if image.mode == "RGB" else 1
     data = image.tobytes()
     stride = image.width * step
     rows = [data[y * stride : (y + 1) * stride] for y in range(image.height)]
-    out = bytearray(SYNC + header(image, dpi, media_name))
+    out = bytearray()
     y = 0
     while y < len(rows):
         repeat = 1
@@ -94,7 +95,7 @@ def encode(image: Image.Image, dpi: int, media_name: str = "") -> bytes:
         out.append(repeat - 1)  # line repeat count
         out += _line(rows[y], step)
         y += repeat
-    return bytes(out)
+    return SYNC + (header(image, dpi, media_name, pages) + bytes(out)) * pages
 
 
 def decode(data: bytes) -> Image.Image:

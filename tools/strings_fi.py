@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Tulostin ei voi tulostaa tätä kokoa. Valitse paperikoko, jota se tukee.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Tulostin ei hyväksy mitään muotoa, jonka Etiketto voi lähettää (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen.",
+    "Sent to the printer – it prints when its turn comes": "Lähetetty tulostimelle – tulostuu, kun on sen vuoro",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Tulostustyö pidätettiin jonossa, esimerkiksi kunnes se vapautetaan tai salasana annetaan. Tarkista jono järjestelmän tulostinasetuksissa ja yritä uudelleen.",
 }

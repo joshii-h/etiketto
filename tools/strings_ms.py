@@ -225,4 +225,6 @@ TRANSLATIONS = {
     "The printer cannot print this size. Choose a paper size it offers.": "Pencetak tidak dapat mencetak saiz ini. Pilih saiz kertas yang ditawarkannya.",
     "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Pencetak tidak menerima mana-mana format yang boleh dihantar oleh Etiketto (PDF, PWG Raster, JPEG).",
     "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Baris gilir pencetak dijeda. Sambungkannya dalam tetapan pencetak sistem dan cuba lagi.",
+    "Sent to the printer – it prints when its turn comes": "Dihantar ke pencetak – akan dicetak apabila tiba gilirannya",
+    "The print job was held in the queue, for example until it is released or a password is entered. Check the queue in the system's printer settings and try again.": "Kerja cetak ditahan dalam baris gilir, contohnya sehingga ia dilepaskan atau kata laluan dimasukkan. Semak baris gilir dalam tetapan pencetak sistem dan cuba lagi.",
 }

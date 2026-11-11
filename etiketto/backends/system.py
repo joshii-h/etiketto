@@ -14,8 +14,9 @@ import io
 import ipaddress
 import ssl
 import time
+from collections.abc import Callable
 from contextlib import suppress
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from typing import Any
 from urllib.parse import quote, urlsplit
 
@@ -27,6 +28,7 @@ from etiketto.backends.base import (
     Capabilities,
     CoverOpen,
     FoundPrinter,
+    JobHeld,
     LabelSize,
     MediaJam,
     NoFormat,
@@ -53,10 +55,11 @@ from etiketto.render import DEFAULT_SAFE_MM
 CUPS_URI = "ipp://localhost/"
 DPI = 300.0
 TIMEOUT = 10.0  # one IPP request
-PRINT_TIMEOUT = 300.0  # printing one job, once the printer has started it
+PRINT_TIMEOUT = 300.0  # a printing job without any progress for this long
 PENDING_LIMIT = 30.0  # waiting behind other jobs: then it prints on its own
 POLL_INTERVAL = 1.0
 POLL_FAILURES = 3  # a busy printer may miss an answer now and then
+PROBLEM_POLLS = 3  # a problem must last this many answers: not a passing state
 SIZE_TOLERANCE = 100  # hundredths of mm: 1 mm
 MAX_PAGE_WIDTH_MM = 330.0  # A3+; also keeps the render of a file small
 
@@ -108,7 +111,9 @@ PRINTER_ATTRIBUTES = [
     "media-size-supported",
     "pwg-raster-document-type-supported",
     "pwg-raster-document-resolution-supported",
+    "copies-supported",
 ]
+STATE_ATTRIBUTES = ["printer-state", "printer-state-reasons"]
 
 
 # --- addresses ---------------------------------------------------------------------
@@ -119,16 +124,17 @@ def printer_uri(host: str) -> str:
     - a printer URI (ipp, ipps; http and https as the CUPS web pages show them)
     - a CUPS queue name on this computer ("HP_LaserJet")
     - a network printer's host name or address, with or without port and
-      path ("hp.local", "192.0.2.5:631", "2001:db8::5", "hp.local/ipp/print")
+      path ("hp.local", "192.0.2.5:631", "2001:db8::5", "hp.local/ipp/print",
+      "2001:db8::5/ipp/print")
     """
     host = host.strip()
     scheme, sep, rest = host.partition("://")
     if sep:
         known = {"ipp": "ipp", "ipps": "ipps", "http": "ipp", "https": "ipps"}
         return known.get(scheme.lower(), scheme) + "://" + rest
-    if _is_ipv6(host):
-        return "ipp://[%s]/ipp/print" % host
     name, slash, path = host.partition("/")
+    if _is_ipv6(name):
+        return "ipp://[%s]/%s" % (name, path if slash else "ipp/print")
     if slash:
         return "ipp://%s/%s" % (name, path)
     if "." in host or ":" in host:
@@ -164,12 +170,18 @@ def map_error(error: Exception) -> PrinterError:
     return PrinterError(text)
 
 
+class IppNotFound(PrinterNotFound):
+    """The printer answered "not found" (IPP status 0x0406): for a job, the
+    printer no longer knows it; unlike a network error, it did answer."""
+
+
 def _is_problem(reason: Any) -> bool:
-    """Warnings, reports and the routine states CUPS reports are none."""
+    """Warnings, reports and the routine states CUPS reports are none; nor
+    is a supply running low ("toner-low", also without a suffix)."""
     return (
         isinstance(reason, str)
         and reason not in ("", "none")
-        and not reason.endswith(("-warning", "-report"))
+        and not reason.endswith(("-warning", "-report", "-low"))
         and not reason.startswith(ROUTINE)
     )
 
@@ -189,6 +201,30 @@ def reasons_error(reasons: list[Any], local_queue: bool = False) -> PrinterError
     return cls("printer-state-reasons: " + ", ".join(problems))
 
 
+def known_error(reasons: list[Any], local_queue: bool = False) -> PrinterError | None:
+    """Only the problems Etiketto knows (out of paper, jam ...): while a job
+    prints, an unknown keyword may be something the printer copes with."""
+    known = [
+        reason
+        for reason in reasons
+        if _is_problem(reason) and reason.removesuffix("-error") in REASONS
+    ]
+    return reasons_error(known, local_queue)
+
+
+def _paused(local_queue: bool, details: str) -> PrinterError:
+    return (QueuePaused if local_queue else PrinterPaused)(details)
+
+
+def state_error(attrs: dict, local_queue: bool = False) -> PrinterError | None:
+    """The problem in printer-state-reasons, else "paused" if the printer
+    (or the queue) is stopped."""
+    error = reasons_error(_texts(attrs, "printer-state-reasons"), local_queue)
+    if error is None and _int(attrs, "printer-state", IDLE) == STOPPED:
+        error = _paused(local_queue, "printer-state: stopped")
+    return error
+
+
 def _request(uri: str, operation: int, attributes: list[ipp.Attribute], **kwargs) -> ipp.Response:
     try:
         body = ipp.encode(
@@ -200,7 +236,7 @@ def _request(uri: str, operation: int, attributes: list[ipp.Attribute], **kwargs
     if not answer.ok:
         message = _text(answer.group(ipp.OPERATION_GROUP), "status-message")
         if answer.status == 0x0406:  # client-error-not-found
-            raise PrinterNotFound("IPP status 0x%04x %s" % (answer.status, message))
+            raise IppNotFound("IPP status 0x%04x %s" % (answer.status, message))
         raise PrinterError("IPP status 0x%04x %s" % (answer.status, message))
     return answer
 
@@ -244,23 +280,40 @@ def _hundredths(mm: float) -> int:
     return round(mm * 100)
 
 
-def _covers(value: Any, wanted: int) -> bool:
-    if isinstance(value, tuple) and len(value) == 2:  # rangeOfInteger
-        return value[0] - SIZE_TOLERANCE <= wanted <= value[1] + SIZE_TOLERANCE
-    return isinstance(value, int) and abs(value - wanted) <= SIZE_TOLERANCE
+def _candidate(value: Any, wanted: int) -> int | None:
+    """What a listed dimension offers for wanted: the value itself, or the
+    nearest point of a range (rangeOfInteger, custom sizes)."""
+    if isinstance(value, tuple) and len(value) == 2:
+        return min(max(wanted, value[0]), value[1])
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    return None
 
 
-def fits(sizes: list[Any], width: int, height: int) -> bool:
-    """Whether media-size-supported has this size (hundredths of mm); an
-    unknown list means the printer will cope."""
+def _nearest(values: Any, wanted: int) -> int | None:
+    """The listed dimension nearest to wanted, if within SIZE_TOLERANCE."""
+    if not isinstance(values, list):
+        return None
+    offers = [_candidate(v, wanted) for v in values]
+    close = [o for o in offers if o is not None and abs(o - wanted) <= SIZE_TOLERANCE]
+    return min(close, key=lambda o: abs(o - wanted), default=None)
+
+
+def match_size(sizes: list[Any], width: int, height: int) -> tuple[int, int] | None:
+    """The size from media-size-supported (hundredths of mm) to ask for:
+    the listed one nearest to the label's, within 1 mm, so that the printer
+    does not fall back to its default paper; None if none is close. An
+    unknown list means the printer will cope: the label's own size."""
     collections = [s for s in sizes if isinstance(s, dict)]
     if not collections:
-        return True
-    return any(
-        any(_covers(x, width) for x in size.get("x-dimension", []))
-        and any(_covers(y, height) for y in size.get("y-dimension", []))
-        for size in collections
-    )
+        return width, height
+    matches = []
+    for size in collections:
+        x = _nearest(size.get("x-dimension"), width)
+        y = _nearest(size.get("y-dimension"), height)
+        if x is not None and y is not None:
+            matches.append((x, y))
+    return min(matches, key=lambda m: abs(m[0] - width) + abs(m[1] - height), default=None)
 
 
 def _media(width: int, height: int) -> ipp.Attribute:
@@ -276,24 +329,37 @@ def _media(width: int, height: int) -> ipp.Attribute:
 # --- documents ---------------------------------------------------------------------
 
 
-def document(image: Image.Image, attrs: dict) -> tuple[bytes, str]:
-    """The page in a format the printer takes: PDF, PWG Raster or JPEG."""
+PDF, PWG_RASTER, JPEG = "application/pdf", "image/pwg-raster", "image/jpeg"
+
+
+def document_format(attrs: dict) -> str:
+    """The format to send: PDF, PWG Raster or JPEG, the first the printer takes."""
     formats = _texts(attrs, "document-format-supported")
-    buf = io.BytesIO()
-    if not formats or "application/pdf" in formats:
-        # Pillow embeds RGB as JPEG: at its best quality, without chroma
-        # subsampling, so that small text stays sharp
-        image.convert("RGB").save(buf, format="PDF", resolution=DPI, quality=95, subsampling=0)
-        return buf.getvalue(), "application/pdf"
-    if "image/pwg-raster" in formats:
-        return _pwg(image, attrs), "image/pwg-raster"
-    if "image/jpeg" in formats:
-        image.convert("RGB").save(buf, format="JPEG", quality=95, subsampling=0, dpi=(DPI, DPI))
-        return buf.getvalue(), "image/jpeg"
+    if not formats:
+        return PDF
+    for mime in (PDF, PWG_RASTER, JPEG):
+        if mime in formats:
+            return mime
     raise NoFormat("document-format-supported: " + ", ".join(formats))
 
 
-def _pwg(image: Image.Image, attrs: dict) -> bytes:
+def document(image: Image.Image, attrs: dict, pages: int = 1) -> tuple[bytes, str]:
+    """The page in a format the printer takes: PDF, PWG Raster or JPEG.
+    Only PWG Raster repeats the page (pages > 1)."""
+    mime = document_format(attrs)
+    buf = io.BytesIO()
+    if mime == PDF:
+        # Pillow embeds RGB as JPEG: at its best quality, without chroma
+        # subsampling, so that small text stays sharp
+        image.convert("RGB").save(buf, format="PDF", resolution=DPI, quality=95, subsampling=0)
+    elif mime == PWG_RASTER:
+        return _pwg(image, attrs, pages), mime
+    else:
+        image.convert("RGB").save(buf, format="JPEG", quality=95, subsampling=0, dpi=(DPI, DPI))
+    return buf.getvalue(), mime
+
+
+def _pwg(image: Image.Image, attrs: dict, pages: int = 1) -> bytes:
     """PWG Raster in a colour space and resolution the printer lists."""
     types = _texts(attrs, "pwg-raster-document-type-supported")
     if not types or "srgb_8" in types:
@@ -306,7 +372,7 @@ def _pwg(image: Image.Image, attrs: dict) -> bytes:
     if dpi != DPI:
         size = (round(image.width * dpi / DPI), round(image.height * dpi / DPI))
         image = image.resize(size, Image.Resampling.LANCZOS)
-    return pwg.encode(image.convert(mode), dpi)
+    return pwg.encode(image.convert(mode), dpi, pages=pages)
 
 
 def _pwg_resolution(resolutions: list[Any]) -> int:
@@ -363,10 +429,7 @@ class SystemPrinter(Backend):
         uri = printer_uri(host)
         attrs = _printer_attributes(uri)
         state = _int(attrs, "printer-state", IDLE)
-        error = reasons_error(_texts(attrs, "printer-state-reasons"), _is_local_queue(uri))
-        if error is None and state == STOPPED:
-            stopped = QueuePaused if _is_local_queue(uri) else PrinterPaused
-            error = stopped("printer-state: stopped")
+        error = state_error(attrs, _is_local_queue(uri))
         return PrinterInfo(
             model=_text(attrs, "printer-make-and-model") or _text(attrs, "printer-info"),
             tape_mm=None,
@@ -396,32 +459,14 @@ class SystemPrinter(Backend):
         progress: ProgressCallback | None = None,
     ) -> PrintResult | None:
         uri = printer_uri(host)
-        copies = max(1, options.copies)
         attrs = _printer_attributes(uri)
-        problem = reasons_error(_texts(attrs, "printer-state-reasons"), _is_local_queue(uri))
+        problem = state_error(attrs, _is_local_queue(uri))
         if problem:
             raise problem
         image, width, height = _page(image, attrs.get("media-size-supported") or [])
-        data, mime = document(image, attrs)
-        job = [ipp.Attribute(ipp.INTEGER, "copies", [copies]), _media(width, height)]
-        if "none" in _texts(attrs, "print-scaling-supported"):
-            job.append(ipp.Attribute(ipp.KEYWORD, "print-scaling", ["none"]))
-        report_progress(progress, 1, copies)
-        answer = _request(
-            uri,
-            ipp.PRINT_JOB,
-            [
-                _user(),
-                ipp.Attribute(ipp.NAME, "job-name", ["Etiketto"]),
-                ipp.Attribute(ipp.MIME_TYPE, "document-format", [mime]),
-            ],
-            job_attributes=job,
-            data=data,
-        )
-        job_id = _int(answer.group(ipp.JOB_GROUP), "job-id")
-        if job_id is not None:
-            _wait_done(uri, job_id, progress, copies)
-        return None
+        document_format(attrs)  # NoFormat before anything is sent
+        page = _Page(image, width, height)
+        return _Jobs(uri, attrs, page, max(1, options.copies), progress).run()
 
 
 def _page(image: Image.Image, sizes: list[Any]) -> tuple[Image.Image, int, int]:
@@ -432,16 +477,18 @@ def _page(image: Image.Image, sizes: list[Any]) -> tuple[Image.Image, int, int]:
         image.height / DPI * 25.4,
     )
     width, height = _hundredths(width_mm), _hundredths(height_mm)
-    if fits(sizes, width, height):
-        return image, width, height
-    if fits(sizes, height, width):
-        return image.rotate(90, expand=True), height, width
+    size = match_size(sizes, width, height)
+    if size:
+        return image, size[0], size[1]
+    size = match_size(sizes, height, width)
+    if size:
+        return image.rotate(90, expand=True), size[0], size[1]
     raise UnsupportedSize("%g × %g mm not in media-size-supported" % (width_mm, height_mm))
 
 
-def _printer_attributes(uri: str) -> dict:
-    keywords = ipp.Attribute(ipp.KEYWORD, "requested-attributes", PRINTER_ATTRIBUTES)
-    return _request(uri, ipp.GET_PRINTER_ATTRIBUTES, [keywords]).group(ipp.PRINTER_GROUP)
+def _printer_attributes(uri: str, keywords: list[str] = PRINTER_ATTRIBUTES) -> dict:
+    requested = ipp.Attribute(ipp.KEYWORD, "requested-attributes", keywords)
+    return _request(uri, ipp.GET_PRINTER_ATTRIBUTES, [requested]).group(ipp.PRINTER_GROUP)
 
 
 def _cups_queues() -> list[FoundPrinter]:
@@ -468,7 +515,12 @@ def _cups_queues() -> list[FoundPrinter]:
 
 
 def _job_attributes(uri: str, job_id: int) -> dict:
-    keywords = ["job-state", "job-state-reasons", "job-impressions-completed"]
+    keywords = [
+        "job-state",
+        "job-state-reasons",
+        "job-impressions-completed",
+        "job-media-sheets-completed",
+    ]
     return _request(
         uri,
         ipp.GET_JOB_ATTRIBUTES,
@@ -480,26 +532,131 @@ def _job_attributes(uri: str, job_id: int) -> dict:
     ).group(ipp.JOB_GROUP)
 
 
+def _completed(attrs: dict) -> int:
+    """Pages (impressions, or sheets) the printer has finished of a job."""
+    impressions = _int(attrs, "job-impressions-completed", 0) or 0
+    return max(impressions, _int(attrs, "job-media-sheets-completed", 0) or 0)
+
+
+def takes_copies(attrs: dict, copies: int) -> bool:
+    """Whether the printer makes this many copies itself (copies-supported,
+    a range 1..n); a printer that does not say is trusted to."""
+    supported = _value(attrs, "copies-supported", (tuple, int), None)
+    if isinstance(supported, tuple) and len(supported) == 2:
+        return supported[1] >= copies
+    return not isinstance(supported, int) or supported >= copies
+
+
+# --- sending and following jobs -------------------------------------------------------
+
+
+@dataclass
+class _Page:
+    image: Image.Image
+    width: int  # hundredths of mm, as the printer lists the size
+    height: int
+
+
+class _Jobs:
+    """Sends the copies: in one job if the printer makes copies itself,
+    else the page repeated in one job (PWG Raster) or one job per copy.
+    Each job is followed until it is done; once one waits in the queue,
+    the others are sent behind it without waiting."""
+
+    def __init__(
+        self, uri: str, attrs: dict, page: _Page, copies: int, progress: ProgressCallback | None
+    ):
+        self.uri, self.attrs, self.page = uri, attrs, page
+        self.copies, self.progress = copies, progress
+        self.queued = False
+
+    def run(self) -> PrintResult | None:
+        done = 0
+        if self.copies == 1 or takes_copies(self.attrs, self.copies):
+            ignored = self._job(0, self.copies, copies=self.copies)
+            # a printer that ignored copies printed one
+            done = 1 if "copies" in ignored else self.copies
+        if done < self.copies:
+            self._one_by_one(done)
+        return PrintResult(queued=True) if self.queued else None
+
+    def _one_by_one(self, done: int) -> None:
+        left = self.copies - done
+        if document_format(self.attrs) == PWG_RASTER:
+            self._job(done, left, pages=left)
+            return
+        for n in range(done, self.copies):
+            self._job(n, 1)
+
+    def _job(self, done: int, count: int, copies: int = 0, pages: int = 1) -> set[str]:
+        """Print-Job for count labels (copies or pages) after done ones; the
+        names of the attributes the printer ignored."""
+        report_progress(self.progress, done + 1, self.copies)
+        data, mime = document(self.page.image, self.attrs, pages)
+        job = [_media(self.page.width, self.page.height)]
+        if copies:
+            job.insert(0, ipp.Attribute(ipp.INTEGER, "copies", [copies]))
+        if "none" in _texts(self.attrs, "print-scaling-supported"):
+            job.append(ipp.Attribute(ipp.KEYWORD, "print-scaling", ["none"]))
+        answer = _request(
+            self.uri,
+            ipp.PRINT_JOB,
+            [
+                _user(),
+                ipp.Attribute(ipp.NAME, "job-name", ["Etiketto"]),
+                ipp.Attribute(ipp.MIME_TYPE, "document-format", [mime]),
+            ],
+            job_attributes=job,
+            data=data,
+        )
+        job_id = _int(answer.group(ipp.JOB_GROUP), "job-id")
+        # status 0x0001 (successful-ok-ignored-or-substituted-attributes)
+        ignored = set(answer.group(ipp.UNSUPPORTED_GROUP))
+        if "media-col" in ignored:  # it would print on its default paper
+            if job_id is not None:
+                _cancel(self.uri, job_id)
+            raise UnsupportedSize("media-col ignored (IPP status 0x%04x)" % answer.status)
+        if job_id is not None and not self.queued:
+            self._wait(job_id, done, 1 if "copies" in ignored else count)
+        return ignored
+
+    def _wait(self, job_id: int, done: int, count: int) -> None:
+        def report(completed: int) -> None:
+            report_progress(self.progress, done + min(count, completed + 1), self.copies)
+
+        self.queued = _wait_done(self.uri, job_id, report)
+        if not self.queued:
+            report_progress(self.progress, done + count, self.copies)
+
+
+WAITING, DONE, QUEUED = "waiting", "done", "queued"
+
+
 class _Watch:
-    """Follows one job. Judged by the job's own state: the printer's
-    reasons only matter once the job stopped. A job that stops, or prints
-    for ever, is canceled, so that it does not print later on its own; a
-    job waiting behind others is left to print when its turn comes."""
+    """Follows one job, judged by its own state. A job that stops, is held,
+    waits in a stopped queue, meets a known printer problem or makes no
+    progress is canceled, so that it does not print later on its own; a job
+    waiting behind others is left to print when its turn comes."""
 
     MISSED = object()  # no answer this time
 
     def __init__(self, uri: str, job_id: int):
         self.uri, self.job_id = uri, job_id
+        self.local = _is_local_queue(uri)
         self.asked = _clock()
-        self.started: float | None = None  # when the printer began with it
-        self.failures = 0
+        self.progressed: float | None = None  # when the last page was done
+        self.completed = -1
+        self.failures = 0  # answers missed in a row
+        self.problems = 0  # answers in a row that show a problem
 
     def attributes(self) -> Any:
         """The job's attributes; None if the printer forgot the job (some
-        keep no history: it is done), MISSED if it did not answer."""
+        keep no history: it is done), MISSED if it did not answer. Only the
+        printer saying "not found" counts as forgotten: a network error is
+        a missed answer."""
         try:
             attrs = _job_attributes(self.uri, self.job_id)
-        except PrinterNotFound:
+        except IppNotFound:
             return None
         except PrinterError:
             self.failures += 1
@@ -509,44 +666,82 @@ class _Watch:
         self.failures = 0
         return attrs
 
-    def finished(self, state: int) -> bool:
-        """True once there is nothing more to wait for; raises on problems."""
+    def judge(self, attrs: dict) -> str:
+        """DONE, QUEUED (left to print later) or WAITING; raises on problems."""
+        state = _int(attrs, "job-state", JOB_COMPLETED) or JOB_COMPLETED
         if state == JOB_COMPLETED:
-            return True
+            return DONE
         if state in (JOB_CANCELED, JOB_ABORTED):
             word = "canceled" if state == JOB_CANCELED else "aborted"
             raise PrinterError("job %s %s" % (self.job_id, word))
         if state == JOB_STOPPED:
-            reasons = _texts(_printer_attributes(self.uri), "printer-state-reasons")
-            _cancel(self.uri, self.job_id)
-            raise reasons_error(reasons, _is_local_queue(self.uri)) or PrinterError(
-                "job %s stopped" % self.job_id
+            self._stopped()
+        reasons = _texts(attrs, "job-state-reasons")
+        if state == JOB_HELD:
+            self._suspect(JobHeld("job-state: held; job-state-reasons: " + ", ".join(reasons)))
+            return WAITING
+        self._suspect(self._printer_problem(state, reasons))
+        if state == JOB_PROCESSING:
+            self._check_progress(attrs)
+            return WAITING
+        return QUEUED if _clock() - self.asked > PENDING_LIMIT else WAITING
+
+    def _stopped(self) -> None:
+        """The printer stopped the job: its reason, the job canceled."""
+        try:
+            reasons = _texts(
+                _printer_attributes(self.uri, STATE_ATTRIBUTES), "printer-state-reasons"
             )
-        if state != JOB_PROCESSING:  # pending or held: behind other jobs
-            return _clock() - self.asked > PENDING_LIMIT
-        if self.started is None:
-            self.started = _clock()
-        if _clock() - self.started > PRINT_TIMEOUT:
+        except PrinterError:
+            reasons = []
+        finally:
             _cancel(self.uri, self.job_id)
-            raise PrinterTimeout("job %s still printing after %g s" % (self.job_id, PRINT_TIMEOUT))
-        return False
+        raise reasons_error(reasons, self.local) or PrinterError("job %s stopped" % self.job_id)
+
+    def _printer_problem(self, state: int, job_reasons: list[str]) -> PrinterError | None:
+        """A stopped printer (or queue) holds up every job; while the job
+        prints, a problem Etiketto knows (out of paper, jam ...) too."""
+        try:
+            printer = _printer_attributes(self.uri, STATE_ATTRIBUTES)
+        except PrinterError:
+            return None  # the job's own answers decide about a printer that is gone
+        reasons = _texts(printer, "printer-state-reasons")
+        stopped = _int(printer, "printer-state", IDLE) == STOPPED
+        if stopped or "printer-stopped" in job_reasons:
+            return reasons_error(reasons, self.local) or _paused(self.local, "printer stopped")
+        return known_error(reasons, self.local) if state == JOB_PROCESSING else None
+
+    def _suspect(self, problem: PrinterError | None) -> None:
+        """A problem counts once it lasts PROBLEM_POLLS answers: then the job
+        is canceled."""
+        self.problems = self.problems + 1 if problem else 0
+        if problem and self.problems >= PROBLEM_POLLS:
+            _cancel(self.uri, self.job_id)
+            raise problem
+
+    def _check_progress(self, attrs: dict) -> None:
+        """The clock starts again with every finished page."""
+        done, now = _completed(attrs), _clock()
+        if self.progressed is None or done > self.completed:
+            self.progressed, self.completed = now, done
+        elif now - self.progressed > PRINT_TIMEOUT:
+            _cancel(self.uri, self.job_id)
+            raise PrinterTimeout("job %s made no progress for %g s" % (self.job_id, PRINT_TIMEOUT))
 
 
-def _wait_done(uri: str, job_id: int, progress: ProgressCallback | None, copies: int) -> None:
-    """Until the job is done, see _Watch."""
+def _wait_done(uri: str, job_id: int, report: Callable[[int], None]) -> bool:
+    """Until the job is done (False) or left in the queue (True), see
+    _Watch; report gets the number of pages finished so far."""
     watch = _Watch(uri, job_id)
     while True:
         attrs = watch.attributes()
         if attrs is None:
-            return
+            return False
         if attrs is not watch.MISSED:
-            state = _int(attrs, "job-state", JOB_COMPLETED) or JOB_COMPLETED
-            if watch.finished(state):
-                if state == JOB_COMPLETED:
-                    report_progress(progress, copies, copies)
-                return
-            done = _int(attrs, "job-impressions-completed", 0) or 0
-            report_progress(progress, min(copies, done + 1), copies)
+            verdict = watch.judge(attrs)
+            if verdict != WAITING:
+                return verdict == QUEUED
+            report(_completed(attrs))
         _sleep(POLL_INTERVAL)
 
 

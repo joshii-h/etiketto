@@ -1547,6 +1547,13 @@ def test_print_result_with_the_requested_mode_is_just_printed(ready, gui_env):
     assert toast_titles(ready) == ["Printed"]
 
 
+def test_a_queued_job_is_reported_as_sent(ready, gui_env):
+    gui_env.print_result = PrintResult(queued=True)
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert toast_titles(ready) == ["Sent to the printer – it prints when its turn comes"]
+
+
 def test_bw_mode_shows_a_grey_preview(make_window, gui_env):
     from PIL import Image
 
@@ -2077,8 +2084,17 @@ def test_system_printer_has_a_translated_name_and_paper_texts():
         ("out_of_paper", "The printer is out of paper."),
         ("media_jam", "The paper is jammed."),
         ("supplies", "The printer is out of toner or ink."),
+        ("job_held", "The print job was held in the queue"),
     ):
         assert texts.code_text(code, MILLIMETRES).startswith(start)
+
+
+def test_switching_to_a_page_printer_turns_the_content_across(window):
+    window.set_backend("cab")
+    window.label.set_orientation("along")  # chosen on the cab: content along the roll
+    size = window.label.media_size()
+    window.set_backend("system")
+    assert window.label.orientation == "across" and window.label.media_size() == size
 
 
 def test_page_printers_have_no_roll(window):
