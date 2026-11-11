@@ -1,6 +1,25 @@
-# Printer and troubleshooting
+# Printers and troubleshooting
 
-## Brother VC-500W
+Choose the printer under [[ui:Printer model]]; each one has its own
+section below.
+
+## All printers { #common }
+
+- [[ui:No printer found]]: printer on and in the same network? The search
+  needs the Avahi service (installed on most desktops, any init system);
+  systemd-resolved alone resolves `.local` names but cannot search. Otherwise
+  enter the address under [[ui:Host name or IP address]].
+- [[ui:Printer not reachable]]: check the address, the printer may have a new
+  IP. Switch the printer off and on again.
+- [[ui:Printer needs attention]]: the printer is reachable but reports a
+  problem, the text below says what to do. Clear it on the printer, then
+  [[ui:Refresh]].
+- Content cut off at the edge or askew: increase the [[ui:Safety margin]].
+- [[ui:content scaled down to fit]]: the content does not fit the label.
+  Make the label longer, use [[ui:Automatic length]] on tape, or shorten
+  the content.
+
+## Brother VC-500W { #vc500w }
 
 ### Wi-Fi setup { #wifi }
 
@@ -35,14 +54,8 @@ and dry.
 Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.
 Do it when stripes appear, or every 20 to 30 labels.
 
-### Problems
+### Problems { #vc500w-problems }
 
-- [[ui:No printer found]]: printer on and in the same network? The search
-  needs the Avahi service (installed on most desktops, any init system);
-  systemd-resolved alone resolves `.local` names but cannot search. Otherwise
-  enter the address under [[ui:Host name or IP address]].
-- [[ui:Printer not reachable]]: check the address, the printer may have a new
-  IP. Switch the printer off and on again.
 - [[ui:Wrong cassette]]: the label was designed for another width. Change
   [[ui:Tape width]] or the cassette.
 - [[ui:No cassette inserted]] or cassette not recognised: reinsert the
@@ -59,10 +72,7 @@ Do it when stripes appear, or every 20 to 30 labels.
 - Background barely visible: ZINK hardly prints very light pastel shades,
   choose a medium shade.
 - Stripes: clean with the CK-1000.
-- Content cut off at the edge or askew: increase the [[ui:Safety margin]],
-  insert the cassette straight.
-- [[ui:content scaled down to fit]]: the fixed length is too short. Make it
-  longer or use [[ui:Automatic length]].
+- Content askew: insert the cassette straight.
 
 ## cab label printers { #cab }
 
@@ -85,10 +95,8 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
   between the labels than height plus gap of your label. Check
   [[ui:Label size]] and [[ui:Gap]], or load the right roll. Press Feed on
   the printer once after changing the roll so it measures again.
-- [[ui:Printer needs attention]]: the printer is reachable but reports a
-  problem, the text below says what to do. Clear it on the printer, then
-  [[ui:Refresh]]. A print that stopped because of a problem is cancelled, so
-  printing again does not give extra labels.
+- A print that stopped because of a problem is cancelled, so printing again
+  does not give extra labels.
 - Out of labels: load a new roll, the printer then synchronises by itself.
 - Print head open: close the print head.
 - Next label not found: labels not threaded through the label sensor, or

@@ -38,6 +38,9 @@ them the build uses the English README screenshots.
   text of the app (`po/etiketto.pot`). The build inserts the app's own
   translation, so translators skip these words.
 - Use explicit heading ids for links between pages: `## Wi-Fi setup { #wifi }`.
+- No printer names in sentences that are about every printer: what one
+  printer can do goes into its section of `printer.md`. A new printer then
+  adds paragraphs instead of changing translated ones.
 - After changing English text: `python3 site/build.py --update-po`, commit the
   updated `po/` files. Changed paragraphs become fuzzy in every language and
   stay English there until translated.

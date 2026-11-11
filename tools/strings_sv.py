@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Etikettavstånd",
     "Different labels loaded": "Andra etiketter isatta",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Etiketten är %(size)s med ett mellanrum på %(gap)s, så en ny börjar var %(pitch)s. Skrivaren mätte en etikett var %(measured)s. Kontrollera etikettstorleken och mellanrummet.",
-    "Label designer for the Brother VC-500W and cab label printers": "Etikettdesigner för Brother VC-500W och cab-etikettskrivare",
+    "Design and print labels": "Designa och skriv ut etiketter",
 }

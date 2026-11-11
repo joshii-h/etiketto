@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Distancia entre etiquetas",
     "Different labels loaded": "Etiquetas distintas cargadas",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "La etiqueta mide %(size)s con una separación de %(gap)s, así que empieza una nueva cada %(pitch)s. La impresora ha medido una etiqueta cada %(measured)s. Compruebe el tamaño de la etiqueta y la separación.",
-    "Label designer for the Brother VC-500W and cab label printers": "Diseñador de etiquetas para la Brother VC-500W y las impresoras de etiquetas cab",
+    "Design and print labels": "Diseñe e imprima etiquetas",
 }

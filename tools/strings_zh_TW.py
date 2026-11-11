@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "標籤間距",
     "Different labels loaded": "裝入了不同的標籤",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "標籤為 %(size)s，間隙為 %(gap)s，因此每 %(pitch)s 開始一張新標籤。印表機量測到每 %(measured)s 一張標籤。請檢查標籤尺寸和間隙。",
-    "Label designer for the Brother VC-500W and cab label printers": "適用於 Brother VC-500W 和 cab 標籤印表機的標籤設計工具",
+    "Design and print labels": "設計並列印標籤",
 }

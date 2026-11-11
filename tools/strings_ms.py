@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Jarak label",
     "Different labels loaded": "Label berbeza dimuatkan",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Label berukuran %(size)s dengan jurang %(gap)s, jadi label baharu bermula setiap %(pitch)s. Pencetak mengukur satu label setiap %(measured)s. Semak saiz label dan jurang.",
-    "Label designer for the Brother VC-500W and cab label printers": "Pereka label untuk Brother VC-500W dan pencetak label cab",
+    "Design and print labels": "Reka dan cetak label",
 }

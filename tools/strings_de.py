@@ -115,7 +115,7 @@ TRANSLATIONS = {
     "Please wait until printing has finished": "Bitte warten, bis der Druck fertig ist",
     "Report": "Melden",
     "Only local files can be dropped": "Nur lokale Dateien können abgelegt werden",
-    "Label designer for the Brother VC-500W and cab label printers": "Etiketten-Designer für den Brother VC-500W und Etikettendrucker von cab",
+    "Design and print labels": "Etiketten gestalten und drucken",
     "Across the roll": "Quer zur Rolle",
     "Along the roll": "Längs der Rolle",
     "The label is too wide for this printer: at most %(max)s.": "Das Etikett ist zu breit für diesen Drucker: höchstens %(max)s.",

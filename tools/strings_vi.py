@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Khoảng cách nhãn",
     "Different labels loaded": "Đã lắp nhãn khác",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Nhãn có kích thước %(size)s với khe hở %(gap)s, nên cứ %(pitch)s lại bắt đầu một nhãn mới. Máy in đo được cứ %(measured)s có một nhãn. Hãy kiểm tra kích thước nhãn và khe hở.",
-    "Label designer for the Brother VC-500W and cab label printers": "Trình thiết kế nhãn cho Brother VC-500W và máy in nhãn cab",
+    "Design and print labels": "Thiết kế và in nhãn",
 }

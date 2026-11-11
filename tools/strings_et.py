@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Siltide vahekaugus",
     "Different labels loaded": "Sisestatud on teised sildid",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Silt on %(size)s ja vahe %(gap)s, seega algab uus silt iga %(pitch)s järel. Printer mõõtis sildi iga %(measured)s järel. Kontrolli sildi suurust ja vahet.",
-    "Label designer for the Brother VC-500W and cab label printers": "Sildikujundaja Brother VC-500W ja cab siltide printeritele",
+    "Design and print labels": "Kujunda ja prindi silte",
 }

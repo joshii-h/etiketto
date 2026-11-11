@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:16+0100\n"
+"PO-Revision-Date: 2026-11-11 21:26+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: id\n"
 "Language: id\n"
@@ -11,8 +11,8 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: etiketto/app.py:136
-msgid "Label designer for the Brother VC-500W and cab label printers"
-msgstr "Perancang label untuk Brother VC-500W dan pencetak label cab"
+msgid "Design and print labels"
+msgstr "Rancang dan cetak label"
 
 #. translators: replace with your name to be credited in the About dialog
 #: etiketto/app.py:141
@@ -860,22 +860,22 @@ msgstr "%s bukan label Etiketto"
 msgid "The file is damaged: %s"
 msgstr "Berkas rusak: %s"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:169
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Tidak dapat menyimpan %s: tidak ada izin menulis di sana"
 
-#: etiketto/ui/texts.py:170
+#: etiketto/ui/texts.py:171
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Tidak dapat menyimpan %s: diska penuh"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:172
 #, python-format
 msgid "Cannot save %s"
 msgstr "Tidak dapat menyimpan %s"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

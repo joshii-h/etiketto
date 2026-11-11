@@ -1,6 +1,7 @@
 # Contribute
 
-Code, bug reports, translations and tests with other cassettes are welcome.
+Code, bug reports, translations and tests with other printers, cassettes and
+label rolls are welcome.
 
 Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) are
 welcome, no Forgejo account needed. They are copied automatically to
@@ -15,5 +16,8 @@ Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/bran
   [site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).
   Names of buttons and settings come from the app translation automatically.
 - **Other printers**: printing goes through a backend interface; a new printer
-  is a new backend. The VC-500W protocol is described in
-  [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md).
+  is a new backend. The protocols of the supported printers are described in
+  [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)
+  (Brother VC-500W) and
+  [docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)
+  (cab).

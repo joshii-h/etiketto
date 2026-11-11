@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "ระยะห่างระหว่างฉลาก",
     "Different labels loaded": "ใส่ฉลากคนละแบบ",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "ฉลากขนาด %(size)s ช่องว่าง %(gap)s ดังนั้นฉลากใหม่จะเริ่มทุก %(pitch)s แต่เครื่องพิมพ์วัดได้ฉลากทุก %(measured)s ตรวจสอบขนาดฉลากและช่องว่าง",
-    "Label designer for the Brother VC-500W and cab label printers": "โปรแกรมออกแบบฉลากสำหรับ Brother VC-500W และเครื่องพิมพ์ฉลาก cab",
+    "Design and print labels": "ออกแบบและพิมพ์ฉลาก",
 }

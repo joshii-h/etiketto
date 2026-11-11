@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "लेबल की दूरी",
     "Different labels loaded": "अलग लेबल लगे हैं",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "लेबल %(size)s का है और गैप %(gap)s है, इसलिए हर %(pitch)s पर नया लेबल शुरू होता है। प्रिंटर ने हर %(measured)s पर एक लेबल मापा। लेबल का आकार और गैप जाँचें।",
-    "Label designer for the Brother VC-500W and cab label printers": "Brother VC-500W और cab लेबल प्रिंटर के लिए लेबल डिज़ाइनर",
+    "Design and print labels": "लेबल डिज़ाइन और प्रिंट करें",
 }

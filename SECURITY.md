@@ -18,5 +18,5 @@ Only the latest release receives fixes.
 ## Scope
 
 Etiketto itself: the app, its Flatpak, the installer and the CI workflows in
-this repository. Problems in the printer's firmware or in Brother's software
-cannot be fixed here; please report those to Brother.
+this repository. Problems in a printer's firmware or in its manufacturer's
+software cannot be fixed here; please report those to the manufacturer.

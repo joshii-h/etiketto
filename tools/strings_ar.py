@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "المسافة بين الملصقات",
     "Different labels loaded": "تم تحميل ملصقات مختلفة",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "حجم الملصق %(size)s مع فراغ %(gap)s، لذا يبدأ ملصق جديد كل %(pitch)s. قاست الطابعة ملصقًا كل %(measured)s. تحقق من حجم الملصق والفراغ.",
-    "Label designer for the Brother VC-500W and cab label printers": "مصمم ملصقات لطابعة Brother VC-500W وطابعات الملصقات cab",
+    "Design and print labels": "صمّم الملصقات واطبعها",
 }

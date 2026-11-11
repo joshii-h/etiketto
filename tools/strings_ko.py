@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "라벨 간격",
     "Different labels loaded": "다른 라벨이 들어 있습니다",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "라벨은 %(size)s이고 간격은 %(gap)s이므로 %(pitch)s마다 새 라벨이 시작됩니다. 프린터는 %(measured)s마다 라벨을 측정했습니다. 라벨 크기와 간격을 확인하세요.",
-    "Label designer for the Brother VC-500W and cab label printers": "Brother VC-500W 및 cab 라벨 프린터용 라벨 디자이너",
+    "Design and print labels": "라벨 디자인 및 인쇄",
 }

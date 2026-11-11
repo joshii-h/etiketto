@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 16:41+0100\n"
+"POT-Creation-Date: 2026-11-11 21:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/contribute.md
 #, markdown-text
-msgid "Code, bug reports, translations and tests with other cassettes are welcome."
+msgid "Code, bug reports, translations and tests with other printers, cassettes and label rolls are welcome."
 msgstr ""
 
 #. type: Plain text
@@ -49,7 +49,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/contribute.md
 #, markdown-text
-msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The VC-500W protocol is described in [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)."
+msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The protocols of the supported printers are described in [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)  (Brother VC-500W) and [docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)  (cab)."
 msgstr ""
 
 #. type: Title #
@@ -61,7 +61,7 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Etiketto designs and prints labels under Linux: colour labels on the Brother VC-500W (ZINK paper), the counterpart to Brother's Color Label Editor, and die-cut labels on cab label printers."
+msgid "Etiketto designs labels under Linux and prints them over the network, on endless tape or on die-cut labels. It talks to each printer in its own language."
 msgstr ""
 
 #. type: Plain text
@@ -85,13 +85,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
-msgid "Cassette detection, vivid colours and cut modes over the network"
+msgid "Endless tape as long as the content, or die-cut labels of any size"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
-msgid "Die-cut labels of any size on cab printers, with a check of the loaded roll"
+msgid "Finds the printer in the network, reads what is loaded and explains printer problems in plain words"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -103,7 +103,7 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Printers: Brother VC-500W (also sold as ColAura) and cab printers with a 4 inch print head (EOS2, EOS5, SQUIX 4, MACH 4S, see [cab label printers](printer.md#cab)). Further printers can be added as a backend, see [Contribute](contribute.md)."
+msgid "The supported printers and what each one can do are listed under [Printers](printer.md). Further printers can be added as a backend, see [Contribute](contribute.md)."
 msgstr ""
 
 #. type: Title ##
@@ -181,13 +181,13 @@ msgstr ""
 #. type: Bullet: '1. '
 #: docs/index.md
 #, markdown-text
-msgid "Switch the printer on and choose it under [[ui:Printer model]]. Etiketto finds it in the network (Bonjour) and detects the inserted cassette or the distance between the loaded labels."
+msgid "Switch the printer on and choose it under [[ui:Printer model]]. Etiketto finds it in the network (Bonjour) and reads what is loaded: the tape width or the distance between the labels."
 msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/index.md
 #, markdown-text
-msgid "Not found? Enter the address under [[ui:Host name or IP address]], e.g.  `VC-500W1234.local` or `192.168.1.50`. New printer: set up its Wi-Fi first, see [Printer](printer.md#wifi)."
+msgid "Not found? Enter the address under [[ui:Host name or IP address]], e.g.  `printer.local` or `192.168.1.50`. New printer: connect it to the network first, see [Printers](printer.md)."
 msgstr ""
 
 #. type: Bullet: '3. '
@@ -205,13 +205,55 @@ msgstr ""
 #. type: Title #
 #: docs/printer.md
 #, markdown-text, no-wrap
-msgid "Printer and troubleshooting"
+msgid "Printers and troubleshooting"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Choose the printer under [[ui:Printer model]]; each one has its own section below."
 msgstr ""
 
 #. type: Title ##
 #: docs/printer.md
 #, markdown-text, no-wrap
-msgid "Brother VC-500W"
+msgid "All printers { #common }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:No printer found]]: printer on and in the same network? The search needs the Avahi service (installed on most desktops, any init system); systemd-resolved alone resolves `.local` names but cannot search. Otherwise enter the address under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer needs attention]]: the printer is reachable but reports a problem, the text below says what to do. Clear it on the printer, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Content cut off at the edge or askew: increase the [[ui:Safety margin]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:content scaled down to fit]]: the content does not fit the label.  Make the label longer, use [[ui:Automatic length]] on tape, or shorten the content."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother VC-500W { #vc500w }"
 msgstr ""
 
 #. type: Title ###
@@ -290,19 +332,7 @@ msgstr ""
 #. type: Title ###
 #: docs/printer.md
 #, markdown-text, no-wrap
-msgid "Problems"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/printer.md
-#, markdown-text
-msgid "[[ui:No printer found]]: printer on and in the same network? The search needs the Avahi service (installed on most desktops, any init system); systemd-resolved alone resolves `.local` names but cannot search. Otherwise enter the address under [[ui:Host name or IP address]]."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/printer.md
-#, markdown-text
-msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again."
+msgid "Problems { #vc500w-problems }"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -368,13 +398,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "Content cut off at the edge or askew: increase the [[ui:Safety margin]], insert the cassette straight."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/printer.md
-#, markdown-text
-msgid "[[ui:content scaled down to fit]]: the fixed length is too short. Make it longer or use [[ui:Automatic length]]."
+msgid "Content askew: insert the cassette straight."
 msgstr ""
 
 #. type: Title ##
@@ -422,7 +446,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Printer needs attention]]: the printer is reachable but reports a problem, the text below says what to do. Clear it on the printer, then [[ui:Refresh]]. A print that stopped because of a problem is cancelled, so printing again does not give extra labels."
+msgid "A print that stopped because of a problem is cancelled, so printing again does not give extra labels."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -488,7 +512,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Elements are placed one after another along the tape. Order them with [[ui:Move up]] and [[ui:Move down]]."
+msgid "Elements are placed one after another along the label. Order them with [[ui:Move up]] and [[ui:Move down]]."
 msgstr ""
 
 #. type: Plain text
@@ -500,7 +524,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the tape height, otherwise fixed in pt."
+msgid "**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the label height, otherwise fixed in pt."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -521,10 +545,22 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Endless tape:"
+msgstr ""
+
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
 msgid "[[ui:Automatic length]]: the label is as long as its content. Off: fixed [[ui:Length]], content aligned and scaled down if needed."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "For every label:"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -536,7 +572,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Edge spacing]]: extra space along the tape edges."
+msgid "[[ui:Edge spacing]]: extra space along the label edges."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -560,7 +596,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Die-cut labels (cab printers) have a fixed size instead of a length:"
+msgid "Die-cut labels have a fixed size instead of a length:"
 msgstr ""
 
 #. type: Plain text
@@ -596,7 +632,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the tape edges. The printer loses about 0.5 mm per side, and long labels can run up to 1 mm askew. If text is cut off at the edge, increase it."
+msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the label edges. Printers lose a little at the edges, and long labels can run slightly askew. If text is cut off at the edge, increase it."
 msgstr ""
 
 #. type: Title ##
@@ -609,6 +645,12 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "![Print dialog](media/print.png#only-light)  ![Print dialog](media/print-dark.png#only-dark)"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The print dialog only shows what the printer can do."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -638,7 +680,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "cab printers print in black with the print method, heat and speed set on the printer; the print dialog only asks for the number of copies."
+msgid "Printers without these options print with the settings made on the printer itself."
 msgstr ""
 
 #. type: Plain text

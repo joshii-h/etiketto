@@ -3,7 +3,7 @@
 A backend knows one printer family: what it can do (Capabilities), how to
 find it on the network, how to ask for its state and how to print a rendered
 label. The user interface only talks to this interface, so supporting a new
-continuous-tape printer means adding one module (see CONTRIBUTING.md).
+printer means adding one module (see CONTRIBUTING.md).
 """
 
 from __future__ import annotations

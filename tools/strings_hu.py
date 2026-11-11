@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Címketávolság",
     "Different labels loaded": "Más címkék vannak betöltve",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "A címke %(size)s, a hézag %(gap)s, így %(pitch)s távolságonként kezdődik új címke. A nyomtató %(measured)s címketávolságot mért. Ellenőrizze a címkeméretet és a hézagot.",
-    "Label designer for the Brother VC-500W and cab label printers": "Címketervező a Brother VC-500W és a cab címkenyomtatókhoz",
+    "Design and print labels": "Címkék tervezése, nyomtatása",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:16+0100\n"
+"PO-Revision-Date: 2026-11-11 21:26+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -11,8 +11,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: etiketto/app.py:136
-msgid "Label designer for the Brother VC-500W and cab label printers"
-msgstr "Brother VC-500W और cab लेबल प्रिंटर के लिए लेबल डिज़ाइनर"
+msgid "Design and print labels"
+msgstr "लेबल डिज़ाइन और प्रिंट करें"
 
 #. translators: replace with your name to be credited in the About dialog
 #: etiketto/app.py:141
@@ -860,22 +860,22 @@ msgstr "%s कोई Etiketto लेबल नहीं है"
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
 
-#: etiketto/ui/texts.py:168
+#: etiketto/ui/texts.py:169
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है"
 
-#: etiketto/ui/texts.py:170
+#: etiketto/ui/texts.py:171
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:172
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

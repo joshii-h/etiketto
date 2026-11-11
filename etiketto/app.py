@@ -133,7 +133,7 @@ class App(Adw.Application):
             version=__version__,
             developer_name="Joshua Hirsig",
             license_type=Gtk.License.AGPL_3_0,
-            comments=_("Label designer for the Brother VC-500W and cab label printers"),
+            comments=_("Design and print labels"),
             website="https://git.joshuahirsig.xyz/joshii/etiketto",
             issue_url="https://git.joshuahirsig.xyz/joshii/etiketto/issues",
             copyright="© 2026 Joshua Hirsig",

@@ -39,27 +39,24 @@
 
   <description>
     <p>
-      Etiketto is a label designer for the Brother VC-500W colour label printer
-      (also sold as ColAura), which prints on ZINK paper. It brings the workflow
-      of Brother's own editor, only available for Windows, macOS and phones, to
-      the Linux desktop.
-    </p>
-    <p>
-      It also prints die-cut labels on cab label printers with a 4 inch print
-      head (EOS2, EOS5, SQUIX 4, MACH 4S) over the network.
+      Etiketto designs labels with text, images and codes, shows them exactly
+      as they will be printed and prints them over the network, on endless
+      tape or on die-cut labels. It talks to each printer in its own language.
     </p>
     <p>Features:</p>
     <ul>
-      <li>Finds the printer on the network by itself</li>
-      <li>Detects the inserted cassette (9 to 50 mm), the remaining tape and cassette details</li>
-      <li>Automatic length that grows with the content, or a fixed length in millimetres or inches</li>
-      <li>Die-cut labels in common or custom sizes on cab printers, with a check of the loaded roll</li>
+      <li>Finds the printer on the network by itself and shows its state</li>
+      <li>Endless tape as long as the content or with a fixed length; die-cut labels in common or custom sizes</li>
       <li>Text in any installed font, images and photos, QR codes and barcodes</li>
       <li>Background colours and images printed edge to edge, borders</li>
-      <li>Vivid colours or black and white, full, half or no cut, colour adjustment</li>
+      <li>Live preview at print resolution, millimetres or inches, templates, PNG export</li>
       <li>Printer problems explained in plain words, with a way to report a problem</li>
-      <li>Live preview at print resolution, templates, PNG export</li>
       <li>User documentation in English and German</li>
+    </ul>
+    <p>Supported printers:</p>
+    <ul>
+      <li>Brother VC-500W (also sold as ColAura): colour labels on ZINK tape, with cassette detection, vivid colours and cut modes</li>
+      <li>cab EOS2, EOS5, SQUIX 4 and MACH 4S: die-cut labels in black, with a check of the loaded roll</li>
     </ul>
     <p>
       Etiketto is not affiliated with Brother Industries or cab Produkttechnik.

@@ -1,25 +1,30 @@
 # Etiketto
 
-Label designer for the Linux desktop: colour labels on the **Brother
-VC-500W** (also sold as ColAura; ZINK paper) and die-cut labels on **cab**
-label printers (EOS2, EOS5, SQUIX 4, MACH 4S). GTK 4 and libadwaita, in
-27 languages: English, German, French, Italian, Spanish, Portuguese
-(Portugal and Brazil), Dutch, Swedish, Finnish, Estonian, Polish,
-Hungarian, Russian, Ukrainian, Turkish, Arabic, Hindi, Thai, Vietnamese,
-Indonesian, Malay, Korean, Japanese and Chinese (Traditional for Taiwan
-and Hong Kong, Simplified).
+Label designer for the Linux desktop. Design labels with text, images and
+codes, see them exactly as they will be printed, and print them over the
+network on endless tape or on die-cut labels. Etiketto talks to each
+printer in its own language, finds it on the network and explains printer
+problems in plain words.
 
-Brother only ships the Color Label Editor for Windows, macOS and phones.
-Etiketto brings the same workflow to Linux: the inserted cassette is
-detected, the label grows with its content, and it prints over the network
-in the printer's own protocol, including the **vivid** colour mode and the
-**cut modes** that AirPrint does not offer.
-
-On cab printers Etiketto prints die-cut labels of any size in cab's own
-printer language (JScript), checks that the loaded roll matches the label
-and explains printer problems such as an open print head or an empty roll.
+GTK 4 and libadwaita, in 27 languages: English, German, French, Italian,
+Spanish, Portuguese (Portugal and Brazil), Dutch, Swedish, Finnish,
+Estonian, Polish, Hungarian, Russian, Ukrainian, Turkish, Arabic, Hindi,
+Thai, Vietnamese, Indonesian, Malay, Korean, Japanese and Chinese
+(Traditional for Taiwan and Hong Kong, Simplified).
 
 User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
+
+## Supported printers
+
+| Printer | Labels | What Etiketto does with it | Protocol |
+|---|---|---|---|
+| Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 ([docs/protocol.md](docs/protocol.md)) |
+| cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 ([docs/cab.md](docs/cab.md)) |
+
+Each printer family is a backend; adding one does not touch the rest of
+the app, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
+Developed with a VC-500W and an EOS2/300. Not supported yet: continuous
+media and the cutter of cab printers.
 
 ## Screenshots
 
@@ -40,26 +45,22 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 
 ## Features
 
-- Finds the printer on the network by itself
-- Cassette detection (9, 12, 19, 25, 50 mm), remaining tape and cassette details
-- Automatic length (as long as the content) or a fixed length, in mm or inches
-- cab printers: die-cut labels in common or custom sizes, content across or
-  along the roll, a warning when the loaded labels have another size
-- Text with any installed font, bold/italic, colour, multiple lines,
-  size fitted to the tape or fixed in pt; emoji and font fallback via Pango
+- Finds the printer on the network by itself and shows its state
+- Endless tape: as long as the content, or a fixed length
+- Die-cut labels: common or custom sizes, content across or along the roll
+- Text with any installed font, bold/italic, colour, multiple lines, size
+  fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
 - QR codes, Code 128 and EAN-13 barcodes
 - Live preview at print resolution: what you see is what is printed
-- Print with vivid or normal colours or in black and white, full cut, half
-  cut or no cut, copies; colour adjustment (brightness, colour balance)
-  (VC-500W); in black at 203, 300 or 600 dpi with the printer's own heat and
-  speed settings (cab)
+- Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
   *Report a problem* prepares an issue with all the details
 - Save labels as `.etiketto` files (images embedded) and reuse them as templates
 - Drag and drop images or `.etiketto` files onto the window
 - Export as PNG
-- [User documentation](https://etiketto.joshuahirsig.xyz) in English and German
+
+What each printer adds is listed under [Supported printers](#supported-printers).
 
 ## Install
 
@@ -82,8 +83,8 @@ cd etiketto
 
 Then start **Etiketto** from the app menu and choose the **Printer model**.
 Etiketto looks for the printer on the network; otherwise enter its host
-name, e.g. `VC-500W1234.local` or `printer04.local` (needs mDNS / nss-mdns),
-or its IP address. Outside Flatpak the host is also read from
+name, e.g. `VC-500W1234.local` or `EOS2.local` (needs mDNS / nss-mdns), or
+its IP address. For the VC-500W, outside Flatpak, the host is also read from
 `~/.config/labelprinter/config.json` if you use the `labelprinter` CLI.
 In Flatpak, `.local` names are resolved through the system's Avahi daemon.
 
@@ -106,29 +107,22 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
 
 ## How labels are laid out
 
-Elements (text, image, code) are placed one after another along the tape,
-each filling the tape height unless a text has a fixed size. With
-*Automatic length* the label is exactly as long as its content plus the
-spacing; with a fixed length the content is aligned and, if needed, scaled
-down. The printer adds a few millimetres of unprintable margin at the ends
-for the cutter.
+Elements (text, image, code) are placed one after another along the label,
+each filling the label's height unless a text has a fixed size.
 
-## Printers
-
-| Printer | Labels | Protocol |
-|---|---|---|
-| Brother VC-500W (ColAura) | ZINK tape cassettes, 9 to 50 mm, colour | Brother's native protocol on TCP port 9100, through [labelprinter](https://github.com/sgrimee/labelprinter-vc500w) ([docs/protocol.md](docs/protocol.md)) |
-| cab EOS2, EOS5, SQUIX 4, MACH 4S | die-cut labels up to 105.6 mm wide, black (thermal direct or transfer) | JScript on TCP port 9100 ([docs/cab.md](docs/cab.md)) |
-
-The cab backend was developed with an EOS2/300. Continuous media and the
-cutter of cab printers are not supported yet. More printers can be added as
-a backend, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
+- **Endless tape**: the label is either exactly as long as its content plus
+  the spacing (*Automatic length*) or has a fixed length; the content is
+  then aligned and, if needed, scaled down. Printers with a cutter add a
+  few millimetres of unprintable margin at the ends.
+- **Die-cut labels** have the size of the labels on the roll. The content
+  runs across the roll, as the label is read when it comes out of the
+  printer, or along it like on tape, and is aligned and scaled to fit.
 
 ## Development
 
 ```sh
 uv venv --system-site-packages .venv
-uv pip install --python .venv/bin/python -e . pytest ruff
+uv pip install --python .venv/bin/python -e . pytest hypothesis ruff
 .venv/bin/python -m pytest
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 LANGUAGE=de .venv/bin/python -m etiketto.app
@@ -148,7 +142,7 @@ review and merge happen.
 
 ## Credits
 
-The VC-500W protocol was reverse engineered by
+The Brother VC-500W protocol was reverse engineered by
 [m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/);
 Etiketto prints through its descendant
 [labelprinter](https://github.com/sgrimee/labelprinter-vc500w)

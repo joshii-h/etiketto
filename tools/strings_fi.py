@@ -217,5 +217,5 @@ TRANSLATIONS = {
     "Label distance": "Tarrojen etäisyys",
     "Different labels loaded": "Eri tarrat asetettu",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Tarran koko on %(size)s ja rako %(gap)s, joten uusi tarra alkaa %(pitch)s välein. Tulostin mittasi tarran %(measured)s välein. Tarkista tarran koko ja rako.",
-    "Label designer for the Brother VC-500W and cab label printers": "Tarrasuunnittelija Brother VC-500W:lle ja cab-tarratulostimille",
+    "Design and print labels": "Suunnittele ja tulosta tarroja",
 }

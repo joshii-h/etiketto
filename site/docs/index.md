@@ -1,22 +1,22 @@
 # Etiketto
 
-Etiketto designs and prints labels under Linux: colour labels on the Brother
-VC-500W (ZINK paper), the counterpart to Brother's Color Label Editor, and
-die-cut labels on cab label printers.
+Etiketto designs labels under Linux and prints them over the network, on
+endless tape or on die-cut labels. It talks to each printer in its own
+language.
 
 ![Main window](media/main.png#only-light)
 ![Main window](media/main-dark.png#only-dark)
 
 - Text, images, QR codes and barcodes; backgrounds printed edge to edge
 - Preview at print resolution: what you see is what is printed
-- Cassette detection, vivid colours and cut modes over the network
-- Die-cut labels of any size on cab printers, with a check of the loaded roll
+- Endless tape as long as the content, or die-cut labels of any size
+- Finds the printer in the network, reads what is loaded and explains
+  printer problems in plain words
 - 27 languages, follows the light or dark mode of the desktop
 
-Printers: Brother VC-500W (also sold as ColAura) and cab printers with a
-4 inch print head (EOS2, EOS5, SQUIX 4, MACH 4S, see
-[cab label printers](printer.md#cab)). Further printers can be added as a
-backend, see [Contribute](contribute.md).
+The supported printers and what each one can do are listed under
+[Printers](printer.md). Further printers can be added as a backend, see
+[Contribute](contribute.md).
 
 ## Install
 
@@ -53,11 +53,11 @@ Saved labels and templates are kept.
 ## First label
 
 1. Switch the printer on and choose it under [[ui:Printer model]]. Etiketto
-   finds it in the network (Bonjour) and detects the inserted cassette or
-   the distance between the loaded labels.
+   finds it in the network (Bonjour) and reads what is loaded: the tape
+   width or the distance between the labels.
 2. Not found? Enter the address under [[ui:Host name or IP address]], e.g.
-   `VC-500W1234.local` or `192.168.1.50`. New printer: set up its Wi-Fi
-   first, see [Printer](printer.md#wifi).
+   `printer.local` or `192.168.1.50`. New printer: connect it to the
+   network first, see [Printers](printer.md).
 3. [[ui:Add]] text, an image or a code, then [[ui:Print]].
 4. [[ui:Save]] stores the label as `.etiketto` file, [[ui:Save as template…]]
    adds it to [[ui:Templates]].

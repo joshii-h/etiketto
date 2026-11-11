@@ -183,6 +183,13 @@ interface first; please open an issue before you start.
    without one. Test the protocol details (requests, bytes, error mapping)
    on top of that.
 
+4. Texts: a row in the "Supported printers" table of the README, an entry
+   under "Supported printers" in the metainfo description, a section in
+   `site/docs/printer.md` (setup and problems), protocol notes in
+   `docs/<name>.md`, and the trademark in the README and the metainfo.
+   Nothing else names printers, so no existing sentence needs a new
+   translation.
+
 Labels store the backend id in the `printer` field; files without it belong
 to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
@@ -206,6 +213,12 @@ adjustment) are kept per backend in `settings.json` under `printers.<id>`.
   with an empty `XDG_CONFIG_HOME`.
 
 ## Translations
+
+- Keep printer names out of translatable sentences ("Design and print
+  labels", not "… on the Brother VC-500W"): a sentence that lists printers
+  has to be translated again into every language for each new printer.
+  Printer names belong in headings, tables and lists of their own, and in
+  messages about a feature only that printer has.
 
 German uses Swiss spelling ("ss", not "ß") on purpose, for everyone. A
 separate `de_DE` with "ß" is welcome as its own catalog.
