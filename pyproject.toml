@@ -25,6 +25,10 @@ etiketto = "etiketto.app:main"
 [tool.setuptools.packages.find]
 include = ["etiketto*"]
 
+[tool.setuptools.package-data]
+# label sheets from gLabels, with their MIT license
+"etiketto.sheets" = ["templates.json", "LICENSE.glabels"]
+
 [tool.setuptools.dynamic]
 version = {attr = "etiketto.__version__"}
 
