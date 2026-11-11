@@ -233,4 +233,5 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Kifogyott a papír – a folytatáshoz töltsön be papírt",
     "Cover open – close it to continue": "A fedél nyitva – a folytatáshoz csukja be",
     "Paper jammed – remove it to continue": "Elakadt a papír – a folytatáshoz távolítsa el",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Az Etiketto nem használhatja a nyomtató USB-portját. Adja hozzá a felhasználóját az „lp” csoporthoz (sudo usermod -aG lp $USER), majd jelentkezzen ki, és jelentkezzen be újra.",
 }

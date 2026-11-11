@@ -171,6 +171,11 @@ interface first; please open an issue before you start.
    a separate package with an entry point in the group `etiketto.backends`
    that names the class.
 
+   - Connections: printers are reached over the network and over USB. If
+     the printer language works on USB too, open `usb://` addresses with
+     `usb.connect()` (a socket-like object on `/dev/usb/lpN`) and list
+     `usb.printers()` of your maker in `discover`; see the cab backend.
+
 3. Tests: add `tests/test_<name>.py` with a fake of the printer's protocol
    (never the real device) and a subclass of
    `tests/backend_contract.BackendContract` that provides a `harness`

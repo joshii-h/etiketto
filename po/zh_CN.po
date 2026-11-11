@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 23:07+0100\n"
+"PO-Revision-Date: 2026-11-11 23:17+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: zh_CN\n"
 "Language: zh_CN\n"
@@ -883,68 +883,74 @@ msgstr "打印作业已在打印机上或队列中被取消。"
 
 #: etiketto/ui/texts.py:168
 msgid ""
+"Etiketto is not allowed to use the printer's USB port. Add your user to the "
+"group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+msgstr "Etiketto 无权使用打印机的 USB 端口。请将您的用户添加到“lp”组（sudo usermod -aG lp $USER），然后注销并重新登录。"
+
+#: etiketto/ui/texts.py:172
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "打印机报告了问题。请关机后重新开机，然后再试一次。"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:184
 msgid "Warming up…"
 msgstr "正在预热…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:185
 msgid "Cooling down…"
 msgstr "正在冷却…"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:186
 msgid "Cleaning…"
 msgstr "正在清洁…"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:187
 msgid "Swipe the printer's panel to cut the label"
 msgstr "请滑动打印机面板以切割标签"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:189
 msgid "Out of paper – load paper to continue"
 msgstr "缺纸 – 装入纸张后继续"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:190
 msgid "Cover open – close it to continue"
 msgstr "盖板已打开 – 关上后继续"
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:191
 msgid "Paper jammed – remove it to continue"
 msgstr "卡纸 – 取出纸张后继续"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:202
 msgid "This label needs a newer version of Etiketto"
 msgstr "此标签需要更新版本的 Etiketto"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:204
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s 不是 Etiketto 标签"
 
-#: etiketto/ui/texts.py:201
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "文件已损坏：%s"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:211
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "无法保存 %s：没有写入权限"
 
-#: etiketto/ui/texts.py:209
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "无法保存 %s：磁盘已满"
 
-#: etiketto/ui/texts.py:210
+#: etiketto/ui/texts.py:214
 #, python-format
 msgid "Cannot save %s"
 msgstr "无法保存 %s"
 
-#: etiketto/ui/texts.py:219
+#: etiketto/ui/texts.py:223
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

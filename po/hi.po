@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 23:07+0100\n"
+"PO-Revision-Date: 2026-11-11 23:17+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -883,68 +883,74 @@ msgstr "प्रिंट जॉब प्रिंटर पर या कत�
 
 #: etiketto/ui/texts.py:168
 msgid ""
+"Etiketto is not allowed to use the printer's USB port. Add your user to the "
+"group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+msgstr "Etiketto को प्रिंटर का USB पोर्ट इस्तेमाल करने की अनुमति नहीं है। अपने उपयोगकर्ता को समूह “lp” में जोड़ें (sudo usermod -aG lp $USER), फिर लॉग आउट करके दोबारा लॉग इन करें।"
+
+#: etiketto/ui/texts.py:172
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "प्रिंटर ने एक समस्या बताई। उसे बंद करके फिर चालू करें, फिर एक बार और प्रयास करें।"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:184
 msgid "Warming up…"
 msgstr "गर्म हो रहा है…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:185
 msgid "Cooling down…"
 msgstr "ठंडा हो रहा है…"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:186
 msgid "Cleaning…"
 msgstr "सफ़ाई हो रही है…"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:187
 msgid "Swipe the printer's panel to cut the label"
 msgstr "लेबल काटने के लिए प्रिंटर के पैनल पर स्वाइप करें"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:189
 msgid "Out of paper – load paper to continue"
 msgstr "कागज़ खत्म – जारी रखने के लिए कागज़ डालें"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:190
 msgid "Cover open – close it to continue"
 msgstr "ढक्कन खुला है – जारी रखने के लिए उसे बंद करें"
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:191
 msgid "Paper jammed – remove it to continue"
 msgstr "कागज़ फँस गया – जारी रखने के लिए उसे निकालें"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:202
 msgid "This label needs a newer version of Etiketto"
 msgstr "इस लेबल के लिए Etiketto का नया संस्करण चाहिए"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:204
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s कोई Etiketto लेबल नहीं है"
 
-#: etiketto/ui/texts.py:201
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:211
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है"
 
-#: etiketto/ui/texts.py:209
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है"
 
-#: etiketto/ui/texts.py:210
+#: etiketto/ui/texts.py:214
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
 
-#: etiketto/ui/texts.py:219
+#: etiketto/ui/texts.py:223
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

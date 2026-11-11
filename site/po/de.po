@@ -314,10 +314,22 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "[[ui:Printer not reachable]]: check the address, the printer may have a new "
-"IP. Switch the printer off and on again."
+"IP. Switch the printer off and on again. On USB: check the cable and search "
+"again."
 msgstr ""
 "[[ui:Printer not reachable]]: Adresse prüfen, der Drucker hat vielleicht "
-"eine neue IP. Den Drucker aus- und wieder einschalten."
+"eine neue IP. Den Drucker aus- und wieder einschalten. Bei USB: Kabel prüfen"
+" und erneut suchen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"No permission for the USB port: your user needs to be in the group `lp`.  "
+"Run `sudo usermod -aG lp $USER`, then log out and in again."
+msgstr ""
+"Keine Berechtigung für den USB-Anschluss: Der Benutzer muss in der Gruppe "
+"`lp` sein. `sudo usermod -aG lp $USER` ausführen, dann ab- und wieder "
+"anmelden."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -606,6 +618,11 @@ msgstr ""
 "Display eingestellt). Etiketto nutzt den „RawIP“-Port 9100 mit dem JScript-"
 "Interpreter, beides Standard am Drucker (im englischen Menü: Setup > "
 "Interfaces > Network services und Setup > Interpreter)."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
+msgstr "USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn."
 
 #. type: Bullet: '- '
 #: docs/printer.md

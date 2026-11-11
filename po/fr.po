@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 23:07+0100\n"
+"PO-Revision-Date: 2026-11-11 23:17+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -883,68 +883,74 @@ msgstr "La tâche d’impression a été annulée sur l’imprimante ou dans la 
 
 #: etiketto/ui/texts.py:168
 msgid ""
+"Etiketto is not allowed to use the printer's USB port. Add your user to the "
+"group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+msgstr "Etiketto n’est pas autorisé à utiliser le port USB de l’imprimante. Ajoutez votre utilisateur au groupe « lp » (sudo usermod -aG lp $USER), puis fermez et rouvrez votre session."
+
+#: etiketto/ui/texts.py:172
+msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "L’imprimante a signalé un problème. Éteignez-la puis rallumez-la, puis réessayez."
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:184
 msgid "Warming up…"
 msgstr "Préchauffage…"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:185
 msgid "Cooling down…"
 msgstr "Refroidissement…"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:186
 msgid "Cleaning…"
 msgstr "Nettoyage…"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:187
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Faites glisser le panneau de l’imprimante pour couper l’étiquette"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:189
 msgid "Out of paper – load paper to continue"
 msgstr "Plus de papier – chargez du papier pour continuer"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:190
 msgid "Cover open – close it to continue"
 msgstr "Capot ouvert – fermez-le pour continuer"
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:191
 msgid "Paper jammed – remove it to continue"
 msgstr "Papier coincé – retirez-le pour continuer"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:202
 msgid "This label needs a newer version of Etiketto"
 msgstr "Cette étiquette nécessite une version plus récente d’Etiketto"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:204
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s n’est pas une étiquette Etiketto"
 
-#: etiketto/ui/texts.py:201
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Le fichier est endommagé : %s"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:211
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Impossible d’enregistrer %s : pas d’autorisation d’écriture"
 
-#: etiketto/ui/texts.py:209
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Impossible d’enregistrer %s : le disque est plein"
 
-#: etiketto/ui/texts.py:210
+#: etiketto/ui/texts.py:214
 #, python-format
 msgid "Cannot save %s"
 msgstr "Impossible d’enregistrer %s"
 
-#: etiketto/ui/texts.py:219
+#: etiketto/ui/texts.py:223
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

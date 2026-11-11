@@ -164,6 +164,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "usb_permission": _(
+            "Etiketto is not allowed to use the printer's USB port. Add your user to the "
+            "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+        ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

@@ -2130,3 +2130,8 @@ def test_page_printers_have_no_roll(window):
     assert margin.get_adjustment().get_upper() == 10  # office printers leave 4 to 5 mm
     window.set_backend("cab")
     assert one(window.sidebar, Adw.SpinRow, title="Gap")
+
+
+def test_usb_permission_text_says_what_to_do():
+    text = texts.code_text("usb_permission", MILLIMETRES)
+    assert "“lp”" in text and "usermod -aG lp" in text

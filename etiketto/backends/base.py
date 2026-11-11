@@ -306,6 +306,12 @@ class JobCanceled(PrinterError):
     code = "job_canceled"
 
 
+class UsbPermission(PrinterError):
+    """The printer's USB device file exists, but this user may not open it."""
+
+    code = "usb_permission"
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 

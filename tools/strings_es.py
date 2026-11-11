@@ -233,4 +233,5 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Sin papel: cargue papel para continuar",
     "Cover open – close it to continue": "Tapa abierta: ciérrela para continuar",
     "Paper jammed – remove it to continue": "Atasco de papel: retírelo para continuar",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto no tiene permiso para usar el puerto USB de la impresora. Añada su usuario al grupo «lp» (sudo usermod -aG lp $USER) y vuelva a iniciar sesión.",
 }

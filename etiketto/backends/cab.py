@@ -21,7 +21,7 @@ from dataclasses import dataclass, replace
 
 from PIL import Image
 
-from etiketto.backends import mdns
+from etiketto.backends import mdns, usb
 from etiketto.backends.base import (
     Backend,
     Capabilities,
@@ -221,6 +221,9 @@ def build_job(image: Image.Image, dots_per_mm: float, gap_mm: float, copies: int
 
 
 def _connect(host: str, port: int):
+    """TCP to port 9100, or the printer's USB device: the same JScript."""
+    if usb.is_usb(host):
+        return usb.connect(host, SOCKET_TIMEOUT)
     return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
 
 
@@ -309,7 +312,13 @@ class Cab(Backend):
         return self.name
 
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
-        return mdns.browse("_pdl-datastream._tcp", _is_cab, timeout)
+        """cab printers on USB, then on the network."""
+        plugged = [
+            FoundPrinter("cab %s (USB)" % p.model, p.address, str(p.device))
+            for p in usb.printers()
+            if p.manufacturer.lower() == "cab"
+        ]
+        return plugged + mdns.browse("_pdl-datastream._tcp", _is_cab, timeout)
 
     def query(self, host: str) -> PrinterInfo:
         with session(host, self.port) as s:

@@ -10,7 +10,10 @@ section below.
   systemd-resolved alone resolves `.local` names but cannot search. Otherwise
   enter the address under [[ui:Host name or IP address]].
 - [[ui:Printer not reachable]]: check the address, the printer may have a new
-  IP. Switch the printer off and on again.
+  IP. Switch the printer off and on again. On USB: check the cable and
+  search again.
+- No permission for the USB port: your user needs to be in the group `lp`.
+  Run `sudo usermod -aG lp $USER`, then log out and in again.
 - [[ui:Printer needs attention]]: the printer is reachable but reports a
   problem, the text below says what to do. Clear it on the printer, then
   [[ui:Refresh]].
@@ -94,6 +97,7 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
   display). Etiketto uses the "RawIP" port 9100 with the JScript interpreter,
   both are the printer's defaults (Setup > Interfaces > Network services and
   Setup > Interpreter).
+- USB: plug the printer in; [[ui:Search for printers]] finds it.
 - Labels: die-cut labels with a gap, label sensor "Gap Sensor". Etiketto
   sets the sensor for each job. Continuous media and a cutter are not
   supported yet.

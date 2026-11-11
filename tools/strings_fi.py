@@ -233,4 +233,5 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Paperi loppu – jatka lisäämällä paperia",
     "Cover open – close it to continue": "Kansi auki – jatka sulkemalla se",
     "Paper jammed – remove it to continue": "Paperi jumissa – jatka poistamalla se",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ei saa käyttää tulostimen USB-porttia. Lisää käyttäjäsi ryhmään ”lp” (sudo usermod -aG lp $USER) ja kirjaudu sitten ulos ja takaisin sisään.",
 }

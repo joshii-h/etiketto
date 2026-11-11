@@ -10,12 +10,13 @@ from __future__ import annotations
 import base64
 import io
 import time
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import cab, get_backend, vc500w
+from etiketto.backends import cab, get_backend, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -63,6 +64,8 @@ def _no_network(monkeypatch):
 
     monkeypatch.setattr(vc500w, "_connect", refuse)
     monkeypatch.setattr(cab, "_connect", refuse)
+    # nor see the USB printers of the machine the tests run on
+    monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
 
 
 # --- fake VC-500W on the protocol level ------------------------------------

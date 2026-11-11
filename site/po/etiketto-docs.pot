@@ -229,7 +229,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again."
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again. On USB: check the cable and search again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No permission for the USB port: your user needs to be in the group `lp`.  Run `sudo usermod -aG lp $USER`, then log out and in again."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -441,6 +447,12 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Network: the printer needs an address in your network (DHCP or set on its display). Etiketto uses the \"RawIP\" port 9100 with the JScript interpreter, both are the printer's defaults (Setup > Interfaces > Network services and Setup > Interpreter)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
 msgstr ""
 
 #. type: Bullet: '- '

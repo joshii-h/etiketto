@@ -15,6 +15,12 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
 
 - TCP port 9100 ("RawIP"), with the interpreter for RawIP set to JScript
   (the default; the printer can also run ZPL there). [confirmed]
+- USB 2.0 (device port): Linux's printer class driver (usblp) makes it
+  `/dev/usb/lpN`, which takes the same JScript and answers the ESC
+  commands, as the driver is bidirectional. Etiketto finds cab printers
+  there by the IEEE 1284 device ID in sysfs (`MFG:cab`) and addresses them
+  like CUPS: `usb://cab/EOS2%2F300?serial=...`. [manual] [assumed: not yet
+  tried on a printer]
 - Commands end with CR; Etiketto sends CR LF. [confirmed]
 - ESC commands (`0x1B` + letter) are executed at once, also while a job is
   running, and answer on the same connection without a terminator unless
