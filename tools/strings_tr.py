@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Yazıcının kağıdı bitti. Kağıt yükleyip yeniden deneyin.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Kağıt sıkıştı. Yazıcının ekranında gösterildiği gibi çıkarıp yeniden deneyin.",
     "The printer is out of toner or ink. Replace it and try again.": "Yazıcının toneri veya mürekkebi bitti. Değiştirip yeniden deneyin.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Yazıcı bu boyutu yazdıramıyor. Yazıcının sunduğu bir kağıt boyutu seçin.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Yazıcı, Etiketto'nun gönderebildiği biçimlerin (PDF, PWG Raster, JPEG) hiçbirini kabul etmiyor.",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Yazıcının kuyruğu duraklatıldı. Sistemin yazıcı ayarlarından devam ettirin ve yeniden deneyin.",
 }

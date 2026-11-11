@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:47+0100\n"
+"PO-Revision-Date: 2026-11-11 22:08+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: it\n"
 "Language: it\n"
@@ -300,7 +300,7 @@ msgstr "Lunga quanto il contenuto"
 msgid "Length"
 msgstr "Lunghezza"
 
-#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:225
+#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:192
 msgid "Alignment"
 msgstr "Allineamento"
 
@@ -312,34 +312,34 @@ msgstr "Dimensione personalizzata"
 msgid "Label size"
 msgstr "Dimensione etichetta"
 
-#: etiketto/ui/label_group.py:192
+#: etiketto/ui/label_group.py:199
 msgid "Width"
 msgstr "Larghezza"
 
-#: etiketto/ui/label_group.py:198
+#: etiketto/ui/label_group.py:205
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s sulla larghezza del rotolo"
 
-#: etiketto/ui/label_group.py:201
+#: etiketto/ui/label_group.py:208
 msgid "Height"
 msgstr "Altezza"
 
-#: etiketto/ui/label_group.py:207
+#: etiketto/ui/label_group.py:214
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s sulla lunghezza del rotolo"
 
-#: etiketto/ui/label_group.py:213
+#: etiketto/ui/label_group.py:223
 msgid "Gap"
 msgstr "Spazio"
 
-#: etiketto/ui/label_group.py:219
+#: etiketto/ui/label_group.py:229
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s tra due etichette sul rotolo"
 
-#: etiketto/ui/label_group.py:223
+#: etiketto/ui/label_group.py:233
 msgid "Content direction"
 msgstr "Direzione del contenuto"
 
@@ -841,58 +841,74 @@ msgstr "La carta è inceppata. Rimuovila come indicato sul display della stampan
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "La stampante ha esaurito toner o inchiostro. Sostituiscilo e riprova."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:144
+msgid "The printer cannot print this size. Choose a paper size it offers."
+msgstr "La stampante non può stampare questa dimensione. Scegli un formato carta che supporta."
+
+#: etiketto/ui/texts.py:146
+msgid ""
+"The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
+"JPEG)."
+msgstr "La stampante non accetta nessuno dei formati che Etiketto può inviare (PDF, PWG Raster, JPEG)."
+
+#: etiketto/ui/texts.py:149
+msgid ""
+"The printer's queue is paused. Resume it in the system's printer settings "
+"and try again."
+msgstr "La coda della stampante è in pausa. Riprendila nelle impostazioni della stampante del sistema e riprova."
+
+#: etiketto/ui/texts.py:153
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "La stampante ha segnalato un problema. Spegnila e riaccendila, poi riprova."
 
-#: etiketto/ui/texts.py:157
+#: etiketto/ui/texts.py:165
 msgid "Warming up…"
 msgstr "Riscaldamento…"
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:166
 msgid "Cooling down…"
 msgstr "Raffreddamento…"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:167
 msgid "Cleaning…"
 msgstr "Pulizia…"
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:168
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Scorri il pannello della stampante per tagliare l’etichetta"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 msgid "This label needs a newer version of Etiketto"
 msgstr "Questa etichetta richiede una versione più recente di Etiketto"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s non è un’etichetta Etiketto"
 
-#: etiketto/ui/texts.py:174
+#: etiketto/ui/texts.py:182
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Il file è danneggiato: %s"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Impossibile salvare %s: nessun permesso di scrittura"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Impossibile salvare %s: il disco è pieno"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:191
 #, python-format
 msgid "Cannot save %s"
 msgstr "Impossibile salvare %s"
 
-#: etiketto/ui/texts.py:192
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

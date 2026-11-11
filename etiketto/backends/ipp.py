@@ -176,15 +176,17 @@ class _Reader:
         return name.decode("utf-8", "replace"), self.take(self.short())
 
 
+# value tags of a fixed size: struct format; one number, or a tuple
+FIXED = {INTEGER: ">i", ENUM: ">i", RANGE_OF_INTEGER: ">ii", RESOLUTION: ">iib"}
+
+
 def _decode_value(tag: int, raw: bytes) -> Any:
-    if tag in (INTEGER, ENUM) and len(raw) == 4:
-        return struct.unpack(">i", raw)[0]
+    fmt = FIXED.get(tag)
+    if fmt and len(raw) == struct.calcsize(fmt):
+        values = struct.unpack(fmt, raw)
+        return values[0] if len(values) == 1 else values
     if tag == BOOLEAN and len(raw) == 1:
         return raw != b"\x00"
-    if tag == RANGE_OF_INTEGER and len(raw) == 8:
-        return struct.unpack(">ii", raw)
-    if tag == RESOLUTION and len(raw) == 9:
-        return struct.unpack(">iib", raw)
     if tag in STRING_TAGS:
         return raw.decode("utf-8", "replace")
     if 0x10 <= tag <= 0x1F:  # out of band: unsupported, unknown, no-value

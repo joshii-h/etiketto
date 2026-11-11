@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Printeril on paber otsas. Pane paberit juurde ja proovi uuesti.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Paber on kinni jäänud. Eemalda see, nagu printeri ekraan näitab, ja proovi uuesti.",
     "The printer is out of toner or ink. Replace it and try again.": "Printeril on toonier või tint otsas. Vaheta see välja ja proovi uuesti.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Printer ei saa seda suurust printida. Vali paberisuurus, mida ta pakub.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Printer ei võta vastu ühtegi vormingut, mida Etiketto saata oskab (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Printeri järjekord on peatatud. Jätka seda süsteemi printeriseadetes ja proovi uuesti.",
 }

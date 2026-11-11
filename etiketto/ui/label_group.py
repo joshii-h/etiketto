@@ -186,8 +186,15 @@ class LabelGroup(Adw.PreferencesGroup):
         self._size_row = combo_row(_("Label size"), items, self._size_key(), self._on_size_preset)
         self.add(self._size_row)
 
-        width, height = lab.media_size()
+        self._add_width_height(caps)
+        if not caps.pages:  # labels on a roll: gap and direction of the roll
+            self._add_roll_rows()
+        self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
+
+    def _add_width_height(self, caps) -> None:
+        width, height = self.window.label.media_size()
         max_width = caps.max_width_mm or MAX_SIZE_MM
+        roll = not caps.pages  # a page has no roll to measure along
         self._width_row = self._length_row(
             _("Width"),
             min(width, max_width),
@@ -195,7 +202,7 @@ class LabelGroup(Adw.PreferencesGroup):
             max_width,
             0.5,
             lambda v: self._on_media_size(width=v),
-            _("%(unit)s across the roll"),
+            _("%(unit)s across the roll") if roll else None,
         )
         self._height_row = self._length_row(
             _("Height"),
@@ -204,10 +211,13 @@ class LabelGroup(Adw.PreferencesGroup):
             MAX_SIZE_MM,
             0.5,
             lambda v: self._on_media_size(height=v),
-            _("%(unit)s along the roll"),
+            _("%(unit)s along the roll") if roll else None,
         )
         self.add(self._width_row)
         self.add(self._height_row)
+
+    def _add_roll_rows(self) -> None:
+        lab, window = self.window.label, self.window
         self.add(
             self._length_row(
                 _("Gap"),
@@ -222,7 +232,6 @@ class LabelGroup(Adw.PreferencesGroup):
         self.add(
             combo_row(_("Content direction"), ORIENTATIONS, lab.orientation, self._on_orientation)
         )
-        self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
 
     def _on_size_preset(self, key: str) -> None:
         if key == CUSTOM_SIZE or key == self._size_key():

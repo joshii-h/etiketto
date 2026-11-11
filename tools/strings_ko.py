@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "프린터에 용지가 없습니다. 용지를 넣고 다시 시도하세요.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "용지가 걸렸습니다. 프린터 화면의 안내에 따라 제거한 뒤 다시 시도하세요.",
     "The printer is out of toner or ink. Replace it and try again.": "프린터의 토너 또는 잉크가 떨어졌습니다. 교체한 뒤 다시 시도하세요.",
+    "The printer cannot print this size. Choose a paper size it offers.": "프린터가 이 크기를 인쇄할 수 없습니다. 프린터가 지원하는 용지 크기를 선택하세요.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "프린터가 Etiketto에서 보낼 수 있는 형식(PDF, PWG Raster, JPEG)을 하나도 받지 않습니다.",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "프린터 대기열이 일시 정지되었습니다. 시스템 프린터 설정에서 다시 시작한 뒤 다시 시도하세요.",
 }

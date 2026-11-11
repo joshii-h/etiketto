@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "打印机缺纸。请装入纸张后重试。",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "卡纸。请按打印机屏幕上的提示取出纸张后重试。",
     "The printer is out of toner or ink. Replace it and try again.": "打印机的墨粉或墨水已用尽。请更换后重试。",
+    "The printer cannot print this size. Choose a paper size it offers.": "打印机无法打印此大小。请选择打印机提供的纸张尺寸。",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "打印机不接受 Etiketto 能发送的任何格式（PDF、PWG Raster、JPEG）。",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "打印机队列已暂停。请在系统的打印机设置中恢复后重试。",
 }

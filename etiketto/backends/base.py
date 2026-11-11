@@ -58,6 +58,9 @@ class Capabilities:
     # endless tape: the label grows with its content. False: die-cut labels
     # of a fixed size, chosen from label_sizes or entered by hand.
     continuous: bool = True
+    # die-cut only: the labels are pages (a page printer), not on a roll, so
+    # there is no gap and no direction of the roll
+    pages: bool = False
     label_sizes: tuple[LabelSize, ...] = ()  # die-cut: common sizes, the first is the default
     max_width_mm: float | None = None  # die-cut: widest printable label (print head width)
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
@@ -268,6 +271,24 @@ class MediaJam(PrinterError):
 
 class SuppliesEmpty(PrinterError):
     code = "supplies"
+
+
+class UnsupportedSize(PrinterError):
+    """The printer takes no paper of the label's size."""
+
+    code = "paper_size"
+
+
+class NoFormat(PrinterError):
+    """The printer takes none of the document formats the backend can make."""
+
+    code = "format"
+
+
+class QueuePaused(PrinterError):
+    """A print queue on this computer is paused (not the printer itself)."""
+
+    code = "queue_paused"
 
 
 def error_text(error: Exception) -> str:

@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Kertas pencetak habis. Isi kertas lalu coba lagi.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Kertas macet. Keluarkan seperti yang ditunjukkan layar pencetak, lalu coba lagi.",
     "The printer is out of toner or ink. Replace it and try again.": "Toner atau tinta pencetak habis. Ganti, lalu coba lagi.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Pencetak tidak dapat mencetak ukuran ini. Pilih ukuran kertas yang tersedia di pencetak.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Pencetak tidak menerima satu pun format yang dapat dikirim Etiketto (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Antrean pencetak dijeda. Lanjutkan di pengaturan pencetak sistem lalu coba lagi.",
 }

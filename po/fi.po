@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:47+0100\n"
+"PO-Revision-Date: 2026-11-11 22:08+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: fi\n"
 "Language: fi\n"
@@ -300,7 +300,7 @@ msgstr "Sisällön pituinen"
 msgid "Length"
 msgstr "Pituus"
 
-#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:225
+#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:192
 msgid "Alignment"
 msgstr "Tasaus"
 
@@ -312,34 +312,34 @@ msgstr "Mukautettu koko"
 msgid "Label size"
 msgstr "Tarran koko"
 
-#: etiketto/ui/label_group.py:192
+#: etiketto/ui/label_group.py:199
 msgid "Width"
 msgstr "Leveys"
 
-#: etiketto/ui/label_group.py:198
+#: etiketto/ui/label_group.py:205
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s rullan poikki"
 
-#: etiketto/ui/label_group.py:201
+#: etiketto/ui/label_group.py:208
 msgid "Height"
 msgstr "Korkeus"
 
-#: etiketto/ui/label_group.py:207
+#: etiketto/ui/label_group.py:214
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s rullan suunnassa"
 
-#: etiketto/ui/label_group.py:213
+#: etiketto/ui/label_group.py:223
 msgid "Gap"
 msgstr "Rako"
 
-#: etiketto/ui/label_group.py:219
+#: etiketto/ui/label_group.py:229
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s kahden tarran välillä rullalla"
 
-#: etiketto/ui/label_group.py:223
+#: etiketto/ui/label_group.py:233
 msgid "Content direction"
 msgstr "Sisällön suunta"
 
@@ -841,58 +841,74 @@ msgstr "Paperi on jumissa. Poista se tulostimen näytön ohjeen mukaan ja yritä
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Tulostimesta on väriaine tai muste loppu. Vaihda se ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:144
+msgid "The printer cannot print this size. Choose a paper size it offers."
+msgstr "Tulostin ei voi tulostaa tätä kokoa. Valitse paperikoko, jota se tukee."
+
+#: etiketto/ui/texts.py:146
+msgid ""
+"The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
+"JPEG)."
+msgstr "Tulostin ei hyväksy mitään muotoa, jonka Etiketto voi lähettää (PDF, PWG Raster, JPEG)."
+
+#: etiketto/ui/texts.py:149
+msgid ""
+"The printer's queue is paused. Resume it in the system's printer settings "
+"and try again."
+msgstr "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen."
+
+#: etiketto/ui/texts.py:153
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Tulostin ilmoitti ongelmasta. Sammuta se ja käynnistä uudelleen, ja yritä sitten vielä kerran."
 
-#: etiketto/ui/texts.py:157
+#: etiketto/ui/texts.py:165
 msgid "Warming up…"
 msgstr "Lämmitetään…"
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:166
 msgid "Cooling down…"
 msgstr "Jäähdytetään…"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:167
 msgid "Cleaning…"
 msgstr "Puhdistetaan…"
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:168
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Leikkaa tarra pyyhkäisemällä tulostimen paneelia"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 msgid "This label needs a newer version of Etiketto"
 msgstr "Tämä tarra vaatii uudemman Etiketto-version"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s ei ole Etiketto-tarra"
 
-#: etiketto/ui/texts.py:174
+#: etiketto/ui/texts.py:182
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tiedosto on vioittunut: %s"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kohdetta %s ei voi tallentaa: ei kirjoitusoikeutta"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kohdetta %s ei voi tallentaa: levy on täynnä"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:191
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kohdetta %s ei voi tallentaa"
 
-#: etiketto/ui/texts.py:192
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

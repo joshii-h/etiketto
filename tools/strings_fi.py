@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Tulostimesta on paperi loppu. Lisää paperia ja yritä uudelleen.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Paperi on jumissa. Poista se tulostimen näytön ohjeen mukaan ja yritä uudelleen.",
     "The printer is out of toner or ink. Replace it and try again.": "Tulostimesta on väriaine tai muste loppu. Vaihda se ja yritä uudelleen.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Tulostin ei voi tulostaa tätä kokoa. Valitse paperikoko, jota se tukee.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Tulostin ei hyväksy mitään muotoa, jonka Etiketto voi lähettää (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen.",
 }

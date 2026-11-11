@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "プリンターの用紙がありません。用紙をセットしてもう一度お試しください。",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "紙詰まりが発生しています。プリンターの画面の表示に従って取り除き、もう一度お試しください。",
     "The printer is out of toner or ink. Replace it and try again.": "プリンターのトナーまたはインクがありません。交換してもう一度お試しください。",
+    "The printer cannot print this size. Choose a paper size it offers.": "プリンターはこのサイズを印刷できません。プリンターが対応する用紙サイズを選んでください。",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "プリンターは、Etiketto が送信できる形式（PDF、PWG Raster、JPEG）のいずれにも対応していません。",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "プリンターのキューが一時停止中です。システムのプリンター設定で再開してから、もう一度お試しください。",
 }

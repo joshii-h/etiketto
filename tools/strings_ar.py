@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "نفد الورق من الطابعة. حمّل الورق وحاول مجددًا.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "الورق عالق. أزله كما تعرض شاشة الطابعة وحاول مجددًا.",
     "The printer is out of toner or ink. Replace it and try again.": "نفد الحبر أو مسحوق الحبر من الطابعة. استبدله وحاول مجددًا.",
+    "The printer cannot print this size. Choose a paper size it offers.": "لا تستطيع الطابعة طباعة هذا الحجم. اختر حجم ورق تدعمه.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "لا تقبل الطابعة أيًّا من الصيغ التي يستطيع Etiketto إرسالها (PDF وPWG Raster وJPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "قائمة انتظار الطابعة متوقفة مؤقتًا. استأنفها من إعدادات الطابعة في النظام وحاول مجددًا.",
 }

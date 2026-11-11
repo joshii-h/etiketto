@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "La stampante ha finito la carta. Carica la carta e riprova.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "La carta è inceppata. Rimuovila come indicato sul display della stampante e riprova.",
     "The printer is out of toner or ink. Replace it and try again.": "La stampante ha esaurito toner o inchiostro. Sostituiscilo e riprova.",
+    "The printer cannot print this size. Choose a paper size it offers.": "La stampante non può stampare questa dimensione. Scegli un formato carta che supporta.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "La stampante non accetta nessuno dei formati che Etiketto può inviare (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "La coda della stampante è in pausa. Riprendila nelle impostazioni della stampante del sistema e riprova.",
 }

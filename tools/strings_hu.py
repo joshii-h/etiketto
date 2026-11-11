@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "A nyomtatóból kifogyott a papír. Töltsön be papírt, és próbálja újra.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Elakadt a papír. Távolítsa el a nyomtató kijelzőjén látható módon, és próbálja újra.",
     "The printer is out of toner or ink. Replace it and try again.": "A nyomtatóból kifogyott a toner vagy a tinta. Cserélje ki, és próbálja újra.",
+    "The printer cannot print this size. Choose a paper size it offers.": "A nyomtató nem tudja kinyomtatni ezt a méretet. Válasszon olyan papírméretet, amelyet kínál.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "A nyomtató az Etiketto által küldhető formátumok egyikét sem fogadja el (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "A nyomtató várólistája szünetel. Folytassa a rendszer nyomtatóbeállításaiban, és próbálja újra.",
 }

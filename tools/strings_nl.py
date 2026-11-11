@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "De printer heeft geen papier meer. Plaats papier en probeer het opnieuw.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Het papier is vastgelopen. Verwijder het zoals het display van de printer aangeeft en probeer het opnieuw.",
     "The printer is out of toner or ink. Replace it and try again.": "De printer heeft geen toner of inkt meer. Vervang het en probeer het opnieuw.",
+    "The printer cannot print this size. Choose a paper size it offers.": "De printer kan dit formaat niet afdrukken. Kies een papierformaat dat de printer aanbiedt.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "De printer accepteert geen van de formaten die Etiketto kan sturen (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "De wachtrij van de printer is gepauzeerd. Hervat hem in de printerinstellingen van het systeem en probeer het opnieuw.",
 }

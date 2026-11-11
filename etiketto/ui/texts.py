@@ -141,6 +141,14 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "The paper is jammed. Remove it as the printer's display shows and try again."
         ),
         "supplies": _("The printer is out of toner or ink. Replace it and try again."),
+        "paper_size": _("The printer cannot print this size. Choose a paper size it offers."),
+        "format": _(
+            "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG)."
+        ),
+        "queue_paused": _(
+            "The printer's queue is paused. Resume it in the system's printer settings and "
+            "try again."
+        ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

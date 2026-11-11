@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Skrivaren har slut på papper. Fyll på papper och försök igen.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Papperet har fastnat. Ta bort det som skrivarens display visar och försök igen.",
     "The printer is out of toner or ink. Replace it and try again.": "Skrivaren har slut på toner eller bläck. Byt ut det och försök igen.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Skrivaren kan inte skriva ut den här storleken. Välj en pappersstorlek som den erbjuder.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Skrivaren tar inte emot något av de format som Etiketto kan skicka (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Skrivarens kö är pausad. Återuppta den i systemets skrivarinställningar och försök igen.",
 }

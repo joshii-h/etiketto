@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:47+0100\n"
+"PO-Revision-Date: 2026-11-11 22:08+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: nl\n"
 "Language: nl\n"
@@ -300,7 +300,7 @@ msgstr "Zo lang als de inhoud"
 msgid "Length"
 msgstr "Lengte"
 
-#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:225
+#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:192
 msgid "Alignment"
 msgstr "Uitlijning"
 
@@ -312,34 +312,34 @@ msgstr "Aangepast formaat"
 msgid "Label size"
 msgstr "Etiketformaat"
 
-#: etiketto/ui/label_group.py:192
+#: etiketto/ui/label_group.py:199
 msgid "Width"
 msgstr "Breedte"
 
-#: etiketto/ui/label_group.py:198
+#: etiketto/ui/label_group.py:205
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s over de breedte van de rol"
 
-#: etiketto/ui/label_group.py:201
+#: etiketto/ui/label_group.py:208
 msgid "Height"
 msgstr "Hoogte"
 
-#: etiketto/ui/label_group.py:207
+#: etiketto/ui/label_group.py:214
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s in de lengte van de rol"
 
-#: etiketto/ui/label_group.py:213
+#: etiketto/ui/label_group.py:223
 msgid "Gap"
 msgstr "Tussenruimte"
 
-#: etiketto/ui/label_group.py:219
+#: etiketto/ui/label_group.py:229
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s tussen twee etiketten op de rol"
 
-#: etiketto/ui/label_group.py:223
+#: etiketto/ui/label_group.py:233
 msgid "Content direction"
 msgstr "Richting van de inhoud"
 
@@ -841,58 +841,74 @@ msgstr "Het papier is vastgelopen. Verwijder het zoals het display van de printe
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "De printer heeft geen toner of inkt meer. Vervang het en probeer het opnieuw."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:144
+msgid "The printer cannot print this size. Choose a paper size it offers."
+msgstr "De printer kan dit formaat niet afdrukken. Kies een papierformaat dat de printer aanbiedt."
+
+#: etiketto/ui/texts.py:146
+msgid ""
+"The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
+"JPEG)."
+msgstr "De printer accepteert geen van de formaten die Etiketto kan sturen (PDF, PWG Raster, JPEG)."
+
+#: etiketto/ui/texts.py:149
+msgid ""
+"The printer's queue is paused. Resume it in the system's printer settings "
+"and try again."
+msgstr "De wachtrij van de printer is gepauzeerd. Hervat hem in de printerinstellingen van het systeem en probeer het opnieuw."
+
+#: etiketto/ui/texts.py:153
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "De printer meldt een probleem. Zet hem uit en weer aan en probeer het daarna nog eens."
 
-#: etiketto/ui/texts.py:157
+#: etiketto/ui/texts.py:165
 msgid "Warming up…"
 msgstr "Opwarmen…"
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:166
 msgid "Cooling down…"
 msgstr "Afkoelen…"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:167
 msgid "Cleaning…"
 msgstr "Reinigen…"
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:168
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Veeg over het paneel van de printer om het etiket af te snijden"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 msgid "This label needs a newer version of Etiketto"
 msgstr "Dit etiket vereist een nieuwere versie van Etiketto"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s is geen Etiketto-etiket"
 
-#: etiketto/ui/texts.py:174
+#: etiketto/ui/texts.py:182
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Het bestand is beschadigd: %s"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kan %s niet opslaan: geen schrijfrechten"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kan %s niet opslaan: de schijf is vol"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:191
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kan %s niet opslaan"
 
-#: etiketto/ui/texts.py:192
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

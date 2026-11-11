@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:47+0100\n"
+"PO-Revision-Date: 2026-11-11 22:08+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hu\n"
 "Language: hu\n"
@@ -300,7 +300,7 @@ msgstr "Olyan hosszú, mint a tartalom"
 msgid "Length"
 msgstr "Hossz"
 
-#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:225
+#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:192
 msgid "Alignment"
 msgstr "Igazítás"
 
@@ -312,34 +312,34 @@ msgstr "Egyéni méret"
 msgid "Label size"
 msgstr "Címkeméret"
 
-#: etiketto/ui/label_group.py:192
+#: etiketto/ui/label_group.py:199
 msgid "Width"
 msgstr "Szélesség"
 
-#: etiketto/ui/label_group.py:198
+#: etiketto/ui/label_group.py:205
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s a tekercs szélessége mentén"
 
-#: etiketto/ui/label_group.py:201
+#: etiketto/ui/label_group.py:208
 msgid "Height"
 msgstr "Magasság"
 
-#: etiketto/ui/label_group.py:207
+#: etiketto/ui/label_group.py:214
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s a tekercs hossza mentén"
 
-#: etiketto/ui/label_group.py:213
+#: etiketto/ui/label_group.py:223
 msgid "Gap"
 msgstr "Hézag"
 
-#: etiketto/ui/label_group.py:219
+#: etiketto/ui/label_group.py:229
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s két címke között a tekercsen"
 
-#: etiketto/ui/label_group.py:223
+#: etiketto/ui/label_group.py:233
 msgid "Content direction"
 msgstr "Tartalom iránya"
 
@@ -841,58 +841,74 @@ msgstr "Elakadt a papír. Távolítsa el a nyomtató kijelzőjén látható mód
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "A nyomtatóból kifogyott a toner vagy a tinta. Cserélje ki, és próbálja újra."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:144
+msgid "The printer cannot print this size. Choose a paper size it offers."
+msgstr "A nyomtató nem tudja kinyomtatni ezt a méretet. Válasszon olyan papírméretet, amelyet kínál."
+
+#: etiketto/ui/texts.py:146
+msgid ""
+"The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
+"JPEG)."
+msgstr "A nyomtató az Etiketto által küldhető formátumok egyikét sem fogadja el (PDF, PWG Raster, JPEG)."
+
+#: etiketto/ui/texts.py:149
+msgid ""
+"The printer's queue is paused. Resume it in the system's printer settings "
+"and try again."
+msgstr "A nyomtató várólistája szünetel. Folytassa a rendszer nyomtatóbeállításaiban, és próbálja újra."
+
+#: etiketto/ui/texts.py:153
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "A nyomtató hibát jelzett. Kapcsolja ki, majd újra be, és próbálja meg még egyszer."
 
-#: etiketto/ui/texts.py:157
+#: etiketto/ui/texts.py:165
 msgid "Warming up…"
 msgstr "Bemelegítés…"
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:166
 msgid "Cooling down…"
 msgstr "Lehűlés…"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:167
 msgid "Cleaning…"
 msgstr "Tisztítás…"
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:168
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Húzzon végig a nyomtató paneljén a címke levágásához"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 msgid "This label needs a newer version of Etiketto"
 msgstr "Ehhez a címkéhez az Etiketto újabb verziója szükséges"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s nem Etiketto-címke"
 
-#: etiketto/ui/texts.py:174
+#: etiketto/ui/texts.py:182
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "A fájl sérült: %s"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Nem menthető: %s (nincs írási jogosultság)"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Nem menthető: %s (a lemez megtelt)"
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:191
 #, python-format
 msgid "Cannot save %s"
 msgstr "Nem menthető: %s"
 
-#: etiketto/ui/texts.py:192
+#: etiketto/ui/texts.py:200
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "Máy in đã hết giấy. Hãy nạp giấy rồi thử lại.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Giấy bị kẹt. Hãy lấy giấy ra theo hướng dẫn trên màn hình của máy in rồi thử lại.",
     "The printer is out of toner or ink. Replace it and try again.": "Máy in đã hết mực hoặc toner. Hãy thay rồi thử lại.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Máy in không thể in cỡ này. Hãy chọn cỡ giấy mà máy in hỗ trợ.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Máy in không nhận định dạng nào mà Etiketto có thể gửi (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong phần cài đặt máy in của hệ thống rồi thử lại.",
 }

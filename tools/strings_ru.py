@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "В принтере закончилась бумага. Загрузите бумагу и повторите попытку.",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "Замятие бумаги. Извлеките её так, как показано на дисплее принтера, и повторите попытку.",
     "The printer is out of toner or ink. Replace it and try again.": "В принтере закончился тонер или чернила. Замените картридж и повторите попытку.",
+    "The printer cannot print this size. Choose a paper size it offers.": "Принтер не может напечатать этот размер. Выберите размер бумаги, который он поддерживает.",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "Принтер не принимает ни один из форматов, которые может отправить Etiketto (PDF, PWG Raster, JPEG).",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "Очередь принтера приостановлена. Возобновите её в настройках принтера системы и повторите попытку.",
 }

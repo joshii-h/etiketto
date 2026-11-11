@@ -222,4 +222,7 @@ TRANSLATIONS = {
     "The printer is out of paper. Load paper and try again.": "กระดาษในเครื่องพิมพ์หมด ใส่กระดาษแล้วลองอีกครั้ง",
     "The paper is jammed. Remove it as the printer's display shows and try again.": "กระดาษติด ให้นำกระดาษออกตามที่หน้าจอของเครื่องพิมพ์แสดงแล้วลองอีกครั้ง",
     "The printer is out of toner or ink. Replace it and try again.": "หมึกหรือผงหมึกในเครื่องพิมพ์หมด ให้เปลี่ยนแล้วลองอีกครั้ง",
+    "The printer cannot print this size. Choose a paper size it offers.": "เครื่องพิมพ์ไม่สามารถพิมพ์ขนาดนี้ได้ ให้เลือกขนาดกระดาษที่เครื่องพิมพ์รองรับ",
+    "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG).": "เครื่องพิมพ์ไม่รับรูปแบบใดเลยที่ Etiketto ส่งได้ (PDF, PWG Raster, JPEG)",
+    "The printer's queue is paused. Resume it in the system's printer settings and try again.": "คิวของเครื่องพิมพ์หยุดชั่วคราว ให้ทำงานต่อในการตั้งค่าเครื่องพิมพ์ของระบบแล้วลองอีกครั้ง",
 }
