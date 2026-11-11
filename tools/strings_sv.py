@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Andra etiketter isatta",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Etiketten är %(size)s med ett mellanrum på %(gap)s, så en ny börjar var %(pitch)s. Skrivaren mätte en etikett var %(measured)s. Kontrollera etikettstorleken och mellanrummet.",
     "Design and print labels": "Designa och skriv ut etiketter",
+    "System printer (CUPS, IPP)": "Systemskrivare (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Skrivaren har slut på papper. Fyll på papper och försök igen.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Papperet har fastnat. Ta bort det som skrivarens display visar och försök igen.",
+    "The printer is out of toner or ink. Replace it and try again.": "Skrivaren har slut på toner eller bläck. Byt ut det och försök igen.",
 }

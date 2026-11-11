@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Farklı etiketler takılı",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Etiket boyutu %(size)s, boşluk %(gap)s; yani yeni bir etiket her %(pitch)s mesafede başlar. Yazıcı etiketler arasında %(measured)s ölçtü. Etiket boyutunu ve boşluğu kontrol edin.",
     "Design and print labels": "Etiket tasarla ve yazdır",
+    "System printer (CUPS, IPP)": "Sistem yazıcısı (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Yazıcının kağıdı bitti. Kağıt yükleyip yeniden deneyin.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Kağıt sıkıştı. Yazıcının ekranında gösterildiği gibi çıkarıp yeniden deneyin.",
+    "The printer is out of toner or ink. Replace it and try again.": "Yazıcının toneri veya mürekkebi bitti. Değiştirip yeniden deneyin.",
 }

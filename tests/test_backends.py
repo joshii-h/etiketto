@@ -49,11 +49,12 @@ def test_unknown_backend():
 
 
 def test_register_orders_default_first(mono):
-    assert [b.id for b in backends()] == ["vc500w", "fake-mono", "cab"]
+    # the default first, then by name, whatever the case
+    assert [b.id for b in backends()] == ["vc500w", "cab", "system", "fake-mono"]
     assert get_backend("fake-mono") is mono
     registry.unregister("fake-mono")
     registry.unregister("fake-mono")  # twice is fine
-    assert [b.id for b in backends()] == ["vc500w", "cab"]
+    assert [b.id for b in backends()] == ["vc500w", "cab", "system"]
 
 
 def test_register_needs_an_id():
@@ -84,7 +85,7 @@ def test_entry_points(monkeypatch):
     monkeypatch.setattr(registry, "_registry", {})
     ids = [b.id for b in backends()]
     assert groups == ["etiketto.backends"]
-    assert ids[0] == "vc500w" and sorted(ids[1:]) == ["cab", "fake-mono", "plugin"]
+    assert ids[0] == "vc500w" and sorted(ids[1:]) == ["cab", "fake-mono", "plugin", "system"]
     backends()  # loaded once only
     assert groups == ["etiketto.backends"]
 

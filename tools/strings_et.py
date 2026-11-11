@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Sisestatud on teised sildid",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Silt on %(size)s ja vahe %(gap)s, seega algab uus silt iga %(pitch)s järel. Printer mõõtis sildi iga %(measured)s järel. Kontrolli sildi suurust ja vahet.",
     "Design and print labels": "Kujunda ja prindi silte",
+    "System printer (CUPS, IPP)": "Süsteemi printer (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Printeril on paber otsas. Pane paberit juurde ja proovi uuesti.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Paber on kinni jäänud. Eemalda see, nagu printeri ekraan näitab, ja proovi uuesti.",
+    "The printer is out of toner or ink. Replace it and try again.": "Printeril on toonier või tint otsas. Vaheta see välja ja proovi uuesti.",
 }

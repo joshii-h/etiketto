@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Andere etiketten geladen",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Het etiket is %(size)s met een tussenruimte van %(gap)s, dus er begint elke %(pitch)s een nieuw. De printer mat een etiket om de %(measured)s. Controleer het etiketformaat en de tussenruimte.",
     "Design and print labels": "Etiketten ontwerpen en afdrukken",
+    "System printer (CUPS, IPP)": "Systeemprinter (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "De printer heeft geen papier meer. Plaats papier en probeer het opnieuw.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Het papier is vastgelopen. Verwijder het zoals het display van de printer aangeeft en probeer het opnieuw.",
+    "The printer is out of toner or ink. Replace it and try again.": "De printer heeft geen toner of inkt meer. Vervang het en probeer het opnieuw.",
 }

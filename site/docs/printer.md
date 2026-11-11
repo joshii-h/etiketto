@@ -117,6 +117,27 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 - Paused: resume the printer on its display.
 - Print too pale or too dark: change the heat level in the printer's setup.
 
+## System printer (CUPS, IPP) { #system }
+
+Prints on the printers your computer knows: printers set up in the system
+settings (also over USB) and printers in the network that speak IPP, such
+as most office printers (AirPrint, IPP Everywhere). The label is printed as
+one page of exactly its size, unscaled.
+
+- [[ui:Search for printers]] lists both. Otherwise enter the printer's
+  address or the name of its CUPS queue under
+  [[ui:Host name or IP address]].
+- [[ui:Label size]]: the paper size, or [[ui:Custom size]].
+- Most office printers cannot print the outer 4 to 5 mm of a page: set the
+  [[ui:Safety margin]] to 5 mm.
+
+### Problems { #system-problems }
+
+- Out of paper, paper jam, cover open, out of toner or ink: fix it as the
+  printer's display shows, then [[ui:Refresh]].
+- The label is printed smaller or moved: the printer or its driver scales
+  the page. Turn off "fit to page" in the printer's setup.
+
 ## Help
 
 Something else? [[ui:Report a problem…]] in the main menu (also offered with

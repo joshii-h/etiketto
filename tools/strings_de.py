@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Copy link": "Link kopieren",
     "Help": "Hilfe",
     "%(month)s %(year)d": "%(month)s %(year)d",
+    "System printer (CUPS, IPP)": "Systemdrucker (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Der Drucker hat kein Papier mehr. Papier einlegen und erneut versuchen.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Papierstau. Das Papier so entfernen, wie es das Display des Druckers zeigt, und erneut versuchen.",
+    "The printer is out of toner or ink. Replace it and try again.": "Toner oder Tinte ist leer. Ersetzen und erneut versuchen.",
 }

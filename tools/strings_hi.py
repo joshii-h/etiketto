@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "अलग लेबल लगे हैं",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "लेबल %(size)s का है और गैप %(gap)s है, इसलिए हर %(pitch)s पर नया लेबल शुरू होता है। प्रिंटर ने हर %(measured)s पर एक लेबल मापा। लेबल का आकार और गैप जाँचें।",
     "Design and print labels": "लेबल डिज़ाइन और प्रिंट करें",
+    "System printer (CUPS, IPP)": "सिस्टम प्रिंटर (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "प्रिंटर में कागज़ खत्म हो गया है। कागज़ डालें और दोबारा कोशिश करें।",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "कागज़ फँस गया है। प्रिंटर की डिस्प्ले पर दिखाए अनुसार उसे निकालें और दोबारा कोशिश करें।",
+    "The printer is out of toner or ink. Replace it and try again.": "प्रिंटर में टोनर या स्याही खत्म हो गई है। उसे बदलें और दोबारा कोशिश करें।",
 }

@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Más címkék vannak betöltve",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "A címke %(size)s, a hézag %(gap)s, így %(pitch)s távolságonként kezdődik új címke. A nyomtató %(measured)s címketávolságot mért. Ellenőrizze a címkeméretet és a hézagot.",
     "Design and print labels": "Címkék tervezése, nyomtatása",
+    "System printer (CUPS, IPP)": "Rendszernyomtató (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "A nyomtatóból kifogyott a papír. Töltsön be papírt, és próbálja újra.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Elakadt a papír. Távolítsa el a nyomtató kijelzőjén látható módon, és próbálja újra.",
+    "The printer is out of toner or ink. Replace it and try again.": "A nyomtatóból kifogyott a toner vagy a tinta. Cserélje ki, és próbálja újra.",
 }

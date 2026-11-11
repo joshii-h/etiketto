@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:33+0100\n"
+"POT-Creation-Date: 2026-11-11 21:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -507,6 +507,54 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Print too pale or too dark: change the heat level in the printer's setup."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "System printer (CUPS, IPP) { #system }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that speak IPP, such as most office printers (AirPrint, IPP Everywhere). The label is printed as one page of exactly its size, unscaled."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Search for printers]] lists both. Otherwise enter the printer's address or the name of its CUPS queue under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Label size]]: the paper size, or [[ui:Custom size]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Most office printers cannot print the outer 4 to 5 mm of a page: set the [[ui:Safety margin]] to 5 mm."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #system-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of paper, paper jam, cover open, out of toner or ink: fix it as the printer's display shows, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label is printed smaller or moved: the printer or its driver scales the page. Turn off \"fit to page\" in the printer's setup."
 msgstr ""
 
 #. type: Title ##

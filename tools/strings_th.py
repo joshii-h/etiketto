@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "ใส่ฉลากคนละแบบ",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "ฉลากขนาด %(size)s ช่องว่าง %(gap)s ดังนั้นฉลากใหม่จะเริ่มทุก %(pitch)s แต่เครื่องพิมพ์วัดได้ฉลากทุก %(measured)s ตรวจสอบขนาดฉลากและช่องว่าง",
     "Design and print labels": "ออกแบบและพิมพ์ฉลาก",
+    "System printer (CUPS, IPP)": "เครื่องพิมพ์ของระบบ (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "กระดาษในเครื่องพิมพ์หมด ใส่กระดาษแล้วลองอีกครั้ง",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "กระดาษติด ให้นำกระดาษออกตามที่หน้าจอของเครื่องพิมพ์แสดงแล้วลองอีกครั้ง",
+    "The printer is out of toner or ink. Replace it and try again.": "หมึกหรือผงหมึกในเครื่องพิมพ์หมด ให้เปลี่ยนแล้วลองอีกครั้ง",
 }

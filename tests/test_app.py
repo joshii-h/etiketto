@@ -1677,11 +1677,9 @@ def test_mono_printer(make_window, mono, gui_env):
 
     win = make_window()
     model = one(win.sidebar, Adw.ComboRow, title="Printer model")
-    assert [model.get_model().get_string(i) for i in range(2)] == [
-        "Brother VC-500W",
-        "Fake Mono 200",
-    ]
-    model.set_selected(1)
+    names = _items(model)
+    assert names[0] == "Brother VC-500W" and "Fake Mono 200" in names
+    model.set_selected(names.index("Fake Mono 200"))
     assert win.label.printer == "fake-mono" and win.backend is mono
     assert win.label.tape_mm == 24 and win.dirty  # nearest width the printer has
     tape = win.label_group.tape_row.get_model()
@@ -2067,3 +2065,16 @@ def test_too_long_fixed_length_from_a_file_is_clamped_consistently(make_window):
     win.set_label(Label(auto_length=False, length_mm=1000), None)
     # the row shows the printer's maximum, and the label really uses it
     assert win.label.length_mm == pytest.approx(431, abs=1)
+
+
+def test_system_printer_has_a_translated_name_and_paper_texts():
+    from etiketto.backends import get_backend
+
+    assert texts.backend_name(get_backend("system")) == "System printer (CUPS, IPP)"
+    assert texts.backend_name(get_backend("cab")) == get_backend("cab").name
+    for code, start in (
+        ("out_of_paper", "The printer is out of paper."),
+        ("media_jam", "The paper is jammed."),
+        ("supplies", "The printer is out of toner or ink."),
+    ):
+        assert texts.code_text(code, MILLIMETRES).startswith(start)

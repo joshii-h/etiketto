@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:33+0100\n"
+"POT-Creation-Date: 2026-11-11 21:48+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -698,6 +698,75 @@ msgid ""
 "Print too pale or too dark: change the heat level in the printer's setup."
 msgstr ""
 "Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "System printer (CUPS, IPP) { #system }"
+msgstr "Systemdrucker (CUPS, IPP) { #system }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Prints on the printers your computer knows: printers set up in the system "
+"settings (also over USB) and printers in the network that speak IPP, such as"
+" most office printers (AirPrint, IPP Everywhere). The label is printed as "
+"one page of exactly its size, unscaled."
+msgstr ""
+"Druckt auf den Druckern, die der Computer kennt: in den Systemeinstellungen "
+"eingerichtete Drucker (auch über USB) und Drucker im Netzwerk, die IPP "
+"sprechen, wie die meisten Bürodrucker (AirPrint, IPP Everywhere). Das "
+"Etikett wird als eine Seite in genau seiner Grösse gedruckt, ohne "
+"Skalierung."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Search for printers]] lists both. Otherwise enter the printer's address"
+" or the name of its CUPS queue under [[ui:Host name or IP address]]."
+msgstr ""
+"[[ui:Search for printers]] listet beide. Sonst die Adresse des Druckers oder"
+" den Namen seiner CUPS-Warteschlange unter [[ui:Host name or IP address]] "
+"eintragen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "[[ui:Label size]]: the paper size, or [[ui:Custom size]]."
+msgstr "[[ui:Label size]]: das Papierformat oder [[ui:Custom size]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Most office printers cannot print the outer 4 to 5 mm of a page: set the "
+"[[ui:Safety margin]] to 5 mm."
+msgstr ""
+"Die meisten Bürodrucker können die äussersten 4 bis 5 mm einer Seite nicht "
+"bedrucken: den [[ui:Safety margin]] auf 5 mm stellen."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #system-problems }"
+msgstr "Probleme { #system-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Out of paper, paper jam, cover open, out of toner or ink: fix it as the "
+"printer's display shows, then [[ui:Refresh]]."
+msgstr ""
+"Kein Papier, Papierstau, Klappe offen, Toner oder Tinte leer: so beheben, "
+"wie es das Display des Druckers zeigt, dann [[ui:Refresh]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The label is printed smaller or moved: the printer or its driver scales the "
+"page. Turn off \"fit to page\" in the printer's setup."
+msgstr ""
+"Das Etikett wird kleiner oder verschoben gedruckt: Der Drucker oder sein "
+"Treiber skaliert die Seite. In der Druckereinrichtung \"An Seite anpassen\" "
+"ausschalten."
 
 #. type: Title ##
 #: docs/printer.md

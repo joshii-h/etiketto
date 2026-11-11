@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Завантажено інші етикетки",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Розмір етикетки — %(size)s із проміжком %(gap)s, тому нова починається кожні %(pitch)s. Принтер виміряв одну етикетку кожні %(measured)s. Перевірте розмір етикетки та проміжок.",
     "Design and print labels": "Дизайн і друк етикеток",
+    "System printer (CUPS, IPP)": "Системний принтер (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "У принтері закінчився папір. Завантажте папір і повторіть спробу.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Папір застряг. Вийміть його, як показано на дисплеї принтера, та повторіть спробу.",
+    "The printer is out of toner or ink. Replace it and try again.": "У принтері закінчився тонер або чорнило. Замініть його та повторіть спробу.",
 }

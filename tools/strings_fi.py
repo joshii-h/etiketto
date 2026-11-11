@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Eri tarrat asetettu",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Tarran koko on %(size)s ja rako %(gap)s, joten uusi tarra alkaa %(pitch)s välein. Tulostin mittasi tarran %(measured)s välein. Tarkista tarran koko ja rako.",
     "Design and print labels": "Suunnittele ja tulosta tarroja",
+    "System printer (CUPS, IPP)": "Järjestelmän tulostin (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Tulostimesta on paperi loppu. Lisää paperia ja yritä uudelleen.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Paperi on jumissa. Poista se tulostimen näytön ohjeen mukaan ja yritä uudelleen.",
+    "The printer is out of toner or ink. Replace it and try again.": "Tulostimesta on väriaine tai muste loppu. Vaihda se ja yritä uudelleen.",
 }

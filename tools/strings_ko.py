@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "다른 라벨이 들어 있습니다",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "라벨은 %(size)s이고 간격은 %(gap)s이므로 %(pitch)s마다 새 라벨이 시작됩니다. 프린터는 %(measured)s마다 라벨을 측정했습니다. 라벨 크기와 간격을 확인하세요.",
     "Design and print labels": "라벨 디자인 및 인쇄",
+    "System printer (CUPS, IPP)": "시스템 프린터 (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "프린터에 용지가 없습니다. 용지를 넣고 다시 시도하세요.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "용지가 걸렸습니다. 프린터 화면의 안내에 따라 제거한 뒤 다시 시도하세요.",
+    "The printer is out of toner or ink. Replace it and try again.": "프린터의 토너 또는 잉크가 떨어졌습니다. 교체한 뒤 다시 시도하세요.",
 }

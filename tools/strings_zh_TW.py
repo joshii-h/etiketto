@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "裝入了不同的標籤",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "標籤為 %(size)s，間隙為 %(gap)s，因此每 %(pitch)s 開始一張新標籤。印表機量測到每 %(measured)s 一張標籤。請檢查標籤尺寸和間隙。",
     "Design and print labels": "設計並列印標籤",
+    "System printer (CUPS, IPP)": "系統印表機（CUPS、IPP）",
+    "The printer is out of paper. Load paper and try again.": "印表機缺紙。請裝入紙張後再試一次。",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "卡紙。請依印表機螢幕上的指示取出紙張後再試一次。",
+    "The printer is out of toner or ink. Replace it and try again.": "印表機的碳粉或墨水已用盡。請更換後再試一次。",
 }

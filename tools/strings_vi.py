@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Đã lắp nhãn khác",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Nhãn có kích thước %(size)s với khe hở %(gap)s, nên cứ %(pitch)s lại bắt đầu một nhãn mới. Máy in đo được cứ %(measured)s có một nhãn. Hãy kiểm tra kích thước nhãn và khe hở.",
     "Design and print labels": "Thiết kế và in nhãn",
+    "System printer (CUPS, IPP)": "Máy in hệ thống (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Máy in đã hết giấy. Hãy nạp giấy rồi thử lại.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Giấy bị kẹt. Hãy lấy giấy ra theo hướng dẫn trên màn hình của máy in rồi thử lại.",
+    "The printer is out of toner or ink. Replace it and try again.": "Máy in đã hết mực hoặc toner. Hãy thay rồi thử lại.",
 }

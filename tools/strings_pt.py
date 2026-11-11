@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Etiquetas diferentes carregadas",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "A etiqueta tem %(size)s com um espaço de %(gap)s, por isso começa uma nova a cada %(pitch)s. A impressora mediu uma etiqueta a cada %(measured)s. Verifique o tamanho da etiqueta e o espaço.",
     "Design and print labels": "Crie e imprima etiquetas",
+    "System printer (CUPS, IPP)": "Impressora do sistema (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "A impressora está sem papel. Coloque papel e tente novamente.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "O papel está encravado. Retire-o como indicado no ecrã da impressora e tente novamente.",
+    "The printer is out of toner or ink. Replace it and try again.": "A impressora está sem toner ou tinta. Substitua-o e tente novamente.",
 }

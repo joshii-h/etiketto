@@ -258,6 +258,18 @@ class PrinterPaused(PrinterError):
     code = "paused"
 
 
+class OutOfPaper(PrinterError):
+    code = "out_of_paper"
+
+
+class MediaJam(PrinterError):
+    code = "media_jam"
+
+
+class SuppliesEmpty(PrinterError):
+    code = "supplies"
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 

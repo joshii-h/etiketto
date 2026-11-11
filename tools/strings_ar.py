@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "تم تحميل ملصقات مختلفة",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "حجم الملصق %(size)s مع فراغ %(gap)s، لذا يبدأ ملصق جديد كل %(pitch)s. قاست الطابعة ملصقًا كل %(measured)s. تحقق من حجم الملصق والفراغ.",
     "Design and print labels": "صمّم الملصقات واطبعها",
+    "System printer (CUPS, IPP)": "طابعة النظام (CUPS، IPP)",
+    "The printer is out of paper. Load paper and try again.": "نفد الورق من الطابعة. حمّل الورق وحاول مجددًا.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "الورق عالق. أزله كما تعرض شاشة الطابعة وحاول مجددًا.",
+    "The printer is out of toner or ink. Replace it and try again.": "نفد الحبر أو مسحوق الحبر من الطابعة. استبدله وحاول مجددًا.",
 }

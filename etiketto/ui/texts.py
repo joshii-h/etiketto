@@ -75,6 +75,12 @@ def element_icon(element) -> str:
 # Lower layers report codes; the texts are made (and translated) here.
 
 
+def backend_name(backend) -> str:
+    """The name of a printer model in the list; brand names stay as they are."""
+    names = {"system": _("System printer (CUPS, IPP)")}
+    return names.get(backend.id, backend.name)
+
+
 def warning_text(warning: RenderWarning) -> str:
     texts = {
         "code_empty": _("Element %(n)d: the code is empty"),
@@ -130,6 +136,11 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "matches the print method set on the printer."
         ),
         "paused": _("The printer is paused. Resume it on its display and try again."),
+        "out_of_paper": _("The printer is out of paper. Load paper and try again."),
+        "media_jam": _(
+            "The paper is jammed. Remove it as the printer's display shows and try again."
+        ),
+        "supplies": _("The printer is out of toner or ink. Replace it and try again."),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

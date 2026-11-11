@@ -17,6 +17,7 @@ from etiketto.backends.base import PrinterInfo  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
+    backend_name,
     cassette_age_hint,
     code_text,
     printer_error_text,
@@ -101,7 +102,7 @@ class Printer:
         return group
 
     def _backend_row(self) -> Adw.ComboRow:
-        items = [(b.id, b.name) for b in backends()]
+        items = [(b.id, backend_name(b)) for b in backends()]
         return combo_row(
             _("Printer model"), items, self.window.backend.id, self.window.set_backend
         )

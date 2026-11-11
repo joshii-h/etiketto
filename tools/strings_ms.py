@@ -218,4 +218,8 @@ TRANSLATIONS = {
     "Different labels loaded": "Label berbeza dimuatkan",
     "The label is %(size)s with a gap of %(gap)s, so a new one starts every %(pitch)s. The printer measured a label every %(measured)s. Check the label size and the gap.": "Label berukuran %(size)s dengan jurang %(gap)s, jadi label baharu bermula setiap %(pitch)s. Pencetak mengukur satu label setiap %(measured)s. Semak saiz label dan jurang.",
     "Design and print labels": "Reka dan cetak label",
+    "System printer (CUPS, IPP)": "Pencetak sistem (CUPS, IPP)",
+    "The printer is out of paper. Load paper and try again.": "Pencetak kehabisan kertas. Masukkan kertas dan cuba lagi.",
+    "The paper is jammed. Remove it as the printer's display shows and try again.": "Kertas tersekat. Keluarkan seperti yang ditunjukkan pada paparan pencetak dan cuba lagi.",
+    "The printer is out of toner or ink. Replace it and try again.": "Pencetak kehabisan toner atau dakwat. Gantikannya dan cuba lagi.",
 }
