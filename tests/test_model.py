@@ -331,3 +331,27 @@ def test_tape_labels_keep_their_rules():
     old = Label(tape_mm=25).to_dict()
     del old["gap_mm"], old["orientation"]  # a file of Etiketto 1.0
     assert Label.from_dict(old).orientation == "along"
+
+
+def test_new_label_for_a_printer_model():
+    from etiketto.backends import get_backend
+
+    vc, cab = get_backend("vc500w").capabilities, get_backend("cab").capabilities
+    assert Label.new_for("vc500w", vc, 19).tape_mm == 19
+    assert Label.new_for("vc500w", vc, 33).tape_mm == 50  # unknown tape: the common one
+    label = Label.new_for("cab", cab)
+    assert (label.printer, label.media_size(), label.auto_length) == ("cab", (50, 25), False)
+
+
+def test_switch_printer_with_and_without_geometry():
+    from etiketto.backends import get_backend
+
+    vc, cab = get_backend("vc500w").capabilities, get_backend("cab").capabilities
+    label = Label(tape_mm=12, auto_length=False, length_mm=70.0)
+    before = label.geometry()
+    label.switch_printer("cab", cab)
+    assert label.media_size() == (50, 25) and label.orientation == "across"
+    label.switch_printer("vc500w", vc, before)
+    assert label.geometry() == before and label.printer == "vc500w"
+    label.switch_printer("vc500w", vc)  # tape to tape: nearest tape, length kept
+    assert (label.tape_mm, label.auto_length) == (12, False)

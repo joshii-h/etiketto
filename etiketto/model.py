@@ -16,6 +16,8 @@ DEFAULT_PRINTER = "vc500w"
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
+# what a printer model decides about a label: kept per model when switching
+GEOMETRY_FIELDS = ("tape_mm", "auto_length", "length_mm", "orientation", "gap_mm")
 
 
 class LabelError(ValueError):
@@ -119,6 +121,49 @@ class Label:
     def pitch_mm(self) -> float:
         """Distance from the start of one die-cut label to the next."""
         return self.media_size()[1] + self.gap_mm
+
+    def use_default_size(self, caps) -> None:
+        """A die-cut label of the printer's default size, content across the roll."""
+        size = caps.label_sizes[0] if caps.label_sizes else None
+        self.auto_length = False
+        self.orientation = "across"
+        self.set_media_size(*((size.width_mm, size.height_mm) if size else (50.0, 25.0)))
+
+    # --- printer models ------------------------------------------------------
+
+    @classmethod
+    def new_for(cls, printer: str, caps, inserted_tape: float | None = None) -> "Label":
+        """An empty label for a printer model: on tape the inserted (or widest
+        common) tape, die-cut labels in the default size."""
+        label = cls(printer=printer)
+        if caps.continuous:
+            widths = caps.tape_widths_mm
+            fallback = 50 if 50 in widths else widths[-1]
+            label.tape_mm = inserted_tape if inserted_tape in widths and inserted_tape else fallback
+        else:
+            label.use_default_size(caps)
+        return label
+
+    def geometry(self) -> dict:
+        return {name: getattr(self, name) for name in GEOMETRY_FIELDS}
+
+    def switch_printer(self, printer: str, caps, geometry: dict | None = None) -> None:
+        """Move the label to another printer model. `geometry` is what it had
+        on that model before (see geometry()); without it the label is made
+        to fit: the nearest tape, or the default label size."""
+        was_continuous = _capabilities(self.printer).continuous
+        self.printer = printer
+        if geometry:
+            for name, value in geometry.items():
+                setattr(self, name, value)
+        elif caps.continuous:
+            if not was_continuous:  # the content runs along the tape again
+                self.orientation = "along"
+                self.auto_length = True
+            widths = caps.tape_widths_mm  # the tape's own number: 50, not 50.0
+            self.tape_mm = min(widths, key=lambda w: abs(w - self.tape_mm))
+        elif was_continuous:
+            self.use_default_size(caps)
 
     # --- persistence -------------------------------------------------------
 

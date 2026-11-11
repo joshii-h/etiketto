@@ -386,6 +386,7 @@ class Window(Adw.ApplicationWindow):
         self.label = Label(elements=[TextElement(text=_("Label"))])
         self.path: Path | None = None
         self.dirty = False
+        self._geometries: dict[str, dict] = {}  # label size per printer model
         self.rendered: Rendered | None = None
         self.printer_info: PrinterInfo | None = None
         self.printing = False
@@ -574,18 +575,10 @@ class Window(Adw.ApplicationWindow):
     def _on_backend(self, backend_id: str) -> None:
         if backend_id == self.label.printer:
             return
-        was_continuous = self.backend.capabilities.continuous
-        self.label.printer = backend_id
-        caps = self.backend.capabilities
-        if caps.continuous:
-            if not was_continuous:  # the content runs along the tape again
-                self.label.orientation = "along"
-                self.label.auto_length = True
-            # the nearest tape, as the tape's own number (50, not 50.0)
-            widths = caps.tape_widths_mm
-            self.label.tape_mm = min(widths, key=lambda w: abs(w - self.label.tape_mm))
-        elif was_continuous:
-            self._use_default_size(self.label)
+        # switching back restores the size the label had on that model
+        self._geometries[self.label.printer] = self.label.geometry()
+        geometry = self._geometries.get(backend_id)
+        self.label.switch_printer(backend_id, get_backend(backend_id).capabilities, geometry)
         self.printer_info = None
         self.rebuild_sidebar()
         self.mark_changed()
@@ -799,15 +792,6 @@ class Window(Adw.ApplicationWindow):
         auto.connect("notify::active", on_auto)
         group.add(length)
         group.add(align)
-
-    def _use_default_size(self, label: Label) -> None:
-        """A die-cut label of the backend's default size, content across the roll."""
-        caps = self.backend.capabilities
-        label.auto_length = False
-        label.orientation = "across"
-        size = caps.label_sizes[0] if caps.label_sizes else None
-        width, height = (size.width_mm, size.height_mm) if size else (50.0, 25.0)
-        label.set_media_size(width, height)
 
     def _size_key(self) -> str:
         """The preset matching the label, else CUSTOM_SIZE."""
@@ -1097,6 +1081,7 @@ class Window(Adw.ApplicationWindow):
             self.printer_info = None
         self.path = path
         self.dirty = False
+        self._geometries = {}
         self._expand_index = -1
         self.rebuild_sidebar()
         self._update_title()
@@ -1844,15 +1829,8 @@ class Window(Adw.ApplicationWindow):
 
     def on_new(self, *_args) -> None:
         def reset():
-            label = Label(printer=self.backend.id)
-            if self.backend.capabilities.continuous:
-                widths = self.backend.capabilities.tape_widths_mm
-                inserted = self.printer_info.tape_mm if self.printer_info else None
-                label.tape_mm = (
-                    inserted if inserted in widths else (50 if 50 in widths else widths[-1])
-                )
-            else:
-                self._use_default_size(label)
+            inserted = self.printer_info.tape_mm if self.printer_info else None
+            label = Label.new_for(self.backend.id, self.backend.capabilities, inserted)
             label.elements = [TextElement(text=_("Label"))]
             self.set_label(label, None)
 

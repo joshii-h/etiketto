@@ -1921,6 +1921,20 @@ def test_cab_new_label_and_back_to_tape(cab_window):
     assert find(win.sidebar, Adw.ComboRow, title="Tape width")
 
 
+def test_switching_back_restores_the_size(window):
+    win = window
+    win.label.tape_mm, win.label.auto_length, win.label.length_mm = 19, False, 80.0
+    win._on_backend("cab")
+    win.label.set_media_size(76, 51)
+    win._on_backend("vc500w")
+    assert (win.label.tape_mm, win.label.auto_length, win.label.length_mm) == (19, False, 80.0)
+    win._on_backend("cab")
+    assert win.label.media_size() == (76, 51)
+    win.set_label(Label(tape_mm=25), None)  # another label: nothing to restore
+    win._on_backend("cab")
+    assert win.label.media_size() == (50, 25)
+
+
 @pytest.mark.parametrize(
     "code, start",
     [
