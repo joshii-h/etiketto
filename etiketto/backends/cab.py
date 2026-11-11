@@ -307,16 +307,16 @@ class Cab(Backend):
 
     def display_name(self, info: PrinterInfo | None) -> str:
         """ "cab EOS2/300": the printer names its model and resolution."""
-        if info and info.model and info.model != "cab":
-            return "cab " + info.model
+        if info and info.model and info.model.casefold() != "cab":
+            return _cab_name(info.model)
         return self.name
 
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
         """cab printers on USB, then on the network."""
         plugged = [
-            FoundPrinter("cab %s (USB)" % p.model, p.address, str(p.device))
+            FoundPrinter("%s (USB)" % _cab_name(p.model), p.address, str(p.device))
             for p in usb.printers()
-            if p.manufacturer.lower() == "cab"
+            if p.manufacturer.casefold().startswith("cab")
         ]
         return plugged + mdns.browse("_pdl-datastream._tcp", _is_cab, timeout)
 
@@ -393,6 +393,11 @@ def _rescale(image: Image.Image, factor: float) -> Image.Image:
     image instead of failing; prepare() renders right the next time."""
     size = (max(1, round(image.width * factor)), max(1, round(image.height * factor)))
     return image.resize(size, Image.Resampling.NEAREST)
+
+
+def _cab_name(model: str) -> str:
+    """ "cab EOS2/300", also for a model that already names the maker."""
+    return model if model.casefold().startswith("cab ") else "cab " + model
 
 
 def _is_cab(name: str) -> bool:

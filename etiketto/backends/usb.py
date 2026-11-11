@@ -13,15 +13,33 @@ from __future__ import annotations
 import errno
 import os
 import select
+import threading
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
-from etiketto.backends.base import PrinterNotFound, PrinterTimeout, UsbPermission
+from etiketto.backends.base import (
+    PrinterBusy,
+    PrinterError,
+    PrinterTimeout,
+    UsbNotFound,
+    UsbPermission,
+)
 
 SYSFS = Path("/sys/class/usbmisc")
 DEV = Path("/dev/usb")
 SCHEME = "usb://"
+
+SLICE = 1.0  # waits are cut into pieces this long, to notice an unplugged printer
+EMPTY_WAIT = 0.05  # after an empty read (a zero-length packet) before reading again
+BUSY_WAIT = 5.0  # how long to wait for a printer another session or program uses
+DRAIN_QUIET = 0.2  # stale bytes have ended when nothing comes for this long
+DRAIN_LIMIT = 2.0  # a printer that keeps talking does not hold up the session longer
+CLOSE_WAIT = 5.0  # at most, for the last write to reach the printer before closing
+GONE = (errno.ENOENT, errno.ENODEV, errno.ENXIO)
 
 
 @dataclass(frozen=True)
@@ -41,7 +59,13 @@ class UsbPrinter:
 def device_id(text: str) -> dict[str, str]:
     """IEEE 1284 device ID "MFG:cab;MDL:EOS2/300;CMD:..." as a dict with the
     long and short key names merged (MANUFACTURER/MFG, MODEL/MDL, ...)."""
-    aliases = {"MFG": "MANUFACTURER", "MDL": "MODEL", "SN": "SERIALNUMBER", "CMD": "COMMAND SET"}
+    aliases = {
+        "MFG": "MANUFACTURER",
+        "MDL": "MODEL",
+        "SN": "SERIALNUMBER",
+        "SERN": "SERIALNUMBER",
+        "CMD": "COMMAND SET",
+    }
     fields: dict[str, str] = {}
     for part in text.split(";"):
         key, sep, value = part.partition(":")
@@ -84,52 +108,107 @@ def is_usb(host: str) -> bool:
 
 
 def find(address: str) -> UsbPrinter:
-    """The printer plugged in now that matches a usb:// address."""
-    parts = urlsplit(address)
-    maker, model = unquote(parts.netloc), unquote(parts.path.lstrip("/"))
-    serial = parse_qs(parts.query).get("serial", [""])[0]
+    """The printer plugged in now that matches a usb:// address; maker and
+    model in any case, as printers do not agree on it."""
+    try:
+        parts = urlsplit(address)
+        serial = parse_qs(parts.query).get("serial", [""])[0]
+    except ValueError as e:  # e.g. "usb://[x": not an address at all
+        raise UsbNotFound("%s: %s" % (address, e)) from e
+    maker, model = unquote(parts.netloc).casefold(), unquote(parts.path.lstrip("/")).casefold()
     for printer in printers():
-        same = printer.manufacturer == maker and printer.model == model
+        same = printer.manufacturer.casefold() == maker and printer.model.casefold() == model
         if same and (not serial or printer.serial == serial):
             return printer
-    raise PrinterNotFound("no USB printer %s" % address)
+    raise UsbNotFound("no USB printer %s" % address)
+
+
+# usblp lets one open file use a printer at a time (EBUSY for the next); in
+# Etiketto the status query and printing run in threads of their own, so they
+# take turns here instead of failing
+_locks: dict[str, threading.Lock] = {}
+_locks_guard = threading.Lock()
+
+
+def _device_lock(device: Path) -> threading.Lock:
+    with _locks_guard:
+        return _locks.setdefault(str(device), threading.Lock())
+
+
+def _open(device: Path, deadline: float) -> int:
+    """The device file, non-blocking: every wait goes through select() with
+    a deadline. Retries while another program has it open (EBUSY)."""
+    while True:
+        try:
+            return os.open(device, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+        except PermissionError as e:
+            raise UsbPermission("%s: %s" % (device, e)) from e
+        except OSError as e:
+            if e.errno in GONE:
+                raise UsbNotFound("%s: %s" % (device, e)) from e
+            if e.errno != errno.EBUSY:
+                raise
+            if time.monotonic() >= deadline:
+                raise PrinterBusy("%s: %s" % (device, e)) from e
+        time.sleep(0.1)
 
 
 class Connection:
     """A USB printer's device file, used like a socket (sendall, recv)."""
 
     def __init__(self, device: Path, timeout: float):
+        self.device = device
         self.timeout = timeout
+        self.fd = -1
+        self.lock = _device_lock(device)
+        if not self.lock.acquire(timeout=BUSY_WAIT):
+            raise PrinterBusy("%s is in use by another session" % device)
         try:
-            self.fd = os.open(device, os.O_RDWR | os.O_NOCTTY)
-        except PermissionError as e:
-            raise UsbPermission("%s: %s" % (device, e)) from e
-        except OSError as e:
-            if e.errno in (errno.ENOENT, errno.ENODEV, errno.ENXIO):
-                raise PrinterNotFound("%s: %s" % (device, e)) from e
+            self.fd = _open(device, time.monotonic() + BUSY_WAIT)
+        except BaseException:
+            self.lock.release()
             raise
 
     def sendall(self, data: bytes) -> None:
+        """All of data within the timeout, like socket.sendall: the printer
+        may stop taking data (paper out, buffer full)."""
+        deadline = time.monotonic() + self.timeout
         view = memoryview(data)
         while view:
-            self._wait(writing=True)
-            written = os.write(self.fd, view)
+            self._wait(writing=True, deadline=deadline)
+            with self._errors():
+                try:
+                    written = self._write(view)
+                except BlockingIOError:  # writable after all only for select()
+                    continue
             view = view[written:]
 
     def recv(self, size: int) -> bytes:
-        """Up to size bytes; b"" never happens, a silent printer times out."""
-        self._wait(writing=False)
-        return os.read(self.fd, size)
+        """Up to size bytes; never b"": a silent printer times out. usblp
+        returns b"" for a zero-length packet, which means nothing yet."""
+        deadline = time.monotonic() + self.timeout
+        while True:
+            self._wait(writing=False, deadline=deadline)
+            with self._errors():
+                try:
+                    data = self._read(size)
+                except BlockingIOError:
+                    data = b""
+            if data:
+                return data
+            time.sleep(min(EMPTY_WAIT, max(0.0, deadline - time.monotonic())))
 
     def settimeout(self, timeout: float) -> None:
         self.timeout = timeout
 
-    def drain(self, quiet: float = 0.2) -> None:
+    def drain(self, quiet: float = DRAIN_QUIET, limit: float = DRAIN_LIMIT) -> None:
         """Read and drop what the printer still had to say (an answer
-        nobody read): on USB nothing closes, so it would come first."""
+        nobody read): on USB nothing closes, so it would come first. Stops
+        after `limit` seconds even if the printer keeps talking."""
         timeout, self.timeout = self.timeout, quiet
+        end = time.monotonic() + limit
         try:
-            while True:
+            while time.monotonic() < end:
                 self.recv(4096)
         except PrinterTimeout:
             pass
@@ -137,18 +216,60 @@ class Connection:
             self.timeout = timeout
 
     def close(self) -> None:
-        if self.fd >= 0:
+        if self.fd < 0:
+            return
+        try:
+            # closing cancels a write still on its way to the printer (usblp
+            # kills its URB): wait until the device takes data again
+            select.select([], [self.fd], [], min(self.timeout, CLOSE_WAIT))
+        except (OSError, ValueError):
+            pass
+        finally:
             os.close(self.fd)
             self.fd = -1
+            self.lock.release()
 
-    def _wait(self, writing: bool) -> None:
+    def _read(self, size: int) -> bytes:
+        return os.read(self.fd, size)
+
+    def _write(self, data: memoryview) -> int:
+        return os.write(self.fd, data)
+
+    @contextmanager
+    def _errors(self) -> Iterator[None]:
+        """OS errors of the device as PrinterErrors: unplugged, or a
+        failing transfer (EIO), which also comes with unplugging."""
+        try:
+            yield
+        except OSError as e:
+            text = "%s: %s" % (self.device, e)
+            if e.errno in GONE or not self.device.exists():
+                raise UsbNotFound(text) from e
+            raise PrinterError(text) from e
+
+    def _wait(self, writing: bool, deadline: float) -> None:
+        """Until the device can be read or written; PrinterTimeout at the
+        deadline, UsbNotFound as soon as the device file is gone."""
         fds = [self.fd]
-        readable, writable, _ = select.select(
-            [] if writing else fds, fds if writing else [], [], self.timeout
-        )
-        if not (writable if writing else readable):
-            raise PrinterTimeout("USB printer did not answer within %g s" % self.timeout)
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise PrinterTimeout("USB printer did not answer within %g s" % self.timeout)
+            ready = select.select(
+                [] if writing else fds, fds if writing else [], [], min(remaining, SLICE)
+            )
+            if ready[1 if writing else 0]:
+                return
+            if not self.device.exists():
+                raise UsbNotFound("%s is gone" % self.device)
 
 
 def connect(address: str, timeout: float) -> Connection:
-    return Connection(find(address).device, timeout)
+    """The printer's device file, with what it still had to say dropped."""
+    connection = Connection(find(address).device, timeout)
+    try:
+        connection.drain()
+    except BaseException:
+        connection.close()
+        raise
+    return connection

@@ -361,17 +361,19 @@ def _connect(host: str, port: int):
 
 STANDARD_TIMEOUT = 5.0  # an answer to a question, as labelprinter waits on TCP
 QUIET = 0.3  # an answer has ended when nothing more comes for this long
+ANSWER_LIMIT = 10.0  # seconds after the first piece of an answer, at most
+ANSWER_MAX = 1 << 20  # bytes of one answer, at most (config.xml is a few kB)
 
 
 class _UsbLink:
     """The interface labelprinter's TCP Connection offers (send_message,
     send_file, get_message, close), on the USB device file: the same XML
     protocol (barnguard found it on USB as on TCP, see docs/vc500w.md).
-    The job states its size (datasize), so no end-of-job marker is sent."""
+    The job states its size (datasize), so no end-of-job marker is sent
+    (assumed, see docs/vc500w.md)."""
 
     def __init__(self, device):
-        self.device = device
-        device.drain()  # an answer left over from an earlier session
+        self.device = device  # usb.connect() dropped what an earlier session left
 
     def send_message(self, message) -> None:
         self.device.sendall(message.get_data().encode())
@@ -386,9 +388,14 @@ class _UsbLink:
         device.settimeout(PRINT_TIMEOUT if long_timeout else STANDARD_TIMEOUT)
         data = device.recv(buffer_size)
         device.settimeout(QUIET)
+        # a printer that keeps talking must not hold the session forever
+        end = time.monotonic() + ANSWER_LIMIT
         try:
-            while True:
-                data += device.recv(buffer_size)
+            while len(data) < ANSWER_MAX and time.monotonic() < end:
+                piece = device.recv(buffer_size)
+                if not piece:  # usb.Connection never says b"", other devices might
+                    break
+                data += piece
         except PrinterTimeout:
             pass
         finally:

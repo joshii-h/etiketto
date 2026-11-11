@@ -234,4 +234,5 @@ TRANSLATIONS = {
     "Cover open – close it to continue": "الغطاء مفتوح – أغلقه للمتابعة",
     "Paper jammed – remove it to continue": "الورق عالق – أزله للمتابعة",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "لا يملك Etiketto إذن استخدام منفذ USB الخاص بالطابعة. أضف المستخدم الخاص بك إلى المجموعة «lp» (sudo usermod -aG lp $USER)، ثم سجّل الخروج وسجّل الدخول مجددًا.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "لا يمكن العثور على الطابعة عبر USB. تحقّق من الكابل ومن أن الطابعة قيد التشغيل وليست في وضع السكون، ثم ابحث مجددًا.",
 }

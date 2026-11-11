@@ -306,6 +306,13 @@ class JobCanceled(PrinterError):
     code = "job_canceled"
 
 
+class UsbNotFound(PrinterNotFound):
+    """No such printer on USB, or it went away (unplugged, switched off,
+    asleep): the advice differs from a printer in the network."""
+
+    code = "usb_not_found"
+
+
 class UsbPermission(PrinterError):
     """The printer's USB device file exists, but this user may not open it."""
 

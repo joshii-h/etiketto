@@ -234,4 +234,5 @@ TRANSLATIONS = {
     "Cover open – close it to continue": "Abdeckung offen – schliessen, dann geht es weiter",
     "Paper jammed – remove it to continue": "Papierstau – Papier entfernen, dann geht es weiter",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto darf den USB-Anschluss des Druckers nicht verwenden. Den Benutzer zur Gruppe „lp“ hinzufügen (sudo usermod -aG lp $USER), dann ab- und wieder anmelden.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Der Drucker ist über USB nicht zu finden. Prüfen Sie das Kabel und ob der Drucker eingeschaltet und wach ist, und suchen Sie dann erneut.",
 }

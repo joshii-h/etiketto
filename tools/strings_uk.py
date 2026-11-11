@@ -234,4 +234,5 @@ TRANSLATIONS = {
     "Cover open – close it to continue": "Кришку відкрито – закрийте її, щоб продовжити",
     "Paper jammed – remove it to continue": "Папір застряг – вийміть його, щоб продовжити",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto не має доступу до USB-порту принтера. Додайте свого користувача до групи «lp» (sudo usermod -aG lp $USER), потім вийдіть із системи та увійдіть знову.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Принтер не знайдено через USB. Перевірте кабель і переконайтеся, що принтер увімкнено і він не в режимі сну, потім повторіть пошук.",
 }

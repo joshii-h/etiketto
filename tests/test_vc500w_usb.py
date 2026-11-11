@@ -7,6 +7,7 @@ same simulated printer as the TCP tests."""
 from __future__ import annotations
 
 import io
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,6 +18,7 @@ from etiketto.backends import usb, vc500w
 from etiketto.backends.base import FoundPrinter, PrinterTimeout, PrintOptions, UsbPermission
 from etiketto.backends.vc500w import VC500W
 
+REAL_CONNECT = vc500w._connect  # before conftest's guard replaces it
 USB_HOST = "usb://Brother/VC-500W?serial=E78123"
 
 
@@ -49,7 +51,7 @@ class FakeUsbDevice:
     def settimeout(self, timeout: float) -> None:
         self.timeouts.append(timeout)
 
-    def drain(self) -> None:
+    def drain(self, quiet: float = usb.DRAIN_QUIET, limit: float = usb.DRAIN_LIMIT) -> None:
         self.drained += 1
         self.unread.clear()
 
@@ -63,11 +65,13 @@ def usb_printer(monkeypatch):
     made = []
 
     def connect(address, timeout):
+        """Like usb.connect(): the device, with stale answers dropped."""
         assert address == USB_HOST
         made.append(FakeUsbDevice(device, stale=b"<status><code>0</code></status>\n"))
+        made[-1].drain()
         return made[-1]
 
-    monkeypatch.undo()  # the real vc500w._connect, not the test guard
+    monkeypatch.setattr(vc500w, "_connect", REAL_CONNECT)  # not the test guard
     monkeypatch.setattr(usb, "connect", connect)
     monkeypatch.setattr(vc500w, "_sleep", lambda seconds: None)
     return SimpleNamespace(device=device, made=made)
@@ -76,7 +80,7 @@ def usb_printer(monkeypatch):
 def test_usb_addresses_go_to_the_usb_device(usb_printer):
     link = vc500w._connect(USB_HOST, 9100)
     assert isinstance(link, vc500w._UsbLink)
-    assert usb_printer.made[0].drained == 1  # stale bytes dropped before the first question
+    assert usb_printer.made[0].drained == 1  # by usb.connect(), not again by the link
 
 
 def test_query_over_usb_with_answers_in_pieces(usb_printer):
@@ -115,7 +119,7 @@ def test_no_permission_for_the_usb_port(monkeypatch):
     def refuse(address, timeout):
         raise UsbPermission("/dev/usb/lp0: Permission denied")
 
-    monkeypatch.undo()
+    monkeypatch.setattr(vc500w, "_connect", REAL_CONNECT)
     monkeypatch.setattr(usb, "connect", refuse)
     with pytest.raises(UsbPermission):
         VC500W().query(USB_HOST)
@@ -150,3 +154,35 @@ def test_drain_reads_until_the_device_is_quiet():
     connection.recv = recv  # type: ignore[method-assign]
     connection.drain()
     assert pieces == [] and connection.timeout == 5.0  # read all, timeout back
+
+
+def test_a_chatty_printer_does_not_hold_the_answer_forever(monkeypatch):
+    class Chatty(FakeUsbDevice):
+        def recv(self, size):
+            time.sleep(0.01)
+            return b"<status/>"  # never quiet
+
+    monkeypatch.setattr(vc500w, "ANSWER_LIMIT", 0.2)
+    start = time.monotonic()
+    answer = vc500w._UsbLink(Chatty(FakeVC500W())).get_message()
+    assert time.monotonic() - start < 1 and 1 < answer.count("<status/>") < 40
+
+
+def test_an_answer_has_a_size_limit(monkeypatch):
+    class Endless(FakeUsbDevice):
+        def recv(self, size):
+            return b"x" * size
+
+    monkeypatch.setattr(vc500w, "ANSWER_MAX", 10_000)
+    answer = vc500w._UsbLink(Endless(FakeVC500W())).get_message()
+    assert 10_000 <= len(answer) < 10_000 + 4096
+
+
+def test_an_empty_piece_ends_the_answer():
+    class Empty(FakeUsbDevice):
+        pieces = [b"<status>", b""]
+
+        def recv(self, size):
+            return self.pieces.pop(0)
+
+    assert vc500w._UsbLink(Empty(FakeVC500W())).get_message() == "<status>"

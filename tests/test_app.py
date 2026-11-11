@@ -47,6 +47,7 @@ from etiketto.backends.base import (  # noqa: E402
     PrintOptions,
     PrintResult,
     Progress,
+    UsbNotFound,
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
 from etiketto.render import mm_to_px, render  # noqa: E402
@@ -2135,3 +2136,9 @@ def test_page_printers_have_no_roll(window):
 def test_usb_permission_text_says_what_to_do():
     text = texts.code_text("usb_permission", MILLIMETRES)
     assert "“lp”" in text and "usermod -aG lp" in text
+
+
+def test_a_usb_printer_not_found_gets_usb_advice():
+    text = texts.printer_error_text(UsbNotFound("no USB printer"), MILLIMETRES)
+    assert "cable" in text and "IP address" not in text
+    assert "usb_not_found" in texts.CONNECTION_ERRORS  # "Printer not reachable"
