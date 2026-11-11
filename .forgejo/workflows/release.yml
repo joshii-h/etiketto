@@ -86,7 +86,10 @@ jobs:
 
           tag = os.environ["TAG"]
           init = pathlib.Path("etiketto/__init__.py").read_text()
-          version = re.search(r'__version__ = "([^"]+)"', init)[1]
+          found = re.search(r'__version__ = "([^"]+)"', init)
+          if not found:
+              sys.exit("::error::no __version__ = \"…\" in etiketto/__init__.py")
+          version = found[1]
           if tag != f"v{version}":
               msg = f"tag {tag} does not match the version {version} in etiketto/__init__.py"
               if os.environ["DRY_RUN"] != "true":

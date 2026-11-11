@@ -993,10 +993,21 @@ def test_save_and_save_as(window, file_dialog, tmp_path):
     assert file_dialog.instances[-1].initial_name == "neu.etiketto"
 
 
-def test_save_as_ignores_files_that_are_not_local(window, file_dialog):
+def test_files_that_are_not_local_are_refused(window, file_dialog):
     file_dialog.result = "https://example.org/label"
     window.files.save_as()
-    assert window.path is None and window.toast_log == []
+    assert window.path is None
+    window.files.open()
+    assert toast_titles(window) == ["Only local files can be used"] * 2
+
+
+def test_save_as_does_not_ask_twice_for_the_same_file(window, file_dialog, tmp_path):
+    # a file system that ignores case: X.ETIKETTO and X.etiketto are one file
+    (tmp_path / "x.etiketto").write_text("{}")
+    (tmp_path / "x.ETIKETTO").hardlink_to(tmp_path / "x.etiketto")
+    file_dialog.result = [tmp_path / "x.ETIKETTO"]  # overwriting it was confirmed
+    window.files.save_as()
+    assert window.path == tmp_path / "x.etiketto" and len(file_dialog.instances) == 1
 
 
 def test_save_as_asks_again_before_overwriting_the_completed_name(window, file_dialog, tmp_path):

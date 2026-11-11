@@ -25,7 +25,10 @@ json_values = st.recursive(
     max_leaves=20,
 )
 FIELDS = list(Label.__dataclass_fields__) + ["version"]
-ELEMENT_FIELDS = ["kind", "text", "font", "bold", "size_pt", "color", "align", "data", "symbology"]
+ELEMENT_FIELDS = [
+    *("kind", "text", "font", "bold", "italic", "size_pt", "color", "align"),
+    *("data", "name", "symbology"),
+]
 # elements with known fields set to arbitrary values, a real kind now and then
 elements = st.lists(
     st.dictionaries(
@@ -43,8 +46,14 @@ label_like = st.dictionaries(st.sampled_from(FIELDS), json_values, max_size=8) |
 )
 
 
-@settings(max_examples=300)
-@given(st.one_of(json_values, label_like))
+@settings(max_examples=300, deadline=None)  # the first call imports the backends
+@given(
+    st.one_of(
+        json_values,
+        label_like,
+        st.builds(dict, background_image=elements.map(lambda items: items[0] if items else {})),
+    )
+)
 def test_loading_any_json_gives_a_label_or_a_label_error(data):
     try:
         label = Label.from_dict(data)

@@ -81,6 +81,8 @@ class Files:
                 return
             if path:
                 self.open_file(Path(path))
+            else:
+                self.window.toast(_("Only local files can be used"))
 
         self.confirm_discard(lambda: dialog.open(self.window, None, done))
 
@@ -113,10 +115,11 @@ class Files:
                 chosen = d.save_finish(result).get_path()
             except GLib.Error:  # cancelled
                 return
-            if not chosen:  # not a local file
+            if not chosen:
+                self.window.toast(_("Only local files can be used"))
                 return
             path = _with_suffix(Path(chosen), suffix)
-            if path.name != Path(chosen).name and path.exists():
+            if path.name != Path(chosen).name and path.exists() and not _same_file(path, chosen):
                 # the dialog asked about overwriting another name: ask again
                 self._pick_save_path(title, suffix, callback, filters, path.parent, path.name)
             else:
@@ -227,6 +230,14 @@ class Files:
             _("Discard"),
             then,
         )
+
+
+def _same_file(path: Path, other: str) -> bool:
+    """On a file system that ignores case, "X.ETIKETTO" is "X.etiketto"."""
+    try:
+        return path.samefile(other)
+    except OSError:  # the chosen name does not exist yet
+        return False
 
 
 def _with_suffix(path: Path, suffix: str) -> Path:

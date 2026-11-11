@@ -249,8 +249,8 @@ class Label:
         raw = path.read_bytes()
         try:
             data = json.loads(raw.decode("utf-8"))
-        except ValueError as e:  # JSON syntax or not UTF-8 at all
-            raise LabelError("not_label", str(e)) from e
+        except (ValueError, RecursionError) as e:  # no JSON, not UTF-8, absurdly nested
+            raise LabelError("not_label", str(e) or type(e).__name__) from e
         return cls.from_dict(data)
 
 

@@ -371,3 +371,11 @@ def test_a_huge_file_is_refused_before_reading(tmp_path, monkeypatch):
     with pytest.raises(LabelError) as info:
         Label.load(path)
     assert info.value.code == "damaged" and "larger" in str(info.value)
+
+
+def test_absurdly_nested_json_is_no_label(tmp_path):
+    path = tmp_path / "deep.etiketto"
+    path.write_text("[" * 100_000 + "]" * 100_000)
+    with pytest.raises(LabelError) as info:
+        Label.load(path)
+    assert info.value.code == "not_label"
