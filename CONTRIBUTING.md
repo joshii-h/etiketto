@@ -59,7 +59,7 @@ gettext from your distribution (see README for package names).
 git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
 cd etiketto
 uv venv --system-site-packages .venv
-uv pip install --python .venv/bin/python -e . pytest pytest-cov ruff
+uv pip install --python .venv/bin/python -e . pytest pytest-cov hypothesis ruff
 .venv/bin/python -m etiketto.app
 ```
 

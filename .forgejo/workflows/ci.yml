@@ -73,7 +73,7 @@ jobs:
         working-directory: src
         run: |
           python3 -m venv --system-site-packages .venv
-          .venv/bin/pip install -q -e . pytest pytest-cov ruff
+          .venv/bin/pip install -q -e . pytest pytest-cov hypothesis ruff
 
       - name: ruff format
         working-directory: src

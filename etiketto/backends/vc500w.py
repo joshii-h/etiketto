@@ -363,10 +363,12 @@ def _answer_code(data: str) -> int:
     return int(match.group(1)) if match else -1
 
 
-def _raw_answer(base):
+def _raw_answer(base: type) -> type:
     """labelprinter's answer class, keeping the XML instead of parsing it."""
 
-    class Answer(base):
+    class Answer(base):  # a class from labelprinter
+        xml = ""  # set by labelprinter through _process_data()
+
         def _process_data(self, data):
             self.xml = data
 

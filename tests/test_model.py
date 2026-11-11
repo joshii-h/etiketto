@@ -355,3 +355,10 @@ def test_switch_printer_with_and_without_geometry():
     assert label.geometry() == before and label.printer == "vc500w"
     label.switch_printer("vc500w")  # tape to tape: nearest tape, length kept
     assert (label.tape_mm, label.auto_length) == (12, False)
+
+
+@pytest.mark.parametrize("kind", [[], ["text"], {}, {"a": 1}, 5, None, ""])
+def test_element_kind_that_is_no_text_is_damaged(kind):
+    with pytest.raises(LabelError) as info:
+        Label.from_dict({"elements": [{"kind": kind}]})
+    assert info.value.code == "damaged"

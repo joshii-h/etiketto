@@ -12,7 +12,7 @@ import socket
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import KW_ONLY, dataclass, field
 from datetime import date
 from typing import Literal
 
@@ -113,6 +113,7 @@ class PrinterInfo:
     remaining_mm: int | None
     total_mm: int | None
     state: str
+    _: KW_ONLY  # the optional fields by name only: safe to add or remove some
     error: str = ""  # PrinterError code of a problem the printer reports; "" = none
     modes: tuple[PrintMode, ...] = ()  # reported by the printer; empty = unknown
     firmware: str = ""

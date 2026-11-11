@@ -114,7 +114,7 @@ class PrintFlow:
         """Copies, cut and mode for the print dialog, from the last print."""
         return {"copies": 1, "cut": self._cut(), "mode": self.mode}
 
-    def rows(self, choices: dict) -> list[Gtk.Widget]:
+    def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported."""
         caps = self.window.backend.capabilities
@@ -154,7 +154,12 @@ class PrintFlow:
             spins.append(spin)
             row.add_row(spin)
         reset.add_css_class("flat")
-        reset.connect("clicked", lambda _b: _reset(spins))
+
+        def reset_all(_button) -> None:
+            for spin in spins:
+                spin.set_value(0)
+
+        reset.connect("clicked", reset_all)
         row.add_suffix(reset)
         self._show_color_adjust(row, reset)
         return row
@@ -175,7 +180,7 @@ class PrintFlow:
             return
         choices = self.choices()
         body = window.size_text(window.rendered.length_mm)
-        dialog = list_dialog(_("Print label"), self.rows(choices), body)
+        dialog = list_dialog(_("Print label"), self._rows(choices), body)
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("print", _("Print"))
         dialog.set_response_appearance("print", Adw.ResponseAppearance.SUGGESTED)
@@ -293,8 +298,3 @@ class PrintFlow:
 
         dialog.connect("response", response)
         self.window.present_dialog(dialog)
-
-
-def _reset(spins) -> None:
-    for spin in spins:
-        spin.set_value(0)

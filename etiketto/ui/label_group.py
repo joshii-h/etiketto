@@ -40,9 +40,9 @@ class LabelGroup(Adw.PreferencesGroup):
     """The "Label" group: tape or die-cut size, spacing, background, border."""
 
     tape_row: Adw.ComboRow  # continuous tape only
-    size_row: Adw.ComboRow  # the others: die-cut labels only
-    width_row: Adw.SpinRow
-    height_row: Adw.SpinRow
+    _size_row: Adw.ComboRow  # the others: die-cut labels only
+    _width_row: Adw.SpinRow
+    _height_row: Adw.SpinRow
 
     def __init__(self, window: Window):
         super().__init__(title=_("Label"))
@@ -162,7 +162,7 @@ class LabelGroup(Adw.PreferencesGroup):
             self.add(row)
         auto.connect("notify::active", lambda r, _p: window.change(auto_length=r.get_active()))
 
-    def size_key(self) -> str:
+    def _size_key(self) -> str:
         """The preset matching the label, else CUSTOM_SIZE."""
         width, height = self.window.label.media_size()
         for size in self.window.backend.capabilities.label_sizes:
@@ -183,12 +183,12 @@ class LabelGroup(Adw.PreferencesGroup):
         items = [(key, unit.size(*size)) for key, size in self._sizes.items()]
         items.append((CUSTOM_SIZE, _("Custom size")))
         self._size_keys = [key for key, _name in items]
-        self.size_row = combo_row(_("Label size"), items, self.size_key(), self._on_size_preset)
-        self.add(self.size_row)
+        self._size_row = combo_row(_("Label size"), items, self._size_key(), self._on_size_preset)
+        self.add(self._size_row)
 
         width, height = lab.media_size()
         max_width = caps.max_width_mm or MAX_SIZE_MM
-        self.width_row = self._length_row(
+        self._width_row = self._length_row(
             _("Width"),
             min(width, max_width),
             MIN_SIZE_MM,
@@ -197,7 +197,7 @@ class LabelGroup(Adw.PreferencesGroup):
             lambda v: self._on_media_size(width=v),
             _("%(unit)s across the roll"),
         )
-        self.height_row = self._length_row(
+        self._height_row = self._length_row(
             _("Height"),
             height,
             MIN_SIZE_MM,
@@ -206,8 +206,8 @@ class LabelGroup(Adw.PreferencesGroup):
             lambda v: self._on_media_size(height=v),
             _("%(unit)s along the roll"),
         )
-        self.add(self.width_row)
-        self.add(self.height_row)
+        self.add(self._width_row)
+        self.add(self._height_row)
         self.add(
             self._length_row(
                 _("Gap"),
@@ -225,7 +225,7 @@ class LabelGroup(Adw.PreferencesGroup):
         self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
 
     def _on_size_preset(self, key: str) -> None:
-        if key == CUSTOM_SIZE or key == self.size_key():
+        if key == CUSTOM_SIZE or key == self._size_key():
             return
         self.window.label.set_media_size(*self._sizes[key])
         self._show_media_size()
@@ -237,9 +237,9 @@ class LabelGroup(Adw.PreferencesGroup):
         old_width, old_height = self.window.label.media_size()
         new = (old_width if width is None else width, old_height if height is None else height)
         self.window.label.set_media_size(*new)
-        index = self._size_keys.index(self.size_key())
-        if self.size_row.get_selected() != index:
-            self.size_row.set_selected(index)
+        index = self._size_keys.index(self._size_key())
+        if self._size_row.get_selected() != index:
+            self._size_row.set_selected(index)
         self.window.mark_changed()
 
     def _show_media_size(self) -> None:
@@ -247,7 +247,7 @@ class LabelGroup(Adw.PreferencesGroup):
         width, height = self.window.label.media_size()
         self._syncing = True  # rounding to the shown digits must not change the model
         try:
-            for row, mm in ((self.width_row, width), (self.height_row, height)):
+            for row, mm in ((self._width_row, width), (self._height_row, height)):
                 row.set_value(self.window.unit.to_display(mm, row.get_digits()))
         finally:
             self._syncing = False

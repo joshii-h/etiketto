@@ -288,10 +288,10 @@ def _element_from_dict(item) -> Element:
     if not isinstance(item, dict):
         raise _damaged("element must be an object")
     kind = item.get("kind")
-    if kind not in ELEMENT_TYPES:
-        if isinstance(kind, str) and kind:  # a kind of element added later
-            raise LabelError("newer", "unknown element type %r" % kind)
+    if not isinstance(kind, str) or not kind:  # also no list or object: unhashable
         raise _damaged("element without a valid kind")
+    if kind not in ELEMENT_TYPES:  # a kind of element added later
+        raise LabelError("newer", "unknown element type %r" % kind)
     cls = ELEMENT_TYPES[kind]
     element = cls(**_known_fields(cls, item))
     if isinstance(element, TextElement):

@@ -3,7 +3,7 @@
 #
 # Notes come from the matching <release> in the AppStream metainfo, otherwise
 # from the tag annotation. Assets: sdist, wheel and SHA256SUMS. The tag must
-# match the version in pyproject.toml.
+# match __version__ in etiketto/__init__.py (pyproject.toml reads it from there).
 #
 # Manual run (Actions -> Release -> Run workflow): `tag` picks an existing tag;
 # with `dry_run` (default) everything is built and printed, nothing published.
@@ -81,13 +81,14 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'EOF'
-          import os, pathlib, subprocess, sys, tomllib
+          import os, pathlib, re, subprocess, sys
           import xml.etree.ElementTree as ET
 
           tag = os.environ["TAG"]
-          version = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"]
+          init = pathlib.Path("etiketto/__init__.py").read_text()
+          version = re.search(r'__version__ = "([^"]+)"', init)[1]
           if tag != f"v{version}":
-              msg = f"tag {tag} does not match the version {version} in pyproject.toml"
+              msg = f"tag {tag} does not match the version {version} in etiketto/__init__.py"
               if os.environ["DRY_RUN"] != "true":
                   sys.exit(f"::error::{msg}")
               print(f"::warning::{msg}")

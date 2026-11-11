@@ -43,7 +43,7 @@ class Printer:
     row: Adw.ActionRow
     details_button: Gtk.Button
     hint: Adw.ActionRow
-    host_row: Adw.EntryRow
+    _host_row: Adw.EntryRow
 
     def __init__(self, window: Window):
         self.window = window
@@ -64,11 +64,11 @@ class Printer:
             group.add(self._backend_row())
         self._add_status_rows(group)
 
-        self.host_row = Adw.EntryRow(title=_("Host name or IP address"))
-        self.host_row.set_text(self.host or "")
-        self.host_row.set_show_apply_button(True)
-        self.host_row.connect("apply", self._on_host_apply)
-        group.add(self.host_row)
+        self._host_row = Adw.EntryRow(title=_("Host name or IP address"))
+        self._host_row.set_text(self.host or "")
+        self._host_row.set_show_apply_button(True)
+        self._host_row.connect("apply", self._on_host_apply)
+        group.add(self._host_row)
 
         group.add(
             length_row(
@@ -164,7 +164,7 @@ class Printer:
             )
             return False
         if len(found) == 1 or not choose:
-            self.use(found[0].host)
+            self._use(found[0].host)
             self.window.toast(_("Found %s") % found[0].name)
             return False
         self._choose(found)
@@ -196,15 +196,15 @@ class Printer:
 
     def _on_chosen(self, _row, dialog, host: str) -> None:
         dialog.close()
-        self.use(host)
+        self._use(host)
 
     def chooser_closed(self, dialog) -> None:
         if self.chooser is dialog:
             self.chooser = None
 
-    def use(self, host: str) -> None:
+    def _use(self, host: str) -> None:
         self.window.printer_settings.update(host=host)
-        self.host_row.set_text(host)  # not a rebuild: open rows and input stay
+        self._host_row.set_text(host)  # not a rebuild: open rows and input stay
         self.refresh()
 
     def refresh(self) -> None:
@@ -220,9 +220,10 @@ class Printer:
         def work():
             try:
                 info = backend.query(host)
-                GLib.idle_add(self.found, info, generation)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001 - shown in the status row
                 GLib.idle_add(self.failed, e, generation)
+            else:
+                GLib.idle_add(self.found, info, generation)
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -287,7 +288,7 @@ class Printer:
         connected = False
         if title is None and info is not None:
             # the printer itself reports a codename (the VC-500W says "Wedge")
-            title, subtitle = self.window.backend.display_name(info), self.summary(info)
+            title, subtitle = self.window.backend.display_name(info), self._summary(info)
             if info.error:  # reachable, but it reports a problem
                 title = _("Printer needs attention")
             connected = True
@@ -298,7 +299,7 @@ class Printer:
         self.hint.set_title(GLib.markup_escape_text(hint or ""))
         self.hint.set_visible(hint is not None)
 
-    def remaining_text(self, info: PrinterInfo) -> str | None:
+    def _remaining_text(self, info: PrinterInfo) -> str | None:
         if not self.window.backend.capabilities.reports_remaining:
             return None
         if info.remaining_mm is None or not info.total_mm:
@@ -309,7 +310,7 @@ class Printer:
             "total": unit.format_long(info.total_mm),
         }
 
-    def summary(self, info: PrinterInfo) -> str:
+    def _summary(self, info: PrinterInfo) -> str:
         unit = self.window.unit
         if info.error:
             return code_text(info.error, unit)
@@ -322,7 +323,7 @@ class Printer:
         if not info.tape_mm:
             return _("No cassette inserted")
         parts = [_("%s cassette") % isolate(unit.tape_name(info.tape_mm))]
-        remaining = self.remaining_text(info)
+        remaining = self._remaining_text(info)
         if remaining:
             parts.append(remaining)
         return " · ".join(parts)
@@ -345,7 +346,7 @@ class Printer:
             (_("Firmware"), info.firmware),
             (_("Cassette"), isolate(unit.tape_name(info.tape_mm)) if info.tape_mm else ""),
             (_("Label distance"), unit.format(info.pitch_mm) if info.pitch_mm else ""),
-            (_("Remaining tape"), self.remaining_text(info) or ""),
+            (_("Remaining tape"), self._remaining_text(info) or ""),
         ]
 
     def _cassette_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:

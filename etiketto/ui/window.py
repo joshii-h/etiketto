@@ -353,11 +353,11 @@ class Window(Adw.ApplicationWindow):
             except GLib.Error:
                 ok = False
             if not ok:
-                self.offer_link(url)
+                self._offer_link(url)
 
         Gtk.UriLauncher.new(url).launch(self, None, launched)
 
-    def offer_link(self, url: str) -> None:
+    def _offer_link(self, url: str) -> None:
         """No browser could be opened: let the user copy the address."""
         self._add_toast(
             _("The browser cannot be opened"),

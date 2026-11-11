@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 21:03+0100\n"
+"PO-Revision-Date: 2026-11-11 21:16+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -103,79 +103,79 @@ msgstr "सामग्री (लिंक, पाठ, संख्या)"
 msgid "Colour"
 msgstr "रंग"
 
-#: etiketto/ui/files.py:34
+#: etiketto/ui/files.py:33
 msgid "Etiketto labels"
 msgstr "Etiketto लेबल"
 
-#: etiketto/ui/files.py:39
+#: etiketto/ui/files.py:38
 msgid "Images"
 msgstr "छवियाँ"
 
-#: etiketto/ui/files.py:42 etiketto/ui/label_group.py:118
+#: etiketto/ui/files.py:41 etiketto/ui/label_group.py:118
 msgid "Choose image"
 msgstr "छवि चुनें"
 
-#: etiketto/ui/files.py:62
+#: etiketto/ui/files.py:61
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "टेम्पलेट %(name)s खोला नहीं जा सकता"
 
-#: etiketto/ui/files.py:66
+#: etiketto/ui/files.py:65
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s खोला नहीं जा सकता"
 
-#: etiketto/ui/files.py:76
+#: etiketto/ui/files.py:75
 msgid "Open label"
 msgstr "लेबल खोलें"
 
-#: etiketto/ui/files.py:88
+#: etiketto/ui/files.py:91
 msgid "label"
 msgstr "लेबल"
 
-#: etiketto/ui/files.py:125
+#: etiketto/ui/files.py:134
 msgid "Save label"
 msgstr "लेबल सहेजें"
 
-#: etiketto/ui/files.py:131 etiketto/ui/window.py:114
+#: etiketto/ui/files.py:139 etiketto/ui/window.py:114
 msgid "Save as template…"
 msgstr "टेम्पलेट के रूप में सहेजें…"
 
-#: etiketto/ui/files.py:149
+#: etiketto/ui/files.py:157
 #, python-format
 msgid "Saved %s"
 msgstr "%s सहेजा गया"
 
-#: etiketto/ui/files.py:159
+#: etiketto/ui/files.py:167
 msgid "Export PNG"
 msgstr "PNG में निर्यात करें"
 
-#: etiketto/ui/files.py:167 etiketto/ui/window.py:300
+#: etiketto/ui/files.py:175 etiketto/ui/window.py:300
 msgid "The preview cannot be drawn"
 msgstr "पूर्वावलोकन नहीं बनाया जा सकता"
 
-#: etiketto/ui/files.py:169
+#: etiketto/ui/files.py:177
 msgid "Exported"
 msgstr "निर्यात किया गया"
 
-#: etiketto/ui/files.py:179
+#: etiketto/ui/files.py:187
 msgid "No templates yet – use “Save as template…”"
 msgstr "अभी कोई टेम्पलेट नहीं – “टेम्पलेट के रूप में सहेजें…” इस्तेमाल करें"
 
-#: etiketto/ui/files.py:206 etiketto/ui/label_group.py:48
+#: etiketto/ui/files.py:214 etiketto/ui/label_group.py:48
 #: etiketto/ui/window.py:38
 msgid "Label"
 msgstr "लेबल"
 
-#: etiketto/ui/files.py:216
+#: etiketto/ui/files.py:224
 msgid "Discard changes?"
 msgstr "बदलाव छोड़ें?"
 
-#: etiketto/ui/files.py:217
+#: etiketto/ui/files.py:225
 msgid "The current label has unsaved changes."
 msgstr "मौजूदा लेबल में बिना सहेजे बदलाव हैं।"
 
-#: etiketto/ui/files.py:219
+#: etiketto/ui/files.py:227
 msgid "Discard"
 msgstr "छोड़ें"
 
@@ -391,11 +391,11 @@ msgstr "स्वचालित (%s)"
 msgid "Printer model"
 msgstr "प्रिंटर मॉडल"
 
-#: etiketto/ui/printer.py:110 etiketto/ui/printer.py:294
+#: etiketto/ui/printer.py:110 etiketto/ui/printer.py:295
 msgid "Searching…"
 msgstr "खोजा जा रहा है…"
 
-#: etiketto/ui/printer.py:113 etiketto/ui/printer.py:375
+#: etiketto/ui/printer.py:113 etiketto/ui/printer.py:376
 msgid "Printer details"
 msgstr "प्रिंटर विवरण"
 
@@ -430,7 +430,7 @@ msgstr "%s मिला"
 msgid "Choose a printer"
 msgstr "प्रिंटर चुनें"
 
-#: etiketto/ui/printer.py:194 etiketto/ui/printing.py:179
+#: etiketto/ui/printer.py:194 etiketto/ui/printing.py:184
 #: etiketto/ui/window.py:316
 msgid "Cancel"
 msgstr "रद्द करें"
@@ -439,82 +439,82 @@ msgstr "रद्द करें"
 msgid "Connecting…"
 msgstr "कनेक्ट हो रहा है…"
 
-#: etiketto/ui/printer.py:276
+#: etiketto/ui/printer.py:277
 msgid "Printer not reachable"
 msgstr "प्रिंटर तक पहुँच नहीं"
 
-#: etiketto/ui/printer.py:278 etiketto/ui/printer.py:292
+#: etiketto/ui/printer.py:279 etiketto/ui/printer.py:293
 msgid "Printer needs attention"
 msgstr "प्रिंटर पर ध्यान देना ज़रूरी है"
 
-#: etiketto/ui/printer.py:307
+#: etiketto/ui/printer.py:308
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "%(total)s में से %(left)s बाकी"
 
-#: etiketto/ui/printer.py:318
+#: etiketto/ui/printer.py:319
 msgid "Printing"
 msgstr "प्रिंट हो रहा है"
 
-#: etiketto/ui/printer.py:320
+#: etiketto/ui/printer.py:321
 #, python-format
 msgid "Ready · a label every %s"
 msgstr "तैयार · हर %s पर एक लेबल"
 
-#: etiketto/ui/printer.py:321
+#: etiketto/ui/printer.py:322
 msgid "Ready"
 msgstr "तैयार"
 
-#: etiketto/ui/printer.py:323
+#: etiketto/ui/printer.py:324
 msgid "No cassette inserted"
 msgstr "कोई कैसेट नहीं लगी है"
 
-#: etiketto/ui/printer.py:324
+#: etiketto/ui/printer.py:325
 #, python-format
 msgid "%s cassette"
 msgstr "%s कैसेट"
 
-#: etiketto/ui/printer.py:343
+#: etiketto/ui/printer.py:344
 msgid "Model"
 msgstr "मॉडल"
 
-#: etiketto/ui/printer.py:344
+#: etiketto/ui/printer.py:345
 msgid "Address"
 msgstr "पता"
 
-#: etiketto/ui/printer.py:345
+#: etiketto/ui/printer.py:346
 msgid "Firmware"
 msgstr "फ़र्मवेयर"
 
-#: etiketto/ui/printer.py:346
+#: etiketto/ui/printer.py:347
 msgid "Cassette"
 msgstr "कैसेट"
 
-#: etiketto/ui/printer.py:347
+#: etiketto/ui/printer.py:348
 msgid "Label distance"
 msgstr "लेबल की दूरी"
 
-#: etiketto/ui/printer.py:348
+#: etiketto/ui/printer.py:349
 msgid "Remaining tape"
 msgstr "बचा हुआ टेप"
 
-#: etiketto/ui/printer.py:358
+#: etiketto/ui/printer.py:359
 msgid "Printable width"
 msgstr "प्रिंट योग्य चौड़ाई"
 
-#: etiketto/ui/printer.py:359
+#: etiketto/ui/printer.py:360
 msgid "Lot number"
 msgstr "लॉट नंबर"
 
-#: etiketto/ui/printer.py:360
+#: etiketto/ui/printer.py:361
 msgid "Serial number"
 msgstr "सीरियल नंबर"
 
-#: etiketto/ui/printer.py:362
+#: etiketto/ui/printer.py:363
 msgid "Probably made"
 msgstr "संभावित निर्माण"
 
-#: etiketto/ui/printer.py:376 etiketto/ui/printing.py:285
+#: etiketto/ui/printer.py:377 etiketto/ui/printing.py:290
 msgid "Close"
 msgstr "बंद करें"
 
@@ -569,60 +569,60 @@ msgstr "रंग समायोजन"
 msgid "Reset"
 msgstr "रीसेट करें"
 
-#: etiketto/ui/printing.py:164
+#: etiketto/ui/printing.py:169
 msgid "Not adjusted"
 msgstr "समायोजित नहीं"
 
-#: etiketto/ui/printing.py:164
+#: etiketto/ui/printing.py:169
 msgid "Adjusted"
 msgstr "समायोजित"
 
-#: etiketto/ui/printing.py:178
+#: etiketto/ui/printing.py:183
 msgid "Print label"
 msgstr "लेबल प्रिंट करें"
 
-#: etiketto/ui/printing.py:180 etiketto/ui/printing.py:257
+#: etiketto/ui/printing.py:185 etiketto/ui/printing.py:262
 #: etiketto/ui/window.py:103
 msgid "Print"
 msgstr "प्रिंट करें"
 
-#: etiketto/ui/printing.py:209
+#: etiketto/ui/printing.py:214
 msgid "No printer yet – search for one or enter its address"
 msgstr "अभी कोई प्रिंटर नहीं – खोजें या उसका पता दर्ज करें"
 
-#: etiketto/ui/printing.py:215
+#: etiketto/ui/printing.py:220
 msgid "Printing…"
 msgstr "प्रिंट हो रहा है…"
 
-#: etiketto/ui/printing.py:225
+#: etiketto/ui/printing.py:230
 msgid "The label cannot be prepared for printing."
 msgstr "लेबल को प्रिंट के लिए तैयार नहीं किया जा सकता।"
 
-#: etiketto/ui/printing.py:240
+#: etiketto/ui/printing.py:245
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "प्रिंट हो रहा है %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:269
+#: etiketto/ui/printing.py:274
 msgid "Printed"
 msgstr "प्रिंट हो गया"
 
-#: etiketto/ui/printing.py:271
+#: etiketto/ui/printing.py:276
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "रंग मोड “%(wanted)s” इस प्रिंटर पर उपलब्ध नहीं है, “%(used)s” से प्रिंट किया गया"
 
-#: etiketto/ui/printing.py:280
+#: etiketto/ui/printing.py:285
 msgid "Printing failed"
 msgstr "प्रिंट विफल"
 
-#: etiketto/ui/printing.py:281
+#: etiketto/ui/printing.py:286
 msgid "Details"
 msgstr "विवरण"
 
-#: etiketto/ui/printing.py:284 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:289 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "रिपोर्ट करें"
 

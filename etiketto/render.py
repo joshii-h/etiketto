@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import io
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
+from types import MappingProxyType
 from typing import NamedTuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
@@ -34,7 +36,8 @@ class RenderWarning(NamedTuple):
     fixed_too_short, background_unreadable)."""
 
     key: str
-    params: dict = {}
+    # read-only: a NamedTuple default is one object shared by all warnings
+    params: Mapping[str, object] = MappingProxyType({})
 
 
 class CodeError(ValueError):
@@ -178,7 +181,7 @@ def check_code(element: CodeElement) -> None:
             raise CodeError("ean13_digits")
         if len(data) == 13 and not _ean13_ok(data):
             raise CodeError("ean13_check")
-    elif element.symbology == "code128" and not all(c in CODE128_CHARS for c in data):
+    elif element.symbology == "code128" and not CODE128_CHARS.issuperset(data):
         raise CodeError("code128_charset")
 
 

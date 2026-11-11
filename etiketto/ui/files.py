@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -30,7 +29,7 @@ class Files:
         self.window = window
 
     @staticmethod
-    def label_filter() -> Gio.ListStore:
+    def _label_filter() -> Gio.ListStore:
         flt = Gtk.FileFilter(name=_("Etiketto labels"))
         flt.add_pattern("*.etiketto")
         return _filters(flt)
@@ -73,11 +72,15 @@ class Files:
             self.window.set_label(label, path)
 
     def open(self, *_args) -> None:
-        dialog = Gtk.FileDialog(title=_("Open label"), filters=self.label_filter())
+        dialog = Gtk.FileDialog(title=_("Open label"), filters=self._label_filter())
 
         def done(d, result):
-            with suppress(GLib.Error):  # cancelled
-                self.open_file(Path(d.open_finish(result).get_path()))
+            try:
+                path = d.open_finish(result).get_path()
+            except GLib.Error:  # cancelled
+                return
+            if path:
+                self.open_file(Path(path))
 
         self.confirm_discard(lambda: dialog.open(self.window, None, done))
 
@@ -88,29 +91,36 @@ class Files:
         return (path.stem if path else _("label")) + suffix
 
     def _pick_save_path(
-        self, title: str, suffix: str, callback, filters=None, folder: Path | None = None
+        self,
+        title: str,
+        suffix: str,
+        callback,
+        filters=None,
+        folder: Path | None = None,
+        name: str = "",
     ) -> None:
         """Ask for a file name, force the suffix, then call callback(path)."""
         dialog = Gtk.FileDialog(title=title)
         if filters is not None:
             dialog.set_filters(filters)
-        dialog.set_initial_name(self._initial_name(suffix))
+        dialog.set_initial_name(name or self._initial_name(suffix))
         if folder:
             folder.mkdir(parents=True, exist_ok=True)
             dialog.set_initial_folder(Gio.File.new_for_path(str(folder)))
 
         def done(d, result):
             try:
-                path = Path(d.save_finish(result).get_path())
-            except (GLib.Error, TypeError):
+                chosen = d.save_finish(result).get_path()
+            except GLib.Error:  # cancelled
                 return
-            if path.suffix.lower() != suffix:
-                # appended, not replaced: "Shelf 1.2" must not become "Shelf 1"
-                path = path.with_name(path.name + suffix)
-            elif suffix == ".etiketto":
-                # the template menu and the open dialog look for "*.etiketto"
-                path = path.with_suffix(suffix)
-            callback(path)
+            if not chosen:  # not a local file
+                return
+            path = _with_suffix(Path(chosen), suffix)
+            if path.name != Path(chosen).name and path.exists():
+                # the dialog asked about overwriting another name: ask again
+                self._pick_save_path(title, suffix, callback, filters, path.parent, path.name)
+            else:
+                callback(path)
 
         dialog.save(self.window, None, done)
 
@@ -120,10 +130,8 @@ class Files:
         else:
             self.save_as()
 
-    def save_as(self, *_args, folder: Path | None = None) -> None:
-        self._pick_save_path(
-            _("Save label"), ".etiketto", self.write, self.label_filter(), folder=folder
-        )
+    def save_as(self, *_args) -> None:
+        self._pick_save_path(_("Save label"), ".etiketto", self.write, self._label_filter())
 
     def save_template(self, *_args) -> None:
         """Store a copy as template; the open file and its state stay as they are."""
@@ -131,7 +139,7 @@ class Files:
             _("Save as template…"),
             ".etiketto",
             self._save_label,
-            self.label_filter(),
+            self._label_filter(),
             folder=config.TEMPLATE_DIR,
         )
 
@@ -219,3 +227,12 @@ class Files:
             _("Discard"),
             then,
         )
+
+
+def _with_suffix(path: Path, suffix: str) -> Path:
+    """The path with the suffix appended, not replaced: "Shelf 1.2" stays
+    "Shelf 1.2.etiketto". An image may end in ".PNG"; a label gets exactly
+    ".etiketto", which the template menu and the open dialog look for."""
+    if path.suffix.lower() != suffix:
+        return path.with_name(path.name + suffix)
+    return path.with_suffix(suffix) if suffix == ".etiketto" else path

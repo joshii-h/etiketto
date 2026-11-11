@@ -130,8 +130,12 @@ class FakeFileDialog:
     def _finish(self, result):
         assert result == "result"
         value = type(self).result
+        if isinstance(value, list):  # one answer per dialog
+            value = value.pop(0)
         if isinstance(value, BaseException):
             raise value
+        if str(value).startswith("https:"):  # a file that is not local
+            return Gio.File.new_for_uri(str(value))
         return Gio.File.new_for_path(str(value))
 
     open_finish = save_finish = _finish
@@ -984,11 +988,28 @@ def test_save_and_save_as(window, file_dialog, tmp_path):
     window.files.save()  # known path: no dialog
     assert len(file_dialog.instances) == 4
     assert Label.load(tmp_path / "neu.etiketto").tape_mm == 9
+    file_dialog.result = cancelled()
     window.activate_action("win.save-as", None)
     assert file_dialog.instances[-1].initial_name == "neu.etiketto"
-    folder = tmp_path / "new" / "folder"
-    window.files.save_as(folder=folder)
-    assert folder.is_dir() and file_dialog.instances[-1].initial_folder == str(folder)
+
+
+def test_save_as_ignores_files_that_are_not_local(window, file_dialog):
+    file_dialog.result = "https://example.org/label"
+    window.files.save_as()
+    assert window.path is None and window.toast_log == []
+
+
+def test_save_as_asks_again_before_overwriting_the_completed_name(window, file_dialog, tmp_path):
+    (tmp_path / "taken.etiketto").write_text("{}")
+    # typed "taken": the dialog had nothing to overwrite, but taken.etiketto exists
+    file_dialog.result = [tmp_path / "taken", cancelled()]
+    window.files.save_as()
+    again = file_dialog.instances[-1]
+    assert again.initial_name == "taken.etiketto" and again.initial_folder == str(tmp_path)
+    assert window.path is None and (tmp_path / "taken.etiketto").read_text() == "{}"
+    file_dialog.result = [tmp_path / "taken.etiketto"]  # confirmed in the dialog
+    window.files.save_as()
+    assert window.path == tmp_path / "taken.etiketto"
 
 
 def test_save_template(window, file_dialog, gui_env):
