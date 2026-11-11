@@ -266,7 +266,7 @@ def gui_env(monkeypatch, tmp_path):
     """The VC-500W backend with faked query/print/discover; config in tmp_path."""
     if not gtk_available():
         pytest.skip("no display for GTK")
-    from etiketto import app
+    from etiketto.ui import settings as config
 
     backend = get_backend("vc500w")
     env = SimpleNamespace(
@@ -306,9 +306,9 @@ def gui_env(monkeypatch, tmp_path):
     monkeypatch.setattr(backend, "print_label", print_label)
     monkeypatch.setattr(backend, "discover", discover)
     monkeypatch.setattr(backend, "configured_host", lambda: env.configured)
-    monkeypatch.setattr(app, "CONFIG_DIR", tmp_path / "config")
-    monkeypatch.setattr(app, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
-    monkeypatch.setattr(app, "TEMPLATE_DIR", tmp_path / "templates")
+    monkeypatch.setattr(config, "CONFIG_DIR", tmp_path / "config")
+    monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
+    monkeypatch.setattr(config, "TEMPLATE_DIR", tmp_path / "templates")
     monkeypatch.delenv("ETIKETTO_SCREENSHOT", raising=False)
     monkeypatch.setenv("LC_ALL", "de_CH.UTF-8")  # units: automatic = mm
     return env
@@ -317,14 +317,15 @@ def gui_env(monkeypatch, tmp_path):
 @pytest.fixture
 def make_window(gtk_app, gui_env):
     """Factory for windows with recorded toasts; settings can be preset."""
-    from etiketto import app
+    from etiketto.ui import window as ui_window
+    from etiketto.ui.settings import Settings
 
     windows = []
 
     def factory(settings=None, settle=True):
         if settings is not None:
-            app.save_settings(settings)
-        win = app.Window(gtk_app)
+            Settings(settings).save()
+        win = ui_window.Window(gtk_app)
         win.toast_log = []
         win.toasts.add_toast = win.toast_log.append
         windows.append(win)
@@ -336,7 +337,7 @@ def make_window(gtk_app, gui_env):
     yield factory
     for win in windows:
         win.dirty = False
-        win.printing = False
+        win.print_flow.busy = False
         if win._render_source:
             from gi.repository import GLib
 
@@ -352,7 +353,7 @@ def window(make_window):
 
 
 def _busy(win) -> bool:
-    title = win.printer_row.get_title()
+    title = win.printer.row.get_title()
     return title in ("Searching…", "Connecting…", "Searching for printers…")
 
 
@@ -363,7 +364,7 @@ def render_now(win) -> None:
     if win._render_source:
         GLib.source_remove(win._render_source)
         win._render_source = 0
-    win._do_render()
+    win.render_preview()
 
 
 def toast_titles(win) -> list[str]:

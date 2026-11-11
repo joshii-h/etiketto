@@ -1,0 +1,374 @@
+"""The printer connection: status row, search, details and the printer settings group."""
+
+from __future__ import annotations
+
+import threading
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
+
+from etiketto.backends import backends  # noqa: E402
+from etiketto.backends.base import PrinterInfo  # noqa: E402
+from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
+from etiketto.ui.texts import (  # noqa: E402
+    CONNECTION_ERRORS,
+    cassette_age_hint,
+    error_from_code,
+    printer_error_text,
+)
+from etiketto.ui.widgets import (  # noqa: E402
+    boxed_list,
+    combo_row,
+    flat_button,
+    length_row,
+)
+from etiketto.units import default_unit  # noqa: E402
+
+
+class Printer:
+    """Connection to the printer of the window's label: query, search, status row."""
+
+    # widgets of the current sidebar, set by group() before any status update
+    row: Adw.ActionRow
+    details_button: Gtk.Button
+    hint: Adw.ActionRow
+
+    def __init__(self, window):
+        self.window = window
+        self.info: PrinterInfo | None = None
+        self.generation = 0  # answers of older printer queries are dropped
+        self.chooser: Adw.AlertDialog | None = None  # the open "Choose a printer" dialog
+
+    @property
+    def host(self) -> str | None:
+        return self.window.printer_settings.host
+
+    # --- sidebar group ---------------------------------------------------------------
+
+    def group(self) -> Adw.PreferencesGroup:
+        window = self.window
+        group = Adw.PreferencesGroup(title=_("Printer"))
+        if len(backends()) > 1:
+            group.add(self._backend_row())
+        self._add_status_rows(group)
+
+        host = Adw.EntryRow(title=_("Host name or IP address"))
+        host.set_text(self.host or "")
+        host.set_show_apply_button(True)
+        host.connect("apply", self._on_host_apply)
+        group.add(host)
+
+        group.add(
+            length_row(
+                window.unit,
+                _("Safety margin"),
+                window.printer_settings.safe_mm,
+                0,
+                3,
+                0.1,
+                self._on_safe_margin,
+                _(
+                    "%(unit)s kept free for content and border; the background is printed edge to edge"
+                ),
+            )
+        )
+
+        auto_name = _("Millimetres") if default_unit() == "mm" else _("Inches")
+        group.add(
+            combo_row(
+                _("Units"),
+                [
+                    ("auto", _("Automatic (%s)") % auto_name),
+                    ("mm", _("Millimetres")),
+                    ("in", _("Inches")),
+                ],
+                window.settings.units or "auto",
+                window.set_units,
+            )
+        )
+        return group
+
+    def _backend_row(self) -> Adw.ComboRow:
+        items = [(b.id, b.name) for b in backends()]
+        return combo_row(_("Printer model"), items, self.window.backend.id, self.window.set_backend)
+
+    def _add_status_rows(self, group: Adw.PreferencesGroup) -> None:
+        self.row = Adw.ActionRow(title=_("Searching…"))
+        self.row.set_subtitle_lines(3)
+        self.details_button = flat_button(
+            "dialog-information-symbolic", _("Printer details"), self.show_details
+        )
+        self.row.add_suffix(self.details_button)
+        self.row.add_suffix(flat_button("view-refresh-symbolic", _("Refresh"), self.refresh))
+        self.row.add_suffix(
+            flat_button(
+                "system-search-symbolic",
+                _("Search for printers"),
+                lambda: self.discover(choose=True),
+            )
+        )
+        group.add(self.row)
+        self.hint = Adw.ActionRow(visible=False, activatable=False)
+        self.hint.set_title_lines(0)
+        self.hint.add_css_class("dim-label")
+        self.hint.add_prefix(Gtk.Image(icon_name="dialog-information-symbolic"))
+        group.add(self.hint)
+        self.update_row()
+
+    def _on_host_apply(self, row: Adw.EntryRow) -> None:
+        self.window.printer_settings.update(host=row.get_text().strip())
+        self.refresh()
+
+    def _on_safe_margin(self, value: float) -> None:
+        # a printer setting, not part of the label: no dirty flag
+        self.window.printer_settings.update(safe_mm=round(value, 1))
+        self.window.schedule_render()
+
+    # --- search and connection ---------------------------------------------------------
+
+    def discover(self, choose: bool = False) -> None:
+        """Look for printers of the current model on the network."""
+        self.generation += 1  # a pending status answer or search is outdated now
+        generation = self.generation
+        self.update_row(_("Searching for printers…"), "")
+        backend = self.window.backend
+
+        def work():
+            found = backend.discover()
+            GLib.idle_add(self.discovered, found, choose, generation)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def discovered(self, found, choose: bool, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
+        if not found:
+            self.update_row(
+                _("No printer found"),
+                _(
+                    "Make sure the printer is switched on and in the same network, or enter its address below"
+                ),
+            )
+            return False
+        if len(found) == 1 or not choose:
+            self.use(found[0].host)
+            self.window.toast(_("Found %s") % found[0].name)
+            return False
+        self._choose(found)
+        if self.host:
+            self.refresh()
+        else:
+            # refresh() would search again and take the first printer,
+            # overriding the choice the user is about to make
+            self.update_row(_("Choose a printer"), "")
+        return False
+
+    def _choose(self, found) -> None:
+        if self.chooser is not None:  # never two choosers at once
+            self.chooser.force_close()
+        dialog = self.chooser = Adw.AlertDialog(heading=_("Choose a printer"))
+        dialog.connect("closed", self.chooser_closed)
+        rows = []
+        for printer in found:
+            row = Adw.ActionRow(
+                title=GLib.markup_escape_text(printer.name),
+                subtitle="%s · %s" % (isolate(printer.host), isolate(printer.address)),
+                activatable=True,
+            )
+            row.connect("activated", self._on_chosen, dialog, printer.host)
+            rows.append(row)
+        dialog.set_extra_child(boxed_list(rows))
+        dialog.add_response("cancel", _("Cancel"))
+        self.window.present_dialog(dialog)
+
+    def _on_chosen(self, _row, dialog, host: str) -> None:
+        dialog.close()
+        self.use(host)
+
+    def chooser_closed(self, dialog) -> None:
+        if self.chooser is dialog:
+            self.chooser = None
+
+    def use(self, host: str) -> None:
+        self.window.printer_settings.update(host=host)
+        self.window.rebuild_sidebar()
+        self.refresh()
+
+    def refresh(self) -> None:
+        host = self.host
+        if not host:
+            # nothing configured yet: look for one on the network
+            self.discover()
+            return
+        self.generation += 1
+        generation = self.generation
+        backend = self.window.backend
+        self.update_row(_("Connecting…"), isolate(host))
+
+        def work():
+            try:
+                info = backend.query(host)
+                GLib.idle_add(self.found, info, generation)
+            except Exception as e:  # noqa: BLE001
+                GLib.idle_add(self.failed, e, generation)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _outdated(self, generation: int | None) -> bool:
+        return generation is not None and generation != self.generation
+
+    def found(self, info: PrinterInfo, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
+        self.info = info
+        self.update_row()
+        window = self.window
+        caps = window.backend.capabilities
+        if (
+            caps.continuous
+            and info.tape_mm in caps.tape_widths_mm
+            and info.tape_mm != window.label.tape_mm
+            and window.path is None
+            and not window.dirty
+        ):
+            # take over the inserted tape; this is no edit by the user
+            window.label.tape_mm = info.tape_mm
+            window.rebuild_sidebar()
+            window.schedule_render()
+            window.dirty = False
+            window.update_title()
+        return False
+
+    def failed(self, error: Exception, generation: int | None = None) -> bool:
+        if self._outdated(generation):
+            return False
+        self.info = None
+        code = getattr(error, "code", "generic")
+        title = (
+            _("Printer not reachable")
+            if code in CONNECTION_ERRORS
+            else _("Printer needs attention")
+        )
+        self.update_row(title, printer_error_text(error, self.window.unit))
+        return False
+
+    # --- status row --------------------------------------------------------------------
+
+    def update_row(self, title: str | None = None, subtitle: str | None = None) -> None:
+        info = self.info
+        connected = False
+        if title is None and info is not None:
+            # the printer itself reports a codename (the VC-500W says "Wedge")
+            title, subtitle = self.window.backend.display_name(info), self.summary(info)
+            if info.error:  # reachable, but it reports a problem
+                title = _("Printer needs attention")
+            connected = True
+        self.row.set_title(GLib.markup_escape_text(title or _("Searching…")))
+        self.row.set_subtitle(GLib.markup_escape_text(subtitle or ""))
+        self.details_button.set_sensitive(connected)
+        hint = cassette_age_hint(info) if connected else None
+        self.hint.set_title(GLib.markup_escape_text(hint or ""))
+        self.hint.set_visible(hint is not None)
+
+    def remaining_text(self, info: PrinterInfo) -> str | None:
+        if not self.window.backend.capabilities.reports_remaining:
+            return None
+        if info.remaining_mm is None or not info.total_mm:
+            return None
+        unit = self.window.unit
+        return _("%(left)s of %(total)s left") % {
+            "left": unit.format_long(info.remaining_mm),
+            "total": unit.format_long(info.total_mm),
+        }
+
+    def summary(self, info: PrinterInfo) -> str:
+        unit = self.window.unit
+        if not self.window.backend.capabilities.continuous:
+            if info.error:
+                return printer_error_text(error_from_code(info.error), unit)
+            if info.state == "BUSY":
+                return _("Printing")
+            if info.pitch_mm:
+                return _("Ready · a label every %s") % unit.format(info.pitch_mm)
+            return _("Ready")
+        if not info.tape_mm:
+            return _("No cassette inserted")
+        parts = [_("%s cassette") % isolate(unit.tape_name(info.tape_mm))]
+        remaining = self.remaining_text(info)
+        if remaining:
+            parts.append(remaining)
+        return " · ".join(parts)
+
+    # --- details -----------------------------------------------------------------------
+
+    def details(self) -> list[tuple[str, str]]:
+        """(title, value) pairs for the details dialog; empty values left out."""
+        info = self.info
+        if info is None:
+            return []
+        rows = self._printer_rows(info) + self._cassette_rows(info)
+        return [(title, value) for title, value in rows if value and value != isolate("")]
+
+    def _printer_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
+        unit = self.window.unit
+        rows = [
+            (_("Model"), self.window.backend.display_name(info)),
+            (_("Address"), isolate(self.host or "")),
+            (_("Firmware"), info.firmware),
+        ]
+        if info.tape_mm:
+            rows.append((_("Cassette"), isolate(unit.tape_name(info.tape_mm))))
+        if info.pitch_mm:
+            rows.append((_("Label distance"), unit.format(info.pitch_mm)))
+        rows.append((_("Remaining tape"), self.remaining_text(info) or ""))
+        return rows
+
+    def _cassette_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
+        cassette = info.cassette
+        if not cassette:
+            return []
+        printable = self.window.unit.format(cassette.printable_mm) if cassette.printable_mm else ""
+        made = cassette.made
+        return [
+            (_("Printable width"), printable),
+            (_("Lot number"), isolate(cassette.lot) if cassette.lot else ""),
+            (_("Serial number"), isolate(cassette.serial) if cassette.serial else ""),
+            # the production date is read from the serial number: a guess
+            (_("Probably made"), month_year(made.month, made.year) if made else ""),
+        ]
+
+    def show_details(self) -> None:
+        details = self.details()
+        if not details:
+            return
+        dialog = Adw.AlertDialog(heading=_("Printer details"))
+        rows = []
+        for title, value in details:
+            row = Adw.ActionRow(title=title, subtitle=GLib.markup_escape_text(value))
+            row.add_css_class("property")
+            row.set_subtitle_selectable(True)
+            rows.append(row)
+        hint = cassette_age_hint(self.info)
+        if hint:
+            dialog.set_body(hint)
+        dialog.set_extra_child(boxed_list(rows))
+        dialog.add_response("close", _("Close"))
+        self.window.present_dialog(dialog)
+
+    def description(self) -> str | None:
+        """For bug reports: model, cassette, state and firmware (in English)."""
+        info = self.info
+        if not info:
+            return None
+        if self.window.backend.capabilities.continuous:
+            media = "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no")
+        else:
+            media = "label every %s mm" % ("%g" % info.pitch_mm if info.pitch_mm else "?")
+        parts = [self.window.backend.display_name(info), media, info.state]
+        if info.firmware:
+            parts.append("firmware " + info.firmware)
+        return ", ".join(parts)

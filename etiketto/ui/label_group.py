@@ -1,0 +1,250 @@
+"""The "Label" group of the sidebar: tape or die-cut size, spacing, background, border."""
+
+from __future__ import annotations
+
+import math
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+
+from gi.repository import Adw  # noqa: E402
+
+from etiketto.model import MAX_GAP_MM, MAX_SIZE_MM, MIN_SIZE_MM  # noqa: E402
+from etiketto.ui.i18n import _  # noqa: E402
+from etiketto.ui.texts import ALIGNS, ORIENTATIONS  # noqa: E402
+from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row  # noqa: E402
+
+CUSTOM_SIZE = "custom"
+
+
+class LabelGroup(Adw.PreferencesGroup):
+    """The "Label" group: tape or die-cut size, spacing, background, border."""
+
+    tape_row: Adw.ComboRow  # continuous tape only
+    size_row: Adw.ComboRow  # the others: die-cut labels only
+    width_row: Adw.SpinRow
+    height_row: Adw.SpinRow
+
+    def __init__(self, window):
+        super().__init__(title=_("Label"))
+        self.window = window
+        self._size_keys: list[str] = []
+        self._syncing = False
+
+        if window.backend.capabilities.continuous:
+            self._add_tape_rows()
+        else:
+            self._add_size_rows()
+        self._add_spacing_rows()
+        self._add_background_rows()
+        self._add_border_row()
+
+    def _length_row(self, title, mm, lower_mm, upper_mm, step_mm, on_change_mm, subtitle=None):
+        return length_row(
+            self.window.unit, title, mm, lower_mm, upper_mm, step_mm, on_change_mm, subtitle
+        )
+
+    def _add_tape_rows(self) -> None:
+        window = self.window
+        widths = [
+            (str(w), window.unit.tape_name(w)) for w in window.backend.capabilities.tape_widths_mm
+        ]
+        self.tape_row = combo_row(
+            _("Tape width"),
+            widths,
+            str(window.label.tape_mm),
+            lambda v: window.change(tape_mm=int(v)),
+        )
+        self.add(self.tape_row)
+        self._add_length_rows()
+
+    def _add_spacing_rows(self) -> None:
+        window, lab = self.window, self.window.label
+        self.add(
+            self._length_row(
+                _("Spacing"),
+                lab.margin_mm,
+                0,
+                20,
+                0.5,
+                lambda v: window.change(margin_mm=v),
+                _("%(unit)s at the ends and between elements"),
+            )
+        )
+        self.add(
+            self._length_row(
+                _("Edge spacing"),
+                lab.edge_mm,
+                0,
+                10,
+                0.5,
+                lambda v: window.change(edge_mm=v),
+                _("extra %(unit)s along the tape edges"),
+            )
+        )
+
+    def _add_background_rows(self) -> None:
+        window, lab = self.window, self.window.label
+        bg = Adw.ActionRow(title=_("Background colour"))
+        bg.add_suffix(color_button(lab.background, lambda v: window.change(background=v)))
+        self.add(bg)
+
+        bg_image = Adw.ActionRow(title=_("Background image"))
+        bg_image.set_subtitle(lab.background_image.name if lab.background_image else _("None"))
+        bg_image.add_suffix(
+            flat_button(
+                "document-open-symbolic",
+                _("Choose image"),
+                lambda: window.files.choose_image(window.set_background_image),
+            )
+        )
+        if lab.background_image:
+            bg_image.add_suffix(
+                flat_button(
+                    "edit-clear-symbolic", _("Remove"), lambda: window.set_background_image(None)
+                )
+            )
+        self.add(bg_image)
+
+    def _add_border_row(self) -> None:
+        window, lab = self.window, self.window.label
+        border = self._length_row(
+            _("Border"),
+            lab.border_mm,
+            0,
+            5,
+            0.1,
+            lambda v: window.change(border_mm=v),
+            _("%(unit)s, 0 = none"),
+        )
+        border.add_suffix(color_button(lab.border_color, lambda v: window.change(border_color=v)))
+        self.add(border)
+
+    def _add_length_rows(self) -> None:
+        """Length, automatic length and alignment: only for endless tape."""
+        window = self.window
+        lab, caps = window.label, window.backend.capabilities
+        auto = Adw.SwitchRow(title=_("Automatic length"), subtitle=_("As long as the content"))
+        auto.set_active(lab.auto_length)
+        self.add(auto)
+
+        lower = max(15.0, caps.min_length_mm)  # 15 mm: the smallest length a file may have
+        upper = float(math.floor(min(1000.0, caps.max_length_mm or 1000.0)))
+        if not lower <= lab.length_mm <= upper:
+            # a file made for another printer: show and keep the same value
+            lab.length_mm = min(max(lab.length_mm, lower), upper)
+        length = self._length_row(
+            _("Length"),
+            min(max(lab.length_mm, lower), upper),
+            lower,
+            upper,
+            1,
+            lambda v: window.change(length_mm=v),
+        )
+        align = combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v))
+        length.set_sensitive(not lab.auto_length)
+        align.set_sensitive(not lab.auto_length)
+
+        def on_auto(row, _p):
+            window.change(auto_length=row.get_active())
+            length.set_sensitive(not row.get_active())
+            align.set_sensitive(not row.get_active())
+
+        auto.connect("notify::active", on_auto)
+        self.add(length)
+        self.add(align)
+
+    def size_key(self) -> str:
+        """The preset matching the label, else CUSTOM_SIZE."""
+        width, height = self.window.label.media_size()
+        for size in self.window.backend.capabilities.label_sizes:
+            if abs(size.width_mm - width) < 0.05 and abs(size.height_mm - height) < 0.05:
+                return "%g×%g" % (size.width_mm, size.height_mm)
+        return CUSTOM_SIZE
+
+    def _add_size_rows(self) -> None:
+        """Die-cut labels: size (preset or by hand), gap, orientation, alignment."""
+        window = self.window
+        lab, caps, unit = window.label, window.backend.capabilities, window.unit
+        presets = [
+            ("%g×%g" % (s.width_mm, s.height_mm), unit.size(s.width_mm, s.height_mm))
+            for s in caps.label_sizes
+        ]
+        items = presets + [(CUSTOM_SIZE, _("Custom size"))]
+        self._size_keys = [key for key, _name in items]
+        self.size_row = combo_row(_("Label size"), items, self.size_key(), self._on_size_preset)
+        self.add(self.size_row)
+
+        width, height = lab.media_size()
+        max_width = caps.max_width_mm or MAX_SIZE_MM
+        self.width_row = self._length_row(
+            _("Width"),
+            min(width, max_width),
+            MIN_SIZE_MM,
+            max_width,
+            0.5,
+            lambda v: self._on_media_size(width=v),
+            _("%(unit)s across the roll"),
+        )
+        self.height_row = self._length_row(
+            _("Height"),
+            height,
+            MIN_SIZE_MM,
+            MAX_SIZE_MM,
+            0.5,
+            lambda v: self._on_media_size(height=v),
+            _("%(unit)s along the roll"),
+        )
+        self.add(self.width_row)
+        self.add(self.height_row)
+        self.add(
+            self._length_row(
+                _("Gap"),
+                lab.gap_mm,
+                0,
+                MAX_GAP_MM,
+                0.5,
+                lambda v: window.change(gap_mm=v),
+                _("%(unit)s between two labels on the roll"),
+            )
+        )
+        self.add(
+            combo_row(_("Content direction"), ORIENTATIONS, lab.orientation, self._on_orientation)
+        )
+        self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
+
+    def _on_size_preset(self, key: str) -> None:
+        if key == CUSTOM_SIZE or key == self.size_key():
+            return
+        width, height = (float(v) for v in key.split("×"))
+        self.window.label.set_media_size(width, height)
+        self._show_media_size()
+        self.window.mark_changed()
+
+    def _on_media_size(self, width: float | None = None, height: float | None = None) -> None:
+        if self._syncing:
+            return
+        old_width, old_height = self.window.label.media_size()
+        new = (old_width if width is None else width, old_height if height is None else height)
+        self.window.label.set_media_size(*new)
+        index = self._size_keys.index(self.size_key())
+        if self.size_row.get_selected() != index:
+            self.size_row.set_selected(index)
+        self.window.mark_changed()
+
+    def _show_media_size(self) -> None:
+        """Width and height rows after the size was chosen from the list."""
+        width, height = self.window.label.media_size()
+        self._syncing = True  # rounding to the shown digits must not change the model
+        try:
+            for row, mm in ((self.width_row, width), (self.height_row, height)):
+                row.set_value(self.window.unit.to_display(mm, row.get_digits()))
+        finally:
+            self._syncing = False
+
+    def _on_orientation(self, orientation: str) -> None:
+        if orientation != self.window.label.orientation:
+            self.window.label.set_orientation(orientation)
+            self.window.mark_changed()

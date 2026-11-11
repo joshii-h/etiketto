@@ -144,7 +144,7 @@ interface first; please open an issue before you start.
      `LabelTooWide`, `OutOfLabels`, `HeadOpen`, `LabelNotFound`,
      `RibbonError`, `PrinterPaused`)
      with the original error text as `details`. Do not write messages for
-     users in a backend: `app.py` turns the error code into a translated text.
+     users in a backend: `ui/texts.py` turns the error code into a translated text.
    - `print_label` gets the image from `prepare()`: the label rendered in
      label space (x along the tape) at `raster()`'s resolution, already
      dithered for mono printers. Rotate and encode it the way the printer
@@ -219,7 +219,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
-      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/backends/*.py
+      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py etiketto/backends/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run

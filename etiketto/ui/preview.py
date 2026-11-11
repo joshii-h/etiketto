@@ -1,0 +1,100 @@
+"""The label preview with its status line and zoom buttons."""
+
+from __future__ import annotations
+
+import io
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Gdk", "4.0")
+
+from gi.repository import Gdk, GLib, Gtk  # noqa: E402
+
+from etiketto.ui.i18n import _  # noqa: E402
+from etiketto.ui.widgets import flat_button  # noqa: E402
+
+# Preview: screen pixels per mm at zoom 1
+PREVIEW_PX_PER_MM = 6.0
+
+
+class Preview(Gtk.Box):
+    """The label preview with the status line and zoom buttons."""
+
+    def __init__(self):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.zoom = 1.0
+        self.fit_zoom = True
+        self._size_mm: tuple[float, float] | None = None  # (length, height) of the shown label
+
+        self.scroller = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        self.picture = Gtk.Picture(
+            can_shrink=True,
+            content_fit=Gtk.ContentFit.CONTAIN,
+            halign=Gtk.Align.CENTER,
+            valign=Gtk.Align.CENTER,
+        )
+        for adjustment in (self.scroller.get_hadjustment(), self.scroller.get_vadjustment()):
+            adjustment.connect("notify::page-size", self._on_page_size)
+        self.picture.set_margin_top(24)
+        self.picture.set_margin_bottom(24)
+        self.picture.set_margin_start(24)
+        self.picture.set_margin_end(24)
+        self.picture.add_css_class("label-preview")
+        self.scroller.set_child(self.picture)
+        self.append(self.scroller)
+        self.append(Gtk.Separator())
+        self.append(self._build_status())
+
+    def _build_status(self) -> Gtk.Box:
+        box = Gtk.Box(spacing=12, margin_start=12, margin_end=12, margin_top=6, margin_bottom=6)
+        self.status = Gtk.Label(xalign=0, hexpand=True)
+        self.status.add_css_class("dim-label")
+        box.append(self.status)
+        box.append(flat_button("zoom-fit-best-symbolic", _("Fit to window"), self.set_zoom))
+        box.append(
+            flat_button("zoom-out-symbolic", _("Zoom out"), lambda: self.set_zoom(self.zoom / 1.25))
+        )
+        box.append(
+            flat_button("zoom-in-symbolic", _("Zoom in"), lambda: self.set_zoom(self.zoom * 1.25))
+        )
+        return box
+
+    def show(self, image, length_mm: float, height_mm: float, text: str) -> None:
+        """Show a rendered preview image and its status text."""
+        buf = io.BytesIO()
+        image.save(buf, format="PNG")
+        texture = Gdk.Texture.new_from_bytes(GLib.Bytes.new(buf.getvalue()))
+        self.picture.set_paintable(texture)
+        self._size_mm = (length_mm, height_mm)
+        self.apply_zoom()
+        self.status.set_text(text)
+
+    def clear(self, text: str) -> None:
+        """No picture (the label could not be drawn), only a status text."""
+        self.picture.set_paintable(None)
+        self.status.set_text(text)
+
+    def _on_page_size(self, *_args) -> None:
+        if self.fit_zoom:
+            self.apply_zoom()
+
+    def apply_zoom(self) -> None:
+        if not self._size_mm:
+            return
+        length, height = self._size_mm
+        if self.fit_zoom:
+            avail_w = self.scroller.get_hadjustment().get_page_size() - 56
+            avail_h = self.scroller.get_vadjustment().get_page_size() - 56
+            if avail_w > 0 and avail_h > 0:
+                px_per_mm = min(avail_w / length, avail_h / height, PREVIEW_PX_PER_MM * 4)
+                self.zoom = px_per_mm / PREVIEW_PX_PER_MM
+        px_per_mm = PREVIEW_PX_PER_MM * self.zoom
+        self.picture.set_size_request(round(length * px_per_mm), round(height * px_per_mm))
+
+    def set_zoom(self, zoom: float | None = None) -> None:
+        """None = fit to the window."""
+        self.fit_zoom = zoom is None
+        if zoom is not None:
+            self.zoom = min(8.0, max(0.1, zoom))
+        self.apply_zoom()
