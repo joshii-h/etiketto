@@ -848,7 +848,7 @@ def test_a_problem_must_last(fake, monkeypatch):
 
     def flicker(self, body, ops, job):  # every other answer: out of paper
         calls.append(1)
-        self.reasons = ["media-empty-error"] if len(calls) % 2 else ["none"]
+        self.reasons = ["none"] if len(calls) % 2 else ["media-empty-error"]
         if len(calls) == 1:
             self.reasons = ["none"]  # the check before sending
         return original(self, body, ops, job)
@@ -1322,3 +1322,62 @@ class TestContract(BackendContract):
         return SimpleNamespace(
             backend=get_backend("system"), fail=fail, printed=lambda: fake.printed
         )
+
+
+def test_a_printer_that_says_busy_but_made_the_job_gets_it_once(fake):
+    # not as the standard says (busy makes no job), but then: never twice
+    fake.job_states = [5, 9]
+    original = FakeIpp._op_0002
+
+    def busy_yet_made(self, body, ops, job):
+        original(self, body, ops, job)
+        groups = [(ipp.JOB_GROUP, [ipp.Attribute(ipp.INTEGER, "job-id", [self.job_id])])]
+        return _answer(0x0507, groups)
+
+    FakeIpp._op_0002, saved = busy_yet_made, original
+    try:
+        _print()
+    finally:
+        FakeIpp._op_0002 = saved
+    assert fake.printed == 1 and fake.operations().count(ipp.PRINT_JOB) == 1
+
+
+def test_a_cancel_that_did_not_get_through_is_tried_again(fake):
+    fake.job_states = [6]
+    original = FakeIpp._op_0008
+    tries = []
+
+    def cancel(self, body, ops, job):
+        tries.append(1)
+        if len(tries) == 1:
+            raise TimeoutError("timed out")  # the network, for a moment
+        return original(self, body, ops, job)
+
+    FakeIpp._op_0008, saved = cancel, original
+    try:
+        with pytest.raises(PrinterError, match="stopped"):
+            _print()
+    finally:
+        FakeIpp._op_0008 = saved
+    assert len(tries) == 2 and fake.canceled == [12]
+
+
+def test_a_problem_that_comes_and_goes_still_ends_after_the_total(fake, monkeypatch):
+    # reported only every other answer, never a page: RECOVERY_TOTAL is absolute
+    monkeypatch.setattr(system, "RECOVERY_TOTAL", 120)
+    fake.job_states = [5]
+    original = FakeIpp._op_000b
+    calls = []
+
+    def flicker(self, body, ops, job):
+        calls.append(1)
+        self.reasons = ["none"] if len(calls) % 2 else ["media-empty-error"]
+        return original(self, body, ops, job)
+
+    FakeIpp._op_000b, saved = flicker, original
+    try:
+        with pytest.raises(OutOfPaper, match="within 120"):
+            _print()
+    finally:
+        FakeIpp._op_000b = saved
+    assert fake.now < 120 + 10

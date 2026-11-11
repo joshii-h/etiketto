@@ -721,6 +721,8 @@ class _Jobs:
             )
             if answer.status != BUSY:
                 return _checked(answer)
+            if _int(answer.group(ipp.JOB_GROUP), "job-id"):
+                return answer  # busy, yet a job was made: never send it twice
             if _clock() - start >= BUSY_LIMIT:
                 raise PrinterBusy("IPP status 0x%04x for %g s" % (BUSY, BUSY_LIMIT))
             _sleep(BUSY_PAUSE)
@@ -760,7 +762,6 @@ class _Watch:
         self.local = _is_local_queue(uri)
         self.pending: float | None = None  # since when the job waits in the queue
         self.progressed: float | None = None  # when it started, or did its last page
-        self.polled: float | None = None  # when it was last judged
         self.completed = 0  # pages done, as the printer counts them
         self.counting = False  # the printer's page counter moved
         self.failures = 0  # answers missed in a row
@@ -769,7 +770,7 @@ class _Watch:
         # the kind of problem to fix and since when; the time spent waiting
         # for fixes: both since the last page
         self.recovery: tuple[type[PrinterError], float] | None = None
-        self.waited = 0.0
+        self.fixing: float | None = None  # first problem to fix since the last page
         self.over = False  # ended, or canceled here: nothing more to cancel
         self.stage = ""  # for the interface: what the user has to do
 
@@ -807,30 +808,27 @@ class _Watch:
         if state != JOB_PENDING:
             self.pending = None
         now = _clock()
-        step = self._follow(attrs, now)
+        self._follow(attrs, now)
         problem = self._problem(state, reasons)
         if problem is not None and type(problem) in RECOVERABLE:
-            self._recover(problem, now, step)
+            self._recover(problem, now)
             return WAITING
         self._suspect(problem)
         if state == JOB_PROCESSING:
             self._check_progress(now)
         return self._queued(now) if state == JOB_PENDING else WAITING
 
-    def _follow(self, attrs: dict, now: float) -> float:
-        """Notes the page counter; the time since the last answer. A page
+    def _follow(self, attrs: dict, now: float) -> None:
+        """Notes the page counter. A page
         that comes out starts the time for fixes again: a problem the
         printer reports while it prints (paper out in another tray) does
         not hold the job up."""
-        step = 0.0 if self.polled is None else now - self.polled
-        self.polled = now
         done = _completed(attrs)
         if done is not None and done > self.completed:
             self.completed, self.counting, self.progressed = done, True, now
-            self.waited = 0.0
+            self.fixing = None
             if self.recovery is not None:
                 self.recovery = (self.recovery[0], now)
-        return step
 
     def _problem(self, state: int, job_reasons: list[str]) -> PrinterError | None:
         """What holds the job up. Without the printer's answer nothing
@@ -861,17 +859,19 @@ class _Watch:
             return reasons_error(reasons, self.local) or _paused(self.local, "printer stopped")
         return known_error(reasons, self.local) if state == JOB_PROCESSING else None
 
-    def _recover(self, problem: PrinterError, now: float, step: float) -> None:
+    def _recover(self, problem: PrinterError, now: float) -> None:
         """Wait for the user to fix the problem: RECOVERY_LIMIT for each kind
         of problem, RECOVERY_TOTAL for all together, both since the last
         page; then the job is canceled."""
         kind = type(problem)
         if self.recovery is None or self.recovery[0] is not kind:
             self.recovery = (kind, now)
-        self.waited += step
-        if now - self.recovery[1] > RECOVERY_LIMIT or self.waited > RECOVERY_TOTAL:
+        if self.fixing is None:
+            self.fixing = now
+        total = now - self.fixing > RECOVERY_TOTAL
+        if now - self.recovery[1] > RECOVERY_LIMIT or total:
             self._cancel()
-            limit = RECOVERY_TOTAL if self.waited > RECOVERY_TOTAL else RECOVERY_LIMIT
+            limit = RECOVERY_TOTAL if total else RECOVERY_LIMIT
             raise kind("%s; not fixed within %g s" % (problem, limit))
         # the clock for progress starts again once the printer goes on
         self.stage, self.progressed, self.problems = RECOVERABLE[kind], None, 0
@@ -907,8 +907,8 @@ class _Watch:
         return QUEUED if now - self.pending > PENDING_LIMIT else WAITING
 
     def _cancel(self) -> None:
-        self.over = True
-        _cancel(self.uri, self.job_id)
+        # a cancel that did not get through is tried again by the caller
+        self.over = _cancel(self.uri, self.job_id)
 
 
 def _ended(job_id: int, state: int, reasons: list[str]) -> PrinterError:
