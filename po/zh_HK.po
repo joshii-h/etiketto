@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-05 15:34+0100\n"
+"PO-Revision-Date: 2026-11-11 16:40+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: zh_HK\n"
 "Language: zh_HK\n"
@@ -10,833 +10,947 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: etiketto/app.py:90
+#: etiketto/app.py:93
 msgid "Full cut"
 msgstr "全切"
 
-#: etiketto/app.py:90
+#: etiketto/app.py:93
 msgid "Half cut"
 msgstr "半切"
 
-#: etiketto/app.py:90
+#: etiketto/app.py:93
 msgid "No cut"
 msgstr "不裁切"
 
-#: etiketto/app.py:93
+#: etiketto/app.py:96
 msgid "Vivid"
 msgstr "鮮豔"
 
-#: etiketto/app.py:94
+#: etiketto/app.py:97
 msgid "Normal"
 msgstr "標準"
 
-#: etiketto/app.py:95
+#: etiketto/app.py:98
 msgid "Black and white (sharper)"
 msgstr "黑白（較銳利）"
 
-#: etiketto/app.py:98
+#: etiketto/app.py:101
 msgid "Brightness"
 msgstr "亮度"
 
-#: etiketto/app.py:99
+#: etiketto/app.py:102
 msgid "Red"
 msgstr "紅"
 
-#: etiketto/app.py:100
+#: etiketto/app.py:103
 msgid "Green"
 msgstr "綠"
 
-#: etiketto/app.py:101
+#: etiketto/app.py:104
 msgid "Blue"
 msgstr "藍"
 
-#: etiketto/app.py:103
+#: etiketto/app.py:106
 msgid "Start"
 msgstr "開頭"
 
-#: etiketto/app.py:103 etiketto/app.py:104
+#: etiketto/app.py:106 etiketto/app.py:113
 msgid "Centre"
 msgstr "置中"
 
-#: etiketto/app.py:103
+#: etiketto/app.py:106
 msgid "End"
 msgstr "結尾"
 
-#: etiketto/app.py:104
+#: etiketto/app.py:107
+msgid "Across the roll"
+msgstr "沿捲筒寬度方向"
+
+#: etiketto/app.py:107
+msgid "Along the roll"
+msgstr "沿送紙方向"
+
+#: etiketto/app.py:113
 msgid "Left"
 msgstr "靠左"
 
-#: etiketto/app.py:104
+#: etiketto/app.py:113
 msgid "Right"
 msgstr "靠右"
 
-#: etiketto/app.py:105
+#: etiketto/app.py:114
 msgid "QR code"
 msgstr "QR 碼"
 
-#: etiketto/app.py:199
+#: etiketto/app.py:208
 msgid "Only local files can be used"
 msgstr "只能使用本機檔案"
 
-#: etiketto/app.py:205
+#: etiketto/app.py:214
 #, python-format
 msgid "Not an image: %s"
 msgstr "不是影像：%s"
 
-#: etiketto/app.py:211 etiketto/app.py:769 etiketto/app.py:1737
+#: etiketto/app.py:220 etiketto/app.py:918 etiketto/app.py:1956
 msgid "Text"
 msgstr "文字"
 
-#: etiketto/app.py:213
+#: etiketto/app.py:222
 msgid "Image"
 msgstr "影像"
 
-#: etiketto/app.py:235
+#: etiketto/app.py:244
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "元素 %(n)d：條碼內容是空的"
 
-#: etiketto/app.py:236
+#: etiketto/app.py:245
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "元素 %(n)d：EAN-13 需要剛好 12 位數字"
 
-#: etiketto/app.py:237
+#: etiketto/app.py:246
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "元素 %(n)d：EAN-13 檢查碼錯誤"
 
-#: etiketto/app.py:239
+#: etiketto/app.py:248
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "元素 %(n)d：Code 128 只接受拉丁字母、數字與標點符號"
 
-#: etiketto/app.py:241
+#: etiketto/app.py:250
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "元素 %(n)d：無法讀取影像"
 
-#: etiketto/app.py:242
+#: etiketto/app.py:251
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "無法繪製元素 %(n)d"
 
-#: etiketto/app.py:243
+#: etiketto/app.py:252
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "安全邊距、邊框與邊緣間距已佔滿空間，請減少"
 
-#: etiketto/app.py:244
+#: etiketto/app.py:253
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "固定長度比間距還短，請加長"
 
-#: etiketto/app.py:245
+#: etiketto/app.py:254
 msgid "The background image cannot be read"
 msgstr "無法讀取背景影像"
 
-#: etiketto/app.py:254
+#: etiketto/app.py:263
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "找不到印表機。請確認印表機已開啟並位於同一網路，或輸入其 IP 位址。"
 
-#: etiketto/app.py:257
+#: etiketto/app.py:266
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "印表機沒有回應。請確認印表機已開啟且未進入睡眠。"
 
-#: etiketto/app.py:259
+#: etiketto/app.py:268
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "印表機拒絕連線。請將印表機關閉再開啟。若其網頁介面有「Port 9100」選項，請將其開啟。"
 
-#: etiketto/app.py:262
+#: etiketto/app.py:271
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "未裝入卡匣。請裝入卡匣後再試一次。"
 
-#: etiketto/app.py:263
+#: etiketto/app.py:272
 msgid "The printer's cover is open. Close it and try again."
 msgstr "印表機上蓋已開啟。請關上後再試一次。"
 
-#: etiketto/app.py:264
+#: etiketto/app.py:273
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "標籤卡紙。請打開上蓋取出標籤後再試一次。"
 
-#: etiketto/app.py:265
+#: etiketto/app.py:274
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "無法辨識卡匣。請重新裝入或換一個卡匣。"
 
-#: etiketto/app.py:266
+#: etiketto/app.py:275
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "印表機忙碌中。請稍候再試一次。"
 
-#: etiketto/app.py:267
+#: etiketto/app.py:276
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "標籤對這台印表機來說太長：最多 %(max)s。"
 
-#: etiketto/app.py:269
+#: etiketto/app.py:277
+#, python-format
+msgid "The label is too wide for this printer: at most %(max)s."
+msgstr "標籤對這台印表機來說太寬：最多 %(max)s。"
+
+#: etiketto/app.py:278
+msgid "The printer is out of labels. Load a new roll and try again."
+msgstr "印表機的標籤已用完。請裝入新的標籤捲後再試一次。"
+
+#: etiketto/app.py:279
+msgid "The print head is open. Close it and try again."
+msgstr "列印頭已開啟。請蓋上後再試一次。"
+
+#: etiketto/app.py:281
+msgid ""
+"The printer cannot find the next label. Check that the labels are loaded "
+"correctly and run through the label sensor."
+msgstr "印表機找不到下一張標籤。請檢查標籤是否正確裝入，並從標籤感應器中穿過。"
+
+#: etiketto/app.py:285
+msgid ""
+"There is a problem with the ribbon. Check that it is inserted correctly and "
+"matches the print method set on the printer."
+msgstr "碳帶有問題。請檢查是否正確裝入，並與印表機上設定的列印方式相符。"
+
+#: etiketto/app.py:288
+msgid "The printer is paused. Resume it on its display and try again."
+msgstr "印表機已暫停。請在其螢幕上繼續後再試一次。"
+
+#: etiketto/app.py:290
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "印表機回報問題。請將印表機關閉再開啟，然後再試一次。"
 
-#: etiketto/app.py:283
+#: etiketto/app.py:311
 msgid "Warming up…"
 msgstr "正在預熱…"
 
-#: etiketto/app.py:284
+#: etiketto/app.py:312
 msgid "Cooling down…"
 msgstr "正在冷卻…"
 
-#: etiketto/app.py:285
+#: etiketto/app.py:313
 msgid "Cleaning…"
 msgstr "正在清潔…"
 
-#: etiketto/app.py:286
+#: etiketto/app.py:314
 msgid "Swipe the printer's panel to cut the label"
 msgstr "請滑動印表機面板以裁切標籤"
 
-#: etiketto/app.py:292
+#: etiketto/app.py:320
 msgid "This label needs a newer version of Etiketto"
 msgstr "此標籤需要較新版本的 Etiketto"
 
-#: etiketto/app.py:294
+#: etiketto/app.py:322
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s 不是 Etiketto 標籤"
 
-#: etiketto/app.py:295
+#: etiketto/app.py:323
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "檔案已損毀：%s"
 
-#: etiketto/app.py:300
+#: etiketto/app.py:328
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "無法儲存 %s：沒有寫入權限"
 
-#: etiketto/app.py:302
+#: etiketto/app.py:330
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "無法儲存 %s：磁碟已滿"
 
-#: etiketto/app.py:303
+#: etiketto/app.py:331
 #, python-format
 msgid "Cannot save %s"
 msgstr "無法儲存 %s"
 
 #. translators: a month and a year, e.g. "May 2018"; reorder as your language needs
-#: etiketto/app.py:320
+#: etiketto/app.py:348
 #, python-format
 msgid "%(month)s %(year)d"
 msgstr "%(year)d年%(month)s"
 
-#: etiketto/app.py:325
+#: etiketto/app.py:353
 msgctxt "month name"
 msgid "January"
 msgstr "1 月"
 
-#: etiketto/app.py:326
+#: etiketto/app.py:354
 msgctxt "month name"
 msgid "February"
 msgstr "2 月"
 
-#: etiketto/app.py:327
+#: etiketto/app.py:355
 msgctxt "month name"
 msgid "March"
 msgstr "3 月"
 
-#: etiketto/app.py:328
+#: etiketto/app.py:356
 msgctxt "month name"
 msgid "April"
 msgstr "4 月"
 
-#: etiketto/app.py:329
+#: etiketto/app.py:357
 msgctxt "month name"
 msgid "May"
 msgstr "5 月"
 
-#: etiketto/app.py:330
+#: etiketto/app.py:358
 msgctxt "month name"
 msgid "June"
 msgstr "6 月"
 
-#: etiketto/app.py:331
+#: etiketto/app.py:359
 msgctxt "month name"
 msgid "July"
 msgstr "7 月"
 
-#: etiketto/app.py:332
+#: etiketto/app.py:360
 msgctxt "month name"
 msgid "August"
 msgstr "8 月"
 
-#: etiketto/app.py:333
+#: etiketto/app.py:361
 msgctxt "month name"
 msgid "September"
 msgstr "9 月"
 
-#: etiketto/app.py:334
+#: etiketto/app.py:362
 msgctxt "month name"
 msgid "October"
 msgstr "10 月"
 
-#: etiketto/app.py:335
+#: etiketto/app.py:363
 msgctxt "month name"
 msgid "November"
 msgstr "11 月"
 
-#: etiketto/app.py:336
+#: etiketto/app.py:364
 msgctxt "month name"
 msgid "December"
 msgstr "12 月"
 
-#: etiketto/app.py:346
+#: etiketto/app.py:374
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "此卡匣似乎是 %(year)d 年%(month)s製造。舊的 ZINK 相紙印出的顏色會較淡。"
 
-#: etiketto/app.py:358 etiketto/app.py:665 etiketto/app.py:1637
+#: etiketto/app.py:386 etiketto/app.py:701 etiketto/app.py:1856
 msgid "Label"
 msgstr "標籤"
 
-#: etiketto/app.py:398
+#: etiketto/app.py:426
 msgid "Open"
 msgstr "開啟"
 
-#: etiketto/app.py:405
+#: etiketto/app.py:433
 msgid "Templates"
 msgstr "範本"
 
-#: etiketto/app.py:411
+#: etiketto/app.py:439
 msgid "Save"
 msgstr "儲存"
 
-#: etiketto/app.py:416
+#: etiketto/app.py:444
 msgid "New label"
 msgstr "新增標籤"
 
-#: etiketto/app.py:417
+#: etiketto/app.py:445
 msgid "Save as…"
 msgstr "另存為…"
 
-#: etiketto/app.py:418 etiketto/app.py:1539
+#: etiketto/app.py:446 etiketto/app.py:1753
 msgid "Save as template…"
 msgstr "儲存為範本…"
 
-#: etiketto/app.py:419
+#: etiketto/app.py:447
 msgid "Export PNG…"
 msgstr "匯出為 PNG…"
 
-#: etiketto/app.py:420
+#: etiketto/app.py:448
 msgid "Help"
 msgstr "說明"
 
-#: etiketto/app.py:421
+#: etiketto/app.py:449
 msgid "Report a problem…"
 msgstr "回報問題…"
 
-#: etiketto/app.py:422
+#: etiketto/app.py:450
 msgid "About Etiketto"
 msgstr "關於 Etiketto"
 
-#: etiketto/app.py:425 etiketto/app.py:1354 etiketto/app.py:1423
+#: etiketto/app.py:453 etiketto/app.py:1567 etiketto/app.py:1637
 msgid "Print"
 msgstr "列印"
 
-#: etiketto/app.py:461
+#: etiketto/app.py:489
 msgid "Fit to window"
 msgstr "符合視窗"
 
-#: etiketto/app.py:465
+#: etiketto/app.py:493
 msgid "Zoom out"
 msgstr "縮小"
 
-#: etiketto/app.py:468
+#: etiketto/app.py:496
 msgid "Zoom in"
 msgstr "放大"
 
-#: etiketto/app.py:544
+#: etiketto/app.py:572
 msgid "Printer model"
 msgstr "印表機型號"
 
-#: etiketto/app.py:559
+#: etiketto/app.py:595
 msgid "Printer"
 msgstr "印表機"
 
-#: etiketto/app.py:562 etiketto/app.py:1176
+#: etiketto/app.py:598 etiketto/app.py:1353
 msgid "Searching…"
 msgstr "正在搜尋…"
 
-#: etiketto/app.py:565 etiketto/app.py:1214
+#: etiketto/app.py:601 etiketto/app.py:1393
 msgid "Printer details"
 msgstr "印表機詳細資訊"
 
-#: etiketto/app.py:571
+#: etiketto/app.py:607
 msgid "Refresh"
 msgstr "重新整理"
 
-#: etiketto/app.py:577
+#: etiketto/app.py:613
 msgid "Search for printers"
 msgstr "搜尋印表機"
 
-#: etiketto/app.py:591
+#: etiketto/app.py:627
 msgid "Host name or IP address"
 msgstr "主機名稱或 IP 位址"
 
-#: etiketto/app.py:599
+#: etiketto/app.py:635
 msgid "Safety margin"
 msgstr "安全邊距"
 
-#: etiketto/app.py:606
+#: etiketto/app.py:642
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "內容與邊框保留的空白（%(unit)s）；背景會無邊界列印"
 
-#: etiketto/app.py:611 etiketto/app.py:617
+#: etiketto/app.py:647 etiketto/app.py:653
 msgid "Millimetres"
 msgstr "公釐"
 
-#: etiketto/app.py:611 etiketto/app.py:618
+#: etiketto/app.py:647 etiketto/app.py:654
 msgid "Inches"
 msgstr "英寸"
 
-#: etiketto/app.py:614
+#: etiketto/app.py:650
 msgid "Units"
 msgstr "單位"
 
-#: etiketto/app.py:616
+#: etiketto/app.py:652
 #, python-format
 msgid "Automatic (%s)"
 msgstr "自動（%s）"
 
-#: etiketto/app.py:671
+#: etiketto/app.py:708
 msgid "Tape width"
 msgstr "標籤帶寬度"
 
-#: etiketto/app.py:680
+#: etiketto/app.py:717
 msgid "Spacing"
 msgstr "間距"
 
-#: etiketto/app.py:686
+#: etiketto/app.py:723
 #, python-format
 msgid "%(unit)s at the ends and between elements"
 msgstr "兩端及元素之間的間距（%(unit)s）"
 
-#: etiketto/app.py:691
+#: etiketto/app.py:728
 msgid "Edge spacing"
 msgstr "邊緣間距"
 
-#: etiketto/app.py:697
+#: etiketto/app.py:734
 #, python-format
 msgid "extra %(unit)s along the tape edges"
 msgstr "沿標籤帶邊緣額外留白（%(unit)s）"
 
-#: etiketto/app.py:701
+#: etiketto/app.py:738
 msgid "Background colour"
 msgstr "背景顏色"
 
-#: etiketto/app.py:705
+#: etiketto/app.py:742
 msgid "Background image"
 msgstr "背景影像"
 
-#: etiketto/app.py:706 etiketto/app.py:879
+#: etiketto/app.py:743 etiketto/app.py:1028
 msgid "None"
 msgstr "無"
 
-#: etiketto/app.py:707 etiketto/app.py:1473
+#: etiketto/app.py:744 etiketto/app.py:1687
 msgid "Choose image"
 msgstr "選擇影像"
 
-#: etiketto/app.py:713 etiketto/app.py:798
+#: etiketto/app.py:750 etiketto/app.py:947
 msgid "Remove"
 msgstr "移除"
 
-#: etiketto/app.py:721
+#: etiketto/app.py:758
 msgid "Border"
 msgstr "邊框"
 
-#: etiketto/app.py:727
+#: etiketto/app.py:764
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s，0 = 無"
 
-#: etiketto/app.py:736
+#: etiketto/app.py:773
 msgid "Automatic length"
 msgstr "自動長度"
 
-#: etiketto/app.py:736
+#: etiketto/app.py:773
 msgid "As long as the content"
 msgstr "與內容等長"
 
-#: etiketto/app.py:743
+#: etiketto/app.py:783
 msgid "Length"
 msgstr "長度"
 
-#: etiketto/app.py:750
+#: etiketto/app.py:790 etiketto/app.py:868
 msgid "Alignment"
 msgstr "對齊"
 
-#: etiketto/app.py:765
+#: etiketto/app.py:827
+msgid "Custom size"
+msgstr "自訂尺寸"
+
+#: etiketto/app.py:829
+msgid "Label size"
+msgstr "標籤尺寸"
+
+#: etiketto/app.py:835
+msgid "Width"
+msgstr "寬度"
+
+#: etiketto/app.py:841
+#, python-format
+msgid "%(unit)s across the roll"
+msgstr "沿捲筒寬度方向 (%(unit)s)"
+
+#: etiketto/app.py:844
+msgid "Height"
+msgstr "高度"
+
+#: etiketto/app.py:850
+#, python-format
+msgid "%(unit)s along the roll"
+msgstr "沿送紙方向 (%(unit)s)"
+
+#: etiketto/app.py:856
+msgid "Gap"
+msgstr "間隙"
+
+#: etiketto/app.py:862
+#, python-format
+msgid "%(unit)s between two labels on the roll"
+msgstr "捲筒上相鄰兩張標籤之間 (%(unit)s)"
+
+#: etiketto/app.py:866
+msgid "Content direction"
+msgstr "內容方向"
+
+#: etiketto/app.py:914
 msgid "Content"
 msgstr "內容"
 
-#: etiketto/app.py:766
+#: etiketto/app.py:915
 msgid "Elements are placed one after another along the tape"
 msgstr "元素會沿著標籤帶依序排列"
 
-#: etiketto/app.py:770
+#: etiketto/app.py:919
 msgid "Image…"
 msgstr "影像…"
 
-#: etiketto/app.py:771
+#: etiketto/app.py:920
 msgid "QR code / barcode"
 msgstr "QR 碼／條碼"
 
-#: etiketto/app.py:773
+#: etiketto/app.py:922
 msgid "Add"
 msgstr "加入"
 
-#: etiketto/app.py:780
+#: etiketto/app.py:929
 msgid "No content yet"
 msgstr "尚無內容"
 
-#: etiketto/app.py:780
+#: etiketto/app.py:929
 msgid "Add text, an image or a code"
 msgstr "加入文字、影像或條碼"
 
-#: etiketto/app.py:804
+#: etiketto/app.py:953
 msgid "Move down"
 msgstr "往後移"
 
-#: etiketto/app.py:805
+#: etiketto/app.py:954
 msgid "Move up"
 msgstr "往前移"
 
-#: etiketto/app.py:839
+#: etiketto/app.py:988
 msgid "Font"
 msgstr "字型"
 
-#: etiketto/app.py:861
+#: etiketto/app.py:1010
 msgid "Size"
 msgstr "大小"
 
-#: etiketto/app.py:868
+#: etiketto/app.py:1017
 msgid "pt, 0 = fill tape height"
 msgstr "pt，0 = 填滿標籤帶高度"
 
-#: etiketto/app.py:874
+#: etiketto/app.py:1023
 msgid "Line alignment"
 msgstr "行對齊"
 
-#: etiketto/app.py:879
+#: etiketto/app.py:1028
 msgid "Image file"
 msgstr "影像檔"
 
-#: etiketto/app.py:880
+#: etiketto/app.py:1029
 msgid "Choose…"
 msgstr "選擇…"
 
-#: etiketto/app.py:896
+#: etiketto/app.py:1045
 msgid "Type"
 msgstr "類型"
 
-#: etiketto/app.py:899
+#: etiketto/app.py:1048
 msgid "Content (link, text, number)"
 msgstr "內容（連結、文字、號碼）"
 
-#: etiketto/app.py:903
+#: etiketto/app.py:1052
 msgid "Colour"
 msgstr "顏色"
 
-#: etiketto/app.py:954
+#: etiketto/app.py:1108
 msgid "Unsaved label"
 msgstr "未儲存的標籤"
 
-#: etiketto/app.py:988
+#: etiketto/app.py:1142
 msgid "content scaled down to fit"
 msgstr "內容已縮小以符合尺寸"
 
-#: etiketto/app.py:990
+#: etiketto/app.py:1144
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "對這台印表機來說太長：最多 %s"
 
-#: etiketto/app.py:995
+#: etiketto/app.py:1149
+#, python-format
+msgid "Too wide for this printer: at most %s"
+msgstr "對這台印表機太寬：最多 %s"
+
+#: etiketto/app.py:1154
 #, python-format
 msgid "Problem: %s"
 msgstr "問題：%s"
 
-#: etiketto/app.py:1002 etiketto/app.py:1595
+#: etiketto/app.py:1161 etiketto/app.py:1809
 msgid "The preview cannot be drawn"
 msgstr "無法繪製預覽"
 
-#: etiketto/app.py:1043
+#: etiketto/app.py:1202
 msgid "Searching for printers…"
 msgstr "正在搜尋印表機…"
 
-#: etiketto/app.py:1057
+#: etiketto/app.py:1216
 msgid "No printer found"
 msgstr "找不到印表機"
 
-#: etiketto/app.py:1059
+#: etiketto/app.py:1218
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "請確認印表機已開啟並位於同一網路，或在下方輸入其位址"
 
-#: etiketto/app.py:1065
+#: etiketto/app.py:1224
 #, python-format
 msgid "Found %s"
 msgstr "找到 %s"
 
-#: etiketto/app.py:1069 etiketto/app.py:1089
+#: etiketto/app.py:1228 etiketto/app.py:1248
 msgid "Choose a printer"
 msgstr "選擇印表機"
 
-#: etiketto/app.py:1082 etiketto/app.py:1251 etiketto/app.py:1353
-#: etiketto/app.py:1649
+#: etiketto/app.py:1241 etiketto/app.py:1431 etiketto/app.py:1465
+#: etiketto/app.py:1566 etiketto/app.py:1868
 msgid "Cancel"
 msgstr "取消"
 
-#: etiketto/app.py:1110
+#: etiketto/app.py:1269
 msgid "Connecting…"
 msgstr "正在連線…"
 
-#: etiketto/app.py:1146
+#: etiketto/app.py:1308
 msgid "Printer not reachable"
 msgstr "無法連線至印表機"
 
-#: etiketto/app.py:1154
+#: etiketto/app.py:1310 etiketto/app.py:1351
+msgid "Printer needs attention"
+msgstr "印表機需要處理"
+
+#: etiketto/app.py:1320
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "剩餘 %(left)s／%(total)s"
 
-#: etiketto/app.py:1161
+#: etiketto/app.py:1330
+msgid "Printing"
+msgstr "列印中"
+
+#: etiketto/app.py:1332
+#, python-format
+msgid "Ready · a label every %s"
+msgstr "就緒 · 每 %s 一張標籤"
+
+#: etiketto/app.py:1333
+msgid "Ready"
+msgstr "就緒"
+
+#: etiketto/app.py:1335
 msgid "No cassette inserted"
 msgstr "未裝入卡匣"
 
-#: etiketto/app.py:1162
+#: etiketto/app.py:1336
 #, python-format
 msgid "%s cassette"
 msgstr "%s 卡匣"
 
-#: etiketto/app.py:1190
+#: etiketto/app.py:1367
 msgid "Model"
 msgstr "型號"
 
-#: etiketto/app.py:1191
+#: etiketto/app.py:1368
 msgid "Address"
 msgstr "位址"
 
-#: etiketto/app.py:1192
+#: etiketto/app.py:1369
 msgid "Firmware"
 msgstr "韌體"
 
-#: etiketto/app.py:1195
+#: etiketto/app.py:1372
 msgid "Cassette"
 msgstr "卡匣"
 
-#: etiketto/app.py:1196
+#: etiketto/app.py:1374
+msgid "Label distance"
+msgstr "標籤間距"
+
+#: etiketto/app.py:1375
 msgid "Remaining tape"
 msgstr "剩餘標籤帶"
 
-#: etiketto/app.py:1202
+#: etiketto/app.py:1381
 msgid "Printable width"
 msgstr "可列印寬度"
 
-#: etiketto/app.py:1203
+#: etiketto/app.py:1382
 msgid "Lot number"
 msgstr "批號"
 
-#: etiketto/app.py:1204
+#: etiketto/app.py:1383
 msgid "Serial number"
 msgstr "序號"
 
-#: etiketto/app.py:1206
+#: etiketto/app.py:1385
 msgid "Probably made"
 msgstr "推測製造時間"
 
-#: etiketto/app.py:1226 etiketto/app.py:1450
+#: etiketto/app.py:1405 etiketto/app.py:1664
 msgid "Close"
 msgstr "關閉"
 
-#: etiketto/app.py:1236
+#: etiketto/app.py:1415
 msgid "The label is empty"
 msgstr "標籤是空的"
 
-#: etiketto/app.py:1241
+#: etiketto/app.py:1421
 msgid "Wrong cassette"
 msgstr "卡匣不符"
 
-#: etiketto/app.py:1243
+#: etiketto/app.py:1423
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "此標籤是為 %(label)s 標籤帶設計，但目前裝入的是 %(tape)s 卡匣。印表機會將其縮放至標籤帶寬度。"
 
-#: etiketto/app.py:1252
+#: etiketto/app.py:1432 etiketto/app.py:1466
 msgid "Print anyway"
 msgstr "仍要列印"
 
-#: etiketto/app.py:1290
+#: etiketto/app.py:1452
+msgid "Different labels loaded"
+msgstr "裝入了不同的標籤"
+
+#: etiketto/app.py:1454
+#, python-format
+msgid ""
+"The label is %(size)s with a gap of %(gap)s, so a new one starts every "
+"%(pitch)s. The printer measured a label every %(measured)s. Check the label "
+"size and the gap."
+msgstr "標籤為 %(size)s，間隙為 %(gap)s，因此每 %(pitch)s 開始一張新標籤。印表機量測到每 %(measured)s 一張標籤。請檢查標籤尺寸和間隙。"
+
+#: etiketto/app.py:1503
 msgid "Copies"
 msgstr "份數"
 
-#: etiketto/app.py:1294
+#: etiketto/app.py:1507
 msgid "Cut"
 msgstr "裁切"
 
-#: etiketto/app.py:1299
+#: etiketto/app.py:1512
 msgid "Colours"
 msgstr "色彩"
 
-#: etiketto/app.py:1308
+#: etiketto/app.py:1521
 msgid "Colour adjustment"
 msgstr "色彩調整"
 
-#: etiketto/app.py:1311
+#: etiketto/app.py:1524
 msgid "Reset"
 msgstr "重設"
 
-#: etiketto/app.py:1332
+#: etiketto/app.py:1545
 msgid "Not adjusted"
 msgstr "未調整"
 
-#: etiketto/app.py:1332
+#: etiketto/app.py:1545
 msgid "Adjusted"
 msgstr "已調整"
 
-#: etiketto/app.py:1344
+#: etiketto/app.py:1557
 msgid "Print label"
 msgstr "列印標籤"
 
-#: etiketto/app.py:1378
+#: etiketto/app.py:1592
 msgid "No printer yet – search for one or enter its address"
 msgstr "尚無印表機，請搜尋或輸入其位址"
 
-#: etiketto/app.py:1383
+#: etiketto/app.py:1597
 msgid "Printing…"
 msgstr "正在列印…"
 
-#: etiketto/app.py:1393
+#: etiketto/app.py:1607
 msgid "The label cannot be prepared for printing."
 msgstr "無法準備標籤以供列印。"
 
-#: etiketto/app.py:1407
+#: etiketto/app.py:1621
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "正在列印 %(n)d/%(total)d…"
 
-#: etiketto/app.py:1430
+#: etiketto/app.py:1644
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "這台印表機不支援色彩模式「%(wanted)s」，已改用「%(used)s」列印"
 
-#: etiketto/app.py:1438
+#: etiketto/app.py:1652
 msgid "Printed"
 msgstr "已列印"
 
-#: etiketto/app.py:1445
+#: etiketto/app.py:1659
 msgid "Printing failed"
 msgstr "列印失敗"
 
-#: etiketto/app.py:1446
+#: etiketto/app.py:1660
 msgid "Details"
 msgstr "詳細資訊"
 
-#: etiketto/app.py:1449 etiketto/app.py:1678
+#: etiketto/app.py:1663 etiketto/app.py:1897
 msgid "Report"
 msgstr "回報"
 
-#: etiketto/app.py:1467
+#: etiketto/app.py:1681
 msgid "Etiketto labels"
 msgstr "Etiketto 標籤"
 
-#: etiketto/app.py:1475
+#: etiketto/app.py:1689
 msgid "Images"
 msgstr "影像"
 
-#: etiketto/app.py:1499
+#: etiketto/app.py:1713
 #, python-format
 msgid "Cannot open %s"
 msgstr "無法開啟 %s"
 
-#: etiketto/app.py:1502
+#: etiketto/app.py:1716
 msgid "Open label"
 msgstr "開啟標籤"
 
-#: etiketto/app.py:1519
+#: etiketto/app.py:1733
 msgid "Save label"
 msgstr "儲存標籤"
 
-#: etiketto/app.py:1520 etiketto/app.py:1541 etiketto/app.py:1572
+#: etiketto/app.py:1734 etiketto/app.py:1755 etiketto/app.py:1786
 msgid "label"
 msgstr "標籤"
 
-#: etiketto/app.py:1555 etiketto/app.py:1568
+#: etiketto/app.py:1769 etiketto/app.py:1782
 #, python-format
 msgid "Saved %s"
 msgstr "已儲存 %s"
 
-#: etiketto/app.py:1571
+#: etiketto/app.py:1785
 msgid "Export PNG"
 msgstr "匯出為 PNG"
 
-#: etiketto/app.py:1602
+#: etiketto/app.py:1816
 msgid "Exported"
 msgstr "已匯出"
 
-#: etiketto/app.py:1608
+#: etiketto/app.py:1822
 msgid "No templates yet – use “Save as template…”"
 msgstr "尚無範本，請使用「儲存為範本…」"
 
-#: etiketto/app.py:1624
+#: etiketto/app.py:1838
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "無法開啟範本 %(name)s"
 
-#: etiketto/app.py:1647
+#: etiketto/app.py:1866
 msgid "Discard changes?"
 msgstr "要捨棄變更嗎？"
 
-#: etiketto/app.py:1647
+#: etiketto/app.py:1866
 msgid "The current label has unsaved changes."
 msgstr "目前的標籤有未儲存的變更。"
 
-#: etiketto/app.py:1650
+#: etiketto/app.py:1869
 msgid "Discard"
 msgstr "捨棄"
 
-#: etiketto/app.py:1657
+#: etiketto/app.py:1876
 msgid "Please wait until printing has finished"
 msgstr "請等候列印完成"
 
-#: etiketto/app.py:1721
+#: etiketto/app.py:1940
 msgid "The browser cannot be opened"
 msgstr "無法開啟瀏覽器"
 
-#: etiketto/app.py:1722
+#: etiketto/app.py:1941
 msgid "Copy link"
 msgstr "複製連結"
 
-#: etiketto/app.py:1762
+#: etiketto/app.py:1981
 msgid "Only local files can be dropped"
 msgstr "只能拖放本機檔案"
 
-#: etiketto/app.py:1882
-msgid "Label designer for the Brother VC-500W"
-msgstr "Brother VC-500W 標籤設計工具"
+#: etiketto/app.py:2110
+msgid "Label designer for the Brother VC-500W and cab label printers"
+msgstr "適用於 Brother VC-500W 和 cab 標籤印表機的標籤設計工具"
 
 #. translators: replace with your name to be credited in the About dialog
-#: etiketto/app.py:1887
+#: etiketto/app.py:2115
 msgid "translator-credits"
 msgstr "Etiketto contributors"

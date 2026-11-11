@@ -1,0 +1,34 @@
+{
+ "tape_mm": 32,
+ "auto_length": false,
+ "length_mm": 57,
+ "margin_mm": 2,
+ "edge_mm": 0.0,
+ "align": "center",
+ "background": "#ffffff",
+ "background_image": null,
+ "border_mm": 0.0,
+ "border_color": "#000000",
+ "elements": [
+  {
+   "data": "B-07-3",
+   "symbology": "qr",
+   "color": "#000000",
+   "kind": "code"
+  },
+  {
+   "text": "Shelf B-07\nBox 3",
+   "font": "Sans",
+   "bold": true,
+   "italic": false,
+   "size_pt": 0.0,
+   "color": "#000000",
+   "align": "left",
+   "kind": "text"
+  }
+ ],
+ "printer": "cab",
+ "gap_mm": 3,
+ "orientation": "across",
+ "version": 1
+}

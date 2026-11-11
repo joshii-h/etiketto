@@ -36,9 +36,11 @@ def _load() -> None:
     if _loaded:
         return
     _loaded = True
+    from etiketto.backends.cab import Cab
     from etiketto.backends.vc500w import VC500W
 
     register(VC500W())
+    register(Cab())
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:
             obj = entry.load()

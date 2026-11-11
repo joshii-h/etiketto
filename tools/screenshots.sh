@@ -16,7 +16,7 @@ LIST=tools/screenshots.list
 CONF="$(mktemp -d)"
 trap 'rm -rf "$CONF"' EXIT
 mkdir -p "$CONF/etiketto"
-echo '{"host": "VC-500W.local"}' > "$CONF/etiketto/settings.json"
+echo '{"host": "VC-500W.local", "printers": {"cab": {"host": "EOS2.local"}}}' > "$CONF/etiketto/settings.json"
 
 # ImageMagick 7 is `magick`, ImageMagick 6 (some distributions) `convert`
 if command -v magick >/dev/null; then IM=magick; IDENTIFY="magick identify"; else IM=convert; IDENTIFY=identify; fi

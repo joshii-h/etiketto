@@ -88,15 +88,25 @@ new strings, say so in the pull request and a maintainer helps. In detail:
 ## Adding a printer
 
 Etiketto talks to printers through backends in `etiketto/backends/`. A new
-**network** printer with **continuous tape** is one new module there; the
-interface adapts to what the printer can do (tape widths, modes, cutter,
-colour, length limits).
+**network** printer is one new module there; the interface adapts to what
+the printer can do (tape widths or label sizes, modes, cutter, colour,
+length and width limits). There are two kinds:
+
+- **Continuous tape** (`continuous=True`, e.g. `vc500w.py`): the user picks
+  one of `tape_widths_mm`, the label grows with its content or has a fixed
+  length.
+- **Die-cut labels** (`continuous=False`, e.g. `cab.py`): the user picks one
+  of `label_sizes` or enters width and height (up to `max_width_mm`), the
+  gap to the next label and whether the content runs across or along the
+  roll. `Label.media_size()` gives width (across the print head) and height
+  (along the feed); `PrintOptions.gap_mm` carries the gap. `prepare()` must
+  return the label in printer orientation, see `Cab.prepare()`. Report the
+  measured label distance as `PrinterInfo.pitch_mm` if the printer knows it:
+  the interface then warns when the loaded labels have another size.
 
 Not supported yet: printers connected by USB or Bluetooth (the interface
-asks for a host name or IP address) and die-cut labels of a fixed size
-(`continuous=False` only hides the length settings; the interface has no
-way to choose a label size). Both need extensions of the interface first;
-please open an issue before you start.
+asks for a host name or IP address). That needs an extension of the
+interface first; please open an issue before you start.
 
 1. Create `etiketto/backends/<name>.py` with a subclass of
    `etiketto.backends.base.Backend`:
@@ -106,14 +116,16 @@ please open an issue before you start.
        id = "myprinter"  # stored in .etiketto files, never change it
        name = "Maker Model"  # shown in the interface
        capabilities = Capabilities(
-           tape_widths_mm=(12, 24),
+           tape_widths_mm=(12, 24),  # empty for die-cut printers
            dpi=300,  # resolution across the tape
            modes=(PrintMode("standard", lpi=300),),
            color_model="mono",  # "color", "mono" or "two-color"
            cut_modes=("full",),  # empty: the printer has no cutter
            reports_remaining=False,
            supports_color_adjust=False,
-           continuous=True,  # endless tape (see above)
+           continuous=True,  # endless tape, False: die-cut labels (see above)
+           label_sizes=(),  # die-cut: LabelSize(width_mm, height_mm), default first
+           max_width_mm=None,  # die-cut: widest label
            data_formats=("jpeg",),  # the first one is the default
            min_length_mm=0,  # shorter labels are extended
            max_length_mm=None,  # longer labels are refused
@@ -128,19 +140,23 @@ please open an issue before you start.
      no mDNS; `etiketto.backends.mdns.browse()` does the Avahi part.
    - `query` and `print_label` raise `PrinterError` subclasses
      (`PrinterNotFound`, `PrinterTimeout`, `PortClosed`, `NoCassette`,
-     `CoverOpen`, `PaperJam`, `BadCassette`, `PrinterBusy`, `LabelTooLong`)
+     `CoverOpen`, `PaperJam`, `BadCassette`, `PrinterBusy`, `LabelTooLong`,
+     `LabelTooWide`, `OutOfLabels`, `HeadOpen`, `LabelNotFound`,
+     `RibbonError`, `PrinterPaused`)
      with the original error text as `details`. Do not write messages for
      users in a backend: `app.py` turns the error code into a translated text.
    - `print_label` gets the image from `prepare()`: the label rendered in
      label space (x along the tape) at `raster()`'s resolution, already
      dithered for mono printers. Rotate and encode it the way the printer
-     wants. Check `max_length_mm` with `check_length()` before sending.
+     wants. Check `max_length_mm` with `check_length()` (die-cut:
+     `max_width_mm` with `check_width()`) before sending.
      Report each copy and printer stage through `progress(Progress(...))`.
      Return a `PrintResult` if something differed from the request (e.g.
      another mode was used), else `None`.
    - Override `raster()` if the printer needs a different resolution, the
      exact tape height in pixels or background beyond the tape edges (bleed),
-     and `configured_host()` if there is a CLI configuration to read.
+     `configured_host()` if there is a CLI configuration to read, and
+     `display_name(info)` if the printer reports its exact model.
    - `modes(info)` returns the modes the connected printer reports
      (`PrinterInfo.modes`), falling back to `capabilities.modes`.
    - Override `preview(image, mode)` if a mode changes the result (the
@@ -154,15 +170,16 @@ please open an issue before you start.
    (never the real device) and a subclass of
    `tests/backend_contract.BackendContract` that provides a `harness`
    fixture (`backend`, `fail()`, `printed()`); see `TestContract` in
-   `tests/test_vc500w.py`. The contract checks the capabilities, the render
-   geometry for every tape, mode and data format, mono output, query, printing
-   with progress, error handling and discovery.
+   `tests/test_vc500w.py` and `tests/test_cab.py`. The contract checks the
+   capabilities, the render geometry for every tape (or label size and
+   orientation), mode and data format, mono output, query, printing with
+   progress, error handling and discovery.
    `test_every_backend_has_a_contract_test` fails for a registered backend
    without one. Test the protocol details (requests, bytes, error mapping)
    on top of that.
 
 Labels store the backend id in the `printer` field; files without it belong
-to the VC-500W. Printer settings (host, safety margin, cut, mode, colour
+to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 
 ## Code style

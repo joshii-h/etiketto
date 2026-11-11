@@ -5,33 +5,33 @@
   <project_license>AGPL-3.0-or-later</project_license>
 
   <name>Etiketto</name>
-  <summary>Design and print colour labels</summary>
-  <summary xml:lang="de">Farbetiketten gestalten und drucken</summary>
+  <summary>Design and print labels</summary>
+  <summary xml:lang="de">Etiketten gestalten und drucken</summary>
   <summary xml:lang="fr">Créer et imprimer des étiquettes</summary>
-  <summary xml:lang="it">Crea e stampa etichette a colori</summary>
-  <summary xml:lang="es">Diseñe e imprima etiquetas en color</summary>
-  <summary xml:lang="nl">Kleurenetiketten maken en afdrukken</summary>
-  <summary xml:lang="sv">Designa och skriv ut färgetiketter</summary>
-  <summary xml:lang="ja">カラーラベルをデザインして印刷</summary>
-  <summary xml:lang="zh_TW">設計並列印彩色標籤</summary>
-  <summary xml:lang="zh_HK">設計並列印彩色標籤</summary>
-  <summary xml:lang="zh_CN">设计并打印彩色标签</summary>
-  <summary xml:lang="pl">Twórz i drukuj kolorowe etykiety</summary>
-  <summary xml:lang="pt">Crie e imprima etiquetas a cores</summary>
-  <summary xml:lang="pt_BR">Crie e imprima etiquetas coloridas</summary>
-  <summary xml:lang="ru">Создание и печать цветных этикеток</summary>
-  <summary xml:lang="uk">Дизайн і друк кольорових етикеток</summary>
-  <summary xml:lang="tr">Renkli etiket tasarla ve yazdır</summary>
-  <summary xml:lang="ko">컬러 라벨 디자인 및 인쇄</summary>
-  <summary xml:lang="fi">Suunnittele ja tulosta väritarroja</summary>
-  <summary xml:lang="hu">Színes címkék tervezése, nyomtatása</summary>
-  <summary xml:lang="et">Kujunda ja prindi värvilisi silte</summary>
-  <summary xml:lang="id">Rancang dan cetak label berwarna</summary>
-  <summary xml:lang="ms">Reka dan cetak label berwarna</summary>
-  <summary xml:lang="th">ออกแบบและพิมพ์ฉลากสี</summary>
-  <summary xml:lang="vi">Thiết kế và in nhãn màu</summary>
-  <summary xml:lang="hi">रंगीन लेबल डिज़ाइन और प्रिंट करें</summary>
-  <summary xml:lang="ar">تصميم الملصقات الملونة وطباعتها</summary>
+  <summary xml:lang="it">Crea e stampa etichette</summary>
+  <summary xml:lang="es">Diseñe e imprima etiquetas</summary>
+  <summary xml:lang="nl">Etiketten ontwerpen en afdrukken</summary>
+  <summary xml:lang="sv">Designa och skriv ut etiketter</summary>
+  <summary xml:lang="ja">ラベルをデザインして印刷</summary>
+  <summary xml:lang="zh_TW">設計並列印標籤</summary>
+  <summary xml:lang="zh_HK">設計並列印標籤</summary>
+  <summary xml:lang="zh_CN">设计并打印标签</summary>
+  <summary xml:lang="pl">Twórz i drukuj etykiety</summary>
+  <summary xml:lang="pt">Crie e imprima etiquetas</summary>
+  <summary xml:lang="pt_BR">Crie e imprima etiquetas</summary>
+  <summary xml:lang="ru">Создание и печать этикеток</summary>
+  <summary xml:lang="uk">Дизайн і друк етикеток</summary>
+  <summary xml:lang="tr">Etiket tasarla ve yazdır</summary>
+  <summary xml:lang="ko">라벨 디자인 및 인쇄</summary>
+  <summary xml:lang="fi">Suunnittele ja tulosta tarroja</summary>
+  <summary xml:lang="hu">Címkék tervezése, nyomtatása</summary>
+  <summary xml:lang="et">Kujunda ja prindi silte</summary>
+  <summary xml:lang="id">Rancang dan cetak label</summary>
+  <summary xml:lang="ms">Reka dan cetak label</summary>
+  <summary xml:lang="th">ออกแบบและพิมพ์ฉลาก</summary>
+  <summary xml:lang="vi">Thiết kế và in nhãn</summary>
+  <summary xml:lang="hi">लेबल डिज़ाइन और प्रिंट करें</summary>
+  <summary xml:lang="ar">صمّم الملصقات واطبعها</summary>
 
   <developer id="xyz.joshuahirsig">
     <name>Joshua Hirsig</name>
@@ -44,11 +44,16 @@
       of Brother's own editor, only available for Windows, macOS and phones, to
       the Linux desktop.
     </p>
+    <p>
+      It also prints die-cut labels on cab label printers with a 4 inch print
+      head (EOS2, EOS5, SQUIX 4, MACH 4S) over the network.
+    </p>
     <p>Features:</p>
     <ul>
       <li>Finds the printer on the network by itself</li>
       <li>Detects the inserted cassette (9 to 50 mm), the remaining tape and cassette details</li>
       <li>Automatic length that grows with the content, or a fixed length in millimetres or inches</li>
+      <li>Die-cut labels in common or custom sizes on cab printers, with a check of the loaded roll</li>
       <li>Text in any installed font, images and photos, QR codes and barcodes</li>
       <li>Background colours and images printed edge to edge, borders</li>
       <li>Vivid colours or black and white, full, half or no cut, colour adjustment</li>
@@ -57,8 +62,9 @@
       <li>User documentation in English and German</li>
     </ul>
     <p>
-      Etiketto is not affiliated with Brother Industries. Brother, ColAura and
-      VC-500W are trademarks of their owners; ZINK is a trademark of ZINK Holdings LLC.
+      Etiketto is not affiliated with Brother Industries or cab Produkttechnik.
+      Brother, ColAura, VC-500W, cab, EOS, SQUIX and MACH are trademarks of their
+      owners; ZINK is a trademark of ZINK Holdings LLC.
     </p>
   </description>
 
@@ -116,6 +122,9 @@
     <keyword>VC-500W</keyword>
     <keyword>ColAura</keyword>
     <keyword>VC-500WCR</keyword>
+    <keyword>cab</keyword>
+    <keyword>EOS2</keyword>
+    <keyword>SQUIX</keyword>
   </keywords>
 
   <branding>

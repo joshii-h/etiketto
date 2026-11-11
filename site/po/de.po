@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 19:28+0100\n"
+"POT-Creation-Date: 2026-11-11 16:41+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -35,22 +35,20 @@ msgstr ""
 msgid ""
 "Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) "
 "are welcome, no Forgejo account needed. They are copied automatically to "
-"[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main "
-"repository, with a link on GitHub. Review and merge happen there; your "
-"commits are kept, so GitHub shows the pull request as merged. The discussion "
-"can stay on GitHub.  With a Forgejo account you can contribute there "
-"directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/"
-"etiketto/src/branch/main/CONTRIBUTING.md)."
+"[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main repository,"
+" with a link on GitHub. Review and merge happen there; your commits are kept,"
+" so GitHub shows the pull request as merged. The discussion can stay on "
+"GitHub.  With a Forgejo account you can contribute there directly.  Details: "
+"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
 msgstr ""
 "Issues und Pull-Requests auf [GitHub](https://github.com/joshii-h/etiketto) "
 "sind willkommen, ein Forgejo-Konto braucht es nicht. Sie werden automatisch "
 "nach [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), dem "
 "Hauptrepository, übertragen, mit einem Link auf GitHub. Review und Merge "
 "finden dort statt; die Commits bleiben erhalten, darum zeigt GitHub den Pull-"
-"Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit "
-"einem Forgejo-Konto geht es auch direkt dort. Details: [CONTRIBUTING.md]"
-"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/"
-"CONTRIBUTING.md)."
+"Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit einem"
+" Forgejo-Konto geht es auch direkt dort. Details: "
+"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
 
 #. type: Bullet: '- '
 #: docs/contribute.md
@@ -60,26 +58,25 @@ msgstr "**App-Übersetzungen**: `tools/strings_<lang>.py`, siehe CONTRIBUTING."
 #. type: Bullet: '- '
 #: docs/contribute.md
 msgid ""
-"**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).  Names "
-"of buttons and settings come from the app translation automatically."
+"**This documentation**: `site/po/<lang>.po`, see "
+"[site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md)."
+"  Names of buttons and settings come from the app translation automatically."
 msgstr ""
-"**Diese Dokumentation**: `site/po/<lang>.po`, siehe [site/README.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md). Namen "
-"von Knöpfen und Einstellungen kommen automatisch aus der App-Übersetzung."
+"**Diese Dokumentation**: `site/po/<lang>.po`, siehe "
+"[site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md)."
+" Namen von Knöpfen und Einstellungen kommen automatisch aus der App-"
+"Übersetzung."
 
 #. type: Bullet: '- '
 #: docs/contribute.md
 msgid ""
 "**Other printers**: printing goes through a backend interface; a new printer "
-"is a new backend. The VC-500W protocol is described in [docs/protocol.md]"
-"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/"
-"protocol.md)."
+"is a new backend. The VC-500W protocol is described in "
+"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)."
 msgstr ""
-"**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein "
-"neuer Drucker ist ein neues Backend. Das Protokoll des VC-500W steht in "
-"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/"
-"main/docs/protocol.md)."
+"**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein neuer"
+" Drucker ist ein neues Backend. Das Protokoll des VC-500W steht in "
+"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)."
 
 #. type: Title #
 #: docs/index.md
@@ -90,11 +87,13 @@ msgstr "Etiketto"
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"Etiketto designs and prints colour labels on the Brother VC-500W (ZINK "
-"paper)  under Linux, the counterpart to Brother's Color Label Editor."
+"Etiketto designs and prints labels under Linux: colour labels on the Brother "
+"VC-500W (ZINK paper), the counterpart to Brother's Color Label Editor, and "
+"die-cut labels on cab label printers."
 msgstr ""
-"Etiketto gestaltet und druckt Farbetiketten auf dem Brother VC-500W (ZINK-"
-"Papier) unter Linux – das Gegenstück zu Brothers Color Label Editor."
+"Etiketto gestaltet und druckt Etiketten unter Linux: Farbetiketten auf dem "
+"Brother VC-500W (ZINK-Papier) – das Gegenstück zu Brothers Color Label Editor"
+" – und Stanzetiketten auf Etikettendruckern von cab."
 
 #. type: Plain text
 #: docs/index.md
@@ -122,17 +121,29 @@ msgstr "Kassettenerkennung, kräftige Farben und Schnittarten über das Netzwerk
 
 #. type: Bullet: '- '
 #: docs/index.md
+msgid ""
+"Die-cut labels of any size on cab printers, with a check of the loaded roll"
+msgstr ""
+"Stanzetiketten in jeder Grösse auf cab-Druckern, mit Prüfung der eingelegten "
+"Rolle"
+
+#. type: Bullet: '- '
+#: docs/index.md
 msgid "27 languages, follows the light or dark mode of the desktop"
 msgstr "27 Sprachen, folgt dem hellen oder dunklen Modus des Desktops"
 
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"Printers: Brother VC-500W (also sold as ColAura). Further printers can be "
-"added as a backend, see [Contribute](contribute.md)."
+"Printers: Brother VC-500W (also sold as ColAura) and cab printers with a 4 "
+"inch print head (EOS2, EOS5, SQUIX 4, MACH 4S, see [cab label "
+"printers](printer.md#cab)). Further printers can be added as a backend, see "
+"[Contribute](contribute.md)."
 msgstr ""
-"Drucker: Brother VC-500W (auch als ColAura verkauft). Weitere Drucker lassen "
-"sich als Backend ergänzen, siehe [Mitmachen](contribute.md)."
+"Drucker: Brother VC-500W (auch als ColAura verkauft) und cab-Drucker mit "
+"4-Zoll-Druckkopf (EOS2, EOS5, SQUIX 4, MACH 4S, siehe [Etikettendrucker von "
+"cab](printer.md#cab)). Weitere Drucker lassen sich als Backend ergänzen, "
+"siehe [Mitmachen](contribute.md)."
 
 #. type: Title ##
 #: docs/index.md
@@ -220,11 +231,13 @@ msgstr "Erstes Etikett"
 #. type: Bullet: '1. '
 #: docs/index.md
 msgid ""
-"Switch the printer on. Etiketto finds it in the network (Bonjour) and "
-"detects the inserted cassette."
+"Switch the printer on and choose it under [[ui:Printer model]]. Etiketto "
+"finds it in the network (Bonjour) and detects the inserted cassette or the "
+"distance between the loaded labels."
 msgstr ""
-"Drucker einschalten. Etiketto findet ihn im Netzwerk (Bonjour) und erkennt "
-"die eingelegte Kassette."
+"Drucker einschalten und unter [[ui:Printer model]] wählen. Etiketto findet "
+"ihn im Netzwerk (Bonjour) und erkennt die eingelegte Kassette oder den "
+"Abstand der eingelegten Etiketten."
 
 #. type: Bullet: '2. '
 #: docs/index.md
@@ -234,8 +247,8 @@ msgid ""
 "see [Printer](printer.md#wifi)."
 msgstr ""
 "Nicht gefunden? Die Adresse unter [[ui:Host name or IP address]] eintragen, "
-"z. B. `VC-500W1234.local` oder `192.168.1.50`. Neuer Drucker: zuerst das "
-"WLAN einrichten, siehe [Drucker](printer.md#wifi)."
+"z. B. `VC-500W1234.local` oder `192.168.1.50`. Neuer Drucker: zuerst das WLAN"
+" einrichten, siehe [Drucker](printer.md#wifi)."
 
 #. type: Bullet: '3. '
 #: docs/index.md
@@ -258,6 +271,12 @@ msgid "Printer and troubleshooting"
 msgstr "Drucker und Fehlerbehebung"
 
 #. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Brother VC-500W"
+msgstr "Brother VC-500W"
+
+#. type: Title ###
 #: docs/printer.md
 #, no-wrap
 msgid "Wi-Fi setup { #wifi }"
@@ -302,14 +321,14 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "Later, the web interface is at `https://` and the printer's address: "
-"\"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it "
-"by hand), \"AirPrint Options\" sets name, location and firmware updates."
+"\"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it by"
+" hand), \"AirPrint Options\" sets name, location and firmware updates."
 msgstr ""
 "Später ist die Weboberfläche unter `https://` und der Adresse des Druckers "
 "erreichbar: „Network Wi-Fi Setup“ wechselt das Netz (oder „click here“ für "
 "die Eingabe von Hand), „AirPrint Options“ für Name, Ort und Firmware-Updates."
 
-#. type: Title ##
+#. type: Title ###
 #: docs/printer.md
 #, no-wrap
 msgid "Cassettes"
@@ -340,8 +359,8 @@ msgstr ""
 msgid ""
 "Etiketto shows the inserted cassette, remaining tape, printable width, lot "
 "number and the presumed production date. ZINK paper ages: old paper prints "
-"paler and yellowish, Etiketto warns about old cassettes. Store cassettes "
-"cool and dry."
+"paler and yellowish, Etiketto warns about old cassettes. Store cassettes cool"
+" and dry."
 msgstr ""
 "Etiketto zeigt die eingelegte Kassette, das restliche Band, die bedruckbare "
 "Breite, die Chargennummer und das vermutete Herstellungsdatum. ZINK-Papier "
@@ -357,7 +376,7 @@ msgstr ""
 "Reinigung: Reinigungskassette CK-1000 einlegen, die Reinigung startet von "
 "selbst. Bei Streifen oder alle 20 bis 30 Etiketten."
 
-#. type: Title ##
+#. type: Title ###
 #: docs/printer.md
 #, no-wrap
 msgid "Problems"
@@ -366,16 +385,15 @@ msgstr "Probleme"
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:No printer found]]: printer on and in the same network? The search "
-"needs the Avahi service (installed on most desktops, any init system); "
-"systemd-resolved alone resolves `.local` names but cannot search. Otherwise "
-"enter the address under [[ui:Host name or IP address]]."
+"[[ui:No printer found]]: printer on and in the same network? The search needs"
+" the Avahi service (installed on most desktops, any init system); systemd-"
+"resolved alone resolves `.local` names but cannot search. Otherwise enter the"
+" address under [[ui:Host name or IP address]]."
 msgstr ""
-"[[ui:No printer found]]: Drucker an und im selben Netzwerk? Die Suche "
-"braucht den Dienst Avahi (auf den meisten Desktops installiert, mit jedem "
-"Init-System); systemd-resolved allein löst `.local`-Namen auf, kann aber "
-"nicht suchen. Sonst die Adresse unter [[ui:Host name or IP address]] "
-"eintragen."
+"[[ui:No printer found]]: Drucker an und im selben Netzwerk? Die Suche braucht"
+" den Dienst Avahi (auf den meisten Desktops installiert, mit jedem Init-"
+"System); systemd-resolved allein löst `.local`-Namen auf, kann aber nicht "
+"suchen. Sonst die Adresse unter [[ui:Host name or IP address]] eintragen."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -383,8 +401,8 @@ msgid ""
 "[[ui:Printer not reachable]]: check the address, the printer may have a new "
 "IP. Switch the printer off and on again."
 msgstr ""
-"[[ui:Printer not reachable]]: Adresse prüfen, der Drucker hat vielleicht "
-"eine neue IP. Den Drucker aus- und wieder einschalten."
+"[[ui:Printer not reachable]]: Adresse prüfen, der Drucker hat vielleicht eine"
+" neue IP. Den Drucker aus- und wieder einschalten."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -398,8 +416,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:No cassette inserted]] or cassette not recognised: reinsert the "
-"cassette until it clicks."
+"[[ui:No cassette inserted]] or cassette not recognised: reinsert the cassette"
+" until it clicks."
 msgstr ""
 "[[ui:No cassette inserted]] oder Kassette nicht erkannt: Kassette neu "
 "einlegen, bis sie einrastet."
@@ -477,8 +495,137 @@ msgid ""
 "[[ui:content scaled down to fit]]: the fixed length is too short. Make it "
 "longer or use [[ui:Automatic length]]."
 msgstr ""
-"[[ui:content scaled down to fit]]: Die feste Länge ist zu kurz. Länger "
-"machen oder [[ui:Automatic length]] verwenden."
+"[[ui:content scaled down to fit]]: Die feste Länge ist zu kurz. Länger machen"
+" oder [[ui:Automatic length]] verwenden."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "cab label printers { #cab }"
+msgstr "Etikettendrucker von cab { #cab }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5, SQUIX 4"
+" and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300."
+msgstr ""
+"Etiketto druckt auf cab-Druckern mit 4-Zoll-Druckkopf: EOS2, EOS5, SQUIX 4 "
+"und MACH 4S, mit 203, 300 oder 600 dpi. Entwickelt mit einem EOS2/300."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Network: the printer needs an address in your network (DHCP or set on its "
+"display). Etiketto uses the \"RawIP\" port 9100 with the JScript interpreter,"
+" both are the printer's defaults (Setup > Interfaces > Network services and "
+"Setup > Interpreter)."
+msgstr ""
+"Netzwerk: Der Drucker braucht eine Adresse im eigenen Netz (DHCP oder am "
+"Display eingestellt). Etiketto nutzt den „RawIP“-Port 9100 mit dem JScript-"
+"Interpreter, beides Standard am Drucker (im englischen Menü: Setup > "
+"Interfaces > Network services und Setup > Interpreter)."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Labels: die-cut labels with a gap, label sensor \"Gap Sensor\". Etiketto sets"
+" the sensor for each job. Continuous media and a cutter are not supported "
+"yet."
+msgstr ""
+"Etiketten: Stanzetiketten mit Lücke, Etikettensensor „Gap Sensor“. Etiketto "
+"stellt den Sensor bei jedem Auftrag ein. Endlosmaterial und Schneidemesser "
+"werden noch nicht unterstützt."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Print method (thermal direct or with ribbon), heat, speed and tear-off "
+"position stay as set on the printer."
+msgstr ""
+"Druckverfahren (Thermodirekt oder mit Farbband), Heizstufe, Geschwindigkeit "
+"und Abreissposition bleiben, wie sie am Drucker eingestellt sind."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #cab-problems }"
+msgstr "Probleme { #cab-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Different labels loaded]]: the printer measured another distance between"
+" the labels than height plus gap of your label. Check [[ui:Label size]] and "
+"[[ui:Gap]], or load the right roll. Press Feed on the printer once after "
+"changing the roll so it measures again."
+msgstr ""
+"[[ui:Different labels loaded]]: Der Drucker hat einen anderen Abstand "
+"zwischen den Etiketten gemessen als Höhe plus Lücke des Etiketts. [[ui:Label "
+"size]] und [[ui:Gap]] prüfen oder die richtige Rolle einlegen. Nach dem "
+"Rollenwechsel einmal Vorschub am Drucker drücken, damit er neu misst."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Printer needs attention]]: the printer is reachable but reports a "
+"problem, the text below says what to do. Clear it on the printer, then "
+"[[ui:Refresh]]. A print that stopped because of a problem is cancelled, so "
+"printing again does not give extra labels."
+msgstr ""
+"[[ui:Printer needs attention]]: Der Drucker ist erreichbar, meldet aber ein "
+"Problem; der Text darunter sagt, was zu tun ist. Am Drucker beheben, dann "
+"[[ui:Refresh]]. Ein wegen eines Problems abgebrochener Druck wird gelöscht, "
+"erneutes Drucken ergibt also keine zusätzlichen Etiketten."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Out of labels: load a new roll, the printer then synchronises by itself."
+msgstr ""
+"Keine Etiketten mehr: neue Rolle einlegen, der Drucker synchronisiert sich "
+"danach selbst."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Print head open: close the print head."
+msgstr "Druckkopf offen: Druckkopf schliessen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Next label not found: labels not threaded through the label sensor, or labels"
+" without gaps (continuous media is not supported yet)."
+msgstr ""
+"Nächstes Etikett nicht gefunden: Etiketten nicht durch den Etikettensensor "
+"geführt, oder Etiketten ohne Lücken (Endlosmaterial wird noch nicht "
+"unterstützt)."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal "
+"direct mode."
+msgstr ""
+"Farbbandproblem: kein Farbband im Thermotransfer-Modus, oder ein Farbband im "
+"Thermodirekt-Modus."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Paused: resume the printer on its display."
+msgstr "Angehalten: Drucker am Display fortsetzen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Print too pale or too dark: change the heat level in the printer's setup."
+msgstr "Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Help"
+msgstr "Hilfe"
 
 #. type: Plain text
 #: docs/printer.md
@@ -585,16 +732,69 @@ msgstr "[[ui:Units]]: Millimeter oder Zoll, standardmässig nach Systemsprache."
 
 #. type: Plain text
 #: docs/use.md
+msgid "Die-cut labels (cab printers) have a fixed size instead of a length:"
+msgstr ""
+"Stanzetiketten (cab-Drucker) haben statt einer Länge eine feste Grösse:"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"![Die-cut label on a cab printer](media/die-cut.png#only-light)  ![Die-cut "
+"label on a cab printer](media/die-cut-dark.png#only-dark)"
+msgstr ""
+"![Stanzetikett auf einem cab-Drucker](media/die-cut.png#only-light)  "
+"![Stanzetikett auf einem cab-Drucker](media/die-cut-dark.png#only-dark)"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]] "
+"(across the roll) and [[ui:Height]] (along the roll), as on the label box."
+msgstr ""
+"[[ui:Label size]]: eine gängige Grösse oder [[ui:Custom size]] mit "
+"[[ui:Width]] (quer zur Rolle) und [[ui:Height]] (längs der Rolle), wie auf "
+"der Etikettenschachtel."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before "
+"printing Etiketto compares height and gap with the distance the printer "
+"measured."
+msgstr ""
+"[[ui:Gap]]: Platz zwischen zwei Etiketten auf der Rolle, meist 2 bis 3 mm. "
+"Vor dem Druck vergleicht Etiketto Höhe und Lücke mit dem Abstand, den der "
+"Drucker gemessen hat."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Content direction]]: [[ui:Across the roll]] for labels read with the "
+"roll running from top to bottom, [[ui:Along the roll]] like on tape."
+msgstr ""
+"[[ui:Content direction]]: [[ui:Across the roll]] für Etiketten, die man mit "
+"von oben nach unten laufender Rolle liest, [[ui:Along the roll]] wie auf "
+"einem Band."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Alignment]]: where the content sits if it is shorter than the label."
+msgstr ""
+"[[ui:Alignment]]: wo der Inhalt sitzt, wenn er kürzer ist als das Etikett."
+
+#. type: Plain text
+#: docs/use.md
 msgid ""
 "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border "
 "keep this distance from the tape edges. The printer loses about 0.5 mm per "
 "side, and long labels can run up to 1 mm askew. If text is cut off at the "
 "edge, increase it."
 msgstr ""
-"[[ui:Safety margin]] (Druckereinstellung, Standard 1,5 mm): Inhalt und "
-"Rahmen halten diesen Abstand zu den Bandkanten. Der Drucker verliert etwa "
-"0,5 mm pro Seite, lange Etiketten laufen bis zu 1 mm schief. Wird Text am "
-"Rand abgeschnitten, den Wert erhöhen."
+"[[ui:Safety margin]] (Druckereinstellung, Standard 1,5 mm): Inhalt und Rahmen"
+" halten diesen Abstand zu den Bandkanten. Der Drucker verliert etwa 0,5 mm "
+"pro Seite, lange Etiketten laufen bis zu 1 mm schief. Wird Text am Rand "
+"abgeschnitten, den Wert erhöhen."
 
 #. type: Title ##
 #: docs/use.md
@@ -640,11 +840,21 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"Colour correction: brightness and colour balance (red, green, blue), for "
-"this print only, not stored in the printer."
+"Colour correction: brightness and colour balance (red, green, blue), for this"
+" print only, not stored in the printer."
 msgstr ""
 "Farbkorrektur: Helligkeit und Farbbalance (Rot, Grün, Blau), nur für diesen "
 "Druck, nicht im Drucker gespeichert."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"cab printers print in black with the print method, heat and speed set on the "
+"printer; the print dialog only asks for the number of copies."
+msgstr ""
+"cab-Drucker drucken schwarz mit dem Druckverfahren, der Heizstufe und der "
+"Geschwindigkeit, die am Drucker eingestellt sind; der Druckdialog fragt nur "
+"nach der Anzahl."
 
 #. type: Plain text
 #: docs/use.md

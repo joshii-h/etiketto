@@ -100,3 +100,14 @@ def test_tape_name(width, inch_name):
 def test_label_size():
     assert MILLIMETRES.label_size(25, 60.4) == "25 × 60 mm"
     assert INCHES.label_size(25, 50.8) == "1″ × 2.00″"
+
+
+def test_die_cut_sizes():
+    assert MILLIMETRES.size(50, 25) == "50 × 25 mm"
+    assert MILLIMETRES.size(101.6, 50.8) == "101.6 × 50.8 mm"
+    assert INCHES.size(101.6, 50.8) == "4.00 × 2.00″"
+    # tapes keep their names, other widths get decimals
+    assert MILLIMETRES.tape_name(50.8) == "50.8 mm"
+    assert INCHES.tape_name(25.0) == "1″"
+    assert INCHES.tape_name(25.4) == "1.00″"
+    assert MILLIMETRES.label_size(50.8, 60) == "50.8 × 60 mm"

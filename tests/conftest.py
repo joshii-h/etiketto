@@ -16,7 +16,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import get_backend, vc500w
+from etiketto.backends import cab, get_backend, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -63,6 +63,7 @@ def _no_network(monkeypatch):
         raise AssertionError("network access to the printer in a test")
 
     monkeypatch.setattr(vc500w, "_connect", refuse)
+    monkeypatch.setattr(cab, "_connect", refuse)
 
 
 # --- fake VC-500W on the protocol level ------------------------------------

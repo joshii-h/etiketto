@@ -1,6 +1,8 @@
 # Printer and troubleshooting
 
-## Wi-Fi setup { #wifi }
+## Brother VC-500W
+
+### Wi-Fi setup { #wifi }
 
 Etiketto does not set up Wi-Fi. Use a phone or the printer's web interface
 once:
@@ -15,7 +17,7 @@ Later, the web interface is at `https://` and the printer's address:
 "Network Wi-Fi Setup" changes the network (or "click here" to enter it by
 hand), "AirPrint Options" sets name, location and firmware updates.
 
-## Cassettes
+### Cassettes
 
 | Cassette | Width |
 |---|---|
@@ -33,7 +35,7 @@ and dry.
 Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.
 Do it when stripes appear, or every 20 to 30 labels.
 
-## Problems
+### Problems
 
 - [[ui:No printer found]]: printer on and in the same network? The search
   needs the Avahi service (installed on most desktops, any init system);
@@ -61,6 +63,42 @@ Do it when stripes appear, or every 20 to 30 labels.
   insert the cassette straight.
 - [[ui:content scaled down to fit]]: the fixed length is too short. Make it
   longer or use [[ui:Automatic length]].
+
+## cab label printers { #cab }
+
+Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5,
+SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
+
+- Network: the printer needs an address in your network (DHCP or set on its
+  display). Etiketto uses the "RawIP" port 9100 with the JScript interpreter,
+  both are the printer's defaults (Setup > Interfaces > Network services and
+  Setup > Interpreter).
+- Labels: die-cut labels with a gap, label sensor "Gap Sensor". Etiketto
+  sets the sensor for each job. Continuous media and a cutter are not
+  supported yet.
+- Print method (thermal direct or with ribbon), heat, speed and tear-off
+  position stay as set on the printer.
+
+### Problems { #cab-problems }
+
+- [[ui:Different labels loaded]]: the printer measured another distance
+  between the labels than height plus gap of your label. Check
+  [[ui:Label size]] and [[ui:Gap]], or load the right roll. Press Feed on
+  the printer once after changing the roll so it measures again.
+- [[ui:Printer needs attention]]: the printer is reachable but reports a
+  problem, the text below says what to do. Clear it on the printer, then
+  [[ui:Refresh]]. A print that stopped because of a problem is cancelled, so
+  printing again does not give extra labels.
+- Out of labels: load a new roll, the printer then synchronises by itself.
+- Print head open: close the print head.
+- Next label not found: labels not threaded through the label sensor, or
+  labels without gaps (continuous media is not supported yet).
+- Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal
+  direct mode.
+- Paused: resume the printer on its display.
+- Print too pale or too dark: change the heat level in the printer's setup.
+
+## Help
 
 Something else? [[ui:Report a problem…]] in the main menu (also offered with
 error messages) opens a prefilled issue in the browser with version, system

@@ -1,7 +1,8 @@
 # Etiketto
 
-Etiketto designs and prints colour labels on the Brother VC-500W (ZINK paper)
-under Linux, the counterpart to Brother's Color Label Editor.
+Etiketto designs and prints labels under Linux: colour labels on the Brother
+VC-500W (ZINK paper), the counterpart to Brother's Color Label Editor, and
+die-cut labels on cab label printers.
 
 ![Main window](media/main.png#only-light)
 ![Main window](media/main-dark.png#only-dark)
@@ -9,10 +10,13 @@ under Linux, the counterpart to Brother's Color Label Editor.
 - Text, images, QR codes and barcodes; backgrounds printed edge to edge
 - Preview at print resolution: what you see is what is printed
 - Cassette detection, vivid colours and cut modes over the network
+- Die-cut labels of any size on cab printers, with a check of the loaded roll
 - 27 languages, follows the light or dark mode of the desktop
 
-Printers: Brother VC-500W (also sold as ColAura). Further printers can be
-added as a backend, see [Contribute](contribute.md).
+Printers: Brother VC-500W (also sold as ColAura) and cab printers with a
+4 inch print head (EOS2, EOS5, SQUIX 4, MACH 4S, see
+[cab label printers](printer.md#cab)). Further printers can be added as a
+backend, see [Contribute](contribute.md).
 
 ## Install
 
@@ -48,8 +52,9 @@ Saved labels and templates are kept.
 
 ## First label
 
-1. Switch the printer on. Etiketto finds it in the network (Bonjour) and
-   detects the inserted cassette.
+1. Switch the printer on and choose it under [[ui:Printer model]]. Etiketto
+   finds it in the network (Bonjour) and detects the inserted cassette or
+   the distance between the loaded labels.
 2. Not found? Enter the address under [[ui:Host name or IP address]], e.g.
    `VC-500W1234.local` or `192.168.1.50`. New printer: set up its Wi-Fi
    first, see [Printer](printer.md#wifi).

@@ -13,6 +13,9 @@ FORMAT_VERSION = 1
 # Cassette widths of the VC-500W (CZ-1001 ... CZ-1005)
 TAPE_WIDTHS_MM = (9, 12, 19, 25, 50)
 DEFAULT_PRINTER = "vc500w"
+# die-cut labels: smallest and largest side a file may have
+MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
+MAX_GAP_MM = 50.0
 
 
 class LabelError(ValueError):
@@ -71,8 +74,12 @@ ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement
 
 @dataclass
 class Label:
-    tape_mm: int = 50
-    auto_length: bool = True
+    # Label space: the length runs along x, the elements are placed one after
+    # another along it; tape_mm is the height across. On endless tape tape_mm
+    # is the tape width; on die-cut labels both together are the label size
+    # (see media_size()).
+    tape_mm: float = 50
+    auto_length: bool = True  # endless tape only
     length_mm: float = 60.0  # used when auto_length is False
     margin_mm: float = 2.0  # space at both ends and between elements
     edge_mm: float = 0.0  # extra space along the tape edges (on top of the safety margin)
@@ -83,6 +90,35 @@ class Label:
     border_color: str = "#000000"
     elements: list[Element] = field(default_factory=list)
     printer: str = DEFAULT_PRINTER  # backend id; files without it are for the VC-500W
+    # die-cut labels only: the gap to the next label, and whether the content
+    # runs across the roll (along the print head) or along it like on tape
+    gap_mm: float = 3.0
+    orientation: Literal["across", "along"] = "along"
+
+    # --- die-cut labels ----------------------------------------------------
+
+    def media_size(self) -> tuple[float, float]:
+        """(width across the print head, height along the feed) in mm."""
+        if self.orientation == "across":
+            return self.length_mm, self.tape_mm
+        return self.tape_mm, self.length_mm
+
+    def set_media_size(self, width_mm: float, height_mm: float) -> None:
+        if self.orientation == "across":
+            self.length_mm, self.tape_mm = width_mm, height_mm
+        else:
+            self.tape_mm, self.length_mm = width_mm, height_mm
+
+    def set_orientation(self, orientation: str) -> None:
+        """Turn the content, the label size stays."""
+        if orientation != self.orientation:
+            width, height = self.media_size()
+            self.orientation = "across" if orientation == "across" else "along"
+            self.set_media_size(width, height)
+
+    def pitch_mm(self) -> float:
+        """Distance from the start of one die-cut label to the next."""
+        return self.media_size()[1] + self.gap_mm
 
     # --- persistence -------------------------------------------------------
 
@@ -121,11 +157,26 @@ class Label:
 
     def _validate(self) -> None:
         self.printer = _str(self.printer, "printer")
-        widths = _tape_widths(self.printer)
-        if isinstance(self.tape_mm, bool) or self.tape_mm not in widths:
-            raise _damaged("unsupported tape width %r mm" % (self.tape_mm,))
-        self.auto_length = bool(self.auto_length)
-        self.length_mm = _clamp(self.length_mm, 15, 1000, "length_mm")
+        caps = _capabilities(self.printer)
+        continuous = caps.continuous
+        if continuous:
+            widths = caps.tape_widths_mm
+            if isinstance(self.tape_mm, bool) or self.tape_mm not in widths:
+                raise _damaged("unsupported tape width %r mm" % (self.tape_mm,))
+            self.tape_mm = widths[widths.index(self.tape_mm)]  # 25, not 25.0
+        else:
+            self.tape_mm = _clamp(self.tape_mm, MIN_SIZE_MM, MAX_SIZE_MM, "tape_mm")
+        # a die-cut label has its size, it does not grow with the content
+        self.auto_length = bool(self.auto_length) and continuous
+        lower = 15 if continuous else MIN_SIZE_MM
+        self.length_mm = _clamp(self.length_mm, lower, MAX_SIZE_MM, "length_mm")
+        self.gap_mm = _clamp(self.gap_mm, 0, MAX_GAP_MM, "gap_mm")
+        self.orientation = _choice(self.orientation, ("across", "along"), "orientation")
+        if not continuous and caps.max_width_mm:
+            # no wider than the print head: also keeps the render of an
+            # untrusted file small
+            width, height = self.media_size()
+            self.set_media_size(min(width, caps.max_width_mm), height)
         self.margin_mm = _clamp(self.margin_mm, 0, 20, "margin_mm")
         self.edge_mm = _clamp(self.edge_mm, 0, 10, "edge_mm")
         self.border_mm = _clamp(self.border_mm, 0, 5, "border_mm")
@@ -153,13 +204,13 @@ class Label:
 # --- validation helpers -----------------------------------------------------
 
 
-def _tape_widths(printer: str) -> tuple[int, ...]:
-    """Tape widths of the printer's backend; a printer this version does not
+def _capabilities(printer: str):
+    """Capabilities of the printer's backend; a printer this version does not
     know means the file comes from a newer Etiketto."""
     from etiketto.backends import get_backend
 
     try:
-        return get_backend(printer).capabilities.tape_widths_mm
+        return get_backend(printer).capabilities
     except KeyError:
         raise LabelError("newer", "unknown printer %r" % printer) from None
 

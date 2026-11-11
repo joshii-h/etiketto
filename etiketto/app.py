@@ -34,6 +34,9 @@ from etiketto.backends.base import (  # noqa: E402
     Progress,
 )
 from etiketto.model import (  # noqa: E402
+    MAX_GAP_MM,
+    MAX_SIZE_MM,
+    MIN_SIZE_MM,
     CodeElement,
     ImageElement,
     Label,
@@ -101,6 +104,12 @@ COLOR_ADJUST_ROWS = [
     ("blue", _("Blue")),
 ]
 ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
+ORIENTATIONS = [("across", _("Across the roll")), ("along", _("Along the roll"))]
+CUSTOM_SIZE = "custom"
+# a measured label distance this far from the label's own is a different roll
+PITCH_TOLERANCE_MM = 1.0
+# errors that mean the printer cannot be reached at all; others need attention
+CONNECTION_ERRORS = ("not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
 SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13")]
 
@@ -265,6 +274,18 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
         "bad_cassette": _("The cassette is not recognised. Insert it again or try another one."),
         "busy": _("The printer is busy. Wait a moment and try again."),
         "too_long": _("The label is too long for this printer: at most %(max)s."),
+        "too_wide": _("The label is too wide for this printer: at most %(max)s."),
+        "out_of_labels": _("The printer is out of labels. Load a new roll and try again."),
+        "head_open": _("The print head is open. Close it and try again."),
+        "label_not_found": _(
+            "The printer cannot find the next label. Check that the labels are loaded "
+            "correctly and run through the label sensor."
+        ),
+        "ribbon": _(
+            "There is a problem with the ribbon. Check that it is inserted correctly and "
+            "matches the print method set on the printer."
+        ),
+        "paused": _("The printer is paused. Resume it on its display and try again."),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),
@@ -272,9 +293,16 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
     if not isinstance(error, PrinterError):
         return texts["generic"]
     text = texts.get(error.code, texts["generic"])
-    if error.code == "too_long":
+    if error.code in ("too_long", "too_wide"):
         text %= {"max": unit.format(float(error.params.get("max_mm", 0)))}
     return text
+
+
+def error_from_code(code: str) -> PrinterError:
+    """A printer error for a code a backend reported in PrinterInfo.error."""
+    error = PrinterError(code)
+    error.code = code
+    return error
 
 
 def stage_text(stage: str) -> str | None:
@@ -546,10 +574,18 @@ class Window(Adw.ApplicationWindow):
     def _on_backend(self, backend_id: str) -> None:
         if backend_id == self.label.printer:
             return
+        was_continuous = self.backend.capabilities.continuous
         self.label.printer = backend_id
-        widths = self.backend.capabilities.tape_widths_mm
-        if self.label.tape_mm not in widths:
+        caps = self.backend.capabilities
+        if caps.continuous:
+            if not was_continuous:  # the content runs along the tape again
+                self.label.orientation = "along"
+                self.label.auto_length = True
+            # the nearest tape, as the tape's own number (50, not 50.0)
+            widths = caps.tape_widths_mm
             self.label.tape_mm = min(widths, key=lambda w: abs(w - self.label.tape_mm))
+        elif was_continuous:
+            self._use_default_size(self.label)
         self.printer_info = None
         self.rebuild_sidebar()
         self.mark_changed()
@@ -664,16 +700,17 @@ class Window(Adw.ApplicationWindow):
         lab = self.label
         group = Adw.PreferencesGroup(title=_("Label"))
 
-        widths = [
-            (str(w), self.unit.tape_name(w)) for w in self.backend.capabilities.tape_widths_mm
-        ]
-        self.tape_row = combo_row(
-            _("Tape width"), widths, str(lab.tape_mm), lambda v: self.change(tape_mm=int(v))
-        )
-        group.add(self.tape_row)
-
         if self.backend.capabilities.continuous:
+            widths = [
+                (str(w), self.unit.tape_name(w)) for w in self.backend.capabilities.tape_widths_mm
+            ]
+            self.tape_row = combo_row(
+                _("Tape width"), widths, str(lab.tape_mm), lambda v: self.change(tape_mm=int(v))
+            )
+            group.add(self.tape_row)
             self._add_length_rows(group)
+        else:
+            self._add_size_rows(group)
 
         group.add(
             self.length_row(
@@ -762,6 +799,115 @@ class Window(Adw.ApplicationWindow):
         auto.connect("notify::active", on_auto)
         group.add(length)
         group.add(align)
+
+    def _use_default_size(self, label: Label) -> None:
+        """A die-cut label of the backend's default size, content across the roll."""
+        caps = self.backend.capabilities
+        label.auto_length = False
+        label.orientation = "across"
+        size = caps.label_sizes[0] if caps.label_sizes else None
+        width, height = (size.width_mm, size.height_mm) if size else (50.0, 25.0)
+        label.set_media_size(width, height)
+
+    def _size_key(self) -> str:
+        """The preset matching the label, else CUSTOM_SIZE."""
+        width, height = self.label.media_size()
+        for size in self.backend.capabilities.label_sizes:
+            if abs(size.width_mm - width) < 0.05 and abs(size.height_mm - height) < 0.05:
+                return "%g×%g" % (size.width_mm, size.height_mm)
+        return CUSTOM_SIZE
+
+    def _add_size_rows(self, group: Adw.PreferencesGroup) -> None:
+        """Die-cut labels: size (preset or by hand), gap, orientation, alignment."""
+        lab, caps, unit = self.label, self.backend.capabilities, self.unit
+        presets = [
+            ("%g×%g" % (s.width_mm, s.height_mm), unit.size(s.width_mm, s.height_mm))
+            for s in caps.label_sizes
+        ]
+        items = presets + [(CUSTOM_SIZE, _("Custom size"))]
+        keys = [key for key, _name in items]
+        self.size_row = combo_row(_("Label size"), items, self._size_key(), self._on_size_preset)
+        group.add(self.size_row)
+
+        width, height = lab.media_size()
+        max_width = caps.max_width_mm or MAX_SIZE_MM
+        self.width_row = self.length_row(
+            _("Width"),
+            min(width, max_width),
+            MIN_SIZE_MM,
+            max_width,
+            0.5,
+            lambda v: self._on_media_size(width=v),
+            _("%(unit)s across the roll"),
+        )
+        self.height_row = self.length_row(
+            _("Height"),
+            height,
+            MIN_SIZE_MM,
+            MAX_SIZE_MM,
+            0.5,
+            lambda v: self._on_media_size(height=v),
+            _("%(unit)s along the roll"),
+        )
+        group.add(self.width_row)
+        group.add(self.height_row)
+        group.add(
+            self.length_row(
+                _("Gap"),
+                lab.gap_mm,
+                0,
+                MAX_GAP_MM,
+                0.5,
+                lambda v: self.change(gap_mm=v),
+                _("%(unit)s between two labels on the roll"),
+            )
+        )
+        group.add(
+            combo_row(_("Content direction"), ORIENTATIONS, lab.orientation, self._on_orientation)
+        )
+        group.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: self.change(align=v)))
+        self._size_keys = keys
+
+    def _on_size_preset(self, key: str) -> None:
+        if key == CUSTOM_SIZE or key == self._size_key():
+            return
+        width, height = (float(v) for v in key.split("×"))
+        self.label.set_media_size(width, height)
+        self._show_media_size()
+        self.mark_changed()
+
+    def _on_media_size(self, width: float | None = None, height: float | None = None) -> None:
+        if getattr(self, "_syncing", False):
+            return
+        old_width, old_height = self.label.media_size()
+        new = (old_width if width is None else width, old_height if height is None else height)
+        self.label.set_media_size(*new)
+        key = self._size_key()
+        if self.size_row.get_selected() != self._size_keys.index(key):
+            self.size_row.set_selected(self._size_keys.index(key))
+        self.mark_changed()
+
+    def _show_media_size(self) -> None:
+        """Width and height rows after the size was chosen from the list."""
+        width, height = self.label.media_size()
+        self._syncing = True  # rounding to the shown digits must not change the model
+        try:
+            for row, mm in ((self.width_row, width), (self.height_row, height)):
+                row.set_value(self.unit.to_display(mm, row.get_digits()))
+        finally:
+            self._syncing = False
+
+    def _on_orientation(self, orientation: str) -> None:
+        if orientation != self.label.orientation:
+            self.label.set_orientation(orientation)
+            self.mark_changed()
+
+    def size_text(self, length_mm: float | None = None) -> str:
+        """ "50 × 25 mm" for the status line and the print dialog."""
+        if self.backend.capabilities.continuous:
+            length = self.label.length_mm if length_mm is None else length_mm
+            return self.unit.label_size(self.label.tape_mm, length)
+        return self.unit.size(*self.label.media_size())
 
     def _elements_group(self) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup(
@@ -945,13 +1091,18 @@ class Window(Adw.ApplicationWindow):
         self.mark_changed()
 
     def set_label(self, label: Label, path: Path | None) -> None:
+        printer_changed = label.printer != self.label.printer
         self.label = label
+        if printer_changed:  # a file or template for the other printer model
+            self.printer_info = None
         self.path = path
         self.dirty = False
         self._expand_index = -1
         self.rebuild_sidebar()
         self._update_title()
         self.schedule_render()
+        if printer_changed:
+            self.refresh_printer()
 
     def _update_title(self) -> None:
         name = self.path.name if self.path else _("Unsaved label")
@@ -986,12 +1137,17 @@ class Window(Adw.ApplicationWindow):
         self.picture.set_paintable(texture)
         self._apply_zoom()
 
-        info = self.unit.label_size(self.label.tape_mm, self.rendered.length_mm)
+        info = self.size_text(self.rendered.length_mm)
         if self.rendered.overflow:
             info += " · " + _("content scaled down to fit")
         if caps.max_length_mm and self.rendered.length_mm > caps.max_length_mm + 0.01:
             info += " · " + _("Too long for this printer: at most %s") % self.unit.format(
                 caps.max_length_mm
+            )
+        width = self.label.media_size()[0]
+        if not caps.continuous and caps.max_width_mm and width > caps.max_width_mm + 0.01:
+            info += " · " + _("Too wide for this printer: at most %s") % self.unit.format(
+                caps.max_width_mm
             )
         if self.rendered.warnings:
             problems = "; ".join(warning_text(w) for w in self.rendered.warnings)
@@ -1131,7 +1287,8 @@ class Window(Adw.ApplicationWindow):
         self._update_printer_row()
         widths = self.backend.capabilities.tape_widths_mm
         if (
-            info.tape_mm in widths
+            self.backend.capabilities.continuous
+            and info.tape_mm in widths
             and info.tape_mm != self.label.tape_mm
             and self.path is None
             and not self.dirty
@@ -1146,7 +1303,13 @@ class Window(Adw.ApplicationWindow):
         if self._outdated(generation):
             return False
         self.printer_info = None
-        self._update_printer_row(_("Printer not reachable"), printer_error_text(error, self.unit))
+        code = getattr(error, "code", "generic")
+        title = (
+            _("Printer not reachable")
+            if code in CONNECTION_ERRORS
+            else _("Printer needs attention")
+        )
+        self._update_printer_row(title, printer_error_text(error, self.unit))
         return False
 
     def _remaining_text(self, info: PrinterInfo) -> str | None:
@@ -1160,6 +1323,14 @@ class Window(Adw.ApplicationWindow):
         }
 
     def _printer_summary(self, info: PrinterInfo) -> str:
+        if not self.backend.capabilities.continuous:
+            if info.error:
+                return printer_error_text(error_from_code(info.error), self.unit)
+            if info.state == "BUSY":
+                return _("Printing")
+            if info.pitch_mm:
+                return _("Ready · a label every %s") % self.unit.format(info.pitch_mm)
+            return _("Ready")
         if not info.tape_mm:
             return _("No cassette inserted")
         parts = [_("%s cassette") % isolate(self.unit.tape_name(info.tape_mm))]
@@ -1175,7 +1346,10 @@ class Window(Adw.ApplicationWindow):
         connected = False
         if title is None and info is not None:
             # the printer itself reports a codename (the VC-500W says "Wedge")
-            title, subtitle, connected = self.backend.name, self._printer_summary(info), True
+            title, subtitle = self.backend.display_name(info), self._printer_summary(info)
+            if info.error:  # reachable, but it reports a problem
+                title = _("Printer needs attention")
+            connected = True
         self.printer_row.set_title(GLib.markup_escape_text(title or _("Searching…")))
         self.printer_row.set_subtitle(GLib.markup_escape_text(subtitle or ""))
         self.details_button.set_sensitive(connected)
@@ -1190,12 +1364,14 @@ class Window(Adw.ApplicationWindow):
             return []
         unit = self.unit
         rows = [
-            (_("Model"), self.backend.name),
+            (_("Model"), self.backend.display_name(info)),
             (_("Address"), isolate(self.host or "")),
             (_("Firmware"), info.firmware),
         ]
         if info.tape_mm:
             rows.append((_("Cassette"), isolate(unit.tape_name(info.tape_mm))))
+        if info.pitch_mm:
+            rows.append((_("Label distance"), unit.format(info.pitch_mm)))
         rows.append((_("Remaining tape"), self._remaining_text(info) or ""))
         cassette = info.cassette
         if cassette:
@@ -1239,7 +1415,8 @@ class Window(Adw.ApplicationWindow):
             self.toast(_("The label is empty"))
             return
         info = self.printer_info
-        if info and info.tape_mm and info.tape_mm != self.label.tape_mm:
+        continuous = self.backend.capabilities.continuous
+        if continuous and info and info.tape_mm and info.tape_mm != self.label.tape_mm:
             dialog = Adw.AlertDialog(
                 heading=_("Wrong cassette"),
                 body=_(
@@ -1257,7 +1434,40 @@ class Window(Adw.ApplicationWindow):
             dialog.connect("response", self._on_wrong_cassette_response)
             dialog.present(self)
             return
+        if self._pitch_differs():
+            self._wrong_labels_dialog()
+            return
         self._print_dialog()
+
+    def _pitch_differs(self) -> bool:
+        info = self.printer_info
+        if self.backend.capabilities.continuous or not info or not info.pitch_mm:
+            return False
+        return abs(info.pitch_mm - self.label.pitch_mm()) > PITCH_TOLERANCE_MM
+
+    def _wrong_labels_dialog(self) -> None:
+        info = self.printer_info
+        assert info and info.pitch_mm
+        dialog = Adw.AlertDialog(
+            heading=_("Different labels loaded"),
+            body=_(
+                "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
+                "%(pitch)s. The printer measured a label every %(measured)s. Check the "
+                "label size and the gap."
+            )
+            % {
+                "size": isolate(self.unit.size(*self.label.media_size())),
+                "gap": isolate(self.unit.format(self.label.gap_mm)),
+                "pitch": isolate(self.unit.format(self.label.pitch_mm())),
+                "measured": isolate(self.unit.format(info.pitch_mm)),
+            },
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("print", _("Print anyway"))
+        dialog.set_response_appearance("print", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.connect("response", self._on_wrong_cassette_response)
+        self._last_dialog = dialog
+        dialog.present(self)
 
     def _on_wrong_cassette_response(self, _dialog, response: str) -> None:
         if response == "print":
@@ -1345,7 +1555,7 @@ class Window(Adw.ApplicationWindow):
             return
         dialog = Adw.AlertDialog(
             heading=_("Print label"),
-            body=self.unit.label_size(self.label.tape_mm, self.rendered.length_mm),
+            body=self.size_text(self.rendered.length_mm),
         )
         box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         box.add_css_class("boxed-list")
@@ -1368,6 +1578,7 @@ class Window(Adw.ApplicationWindow):
                         mode=choices["mode"],
                         color=self.color_adjust,
                         data_format=self.data_format,
+                        gap_mm=self.label.gap_mm,
                     )
                 )
 
@@ -1633,10 +1844,15 @@ class Window(Adw.ApplicationWindow):
 
     def on_new(self, *_args) -> None:
         def reset():
-            widths = self.backend.capabilities.tape_widths_mm
-            inserted = self.printer_info.tape_mm if self.printer_info else None
-            tape = inserted if inserted in widths else (50 if 50 in widths else widths[-1])
-            label = Label(tape_mm=tape, printer=self.backend.id)
+            label = Label(printer=self.backend.id)
+            if self.backend.capabilities.continuous:
+                widths = self.backend.capabilities.tape_widths_mm
+                inserted = self.printer_info.tape_mm if self.printer_info else None
+                label.tape_mm = (
+                    inserted if inserted in widths else (50 if 50 in widths else widths[-1])
+                )
+            else:
+                self._use_default_size(label)
             label.elements = [TextElement(text=_("Label"))]
             self.set_label(label, None)
 
@@ -1688,11 +1904,11 @@ class Window(Adw.ApplicationWindow):
         info = self.printer_info
         if not info:
             return None
-        parts = [
-            self.backend.name,
-            "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no"),
-            info.state,
-        ]
+        if self.backend.capabilities.continuous:
+            media = "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no")
+        else:
+            media = "label every %s mm" % ("%g" % info.pitch_mm if info.pitch_mm else "?")
+        parts = [self.backend.display_name(info), media, info.state]
         if info.firmware:
             parts.append("firmware " + info.firmware)
         return ", ".join(parts)
@@ -1821,7 +2037,14 @@ class App(Adw.Application):
 
         def prepare():
             # a believable printer instead of the network
-            window.printer_info = PrinterInfo("Wedge", window.label.tape_mm, 4120, 5000, "IDLE")
+            if window.backend.capabilities.continuous:
+                tape = window.label.tape_mm
+                window.printer_info = PrinterInfo("Wedge", tape, 4120, 5000, "IDLE")
+            else:
+                pitch = window.label.pitch_mm()
+                window.printer_info = PrinterInfo(
+                    "EOS2/300", None, None, None, "IDLE", pitch_mm=pitch
+                )
             window._update_printer_row()
             if state == "expand":
                 window._expand_index = len(window.label.elements) - 1
@@ -1884,7 +2107,7 @@ class App(Adw.Application):
             version=__version__,
             developer_name="Joshua Hirsig",
             license_type=Gtk.License.AGPL_3_0,
-            comments=_("Label designer for the Brother VC-500W"),
+            comments=_("Label designer for the Brother VC-500W and cab label printers"),
             website="https://git.joshuahirsig.xyz/joshii/etiketto",
             issue_url="https://git.joshuahirsig.xyz/joshii/etiketto/issues",
             copyright="© 2026 Joshua Hirsig",

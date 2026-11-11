@@ -1669,7 +1669,274 @@ def test_no_length_rows_for_die_cut_printers(make_window, mono, monkeypatch):
     win._on_backend("fake-mono")
     assert not find(win.sidebar, Adw.SpinRow, title="Length")
     assert not find(win.sidebar, Adw.SwitchRow, title="Automatic length")
-    assert not find(win.sidebar, Adw.ComboRow, title="Alignment")
+    assert not find(win.sidebar, Adw.ComboRow, title="Tape width")
+    # no sizes of its own: 50 × 25 mm, entered by hand
+    size = one(win.sidebar, Adw.ComboRow, title="Label size")
+    assert size.get_model().get_n_items() == 1 and win.label.media_size() == (50, 25)
+
+
+# --- cab: die-cut labels ---------------------------------------------------------------------
+
+
+@pytest.fixture
+def cab_env(gui_env, monkeypatch):
+    """The cab backend with faked query/print/discover; a 50 × 25 mm roll with
+    3 mm gaps (a label every 28 mm) in the printer."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("cab")
+    env = SimpleNamespace(
+        backend=backend,
+        info=PrinterInfo(
+            "EOS2/300", None, None, None, "IDLE", firmware="5.47.7 Jan 22, 2026", pitch_mm=28.0
+        ),
+        error=None,
+        queries=[],
+        prints=[],
+    )
+
+    def query(host):
+        env.queries.append(host)
+        if env.error:
+            raise env.error
+        return env.info
+
+    def print_label(image, host, options, progress=None):
+        env.prints.append((image, host, options))
+        progress(Progress(1, options.copies))
+
+    monkeypatch.setattr(backend, "query", query)
+    monkeypatch.setattr(backend, "print_label", print_label)
+    monkeypatch.setattr(
+        backend,
+        "discover",
+        lambda timeout=3.0: [
+            FoundPrinter("cab EOS2/300 (aa:bb:cc)", "printer04.local", "192.0.2.21")
+        ],
+    )
+    return env
+
+
+@pytest.fixture
+def cab_window(make_window, cab_env):
+    win = make_window()
+    one(win.sidebar, Adw.ComboRow, title="Printer model").set_selected(1)
+    assert pump(lambda: win.printer_info is cab_env.info)
+    render_now(win)
+    return win
+
+
+def _items(row):
+    model = row.get_model()
+    return [model.get_string(i) for i in range(model.get_n_items())]
+
+
+def _selected(row):
+    return _items(row)[row.get_selected()]
+
+
+def test_cab_printer(cab_window, cab_env):
+    win = cab_window
+    assert win.label.printer == "cab" and win.dirty
+    assert win.label.media_size() == (50, 25)
+    assert win.label.orientation == "across" and not win.label.auto_length
+    assert app.load_settings()["printers"]["cab"]["host"] == "printer04.local"
+    assert win.printer_row.get_title() == "cab EOS2/300"
+    assert win.printer_row.get_subtitle() == "Ready · a label every 28.0 mm"
+    size = one(win.sidebar, Adw.ComboRow, title="Label size")
+    assert _items(size) == [
+        "50 × 25 mm",
+        "38 × 25 mm",
+        "57 × 32 mm",
+        "76 × 51 mm",
+        "100 × 50 mm",
+        "100 × 100 mm",
+        "100 × 150 mm",
+        "Custom size",
+    ]
+    assert _selected(size) == "50 × 25 mm"
+    for title in ("Tape width", "Automatic length"):
+        assert not find(win.sidebar, Adw.ComboRow, title=title)
+        assert not find(win.sidebar, Adw.SwitchRow, title=title)
+    assert one(win.sidebar, Adw.SpinRow, title="Width").get_adjustment().get_upper() == 105.6
+    assert win.size_label.get_text().startswith("50 × 25 mm")
+    # the preview is the label as read: 50 mm wide, 25 mm high
+    assert win.rendered.image.size == (mm_to_px(50, 305), mm_to_px(25, 305))
+
+
+def test_cab_label_sizes(cab_window):
+    win = cab_window
+    size = one(win.sidebar, Adw.ComboRow, title="Label size")
+    width = one(win.sidebar, Adw.SpinRow, title="Width")
+    height = one(win.sidebar, Adw.SpinRow, title="Height")
+    size.set_selected(4)
+    assert win.label.media_size() == (100, 50)
+    assert (width.get_value(), height.get_value()) == (100, 50)
+    height.set_value(40)
+    assert win.label.media_size() == (100, 40) and _selected(size) == "Custom size"
+    height.set_value(50)
+    assert _selected(size) == "100 × 50 mm"  # a known size again
+    size.set_selected(7)  # "Custom size" alone changes nothing
+    assert win.label.media_size() == (100, 50)
+    one(win.sidebar, Adw.SpinRow, title="Gap").set_value(2)
+    assert win.label.gap_mm == 2 and win.label.pitch_mm() == 52
+
+
+def test_cab_sizes_in_inches(cab_window):
+    win = cab_window
+    win._on_units("in")
+    size = one(win.sidebar, Adw.ComboRow, title="Label size")
+    assert _items(size)[0] == "1.97 × 0.98″"
+    one(win.sidebar, Adw.ComboRow, title="Label size").set_selected(4)
+    assert win.label.media_size() == (100, 50)  # not rounded through the inch rows
+
+
+def test_cab_orientation(cab_window):
+    win = cab_window
+    direction = one(win.sidebar, Adw.ComboRow, title="Content direction")
+    assert _items(direction) == ["Across the roll", "Along the roll"]
+    direction.set_selected(1)
+    assert win.label.orientation == "along" and win.label.media_size() == (50, 25)
+    render_now(win)
+    # read along the roll: the preview is 25 mm long and 50 mm high
+    assert win.rendered.image.size == (mm_to_px(25, 305), mm_to_px(50, 305))
+    assert win.size_label.get_text().startswith("50 × 25 mm")
+
+
+def test_cab_print(cab_window, cab_env):
+    win = cab_window
+    win.on_print()
+    dialog = win._last_dialog
+    assert dialog.get_heading() == "Print label" and dialog.get_body() == "50 × 25 mm"
+    box = dialog.get_extra_child()
+    assert box.get_row_at_index(0).get_title() == "Copies"
+    assert box.get_row_at_index(1) is None  # no cutter, one mode
+    dialog.emit("response", "print")
+    assert pump(lambda: not win.printing)
+    image, host, options = cab_env.prints[0]
+    assert host == "printer04.local" and options.gap_mm == 3
+    assert image.size == (600, 300)  # printer orientation, 12 dots per mm
+    assert toast_titles(win)[-1] == "Printed"
+
+
+@pytest.mark.parametrize("answer, prints", [("cancel", False), ("print", True)])
+def test_cab_different_labels_loaded(cab_window, cab_env, answer, prints):
+    win = cab_window
+    cab_env.info.pitch_mm = 20.0
+    win.on_print()
+    dialog = win.get_visible_dialog()
+    assert dialog.get_heading() == "Different labels loaded"
+    body = dialog.get_body()
+    assert "50 × 25 mm" in body and "3.0 mm" in body and "28.0 mm" in body and "20.0 mm" in body
+    respond(dialog, answer)
+    following = win.get_visible_dialog()
+    assert (following is not None and following.get_heading() == "Print label") == prints
+
+
+def test_cab_close_enough_pitch_prints_directly(cab_window, cab_env):
+    cab_env.info.pitch_mm = 28.8  # the sensor measures in whole mm
+    cab_window.on_print()
+    assert cab_window.get_visible_dialog().get_heading() == "Print label"
+
+
+def test_cab_too_wide(cab_window):
+    win = cab_window
+    win.label.set_media_size(120, 25)
+    render_now(win)
+    assert "Too wide for this printer: at most 105.6 mm" in win.size_label.get_text()
+
+
+def test_cab_printer_states(make_window, cab_env):
+    from etiketto.backends.base import HeadOpen
+
+    win = make_window()
+    win._on_backend("cab")
+    cab_env.info.error, cab_env.info.state = "out_of_labels", "ERROR"
+    win.refresh_printer()
+    assert pump(lambda: win.printer_info is cab_env.info)
+    assert win.printer_row.get_title() == "Printer needs attention"
+    assert win.printer_row.get_subtitle().startswith("The printer is out of labels")
+    cab_env.info.error, cab_env.info.state = "", "BUSY"
+    win._update_printer_row()
+    assert win.printer_row.get_subtitle() == "Printing"
+    cab_env.info.state, cab_env.info.pitch_mm = "IDLE", None
+    win._update_printer_row()
+    assert win.printer_row.get_subtitle() == "Ready"
+    cab_env.error = HeadOpen("ESC s YD000000N")
+    win.refresh_printer()
+    assert pump(lambda: win.printer_row.get_title() == "Printer needs attention")
+    assert win.printer_row.get_subtitle() == "The print head is open. Close it and try again."
+    cab_env.error = PrinterTimeout("timed out")
+    win.refresh_printer()
+    assert pump(lambda: win.printer_row.get_title() == "Printer not reachable")
+
+
+def test_cab_details_and_report(cab_window):
+    win = cab_window
+    details = dict(win.printer_details())
+    assert details["Model"] == "cab EOS2/300"
+    assert details["Label distance"] == "28.0 mm"
+    assert "Cassette" not in details and "Remaining tape" not in details
+    assert (
+        win.printer_description()
+        == "cab EOS2/300, label every 28 mm, IDLE, firmware 5.47.7 Jan 22, 2026"
+    )
+    win.printer_info.pitch_mm = None
+    assert "label every ? mm" in win.printer_description()
+
+
+def test_cab_back_to_tape_after_a_preset(cab_window):
+    win = cab_window
+    one(win.sidebar, Adw.ComboRow, title="Label size").set_selected(4)  # 100 × 50 mm
+    win._on_backend("vc500w")
+    assert win.label.tape_mm == 50 and isinstance(win.label.tape_mm, int)
+    assert _selected(one(win.sidebar, Adw.ComboRow, title="Tape width")) == "50 mm"
+
+
+def test_opening_a_label_for_the_other_printer(cab_window, cab_env, gui_env):
+    win = cab_window
+    gui_env.configured = "VC-500W.local"
+    win.set_label(Label(tape_mm=25), None)  # a VC-500W label
+    assert win.backend.id == "vc500w"
+    assert pump(lambda: win.printer_info is gui_env.query_result)
+    assert win.printer_row.get_title() == "Brother VC-500W"
+    win.set_label(Label(tape_mm=25), None)  # same printer: no new query
+    assert win.printer_info is gui_env.query_result
+
+
+def test_cab_gap_row_allows_what_files_may_have(cab_window):
+    gap = one(cab_window.sidebar, Adw.SpinRow, title="Gap")
+    assert gap.get_adjustment().get_upper() == 50
+
+
+def test_cab_new_label_and_back_to_tape(cab_window):
+    win = cab_window
+    win.label.set_media_size(100, 150)
+    win.dirty = False
+    win.on_new()
+    assert win.label.printer == "cab" and win.label.media_size() == (50, 25)
+    win._on_backend("vc500w")
+    assert win.label.orientation == "along" and win.label.auto_length
+    assert win.label.tape_mm == 25  # the nearest tape to 25 mm (label space)
+    assert find(win.sidebar, Adw.ComboRow, title="Tape width")
+
+
+@pytest.mark.parametrize(
+    "code, start",
+    [
+        ("too_wide", "The label is too wide for this printer: at most 105.6 mm."),
+        ("out_of_labels", "The printer is out of labels."),
+        ("head_open", "The print head is open."),
+        ("label_not_found", "The printer cannot find the next label."),
+        ("ribbon", "There is a problem with the ribbon."),
+        ("paused", "The printer is paused."),
+    ],
+)
+def test_die_cut_error_texts(code, start):
+    from etiketto.backends.base import LabelTooWide
+
+    error = LabelTooWide("x", max_mm=105.6) if code == "too_wide" else app.error_from_code(code)
+    assert app.printer_error_text(error, MILLIMETRES).startswith(start)
 
 
 def test_choosing_the_same_model_changes_nothing(window, mono):

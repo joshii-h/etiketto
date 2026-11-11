@@ -268,3 +268,66 @@ def test_image_from_file_and_raw(tmp_path):
     assert element.name == "pic.bin"
     assert element.data == base64.b64encode(b"\x00\x01binary").decode()
     assert element.raw() == b"\x00\x01binary"
+
+
+# --- die-cut labels ------------------------------------------------------------------
+
+
+def test_media_size_follows_the_orientation():
+    label = Label(printer="cab", tape_mm=25, length_mm=50, orientation="across")
+    assert label.media_size() == (50, 25)  # content along the 50 mm width
+    label.set_orientation("along")
+    assert label.media_size() == (50, 25)  # same label, turned content
+    assert (label.tape_mm, label.length_mm) == (50, 25)
+    label.set_orientation("along")  # no change
+    assert (label.tape_mm, label.length_mm) == (50, 25)
+    label.set_media_size(100, 150)
+    assert (label.tape_mm, label.length_mm) == (100, 150)
+    label.gap_mm = 2.5
+    assert label.pitch_mm() == 152.5
+
+
+def test_die_cut_label_round_trip(tmp_path):
+    label = Label(printer="cab", orientation="across", auto_length=False, gap_mm=2)
+    label.set_media_size(57.5, 32)
+    path = tmp_path / "die-cut.etiketto"
+    label.save(path)
+    loaded = Label.load(path)
+    assert loaded.media_size() == (57.5, 32) and loaded.gap_mm == 2
+    assert loaded.orientation == "across" and not loaded.auto_length
+
+
+def test_die_cut_validation():
+    data = Label(printer="cab", tape_mm=1, length_mm=2000, gap_mm=99).to_dict()
+    data["auto_length"] = True
+    label = Label.from_dict(data)
+    assert (label.tape_mm, label.length_mm, label.gap_mm) == (5, 1000, 50)
+    assert not label.auto_length  # die-cut labels have a fixed size
+    for field, value in (("tape_mm", "wide"), ("gap_mm", None), ("orientation", "diagonal")):
+        with pytest.raises(LabelError) as caught:
+            Label.from_dict(dict(data, **{field: value}))
+        assert caught.value.code == "damaged"
+
+
+def test_die_cut_labels_no_wider_than_the_print_head():
+    label = Label(printer="cab", orientation="across")
+    label.set_media_size(300, 1000)
+    loaded = Label.from_dict(label.to_dict())
+    assert loaded.media_size() == (105.6, 1000)
+    label.set_orientation("along")
+    assert Label.from_dict(label.to_dict()).media_size() == (105.6, 1000)
+
+
+def test_tape_widths_are_whole_numbers():
+    label = Label.from_dict(dict(Label().to_dict(), tape_mm=25.0))
+    assert label.tape_mm == 25 and isinstance(label.tape_mm, int)
+
+
+def test_tape_labels_keep_their_rules():
+    data = Label(tape_mm=25, length_mm=10).to_dict()
+    assert Label.from_dict(data).length_mm == 15  # the VC-500W's shortest label
+    with pytest.raises(LabelError):
+        Label.from_dict(dict(data, tape_mm=24))
+    old = Label(tape_mm=25).to_dict()
+    del old["gap_mm"], old["orientation"]  # a file of Etiketto 1.0
+    assert Label.from_dict(old).orientation == "along"

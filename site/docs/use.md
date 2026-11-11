@@ -23,6 +23,20 @@ Elements are placed one after another along the tape. Order them with
 - [[ui:Border]]: width, 0 = none; always inside the safety margin.
 - [[ui:Units]]: millimetres or inches, by default from the system language.
 
+Die-cut labels (cab printers) have a fixed size instead of a length:
+
+![Die-cut label on a cab printer](media/die-cut.png#only-light)
+![Die-cut label on a cab printer](media/die-cut-dark.png#only-dark)
+
+- [[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]]
+  (across the roll) and [[ui:Height]] (along the roll), as on the label box.
+- [[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.
+  Before printing Etiketto compares height and gap with the distance the
+  printer measured.
+- [[ui:Content direction]]: [[ui:Across the roll]] for labels read with
+  the roll running from top to bottom, [[ui:Along the roll]] like on tape.
+- [[ui:Alignment]]: where the content sits if it is shorter than the label.
+
 [[ui:Safety margin]] (printer setting, default 1.5 mm): content and border
 keep this distance from the tape edges. The printer loses about 0.5 mm per
 side, and long labels can run up to 1 mm askew. If text is cut off at the
@@ -42,5 +56,8 @@ edge, increase it.
   codes.
 - Colour correction: brightness and colour balance (red, green, blue), for
   this print only, not stored in the printer.
+
+cab printers print in black with the print method, heat and speed set on
+the printer; the print dialog only asks for the number of copies.
 
 [[ui:Export PNG…]] saves the label as image.

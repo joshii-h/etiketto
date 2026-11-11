@@ -53,11 +53,11 @@ class Rendered:
     overflow: bool = False  # content was scaled down to fit a fixed length
 
 
-def mm_to_px(mm: float, dpi: int = PRINT_DPI) -> int:
+def mm_to_px(mm: float, dpi: float = PRINT_DPI) -> int:
     return max(1, round(mm / 25.4 * dpi))
 
 
-def px_to_mm(px: int, dpi: int = PRINT_DPI) -> float:
+def px_to_mm(px: int, dpi: float = PRINT_DPI) -> float:
     return px / dpi * 25.4
 
 
@@ -119,7 +119,7 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
     ).copy()
 
 
-def render_text(element: TextElement, height: int, dpi: int) -> Image.Image:
+def render_text(element: TextElement, height: int, dpi: float) -> Image.Image:
     if element.size_pt > 0:
         return _text_block(element, element.size_pt / 72 * dpi)
     # Fit to the tape: the block height scales about linearly with font size
@@ -221,7 +221,7 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.NEAREST)
 
 
-def render_element(element: Element, height: int, dpi: int) -> Image.Image:
+def render_element(element: Element, height: int, dpi: float) -> Image.Image:
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
@@ -257,7 +257,7 @@ class _Frame:
     inner: int  # content height
 
 
-def _frame(label: Label, dpi: int, safe_mm: float, tape_px, bleed_px, warnings) -> _Frame:
+def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings) -> _Frame:
     tape = tape_px or mm_to_px(label.tape_mm, dpi)
     edge = mm_to_px(label.edge_mm, dpi) if label.edge_mm > 0 else 0
     margin = mm_to_px(label.margin_mm, dpi) if label.margin_mm > 0 else 0
@@ -280,7 +280,7 @@ def _element_warning(element: Element, index: int, error: Exception) -> RenderWa
     return RenderWarning("element_failed", {"n": index})
 
 
-def _parts(label: Label, f: _Frame, dpi: int, warnings) -> list[Image.Image]:
+def _parts(label: Label, f: _Frame, dpi: float, warnings) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
@@ -301,7 +301,7 @@ def _content_width(parts: list[Image.Image], gap: int) -> int:
     return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
 
 
-def _fit_length(label: Label, parts, f: _Frame, dpi: int, warnings, min_length_mm: float):
+def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float):
     """Label length, the (possibly scaled) parts and the gap between them."""
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     content_w = _content_width(parts, f.margin)
@@ -364,7 +364,7 @@ def _draw_border(img: Image.Image, label: Label, f: _Frame) -> None:
 
 def render(
     label: Label,
-    dpi: int = PRINT_DPI,
+    dpi: float = PRINT_DPI,
     safe_mm: float = DEFAULT_SAFE_MM,
     tape_px: int | None = None,
     bleed_px: int = 0,

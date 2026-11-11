@@ -476,11 +476,11 @@ class VC500W(Backend):
             cassette=cassette_info(config),
         )
 
-    def raster(self, tape_mm: int, options: PrintOptions) -> Raster:
+    def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         if data_format(options) == "jpeg":
             return Raster(PRINT_DPI)
         dpi = raster_dpi(options.mode)
-        tape_px, width = cross_geometry(tape_mm, dpi)
+        tape_px, width = cross_geometry(nominal_width(tape_mm), dpi)
         return Raster(dpi, tape_px, bleed_px=math.ceil((width - tape_px) / 2), width_px=width)
 
     def preview(self, image: Image.Image, mode: str = "") -> Image.Image:

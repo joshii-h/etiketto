@@ -34,17 +34,28 @@ class PrintMode:
 
 
 @dataclass(frozen=True)
+class LabelSize:
+    """A die-cut label as the material is sold: width across the print head,
+    height along the feed direction, in mm."""
+
+    width_mm: float
+    height_mm: float
+
+
+@dataclass(frozen=True)
 class Capabilities:
-    tape_widths_mm: tuple[int, ...]
-    dpi: int  # resolution across the tape the preview is rendered at
+    tape_widths_mm: tuple[int, ...]  # endless tape; empty for die-cut printers
+    dpi: float  # resolution across the tape the preview is rendered at
     modes: tuple[PrintMode, ...]  # fallback when the printer does not report its modes
     color_model: ColorModel = "color"
     cut_modes: tuple[str, ...] = CUT_MODES  # empty: the printer does not cut
     reports_remaining: bool = False  # remaining tape in the status
     supports_color_adjust: bool = False  # brightness / colour balance per job
-    # endless tape; the interface offers length and alignment only for these.
-    # False (die-cut labels of fixed size) is not supported by the interface yet.
+    # endless tape: the label grows with its content. False: die-cut labels
+    # of a fixed size, chosen from label_sizes or entered by hand.
     continuous: bool = True
+    label_sizes: tuple[LabelSize, ...] = ()  # die-cut: common sizes, the first is the default
+    max_width_mm: float | None = None  # die-cut: widest printable label (print head width)
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
@@ -58,7 +69,7 @@ class Raster:
     extends the background beyond both tape edges; width_px is the exact
     height (across the tape) of the finished image."""
 
-    dpi: int
+    dpi: float
     tape_px: int | None = None
     bleed_px: int = 0
     width_px: int | None = None
@@ -94,6 +105,7 @@ class PrinterInfo:
     modes: tuple[PrintMode, ...] = ()  # reported by the printer; empty = unknown
     firmware: str = ""
     cassette: CassetteInfo | None = None
+    pitch_mm: float | None = None  # die-cut: measured distance from label to label
 
 
 # --- a print job ------------------------------------------------------------
@@ -138,6 +150,7 @@ class PrintOptions:
     mode: str = ""  # PrintMode.id; empty = the printer's first mode
     color: ColorAdjust = field(default_factory=ColorAdjust)
     data_format: str = "rawrgb"  # backends fall back to their own default
+    gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
 
 
 @dataclass(frozen=True)
@@ -208,11 +221,42 @@ class LabelTooLong(PrinterError):
     code = "too_long"  # params: max_mm
 
 
+class LabelTooWide(PrinterError):
+    code = "too_wide"  # params: max_mm
+
+
+class OutOfLabels(PrinterError):
+    code = "out_of_labels"
+
+
+class HeadOpen(PrinterError):
+    code = "head_open"
+
+
+class LabelNotFound(PrinterError):
+    code = "label_not_found"  # the sensor finds no gap: wrong sensor or material
+
+
+class RibbonError(PrinterError):
+    code = "ribbon"
+
+
+class PrinterPaused(PrinterError):
+    code = "paused"
+
+
 def check_length(length_mm: float, capabilities: Capabilities) -> None:
     """Raise LabelTooLong if the label exceeds capabilities.max_length_mm."""
     limit = capabilities.max_length_mm
     if limit is not None and length_mm > limit + 0.01:
         raise LabelTooLong("%.1f mm is longer than %.1f mm" % (length_mm, limit), max_mm=limit)
+
+
+def check_width(width_mm: float, capabilities: Capabilities) -> None:
+    """Raise LabelTooWide if a die-cut label exceeds capabilities.max_width_mm."""
+    limit = capabilities.max_width_mm
+    if limit is not None and width_mm > limit + 0.01:
+        raise LabelTooWide("%.1f mm is wider than %.1f mm" % (width_mm, limit), max_mm=limit)
 
 
 # --- the backend ------------------------------------------------------------
@@ -235,11 +279,15 @@ class Backend(ABC):
         """A host configured outside Etiketto (e.g. by a CLI tool), if any."""
         return None
 
+    def display_name(self, info: PrinterInfo | None) -> str:
+        """The connected printer's name for the interface; the model family by default."""
+        return self.name
+
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
 
-    def raster(self, tape_mm: int, options: PrintOptions) -> Raster:
+    def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)
 
     def preview(self, image: Image.Image, mode: str = "") -> Image.Image:

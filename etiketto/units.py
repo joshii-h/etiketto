@@ -64,15 +64,27 @@ class Unit:
             return "%s m" % ("%.1f" % (mm / 1000)).removesuffix(".0")
         return "%.1f ft" % (mm / MM_PER_INCH / 12)
 
-    def tape_name(self, width_mm: int) -> str:
+    def tape_name(self, width_mm: float) -> str:
         if self.key == "in":
-            return INCH_TAPE_NAMES.get(width_mm, "%.2f″" % (width_mm / MM_PER_INCH))
-        return "%d mm" % width_mm
+            name = INCH_TAPE_NAMES.get(round(width_mm)) if width_mm == round(width_mm) else None
+            return name or "%.2f″" % (width_mm / MM_PER_INCH)
+        return "%s mm" % _number(width_mm)
 
-    def label_size(self, width_mm: int, length_mm: float) -> str:
+    def label_size(self, width_mm: float, length_mm: float) -> str:
         if self.key == "in":
             return "%s × %.2f″" % (self.tape_name(width_mm), length_mm / MM_PER_INCH)
-        return "%d × %.0f mm" % (width_mm, length_mm)
+        return "%s × %.0f mm" % (_number(width_mm), length_mm)
+
+    def size(self, width_mm: float, height_mm: float) -> str:
+        """A die-cut label: width × height."""
+        if self.key == "in":
+            return "%.2f × %.2f″" % (width_mm / MM_PER_INCH, height_mm / MM_PER_INCH)
+        return "%s × %s mm" % (_number(width_mm), _number(height_mm))
+
+
+def _number(mm: float) -> str:
+    """25 -> "25", 50.8 -> "50.8"."""
+    return ("%.1f" % mm).removesuffix(".0")
 
 
 MILLIMETRES = Unit("mm", "mm", 1.0, 1)

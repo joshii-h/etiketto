@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-05 19:28+0100\n"
+"POT-Creation-Date: 2026-11-11 16:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,7 +61,7 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Etiketto designs and prints colour labels on the Brother VC-500W (ZINK paper)  under Linux, the counterpart to Brother's Color Label Editor."
+msgid "Etiketto designs and prints labels under Linux: colour labels on the Brother VC-500W (ZINK paper), the counterpart to Brother's Color Label Editor, and die-cut labels on cab label printers."
 msgstr ""
 
 #. type: Plain text
@@ -91,13 +91,19 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
+msgid "Die-cut labels of any size on cab printers, with a check of the loaded roll"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
 msgid "27 languages, follows the light or dark mode of the desktop"
 msgstr ""
 
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Printers: Brother VC-500W (also sold as ColAura). Further printers can be added as a backend, see [Contribute](contribute.md)."
+msgid "Printers: Brother VC-500W (also sold as ColAura) and cab printers with a 4 inch print head (EOS2, EOS5, SQUIX 4, MACH 4S, see [cab label printers](printer.md#cab)). Further printers can be added as a backend, see [Contribute](contribute.md)."
 msgstr ""
 
 #. type: Title ##
@@ -175,7 +181,7 @@ msgstr ""
 #. type: Bullet: '1. '
 #: docs/index.md
 #, markdown-text
-msgid "Switch the printer on. Etiketto finds it in the network (Bonjour) and detects the inserted cassette."
+msgid "Switch the printer on and choose it under [[ui:Printer model]]. Etiketto finds it in the network (Bonjour) and detects the inserted cassette or the distance between the loaded labels."
 msgstr ""
 
 #. type: Bullet: '2. '
@@ -203,6 +209,12 @@ msgid "Printer and troubleshooting"
 msgstr ""
 
 #. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother VC-500W"
+msgstr ""
+
+#. type: Title ###
 #: docs/printer.md
 #, markdown-text, no-wrap
 msgid "Wi-Fi setup { #wifi }"
@@ -244,7 +256,7 @@ msgstr ""
 msgid "Later, the web interface is at `https://` and the printer's address: \"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it by hand), \"AirPrint Options\" sets name, location and firmware updates."
 msgstr ""
 
-#. type: Title ##
+#. type: Title ###
 #: docs/printer.md
 #, markdown-text, no-wrap
 msgid "Cassettes"
@@ -275,7 +287,7 @@ msgstr ""
 msgid "Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.  Do it when stripes appear, or every 20 to 30 labels."
 msgstr ""
 
-#. type: Title ##
+#. type: Title ###
 #: docs/printer.md
 #, markdown-text, no-wrap
 msgid "Problems"
@@ -363,6 +375,96 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "[[ui:content scaled down to fit]]: the fixed length is too short. Make it longer or use [[ui:Automatic length]]."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "cab label printers { #cab }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5, SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Network: the printer needs an address in your network (DHCP or set on its display). Etiketto uses the \"RawIP\" port 9100 with the JScript interpreter, both are the printer's defaults (Setup > Interfaces > Network services and Setup > Interpreter)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Labels: die-cut labels with a gap, label sensor \"Gap Sensor\". Etiketto sets the sensor for each job. Continuous media and a cutter are not supported yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print method (thermal direct or with ribbon), heat, speed and tear-off position stay as set on the printer."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #cab-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Different labels loaded]]: the printer measured another distance between the labels than height plus gap of your label. Check [[ui:Label size]] and [[ui:Gap]], or load the right roll. Press Feed on the printer once after changing the roll so it measures again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer needs attention]]: the printer is reachable but reports a problem, the text below says what to do. Clear it on the printer, then [[ui:Refresh]]. A print that stopped because of a problem is cancelled, so printing again does not give extra labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of labels: load a new roll, the printer then synchronises by itself."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print head open: close the print head."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Next label not found: labels not threaded through the label sensor, or labels without gaps (continuous media is not supported yet)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal direct mode."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Paused: resume the printer on its display."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print too pale or too dark: change the heat level in the printer's setup."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Help"
 msgstr ""
 
 #. type: Plain text
@@ -458,6 +560,42 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
+msgid "Die-cut labels (cab printers) have a fixed size instead of a length:"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Die-cut label on a cab printer](media/die-cut.png#only-light)  ![Die-cut label on a cab printer](media/die-cut-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]] (across the roll) and [[ui:Height]] (along the roll), as on the label box."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before printing Etiketto compares height and gap with the distance the printer measured."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Content direction]]: [[ui:Across the roll]] for labels read with the roll running from top to bottom, [[ui:Along the roll]] like on tape."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Alignment]]: where the content sits if it is shorter than the label."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
 msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the tape edges. The printer loses about 0.5 mm per side, and long labels can run up to 1 mm askew. If text is cut off at the edge, increase it."
 msgstr ""
 
@@ -495,6 +633,12 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "Colour correction: brightness and colour balance (red, green, blue), for this print only, not stored in the printer."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "cab printers print in black with the print method, heat and speed set on the printer; the print dialog only asks for the number of copies."
 msgstr ""
 
 #. type: Plain text
