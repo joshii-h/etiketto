@@ -53,7 +53,9 @@ class Preview(Gtk.Box):
         box.append(self.status)
         box.append(flat_button("zoom-fit-best-symbolic", _("Fit to window"), self.set_zoom))
         box.append(
-            flat_button("zoom-out-symbolic", _("Zoom out"), lambda: self.set_zoom(self.zoom / 1.25))
+            flat_button(
+                "zoom-out-symbolic", _("Zoom out"), lambda: self.set_zoom(self.zoom / 1.25)
+            )
         )
         box.append(
             flat_button("zoom-in-symbolic", _("Zoom in"), lambda: self.set_zoom(self.zoom * 1.25))

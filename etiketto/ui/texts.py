@@ -6,11 +6,16 @@ import errno
 from datetime import date
 from pathlib import Path
 
+from PIL import Image
+
 from etiketto.backends.base import PrinterError, PrinterInfo
 from etiketto.model import ImageElement, LabelError, TextElement
 from etiketto.render import RenderWarning
 from etiketto.ui.i18n import _, isolate, month_name
 from etiketto.units import Unit
+
+# cassettes older than this get a hint: old ZINK paper prints paler
+OLD_CASSETTE_DAYS = 2 * 365
 
 CUT_MODES = [("full", _("Full cut")), ("half", _("Half cut")), ("none", _("No cut"))]
 # print modes by protocol name; unknown modes are shown by their name
@@ -35,8 +40,6 @@ SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13"
 
 def image_from_path(path) -> ImageElement:
     """Read an image file into an element; ValueError if it is not an image."""
-    from PIL import Image
-
     if not path:
         raise ValueError(_("Only local files can be used"))
     try:
@@ -147,6 +150,11 @@ def stage_text(stage: str) -> str | None:
     }.get(stage)
 
 
+def error_details(error: Exception) -> str:
+    """The original error for bug reports: "ValueError: bad value"."""
+    return "%s: %s" % (type(error).__name__, error)
+
+
 def label_error_text(error: LabelError, name: str) -> str:
     if error.code == "newer":
         return _("This label needs a newer version of Etiketto")
@@ -166,11 +174,8 @@ def save_error_text(error: OSError, name: str) -> str:
 def cassette_age_hint(info: PrinterInfo | None, today: date | None = None) -> str | None:
     """A hint for cassettes that seem to be more than two years old."""
     made = info.cassette.made if info and info.cassette else None
-    if made is None or ((today or date.today()) - made).days <= 730:
+    if made is None or ((today or date.today()) - made).days <= OLD_CASSETTE_DAYS:
         return None
     return _(
         "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints paler colours."
     ) % {"month": month_name(made.month), "year": made.year}
-
-
-# --- window -----------------------------------------------------------------

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import threading
+from typing import TYPE_CHECKING
 
 import gi
 
@@ -28,6 +29,9 @@ from etiketto.ui.widgets import (  # noqa: E402
 )
 from etiketto.units import default_unit  # noqa: E402
 
+if TYPE_CHECKING:
+    from etiketto.ui.window import Window
+
 # a measured label distance this far from the label's own is a different roll
 PITCH_TOLERANCE_MM = 1.0
 
@@ -39,8 +43,9 @@ class Printer:
     row: Adw.ActionRow
     details_button: Gtk.Button
     hint: Adw.ActionRow
+    host_row: Adw.EntryRow
 
-    def __init__(self, window):
+    def __init__(self, window: Window):
         self.window = window
         self.info: PrinterInfo | None = None
         self.generation = 0  # answers of older printer queries are dropped
@@ -59,11 +64,11 @@ class Printer:
             group.add(self._backend_row())
         self._add_status_rows(group)
 
-        host = Adw.EntryRow(title=_("Host name or IP address"))
-        host.set_text(self.host or "")
-        host.set_show_apply_button(True)
-        host.connect("apply", self._on_host_apply)
-        group.add(host)
+        self.host_row = Adw.EntryRow(title=_("Host name or IP address"))
+        self.host_row.set_text(self.host or "")
+        self.host_row.set_show_apply_button(True)
+        self.host_row.connect("apply", self._on_host_apply)
+        group.add(self.host_row)
 
         group.add(
             length_row(
@@ -97,7 +102,9 @@ class Printer:
 
     def _backend_row(self) -> Adw.ComboRow:
         items = [(b.id, b.name) for b in backends()]
-        return combo_row(_("Printer model"), items, self.window.backend.id, self.window.set_backend)
+        return combo_row(
+            _("Printer model"), items, self.window.backend.id, self.window.set_backend
+        )
 
     def _add_status_rows(self, group: Adw.PreferencesGroup) -> None:
         self.row = Adw.ActionRow(title=_("Searching…"))
@@ -197,7 +204,7 @@ class Printer:
 
     def use(self, host: str) -> None:
         self.window.printer_settings.update(host=host)
-        self.window.rebuild_sidebar()
+        self.host_row.set_text(host)  # not a rebuild: open rows and input stay
         self.refresh()
 
     def refresh(self) -> None:
@@ -233,29 +240,32 @@ class Printer:
         self.update_row()
         window = self.window
         widths = window.backend.capabilities.tape_widths_mm
-        fresh = window.path is None and not window.dirty
-        if fresh and self.cassette_differs() and info.tape_mm in widths:
+        fresh = window.adopts_tape and window.path is None and not window.dirty
+        tape = self.other_tape()
+        if fresh and tape in widths:
             # take over the inserted tape; the row's handler renders, but
             # this is no edit by the user
-            window.label_group.tape_row.set_selected(widths.index(info.tape_mm))
+            window.label_group.tape_row.set_selected(widths.index(tape))
             window.dirty = False
             window.update_title()
         return False
 
     # --- does the loaded material fit the label? ----------------------------------------
 
-    def cassette_differs(self) -> bool:
-        """Tape printers: another tape width is inserted than the label has."""
+    def other_tape(self) -> int | None:
+        """Tape printers: the inserted tape width if the label has another one."""
         info, label = self.info, self.window.label
-        continuous = self.window.backend.capabilities.continuous
-        return bool(continuous and info and info.tape_mm and info.tape_mm != label.tape_mm)
+        if not self.window.backend.capabilities.continuous or not info or not info.tape_mm:
+            return None
+        return info.tape_mm if info.tape_mm != label.tape_mm else None
 
-    def pitch_differs(self) -> bool:
-        """Die-cut printers: the measured label distance is not the label's."""
+    def other_pitch(self) -> float | None:
+        """Die-cut printers: the measured label distance if it is not the label's."""
         info, label = self.info, self.window.label
         if self.window.backend.capabilities.continuous or not info or not info.pitch_mm:
-            return False
-        return abs(info.pitch_mm - label.pitch_mm()) > PITCH_TOLERANCE_MM
+            return None
+        differs = abs(info.pitch_mm - label.pitch_mm()) > PITCH_TOLERANCE_MM
+        return info.pitch_mm if differs else None
 
     def failed(self, error: Exception, generation: int | None = None) -> bool:
         if self._outdated(generation):
@@ -329,17 +339,14 @@ class Printer:
 
     def _printer_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
         unit = self.window.unit
-        rows = [
+        return [
             (_("Model"), self.window.backend.display_name(info)),
             (_("Address"), isolate(self.host) if self.host else ""),
             (_("Firmware"), info.firmware),
+            (_("Cassette"), isolate(unit.tape_name(info.tape_mm)) if info.tape_mm else ""),
+            (_("Label distance"), unit.format(info.pitch_mm) if info.pitch_mm else ""),
+            (_("Remaining tape"), self.remaining_text(info) or ""),
         ]
-        if info.tape_mm:
-            rows.append((_("Cassette"), isolate(unit.tape_name(info.tape_mm))))
-        if info.pitch_mm:
-            rows.append((_("Label distance"), unit.format(info.pitch_mm)))
-        rows.append((_("Remaining tape"), self.remaining_text(info) or ""))
-        return rows
 
     def _cassette_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
         cassette = info.cassette

@@ -5,12 +5,12 @@ from __future__ import annotations
 import copy
 import threading
 from dataclasses import replace
+from typing import TYPE_CHECKING
 
 from gi.repository import Adw, GLib, Gtk
 
 from etiketto.backends.base import (
     ColorAdjust,
-    PrinterInfo,
     PrintMode,
     PrintOptions,
     PrintResult,
@@ -21,16 +21,20 @@ from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     MODE_NAMES,
+    error_details,
     printer_error_text,
     stage_text,
 )
 from etiketto.ui.widgets import combo_row, list_dialog, spin_row
 
+if TYPE_CHECKING:
+    from etiketto.ui.window import Window
+
 
 class PrintFlow:
     """From the Print button to the result: checks, dialog, job, progress."""
 
-    def __init__(self, window):
+    def __init__(self, window: Window):
         self.window = window
         self.busy = False
 
@@ -58,18 +62,17 @@ class PrintFlow:
         if not window.label.elements and not window.label.background_image:
             window.toast(_("The label is empty"))
             return
-        printer = window.printer
-        if printer.cassette_differs():
-            self._wrong_cassette_dialog(printer.info)
-        elif printer.pitch_differs():
-            self._wrong_labels_dialog(printer.info)
+        if tape := window.printer.other_tape():
+            self._wrong_cassette_dialog(tape)
+        elif pitch := window.printer.other_pitch():
+            self._wrong_labels_dialog(pitch)
         else:
             self.dialog()
 
     def _warn(self, heading: str, body: str) -> None:
         self.window.confirm(heading, body, "print", _("Print anyway"), self.dialog)
 
-    def _wrong_cassette_dialog(self, info: PrinterInfo) -> None:
+    def _wrong_cassette_dialog(self, inserted_mm: float) -> None:
         unit, label = self.window.unit, self.window.label
         self._warn(
             _("Wrong cassette"),
@@ -79,11 +82,11 @@ class PrintFlow:
             )
             % {
                 "label": isolate(unit.tape_name(label.tape_mm)),
-                "tape": isolate(unit.tape_name(info.tape_mm)),
+                "tape": isolate(unit.tape_name(inserted_mm)),
             },
         )
 
-    def _wrong_labels_dialog(self, info: PrinterInfo) -> None:
+    def _wrong_labels_dialog(self, measured_mm: float) -> None:
         unit, label = self.window.unit, self.window.label
         self._warn(
             _("Different labels loaded"),
@@ -96,7 +99,7 @@ class PrintFlow:
                 "size": isolate(unit.size(*label.media_size())),
                 "gap": isolate(unit.format(label.gap_mm)),
                 "pitch": isolate(unit.format(label.pitch_mm())),
-                "measured": isolate(unit.format(info.pitch_mm)),
+                "measured": isolate(unit.format(measured_mm)),
             },
         )
 
@@ -151,7 +154,7 @@ class PrintFlow:
             spins.append(spin)
             row.add_row(spin)
         reset.add_css_class("flat")
-        reset.connect("clicked", lambda _b: [spin.set_value(0) for spin in spins])
+        reset.connect("clicked", lambda _b: _reset(spins))
         row.add_suffix(reset)
         self._show_color_adjust(row, reset)
         return row
@@ -273,7 +276,7 @@ class PrintFlow:
 
     def failed(self, error: Exception, message: str) -> None:
         """A dialog: what happened and what to do, the original text on request."""
-        details = getattr(error, "details", "") or "%s: %s" % (type(error).__name__, error)
+        details = getattr(error, "details", "") or error_details(error)
         dialog = Adw.AlertDialog(heading=_("Printing failed"), body=message)
         expander = Gtk.Expander(label=_("Details"))
         expander.set_child(Gtk.Label(label=details, wrap=True, selectable=True, xalign=0))
@@ -290,3 +293,8 @@ class PrintFlow:
 
         dialog.connect("response", response)
         self.window.present_dialog(dialog)
+
+
+def _reset(spins) -> None:
+    for spin in spins:
+        spin.set_value(0)

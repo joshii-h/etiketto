@@ -7,8 +7,8 @@ from pathlib import Path
 
 from gi.repository import GLib
 
-from etiketto.backends import DEFAULT_BACKEND
 from etiketto.backends.base import Backend, ColorAdjust
+from etiketto.model import DEFAULT_PRINTER
 from etiketto.render import DEFAULT_SAFE_MM
 
 CONFIG_DIR = Path(GLib.get_user_config_dir()) / "etiketto"
@@ -26,7 +26,7 @@ def migrate(data: dict) -> dict:
         return data
     if not isinstance(data.get("printers"), dict):
         data["printers"] = {}
-    entry = data["printers"].setdefault(DEFAULT_BACKEND, {})
+    entry = data["printers"].setdefault(DEFAULT_PRINTER, {})
     if legacy.get("mode") == "normal":  # labelprinter's name for "color"
         legacy["mode"] = "color"
     for key, value in legacy.items():

@@ -13,7 +13,6 @@ from importlib.metadata import entry_points
 from etiketto.backends.base import Backend
 from etiketto.model import DEFAULT_PRINTER
 
-DEFAULT_BACKEND = DEFAULT_PRINTER  # files without a printer are for it
 ENTRY_POINT_GROUP = "etiketto.backends"
 
 _registry: dict[str, Backend] = {}
@@ -53,10 +52,10 @@ def _load() -> None:
 def backends() -> list[Backend]:
     """All registered backends, the default first."""
     _load()
-    return sorted(_registry.values(), key=lambda b: (b.id != DEFAULT_BACKEND, b.name))
+    return sorted(_registry.values(), key=lambda b: (b.id != DEFAULT_PRINTER, b.name))
 
 
-def get_backend(backend_id: str = DEFAULT_BACKEND) -> Backend:
+def get_backend(backend_id: str = DEFAULT_PRINTER) -> Backend:
     """KeyError for unknown ids."""
     _load()
     return _registry[backend_id]

@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gi.repository import Gio, GLib, Gtk
 
 from etiketto.model import Label, LabelError, TextElement
 from etiketto.ui import settings as config
 from etiketto.ui.i18n import _
-from etiketto.ui.texts import image_from_path, label_error_text, save_error_text
+from etiketto.ui.texts import error_details, image_from_path, label_error_text, save_error_text
+
+if TYPE_CHECKING:
+    from etiketto.ui.window import Window
 
 
 def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
@@ -21,7 +26,7 @@ def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
 class Files:
     """Opening, saving, exporting, templates and new labels."""
 
-    def __init__(self, window):
+    def __init__(self, window: Window):
         self.window = window
 
     @staticmethod
@@ -71,10 +76,8 @@ class Files:
         dialog = Gtk.FileDialog(title=_("Open label"), filters=self.label_filter())
 
         def done(d, result):
-            try:
+            with suppress(GLib.Error):  # cancelled
                 self.open_file(Path(d.open_finish(result).get_path()))
-            except GLib.Error:
-                pass
 
         self.confirm_discard(lambda: dialog.open(self.window, None, done))
 
@@ -101,10 +104,11 @@ class Files:
                 path = Path(d.save_finish(result).get_path())
             except (GLib.Error, TypeError):
                 return
-            # an image may end in ".PNG"; labels need exactly ".etiketto",
-            # the template menu and the open dialog look for that
-            ending = path.suffix.lower() if suffix == ".png" else path.suffix
-            if ending != suffix:
+            if path.suffix.lower() != suffix:
+                # appended, not replaced: "Shelf 1.2" must not become "Shelf 1"
+                path = path.with_name(path.name + suffix)
+            elif suffix == ".etiketto":
+                # the template menu and the open dialog look for "*.etiketto"
                 path = path.with_suffix(suffix)
             callback(path)
 
@@ -126,7 +130,7 @@ class Files:
         self._pick_save_path(
             _("Save as template…"),
             ".etiketto",
-            lambda path: self._save(self.window.label.save, path, _("Saved %s") % path.name),
+            self._save_label,
             self.label_filter(),
             folder=config.TEMPLATE_DIR,
         )
@@ -141,9 +145,12 @@ class Files:
         self.window.toast(done)
         return True
 
+    def _save_label(self, path: Path) -> bool:
+        return self._save(self.window.label.save, path, _("Saved %s") % path.name)
+
     def write(self, path: Path) -> None:
         window = self.window
-        if self._save(window.label.save, path, _("Saved %s") % path.name):
+        if self._save_label(path):
             window.path = path
             window.dirty = False
             window.update_title()
@@ -157,7 +164,7 @@ class Files:
         try:
             _rendered, image = window.render_image()
         except Exception as e:  # noqa: BLE001
-            window.error(_("The preview cannot be drawn"), "%s: %s" % (type(e).__name__, e))
+            window.error(_("The preview cannot be drawn"), error_details(e))
             return
         self._save(lambda p: image.save(p, format="PNG", dpi=(dpi, dpi)), path, _("Exported"))
 
@@ -197,7 +204,7 @@ class Files:
             inserted = info.tape_mm if info else None
             label = Label.new_for(backend.id, inserted)
             label.elements = [TextElement(text=_("Label"))]
-            window.set_label(label, None)
+            window.set_label(label, None, adopts_tape=True)
 
         self.confirm_discard(reset)
 

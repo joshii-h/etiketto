@@ -9,7 +9,7 @@ from fake_backends import FakeMono
 from PIL import Image
 
 import etiketto.backends as registry
-from etiketto.backends import DEFAULT_BACKEND, backends, get_backend
+from etiketto.backends import backends, get_backend
 from etiketto.backends.base import (
     Backend,
     ColorAdjust,
@@ -22,7 +22,7 @@ from etiketto.backends.base import (
     apply_color_model,
 )
 from etiketto.backends.vc500w import VC500W
-from etiketto.model import Label
+from etiketto.model import DEFAULT_PRINTER, Label
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def mono(monkeypatch):
 
 def test_default_backend_is_registered():
     backend = get_backend()
-    assert backend.id == DEFAULT_BACKEND == "vc500w"
+    assert backend.id == DEFAULT_PRINTER == "vc500w"
     assert isinstance(backend, VC500W)
     assert get_backend("vc500w") is backend
 
@@ -134,7 +134,7 @@ def test_printer_error_keeps_details_and_params():
 def test_apply_color_model_dithers_mono_only():
     grey = Image.new("RGB", (40, 40), (128, 128, 128))
     dithered = apply_color_model(grey, "mono")
-    colours = dict((c, n) for n, c in dithered.getcolors())
+    colours = {c: n for n, c in dithered.getcolors()}
     assert set(colours) == {(0, 0, 0), (255, 255, 255)}
     assert abs(colours[(0, 0, 0)] - 800) < 80  # half black: Floyd-Steinberg, not a threshold
     assert apply_color_model(grey, "color") is grey

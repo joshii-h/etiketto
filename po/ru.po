@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-11 20:55+0100\n"
+"PO-Revision-Date: 2026-11-11 21:03+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -19,163 +19,163 @@ msgstr "Редактор этикеток для Brother VC-500W и принте
 msgid "translator-credits"
 msgstr "Etiketto contributors"
 
-#: etiketto/ui/elements.py:24
+#: etiketto/ui/elements.py:29
 msgid "Content"
 msgstr "Содержимое"
 
-#: etiketto/ui/elements.py:25
+#: etiketto/ui/elements.py:30
 msgid "Elements are placed one after another along the tape"
 msgstr "Элементы располагаются друг за другом вдоль ленты"
 
-#: etiketto/ui/elements.py:32
+#: etiketto/ui/elements.py:37
 msgid "No content yet"
 msgstr "Содержимого пока нет"
 
-#: etiketto/ui/elements.py:32
+#: etiketto/ui/elements.py:37
 msgid "Add text, an image or a code"
 msgstr "Добавьте текст, изображение или код"
 
-#: etiketto/ui/elements.py:41 etiketto/ui/texts.py:53 etiketto/ui/window.py:374
+#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:56 etiketto/ui/window.py:382
 msgid "Text"
 msgstr "Текст"
 
-#: etiketto/ui/elements.py:42
+#: etiketto/ui/elements.py:47
 msgid "Image…"
 msgstr "Изображение…"
 
-#: etiketto/ui/elements.py:43
+#: etiketto/ui/elements.py:48
 msgid "QR code / barcode"
 msgstr "QR-код / штрихкод"
 
-#: etiketto/ui/elements.py:45
+#: etiketto/ui/elements.py:50
 msgid "Add"
 msgstr "Добавить"
 
-#: etiketto/ui/elements.py:79 etiketto/ui/label_group.py:119
+#: etiketto/ui/elements.py:84 etiketto/ui/label_group.py:125
 msgid "Remove"
 msgstr "Удалить"
 
-#: etiketto/ui/elements.py:82
+#: etiketto/ui/elements.py:87
 msgid "Move down"
 msgstr "Переместить назад"
 
-#: etiketto/ui/elements.py:83
+#: etiketto/ui/elements.py:88
 msgid "Move up"
 msgstr "Переместить вперёд"
 
-#: etiketto/ui/elements.py:94
+#: etiketto/ui/elements.py:99
 msgid "Size"
 msgstr "Размер"
 
-#: etiketto/ui/elements.py:101
+#: etiketto/ui/elements.py:106
 msgid "pt, 0 = fill tape height"
 msgstr "пт, 0 = по высоте ленты"
 
-#: etiketto/ui/elements.py:106
+#: etiketto/ui/elements.py:111
 msgid "Line alignment"
 msgstr "Выравнивание строк"
 
-#: etiketto/ui/elements.py:128
+#: etiketto/ui/elements.py:135
 msgid "Font"
 msgstr "Шрифт"
 
-#: etiketto/ui/elements.py:150
+#: etiketto/ui/elements.py:157
 msgid "Image file"
 msgstr "Файл изображения"
 
-#: etiketto/ui/elements.py:151 etiketto/ui/label_group.py:107
+#: etiketto/ui/elements.py:158 etiketto/ui/label_group.py:113
 msgid "None"
 msgstr "Нет"
 
-#: etiketto/ui/elements.py:152
+#: etiketto/ui/elements.py:159
 msgid "Choose…"
 msgstr "Выбрать…"
 
-#: etiketto/ui/elements.py:164
+#: etiketto/ui/elements.py:171
 msgid "Type"
 msgstr "Тип"
 
-#: etiketto/ui/elements.py:166
+#: etiketto/ui/elements.py:173
 msgid "Content (link, text, number)"
 msgstr "Содержимое (ссылка, текст, номер)"
 
-#: etiketto/ui/elements.py:170
+#: etiketto/ui/elements.py:177
 msgid "Colour"
 msgstr "Цвет"
 
-#: etiketto/ui/files.py:29
+#: etiketto/ui/files.py:34
 msgid "Etiketto labels"
 msgstr "Этикетки Etiketto"
 
-#: etiketto/ui/files.py:34
+#: etiketto/ui/files.py:39
 msgid "Images"
 msgstr "Изображения"
 
-#: etiketto/ui/files.py:37 etiketto/ui/label_group.py:112
+#: etiketto/ui/files.py:42 etiketto/ui/label_group.py:118
 msgid "Choose image"
 msgstr "Выбрать изображение"
 
-#: etiketto/ui/files.py:57
+#: etiketto/ui/files.py:62
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Не удалось открыть шаблон %(name)s"
 
-#: etiketto/ui/files.py:61
+#: etiketto/ui/files.py:66
 #, python-format
 msgid "Cannot open %s"
 msgstr "Не удалось открыть %s"
 
-#: etiketto/ui/files.py:71
+#: etiketto/ui/files.py:76
 msgid "Open label"
 msgstr "Открыть этикетку"
 
-#: etiketto/ui/files.py:85
+#: etiketto/ui/files.py:88
 msgid "label"
 msgstr "этикетка"
 
-#: etiketto/ui/files.py:121
+#: etiketto/ui/files.py:125
 msgid "Save label"
 msgstr "Сохранить этикетку"
 
-#: etiketto/ui/files.py:127 etiketto/ui/window.py:112
+#: etiketto/ui/files.py:131 etiketto/ui/window.py:114
 msgid "Save as template…"
 msgstr "Сохранить как шаблон…"
 
-#: etiketto/ui/files.py:129 etiketto/ui/files.py:146
+#: etiketto/ui/files.py:149
 #, python-format
 msgid "Saved %s"
 msgstr "Сохранено: %s"
 
-#: etiketto/ui/files.py:152
+#: etiketto/ui/files.py:159
 msgid "Export PNG"
 msgstr "Экспорт в PNG"
 
-#: etiketto/ui/files.py:160 etiketto/ui/window.py:297
+#: etiketto/ui/files.py:167 etiketto/ui/window.py:300
 msgid "The preview cannot be drawn"
 msgstr "Не удалось нарисовать предпросмотр"
 
-#: etiketto/ui/files.py:162
+#: etiketto/ui/files.py:169
 msgid "Exported"
 msgstr "Экспортировано"
 
-#: etiketto/ui/files.py:172
+#: etiketto/ui/files.py:179
 msgid "No templates yet – use “Save as template…”"
 msgstr "Шаблонов пока нет – используйте «Сохранить как шаблон…»"
 
-#: etiketto/ui/files.py:199 etiketto/ui/label_group.py:42
+#: etiketto/ui/files.py:206 etiketto/ui/label_group.py:48
 #: etiketto/ui/window.py:38
 msgid "Label"
 msgstr "Этикетка"
 
-#: etiketto/ui/files.py:209
+#: etiketto/ui/files.py:216
 msgid "Discard changes?"
 msgstr "Отменить изменения?"
 
-#: etiketto/ui/files.py:210
+#: etiketto/ui/files.py:217
 msgid "The current label has unsaved changes."
 msgstr "В текущей этикетке есть несохранённые изменения."
 
-#: etiketto/ui/files.py:212
+#: etiketto/ui/files.py:219
 msgid "Discard"
 msgstr "Отменить изменения"
 
@@ -245,97 +245,97 @@ msgctxt "month name"
 msgid "December"
 msgstr "декабрь"
 
-#: etiketto/ui/label_group.py:67
+#: etiketto/ui/label_group.py:73
 msgid "Tape width"
 msgstr "Ширина ленты"
 
-#: etiketto/ui/label_group.py:79
+#: etiketto/ui/label_group.py:85
 msgid "Spacing"
 msgstr "Интервал"
 
-#: etiketto/ui/label_group.py:85
+#: etiketto/ui/label_group.py:91
 #, python-format
 msgid "%(unit)s at the ends and between elements"
 msgstr "%(unit)s по краям и между элементами"
 
-#: etiketto/ui/label_group.py:90
+#: etiketto/ui/label_group.py:96
 msgid "Edge spacing"
 msgstr "Отступ от края"
 
-#: etiketto/ui/label_group.py:96
+#: etiketto/ui/label_group.py:102
 #, python-format
 msgid "extra %(unit)s along the tape edges"
 msgstr "дополнительно %(unit)s вдоль краёв ленты"
 
-#: etiketto/ui/label_group.py:102
+#: etiketto/ui/label_group.py:108
 msgid "Background colour"
 msgstr "Цвет фона"
 
-#: etiketto/ui/label_group.py:106
+#: etiketto/ui/label_group.py:112
 msgid "Background image"
 msgstr "Фоновое изображение"
 
-#: etiketto/ui/label_group.py:127
+#: etiketto/ui/label_group.py:133
 msgid "Border"
 msgstr "Рамка"
 
-#: etiketto/ui/label_group.py:133
+#: etiketto/ui/label_group.py:139
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = нет"
 
-#: etiketto/ui/label_group.py:142
+#: etiketto/ui/label_group.py:148
 msgid "Automatic length"
 msgstr "Автоматическая длина"
 
-#: etiketto/ui/label_group.py:142
+#: etiketto/ui/label_group.py:148
 msgid "As long as the content"
 msgstr "По длине содержимого"
 
-#: etiketto/ui/label_group.py:151
+#: etiketto/ui/label_group.py:157
 msgid "Length"
 msgstr "Длина"
 
-#: etiketto/ui/label_group.py:153 etiketto/ui/label_group.py:216
+#: etiketto/ui/label_group.py:159 etiketto/ui/label_group.py:225
 msgid "Alignment"
 msgstr "Выравнивание"
 
-#: etiketto/ui/label_group.py:175
+#: etiketto/ui/label_group.py:184
 msgid "Custom size"
 msgstr "Свой размер"
 
-#: etiketto/ui/label_group.py:177
+#: etiketto/ui/label_group.py:186
 msgid "Label size"
 msgstr "Размер этикетки"
 
-#: etiketto/ui/label_group.py:183
+#: etiketto/ui/label_group.py:192
 msgid "Width"
 msgstr "Ширина"
 
-#: etiketto/ui/label_group.py:189
+#: etiketto/ui/label_group.py:198
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s поперёк рулона"
 
-#: etiketto/ui/label_group.py:192
+#: etiketto/ui/label_group.py:201
 msgid "Height"
 msgstr "Высота"
 
-#: etiketto/ui/label_group.py:198
+#: etiketto/ui/label_group.py:207
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s вдоль рулона"
 
-#: etiketto/ui/label_group.py:204
+#: etiketto/ui/label_group.py:213
 msgid "Gap"
 msgstr "Зазор"
 
-#: etiketto/ui/label_group.py:210
+#: etiketto/ui/label_group.py:219
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s между двумя этикетками на рулоне"
 
-#: etiketto/ui/label_group.py:214
+#: etiketto/ui/label_group.py:223
 msgid "Content direction"
 msgstr "Направление содержимого"
 
@@ -343,205 +343,205 @@ msgstr "Направление содержимого"
 msgid "Fit to window"
 msgstr "По размеру окна"
 
-#: etiketto/ui/preview.py:56
+#: etiketto/ui/preview.py:57
 msgid "Zoom out"
 msgstr "Уменьшить"
 
-#: etiketto/ui/preview.py:59
+#: etiketto/ui/preview.py:61
 msgid "Zoom in"
 msgstr "Увеличить"
 
-#: etiketto/ui/printer.py:57
+#: etiketto/ui/printer.py:62
 msgid "Printer"
 msgstr "Принтер"
 
-#: etiketto/ui/printer.py:62
+#: etiketto/ui/printer.py:67
 msgid "Host name or IP address"
 msgstr "Имя узла или IP-адрес"
 
-#: etiketto/ui/printer.py:71
+#: etiketto/ui/printer.py:76
 msgid "Safety margin"
 msgstr "Защитное поле"
 
-#: etiketto/ui/printer.py:78
+#: etiketto/ui/printer.py:83
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "%(unit)s свободно для содержимого и рамки; фон печатается без полей"
 
-#: etiketto/ui/printer.py:83 etiketto/ui/printer.py:89
+#: etiketto/ui/printer.py:88 etiketto/ui/printer.py:94
 msgid "Millimetres"
 msgstr "Миллиметры"
 
-#: etiketto/ui/printer.py:83 etiketto/ui/printer.py:90
+#: etiketto/ui/printer.py:88 etiketto/ui/printer.py:95
 msgid "Inches"
 msgstr "Дюймы"
 
-#: etiketto/ui/printer.py:86
+#: etiketto/ui/printer.py:91
 msgid "Units"
 msgstr "Единицы"
 
-#: etiketto/ui/printer.py:88
+#: etiketto/ui/printer.py:93
 #, python-format
 msgid "Automatic (%s)"
 msgstr "Автоматически (%s)"
 
-#: etiketto/ui/printer.py:100
+#: etiketto/ui/printer.py:106
 msgid "Printer model"
 msgstr "Модель принтера"
 
-#: etiketto/ui/printer.py:103 etiketto/ui/printer.py:284
+#: etiketto/ui/printer.py:110 etiketto/ui/printer.py:294
 msgid "Searching…"
 msgstr "Поиск…"
 
-#: etiketto/ui/printer.py:106 etiketto/ui/printer.py:368
+#: etiketto/ui/printer.py:113 etiketto/ui/printer.py:375
 msgid "Printer details"
 msgstr "Сведения о принтере"
 
-#: etiketto/ui/printer.py:109
+#: etiketto/ui/printer.py:116
 msgid "Refresh"
 msgstr "Обновить"
 
-#: etiketto/ui/printer.py:113
+#: etiketto/ui/printer.py:120
 msgid "Search for printers"
 msgstr "Найти принтеры"
 
-#: etiketto/ui/printer.py:139
+#: etiketto/ui/printer.py:146
 msgid "Searching for printers…"
 msgstr "Поиск принтеров…"
 
-#: etiketto/ui/printer.py:153
+#: etiketto/ui/printer.py:160
 msgid "No printer found"
 msgstr "Принтер не найден"
 
-#: etiketto/ui/printer.py:155
+#: etiketto/ui/printer.py:162
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "Убедитесь, что принтер включён и находится в той же сети, или введите его адрес ниже"
 
-#: etiketto/ui/printer.py:161
+#: etiketto/ui/printer.py:168
 #, python-format
 msgid "Found %s"
 msgstr "Найден %s"
 
-#: etiketto/ui/printer.py:169 etiketto/ui/printer.py:183
+#: etiketto/ui/printer.py:176 etiketto/ui/printer.py:190
 msgid "Choose a printer"
 msgstr "Выберите принтер"
 
-#: etiketto/ui/printer.py:187 etiketto/ui/printing.py:176
-#: etiketto/ui/widgets.py:110
+#: etiketto/ui/printer.py:194 etiketto/ui/printing.py:179
+#: etiketto/ui/window.py:316
 msgid "Cancel"
 msgstr "Отменить"
 
-#: etiketto/ui/printer.py:211
+#: etiketto/ui/printer.py:218
 msgid "Connecting…"
 msgstr "Подключение…"
 
-#: etiketto/ui/printer.py:266
+#: etiketto/ui/printer.py:276
 msgid "Printer not reachable"
 msgstr "Принтер недоступен"
 
-#: etiketto/ui/printer.py:268 etiketto/ui/printer.py:282
+#: etiketto/ui/printer.py:278 etiketto/ui/printer.py:292
 msgid "Printer needs attention"
 msgstr "Принтеру требуется внимание"
 
-#: etiketto/ui/printer.py:297
+#: etiketto/ui/printer.py:307
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "Осталось %(left)s из %(total)s"
 
-#: etiketto/ui/printer.py:308
+#: etiketto/ui/printer.py:318
 msgid "Printing"
 msgstr "Печать"
 
-#: etiketto/ui/printer.py:310
+#: etiketto/ui/printer.py:320
 #, python-format
 msgid "Ready · a label every %s"
 msgstr "Готов · этикетка каждые %s"
 
-#: etiketto/ui/printer.py:311
+#: etiketto/ui/printer.py:321
 msgid "Ready"
 msgstr "Готов"
 
-#: etiketto/ui/printer.py:313
+#: etiketto/ui/printer.py:323
 msgid "No cassette inserted"
 msgstr "Кассета не вставлена"
 
-#: etiketto/ui/printer.py:314
+#: etiketto/ui/printer.py:324
 #, python-format
 msgid "%s cassette"
 msgstr "Кассета %s"
 
-#: etiketto/ui/printer.py:333
+#: etiketto/ui/printer.py:343
 msgid "Model"
 msgstr "Модель"
 
-#: etiketto/ui/printer.py:334
+#: etiketto/ui/printer.py:344
 msgid "Address"
 msgstr "Адрес"
 
-#: etiketto/ui/printer.py:335
+#: etiketto/ui/printer.py:345
 msgid "Firmware"
 msgstr "Прошивка"
 
-#: etiketto/ui/printer.py:338
+#: etiketto/ui/printer.py:346
 msgid "Cassette"
 msgstr "Кассета"
 
-#: etiketto/ui/printer.py:340
+#: etiketto/ui/printer.py:347
 msgid "Label distance"
 msgstr "Расстояние между этикетками"
 
-#: etiketto/ui/printer.py:341
+#: etiketto/ui/printer.py:348
 msgid "Remaining tape"
 msgstr "Остаток ленты"
 
-#: etiketto/ui/printer.py:351
+#: etiketto/ui/printer.py:358
 msgid "Printable width"
 msgstr "Ширина печати"
 
-#: etiketto/ui/printer.py:352
+#: etiketto/ui/printer.py:359
 msgid "Lot number"
 msgstr "Номер партии"
 
-#: etiketto/ui/printer.py:353
+#: etiketto/ui/printer.py:360
 msgid "Serial number"
 msgstr "Серийный номер"
 
-#: etiketto/ui/printer.py:355
+#: etiketto/ui/printer.py:362
 msgid "Probably made"
 msgstr "Вероятная дата выпуска"
 
-#: etiketto/ui/printer.py:369 etiketto/ui/printing.py:282
+#: etiketto/ui/printer.py:376 etiketto/ui/printing.py:285
 msgid "Close"
 msgstr "Закрыть"
 
-#: etiketto/ui/printing.py:59
+#: etiketto/ui/printing.py:63
 msgid "The label is empty"
 msgstr "Этикетка пуста"
 
-#: etiketto/ui/printing.py:70
+#: etiketto/ui/printing.py:73
 msgid "Print anyway"
 msgstr "Всё равно печатать"
 
-#: etiketto/ui/printing.py:75
+#: etiketto/ui/printing.py:78
 msgid "Wrong cassette"
 msgstr "Неподходящая кассета"
 
-#: etiketto/ui/printing.py:77
+#: etiketto/ui/printing.py:80
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Этикетка рассчитана на ленту %(label)s, но вставлена кассета %(tape)s. Принтер масштабирует её под ленту."
 
-#: etiketto/ui/printing.py:89
+#: etiketto/ui/printing.py:92
 msgid "Different labels loaded"
 msgstr "Загружены другие этикетки"
 
-#: etiketto/ui/printing.py:91
+#: etiketto/ui/printing.py:94
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -549,410 +549,410 @@ msgid ""
 "size and the gap."
 msgstr "Размер этикетки — %(size)s с зазором %(gap)s, поэтому новая начинается каждые %(pitch)s. Принтер измерил одну этикетку каждые %(measured)s. Проверьте размер этикетки и зазор."
 
-#: etiketto/ui/printing.py:119
+#: etiketto/ui/printing.py:122
 msgid "Copies"
 msgstr "Копии"
 
-#: etiketto/ui/printing.py:123
+#: etiketto/ui/printing.py:126
 msgid "Cut"
 msgstr "Обрезка"
 
-#: etiketto/ui/printing.py:128
+#: etiketto/ui/printing.py:131
 msgid "Colours"
 msgstr "Цвета"
 
-#: etiketto/ui/printing.py:137
+#: etiketto/ui/printing.py:140
 msgid "Colour adjustment"
 msgstr "Коррекция цвета"
 
-#: etiketto/ui/printing.py:140
+#: etiketto/ui/printing.py:143
 msgid "Reset"
 msgstr "Сбросить"
 
-#: etiketto/ui/printing.py:161
+#: etiketto/ui/printing.py:164
 msgid "Not adjusted"
 msgstr "Без коррекции"
 
-#: etiketto/ui/printing.py:161
+#: etiketto/ui/printing.py:164
 msgid "Adjusted"
 msgstr "Скорректировано"
 
-#: etiketto/ui/printing.py:175
+#: etiketto/ui/printing.py:178
 msgid "Print label"
 msgstr "Печать этикетки"
 
-#: etiketto/ui/printing.py:177 etiketto/ui/printing.py:254
-#: etiketto/ui/window.py:101
+#: etiketto/ui/printing.py:180 etiketto/ui/printing.py:257
+#: etiketto/ui/window.py:103
 msgid "Print"
 msgstr "Печать"
 
-#: etiketto/ui/printing.py:206
+#: etiketto/ui/printing.py:209
 msgid "No printer yet – search for one or enter its address"
 msgstr "Принтера пока нет – найдите его или введите адрес"
 
-#: etiketto/ui/printing.py:212
+#: etiketto/ui/printing.py:215
 msgid "Printing…"
 msgstr "Печать…"
 
-#: etiketto/ui/printing.py:222
+#: etiketto/ui/printing.py:225
 msgid "The label cannot be prepared for printing."
 msgstr "Не удалось подготовить этикетку к печати."
 
-#: etiketto/ui/printing.py:237
+#: etiketto/ui/printing.py:240
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Печать %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:266
+#: etiketto/ui/printing.py:269
 msgid "Printed"
 msgstr "Напечатано"
 
-#: etiketto/ui/printing.py:268
+#: etiketto/ui/printing.py:271
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Цветовой режим «%(wanted)s» недоступен на этом принтере, напечатано в режиме «%(used)s»"
 
-#: etiketto/ui/printing.py:277
+#: etiketto/ui/printing.py:280
 msgid "Printing failed"
 msgstr "Ошибка печати"
 
-#: etiketto/ui/printing.py:278
+#: etiketto/ui/printing.py:281
 msgid "Details"
 msgstr "Подробности"
 
-#: etiketto/ui/printing.py:281 etiketto/ui/window.py:328
+#: etiketto/ui/printing.py:284 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "Сообщить"
 
-#: etiketto/ui/texts.py:15
+#: etiketto/ui/texts.py:20
 msgid "Full cut"
 msgstr "Полная обрезка"
 
-#: etiketto/ui/texts.py:15
+#: etiketto/ui/texts.py:20
 msgid "Half cut"
 msgstr "Надрез"
 
-#: etiketto/ui/texts.py:15
+#: etiketto/ui/texts.py:20
 msgid "No cut"
 msgstr "Без обрезки"
 
-#: etiketto/ui/texts.py:18
+#: etiketto/ui/texts.py:23
 msgid "Vivid"
 msgstr "Насыщенные"
 
-#: etiketto/ui/texts.py:19
+#: etiketto/ui/texts.py:24
 msgid "Normal"
 msgstr "Обычные"
 
-#: etiketto/ui/texts.py:20
+#: etiketto/ui/texts.py:25
 msgid "Black and white (sharper)"
 msgstr "Чёрно-белые (чётче)"
 
-#: etiketto/ui/texts.py:23
+#: etiketto/ui/texts.py:28
 msgid "Brightness"
 msgstr "Яркость"
 
-#: etiketto/ui/texts.py:24
+#: etiketto/ui/texts.py:29
 msgid "Red"
 msgstr "Красный"
 
-#: etiketto/ui/texts.py:25
+#: etiketto/ui/texts.py:30
 msgid "Green"
 msgstr "Зелёный"
 
-#: etiketto/ui/texts.py:26
+#: etiketto/ui/texts.py:31
 msgid "Blue"
 msgstr "Синий"
 
-#: etiketto/ui/texts.py:28
+#: etiketto/ui/texts.py:33
 msgid "Start"
 msgstr "Начало"
 
-#: etiketto/ui/texts.py:28 etiketto/ui/texts.py:32
+#: etiketto/ui/texts.py:33 etiketto/ui/texts.py:37
 msgid "Centre"
 msgstr "Центр"
 
-#: etiketto/ui/texts.py:28
+#: etiketto/ui/texts.py:33
 msgid "End"
 msgstr "Конец"
 
-#: etiketto/ui/texts.py:29
+#: etiketto/ui/texts.py:34
 msgid "Across the roll"
 msgstr "Поперёк рулона"
 
-#: etiketto/ui/texts.py:29
+#: etiketto/ui/texts.py:34
 msgid "Along the roll"
 msgstr "Вдоль рулона"
 
-#: etiketto/ui/texts.py:32
+#: etiketto/ui/texts.py:37
 msgid "Left"
 msgstr "Слева"
 
-#: etiketto/ui/texts.py:32
+#: etiketto/ui/texts.py:37
 msgid "Right"
 msgstr "Справа"
 
-#: etiketto/ui/texts.py:33
+#: etiketto/ui/texts.py:38
 msgid "QR code"
 msgstr "QR-код"
 
-#: etiketto/ui/texts.py:41
+#: etiketto/ui/texts.py:44
 msgid "Only local files can be used"
 msgstr "Можно использовать только локальные файлы"
 
-#: etiketto/ui/texts.py:47
+#: etiketto/ui/texts.py:50
 #, python-format
 msgid "Not an image: %s"
 msgstr "Не изображение: %s"
 
-#: etiketto/ui/texts.py:55
+#: etiketto/ui/texts.py:58
 msgid "Image"
 msgstr "Изображение"
 
-#: etiketto/ui/texts.py:77
+#: etiketto/ui/texts.py:80
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "Элемент %(n)d: код пуст"
 
-#: etiketto/ui/texts.py:78
+#: etiketto/ui/texts.py:81
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "Элемент %(n)d: для EAN-13 нужно ровно 12 цифр"
 
-#: etiketto/ui/texts.py:79
+#: etiketto/ui/texts.py:82
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Элемент %(n)d: неверная контрольная цифра EAN-13"
 
-#: etiketto/ui/texts.py:81
+#: etiketto/ui/texts.py:84
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Элемент %(n)d: Code 128 допускает только латинские буквы, цифры и знаки препинания"
 
-#: etiketto/ui/texts.py:83
+#: etiketto/ui/texts.py:86
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Элемент %(n)d: не удалось прочитать изображение"
 
-#: etiketto/ui/texts.py:84
+#: etiketto/ui/texts.py:87
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Не удалось нарисовать элемент %(n)d"
 
-#: etiketto/ui/texts.py:85
+#: etiketto/ui/texts.py:88
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "Защитное поле, рамка и отступ от края не оставляют места – уменьшите их"
 
-#: etiketto/ui/texts.py:86
+#: etiketto/ui/texts.py:89
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Фиксированная длина меньше интервала – увеличьте её"
 
-#: etiketto/ui/texts.py:87
+#: etiketto/ui/texts.py:90
 msgid "The background image cannot be read"
 msgstr "Не удалось прочитать фоновое изображение"
 
-#: etiketto/ui/texts.py:104
+#: etiketto/ui/texts.py:107
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Принтер не найден. Убедитесь, что он включён и находится в той же сети, или введите его IP-адрес."
 
-#: etiketto/ui/texts.py:107
+#: etiketto/ui/texts.py:110
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Принтер не отвечает. Убедитесь, что он включён и не в спящем режиме."
 
-#: etiketto/ui/texts.py:109
+#: etiketto/ui/texts.py:112
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Принтер отклоняет подключение. Выключите и снова включите его. Если в его веб-интерфейсе есть параметр «Port 9100», включите его."
 
-#: etiketto/ui/texts.py:112
+#: etiketto/ui/texts.py:115
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Кассета не вставлена. Вставьте её и повторите попытку."
 
-#: etiketto/ui/texts.py:113
+#: etiketto/ui/texts.py:116
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Крышка принтера открыта. Закройте её и повторите попытку."
 
-#: etiketto/ui/texts.py:114
+#: etiketto/ui/texts.py:117
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Этикетка застряла. Откройте крышку, извлеките её и повторите попытку."
 
-#: etiketto/ui/texts.py:115
+#: etiketto/ui/texts.py:118
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Кассета не распознана. Вставьте её заново или попробуйте другую."
 
-#: etiketto/ui/texts.py:116
+#: etiketto/ui/texts.py:119
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Принтер занят. Подождите немного и повторите попытку."
 
-#: etiketto/ui/texts.py:117
+#: etiketto/ui/texts.py:120
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Этикетка слишком длинная для этого принтера: не более %(max)s."
 
-#: etiketto/ui/texts.py:118
+#: etiketto/ui/texts.py:121
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Этикетка слишком широкая для этого принтера: максимум %(max)s."
 
-#: etiketto/ui/texts.py:119
+#: etiketto/ui/texts.py:122
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "В принтере закончились этикетки. Загрузите новый рулон и повторите попытку."
 
-#: etiketto/ui/texts.py:120
+#: etiketto/ui/texts.py:123
 msgid "The print head is open. Close it and try again."
 msgstr "Печатающая головка открыта. Закройте её и повторите попытку."
 
-#: etiketto/ui/texts.py:122
+#: etiketto/ui/texts.py:125
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Принтер не находит следующую этикетку. Проверьте, правильно ли загружены этикетки и проходят ли они через датчик этикеток."
 
-#: etiketto/ui/texts.py:126
+#: etiketto/ui/texts.py:129
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Проблема с красящей лентой. Проверьте, правильно ли она вставлена и соответствует ли способу печати, заданному в принтере."
 
-#: etiketto/ui/texts.py:129
+#: etiketto/ui/texts.py:132
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Принтер приостановлен. Возобновите работу на его дисплее и повторите попытку."
 
-#: etiketto/ui/texts.py:131
+#: etiketto/ui/texts.py:134
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Принтер сообщил о проблеме. Выключите и снова включите его, затем повторите попытку."
 
-#: etiketto/ui/texts.py:143
+#: etiketto/ui/texts.py:146
 msgid "Warming up…"
 msgstr "Прогрев…"
 
-#: etiketto/ui/texts.py:144
+#: etiketto/ui/texts.py:147
 msgid "Cooling down…"
 msgstr "Охлаждение…"
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:148
 msgid "Cleaning…"
 msgstr "Очистка…"
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:149
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Проведите по панели принтера, чтобы отрезать этикетку"
 
-#: etiketto/ui/texts.py:152
+#: etiketto/ui/texts.py:160
 msgid "This label needs a newer version of Etiketto"
 msgstr "Для этой этикетки нужна более новая версия Etiketto"
 
-#: etiketto/ui/texts.py:154
+#: etiketto/ui/texts.py:162
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s не является этикеткой Etiketto"
 
-#: etiketto/ui/texts.py:155
+#: etiketto/ui/texts.py:163
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Файл повреждён: %s"
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:168
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Не удалось сохранить %s: нет прав на запись"
 
-#: etiketto/ui/texts.py:162
+#: etiketto/ui/texts.py:170
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Не удалось сохранить %s: диск заполнен"
 
-#: etiketto/ui/texts.py:163
+#: etiketto/ui/texts.py:171
 #, python-format
 msgid "Cannot save %s"
 msgstr "Не удалось сохранить %s"
 
-#: etiketto/ui/texts.py:172
+#: etiketto/ui/texts.py:180
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "Вероятная дата выпуска кассеты: %(month)s %(year)d. Старая бумага ZINK печатает более блёклые цвета."
 
-#: etiketto/ui/window.py:80
+#: etiketto/ui/window.py:82
 msgid "Open"
 msgstr "Открыть"
 
-#: etiketto/ui/window.py:87
+#: etiketto/ui/window.py:89
 msgid "Templates"
 msgstr "Шаблоны"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:95
 msgid "Save"
 msgstr "Сохранить"
 
-#: etiketto/ui/window.py:110
+#: etiketto/ui/window.py:112
 msgid "New label"
 msgstr "Новая этикетка"
 
-#: etiketto/ui/window.py:111
+#: etiketto/ui/window.py:113
 msgid "Save as…"
 msgstr "Сохранить как…"
 
-#: etiketto/ui/window.py:113
+#: etiketto/ui/window.py:115
 msgid "Export PNG…"
 msgstr "Экспорт в PNG…"
 
-#: etiketto/ui/window.py:114
+#: etiketto/ui/window.py:116
 msgid "Help"
 msgstr "Справка"
 
-#: etiketto/ui/window.py:115
+#: etiketto/ui/window.py:117
 msgid "Report a problem…"
 msgstr "Сообщить о проблеме…"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:118
 msgid "About Etiketto"
 msgstr "О приложении Etiketto"
 
-#: etiketto/ui/window.py:241
+#: etiketto/ui/window.py:244
 msgid "Unsaved label"
 msgstr "Несохранённая этикетка"
 
-#: etiketto/ui/window.py:280
+#: etiketto/ui/window.py:283
 msgid "content scaled down to fit"
 msgstr "содержимое уменьшено по размеру"
 
-#: etiketto/ui/window.py:282
+#: etiketto/ui/window.py:285
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Слишком длинная для этого принтера: не более %s"
 
-#: etiketto/ui/window.py:287
+#: etiketto/ui/window.py:290
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Слишком широкая для этого принтера: максимум %s"
 
-#: etiketto/ui/window.py:292
+#: etiketto/ui/window.py:295
 #, python-format
 msgid "Problem: %s"
 msgstr "Проблема: %s"
 
-#: etiketto/ui/window.py:355
+#: etiketto/ui/window.py:363
 msgid "The browser cannot be opened"
 msgstr "Не удалось открыть браузер"
 
-#: etiketto/ui/window.py:357
+#: etiketto/ui/window.py:365
 msgid "Copy link"
 msgstr "Копировать ссылку"
 
-#: etiketto/ui/window.py:401
+#: etiketto/ui/window.py:409
 msgid "Only local files can be dropped"
 msgstr "Перетаскивать можно только локальные файлы"
 
-#: etiketto/ui/window.py:416
+#: etiketto/ui/window.py:424
 msgid "Please wait until printing has finished"
 msgstr "Дождитесь окончания печати"

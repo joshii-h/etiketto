@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import base64
 import io
+import math
 import re
 import socket
 import time
-from contextlib import AbstractContextManager
+from contextlib import AbstractContextManager, suppress
 from dataclasses import dataclass, replace
 
 from PIL import Image
@@ -270,10 +271,8 @@ class _Session:
     def cancel(self) -> None:
         """ESC c: drop the running job, so that "try again" does not print
         its remaining labels a second time once the problem is solved."""
-        try:
+        with suppress(OSError):  # the connection is gone; nothing more to do
             self.sock.sendall(ESC + b"c")
-        except OSError:
-            pass  # the connection is gone; nothing more to do
 
 
 def session(host: str, port: int = DEFAULT_PORT) -> AbstractContextManager[_Session]:
@@ -367,7 +366,7 @@ class Cab(Backend):
             version = s.version()
             dots = version.dots_per_mm if version.model else rendered
             self.dots_per_mm = dots
-            if abs(dots - rendered) > 0.01:
+            if not math.isclose(dots, rendered):
                 image = _rescale(image, dots / rendered)
             job = build_job(image, dots, options.gap_mm, copies)
             _wait_idle(s)

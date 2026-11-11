@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import base64
 import io
-import socket
 import time
 from types import SimpleNamespace
 
@@ -162,7 +161,7 @@ class FakeConnection:
 
     def get_message(self, long_timeout=False, buffer_size=4096):
         if not self.pending:
-            raise socket.timeout("timed out")
+            raise TimeoutError("timed out")
         self.device.log.append(("read", long_timeout))
         return self.pending.pop(0)
 
@@ -217,12 +216,12 @@ def gtk_available() -> bool:
 
             gi.require_version("Gtk", "4.0")
             gi.require_version("Adw", "1")
-            from gi.overrides import Gtk as gtk_override
+            from gi.overrides import Gtk as GtkOverride
             from gi.repository import Adw, Gtk
 
             # PyGObject's own init_check() at import time is what counts:
             # without a display widgets refuse to be created (or crash)
-            ok = bool(getattr(gtk_override, "initialized", True)) and Gtk.init_check()
+            ok = bool(getattr(GtkOverride, "initialized", True)) and Gtk.init_check()
             if ok:
                 Adw.init()
             _gtk_state["ok"] = bool(ok)

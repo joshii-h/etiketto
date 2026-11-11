@@ -138,6 +138,10 @@ interface first; please open an issue before you start.
 
    - `discover` returns printers announced on the network, `[]` if there is
      no mDNS; `etiketto.backends.mdns.browse()` does the Avahi part.
+   - `query` returns a `PrinterInfo`; if the printer reports a problem, put
+     the code of the matching `PrinterError` into `PrinterInfo.error` (e.g.
+     `"cover_open"`), never the printer's own text. `base.open_session()`
+     and `base.network_error()` cover connecting and network errors.
    - `query` and `print_label` raise `PrinterError` subclasses
      (`PrinterNotFound`, `PrinterTimeout`, `PortClosed`, `NoCassette`,
      `CoverOpen`, `PaperJam`, `BadCassette`, `PrinterBusy`, `LabelTooLong`,
@@ -150,7 +154,8 @@ interface first; please open an issue before you start.
      dithered for mono printers. Rotate and encode it the way the printer
      wants. Check `max_length_mm` with `check_length()` (die-cut:
      `max_width_mm` with `check_width()`) before sending.
-     Report each copy and printer stage through `progress(Progress(...))`.
+     Report each copy and printer stage through `progress(Progress(...))`
+     (`report_progress()` from `base.py` does that if a callback was given).
      Return a `PrintResult` if something differed from the request (e.g.
      another mode was used), else `None`.
    - Override `raster()` if the printer needs a different resolution, the

@@ -93,10 +93,10 @@ def main() -> int:
             warnings += len(fuzzy) + len(untranslated) + (1 if stale else 0)
 
             for e in current:
-                if e["msgstr"] and "fuzzy" not in e["flags"]:
-                    if placeholders(e["msgstr"]) != placeholders(e["msgid"]):
-                        print("ERROR %s: placeholders changed in: %s" % (lang, e["msgid"][:70]))
-                        errors += 1
+                translated = e["msgstr"] and "fuzzy" not in e["flags"]
+                if translated and placeholders(e["msgstr"]) != placeholders(e["msgid"]):
+                    print("ERROR %s: placeholders changed in: %s" % (lang, e["msgid"][:70]))
+                    errors += 1
 
             terms = build.catalog(build.APP_PO / (lang + ".po"))
             missing = sorted(t for t in used if t in app and t not in terms)

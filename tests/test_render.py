@@ -12,13 +12,11 @@ import pytest
 from conftest import ink_bbox
 from PIL import Image, ImageChops
 
-from etiketto import render as R
+from etiketto import render as render_module
 from etiketto.model import CodeElement, ImageElement, Label, TextElement
 from etiketto.render import (
-    Rendered,
     RenderWarning,
     mm_to_px,
-    print_image,
     px_to_mm,
     render,
 )
@@ -117,7 +115,7 @@ def test_fixed_length_alignment(make_label, wide_image, align, x0):
     assert rendered.image.size == (LENGTH_100, TAPE)
     bbox = ink_bbox(rendered.image, WHITE)
     assert bbox == (x0, FRAME, x0 + PART_W, TAPE - FRAME)
-    assert FRAME + MARGIN <= bbox[0] and bbox[2] <= LENGTH_100 - FRAME - MARGIN
+    assert bbox[0] >= FRAME + MARGIN and bbox[2] <= LENGTH_100 - FRAME - MARGIN
     assert not rendered.overflow and rendered.warnings == []
 
 
@@ -229,7 +227,12 @@ def test_border_shifts_content(make_label, wide_image):
     # border in the background colour: only the content differs from white
     img = render(make_label(border_mm=0.5, border_color="#ffffff", elements=[wide_image])).image
     assert img.size[0] == 2 * (TAPE - 2 * frame) + 2 * (MARGIN + frame)
-    assert ink_bbox(img, WHITE) == (frame + MARGIN, frame, img.width - frame - MARGIN, TAPE - frame)
+    assert ink_bbox(img, WHITE) == (
+        frame + MARGIN,
+        frame,
+        img.width - frame - MARGIN,
+        TAPE - frame,
+    )
 
 
 def test_background_is_edge_to_edge(make_label, wide_image):
@@ -255,9 +258,9 @@ def test_broken_background_image_warns(make_label):
 
 
 def test_invalid_colours_fall_back():
-    assert R._color("not a colour") == (0, 0, 0)
-    assert R._color("nope", "#ffffff") == (255, 255, 255)
-    assert R._color("#11223344") == (0x11, 0x22, 0x33)
+    assert render_module._color("not a colour") == (0, 0, 0)
+    assert render_module._color("nope", "#ffffff") == (255, 255, 255)
+    assert render_module._color("#11223344") == (0x11, 0x22, 0x33)
     img = render(Label(tape_mm=25, background="bogus", border_mm=1, border_color="bogus")).image
     assert img.getpixel((0, 0)) == WHITE
     assert img.getpixel((img.width // 2, SAFE)) == (0, 0, 0)
@@ -266,21 +269,8 @@ def test_invalid_colours_fall_back():
 # --- print orientation ---------------------------------------------------------
 
 
-def test_print_image_rotates_clockwise():
-    img = Image.new("RGB", (30, 10), WHITE)
-    img.putpixel((0, 0), (255, 0, 0))
-    img.putpixel((29, 0), (0, 0, 255))
-    out = print_image(Rendered(img, px_to_mm(30)))
-    assert out.size == (10, 30)
-    assert out.getpixel((9, 0)) == (255, 0, 0)  # top left -> top right
-    assert out.getpixel((9, 29)) == (0, 0, 255)  # top right -> bottom right
-
-
-# --- text --------------------------------------------------------------------
-
-
 def test_text_fits_tape_height():
-    block = R.render_text(TextElement(text="Hgjy"), INNER, 317)
+    block = render_module.render_text(TextElement(text="Hgjy"), INNER, 317)
     assert 0.8 * INNER < block.height <= INNER
     assert block.mode == "RGBA"
 
@@ -296,15 +286,15 @@ def test_text_fill_in_label(make_label):
 def test_huge_fixed_size_is_scaled_to_tape():
     inner = mm_to_px(9) - 2 * SAFE
     element = TextElement(text="Hg", size_pt=300)
-    assert R.render_text(element, inner, 317).height > inner  # would not fit unscaled
+    assert render_module.render_text(element, inner, 317).height > inner  # would not fit unscaled
     img = render(Label(tape_mm=9, elements=[element])).image
     x0, y0, x1, y1 = ink_bbox(img, WHITE)
     assert y0 >= SAFE and y1 <= img.height - SAFE
 
 
 def test_fixed_size_scales_with_points():
-    small = R.render_text(TextElement(text="Hg", size_pt=12), 1000, 317)
-    big = R.render_text(TextElement(text="Hg", size_pt=24), 1000, 317)
+    small = render_module.render_text(TextElement(text="Hg", size_pt=12), 1000, 317)
+    big = render_module.render_text(TextElement(text="Hg", size_pt=24), 1000, 317)
     assert big.height == pytest.approx(2 * small.height, rel=0.15)
     assert 12 / 72 * 317 <= small.height <= 3 * 12 / 72 * 317
     long = render(Label(elements=[TextElement(text="Hi", size_pt=12)]))
@@ -314,7 +304,7 @@ def test_fixed_size_scales_with_points():
 
 def test_text_colour_and_alignment():
     def lower_line(align):
-        block = R.render_text(
+        block = render_module.render_text(
             TextElement(text="WWWWWWWW\nI", align=align, color="#ff0000"), 200, 317
         )
         lower = block.crop((0, block.height * 3 // 4, block.width, block.height))
@@ -332,9 +322,11 @@ def test_text_colour_and_alignment():
 
 
 def test_bold_and_italic_change_the_glyphs():
-    plain = R.render_text(TextElement(text="Etikett", bold=False), 100, 317)
-    bold = R.render_text(TextElement(text="Etikett", bold=True), 100, 317)
-    italic = R.render_text(TextElement(text="Etikett", bold=False, italic=True), 100, 317)
+    plain = render_module.render_text(TextElement(text="Etikett", bold=False), 100, 317)
+    bold = render_module.render_text(TextElement(text="Etikett", bold=True), 100, 317)
+    italic = render_module.render_text(
+        TextElement(text="Etikett", bold=False, italic=True), 100, 317
+    )
     assert plain.tobytes() != bold.tobytes()
     assert plain.tobytes() != italic.tobytes()
 
@@ -352,22 +344,22 @@ def test_trailing_newline_does_not_shrink_text():
 
 
 def test_empty_text_renders():
-    assert R.render_text(TextElement(text=""), 100, 317).height > 0
+    assert render_module.render_text(TextElement(text=""), 100, 317).height > 0
 
 
 # --- images --------------------------------------------------------------------
 
 
 def test_image_keeps_aspect(png_b64):
-    assert R.render_image(ImageElement(data=png_b64((40, 20))), 100).size == (200, 100)
-    assert R.render_image(ImageElement(data=png_b64((10, 40))), 100).size == (25, 100)
+    assert render_module.render_image(ImageElement(data=png_b64((40, 20))), 100).size == (200, 100)
+    assert render_module.render_image(ImageElement(data=png_b64((10, 40))), 100).size == (25, 100)
 
 
 def test_image_cache_returns_copies(png_b64):
     element = ImageElement(data=png_b64((40, 20), "red"))
-    first = R.render_image(element, 50)
+    first = render_module.render_image(element, 50)
     first.paste((0, 0, 255, 255), (0, 0, 10, 10))
-    assert R.render_image(element, 50).getpixel((0, 0)) == (255, 0, 0, 255)
+    assert render_module.render_image(element, 50).getpixel((0, 0)) == (255, 0, 0, 255)
 
 
 def test_exif_orientation_is_applied():
@@ -377,7 +369,9 @@ def test_exif_orientation_is_applied():
     exif[0x0112] = 6  # stored rotated: display needs 90° clockwise
     buf = io.BytesIO()
     img.save(buf, format="JPEG", exif=exif, quality=100)
-    part = R.render_image(ImageElement(data=base64.b64encode(buf.getvalue()).decode()), 80)
+    part = render_module.render_image(
+        ImageElement(data=base64.b64encode(buf.getvalue()).decode()), 80
+    )
     assert part.size == (40, 80)
     r, _g, b, _a = part.getpixel((35, 5))  # marker now top right
     assert b > 200 and r < 60
@@ -401,9 +395,9 @@ def test_element_errors_are_numbered(make_label, wide_image):
 
 
 def test_qr_is_square_coloured_and_transparent():
-    part = R.render_code(CodeElement(data="https://example.org", color="#0000ff"), 120)
+    part = render_module.render_code(CodeElement(data="https://example.org", color="#0000ff"), 120)
     assert part.size == (120, 120)
-    colours = {p for p in pixels(part)}
+    colours = set(pixels(part))
     assert (0, 0, 255, 255) in colours
     assert any(p[3] == 0 for p in colours)
 
@@ -418,7 +412,9 @@ def test_qr_on_label_shows_background(make_label):
 
 @pytest.mark.parametrize("symbology, data", [("code128", "ABC-123"), ("ean13", "4006381333931")])
 def test_barcodes_transparent_background_and_colour(symbology, data):
-    part = R.render_code(CodeElement(data=data, symbology=symbology, color="#ff0000"), 100)
+    part = render_module.render_code(
+        CodeElement(data=data, symbology=symbology, color="#ff0000"), 100
+    )
     assert part.height == 100 and part.width > 100
     alphas = {p[3] for p in pixels(part)}
     assert alphas == {0, 255}
@@ -453,14 +449,14 @@ def test_invalid_codes_warn(make_label, symbology, data, key):
     [("ean13", "400638133393"), ("ean13", "4006381333931"), ("code128", " ~Az09!")],
 )
 def test_check_code_accepts(symbology, data):
-    R.check_code(CodeElement(data=data, symbology=symbology))  # no exception
+    render_module.check_code(CodeElement(data=data, symbology=symbology))  # no exception
 
 
 def test_other_element_errors(make_label, monkeypatch):
     def broken(element, height):
         raise RuntimeError("segno broke")
 
-    monkeypatch.setattr(R, "render_code", broken)
+    monkeypatch.setattr(render_module, "render_code", broken)
     rendered = render(make_label(elements=[CodeElement(data="x")]))
     assert rendered.warnings == [RenderWarning("element_failed", {"n": 1})]
 
@@ -482,8 +478,8 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
         sizes.append(size_px)
         return Image.new("RGBA", (10, round(size_px + 40)))
 
-    monkeypatch.setattr(R, "_text_block", fake_block)
-    block = R.render_text(TextElement(text="x"), 100, 317)
+    monkeypatch.setattr(render_module, "_text_block", fake_block)
+    block = render_module.render_text(TextElement(text="x"), 100, 317)
     assert block.height <= 100
     assert sizes[1] == pytest.approx(100 * 100 / 140)  # linear estimate from the probe
     assert len(sizes) > 2 and sizes[-1] < sizes[1]

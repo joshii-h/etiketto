@@ -235,7 +235,11 @@ def test_tape_widths_come_from_the_printer(monkeypatch):
 
 def test_old_version_accepted_and_booleans_normalised():
     label = Label.from_dict(
-        {"version": 0, "auto_length": 0, "elements": [{"kind": "text", "bold": 0, "italic": "yes"}]}
+        {
+            "version": 0,
+            "auto_length": 0,
+            "elements": [{"kind": "text", "bold": 0, "italic": "yes"}],
+        }
     )
     assert label.auto_length is False
     assert label.elements[0].bold is False and label.elements[0].italic is True

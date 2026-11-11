@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import gi
 
@@ -21,7 +22,12 @@ from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import ALIGNS, ORIENTATIONS  # noqa: E402
 from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row  # noqa: E402
 
+if TYPE_CHECKING:
+    from etiketto.ui.window import Window
+
 CUSTOM_SIZE = "custom"
+# a size entered in inches still matches a preset in mm
+SAME_SIZE_MM = 0.05
 # the length and alignment rows are off while the length is automatic
 INVERTED = GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.INVERT_BOOLEAN
 
@@ -38,7 +44,7 @@ class LabelGroup(Adw.PreferencesGroup):
     width_row: Adw.SpinRow
     height_row: Adw.SpinRow
 
-    def __init__(self, window):
+    def __init__(self, window: Window):
         super().__init__(title=_("Label"))
         self.window = window
         self._sizes: dict[str, tuple[float, float]] = {}  # preset key: (width, height)
@@ -160,7 +166,10 @@ class LabelGroup(Adw.PreferencesGroup):
         """The preset matching the label, else CUSTOM_SIZE."""
         width, height = self.window.label.media_size()
         for size in self.window.backend.capabilities.label_sizes:
-            if abs(size.width_mm - width) < 0.05 and abs(size.height_mm - height) < 0.05:
+            if (
+                abs(size.width_mm - width) < SAME_SIZE_MM
+                and abs(size.height_mm - height) < SAME_SIZE_MM
+            ):
                 return _size_key(size.width_mm, size.height_mm)
         return CUSTOM_SIZE
 
@@ -244,6 +253,5 @@ class LabelGroup(Adw.PreferencesGroup):
             self._syncing = False
 
     def _on_orientation(self, orientation: str) -> None:
-        if orientation != self.window.label.orientation:
-            self.window.label.set_orientation(orientation)
-            self.window.mark_changed()
+        self.window.label.set_orientation(orientation)
+        self.window.mark_changed()

@@ -6,7 +6,7 @@ import base64
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal
 
 FORMAT_VERSION = 1
 
@@ -53,7 +53,7 @@ class ImageElement:
     kind: Literal["image"] = "image"
 
     @classmethod
-    def from_file(cls, path: str | Path) -> "ImageElement":
+    def from_file(cls, path: str | Path) -> ImageElement:
         path = Path(path)
         return cls(data=base64.b64encode(path.read_bytes()).decode(), name=path.name)
 
@@ -69,7 +69,7 @@ class CodeElement:
     kind: Literal["code"] = "code"
 
 
-Element = Union[TextElement, ImageElement, CodeElement]
+Element = TextElement | ImageElement | CodeElement
 ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement}
 
 
@@ -131,7 +131,7 @@ class Label:
     # --- printer models ------------------------------------------------------
 
     @classmethod
-    def new_for(cls, printer: str, inserted_tape: float | None = None) -> "Label":
+    def new_for(cls, printer: str, inserted_tape: float | None = None) -> Label:
         """An empty label for a printer model: on tape the inserted (or widest
         common) tape, die-cut labels in the default size."""
         caps = _capabilities(printer)
@@ -139,7 +139,9 @@ class Label:
         if caps.continuous:
             widths = caps.tape_widths_mm
             fallback = 50 if 50 in widths else widths[-1]
-            label.tape_mm = inserted_tape if inserted_tape in widths and inserted_tape else fallback
+            label.tape_mm = (
+                inserted_tape if inserted_tape in widths and inserted_tape else fallback
+            )
         else:
             label.use_default_size(caps)
         return label
@@ -173,7 +175,7 @@ class Label:
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Label":
+    def from_dict(cls, data: dict) -> Label:
         """Build a label from untrusted JSON: unknown fields are ignored,
         wrong types raise LabelError, numbers are clamped to sane ranges."""
         if not isinstance(data, dict):
@@ -236,7 +238,7 @@ class Label:
         tmp.replace(path)
 
     @classmethod
-    def load(cls, path: str | Path) -> "Label":
+    def load(cls, path: str | Path) -> Label:
         """OSError if the file cannot be read, LabelError for its content."""
         raw = Path(path).read_bytes()
         try:

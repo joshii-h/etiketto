@@ -163,6 +163,10 @@ def _ean13_ok(data: str) -> bool:
     return int(data[12]) == check
 
 
+# what Code 128 (sets A and B) can encode: printable ASCII
+CODE128_CHARS = frozenset(map(chr, range(32, 127)))
+
+
 def check_code(element: CodeElement) -> None:
     """Raise CodeError if the content cannot be encoded (python-barcode would
     silently drop characters or replace a wrong check digit)."""
@@ -174,9 +178,8 @@ def check_code(element: CodeElement) -> None:
             raise CodeError("ean13_digits")
         if len(data) == 13 and not _ean13_ok(data):
             raise CodeError("ean13_check")
-    elif element.symbology == "code128":
-        if any(not 32 <= ord(c) <= 126 for c in data):
-            raise CodeError("code128_charset")
+    elif element.symbology == "code128" and not all(c in CODE128_CHARS for c in data):
+        raise CodeError("code128_charset")
 
 
 def render_code(element: CodeElement, height: int) -> Image.Image:
@@ -381,8 +384,3 @@ def render(
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)
     return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
-
-
-def print_image(rendered: Rendered) -> Image.Image:
-    """Rotate to printer orientation: image width = tape width."""
-    return rendered.image.rotate(-90, expand=True)

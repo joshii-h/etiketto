@@ -206,7 +206,8 @@ def test_element_titles_and_icons():
         texts.element_title(CodeElement(data="y" * 50)) == "QR code: \u2068" + "y" * 30 + "\u2069"
     )
     assert (
-        texts.element_title(CodeElement(data="123", symbology="ean13")) == "EAN-13: \u2068123\u2069"
+        texts.element_title(CodeElement(data="123", symbology="ean13"))
+        == "EAN-13: \u2068123\u2069"
     )
     assert texts.element_icon(TextElement()) == "format-text-bold-symbolic"
     assert texts.element_icon(ImageElement()) == "image-x-generic-symbolic"
@@ -608,12 +609,14 @@ def test_printer_found_adopts_tape_of_new_label(make_window, gui_env):
     assert win.printer.row.get_subtitle() == "\u206825 mm\u2069 cassette · 4 m of 5 m left"
 
 
-@pytest.mark.parametrize("state", ["dirty", "path"])
+@pytest.mark.parametrize("state", ["dirty", "path", "template"])
 def test_printer_found_keeps_changed_or_saved_label(window, tmp_path, state):
     if state == "dirty":
         window.change(margin_mm=1.0)
-    else:
+    elif state == "path":
         window.path = tmp_path / "x.etiketto"
+    else:  # a template is a new label, but its tape was chosen on purpose
+        window.set_label(Label(tape_mm=50), None)
     window.printer.found(PrinterInfo("Wedge", 12, None, None, "IDLE"))
     assert window.label.tape_mm == 50
     assert window.printer.row.get_subtitle() == "\u206812 mm\u2069 cassette"
@@ -967,17 +970,19 @@ def test_save_and_save_as(window, file_dialog, tmp_path):
     window.activate_action("win.save", None)  # no path yet: save as
     assert file_dialog.instances[-1].initial_name == "label.etiketto"
     assert window.path is None
-    file_dialog.result = tmp_path / "neu.txt"
+    file_dialog.result = tmp_path / "Regal 1.2"
     window.files.save()
-    assert window.path == tmp_path / "neu.etiketto"
-    assert (tmp_path / "neu.etiketto").exists() and not (tmp_path / "neu.txt").exists()
+    assert window.path == tmp_path / "Regal 1.2.etiketto"  # the ".2" stays in the name
+    file_dialog.result = tmp_path / "neu"
+    window.files.save_as()
+    assert window.path == tmp_path / "neu.etiketto" and window.path.exists()
     file_dialog.result = tmp_path / "GROSS.ETIKETTO"
     window.files.save_as()
     assert window.path == tmp_path / "GROSS.etiketto"  # what the template menu lists
     window.path = tmp_path / "neu.etiketto"
     window.change(tape_mm=9)
     window.files.save()  # known path: no dialog
-    assert len(file_dialog.instances) == 3
+    assert len(file_dialog.instances) == 4
     assert Label.load(tmp_path / "neu.etiketto").tape_mm == 9
     window.activate_action("win.save-as", None)
     assert file_dialog.instances[-1].initial_name == "neu.etiketto"
@@ -1469,7 +1474,8 @@ def test_colour_adjustment(ready, gui_env):
     reset.emit("clicked")
     assert [s.get_value() for s in spins] == [0, 0, 0, 0]
     assert (
-        ready.printer_settings.color_adjust.is_neutral() and colour.get_subtitle() == "Not adjusted"
+        ready.printer_settings.color_adjust.is_neutral()
+        and colour.get_subtitle() == "Not adjusted"
     )
     assert not reset.get_sensitive()
     respond(ready.last_dialog, "cancel")

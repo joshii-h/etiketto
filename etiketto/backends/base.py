@@ -22,6 +22,8 @@ from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, render
 
 ColorModel = Literal["color", "mono", "two-color"]
+# rounding in unit conversions must not make a label "too long" or "too wide"
+LIMIT_SLACK_MM = 0.01
 CUT_MODES = ("full", "half", "none")
 
 
@@ -63,10 +65,10 @@ class Capabilities:
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
 
     def too_long(self, length_mm: float) -> bool:
-        return self.max_length_mm is not None and length_mm > self.max_length_mm + 0.01
+        return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
 
     def too_wide(self, width_mm: float) -> bool:
-        return self.max_width_mm is not None and width_mm > self.max_width_mm + 0.01
+        return self.max_width_mm is not None and width_mm > self.max_width_mm + LIMIT_SLACK_MM
 
     def nearest_tape(self, width_mm: float) -> int:
         return min(self.tape_widths_mm, key=lambda w: abs(w - width_mm))
@@ -111,7 +113,6 @@ class PrinterInfo:
     remaining_mm: int | None
     total_mm: int | None
     state: str
-    stage: str = ""
     error: str = ""  # PrinterError code of a problem the printer reports; "" = none
     modes: tuple[PrintMode, ...] = ()  # reported by the printer; empty = unknown
     firmware: str = ""

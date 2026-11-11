@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import socket
 from collections.abc import Callable
+from contextlib import suppress
 
 from gi.repository import Gio, GLib
 
@@ -23,7 +24,15 @@ def _call(bus, path, interface, method, params, reply, timeout_ms):
     """A blocking Avahi method call; GLib.Error if it fails."""
     reply_type = GLib.VariantType(reply) if reply else None
     return bus.call_sync(
-        AVAHI, path, interface, method, params, reply_type, Gio.DBusCallFlags.NONE, timeout_ms, None
+        AVAHI,
+        path,
+        interface,
+        method,
+        params,
+        reply_type,
+        Gio.DBusCallFlags.NONE,
+        timeout_ms,
+        None,
     )
 
 
@@ -79,10 +88,8 @@ def _collect(bus, context, service_type, match, timeout) -> dict[str, tuple]:
 
 
 def _free(bus, path: str) -> None:
-    try:
+    with suppress(GLib.Error):  # Avahi frees it anyway when we disconnect
         _call(bus, path, BROWSER, "Free", None, None, 1000)
-    except GLib.Error:
-        pass  # Avahi frees it anyway when we disconnect
 
 
 def _resolve_service(bus, item) -> FoundPrinter | None:
@@ -116,6 +123,6 @@ def avahi_resolve(host: str) -> str | None:
     try:
         bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         reply = _call(bus, "/", SERVER, "ResolveHostName", params, "(iisisu)", 5000)
-        return reply.unpack()[4] or None
     except Exception:  # noqa: BLE001 - no Avahi, no bus, not found
         return None
+    return reply.unpack()[4] or None

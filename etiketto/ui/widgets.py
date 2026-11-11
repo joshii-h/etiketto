@@ -10,8 +10,6 @@ gi.require_version("Gdk", "4.0")
 
 from gi.repository import Adw, Gdk, Gtk  # noqa: E402
 
-from etiketto.ui.i18n import _  # noqa: E402
-
 
 def rgba_to_hex(rgba: Gdk.RGBA) -> str:
     return "#%02x%02x%02x" % (
@@ -28,13 +26,11 @@ def hex_to_rgba(value: str) -> Gdk.RGBA:
     return rgba
 
 
-def string_list(items) -> Gtk.StringList:
-    return Gtk.StringList.new([label for _key, label in items])
-
-
 def combo_row(title: str, items, current: str, on_change) -> Adw.ComboRow:
-    row = Adw.ComboRow(title=title, model=string_list(items))
+    """A choice of (key, label) items; on_change(key) when another is chosen."""
     keys = [key for key, _label in items]
+    model = Gtk.StringList.new([label for _key, label in items])
+    row = Adw.ComboRow(title=title, model=model)
     row.set_selected(keys.index(current) if current in keys else 0)
     row.connect("notify::selected", lambda r, _p: on_change(keys[r.get_selected()]))
     return row
@@ -85,30 +81,12 @@ def flat_button(icon_name: str, tooltip: str, on_click) -> Gtk.Button:
     return button
 
 
-def boxed_list(rows) -> Gtk.ListBox:
-    """A list box in the boxed-list style (for dialogs), without selection."""
+def list_dialog(heading: str, rows, body: str = "") -> Adw.AlertDialog:
+    """A dialog with a boxed list of rows; the caller adds the responses."""
     box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
     box.add_css_class("boxed-list")
     for row in rows:
         box.append(row)
-    return box
-
-
-def list_dialog(heading: str, rows, body: str = "") -> Adw.AlertDialog:
-    """A dialog with a boxed list of rows; the caller adds the responses."""
     dialog = Adw.AlertDialog(heading=heading, body=body)
-    dialog.set_extra_child(boxed_list(rows))
-    return dialog
-
-
-def confirm_dialog(
-    heading: str, body: str, confirm_id: str, confirm_label: str, on_confirm
-) -> Adw.AlertDialog:
-    """A Cancel / confirm dialog with a destructive confirm button;
-    on_confirm() runs only for the confirm response. The caller presents it."""
-    dialog = Adw.AlertDialog(heading=heading, body=body)
-    dialog.add_response("cancel", _("Cancel"))
-    dialog.add_response(confirm_id, confirm_label)
-    dialog.set_response_appearance(confirm_id, Adw.ResponseAppearance.DESTRUCTIVE)
-    dialog.connect("response", lambda _d, response: response == confirm_id and on_confirm())
+    dialog.set_extra_child(box)
     return dialog

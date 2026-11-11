@@ -11,6 +11,7 @@ gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+from PIL import Image  # noqa: E402
 
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
@@ -25,8 +26,7 @@ from etiketto.ui.preview import Preview  # noqa: E402
 from etiketto.ui.printer import Printer  # noqa: E402
 from etiketto.ui.printing import PrintFlow  # noqa: E402
 from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
-from etiketto.ui.texts import image_from_path, warning_text  # noqa: E402
-from etiketto.ui.widgets import confirm_dialog  # noqa: E402
+from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
 
 
@@ -38,6 +38,8 @@ class Window(Adw.ApplicationWindow):
         self.label = Label(elements=[TextElement(text=_("Label"))])
         self.path: Path | None = None
         self.dirty = False
+        # the start label and "New label" take the width of the inserted tape
+        self.adopts_tape = True
         self._geometries: dict[str, dict] = {}  # label size per printer model
         self.rendered: Rendered | None = None
         self.expand_index = -1
@@ -222,9 +224,10 @@ class Window(Adw.ApplicationWindow):
         self.label.background_image = image
         self._structure_changed()
 
-    def set_label(self, label: Label, path: Path | None) -> None:
+    def set_label(self, label: Label, path: Path | None, adopts_tape: bool = False) -> None:
         printer_changed = label.printer != self.label.printer
         self.label = label
+        self.adopts_tape = adopts_tape
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
         self.path = path
@@ -243,7 +246,7 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
-    def render_image(self):
+    def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
@@ -296,7 +299,7 @@ class Window(Adw.ApplicationWindow):
         self.rendered = None
         message = _("The preview cannot be drawn")
         self.preview.clear(message)
-        details = "%s: %s" % (type(error).__name__, error)
+        details = error_details(error)
         if details != self._render_error:  # once, not on every keystroke
             self._render_error = details
             self.error(message, details)
@@ -309,7 +312,12 @@ class Window(Adw.ApplicationWindow):
 
     def confirm(self, heading: str, body: str, confirm_id: str, label: str, then) -> None:
         """Ask before something that cannot be undone; then() on confirmation."""
-        self.present_dialog(confirm_dialog(heading, body, confirm_id, label, then))
+        dialog = Adw.AlertDialog(heading=heading, body=body)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response(confirm_id, label)
+        dialog.set_response_appearance(confirm_id, Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.connect("response", lambda _d, response: response == confirm_id and then())
+        self.present_dialog(dialog)
 
     def _add_toast(self, text: str, timeout: int, button: str = "", on_click=None) -> None:
         toast = Adw.Toast(title=GLib.markup_escape_text(text), timeout=timeout)

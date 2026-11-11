@@ -180,7 +180,10 @@ def test_cassette_date(serial, made):
 def test_cassette_info(printer):
     config = vc500w.parse_config(printer.device.config_xml())
     assert vc500w.cassette_info(config) == CassetteInfo(
-        lot="ABC123456", serial="180529-0116G133390-0084", made=date(2018, 5, 29), printable_mm=24.1
+        lot="ABC123456",
+        serial="180529-0116G133390-0084",
+        made=date(2018, 5, 29),
+        printable_mm=24.1,
     )
     config.tape_mm = None
     assert vc500w.cassette_info(config) is None
@@ -210,13 +213,16 @@ def test_status_error(error, cls):
 @pytest.mark.parametrize(
     "error, cls",
     [
-        (ValueError("Cannot resolve hostname 'x' to IPv4 address: ...\nPossible"), PrinterNotFound),
+        (
+            ValueError("Cannot resolve hostname 'x' to IPv4 address: ...\nPossible"),
+            PrinterNotFound,
+        ),
         (socket.gaierror(-2, "Name or service not known"), PrinterNotFound),
         (OSError("cannot resolve VC.local (mDNS)"), PrinterNotFound),
         (ValueError("Connection to 'x:9100' was refused.\nPossible solutions"), PortClosed),
         (ConnectionRefusedError(111, "refused"), PortClosed),
         (ValueError("Connection to 'x:9100' timed out after 3 seconds.\n"), PrinterTimeout),
-        (socket.timeout("timed out"), PrinterTimeout),
+        (TimeoutError("timed out"), PrinterTimeout),
         (ValueError("Cannot connect to printer at 'x:9100': No route\n"), PrinterNotFound),
         (ValueError('The XML status code is not OK: "busy"'), PrinterError),
         (RuntimeError(), PrinterError),
@@ -247,7 +253,7 @@ def test_query_lost_answer_is_a_timeout(printer, backend, monkeypatch):
     from conftest import FakeConnection
 
     def silence(self, long_timeout=False, buffer_size=4096):
-        raise socket.timeout("timed out")
+        raise TimeoutError("timed out")
 
     monkeypatch.setattr(FakeConnection, "get_message", silence)
     with pytest.raises(PrinterTimeout):
@@ -283,7 +289,6 @@ def test_query(printer):
         remaining_mm=round(150 * 25.4),
         total_mm=round(197 * 25.4),
         state="IDLE",
-        stage="SUCCESS",
         error="",  # print_job_error=NONE: no problem
         modes=(VIVID, COLOR, BW),
         firmware="2026031504",
@@ -725,7 +730,7 @@ def test_print_rejected_and_status_unreadable(printer, backend, monkeypatch):
     def status_xml(original=printer.device.status_xml):
         calls.append(1)
         if len(calls) > 1:
-            raise socket.timeout("timed out")
+            raise TimeoutError("timed out")
         return original()
 
     monkeypatch.setattr(printer.device, "status_xml", status_xml)

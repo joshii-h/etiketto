@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -15,11 +17,14 @@ from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
 from etiketto.ui.widgets import color_button, combo_row, flat_button, spin_row  # noqa: E402
 
+if TYPE_CHECKING:
+    from etiketto.ui.window import Window
+
 
 class ElementsGroup(Adw.PreferencesGroup):
     """The "Content" group: one expander row per element."""
 
-    def __init__(self, window):
+    def __init__(self, window: Window):
         super().__init__(
             title=_("Content"),
             description=_("Elements are placed one after another along the tape"),
@@ -120,7 +125,9 @@ class ElementsGroup(Adw.PreferencesGroup):
                 text=buf.get_text(buf.get_start_iter(), buf.get_end_iter(), False)
             ),
         )
-        frame = Gtk.Frame(child=view, margin_start=12, margin_end=12, margin_top=8, margin_bottom=8)
+        frame = Gtk.Frame(
+            child=view, margin_start=12, margin_end=12, margin_top=8, margin_bottom=8
+        )
         return Adw.PreferencesRow(activatable=False, child=frame)
 
     @staticmethod

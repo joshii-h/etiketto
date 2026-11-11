@@ -191,8 +191,10 @@ def po4a(langs: list[str], update: bool, po_dir: Path = DOC_PO, out: Path = BUIL
         "[po4a_paths] %s $lang:%s/$lang.po" % (rel(po_dir / "etiketto-docs.pot"), rel(po_dir)),
         '[options] opt:"-o markdown"',
     ]
-    for page in pages():
-        lines.append("[type: text] %s $lang:%s/$lang/docs/%s" % (rel(page), rel(out), page.name))
+    lines += [
+        "[type: text] %s $lang:%s/$lang/docs/%s" % (rel(page), rel(out), page.name)
+        for page in pages()
+    ]
     cfg.write_text("\n".join(lines) + "\n", encoding="utf-8")
     cmd = [
         "po4a",

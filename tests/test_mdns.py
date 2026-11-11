@@ -96,7 +96,7 @@ class FakeBus:
 
     def _Free(self, path, iface, args):
         assert (path, iface) == (BROWSER_PATH, mdns.BROWSER)
-        return None
+        return
 
     def methods(self):
         return [method for method, _path, _args in self.calls]

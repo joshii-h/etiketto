@@ -458,7 +458,6 @@ class VC500W(Backend):
             remaining_mm=remaining,
             total_mm=total,
             state=status.state,
-            stage=status.stage,
             error=problem.code if problem else "",
             modes=config.modes,
             firmware=config.firmware,
@@ -577,7 +576,6 @@ def _send(s: _Session, xml: str, data: bytes) -> None:
     for attempt in range(SEND_RETRIES + 1):
         try:
             s.print(xml, data)
-            return
         except _Busy as e:
             if attempt == SEND_RETRIES:
                 raise _rejected(s, e) from e
@@ -586,6 +584,8 @@ def _send(s: _Session, xml: str, data: bytes) -> None:
             if "status code is not OK" not in str(e):
                 raise
             raise _rejected(s, e) from e
+        else:
+            return
 
 
 def _rejected(s: _Session, error: Exception) -> PrinterError:
