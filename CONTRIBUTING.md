@@ -201,6 +201,27 @@ adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 - Commit messages in English, imperative mood, a short first line
   ("Fix cut mode for multiple copies"), details in the body.
 
+## Untrusted input
+
+Label files and data files come from anywhere, so they are read
+defensively: within size limits, and every malformed file raises one
+exception type with a code (the interface turns the code into a translated
+text), never a raw `KeyError`, `zipfile` or XML error.
+
+- `etiketto/model.py`: `.etiketto` label files, `LabelError`.
+- `etiketto/merge/`: data rows for serial labels from CSV, ODS and XLSX
+  files (`read_table()`), and the `{column}` placeholders in label texts
+  (`fill()`, which never uses `str.format()` on user data). It raises
+  `MergeError` with the codes `not_table`, `damaged`, `too_large` and
+  `empty`; the limits (file size, unpacked size of each zip member, rows,
+  columns, cells) are in `etiketto/merge/limits.py`. XML parts with a
+  document type or entity declaration are refused before parsing, and large
+  parts are parsed as a stream. The readers use only the standard library
+  (`csv`, `zipfile`, `xml.etree`); no third-party code is included or
+  adapted, so nothing needs credit.
+- Property tests (`tests/test_properties.py`, `tests/test_merge.py`) feed
+  random input to these readers: keep them passing when you change one.
+
 ## User interface
 
 - Follow the [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/)
