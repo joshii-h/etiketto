@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:48+0100\n"
+"POT-Creation-Date: 2026-11-11 22:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -518,7 +518,7 @@ msgstr ""
 #. type: Plain text
 #: docs/printer.md
 #, markdown-text
-msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that speak IPP, such as most office printers (AirPrint, IPP Everywhere). The label is printed as one page of exactly its size, unscaled."
+msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that support IPP Everywhere, as most office printers do. A network printer that only offers AirPrint can be printed on once it is set up in the system settings. The label is printed as one page of exactly its size, unscaled."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -555,6 +555,18 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "The label is printed smaller or moved: the printer or its driver scales the page. Turn off \"fit to page\" in the printer's setup."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Other jobs are printing first: Etiketto says the label was sent, and the printer prints it when its turn comes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The job is held in the queue (until it is released, or until a password is entered): Etiketto cancels it. Check the queue in the system settings."
 msgstr ""
 
 #. type: Title ##

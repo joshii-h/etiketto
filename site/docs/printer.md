@@ -120,9 +120,10 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 ## System printer (CUPS, IPP) { #system }
 
 Prints on the printers your computer knows: printers set up in the system
-settings (also over USB) and printers in the network that speak IPP, such
-as most office printers (AirPrint, IPP Everywhere). The label is printed as
-one page of exactly its size, unscaled.
+settings (also over USB) and printers in the network that support IPP
+Everywhere, as most office printers do. A network printer that only offers
+AirPrint can be printed on once it is set up in the system settings. The
+label is printed as one page of exactly its size, unscaled.
 
 - [[ui:Search for printers]] lists both. Otherwise enter the printer's
   address or the name of its CUPS queue under
@@ -137,6 +138,10 @@ one page of exactly its size, unscaled.
   printer's display shows, then [[ui:Refresh]].
 - The label is printed smaller or moved: the printer or its driver scales
   the page. Turn off "fit to page" in the printer's setup.
+- Other jobs are printing first: Etiketto says the label was sent, and the
+  printer prints it when its turn comes.
+- The job is held in the queue (until it is released, or until a password
+  is entered): Etiketto cancels it. Check the queue in the system settings.
 
 ## Help
 

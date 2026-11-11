@@ -2,8 +2,10 @@
 
 How Etiketto prints on printers the operating system knows. Everything goes
 through IPP (Internet Printing Protocol, RFC 8010 and RFC 8011), the
-protocol CUPS itself speaks and that every IPP Everywhere / AirPrint printer
-understands. Python's standard library is enough; there is no dependency on
+protocol CUPS itself speaks and that every IPP Everywhere printer
+understands. A printer that only takes AirPrint's `image/urf` gets no job
+directly (no format Etiketto can make, see below); set up as a CUPS queue,
+CUPS converts the PDF for it. Python's standard library is enough; there is no dependency on
 CUPS libraries or drivers.
 
 Markers as in [cab.md](cab.md): **[spec]** from the RFCs or PWG standards,
@@ -33,14 +35,24 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 ## Printing
 
 - `Get-Printer-Attributes` first: state, `printer-state-reasons`, the
-  formats, `print-scaling-supported` and `media-size-supported`. A printer
-  that reports a problem gets no job. [spec]
+  formats, `print-scaling-supported`, `media-size-supported` and
+  `copies-supported`. A printer that reports a problem, or whose
+  `printer-state` is stopped (a paused CUPS queue: `cupsdisable`), gets no
+  job. [spec] [confirmed with a paused CUPS queue]
 - The page size comes from the label in millimetres (A4 is exactly 21000 ×
-  29700 hundredths of mm). If the printer does not list it, the page is
-  turned to portrait when that size is listed; otherwise Etiketto says so
-  before sending anything, instead of the printer silently using its
-  default paper (it would answer 0x0001, "attributes ignored"). [spec]
-  [confirmed with an HP LaserJet Pro 4002: 50 × 30 mm is below its range]
+  29700 hundredths of mm). A listed size up to 1 mm off counts, and the
+  listed size is what `media-col` asks for (the nearest one; in a custom
+  range, the label's own size). If the printer does not list it, the page
+  is turned to portrait when that size is listed; otherwise Etiketto says
+  so before sending anything, instead of the printer silently using its
+  default paper. [spec] [confirmed with an HP LaserJet Pro 4002: 50 × 30
+  mm is below its range]
+- A printer that answers `Print-Job` with 0x0001
+  (successful-ok-ignored-or-substituted-attributes) lists what it ignored
+  in the unsupported-attributes group: an ignored `media-col` would print on
+  its default paper, so the job is canceled with the paper size message;
+  an ignored `copies` means it prints one, the others follow as below.
+  [spec]
 - `Print-Job` with one page in the label's exact size: PDF if the printer
   or CUPS takes it (Pillow's JPEG inside at quality 95 without chroma
   subsampling, so that small text stays sharp), else PWG Raster, which
@@ -49,22 +61,48 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   carries the size, `print-scaling=none` (if supported) keeps it at 100 %,
   `copies` is the number of labels, `requesting-user-name` the login
   name. [spec]
-- `Get-Job-Attributes` every second; the job's own state decides:
-  completed is done, canceled or aborted is an error, processing-stopped
-  cancels the job with the printer's reason. While a job prints, CUPS
-  reports `connecting-to-device` and `cups-waiting-for-job-completed`
-  without a suffix: routine, not a problem. A job printing for more than
-  5 minutes is canceled; one waiting behind other jobs is left to print
-  when its turn comes. A few missed answers are tolerated; a printer that
-  forgot the job already (not found) counts as done. [spec] [confirmed
-  through a CUPS queue to ippeveprinter]
+- Copies: if the upper bound of `copies-supported` is below the number of
+  labels, PWG Raster carries the page that many times in one job
+  (`TotalPageCount`), PDF and JPEG go as one job per label. A printer that
+  does not list `copies-supported` is trusted to make the copies. [spec]
+- `Get-Job-Attributes` every second, together with the printer's state;
+  the job's own state decides:
+  - completed is done, canceled or aborted is an error;
+  - processing-stopped: the printer's reason is read, then the job is
+    canceled (also if the printer does not answer any more);
+  - held (`job-state` 4, e.g. `job-hold-until-specified`,
+    `cups-held-for-authentication`) for three answers in a row: canceled,
+    with a message to check the queue;
+  - pending while the printer or queue is stopped (`printer-state` 5, or
+    `printer-stopped` in `job-state-reasons`) for three answers: canceled
+    as paused;
+  - processing while the printer reports a problem Etiketto knows (the
+    table below, without a suffix or with `-error`) or is stopped, for
+    three answers: canceled with that problem. Unknown keywords do not
+    stop a printing job;
+  - processing without progress for 5 minutes: canceled. The clock starts
+    again whenever `job-impressions-completed` (or
+    `job-media-sheets-completed`) rises, so a long job is not cut short;
+  - pending (waiting behind other jobs) for 30 seconds: Etiketto stops
+    watching and says the label was sent and prints when its turn comes;
+    the job stays. Further single-copy jobs are then sent without waiting.
+  While a job prints, CUPS reports `connecting-to-device` and
+  `cups-waiting-for-job-completed` without a suffix: routine, not a
+  problem. A few missed answers (network errors included) are tolerated.
+  Only the printer answering 0x0406 (client-error-not-found) for the job
+  counts as done: it forgot the job already (some keep no history). A
+  refused connection or a name that does not resolve is a missed answer,
+  never "printed". [spec] [confirmed through a CUPS queue to
+  ippeveprinter]
 - `ipps://` printers bring self-signed certificates. Etiketto does not
   check them at all (CUPS remembers a printer's certificate the first time
   and warns if it changes); the risk is someone in the same network
   pretending to be the printer and reading the label. [confirmed]
 - Checked with `ippeveprinter` (CUPS's simulated IPP Everywhere printer),
-  directly and through a CUPS queue: an A4 label arrives as a
-  595.276 × 841.89 pt PDF page. An HP LaserJet Pro 4002 accepted the same
+  directly and through a CUPS queue. Through CUPS an A4 label arrives as a
+  595.276 × 841.89 pt PDF page (CUPS's filters write the exact A4 size);
+  sent directly it is Pillow's PDF, 595.2 × 841.92 pt (2480 × 3508 px at
+  300 dpi). An HP LaserJet Pro 4002 accepted the same
   job with `Validate-Job` (nothing printed). The PWG Raster pages convert
   with CUPS's own `pwgtopdf`. [confirmed]
 
@@ -72,7 +110,9 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 
 `printer-state-reasons` keywords; `-warning` and `-report` (toner low,
 paper low) are no reason to stop, a keyword without suffix counts as an
-error (RFC 8011 5.4.12). [spec]
+error (RFC 8011 5.4.12). Keywords ending in `-low` (`toner-low`,
+`media-low`, `marker-supply-low`) are warnings even without a suffix.
+[spec]
 
 | Keyword | Etiketto's message |
 |---|---|

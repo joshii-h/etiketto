@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:48+0100\n"
+"POT-Creation-Date: 2026-11-11 22:28+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -25,8 +25,8 @@ msgstr "Mitmachen"
 #. type: Plain text
 #: docs/contribute.md
 msgid ""
-"Code, bug reports, translations and tests with other printers, cassettes and"
-" label rolls are welcome."
+"Code, bug reports, translations and tests with other printers, cassettes and "
+"label rolls are welcome."
 msgstr ""
 "Code, Fehlermeldungen, Übersetzungen und Tests mit anderen Druckern, "
 "Kassetten und Etikettenrollen sind willkommen."
@@ -38,19 +38,20 @@ msgid ""
 "are welcome, no Forgejo account needed. They are copied automatically to "
 "[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main "
 "repository, with a link on GitHub. Review and merge happen there; your "
-"commits are kept, so GitHub shows the pull request as merged. The discussion"
-" can stay on GitHub.  With a Forgejo account you can contribute there "
-"directly.  Details: "
-"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+"commits are kept, so GitHub shows the pull request as merged. The discussion "
+"can stay on GitHub.  With a Forgejo account you can contribute there "
+"directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/"
+"etiketto/src/branch/main/CONTRIBUTING.md)."
 msgstr ""
 "Issues und Pull-Requests auf [GitHub](https://github.com/joshii-h/etiketto) "
 "sind willkommen, ein Forgejo-Konto braucht es nicht. Sie werden automatisch "
 "nach [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), dem "
 "Hauptrepository, übertragen, mit einem Link auf GitHub. Review und Merge "
-"finden dort statt; die Commits bleiben erhalten, darum zeigt GitHub den "
-"Pull-Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit"
-" einem Forgejo-Konto geht es auch direkt dort. Details: "
-"[CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/CONTRIBUTING.md)."
+"finden dort statt; die Commits bleiben erhalten, darum zeigt GitHub den Pull-"
+"Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit "
+"einem Forgejo-Konto geht es auch direkt dort. Details: [CONTRIBUTING.md]"
+"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/"
+"CONTRIBUTING.md)."
 
 #. type: Bullet: '- '
 #: docs/contribute.md
@@ -60,28 +61,26 @@ msgstr "**App-Übersetzungen**: `tools/strings_<lang>.py`, siehe CONTRIBUTING."
 #. type: Bullet: '- '
 #: docs/contribute.md
 msgid ""
-"**This documentation**: `site/po/<lang>.po`, see "
-"[site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md)."
-"  Names of buttons and settings come from the app translation automatically."
+"**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).  Names "
+"of buttons and settings come from the app translation automatically."
 msgstr ""
-"**Diese Dokumentation**: `site/po/<lang>.po`, siehe "
-"[site/README.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md)."
-" Namen von Knöpfen und Einstellungen kommen automatisch aus der App-"
-"Übersetzung."
+"**Diese Dokumentation**: `site/po/<lang>.po`, siehe [site/README.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md). Namen "
+"von Knöpfen und Einstellungen kommen automatisch aus der App-Übersetzung."
 
 #. type: Bullet: '- '
 #: docs/contribute.md
 msgid ""
-"**Other printers**: printing goes through a backend interface; a new printer"
-" is a new backend. The protocols of the supported printers are described in "
+"**Other printers**: printing goes through a backend interface; a new printer "
+"is a new backend. The protocols of the supported printers are described in "
 "[docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), "
 "one file per printer."
 msgstr ""
 "**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein "
 "neuer Drucker ist ein neues Backend. Die Protokolle der unterstützten "
-"Drucker stehen in "
-"[docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), "
-"eine Datei pro Drucker."
+"Drucker stehen in [docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/"
+"branch/main/docs), eine Datei pro Drucker."
 
 #. type: Title #
 #: docs/index.md
@@ -97,8 +96,8 @@ msgid ""
 "language."
 msgstr ""
 "Etiketto gestaltet Etiketten unter Linux und druckt sie über das Netzwerk, "
-"auf Endlosband oder auf gestanzte Etiketten. Mit jedem Drucker spricht es in"
-" dessen eigener Sprache."
+"auf Endlosband oder auf gestanzte Etiketten. Mit jedem Drucker spricht es in "
+"dessen eigener Sprache."
 
 #. type: Plain text
 #: docs/index.md
@@ -142,13 +141,13 @@ msgstr "27 Sprachen, folgt dem hellen oder dunklen Modus des Desktops"
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"The supported printers and what each one can do are listed under "
-"[Printers](printer.md). Further printers can be added as a backend, see "
-"[Contribute](contribute.md)."
+"The supported printers and what each one can do are listed under [Printers]"
+"(printer.md). Further printers can be added as a backend, see [Contribute]"
+"(contribute.md)."
 msgstr ""
-"Die unterstützten Drucker und was jeder kann, stehen unter "
-"[Drucker](printer.md). Weitere Drucker lassen sich als Backend ergänzen, "
-"siehe [Mitmachen](contribute.md)."
+"Die unterstützten Drucker und was jeder kann, stehen unter [Drucker]"
+"(printer.md). Weitere Drucker lassen sich als Backend ergänzen, siehe "
+"[Mitmachen](contribute.md)."
 
 #. type: Title ##
 #: docs/index.md
@@ -287,8 +286,8 @@ msgid ""
 "Choose the printer under [[ui:Printer model]]; each one has its own section "
 "below."
 msgstr ""
-"Den Drucker unter [[ui:Printer model]] wählen; jeder hat unten einen eigenen"
-" Abschnitt."
+"Den Drucker unter [[ui:Printer model]] wählen; jeder hat unten einen eigenen "
+"Abschnitt."
 
 #. type: Title ##
 #: docs/printer.md
@@ -340,9 +339,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:content scaled down to fit]]: the content does not fit the label.  Make"
-" the label longer or larger, use [[ui:Automatic length]] on tape, or shorten"
-" the content."
+"[[ui:content scaled down to fit]]: the content does not fit the label.  Make "
+"the label longer or larger, use [[ui:Automatic length]] on tape, or shorten "
+"the content."
 msgstr ""
 "[[ui:content scaled down to fit]]: Der Inhalt passt nicht auf das Etikett. "
 "Das Etikett länger oder grösser machen, auf Band [[ui:Automatic length]] "
@@ -404,8 +403,7 @@ msgid ""
 msgstr ""
 "Später ist die Weboberfläche unter `https://` und der Adresse des Druckers "
 "erreichbar: „Network Wi-Fi Setup“ wechselt das Netz (oder „click here“ für "
-"die Eingabe von Hand), „AirPrint Options“ für Name, Ort und Firmware-"
-"Updates."
+"die Eingabe von Hand), „AirPrint Options“ für Name, Ort und Firmware-Updates."
 
 #. type: Title ###
 #: docs/printer.md
@@ -535,8 +533,7 @@ msgstr "Deckel offen: Deckel schliessen."
 
 #. type: Bullet: '- '
 #: docs/printer.md
-msgid ""
-"Warming up, cooling down, cleaning: wait, printing continues by itself."
+msgid "Warming up, cooling down, cleaning: wait, printing continues by itself."
 msgstr ""
 "Aufwärmen, Abkühlen, Reinigung: warten, der Druck geht von selbst weiter."
 
@@ -642,8 +639,8 @@ msgid ""
 "once after changing the roll so it measures again."
 msgstr ""
 "[[ui:Different labels loaded]]: Der Drucker hat einen anderen Abstand "
-"zwischen den Etiketten gemessen als Höhe plus Lücke des Etiketts. [[ui:Label"
-" size]] und [[ui:Gap]] prüfen oder die richtige Rolle einlegen. Nach dem "
+"zwischen den Etiketten gemessen als Höhe plus Lücke des Etiketts. [[ui:Label "
+"size]] und [[ui:Gap]] prüfen oder die richtige Rolle einlegen. Nach dem "
 "Rollenwechsel einmal Vorschub am Drucker drücken, damit er neu misst."
 
 #. type: Bullet: '- '
@@ -652,8 +649,8 @@ msgid ""
 "A print that stopped because of a problem is cancelled, so printing again "
 "does not give extra labels."
 msgstr ""
-"Ein wegen eines Problems abgebrochener Druck wird gelöscht, erneutes Drucken"
-" ergibt also keine zusätzlichen Etiketten."
+"Ein wegen eines Problems abgebrochener Druck wird gelöscht, erneutes Drucken "
+"ergibt also keine zusätzlichen Etiketten."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -684,8 +681,8 @@ msgid ""
 "Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal "
 "direct mode."
 msgstr ""
-"Farbbandproblem: kein Farbband im Thermotransfer-Modus, oder ein Farbband im"
-" Thermodirekt-Modus."
+"Farbbandproblem: kein Farbband im Thermotransfer-Modus, oder ein Farbband im "
+"Thermodirekt-Modus."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -696,8 +693,7 @@ msgstr "Angehalten: Drucker am Display fortsetzen."
 #: docs/printer.md
 msgid ""
 "Print too pale or too dark: change the heat level in the printer's setup."
-msgstr ""
-"Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
+msgstr "Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
 
 #. type: Title ##
 #: docs/printer.md
@@ -709,24 +705,26 @@ msgstr "Systemdrucker (CUPS, IPP) { #system }"
 #: docs/printer.md
 msgid ""
 "Prints on the printers your computer knows: printers set up in the system "
-"settings (also over USB) and printers in the network that speak IPP, such as"
-" most office printers (AirPrint, IPP Everywhere). The label is printed as "
-"one page of exactly its size, unscaled."
+"settings (also over USB) and printers in the network that support IPP "
+"Everywhere, as most office printers do. A network printer that only offers "
+"AirPrint can be printed on once it is set up in the system settings. The "
+"label is printed as one page of exactly its size, unscaled."
 msgstr ""
 "Druckt auf den Druckern, die der Computer kennt: in den Systemeinstellungen "
 "eingerichtete Drucker (auch über USB) und Drucker im Netzwerk, die IPP "
-"sprechen, wie die meisten Bürodrucker (AirPrint, IPP Everywhere). Das "
-"Etikett wird als eine Seite in genau seiner Grösse gedruckt, ohne "
-"Skalierung."
+"Everywhere unterstützen, wie die meisten Bürodrucker. Ein Netzwerkdrucker, "
+"der nur AirPrint anbietet, lässt sich nutzen, sobald er in den "
+"Systemeinstellungen eingerichtet ist. Das Etikett wird als eine Seite in "
+"genau seiner Grösse gedruckt, ohne Skalierung."
 
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:Search for printers]] lists both. Otherwise enter the printer's address"
-" or the name of its CUPS queue under [[ui:Host name or IP address]]."
+"[[ui:Search for printers]] lists both. Otherwise enter the printer's address "
+"or the name of its CUPS queue under [[ui:Host name or IP address]]."
 msgstr ""
-"[[ui:Search for printers]] listet beide. Sonst die Adresse des Druckers oder"
-" den Namen seiner CUPS-Warteschlange unter [[ui:Host name or IP address]] "
+"[[ui:Search for printers]] listet beide. Sonst die Adresse des Druckers oder "
+"den Namen seiner CUPS-Warteschlange unter [[ui:Host name or IP address]] "
 "eintragen."
 
 #. type: Bullet: '- '
@@ -768,6 +766,25 @@ msgstr ""
 "Treiber skaliert die Seite. In der Druckereinrichtung \"An Seite anpassen\" "
 "ausschalten."
 
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Other jobs are printing first: Etiketto says the label was sent, and the "
+"printer prints it when its turn comes."
+msgstr ""
+"Zuerst werden andere Aufträge gedruckt: Etiketto meldet, dass das Etikett "
+"gesendet wurde, und der Drucker druckt es, sobald es an der Reihe ist."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The job is held in the queue (until it is released, or until a password is "
+"entered): Etiketto cancels it. Check the queue in the system settings."
+msgstr ""
+"Der Auftrag wird in der Warteschlange zurückgehalten (bis er freigegeben "
+"oder ein Passwort eingegeben wird): Etiketto bricht ihn ab. Die "
+"Warteschlange in den Systemeinstellungen prüfen."
+
 #. type: Title ##
 #: docs/printer.md
 #, no-wrap
@@ -777,9 +794,9 @@ msgstr "Hilfe"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Something else? [[ui:Report a problem…]] in the main menu (also offered with"
-" error messages) opens a prefilled issue in the browser with version, system"
-" and printer. You see everything before sending it."
+"Something else? [[ui:Report a problem…]] in the main menu (also offered with "
+"error messages) opens a prefilled issue in the browser with version, system "
+"and printer. You see everything before sending it."
 msgstr ""
 "Etwas anderes? [[ui:Report a problem…]] im Hauptmenü (auch bei "
 "Fehlermeldungen angeboten) öffnet im Browser ein vorausgefülltes Issue mit "
@@ -803,8 +820,8 @@ msgid ""
 "Elements are placed one after another along the label. Order them with "
 "[[ui:Move up]] and [[ui:Move down]]."
 msgstr ""
-"Elemente stehen nacheinander entlang des Etiketts. Reihenfolge mit [[ui:Move"
-" up]] und [[ui:Move down]]."
+"Elemente stehen nacheinander entlang des Etiketts. Reihenfolge mit [[ui:Move "
+"up]] und [[ui:Move down]]."
 
 #. type: Plain text
 #: docs/use.md
@@ -818,8 +835,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the"
-" label height, otherwise fixed in pt."
+"**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the "
+"label height, otherwise fixed in pt."
 msgstr ""
 "**Text**: jede installierte Schrift, Farbe, mehrere Zeilen. [[ui:Size]] 0 "
 "füllt die Etikettenhöhe, sonst fest in pt."
@@ -851,8 +868,8 @@ msgid ""
 "[[ui:Automatic length]]: the label is as long as its content. Off: fixed "
 "[[ui:Length]], content aligned and scaled down if needed."
 msgstr ""
-"[[ui:Automatic length]]: Das Etikett ist so lang wie sein Inhalt. Aus: feste"
-" [[ui:Length]], Inhalt ausgerichtet und bei Bedarf verkleinert."
+"[[ui:Automatic length]]: Das Etikett ist so lang wie sein Inhalt. Aus: feste "
+"[[ui:Length]], Inhalt ausgerichtet und bei Bedarf verkleinert."
 
 #. type: Plain text
 #: docs/use.md
@@ -885,8 +902,7 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "[[ui:Units]]: millimetres or inches, by default from the system language."
-msgstr ""
-"[[ui:Units]]: Millimeter oder Zoll, standardmässig nach Systemsprache."
+msgstr "[[ui:Units]]: Millimeter oder Zoll, standardmässig nach Systemsprache."
 
 #. type: Plain text
 #: docs/use.md
@@ -899,8 +915,8 @@ msgid ""
 "![Die-cut label](media/die-cut.png#only-light)  ![Die-cut label](media/die-"
 "cut-dark.png#only-dark)"
 msgstr ""
-"![Gestanztes Etikett](media/die-cut.png#only-light)  ![Gestanztes "
-"Etikett](media/die-cut-dark.png#only-dark)"
+"![Gestanztes Etikett](media/die-cut.png#only-light)  ![Gestanztes Etikett]"
+"(media/die-cut-dark.png#only-dark)"
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -915,8 +931,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before"
-" printing Etiketto compares height and gap with the distance the printer "
+"[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before "
+"printing Etiketto compares height and gap with the distance the printer "
 "measured."
 msgstr ""
 "[[ui:Gap]]: Platz zwischen zwei Etiketten auf der Rolle, meist 2 bis 3 mm. "
@@ -950,8 +966,8 @@ msgid ""
 msgstr ""
 "[[ui:Safety margin]] (Druckereinstellung, Standard 1,5 mm): Inhalt und "
 "Rahmen halten diesen Abstand zu den Etikettenkanten. Drucker verlieren an "
-"den Kanten etwas, und lange Etiketten können leicht schief laufen. Wird Text"
-" am Rand abgeschnitten, den Wert erhöhen."
+"den Kanten etwas, und lange Etiketten können leicht schief laufen. Wird Text "
+"am Rand abgeschnitten, den Wert erhöhen."
 
 #. type: Title ##
 #: docs/use.md
@@ -980,9 +996,9 @@ msgid ""
 "printer are listed under [Printers](printer.md). Printers without such "
 "options print with the settings made on the printer itself."
 msgstr ""
-"Der Druckdialog zeigt nur, was der Drucker kann; die Optionen jedes Druckers"
-" stehen unter [Drucker](printer.md). Drucker ohne solche Optionen drucken "
-"mit den Einstellungen, die am Drucker selbst gemacht sind."
+"Der Druckdialog zeigt nur, was der Drucker kann; die Optionen jedes Druckers "
+"stehen unter [Drucker](printer.md). Drucker ohne solche Optionen drucken mit "
+"den Einstellungen, die am Drucker selbst gemacht sind."
 
 #. type: Plain text
 #: docs/use.md
