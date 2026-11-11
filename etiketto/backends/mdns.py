@@ -103,14 +103,24 @@ def _resolve_service(bus, item) -> FoundPrinter | None:
 
 
 def resolve_host(host: str) -> str:
-    """An address for host. Inside Flatpak *.local names are resolved through
-    the host's Avahi daemon, because the runtime has no nss-mdns."""
+    """One numeric address for host. Inside Flatpak *.local names are
+    resolved through the host's Avahi daemon, because the runtime has no
+    nss-mdns.
+
+    One address, the one the system prefers: socket.create_connection() with
+    a name tries every address it resolves to and waits the full timeout for
+    each, so a name with many dead addresses would hang (CPython gh-106283).
+    Control characters are refused: getaddrinfo() silently cuts a name at a
+    null byte and would resolve another host (CPython gh-160898)."""
+    if not host or any(ord(c) < 32 or c == "\x7f" for c in host):
+        raise OSError("cannot resolve %r: not a host name" % host)
     try:
-        socket.getaddrinfo(host, None)
-        return host
+        found = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
     except socket.gaierror:
         if not host.endswith(".local"):
             raise
+    else:
+        return str(found[0][4][0])  # the sockaddr: (address, port, ...)
     address = avahi_resolve(host)
     if not address:
         raise OSError("cannot resolve %s (mDNS)" % host)

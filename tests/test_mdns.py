@@ -210,14 +210,25 @@ def test_avahi_resolve(bus):
 # --- host resolution ---------------------------------------------------------
 
 
-def _gaierror(*_args):
+def _gaierror(*_args, **_kwargs):
     raise socket.gaierror("not found")
 
 
-def test_resolve_host_known_name_unchanged(monkeypatch):
-    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port: [("ok",)])
+def test_resolve_host_gives_the_preferred_address_only(monkeypatch):
+    # many addresses: connecting to all of them would wait the timeout for each
+    addresses = [
+        (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("192.0.2.%d" % n, 0)) for n in (7, 8)
+    ]
+    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port, type: addresses)
     monkeypatch.setattr(mdns, "avahi_resolve", lambda host: pytest.fail("no avahi needed"))
-    assert mdns.resolve_host("printer.lan") == "printer.lan"
+    assert mdns.resolve_host("printer.lan") == "192.0.2.7"
+
+
+@pytest.mark.parametrize("host", ["", "printer.lan\x00.evil", "printer\nlan", "a\x7fb"])
+def test_resolve_host_refuses_control_characters(monkeypatch, host):
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: pytest.fail("not resolved"))
+    with pytest.raises(OSError, match="not a host name"):
+        mdns.resolve_host(host)
 
 
 def test_resolve_host_non_local_failure_propagates(monkeypatch):
