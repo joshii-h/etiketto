@@ -6,6 +6,9 @@ MAX_FILE_BYTES = 50 * 1024 * 1024  # the file as it is on disk
 # one XML part of an ODS or XLSX file, unpacked: zip bombs pack gigabytes into
 # kilobytes; the parts are read as a stream, so this bounds time, not memory
 MAX_MEMBER_BYTES = 256 * 1024 * 1024
+# entries of an ODS or XLSX archive: a spreadsheet has a few dozen; zipfile
+# keeps an object per entry, so millions of tiny ones would fill memory
+MAX_ZIP_ENTRIES = 10_000
 MAX_ROWS = 100_000  # data rows, without the header row
 MAX_COLUMNS = 1000
 MAX_CELLS = 2_000_000  # filled cells of the whole table; also shared strings

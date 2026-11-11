@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import bisect
 import re
 from dataclasses import dataclass, field
 
@@ -113,8 +114,13 @@ class Builder:
         self._data_rows = -1  # the first row is the header
         self._cells = 0
         self._width = 0
+        self._keys: dict[int, list[str]] = {}  # row number in the file: its stored cells
+        self._sorted: list[int] = []
+        self._blanked = 0
 
-    def add(self, cells: list[str], repeat: int = 1) -> None:
+    def add(self, cells: list[str], repeat: int = 1, key: int | None = None) -> None:
+        """A row (`repeat` times); `key` (its number in the file) lets
+        blank() find it again."""
         end = _filled_length(cells)
         if not end:
             return
@@ -124,13 +130,37 @@ class Builder:
         self._cells += end * repeat
         if self._data_rows > limits.MAX_ROWS or self._cells > limits.MAX_CELLS:
             raise too_large("more than %d rows or %d cells" % (limits.MAX_ROWS, limits.MAX_CELLS))
-        self._rows.append((cells[:end], repeat))
-        self._width = max(self._width, end)
+        stored = cells[:end]
+        self._rows.append((stored, repeat))
+        if key is not None:
+            self._keys[key] = stored
+
+    def blank(self, first_row: int, last_row: int, first: int, last: int) -> None:
+        """Empty the cells of a merged range except its first one, which
+        shows the value: hidden cells of a merged range count as empty, as
+        covered cells in ODS do. The work is bounded by MAX_CELLS, whatever
+        ranges a file claims."""
+        if len(self._sorted) != len(self._keys):  # rows are all added by now
+            self._sorted = sorted(self._keys)
+        low = bisect.bisect_left(self._sorted, first_row)
+        high = bisect.bisect_right(self._sorted, last_row)
+        for key in self._sorted[low:high]:
+            cells = self._keys[key]
+            start = first + 1 if key == first_row else first
+            end = min(last + 1, len(cells))
+            self._blanked += max(1, end - start)
+            if self._blanked > limits.MAX_CELLS:
+                raise too_large("more than %d merged cells" % limits.MAX_CELLS)
+            cells[start:end] = [""] * max(0, end - start)
 
     def table(self) -> Table:
-        if not self._rows:
+        # rows may have lost cells to blank(): empty ones go, the width shrinks
+        filled = [(cells[: _filled_length(cells)], count) for cells, count in self._rows]
+        filled = [(cells, count) for cells, count in filled if cells]
+        if not filled:
             raise MergeError("empty", "no filled cell")
-        (header, repeat), *rest = self._rows
+        self._width = max(len(cells) for cells, _count in filled)
+        (header, repeat), *rest = filled
         if repeat > 1:
             rest.insert(0, (header, repeat - 1))
         columns = column_names(self._padded(header))

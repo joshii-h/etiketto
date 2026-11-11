@@ -213,8 +213,9 @@ text), never a raw `KeyError`, `zipfile` or XML error.
   files (`read_table()`), and the `{column}` placeholders in label texts
   (`fill()`, which never uses `str.format()` on user data). It raises
   `MergeError` with the codes `not_table`, `damaged`, `too_large` and
-  `empty`; the limits (file size, unpacked size of each zip member, rows,
-  columns, cells) are in `etiketto/merge/limits.py`. XML parts with a
+  `empty`; the limits (file size, number of zip entries, unpacked size of
+  each zip member, rows, columns, cells) are in `etiketto/merge/limits.py`.
+  Hidden cells of merged ranges are empty in ODS and XLSX alike. XML parts with a
   document type or entity declaration are refused before parsing, and large
   parts are parsed as a stream. The readers use only the standard library
   (`csv`, `zipfile`, `xml.etree`); no third-party code is included or

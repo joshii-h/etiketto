@@ -507,6 +507,37 @@ def test_zip_members_over_the_limit(tmp_path, monkeypatch):
     assert code_of(path) == "too_large"
 
 
+def test_zip_entries_over_the_limit(tmp_path, monkeypatch):
+    members = {"mimetype": "application/vnd.oasis.opendocument.spreadsheet"}
+    members["content.xml"] = ods_content(ods_table("T", row(text("A")), row(text("1"))))
+    members.update({f"extra/{i}.xml": "<x/>" for i in range(3)})
+    path = write_zip(tmp_path, "many.ods", members)
+    assert read_table(path).rows == [{"A": "1"}]
+    monkeypatch.setattr(limits, "MAX_ZIP_ENTRIES", 4)  # 5 entries
+    assert code_of(path) == "too_large"
+    with pytest.raises(MergeError) as info:
+        sheet_names(path)
+    assert info.value.code == "too_large"
+
+
+def test_zip_entries_are_counted_even_if_the_end_record_lies(tmp_path, monkeypatch):
+    members = {f"{i}.xml": "<x/>" for i in range(5)}
+    data = bytearray(write_zip(tmp_path, "a.zip", members).read_bytes())
+    end = data.rindex(b"PK\x05\x06")
+    data[end + 8 : end + 12] = (1).to_bytes(2, "little") * 2  # "one entry"
+    monkeypatch.setattr(limits, "MAX_ZIP_ENTRIES", 4)
+    assert code_of(write(tmp_path, "b.zip", bytes(data))) == "too_large"
+
+
+def test_zip_with_a_huge_central_directory_is_refused_before_reading_it(tmp_path, monkeypatch):
+    data = bytearray(write_zip(tmp_path, "a.zip", {"x.xml": "<x/>"}).read_bytes())
+    end = data.rindex(b"PK\x05\x06")
+    data[end + 12 : end + 16] = (10**8).to_bytes(4, "little")
+    assert code_of(write(tmp_path, "b.zip", bytes(data))) == "too_large"
+    data[end + 12 : end + 16] = b"\xff" * 4  # ZIP64: left to zipfile, which finds no record
+    assert code_of(write(tmp_path, "c.zip", bytes(data))) == "damaged"
+
+
 def test_zip_that_is_neither_ods_nor_xlsx(tmp_path):
     path = write_zip(tmp_path, "a.zip", {"word/document.xml": "<w/>"})
     assert code_of(path) == "not_table"
@@ -774,6 +805,91 @@ def test_xlsx_limits(tmp_path, monkeypatch):
     assert code_of(shared) == "too_large"
 
 
+def test_xlsx_merged_cells_show_their_value_once(tmp_path):
+    """LibreOffice keeps the content of cells hidden by merging; like the
+    covered cells of ODS they are empty."""
+    rows = (
+        '<row r="1">' + inline("A1", "A") + inline("B1", "B") + inline("C1", "C") + "</row>"
+        '<row r="2">'
+        + inline("A2", "wide")
+        + inline("B2", "hidden")
+        + inline("C2", "c")
+        + "</row>"
+        '<row r="4">' + inline("A4", "tall") + inline("C4", "x") + "</row>"
+        '<row r="5">' + inline("A5", "hidden") + inline("B5", "b") + "</row>"
+        '<row r="6">' + inline("C6", "gone") + "</row>"
+    )
+    merges = (
+        '<mergeCells count="4"><mergeCell ref="A2:B2"/><mergeCell ref="A4:A5"/>'
+        '<mergeCell ref="C7:B6"/><mergeCell ref="D9:E10"/></mergeCells>'
+    )
+    path = make_xlsx(
+        tmp_path,
+        "",
+        extra={
+            "xl/worksheets/sheet1.xml": f'<worksheet xmlns="{MAIN}"><sheetData>{rows}'
+            f"</sheetData>{merges}</worksheet>"
+        },
+    )
+    assert read_table(path).rows == [
+        {"A": "wide", "B": "", "C": "c"},
+        {"A": "tall", "B": "", "C": "x"},
+        {"A": "", "B": "b", "C": ""},
+    ]
+
+
+def test_xlsx_merged_header_cells(tmp_path):
+    rows = xrow(inline("A1", "Name"), inline("B1", "old"), inline("C1", "Zip"))
+    rows += xrow(inline("A2", "1"), inline("B2", "2"), inline("C2", "3"))
+    path = make_xlsx(
+        tmp_path,
+        "",
+        extra={
+            "xl/worksheets/sheet1.xml": f'<worksheet xmlns="{MAIN}"><sheetData>{rows}'
+            '</sheetData><mergeCells><mergeCell ref="A1:B1"/><mergeCell ref="C1"/>'
+            "</mergeCells></worksheet>"
+        },
+    )
+    assert read_table(path) == Table(["Name", "B", "Zip"], [{"Name": "1", "B": "2", "Zip": "3"}])
+
+
+@pytest.mark.parametrize("ref", ["", "A1:", "1:2", "A0:B1", "A1:B9999999", "XFE1:XFE2"])
+def test_xlsx_bad_merged_ranges_are_damaged(tmp_path, ref):
+    sheet = (
+        f'<worksheet xmlns="{MAIN}"><sheetData>{xrow(inline("A1", "A"))}</sheetData>'
+        f'<mergeCells><mergeCell ref="{ref}"/></mergeCells></worksheet>'
+    )
+    path = make_xlsx(tmp_path, "", extra={"xl/worksheets/sheet1.xml": sheet})
+    assert code_of(path) == "damaged"
+
+
+@pytest.mark.parametrize("number", ["0", "x", "1048577"])
+def test_xlsx_bad_row_numbers_are_damaged(tmp_path, number):
+    path = make_xlsx(tmp_path, f'<row r="{number}">{inline("A1", "A")}</row>')
+    assert code_of(path) == "damaged"
+
+
+def test_xlsx_merged_ranges_cannot_make_reading_slow(tmp_path, monkeypatch):
+    rows = "".join(xrow(inline(f"A{n}", "x"), inline(f"B{n}", "y")) for n in range(1, 21))
+    merges = '<mergeCell ref="A1:B20"/>' * 5
+    sheet = (
+        f'<worksheet xmlns="{MAIN}"><sheetData>{rows}</sheetData>'
+        f"<mergeCells>{merges}</mergeCells></worksheet>"
+    )
+    path = make_xlsx(tmp_path, "", extra={"xl/worksheets/sheet1.xml": sheet})
+    assert read_table(path) == Table(["x"], [])  # only A1 keeps its value
+    monkeypatch.setattr(limits, "MAX_CELLS", 60)  # 40 cells, then 5 ranges of 20 rows
+    assert code_of(path) == "too_large"
+    monkeypatch.setattr(limits, "MAX_CELLS", 4)
+    ranges = '<mergeCell ref="C3"/>' * 5
+    sheet = (
+        f'<worksheet xmlns="{MAIN}"><sheetData>{xrow(inline("A1", "x"))}</sheetData>'
+        f"<mergeCells>{ranges}</mergeCells></worksheet>"
+    )
+    path = make_xlsx(tmp_path, "", extra={"xl/worksheets/sheet1.xml": sheet}, name="r.xlsx")
+    assert code_of(path) == "too_large"  # more ranges than cells allowed
+
+
 def test_xlsx_empty_sheet(tmp_path):
     assert code_of(make_xlsx(tmp_path, "")) == "empty"
 
@@ -827,6 +943,7 @@ TAGS = [
     "cellXfs",
     "xf",
     "numFmt",
+    "mergeCell",
 ]
 ATTRS = [
     'table:name="T"',
@@ -846,6 +963,8 @@ ATTRS = [
     'Id="rId1"',
     'Target="worksheets/sheet1.xml"',
     'formatCode="dd"',
+    'ref="A1:B2"',
+    'ref="B1:A99999"',
 ]
 XML_HEAD = f'<root {ODS_NS} xmlns:r="{REL}">'
 

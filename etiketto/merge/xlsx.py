@@ -31,6 +31,7 @@ _SHARED_STRINGS = "xl/sharedStrings.xml"
 _STYLES = "xl/styles.xml"
 _REFERENCE = re.compile(r"([A-Za-z]{1,3})([0-9]+)")
 _EXCEL_COLUMNS = 16384  # A to XFD
+_EXCEL_ROWS = 1048576
 
 
 @dataclass
@@ -69,11 +70,53 @@ def read(zf: zipfile.ZipFile, wanted: str | int | None) -> Table:
     present = set(zf.namelist())
     cells = _Cells(_shared_strings(zf, present), _formats(zf, present), book.date1904)
     builder = Builder()
+    merged: list[str] = []  # <mergeCells> follows <sheetData>
+    number = 0
     for event, elem, parent in events(zf, part):
-        if event == "end" and local(elem.tag) == "row":
-            builder.add(cells.row(elem))
+        if event != "end":
+            continue
+        name = local(elem.tag)
+        if name == "row":
+            number = _row_number(elem.get("r"), number + 1)
+            builder.add(cells.row(elem), key=number)
             drop(elem, parent)
+        elif name == "mergeCell":
+            if len(merged) >= limits.MAX_CELLS:
+                raise too_large("more than %d merged ranges" % limits.MAX_CELLS)
+            merged.append(elem.get("ref", ""))
+            drop(elem, parent)
+    for reference in merged:
+        builder.blank(*_range(reference))
     return builder.table()
+
+
+def _row_number(value: str | None, default: int) -> int:
+    if value is None:
+        return default
+    if not value.isdigit() or not 0 < int(value) <= _EXCEL_ROWS:
+        raise damaged("invalid row number %r" % value)
+    return int(value)
+
+
+def _range(reference: str) -> tuple[int, int, int, int]:
+    """ "B2:C4" -> (first row, last row, first column, last column), rows
+    counted from 1 as in the file, columns from 0."""
+    start, _sep, end = reference.partition(":")
+    first_column, first_row = _cell(start)
+    last_column, last_row = _cell(end if _sep else start)
+    return (
+        min(first_row, last_row),
+        max(first_row, last_row),
+        min(first_column, last_column),
+        max(first_column, last_column),
+    )
+
+
+def _cell(reference: str) -> tuple[int, int]:
+    match = _REFERENCE.fullmatch(reference)
+    if not match:
+        raise damaged("invalid cell reference %r" % reference)
+    return _column(reference, 0), _row_number(match.group(2), 0)
 
 
 def _sheet_part(zf: zipfile.ZipFile, relation: str | None) -> str:
