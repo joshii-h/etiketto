@@ -35,6 +35,9 @@ PYTHON="$(command -v python3)" || { echo "error: python3 not found" >&2; exit 1;
     exit 1
 }
 command -v msgfmt >/dev/null || { echo "error: msgfmt (gettext) not found" >&2; exit 1; }
+# optional: shipping labels from PDF files (images work without it)
+"$PYTHON" -c 'import gi; gi.require_version("Poppler", "0.18")' 2>/dev/null ||
+    echo "note: poppler-glib with GObject introspection is missing: shipping labels from PDF files cannot be opened" >&2
 
 # private venv that can see the system's GTK bindings; build from a copy
 BUILD="$(mktemp -d)"

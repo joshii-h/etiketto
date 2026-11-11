@@ -9,8 +9,11 @@ from pathlib import Path
 from PIL import Image
 
 from etiketto.backends.base import PrinterError, PrinterInfo
-from etiketto.model import ImageElement, LabelError, TextElement
+from etiketto.model import ImageElement, LabelError, PageElement, TextElement
 from etiketto.render import RenderWarning
+from etiketto.shipping.detect import Detection
+from etiketto.shipping.source import SourceError
+from etiketto.shipping.targets import Target
 from etiketto.ui.i18n import _, isolate, month_name
 from etiketto.units import Unit
 
@@ -38,6 +41,9 @@ PRINT_ON = [("page", _("Single label")), ("sheet", _("Label sheet"))]
 CONNECTION_ERRORS = ("not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
 SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13")]
+FITS = [("fit", _("Whole area, centred")), ("fill", _("Fill the label, edges cut off"))]
+# label sizes known by name; the others are shown by their size
+TARGET_NAMES = {"4x6": "4 × 6″", "a6": "A6", "a4": "A4"}
 
 
 def image_from_path(path) -> ImageElement:
@@ -58,6 +64,8 @@ def element_title(element) -> str:
         return first[:40] or _("Text")
     if isinstance(element, ImageElement):
         return element.name or _("Image")
+    if isinstance(element, PageElement):
+        return element.name or _("Shipping label")
     return (
         dict(SYMBOLOGIES).get(element.symbology, element.symbology)
         + ": "
@@ -70,7 +78,38 @@ def element_icon(element) -> str:
         return "format-text-bold-symbolic"
     if isinstance(element, ImageElement):
         return "image-x-generic-symbolic"
+    if isinstance(element, PageElement):
+        return "x-office-document-symbolic"
     return "view-grid-symbolic"
+
+
+def target_name(target: Target, unit: Unit) -> str:
+    """ "4 × 6″ (101.6 × 152.4 mm)", "100 × 150 mm", "Endless, 62 mm wide"."""
+    if target.height_mm is None:
+        return _("Endless, %(width)s wide") % {"width": unit.tape_name(target.width_mm)}
+    size = unit.size(target.width_mm, target.height_mm)
+    name = TARGET_NAMES.get(target.key)
+    return "%s (%s)" % (name, size) if name else size
+
+
+def detection_hint(detection: Detection | None) -> str:
+    """What the label detection found, and what to check."""
+    if detection is None or (detection.how in ("frame", "block") and detection.certain):
+        return _(
+            "Check that all of the label is inside the selection. Drag to move it or its "
+            "edges, or draw a new one."
+        )
+    if detection.how == "block":
+        return _("Several areas could be the label. Check the selection or try the next one.")
+    if detection.how == "content":
+        return _("Everything printed on the page is selected. Drag to choose the label.")
+    return _("Nothing is printed on this page.")
+
+
+def source_error_text(error: SourceError, name: str) -> str:
+    if error.code == "no_pdf":
+        return _("PDF files need Poppler (poppler-glib), which is not installed")
+    return _("Cannot open %s") % name
 
 
 # --- messages ---------------------------------------------------------------
@@ -92,6 +131,10 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
         ),
         "image_unreadable": _("Element %(n)d: the image cannot be read"),
+        "page_unreadable": _("Element %(n)d: the document cannot be read"),
+        "pdf_missing": _(
+            "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
+        ),
         "element_failed": _("Element %(n)d cannot be drawn"),
         "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),

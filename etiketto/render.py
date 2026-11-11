@@ -18,7 +18,7 @@ from typing import NamedTuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
-from etiketto.model import CodeElement, Element, ImageElement, Label, TextElement
+from etiketto.model import CodeElement, Element, ImageElement, Label, PageElement, TextElement
 
 # Resolution of the vivid print mode (labelprinter: 317 lpi)
 PRINT_DPI = 317
@@ -33,8 +33,8 @@ DEFAULT_SAFE_MM = 1.5
 class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: code_empty, ean13_digits, ean13_check,
-    code128_charset, image_unreadable, element_failed, no_room,
-    fixed_too_short, background_unreadable)."""
+    code128_charset, image_unreadable, page_unreadable, pdf_missing,
+    element_failed, no_room, fixed_too_short, background_unreadable)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
@@ -226,11 +226,29 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.NEAREST)
 
 
-def render_element(element: Element, height: int, dpi: float) -> Image.Image:
+def render_page(element: PageElement, width: int | None, height: int) -> Image.Image:
+    """The area of the page drawn right at its size on the label: no scaling
+    afterwards, so barcodes keep whole printer dots. width None: as wide as
+    the area needs at the height (endless tape)."""
+    from etiketto.shipping.source import draw
+
+    crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
+    box = (width, height)
+    return draw(element.data, element.page, crop, element.rotation, box, element.fit).convert(
+        "RGBA"
+    )
+
+
+def render_element(
+    element: Element, height: int, dpi: float, width: int | None = None
+) -> Image.Image:
+    """width: the room along the label (fixed length), None if it grows."""
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
         return render_image(element, height)
+    if isinstance(element, PageElement):
+        return render_page(element, width, height)
     return render_code(element, height)
 
 
@@ -282,14 +300,25 @@ def _element_warning(element: Element, index: int, error: Exception) -> RenderWa
         return RenderWarning(error.key, {"n": index})
     if isinstance(element, ImageElement):
         return RenderWarning("image_unreadable", {"n": index})
+    if isinstance(element, PageElement):
+        missing = getattr(error, "code", "") == "no_pdf"
+        return RenderWarning("pdf_missing" if missing else "page_unreadable", {"n": index})
     return RenderWarning("element_failed", {"n": index})
 
 
-def _parts(label: Label, f: _Frame, dpi: float, warnings) -> list[Image.Image]:
+def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | None:
+    """The room for content along a label of fixed length; None if it grows."""
+    if label.auto_length:
+        return None
+    length = max(math.ceil(min_length_mm / 25.4 * dpi), mm_to_px(label.length_mm, dpi))
+    return max(1, length - 2 * (f.margin + f.frame))
+
+
+def _parts(label: Label, f: _Frame, dpi: float, warnings, room: int | None) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi)
+            part = render_element(element, f.inner, dpi, room)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
@@ -380,7 +409,7 @@ def render(
     min_length_mm is the printer's shortest label (Capabilities.min_length_mm)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings)
+    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm))
     length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)

@@ -74,7 +74,41 @@ class CodeElement:
     kind: Literal["code"] = "code"
 
 
-Element = TextElement | ImageElement | CodeElement
+ROTATIONS = (0, 90, 180, 270)
+FITS = ("fit", "fill")
+
+
+@dataclass
+class PageElement:
+    """A page of a PDF or an image file, cropped to one area and printed at
+    the label's size: a shipping label. The original file is kept, so the
+    area is drawn at the printer's resolution, never scaled up blurrily."""
+
+    data: str = ""  # base64 encoded PDF or image file
+    name: str = ""  # original file name, for display only
+    page: int = 0  # 0-based
+    # area of the page (before rotation) as fractions: x, y, width, height
+    crop: list[float] = field(default_factory=lambda: [0.0, 0.0, 1.0, 1.0])
+    rotation: int = 0  # clockwise, in degrees: one of ROTATIONS
+    fit: Literal["fit", "fill"] = "fit"  # keep all of the area, or fill the label
+    kind: Literal["page"] = "page"
+
+    @classmethod
+    def from_file(cls, path: str | Path) -> PageElement:
+        """OSError if unreadable, LabelError if absurdly large."""
+        path = Path(path)
+        if path.stat().st_size > MAX_FILE_BYTES:
+            raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
+        return cls(data=base64.b64encode(path.read_bytes()).decode(), name=path.name)
+
+
+Element = TextElement | ImageElement | CodeElement | PageElement
+ELEMENT_TYPES = {
+    "text": TextElement,
+    "image": ImageElement,
+    "code": CodeElement,
+    "page": PageElement,
+}
 
 
 @dataclass
@@ -106,9 +140,6 @@ class SheetChoice:
         if not isinstance(choice.rotated, bool):  # bool("false") would be True
             raise _damaged("sheet rotated must be true or false")
         return choice
-
-
-ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement}
 
 
 @dataclass
@@ -381,8 +412,28 @@ def _element_from_dict(item) -> Element:
     elif isinstance(element, ImageElement):
         element.data = _str(element.data, "image data")
         element.name = _str(element.name, "image name")
+    elif isinstance(element, PageElement):
+        _validate_page(element)
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
         element.symbology = _choice(element.symbology, ("qr", "code128", "ean13"), "symbology")
     return element
+
+
+def _validate_page(element: PageElement) -> None:
+    element.data = _str(element.data, "page data")
+    element.name = _str(element.name, "page name")
+    if isinstance(element.page, bool) or not isinstance(element.page, int):
+        raise _damaged("page must be a whole number")
+    element.page = max(0, element.page)
+    if isinstance(element.rotation, bool):
+        raise _damaged("invalid rotation")
+    element.rotation = _choice(element.rotation, ROTATIONS, "rotation")
+    element.fit = _choice(element.fit, FITS, "fit")
+    crop = element.crop
+    if not isinstance(crop, list) or len(crop) != 4:
+        raise _damaged("crop must be a list of four numbers")
+    x, y, w, h = (_clamp(v, 0, 1, "crop") for v in crop)
+    x, y = min(x, 0.99), min(y, 0.99)
+    element.crop = [x, y, max(0.01, min(w, 1 - x)), max(0.01, min(h, 1 - y))]

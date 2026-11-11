@@ -114,6 +114,7 @@ class Window(Adw.ApplicationWindow):
     def _main_menu() -> Gio.Menu:
         menu = Gio.Menu()
         menu.append(_("New label"), "win.new")
+        menu.append(_("Shipping label…"), "win.shipping")
         menu.append(_("Save as…"), "win.save-as")
         menu.append(_("Save as template…"), "win.save-template")
         menu.append(_("Export PNG…"), "win.export")
@@ -476,6 +477,7 @@ class Window(Adw.ApplicationWindow):
             "help": lambda *_a: self.open_url(docs_url()),
             "print": self.print_flow.on_print,
             "new": self.files.new,
+            "shipping": self.files.open_shipping,
             "add-text": lambda *_a: self.add_element(TextElement(text=_("Text"))),
             "add-image": lambda *_a: self.files.choose_image(self.add_element),
             "add-code": lambda *_a: self.add_element(CodeElement()),
@@ -508,6 +510,9 @@ class Window(Adw.ApplicationWindow):
         path = Path(file.get_path())
         if path.suffix == ".etiketto":
             self.files.confirm_discard(lambda: self.files.open_file(path))
+            return True
+        if path.suffix.lower() == ".pdf":  # a carrier's label
+            self.files.confirm_discard(lambda: self.files.shipping_from(path))
             return True
         try:
             self.add_element(image_from_path(path))

@@ -12,9 +12,15 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto.model import ImageElement, TextElement  # noqa: E402
+from etiketto.model import ImageElement, PageElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
-from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
+from etiketto.ui.texts import (  # noqa: E402
+    FITS,
+    SYMBOLOGIES,
+    TEXT_ALIGNS,
+    element_icon,
+    element_title,
+)
 from etiketto.ui.widgets import color_button, combo_row, flat_button, spin_row  # noqa: E402
 
 if TYPE_CHECKING:
@@ -73,6 +79,8 @@ class ElementsGroup(Adw.PreferencesGroup):
             self._text_rows(row, element, set_attr)
         elif isinstance(element, ImageElement):
             self._image_rows(row, element, set_attr)
+        elif isinstance(element, PageElement):
+            self._page_rows(row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
         return row
@@ -165,6 +173,15 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)
         row.add_row(image_row)
+
+    def _page_rows(self, row: Adw.ExpanderRow, element: PageElement, set_attr) -> None:
+        area = Adw.ActionRow(title=_("Area"))
+        area.set_subtitle(GLib.markup_escape_text(element.name))
+        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
+        choose.connect("clicked", lambda _b: self.window.files.edit_area(element))
+        area.add_suffix(choose)
+        row.add_row(area)
+        row.add_row(combo_row(_("Scale"), FITS, element.fit, lambda v: set_attr(fit=v)))
 
     def _code_rows(self, row: Adw.ExpanderRow, element, set_attr) -> None:
         row.add_row(
