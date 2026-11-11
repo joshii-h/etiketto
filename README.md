@@ -22,11 +22,12 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 ([docs/cab.md](docs/cab.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
-Connections: network (LAN or Wi-Fi) for all of them; USB for cab printers
-(found by themselves, through the kernel's printer driver) and for every
-printer the system printer reaches through CUPS. The VC-500W has a USB port,
-but what it expects there is not known yet. On USB your user needs to be in
-the group `lp` (`sudo usermod -aG lp $USER`, then log in again).
+Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
+kernel's printer driver: cab printers and the VC-500W are found on USB by
+themselves, and the system printer reaches every printer CUPS has, USB
+included. On USB, the VC-500W and cab printers have not been tried on a
+printer yet. Your user needs to be in the group `lp`
+(`sudo usermod -aG lp $USER`, then log in again).
 
 Each printer family is a backend; adding one does not touch the rest of
 the app, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
@@ -155,6 +156,10 @@ The Brother VC-500W protocol was reverse engineered by
 Etiketto prints through its descendant
 [labelprinter](https://github.com/sgrimee/labelprinter-vc500w)
 (m7i.org → lenchan139 → sgrimee).
+
+The VC-500W on USB follows the observations of
+[barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
+MPL-2.0), written anew; no barnguard code is included.
 
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no

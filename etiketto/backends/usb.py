@@ -124,6 +124,18 @@ class Connection:
     def settimeout(self, timeout: float) -> None:
         self.timeout = timeout
 
+    def drain(self, quiet: float = 0.2) -> None:
+        """Read and drop what the printer still had to say (an answer
+        nobody read): on USB nothing closes, so it would come first."""
+        timeout, self.timeout = self.timeout, quiet
+        try:
+            while True:
+                self.recv(4096)
+        except PrinterTimeout:
+            pass
+        finally:
+            self.timeout = timeout
+
     def close(self) -> None:
         if self.fd >= 0:
             os.close(self.fd)

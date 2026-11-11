@@ -20,7 +20,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from etiketto.backends import mdns
+from etiketto.backends import mdns, usb
 from etiketto.backends.base import (
     Backend,
     BadCassette,
@@ -350,10 +350,53 @@ def encode_jpeg(image: Image.Image, mode: PrintMode) -> bytes:
 
 
 def _connect(host: str, port: int):
+    """TCP through labelprinter, or the printer's USB device file."""
+    if usb.is_usb(host):
+        return _UsbLink(usb.connect(host, STANDARD_TIMEOUT))
     from labelprinter.connection import Connection
 
     # labelprinter opens an IPv4 socket
     return Connection(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
+
+
+STANDARD_TIMEOUT = 5.0  # an answer to a question, as labelprinter waits on TCP
+QUIET = 0.3  # an answer has ended when nothing more comes for this long
+
+
+class _UsbLink:
+    """The interface labelprinter's TCP Connection offers (send_message,
+    send_file, get_message, close), on the USB device file: the same XML
+    protocol (barnguard found it on USB as on TCP, see docs/vc500w.md).
+    The job states its size (datasize), so no end-of-job marker is sent."""
+
+    def __init__(self, device):
+        self.device = device
+        device.drain()  # an answer left over from an earlier session
+
+    def send_message(self, message) -> None:
+        self.device.sendall(message.get_data().encode())
+
+    def send_file(self, handle) -> None:
+        self.device.sendall(handle.read())
+
+    def get_message(self, long_timeout: bool = False, buffer_size: int = 4096) -> str:
+        """One answer. It may arrive in pieces on USB: read until the
+        printer is quiet; the first piece may take long (vivid prints)."""
+        device = self.device
+        device.settimeout(PRINT_TIMEOUT if long_timeout else STANDARD_TIMEOUT)
+        data = device.recv(buffer_size)
+        device.settimeout(QUIET)
+        try:
+            while True:
+                data += device.recv(buffer_size)
+        except PrinterTimeout:
+            pass
+        finally:
+            device.settimeout(STANDARD_TIMEOUT)
+        return data.decode("utf-8", "replace")
+
+    def close(self) -> None:
+        self.device.close()
 
 
 class _Busy(ValueError):
@@ -440,7 +483,13 @@ class VC500W(Backend):
         return configured_host()
 
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
-        return mdns.browse("_ipp._tcp", _is_vc500w, timeout)
+        """The VC-500W on USB, then on the network."""
+        plugged = [
+            FoundPrinter("Brother VC-500W (USB)", p.address, str(p.device))
+            for p in usb.printers()
+            if _is_vc500w(p.model)
+        ]
+        return plugged + mdns.browse("_ipp._tcp", _is_vc500w, timeout)
 
     def query(self, host: str) -> PrinterInfo:
         with session(host, self.port) as s:

@@ -1,0 +1,152 @@
+"""The VC-500W on USB: the same XML protocol as on TCP, on the printer's
+USB device file (/dev/usb/lpN). What we know of its USB behaviour comes
+from barnguard's notes (see docs/vc500w.md); these tests pin down the
+results Etiketto must give, against a fake device that answers through the
+same simulated printer as the TCP tests."""
+
+from __future__ import annotations
+
+import io
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+from conftest import XML_HEAD, FakeConnection, FakeVC500W
+
+from etiketto.backends import usb, vc500w
+from etiketto.backends.base import FoundPrinter, PrinterTimeout, PrintOptions, UsbPermission
+from etiketto.backends.vc500w import VC500W
+
+USB_HOST = "usb://Brother/VC-500W?serial=E78123"
+
+
+class FakeUsbDevice:
+    """A usb.Connection look-alike: bytes in, answers out in small pieces."""
+
+    def __init__(self, printer: FakeVC500W, stale: bytes = b"", chunk: int = 37):
+        self.link = FakeConnection(printer)
+        self.unread = bytearray(stale)  # an earlier, unread answer
+        self.chunk = chunk
+        self.timeouts: list[float] = []
+        self.drained = 0
+        self.closed = False
+
+    def sendall(self, data: bytes) -> None:
+        if data.startswith(XML_HEAD.encode()):
+            self.link.send_message(SimpleNamespace(get_data=lambda: data.decode()))
+        else:
+            self.link.send_file(io.BytesIO(data))
+        while self.link.pending:
+            self.unread += self.link.pending.pop(0).encode()
+
+    def recv(self, size: int) -> bytes:
+        if not self.unread:
+            raise PrinterTimeout("USB printer did not answer")
+        piece = bytes(self.unread[: min(size, self.chunk)])
+        del self.unread[: len(piece)]
+        return piece
+
+    def settimeout(self, timeout: float) -> None:
+        self.timeouts.append(timeout)
+
+    def drain(self) -> None:
+        self.drained += 1
+        self.unread.clear()
+
+    def close(self) -> None:
+        self.closed = True
+
+
+@pytest.fixture
+def usb_printer(monkeypatch):
+    device = FakeVC500W()
+    made = []
+
+    def connect(address, timeout):
+        assert address == USB_HOST
+        made.append(FakeUsbDevice(device, stale=b"<status><code>0</code></status>\n"))
+        return made[-1]
+
+    monkeypatch.undo()  # the real vc500w._connect, not the test guard
+    monkeypatch.setattr(usb, "connect", connect)
+    monkeypatch.setattr(vc500w, "_sleep", lambda seconds: None)
+    return SimpleNamespace(device=device, made=made)
+
+
+def test_usb_addresses_go_to_the_usb_device(usb_printer):
+    link = vc500w._connect(USB_HOST, 9100)
+    assert isinstance(link, vc500w._UsbLink)
+    assert usb_printer.made[0].drained == 1  # stale bytes dropped before the first question
+
+
+def test_query_over_usb_with_answers_in_pieces(usb_printer):
+    info = VC500W().query(USB_HOST)
+    assert info.model == "Wedge" and info.tape_mm == 25 and info.firmware == "2026031504"
+    device = usb_printer.made[0]
+    assert device.closed and usb_printer.device.names()[:2] == ["config", "status"]
+
+
+def test_print_over_usb_sends_the_job_then_the_data(usb_printer):
+    backend = VC500W()
+    options = PrintOptions(mode="color")
+    from PIL import Image
+
+    image = Image.new("RGB", (400, 120), "white")
+    backend.print_label(image, USB_HOST, options)
+    printer = usb_printer.device
+    assert printer.prints() and printer.data()
+    xml = printer.prints()[0]
+    assert "<datasize>%d</datasize>" % len(printer.data()[0]) in xml  # the job says its size
+    # the printer may take long for vivid prints: the answer to the data waits long
+    assert max(usb_printer.made[0].timeouts) == vc500w.PRINT_TIMEOUT
+
+
+def test_a_printer_that_does_not_answer_on_usb(usb_printer, monkeypatch):
+    class Silent(FakeUsbDevice):
+        def sendall(self, data):
+            pass  # takes everything, answers nothing
+
+    monkeypatch.setattr(usb, "connect", lambda address, timeout: Silent(usb_printer.device))
+    with pytest.raises(PrinterTimeout):
+        VC500W().query(USB_HOST)
+
+
+def test_no_permission_for_the_usb_port(monkeypatch):
+    def refuse(address, timeout):
+        raise UsbPermission("/dev/usb/lp0: Permission denied")
+
+    monkeypatch.undo()
+    monkeypatch.setattr(usb, "connect", refuse)
+    with pytest.raises(UsbPermission):
+        VC500W().query(USB_HOST)
+
+
+def test_vc500w_on_usb_is_found(tmp_path, monkeypatch):
+    root = tmp_path / "usbmisc"
+    for name, ieee in (
+        ("lp0", "MFG:Brother;MDL:VC-500W;CMD:XML;SN:E78123;"),
+        ("lp1", "MFG:Brother;MDL:QL-800;"),  # another Brother: not this backend
+    ):
+        (root / name / "device").mkdir(parents=True)
+        (root / name / "device" / "ieee1284_id").write_text(ieee)
+    monkeypatch.setattr(usb, "SYSFS", root)
+    monkeypatch.setattr(usb, "DEV", Path("/dev/usb"))
+    monkeypatch.setattr(vc500w.mdns, "browse", lambda service_type, match, timeout: [])
+    assert VC500W().discover(timeout=0.01) == [
+        FoundPrinter("Brother VC-500W (USB)", USB_HOST, "/dev/usb/lp0")
+    ]
+
+
+def test_drain_reads_until_the_device_is_quiet():
+    connection = usb.Connection.__new__(usb.Connection)
+    connection.timeout = 5.0
+    pieces = [b"old", b"er"]
+
+    def recv(size):
+        if not pieces:
+            raise PrinterTimeout("quiet")
+        return pieces.pop(0)
+
+    connection.recv = recv  # type: ignore[method-assign]
+    connection.drain()
+    assert pieces == [] and connection.timeout == 5.0  # read all, timeout back
