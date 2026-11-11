@@ -60,7 +60,7 @@ class Preview(Gtk.Box):
         )
         return box
 
-    def show(self, image, length_mm: float, height_mm: float, text: str) -> None:
+    def show_image(self, image, length_mm: float, height_mm: float, text: str) -> None:
         """Show a rendered preview image and its status text."""
         buf = io.BytesIO()
         image.save(buf, format="PNG")

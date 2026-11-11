@@ -91,6 +91,14 @@ def warning_text(warning: RenderWarning) -> str:
 
 def printer_error_text(error: Exception, unit: Unit) -> str:
     """What went wrong and what to do, for any error from a backend."""
+    if not isinstance(error, PrinterError):
+        return code_text("generic", unit)
+    return code_text(error.code, unit, float(error.params.get("max_mm", 0)))
+
+
+def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
+    """The text for a PrinterError code (also PrinterInfo.error); max_mm
+    is the limit of "too_long" and "too_wide"."""
     texts = {
         "not_found": _(
             "The printer cannot be found. Check that it is switched on and in the same "
@@ -123,19 +131,10 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),
     }
-    if not isinstance(error, PrinterError):
-        return texts["generic"]
-    text = texts.get(error.code, texts["generic"])
-    if error.code in ("too_long", "too_wide"):
-        text %= {"max": unit.format(float(error.params.get("max_mm", 0)))}
+    text = texts.get(code, texts["generic"])
+    if code in ("too_long", "too_wide"):
+        text %= {"max": unit.format(max_mm)}
     return text
-
-
-def error_from_code(code: str) -> PrinterError:
-    """A printer error for a code a backend reported in PrinterInfo.error."""
-    error = PrinterError(code)
-    error.code = code
-    return error
 
 
 def stage_text(stage: str) -> str | None:

@@ -10,7 +10,12 @@ from etiketto.model import Label, LabelError, TextElement
 from etiketto.ui import settings as config
 from etiketto.ui.i18n import _
 from etiketto.ui.texts import image_from_path, label_error_text, save_error_text
-from etiketto.ui.widgets import confirm_dialog
+
+
+def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
+    filters = Gio.ListStore.new(Gtk.FileFilter)
+    filters.append(flt)
+    return filters
 
 
 class Files:
@@ -19,21 +24,17 @@ class Files:
     def __init__(self, window):
         self.window = window
 
-    def label_filter(self) -> Gio.ListStore:
-        filters = Gio.ListStore.new(Gtk.FileFilter)
+    @staticmethod
+    def label_filter() -> Gio.ListStore:
         flt = Gtk.FileFilter(name=_("Etiketto labels"))
         flt.add_pattern("*.etiketto")
-        filters.append(flt)
-        return filters
+        return _filters(flt)
 
     def choose_image(self, callback) -> None:
-        dialog = Gtk.FileDialog(title=_("Choose image"))
-        filters = Gio.ListStore.new(Gtk.FileFilter)
         flt = Gtk.FileFilter(name=_("Images"))
         flt.add_pixbuf_formats()
         flt.add_suffix("webp")
-        filters.append(flt)
-        dialog.set_filters(filters)
+        dialog = Gtk.FileDialog(title=_("Choose image"), filters=_filters(flt))
 
         def done(d, result):
             try:
@@ -47,14 +48,24 @@ class Files:
 
         dialog.open(self.window, None, done)
 
-    def open_file(self, path: Path) -> None:
-        window = self.window
+    def _load(self, path: Path, template: bool = False) -> Label | None:
+        """The label in a file, or None after telling the user why not."""
         try:
-            window.set_label(Label.load(path), path)
-        except LabelError as e:
-            window.error(label_error_text(e, path.name), str(e))
-        except OSError as e:
-            window.error(_("Cannot open %s") % path.name, str(e))
+            return Label.load(path)
+        except (OSError, LabelError) as e:
+            if template:
+                text = _("Cannot open template %(name)s") % {"name": path.stem}
+            elif isinstance(e, LabelError):
+                text = label_error_text(e, path.name)
+            else:
+                text = _("Cannot open %s") % path.name
+            self.window.error(text, str(e))
+            return None
+
+    def open_file(self, path: Path) -> None:
+        label = self._load(path)
+        if label:
+            self.window.set_label(label, path)
 
     def open(self, *_args) -> None:
         dialog = Gtk.FileDialog(title=_("Open label"), filters=self.label_filter())
@@ -90,7 +101,10 @@ class Files:
                 path = Path(d.save_finish(result).get_path())
             except (GLib.Error, TypeError):
                 return
-            if path.suffix.lower() != suffix:
+            # an image may end in ".PNG"; labels need exactly ".etiketto",
+            # the template menu and the open dialog look for that
+            ending = path.suffix.lower() if suffix == ".png" else path.suffix
+            if ending != suffix:
                 path = path.with_suffix(suffix)
             callback(path)
 
@@ -112,31 +126,27 @@ class Files:
         self._pick_save_path(
             _("Save as template…"),
             ".etiketto",
-            self._write_template,
+            lambda path: self._save(self.window.label.save, path, _("Saved %s") % path.name),
             self.label_filter(),
             folder=config.TEMPLATE_DIR,
         )
 
-    def _write_template(self, path: Path) -> None:
-        window = self.window
+    def _save(self, save, path: Path, done: str) -> bool:
+        """save(path), then the toast `done`; or tell the user why it failed."""
         try:
-            window.label.save(path)
+            save(path)
         except OSError as e:
-            window.error(save_error_text(e, path.name), str(e))
-            return
-        window.toast(_("Saved %s") % path.name)
+            self.window.error(save_error_text(e, path.name), str(e))
+            return False
+        self.window.toast(done)
+        return True
 
     def write(self, path: Path) -> None:
         window = self.window
-        try:
-            window.label.save(path)
-        except OSError as e:
-            window.error(save_error_text(e, path.name), str(e))
-            return
-        window.path = path
-        window.dirty = False
-        window.update_title()
-        window.toast(_("Saved %s") % path.name)
+        if self._save(window.label.save, path, _("Saved %s") % path.name):
+            window.path = path
+            window.dirty = False
+            window.update_title()
 
     def export(self, *_args) -> None:
         self._pick_save_path(_("Export PNG"), ".png", self.export_png)
@@ -145,17 +155,11 @@ class Files:
         window = self.window
         dpi = window.backend.capabilities.dpi
         try:
-            rendered = window.render_label(window.label)
-            image = window.backend.preview(rendered.image, window.print_flow.mode)
+            _rendered, image = window.render_image()
         except Exception as e:  # noqa: BLE001
             window.error(_("The preview cannot be drawn"), "%s: %s" % (type(e).__name__, e))
             return
-        try:
-            image.save(path, format="PNG", dpi=(dpi, dpi))
-        except OSError as e:
-            window.error(save_error_text(e, path.name), str(e))
-            return
-        window.toast(_("Exported"))
+        self._save(lambda p: image.save(p, format="PNG", dpi=(dpi, dpi)), path, _("Exported"))
 
     # --- templates and new labels ------------------------------------------------
 
@@ -175,17 +179,12 @@ class Files:
             menu.append_item(item)
 
     def open_template(self, _action, value) -> None:
-        window = self.window
         path = Path(value.get_string())
 
         def load():
-            try:
-                label = Label.load(path)
-            except (OSError, LabelError) as e:
-                window.error(_("Cannot open template %(name)s") % {"name": path.stem}, str(e))
-                return
-            # a template starts a new, unsaved label
-            window.set_label(label, None)
+            label = self._load(path, template=True)
+            if label:  # a template starts a new, unsaved label
+                self.window.set_label(label, None)
 
         self.confirm_discard(load)
 
@@ -196,7 +195,7 @@ class Files:
             info = window.printer.info
             backend = window.backend
             inserted = info.tape_mm if info else None
-            label = Label.new_for(backend.id, backend.capabilities, inserted)
+            label = Label.new_for(backend.id, inserted)
             label.elements = [TextElement(text=_("Label"))]
             window.set_label(label, None)
 
@@ -206,11 +205,10 @@ class Files:
         if not self.window.dirty:
             then()
             return
-        dialog = confirm_dialog(
+        self.window.confirm(
             _("Discard changes?"),
             _("The current label has unsaved changes."),
             "discard",
             _("Discard"),
             then,
         )
-        self.window.present_dialog(dialog)

@@ -62,6 +62,15 @@ class Capabilities:
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
 
+    def too_long(self, length_mm: float) -> bool:
+        return self.max_length_mm is not None and length_mm > self.max_length_mm + 0.01
+
+    def too_wide(self, width_mm: float) -> bool:
+        return self.max_width_mm is not None and width_mm > self.max_width_mm + 0.01
+
+    def nearest_tape(self, width_mm: float) -> int:
+        return min(self.tape_widths_mm, key=lambda w: abs(w - width_mm))
+
 
 @dataclass(frozen=True)
 class Raster:
@@ -103,7 +112,7 @@ class PrinterInfo:
     total_mm: int | None
     state: str
     stage: str = ""
-    error: str = ""
+    error: str = ""  # PrinterError code of a problem the printer reports; "" = none
     modes: tuple[PrintMode, ...] = ()  # reported by the printer; empty = unknown
     firmware: str = ""
     cassette: CassetteInfo | None = None
@@ -283,7 +292,9 @@ def open_session(connect, wrap, map_error) -> Iterator:
         connection.close()
 
 
-def report(progress: ProgressCallback | None, n: int, copies: int, stage: str = "") -> None:
+def report_progress(
+    progress: ProgressCallback | None, n: int, copies: int, stage: str = ""
+) -> None:
     """Tell the caller which copy is printing, if it asked to know."""
     if progress:
         progress(Progress(n, copies, stage))
@@ -292,14 +303,14 @@ def report(progress: ProgressCallback | None, n: int, copies: int, stage: str = 
 def check_length(length_mm: float, capabilities: Capabilities) -> None:
     """Raise LabelTooLong if the label exceeds capabilities.max_length_mm."""
     limit = capabilities.max_length_mm
-    if limit is not None and length_mm > limit + 0.01:
+    if limit is not None and capabilities.too_long(length_mm):
         raise LabelTooLong("%.1f mm is longer than %.1f mm" % (length_mm, limit), max_mm=limit)
 
 
 def check_width(width_mm: float, capabilities: Capabilities) -> None:
     """Raise LabelTooWide if a die-cut label exceeds capabilities.max_width_mm."""
     limit = capabilities.max_width_mm
-    if limit is not None and width_mm > limit + 0.01:
+    if limit is not None and capabilities.too_wide(width_mm):
         raise LabelTooWide("%.1f mm is wider than %.1f mm" % (width_mm, limit), max_mm=limit)
 
 

@@ -10,9 +10,8 @@ from typing import Literal, Union
 
 FORMAT_VERSION = 1
 
-# Cassette widths of the VC-500W (CZ-1001 ... CZ-1005)
-TAPE_WIDTHS_MM = (9, 12, 19, 25, 50)
 DEFAULT_PRINTER = "vc500w"
+MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
@@ -113,10 +112,9 @@ class Label:
 
     def set_orientation(self, orientation: str) -> None:
         """Turn the content, the label size stays."""
-        if orientation != self.orientation:
-            width, height = self.media_size()
-            self.orientation = "across" if orientation == "across" else "along"
-            self.set_media_size(width, height)
+        width, height = self.media_size()
+        self.orientation = "across" if orientation == "across" else "along"
+        self.set_media_size(width, height)
 
     def pitch_mm(self) -> float:
         """Distance from the start of one die-cut label to the next."""
@@ -124,6 +122,7 @@ class Label:
 
     def use_default_size(self, caps) -> None:
         """A die-cut label of the printer's default size, content across the roll."""
+        # a plugin without sizes of its own: 50 × 25 mm, entered by hand
         size = caps.label_sizes[0] if caps.label_sizes else None
         self.auto_length = False
         self.orientation = "across"
@@ -132,9 +131,10 @@ class Label:
     # --- printer models ------------------------------------------------------
 
     @classmethod
-    def new_for(cls, printer: str, caps, inserted_tape: float | None = None) -> "Label":
+    def new_for(cls, printer: str, inserted_tape: float | None = None) -> "Label":
         """An empty label for a printer model: on tape the inserted (or widest
         common) tape, die-cut labels in the default size."""
+        caps = _capabilities(printer)
         label = cls(printer=printer)
         if caps.continuous:
             widths = caps.tape_widths_mm
@@ -147,11 +147,12 @@ class Label:
     def geometry(self) -> dict:
         return {name: getattr(self, name) for name in GEOMETRY_FIELDS}
 
-    def switch_printer(self, printer: str, caps, geometry: dict | None = None) -> None:
+    def switch_printer(self, printer: str, geometry: dict | None = None) -> None:
         """Move the label to another printer model. `geometry` is what it had
         on that model before (see geometry()); without it the label is made
         to fit: the nearest tape, or the default label size."""
         was_continuous = _capabilities(self.printer).continuous
+        caps = _capabilities(printer)
         self.printer = printer
         if geometry:
             for name, value in geometry.items():
@@ -160,8 +161,7 @@ class Label:
             if not was_continuous:  # the content runs along the tape again
                 self.orientation = "along"
                 self.auto_length = True
-            widths = caps.tape_widths_mm  # the tape's own number: 50, not 50.0
-            self.tape_mm = min(widths, key=lambda w: abs(w - self.tape_mm))
+            self.tape_mm = caps.nearest_tape(self.tape_mm)  # 50, not 50.0
         elif was_continuous:
             self.use_default_size(caps)
 
@@ -213,7 +213,7 @@ class Label:
             self.tape_mm = _clamp(self.tape_mm, MIN_SIZE_MM, MAX_SIZE_MM, "tape_mm")
         # a die-cut label has its size, it does not grow with the content
         self.auto_length = bool(self.auto_length) and continuous
-        lower = 15 if continuous else MIN_SIZE_MM
+        lower = MIN_TAPE_LENGTH_MM if continuous else MIN_SIZE_MM
         self.length_mm = _clamp(self.length_mm, lower, MAX_SIZE_MM, "length_mm")
         self.gap_mm = _clamp(self.gap_mm, 0, MAX_GAP_MM, "gap_mm")
         self.orientation = _choice(self.orientation, ("across", "along"), "orientation")

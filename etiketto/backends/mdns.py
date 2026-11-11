@@ -9,6 +9,8 @@ from __future__ import annotations
 import socket
 from collections.abc import Callable
 
+from gi.repository import Gio, GLib
+
 from etiketto.backends.base import FoundPrinter
 
 AVAHI = "org.freedesktop.Avahi"
@@ -17,15 +19,19 @@ BROWSER = "org.freedesktop.Avahi.ServiceBrowser"
 IF_UNSPEC, PROTO_INET = -1, 0
 
 
+def _call(bus, path, interface, method, params, reply, timeout_ms):
+    """A blocking Avahi method call; GLib.Error if it fails."""
+    reply_type = GLib.VariantType(reply) if reply else None
+    return bus.call_sync(
+        AVAHI, path, interface, method, params, reply_type, Gio.DBusCallFlags.NONE, timeout_ms, None
+    )
+
+
 def browse(service_type: str, match: Callable[[str], bool], timeout: float = 3.0):
     """Services of a type whose name matches, resolved to host and address.
 
     Stops when Avahi reports that it has seen everything it knows about
     ("AllForNow"); timeout is the upper limit."""
-    try:
-        from gi.repository import Gio, GLib
-    except ImportError:  # pragma: no cover - PyGObject is a hard dependency
-        return []
     context = GLib.MainContext.new()
     context.push_thread_default()
     try:
@@ -40,8 +46,6 @@ def browse(service_type: str, match: Callable[[str], bool], timeout: float = 3.0
 
 
 def _collect(bus, context, service_type, match, timeout) -> dict[str, tuple]:
-    from gi.repository import Gio, GLib
-
     seen: dict[str, tuple] = {}
     state: dict = {"path": None, "done": False}
 
@@ -60,20 +64,13 @@ def _collect(bus, context, service_type, match, timeout) -> dict[str, tuple]:
         AVAHI, BROWSER, None, None, None, Gio.DBusSignalFlags.NONE, on_signal
     )
     try:
-        state["path"] = bus.call_sync(
-            AVAHI,
-            "/",
-            SERVER,
-            "ServiceBrowserNew",
-            GLib.Variant("(iissu)", (IF_UNSPEC, PROTO_INET, service_type, "local", 0)),
-            GLib.VariantType("(o)"),
-            Gio.DBusCallFlags.NONE,
-            3000,
-            None,
-        ).unpack()[0]
+        params = GLib.Variant("(iissu)", (IF_UNSPEC, PROTO_INET, service_type, "local", 0))
+        reply = _call(bus, "/", SERVER, "ServiceBrowserNew", params, "(o)", 3000)
+        state["path"] = reply.unpack()[0]
         deadline = GLib.get_monotonic_time() + int(timeout * 1_000_000)
         while not state["done"] and GLib.get_monotonic_time() < deadline:
-            context.iteration(False) or GLib.usleep(10_000)
+            if not context.iteration(False):
+                GLib.usleep(10_000)
     finally:
         bus.signal_unsubscribe(sub)
         if state["path"]:
@@ -82,30 +79,17 @@ def _collect(bus, context, service_type, match, timeout) -> dict[str, tuple]:
 
 
 def _free(bus, path: str) -> None:
-    from gi.repository import Gio, GLib
-
     try:
-        bus.call_sync(AVAHI, path, BROWSER, "Free", None, None, Gio.DBusCallFlags.NONE, 1000, None)
+        _call(bus, path, BROWSER, "Free", None, None, 1000)
     except GLib.Error:
         pass  # Avahi frees it anyway when we disconnect
 
 
 def _resolve_service(bus, item) -> FoundPrinter | None:
-    from gi.repository import Gio, GLib
-
     interface, protocol, name, stype, domain = item
+    params = GLib.Variant("(iisssiu)", (interface, protocol, name, stype, domain, PROTO_INET, 0))
     try:
-        reply = bus.call_sync(
-            AVAHI,
-            "/",
-            SERVER,
-            "ResolveService",
-            GLib.Variant("(iisssiu)", (interface, protocol, name, stype, domain, PROTO_INET, 0)),
-            GLib.VariantType("(iissssisqaayu)"),
-            Gio.DBusCallFlags.NONE,
-            3000,
-            None,
-        ).unpack()
+        reply = _call(bus, "/", SERVER, "ResolveService", params, "(iissssisqaayu)", 3000).unpack()
     except GLib.Error:
         return None
     return FoundPrinter(name=name, host=reply[5], address=reply[7])
@@ -127,22 +111,11 @@ def resolve_host(host: str) -> str:
 
 
 def avahi_resolve(host: str) -> str | None:
+    # interface: any, protocol: IPv4, name, address protocol: IPv4, flags
+    params = GLib.Variant("(iisiu)", (IF_UNSPEC, PROTO_INET, host, PROTO_INET, 0))
     try:
-        from gi.repository import Gio, GLib
-
         bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        reply = bus.call_sync(
-            AVAHI,
-            "/",
-            SERVER,
-            "ResolveHostName",
-            # interface: any, protocol: IPv4, name, address protocol: IPv4, flags
-            GLib.Variant("(iisiu)", (IF_UNSPEC, PROTO_INET, host, PROTO_INET, 0)),
-            GLib.VariantType("(iisisu)"),
-            Gio.DBusCallFlags.NONE,
-            5000,
-            None,
-        )
+        reply = _call(bus, "/", SERVER, "ResolveHostName", params, "(iisisu)", 5000)
         return reply.unpack()[4] or None
     except Exception:  # noqa: BLE001 - no Avahi, no bus, not found
         return None

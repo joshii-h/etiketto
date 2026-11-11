@@ -11,8 +11,9 @@ import logging
 from importlib.metadata import entry_points
 
 from etiketto.backends.base import Backend
+from etiketto.model import DEFAULT_PRINTER
 
-DEFAULT_BACKEND = "vc500w"
+DEFAULT_BACKEND = DEFAULT_PRINTER  # files without a printer are for it
 ENTRY_POINT_GROUP = "etiketto.backends"
 
 _registry: dict[str, Backend] = {}

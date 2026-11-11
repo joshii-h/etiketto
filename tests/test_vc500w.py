@@ -284,12 +284,17 @@ def test_query(printer):
         total_mm=round(197 * 25.4),
         state="IDLE",
         stage="SUCCESS",
-        error="NONE",
+        error="",  # print_job_error=NONE: no problem
         modes=(VIVID, COLOR, BW),
         firmware="2026031504",
         cassette=CassetteInfo("ABC123456", "180529-0116G133390-0084", date(2018, 5, 29), 24.1),
     )
     assert printer.device.names() == ["config", "read", "status", "read", "close"]
+
+
+def test_query_reports_a_problem_as_its_code(printer, backend):
+    printer.device.statuses = [status(state="ERROR", error="DOOR OPEN")]
+    assert backend.query("p").error == "cover_open"
 
 
 def test_query_without_cassette_or_remaining(printer, backend):

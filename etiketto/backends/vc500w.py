@@ -45,9 +45,8 @@ from etiketto.backends.base import (
     error_text,
     network_error,
     open_session,
-    report,
+    report_progress,
 )
-from etiketto.model import TAPE_WIDTHS_MM
 from etiketto.render import PRINT_DPI
 
 DEFAULT_PORT = 9100
@@ -80,12 +79,14 @@ JOB_ERRORS: dict[str, type[PrinterError]] = {
     "BAD CASSETTE": BadCassette,
 }
 
+# cassette widths of the VC-500W (CZ-1001 ... CZ-1005)
+TAPE_WIDTHS_MM = (9, 12, 19, 25, 50)
 _sleep = time.sleep  # replaced in tests
 _clock = time.monotonic
 
 
 def nominal_width(width_mm: float) -> int:
-    return min(TAPE_WIDTHS_MM, key=lambda w: abs(w - width_mm))
+    return VC500W.capabilities.nearest_tape(width_mm)
 
 
 def configured_host() -> str | None:
@@ -318,13 +319,12 @@ def raster_dpi(mode_id: str) -> int:
 
 
 def encode_rawrgb(
-    image: Image.Image, mode: PrintMode, options: PrintOptions, crossweb_dpi: int = CROSSWEB_DPI
+    image: Image.Image, mode: PrintMode, rendered_dpi: int, crossweb_dpi: int = CROSSWEB_DPI
 ) -> tuple[bytes, int, int]:
     """Raw RGB rows across the tape; returns (data, width, height).
 
-    The image comes from prepare() at raster_dpi(options.mode) in label space;
-    the printer's own lpi and crossweb dpi decide the final size."""
-    rendered_dpi = raster_dpi(options.mode)
+    The image comes from prepare() at rendered_dpi (raster_dpi()) in label
+    space; the printer's own lpi and crossweb dpi decide the final size."""
     length_in = image.width / rendered_dpi
     dpi = max(crossweb_dpi, mode.lpi)
     height = max(1, round(length_in * mode.lpi))
@@ -363,6 +363,16 @@ def _answer_code(data: str) -> int:
     return int(match.group(1)) if match else -1
 
 
+def _raw_answer(base):
+    """labelprinter's answer class, keeping the XML instead of parsing it."""
+
+    class Answer(base):
+        def _process_data(self, data):
+            self.xml = data
+
+    return Answer
+
+
 class _Session:
     """Requests on one open connection, answers parsed by labelprinter."""
 
@@ -377,20 +387,12 @@ class _Session:
     def config(self) -> DeviceConfig:
         from labelprinter.printer import Config, GetConfig
 
-        class Answer(Config):
-            def _process_data(self, data):
-                self.xml = data
-
-        return parse_config(self._ask(GetConfig(), Answer).xml)
+        return parse_config(self._ask(GetConfig(), _raw_answer(Config)).xml)
 
     def status(self) -> DeviceStatus:
         from labelprinter.printer import GetStatus, Status
 
-        class Answer(Status):
-            def _process_data(self, data):
-                self.xml = data
-
-        return parse_status(self._ask(GetStatus(), Answer).xml)
+        return parse_status(self._ask(GetStatus(), _raw_answer(Status)).xml)
 
     def print(self, xml: str, data: bytes) -> None:
         from labelprinter.printer import PrintAnswer, Question
@@ -420,11 +422,8 @@ class VC500W(Backend):
         tape_widths_mm=TAPE_WIDTHS_MM,
         dpi=PRINT_DPI,
         modes=(VIVID, COLOR),
-        color_model="color",
-        cut_modes=("full", "half", "none"),
         reports_remaining=True,
         supports_color_adjust=True,
-        continuous=True,
         data_formats=("rawrgb", "jpeg"),
         min_length_mm=MIN_LENGTH_MM,
         max_length_mm=MAX_LENGTH_IN * 25.4,
@@ -451,6 +450,8 @@ class VC500W(Backend):
         if config.tape_mm and config.length_in and status.remain_in is not None:
             total = round(config.length_in * 25.4)
             remaining = round(status.remain_in * 25.4)
+        # the printer says print_job_error=NONE when all is well
+        problem = status_error(status)
         return PrinterInfo(
             model=config.model or "VC-500W",
             tape_mm=config.tape_mm,
@@ -458,7 +459,7 @@ class VC500W(Backend):
             total_mm=total,
             state=status.state,
             stage=status.stage,
-            error=status.error,
+            error=problem.code if problem else "",
             modes=config.modes,
             firmware=config.firmware,
             cassette=cassette_info(config),
@@ -496,12 +497,12 @@ class VC500W(Backend):
             if mode.id == "bw":
                 image = image.convert("L")
             if fmt == "rawrgb":
-                data, width, height = encode_rawrgb(image, mode, options, config.crossweb_dpi)
+                data, width, height = encode_rawrgb(image, mode, rendered_dpi, config.crossweb_dpi)
             else:
                 data, width, height = encode_jpeg(image, mode), 0, 0
             xml = print_xml(mode, fmt, len(data), cut, options.color, width, height)
             for n in range(1, options.copies + 1):
-                report(progress, n, options.copies)
+                report_progress(progress, n, options.copies)
                 _wait_ready(s, progress, n, options.copies)
                 _send(s, xml, data)
                 _wait_done(s, progress, n, options.copies)
@@ -537,7 +538,7 @@ def _poll(s: _Session, progress, n: int, copies: int, done) -> None:
         if not _is_ready(status) and status.stage != stage:
             stage = status.stage
             deadline = _clock() + PRINT_TIMEOUT
-            report(progress, n, copies, stage)
+            report_progress(progress, n, copies, stage)
         if done(status):
             return
         if status.stage == CUT_STAGE:

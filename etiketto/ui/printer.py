@@ -17,16 +17,19 @@ from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
     cassette_age_hint,
-    error_from_code,
+    code_text,
     printer_error_text,
 )
 from etiketto.ui.widgets import (  # noqa: E402
-    boxed_list,
     combo_row,
     flat_button,
     length_row,
+    list_dialog,
 )
 from etiketto.units import default_unit  # noqa: E402
+
+# a measured label distance this far from the label's own is a different roll
+PITCH_TOLERANCE_MM = 1.0
 
 
 class Printer:
@@ -132,8 +135,7 @@ class Printer:
 
     def discover(self, choose: bool = False) -> None:
         """Look for printers of the current model on the network."""
-        self.generation += 1  # a pending status answer or search is outdated now
-        generation = self.generation
+        generation = self._next_generation()
         self.update_row(_("Searching for printers…"), "")
         backend = self.window.backend
 
@@ -170,18 +172,18 @@ class Printer:
     def _choose(self, found) -> None:
         if self.chooser is not None:  # never two choosers at once
             self.chooser.force_close()
-        dialog = self.chooser = Adw.AlertDialog(heading=_("Choose a printer"))
-        dialog.connect("closed", self.chooser_closed)
-        rows = []
-        for printer in found:
-            row = Adw.ActionRow(
+        rows = [
+            Adw.ActionRow(
                 title=GLib.markup_escape_text(printer.name),
                 subtitle="%s · %s" % (isolate(printer.host), isolate(printer.address)),
                 activatable=True,
             )
+            for printer in found
+        ]
+        dialog = self.chooser = list_dialog(_("Choose a printer"), rows)
+        dialog.connect("closed", self.chooser_closed)
+        for row, printer in zip(rows, found, strict=True):
             row.connect("activated", self._on_chosen, dialog, printer.host)
-            rows.append(row)
-        dialog.set_extra_child(boxed_list(rows))
         dialog.add_response("cancel", _("Cancel"))
         self.window.present_dialog(dialog)
 
@@ -204,8 +206,7 @@ class Printer:
             # nothing configured yet: look for one on the network
             self.discover()
             return
-        self.generation += 1
-        generation = self.generation
+        generation = self._next_generation()
         backend = self.window.backend
         self.update_row(_("Connecting…"), isolate(host))
 
@@ -218,6 +219,10 @@ class Printer:
 
         threading.Thread(target=work, daemon=True).start()
 
+    def _next_generation(self) -> int:
+        self.generation += 1  # a pending status answer or search is outdated now
+        return self.generation
+
     def _outdated(self, generation: int | None) -> bool:
         return generation is not None and generation != self.generation
 
@@ -227,21 +232,30 @@ class Printer:
         self.info = info
         self.update_row()
         window = self.window
-        caps = window.backend.capabilities
-        if (
-            caps.continuous
-            and info.tape_mm in caps.tape_widths_mm
-            and info.tape_mm != window.label.tape_mm
-            and window.path is None
-            and not window.dirty
-        ):
-            # take over the inserted tape; this is no edit by the user
-            window.label.tape_mm = info.tape_mm
-            window.rebuild_sidebar()
-            window.schedule_render()
+        widths = window.backend.capabilities.tape_widths_mm
+        fresh = window.path is None and not window.dirty
+        if fresh and self.cassette_differs() and info.tape_mm in widths:
+            # take over the inserted tape; the row's handler renders, but
+            # this is no edit by the user
+            window.label_group.tape_row.set_selected(widths.index(info.tape_mm))
             window.dirty = False
             window.update_title()
         return False
+
+    # --- does the loaded material fit the label? ----------------------------------------
+
+    def cassette_differs(self) -> bool:
+        """Tape printers: another tape width is inserted than the label has."""
+        info, label = self.info, self.window.label
+        continuous = self.window.backend.capabilities.continuous
+        return bool(continuous and info and info.tape_mm and info.tape_mm != label.tape_mm)
+
+    def pitch_differs(self) -> bool:
+        """Die-cut printers: the measured label distance is not the label's."""
+        info, label = self.info, self.window.label
+        if self.window.backend.capabilities.continuous or not info or not info.pitch_mm:
+            return False
+        return abs(info.pitch_mm - label.pitch_mm()) > PITCH_TOLERANCE_MM
 
     def failed(self, error: Exception, generation: int | None = None) -> bool:
         if self._outdated(generation):
@@ -287,9 +301,9 @@ class Printer:
 
     def summary(self, info: PrinterInfo) -> str:
         unit = self.window.unit
+        if info.error:
+            return code_text(info.error, unit)
         if not self.window.backend.capabilities.continuous:
-            if info.error:
-                return printer_error_text(error_from_code(info.error), unit)
             if info.state == "BUSY":
                 return _("Printing")
             if info.pitch_mm:
@@ -311,13 +325,13 @@ class Printer:
         if info is None:
             return []
         rows = self._printer_rows(info) + self._cassette_rows(info)
-        return [(title, value) for title, value in rows if value and value != isolate("")]
+        return [(title, value) for title, value in rows if value]
 
     def _printer_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
         unit = self.window.unit
         rows = [
             (_("Model"), self.window.backend.display_name(info)),
-            (_("Address"), isolate(self.host or "")),
+            (_("Address"), isolate(self.host) if self.host else ""),
             (_("Firmware"), info.firmware),
         ]
         if info.tape_mm:
@@ -345,17 +359,13 @@ class Printer:
         details = self.details()
         if not details:
             return
-        dialog = Adw.AlertDialog(heading=_("Printer details"))
         rows = []
         for title, value in details:
             row = Adw.ActionRow(title=title, subtitle=GLib.markup_escape_text(value))
             row.add_css_class("property")
             row.set_subtitle_selectable(True)
             rows.append(row)
-        hint = cassette_age_hint(self.info)
-        if hint:
-            dialog.set_body(hint)
-        dialog.set_extra_child(boxed_list(rows))
+        dialog = list_dialog(_("Printer details"), rows, cassette_age_hint(self.info) or "")
         dialog.add_response("close", _("Close"))
         self.window.present_dialog(dialog)
 

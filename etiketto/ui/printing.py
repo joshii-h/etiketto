@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import copy
 import threading
+from dataclasses import replace
 
 from gi.repository import Adw, GLib, Gtk
 
 from etiketto.backends.base import (
     ColorAdjust,
     PrinterInfo,
+    PrintMode,
     PrintOptions,
     PrintResult,
     Progress,
@@ -22,10 +24,7 @@ from etiketto.ui.texts import (
     printer_error_text,
     stage_text,
 )
-from etiketto.ui.widgets import boxed_list, combo_row, confirm_dialog, spin_row
-
-# a measured label distance this far from the label's own is a different roll
-PITCH_TOLERANCE_MM = 1.0
+from etiketto.ui.widgets import combo_row, list_dialog, spin_row
 
 
 class PrintFlow:
@@ -35,10 +34,20 @@ class PrintFlow:
         self.window = window
         self.busy = False
 
+    def _modes(self) -> tuple[PrintMode, ...]:
+        return self.window.backend.modes(self.window.printer.info)
+
     @property
     def mode(self) -> str:
         """The print mode of the last print (what the preview shows)."""
-        return self.choices()["mode"]
+        ids = [m.id for m in self._modes()]
+        saved = self.window.printer_settings.get("mode")
+        return saved if saved in ids else ids[0]
+
+    def _cut(self) -> str:
+        cut_modes = self.window.backend.capabilities.cut_modes
+        saved = self.window.printer_settings.get("cut", "full")
+        return saved if saved in cut_modes else (cut_modes or ("",))[0]
 
     # --- checks ----------------------------------------------------------------
 
@@ -49,33 +58,16 @@ class PrintFlow:
         if not window.label.elements and not window.label.background_image:
             window.toast(_("The label is empty"))
             return
-        info = window.printer.info
-        if self._wrong_cassette(info):
-            self._wrong_cassette_dialog(info)
-        elif self.pitch_differs():
-            self._wrong_labels_dialog(info)
+        printer = window.printer
+        if printer.cassette_differs():
+            self._wrong_cassette_dialog(printer.info)
+        elif printer.pitch_differs():
+            self._wrong_labels_dialog(printer.info)
         else:
             self.dialog()
 
-    def _wrong_cassette(self, info: PrinterInfo | None) -> bool:
-        window = self.window
-        return bool(
-            window.backend.capabilities.continuous
-            and info
-            and info.tape_mm
-            and info.tape_mm != window.label.tape_mm
-        )
-
-    def pitch_differs(self) -> bool:
-        window = self.window
-        info = window.printer.info
-        if window.backend.capabilities.continuous or not info or not info.pitch_mm:
-            return False
-        return abs(info.pitch_mm - window.label.pitch_mm()) > PITCH_TOLERANCE_MM
-
     def _warn(self, heading: str, body: str) -> None:
-        dialog = confirm_dialog(heading, body, "print", _("Print anyway"), self.dialog)
-        self.window.present_dialog(dialog)
+        self.window.confirm(heading, body, "print", _("Print anyway"), self.dialog)
 
     def _wrong_cassette_dialog(self, info: PrinterInfo) -> None:
         unit, label = self.window.unit, self.window.label
@@ -117,31 +109,19 @@ class PrintFlow:
 
     def choices(self) -> dict:
         """Copies, cut and mode for the print dialog, from the last print."""
-        window = self.window
-        caps = window.backend.capabilities
-        cut = window.printer_settings.get("cut", "full")
-        modes = [m.id for m in window.backend.modes(window.printer.info)]
-        mode = window.printer_settings.get("mode")
-        return {
-            "copies": 1,
-            "cut": cut if cut in caps.cut_modes else (caps.cut_modes or ("",))[0],
-            "mode": mode if mode in modes else modes[0],
-        }
+        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
 
     def rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported."""
-        window = self.window
-        caps = window.backend.capabilities
+        caps = self.window.backend.capabilities
         rows: list[Gtk.Widget] = [
             spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
         ]
         if caps.cut_modes:
             cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
             rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
-        modes = [
-            (m.id, MODE_NAMES.get(m.id, m.id)) for m in window.backend.modes(window.printer.info)
-        ]
+        modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self._modes()]
         if len(modes) > 1:
             rows.append(
                 combo_row(
@@ -183,20 +163,16 @@ class PrintFlow:
 
     def _set_color_adjust(self, row, reset, name: str, value: int) -> None:
         settings = self.window.printer_settings
-        values = dict(settings.color_adjust.to_dict(), **{name: value})
-        settings.update(color_adjust=ColorAdjust.from_dict(values).to_dict())
+        settings.update(color_adjust=replace(settings.color_adjust, **{name: value}).to_dict())
         self._show_color_adjust(row, reset)
 
     def dialog(self) -> None:
         window = self.window
         if window.rendered is None:
             return
-        dialog = Adw.AlertDialog(
-            heading=_("Print label"),
-            body=window.size_text(window.rendered.length_mm),
-        )
         choices = self.choices()
-        dialog.set_extra_child(boxed_list(self.rows(choices)))
+        body = window.size_text(window.rendered.length_mm)
+        dialog = list_dialog(_("Print label"), self.rows(choices), body)
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("print", _("Print"))
         dialog.set_response_appearance("print", Adw.ResponseAppearance.SUGGESTED)
@@ -279,20 +255,21 @@ class PrintFlow:
         window.banner.set_revealed(False)
         if error:
             self.failed(error, message or printer_error_text(error, window.unit))
-        elif options and result and result.mode and result.mode != options.mode:
-            window.toast(
-                _(
-                    "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
-                )
-                % {
-                    "wanted": MODE_NAMES.get(options.mode, options.mode),
-                    "used": MODE_NAMES.get(result.mode, result.mode),
-                }
-            )
         else:
-            window.toast(_("Printed"))
+            window.toast(self._printed_text(options, result))
         window.printer.refresh()
         return False
+
+    @staticmethod
+    def _printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
+        if not (options and result and result.mode and result.mode != options.mode):
+            return _("Printed")
+        return _(
+            "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
+        ) % {
+            "wanted": MODE_NAMES.get(options.mode, options.mode),
+            "used": MODE_NAMES.get(result.mode, result.mode),
+        }
 
     def failed(self, error: Exception, message: str) -> None:
         """A dialog: what happened and what to do, the original text on request."""

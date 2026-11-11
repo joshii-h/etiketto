@@ -128,7 +128,7 @@ def test_text_size_clamped(value, expected):
     assert label.elements[0].size_pt == expected
 
 
-@pytest.mark.parametrize("tape", model.TAPE_WIDTHS_MM)
+@pytest.mark.parametrize("tape", (9, 12, 19, 25, 50))
 def test_supported_tape_widths(tape):
     assert Label.from_dict({"tape_mm": tape}).tape_mm == tape
 
@@ -334,24 +334,20 @@ def test_tape_labels_keep_their_rules():
 
 
 def test_new_label_for_a_printer_model():
-    from etiketto.backends import get_backend
 
-    vc, cab = get_backend("vc500w").capabilities, get_backend("cab").capabilities
-    assert Label.new_for("vc500w", vc, 19).tape_mm == 19
-    assert Label.new_for("vc500w", vc, 33).tape_mm == 50  # unknown tape: the common one
-    label = Label.new_for("cab", cab)
+    assert Label.new_for("vc500w", 19).tape_mm == 19
+    assert Label.new_for("vc500w", 33).tape_mm == 50  # unknown tape: the common one
+    label = Label.new_for("cab")
     assert (label.printer, label.media_size(), label.auto_length) == ("cab", (50, 25), False)
 
 
 def test_switch_printer_with_and_without_geometry():
-    from etiketto.backends import get_backend
 
-    vc, cab = get_backend("vc500w").capabilities, get_backend("cab").capabilities
     label = Label(tape_mm=12, auto_length=False, length_mm=70.0)
     before = label.geometry()
-    label.switch_printer("cab", cab)
+    label.switch_printer("cab")
     assert label.media_size() == (50, 25) and label.orientation == "across"
-    label.switch_printer("vc500w", vc, before)
+    label.switch_printer("vc500w", before)
     assert label.geometry() == before and label.printer == "vc500w"
-    label.switch_printer("vc500w", vc)  # tape to tape: nearest tape, length kept
+    label.switch_printer("vc500w")  # tape to tape: nearest tape, length kept
     assert (label.tape_mm, label.auto_length) == (12, False)

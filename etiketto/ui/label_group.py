@@ -9,14 +9,25 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw  # noqa: E402
+from gi.repository import Adw, GLib, GObject  # noqa: E402
 
-from etiketto.model import MAX_GAP_MM, MAX_SIZE_MM, MIN_SIZE_MM  # noqa: E402
+from etiketto.model import (  # noqa: E402
+    MAX_GAP_MM,
+    MAX_SIZE_MM,
+    MIN_SIZE_MM,
+    MIN_TAPE_LENGTH_MM,
+)
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import ALIGNS, ORIENTATIONS  # noqa: E402
 from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row  # noqa: E402
 
 CUSTOM_SIZE = "custom"
+# the length and alignment rows are off while the length is automatic
+INVERTED = GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.INVERT_BOOLEAN
+
+
+def _size_key(width_mm: float, height_mm: float) -> str:
+    return "%g×%g" % (width_mm, height_mm)
 
 
 class LabelGroup(Adw.PreferencesGroup):
@@ -30,7 +41,8 @@ class LabelGroup(Adw.PreferencesGroup):
     def __init__(self, window):
         super().__init__(title=_("Label"))
         self.window = window
-        self._size_keys: list[str] = []
+        self._sizes: dict[str, tuple[float, float]] = {}  # preset key: (width, height)
+        self._size_keys: list[str] = []  # the size row's entries
         self._syncing = False
 
         if window.backend.capabilities.continuous:
@@ -92,7 +104,8 @@ class LabelGroup(Adw.PreferencesGroup):
         self.add(bg)
 
         bg_image = Adw.ActionRow(title=_("Background image"))
-        bg_image.set_subtitle(lab.background_image.name if lab.background_image else _("None"))
+        name = lab.background_image.name if lab.background_image else _("None")
+        bg_image.set_subtitle(GLib.markup_escape_text(name))
         bg_image.add_suffix(
             flat_button(
                 "document-open-symbolic",
@@ -130,49 +143,36 @@ class LabelGroup(Adw.PreferencesGroup):
         auto.set_active(lab.auto_length)
         self.add(auto)
 
-        lower = max(15.0, caps.min_length_mm)  # 15 mm: the smallest length a file may have
-        upper = float(math.floor(min(1000.0, caps.max_length_mm or 1000.0)))
-        if not lower <= lab.length_mm <= upper:
-            # a file made for another printer: show and keep the same value
-            lab.length_mm = min(max(lab.length_mm, lower), upper)
+        lower = max(MIN_TAPE_LENGTH_MM, caps.min_length_mm)
+        upper = float(math.floor(min(MAX_SIZE_MM, caps.max_length_mm or MAX_SIZE_MM)))
+        # a file made for another printer: show and keep the same value
+        lab.length_mm = min(max(lab.length_mm, lower), upper)
         length = self._length_row(
-            _("Length"),
-            min(max(lab.length_mm, lower), upper),
-            lower,
-            upper,
-            1,
-            lambda v: window.change(length_mm=v),
+            _("Length"), lab.length_mm, lower, upper, 1, lambda v: window.change(length_mm=v)
         )
         align = combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v))
-        length.set_sensitive(not lab.auto_length)
-        align.set_sensitive(not lab.auto_length)
-
-        def on_auto(row, _p):
-            window.change(auto_length=row.get_active())
-            length.set_sensitive(not row.get_active())
-            align.set_sensitive(not row.get_active())
-
-        auto.connect("notify::active", on_auto)
-        self.add(length)
-        self.add(align)
+        for row in (length, align):
+            auto.bind_property("active", row, "sensitive", INVERTED)
+            self.add(row)
+        auto.connect("notify::active", lambda r, _p: window.change(auto_length=r.get_active()))
 
     def size_key(self) -> str:
         """The preset matching the label, else CUSTOM_SIZE."""
         width, height = self.window.label.media_size()
         for size in self.window.backend.capabilities.label_sizes:
             if abs(size.width_mm - width) < 0.05 and abs(size.height_mm - height) < 0.05:
-                return "%g×%g" % (size.width_mm, size.height_mm)
+                return _size_key(size.width_mm, size.height_mm)
         return CUSTOM_SIZE
 
     def _add_size_rows(self) -> None:
         """Die-cut labels: size (preset or by hand), gap, orientation, alignment."""
         window = self.window
         lab, caps, unit = window.label, window.backend.capabilities, window.unit
-        presets = [
-            ("%g×%g" % (s.width_mm, s.height_mm), unit.size(s.width_mm, s.height_mm))
-            for s in caps.label_sizes
-        ]
-        items = presets + [(CUSTOM_SIZE, _("Custom size"))]
+        self._sizes = {
+            _size_key(s.width_mm, s.height_mm): (s.width_mm, s.height_mm) for s in caps.label_sizes
+        }
+        items = [(key, unit.size(*size)) for key, size in self._sizes.items()]
+        items.append((CUSTOM_SIZE, _("Custom size")))
         self._size_keys = [key for key, _name in items]
         self.size_row = combo_row(_("Label size"), items, self.size_key(), self._on_size_preset)
         self.add(self.size_row)
@@ -218,8 +218,7 @@ class LabelGroup(Adw.PreferencesGroup):
     def _on_size_preset(self, key: str) -> None:
         if key == CUSTOM_SIZE or key == self.size_key():
             return
-        width, height = (float(v) for v in key.split("×"))
-        self.window.label.set_media_size(width, height)
+        self.window.label.set_media_size(*self._sizes[key])
         self._show_media_size()
         self.window.mark_changed()
 

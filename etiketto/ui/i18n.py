@@ -32,11 +32,16 @@ def pgettext(context: str, message: str) -> str:
 RTL_LANGUAGES = {"ar", "he", "fa", "ur"}
 
 
+def _language(translation) -> str:
+    """The catalog's language without region: "pt" for "pt_BR"; "" if unknown."""
+    language = translation.info().get("language", "") if hasattr(translation, "info") else ""
+    return language.split("_")[0].split("-")[0].lower()
+
+
 def translation_is_rtl(translation=TRANSLATION) -> bool:
     """True if the loaded catalog is a right-to-left language. GTK only takes
     the direction from the system locale, not from LANGUAGE."""
-    language = translation.info().get("language", "") if hasattr(translation, "info") else ""
-    return language.split("_")[0].split("-")[0].lower() in RTL_LANGUAGES
+    return _language(translation) in RTL_LANGUAGES
 
 
 def isolate(text: str) -> str:
@@ -51,8 +56,7 @@ DOCS_LANGUAGES = ("en", "de")
 
 def docs_url(translation=TRANSLATION) -> str:
     """The documentation in the interface language, English otherwise."""
-    language = translation.info().get("language", "") if hasattr(translation, "info") else ""
-    short = language.split("_")[0].split("-")[0].lower()
+    short = _language(translation)
     return "%s/%s/" % (DOCS_URL, short if short in DOCS_LANGUAGES else "en")
 
 

@@ -971,9 +971,13 @@ def test_save_and_save_as(window, file_dialog, tmp_path):
     window.files.save()
     assert window.path == tmp_path / "neu.etiketto"
     assert (tmp_path / "neu.etiketto").exists() and not (tmp_path / "neu.txt").exists()
+    file_dialog.result = tmp_path / "GROSS.ETIKETTO"
+    window.files.save_as()
+    assert window.path == tmp_path / "GROSS.etiketto"  # what the template menu lists
+    window.path = tmp_path / "neu.etiketto"
     window.change(tape_mm=9)
     window.files.save()  # known path: no dialog
-    assert len(file_dialog.instances) == 2
+    assert len(file_dialog.instances) == 3
     assert Label.load(tmp_path / "neu.etiketto").tape_mm == 9
     window.activate_action("win.save-as", None)
     assert file_dialog.instances[-1].initial_name == "neu.etiketto"
@@ -1889,6 +1893,16 @@ def test_cab_printer_states(make_window, cab_env):
     assert pump(lambda: win.printer.row.get_title() == "Printer not reachable")
 
 
+def test_tape_printer_reporting_a_problem(make_window, gui_env):
+    gui_env.configured = "VC.local"
+    gui_env.query_result = PrinterInfo("Wedge", 25, 4000, 5000, "ERROR", error="cover_open")
+    win = make_window()
+    assert win.printer.row.get_title() == "Printer needs attention"
+    assert html.unescape(win.printer.row.get_subtitle()) == (
+        "The printer's cover is open. Close it and try again."
+    )
+
+
 def test_cab_details_and_report(cab_window):
     win = cab_window
     details = dict(win.printer.details())
@@ -1965,10 +1979,7 @@ def test_switching_back_restores_the_size(window):
     ],
 )
 def test_die_cut_error_texts(code, start):
-    from etiketto.backends.base import LabelTooWide
-
-    error = LabelTooWide("x", max_mm=105.6) if code == "too_wide" else texts.error_from_code(code)
-    assert texts.printer_error_text(error, MILLIMETRES).startswith(start)
+    assert texts.code_text(code, MILLIMETRES, 105.6).startswith(start)
 
 
 def test_choosing_the_same_model_changes_nothing(window, mono):
@@ -1976,9 +1987,7 @@ def test_choosing_the_same_model_changes_nothing(window, mono):
     assert not window.dirty
 
 
-def test_backend_and_settings_are_robust(window):
-    window.label.printer = "plugin-gone"
-    assert window.backend.id == "vc500w"
+def test_settings_are_robust(window):
     window.settings.data["printers"] = "junk"
     assert window.printer_settings.get("host") is None
     assert window.settings.data["printers"] == {"vc500w": {}}

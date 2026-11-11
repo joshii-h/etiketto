@@ -94,19 +94,21 @@ def boxed_list(rows) -> Gtk.ListBox:
     return box
 
 
+def list_dialog(heading: str, rows, body: str = "") -> Adw.AlertDialog:
+    """A dialog with a boxed list of rows; the caller adds the responses."""
+    dialog = Adw.AlertDialog(heading=heading, body=body)
+    dialog.set_extra_child(boxed_list(rows))
+    return dialog
+
+
 def confirm_dialog(
-    heading: str,
-    body: str,
-    confirm_id: str,
-    confirm_label: str,
-    on_confirm,
-    appearance=Adw.ResponseAppearance.DESTRUCTIVE,
+    heading: str, body: str, confirm_id: str, confirm_label: str, on_confirm
 ) -> Adw.AlertDialog:
-    """A Cancel / confirm dialog; on_confirm() runs only for the confirm response.
-    The caller presents it."""
+    """A Cancel / confirm dialog with a destructive confirm button;
+    on_confirm() runs only for the confirm response. The caller presents it."""
     dialog = Adw.AlertDialog(heading=heading, body=body)
     dialog.add_response("cancel", _("Cancel"))
     dialog.add_response(confirm_id, confirm_label)
-    dialog.set_response_appearance(confirm_id, appearance)
+    dialog.set_response_appearance(confirm_id, Adw.ResponseAppearance.DESTRUCTIVE)
     dialog.connect("response", lambda _d, response: response == confirm_id and on_confirm())
     return dialog

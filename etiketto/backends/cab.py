@@ -45,7 +45,7 @@ from etiketto.backends.base import (
     error_text,
     network_error,
     open_session,
-    report,
+    report_progress,
 )
 from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM
@@ -168,11 +168,7 @@ class Version:
     @property
     def dots_per_mm(self) -> float:
         match = re.search(r"/(\d+)", self.model)
-        return (
-            DOTS_PER_MM.get(int(match.group(1)), DEFAULT_DOTS_PER_MM)
-            if match
-            else (DEFAULT_DOTS_PER_MM)
-        )
+        return DOTS_PER_MM.get(int(match.group(1)) if match else 0, DEFAULT_DOTS_PER_MM)
 
 
 def parse_version(raw: str) -> Version:
@@ -296,8 +292,6 @@ class Cab(Backend):
         modes=(PrintMode("standard", round(dpi_for(DEFAULT_DOTS_PER_MM))),),
         color_model="mono",
         cut_modes=(),
-        reports_remaining=False,
-        supports_color_adjust=False,
         continuous=False,
         label_sizes=LABEL_SIZES,
         max_width_mm=MAX_WIDTH_MM,
@@ -368,7 +362,7 @@ class Cab(Backend):
         check_width(image.width / rendered, self.capabilities)
         copies = max(1, options.copies)
         with session(host, self.port) as s:
-            report(progress, 1, copies)
+            report_progress(progress, 1, copies)
             # the printer may not have been asked yet (switched on later)
             version = s.version()
             dots = version.dots_per_mm if version.model else rendered
@@ -431,13 +425,13 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
             if done != last:
                 last = done
                 deadline = _clock() + PRINT_TIMEOUT
-                report(progress, min(copies, done + 1), copies)
+                report_progress(progress, min(copies, done + 1), copies)
         elif status.running:
             idle_since = None
         else:
             idle_since = _clock() if idle_since is None else idle_since
             if started or _clock() - idle_since >= START_GRACE:
-                report(progress, copies, copies)
+                report_progress(progress, copies, copies)
                 return
         if _clock() > deadline:
             raise PrinterTimeout("printer stayed busy: %s" % status.raw)

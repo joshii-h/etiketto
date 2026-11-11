@@ -48,13 +48,15 @@ class ElementsGroup(Adw.PreferencesGroup):
         self.set_header_suffix(add)
 
     def _element_row(self, index: int, element) -> Adw.ExpanderRow:
-        row = Adw.ExpanderRow(title=GLib.markup_escape_text(element_title(element)))
+        row = Adw.ExpanderRow()
         row.add_prefix(Gtk.Image(icon_name=element_icon(element)))
         row.set_expanded(index == self.window.expand_index)
         self._add_header_buttons(row, index)
 
         def retitle():
             row.set_title(GLib.markup_escape_text(element_title(element)))
+
+        retitle()
 
         def set_attr(**kwargs):
             for key, value in kwargs.items():
@@ -65,7 +67,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         if isinstance(element, TextElement):
             self._text_rows(row, element, set_attr)
         elif isinstance(element, ImageElement):
-            self._image_rows(row, element, retitle)
+            self._image_rows(row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
         return row
@@ -144,16 +146,14 @@ class ElementsGroup(Adw.PreferencesGroup):
             font_row.add_suffix(toggle)
         return font_row
 
-    def _image_rows(self, row: Adw.ExpanderRow, element: ImageElement, retitle) -> None:
-        image_row = Adw.ActionRow(title=_("Image file"), subtitle=element.name or _("None"))
+    def _image_rows(self, row: Adw.ExpanderRow, element: ImageElement, set_attr) -> None:
+        image_row = Adw.ActionRow(title=_("Image file"))
+        image_row.set_subtitle(GLib.markup_escape_text(element.name or _("None")))
         choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
 
-        def picked(new):
-            if new:
-                element.data, element.name = new.data, new.name
-                image_row.set_subtitle(new.name)
-                retitle()
-                self.window.mark_changed()
+        def picked(new: ImageElement):
+            set_attr(data=new.data, name=new.name)
+            image_row.set_subtitle(GLib.markup_escape_text(new.name))
 
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)

@@ -13,7 +13,7 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
 from etiketto import report  # noqa: E402
-from etiketto.backends import DEFAULT_BACKEND, get_backend  # noqa: E402
+from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend  # noqa: E402
 from etiketto.model import CodeElement, Label, TextElement  # noqa: E402
 from etiketto.render import Rendered, render  # noqa: E402
@@ -26,6 +26,7 @@ from etiketto.ui.printer import Printer  # noqa: E402
 from etiketto.ui.printing import PrintFlow  # noqa: E402
 from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
 from etiketto.ui.texts import image_from_path, warning_text  # noqa: E402
+from etiketto.ui.widgets import confirm_dialog  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
 
 
@@ -148,10 +149,8 @@ class Window(Adw.ApplicationWindow):
 
     @property
     def backend(self) -> Backend:
-        try:
-            return get_backend(self.label.printer)
-        except KeyError:  # a plugin that went away since the label was opened
-            return get_backend(DEFAULT_BACKEND)
+        # Label.load() refuses printers this version does not know
+        return get_backend(self.label.printer)
 
     @property
     def printer_settings(self) -> PrinterSettings:
@@ -168,10 +167,9 @@ class Window(Adw.ApplicationWindow):
         # switching back restores the size the label had on that model
         self._geometries[self.label.printer] = self.label.geometry()
         geometry = self._geometries.get(backend_id)
-        self.label.switch_printer(backend_id, get_backend(backend_id).capabilities, geometry)
+        self.label.switch_printer(backend_id, geometry)
         self.printer.info = None
-        self.rebuild_sidebar()
-        self.mark_changed()
+        self._structure_changed()
         self.printer.refresh()
 
     def set_units(self, value: str) -> None:
@@ -199,29 +197,30 @@ class Window(Adw.ApplicationWindow):
         self.update_title()
         self.schedule_render()
 
+    def _structure_changed(self) -> None:
+        """A change the sidebar has to show with other rows."""
+        self.rebuild_sidebar()
+        self.mark_changed()
+
     def add_element(self, element) -> None:
         self.label.elements.append(element)
         self.expand_index = len(self.label.elements) - 1
-        self.rebuild_sidebar()
-        self.mark_changed()
+        self._structure_changed()
 
     def move_element(self, index: int, target: int) -> None:
         items = self.label.elements
         items[index], items[target] = items[target], items[index]
         self.expand_index = target
-        self.rebuild_sidebar()
-        self.mark_changed()
+        self._structure_changed()
 
     def remove_element(self, index: int) -> None:
         del self.label.elements[index]
         self.expand_index = -1
-        self.rebuild_sidebar()
-        self.mark_changed()
+        self._structure_changed()
 
     def set_background_image(self, image) -> None:
         self.label.background_image = image
-        self.rebuild_sidebar()
-        self.mark_changed()
+        self._structure_changed()
 
     def set_label(self, label: Label, path: Path | None) -> None:
         printer_changed = label.printer != self.label.printer
@@ -244,15 +243,17 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
-    def render_label(self, label: Label) -> Rendered:
-        """Render a label with the current printer model and safety margin."""
-        caps = self.backend.capabilities
-        return render(
-            label,
-            dpi=caps.dpi,
+    def render_image(self):
+        """The label rendered for the current printer model and safety margin,
+        and the image of it as the printer would print it (preview, export)."""
+        backend = self.backend
+        rendered = render(
+            self.label,
+            dpi=backend.capabilities.dpi,
             safe_mm=self.printer_settings.safe_mm,
-            min_length_mm=caps.min_length_mm,
+            min_length_mm=backend.capabilities.min_length_mm,
         )
+        return rendered, backend.preview(rendered.image, self.print_flow.mode)
 
     def schedule_render(self) -> None:
         if self._render_source:
@@ -262,13 +263,12 @@ class Window(Adw.ApplicationWindow):
     def render_preview(self) -> bool:
         self._render_source = 0
         try:
-            self.rendered = self.render_label(self.label)
-            image = self.backend.preview(self.rendered.image, self.print_flow.mode)
+            self.rendered, image = self.render_image()
         except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
             self._render_failed(e)
             return False
         self._render_error = None
-        self.preview.show(
+        self.preview.show_image(
             image, self.rendered.length_mm, self.label.tape_mm, self._status_text(self.rendered)
         )
         return False
@@ -278,12 +278,12 @@ class Window(Adw.ApplicationWindow):
         info = self.size_text(rendered.length_mm)
         if rendered.overflow:
             info += " · " + _("content scaled down to fit")
-        if caps.max_length_mm and rendered.length_mm > caps.max_length_mm + 0.01:
+        if caps.max_length_mm and caps.too_long(rendered.length_mm):
             info += " · " + _("Too long for this printer: at most %s") % self.unit.format(
                 caps.max_length_mm
             )
         width = self.label.media_size()[0]
-        if not caps.continuous and caps.max_width_mm and width > caps.max_width_mm + 0.01:
+        if not caps.continuous and caps.max_width_mm and caps.too_wide(width):
             info += " · " + _("Too wide for this printer: at most %s") % self.unit.format(
                 caps.max_width_mm
             )
@@ -307,17 +307,25 @@ class Window(Adw.ApplicationWindow):
         self.last_dialog = dialog
         dialog.present(self)
 
+    def confirm(self, heading: str, body: str, confirm_id: str, label: str, then) -> None:
+        """Ask before something that cannot be undone; then() on confirmation."""
+        self.present_dialog(confirm_dialog(heading, body, confirm_id, label, then))
+
+    def _add_toast(self, text: str, timeout: int, button: str = "", on_click=None) -> None:
+        toast = Adw.Toast(title=GLib.markup_escape_text(text), timeout=timeout)
+        if button:
+            toast.set_button_label(button)
+            toast.connect("button-clicked", lambda _t: on_click())
+        self.toasts.add_toast(toast)
+
     def toast(self, text: str) -> None:
-        self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(text), timeout=4))
+        self._add_toast(text, 4)
 
     def error(self, text: str, details: str | None = None) -> None:
         """A toast for problems, with a button to report them; the details
         (original error text) only go into the report."""
-        toast = Adw.Toast(title=GLib.markup_escape_text(text), timeout=8)
-        toast.set_button_label(_("Report"))
         problem = text + ("\n\n" + details if details else "")
-        toast.connect("button-clicked", lambda _t: self.report_problem(problem))
-        self.toasts.add_toast(toast)
+        self._add_toast(text, 8, _("Report"), lambda: self.report_problem(problem))
 
     def report_problem(self, problem: str | None = None) -> None:
         toolkit = "GTK %d.%d, libadwaita %d.%d" % (
@@ -343,10 +351,12 @@ class Window(Adw.ApplicationWindow):
 
     def offer_link(self, url: str) -> None:
         """No browser could be opened: let the user copy the address."""
-        toast = Adw.Toast(title=_("The browser cannot be opened"), timeout=0)
-        toast.set_button_label(_("Copy link"))
-        toast.connect("button-clicked", lambda _t: self.get_clipboard().set(url))
-        self.toasts.add_toast(toast)
+        self._add_toast(
+            _("The browser cannot be opened"),
+            0,
+            _("Copy link"),
+            lambda: self.get_clipboard().set(url),
+        )
 
     # --- actions, drag and drop, closing --------------------------------------------
 
