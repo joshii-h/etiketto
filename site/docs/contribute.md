@@ -17,7 +17,5 @@ Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/bran
   Names of buttons and settings come from the app translation automatically.
 - **Other printers**: printing goes through a backend interface; a new printer
   is a new backend. The protocols of the supported printers are described in
-  [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)
-  (Brother VC-500W) and
-  [docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)
-  (cab).
+  [docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs),
+  one file per printer.

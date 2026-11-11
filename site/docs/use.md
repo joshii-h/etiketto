@@ -30,8 +30,8 @@ For every label:
 
 Die-cut labels have a fixed size instead of a length:
 
-![Die-cut label on a cab printer](media/die-cut.png#only-light)
-![Die-cut label on a cab printer](media/die-cut-dark.png#only-dark)
+![Die-cut label](media/die-cut.png#only-light)
+![Die-cut label](media/die-cut-dark.png#only-dark)
 
 - [[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]]
   (across the roll) and [[ui:Height]] (along the roll), as on the label box.
@@ -52,19 +52,10 @@ edge, increase it.
 ![Print dialog](media/print.png#only-light)
 ![Print dialog](media/print-dark.png#only-dark)
 
-The print dialog only shows what the printer can do.
-
 - [[ui:Copies]]: number of labels.
-- [[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts
-  through the label, the backing holds them together. [[ui:No cut]]: the
-  printer waits, swipe its panel to cut.
-- [[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]]
-  (Brother: Standard) for softer ones, black and white (400 lpi) for text and
-  codes.
-- Colour correction: brightness and colour balance (red, green, blue), for
-  this print only, not stored in the printer.
 
-Printers without these options print with the settings made on the
-printer itself.
+The print dialog only shows what the printer can do; the options of each
+printer are listed under [Printers](printer.md). Printers without such
+options print with the settings made on the printer itself.
 
 [[ui:Export PNG…]] saves the label as image.

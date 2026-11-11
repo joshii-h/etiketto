@@ -102,28 +102,42 @@ def _resolve_service(bus, item) -> FoundPrinter | None:
     return FoundPrinter(name=name, host=reply[5], address=reply[7])
 
 
-def resolve_host(host: str) -> str:
-    """One numeric address for host. Inside Flatpak *.local names are
-    resolved through the host's Avahi daemon, because the runtime has no
-    nss-mdns.
+def resolve_host(host: str, family: int = socket.AF_UNSPEC) -> str:
+    """One numeric address for host, IPv4 if it has one (printers on port
+    9100 answer there; labelprinter only speaks IPv4, so the VC-500W asks
+    for AF_INET). Inside Flatpak *.local names are resolved through the
+    host's Avahi daemon, because the runtime has no nss-mdns.
 
-    One address, the one the system prefers: socket.create_connection() with
-    a name tries every address it resolves to and waits the full timeout for
-    each, so a name with many dead addresses would hang (CPython gh-106283).
-    Control characters are refused: getaddrinfo() silently cuts a name at a
-    null byte and would resolve another host (CPython gh-160898)."""
+    One address: socket.create_connection() with a name tries every address
+    it resolves to and waits the full timeout for each, so a name with many
+    dead addresses would hang (CPython gh-106283). Control characters are
+    refused: getaddrinfo() silently cuts a name at a null byte and would
+    resolve another host (CPython gh-160898)."""
     if not host or any(ord(c) < 32 or c == "\x7f" for c in host):
         raise OSError("cannot resolve %r: not a host name" % host)
     try:
-        found = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        found = socket.getaddrinfo(host, None, family, socket.SOCK_STREAM)
+    except UnicodeError as e:  # e.g. "a..b": the idna codec refuses it
+        raise OSError("cannot resolve %r: not a host name" % host) from e
     except socket.gaierror:
         if not host.endswith(".local"):
             raise
     else:
-        return str(found[0][4][0])  # the sockaddr: (address, port, ...)
+        return _address(found)
     address = avahi_resolve(host)
     if not address:
         raise OSError("cannot resolve %s (mDNS)" % host)
+    return address
+
+
+def _address(found: list) -> str:
+    """The IPv4 address if there is one, else the first; an IPv6 link-local
+    address keeps its interface ("fe80::1%3"), it is useless without."""
+    ipv4 = [info for info in found if info[0] == socket.AF_INET]
+    sockaddr = (ipv4 or found)[0][4]
+    address = str(sockaddr[0])
+    if len(sockaddr) > 3 and sockaddr[3] and "%" not in address:
+        address += "%%%d" % sockaddr[3]  # scope id
     return address
 
 

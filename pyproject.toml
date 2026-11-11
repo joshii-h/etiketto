@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "etiketto"
 dynamic = ["version"]  # etiketto.__version__
-description = "Label designer for the Brother VC-500W and cab label printers (GTK4/libadwaita)"
+description = "Design and print labels on label printers (GTK4/libadwaita)"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.11"

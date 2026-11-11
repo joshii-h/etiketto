@@ -16,8 +16,8 @@ section below.
   [[ui:Refresh]].
 - Content cut off at the edge or askew: increase the [[ui:Safety margin]].
 - [[ui:content scaled down to fit]]: the content does not fit the label.
-  Make the label longer, use [[ui:Automatic length]] on tape, or shorten
-  the content.
+  Make the label longer or larger, use [[ui:Automatic length]] on tape, or
+  shorten the content.
 
 ## Brother VC-500W { #vc500w }
 
@@ -53,6 +53,17 @@ and dry.
 
 Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.
 Do it when stripes appear, or every 20 to 30 labels.
+
+### Print options { #vc500w-print }
+
+- [[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts
+  through the label, the backing holds them together. [[ui:No cut]]: the
+  printer waits, swipe its panel to cut.
+- [[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]]
+  (Brother: Standard) for softer ones, black and white (400 lpi) for text and
+  codes.
+- Colour correction: brightness and colour balance (red, green, blue), for
+  this print only, not stored in the printer.
 
 ### Problems { #vc500w-problems }
 

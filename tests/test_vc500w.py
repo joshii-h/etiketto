@@ -271,7 +271,7 @@ def test_connect_uses_resolved_host(monkeypatch):
     monkeypatch.setitem(
         sys.modules, "labelprinter.connection", types.SimpleNamespace(Connection=Connection)
     )
-    monkeypatch.setattr(mdns, "resolve_host", lambda host: "192.0.2.1")
+    monkeypatch.setattr(mdns, "resolve_host", lambda host, family: "192.0.2.1")
     connection = REAL_CONNECT("VC.local", 9100)
     assert made["args"] == ("192.0.2.1", 9100, vc500w.PRINT_TIMEOUT)
     assert isinstance(connection, Connection)

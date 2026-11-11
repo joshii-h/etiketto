@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:27+0100\n"
+"POT-Creation-Date: 2026-11-11 21:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/contribute.md
 #, markdown-text
-msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The protocols of the supported printers are described in [docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)  (Brother VC-500W) and [docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)  (cab)."
+msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The protocols of the supported printers are described in [docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), one file per printer."
 msgstr ""
 
 #. type: Title #
@@ -247,7 +247,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:content scaled down to fit]]: the content does not fit the label.  Make the label longer, use [[ui:Automatic length]] on tape, or shorten the content."
+msgid "[[ui:content scaled down to fit]]: the content does not fit the label.  Make the label longer or larger, use [[ui:Automatic length]] on tape, or shorten the content."
 msgstr ""
 
 #. type: Title ##
@@ -327,6 +327,30 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.  Do it when stripes appear, or every 20 to 30 labels."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Print options { #vc500w-print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts through the label, the backing holds them together. [[ui:No cut]]: the printer waits, swipe its panel to cut."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] (Brother: Standard) for softer ones, black and white (400 lpi) for text and codes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Colour correction: brightness and colour balance (red, green, blue), for this print only, not stored in the printer."
 msgstr ""
 
 #. type: Title ###
@@ -602,7 +626,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "![Die-cut label on a cab printer](media/die-cut.png#only-light)  ![Die-cut label on a cab printer](media/die-cut-dark.png#only-dark)"
+msgid "![Die-cut label](media/die-cut.png#only-light)  ![Die-cut label](media/die-cut-dark.png#only-dark)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -647,40 +671,16 @@ msgstr ""
 msgid "![Print dialog](media/print.png#only-light)  ![Print dialog](media/print-dark.png#only-dark)"
 msgstr ""
 
-#. type: Plain text
-#: docs/use.md
-#, markdown-text
-msgid "The print dialog only shows what the printer can do."
-msgstr ""
-
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
 msgid "[[ui:Copies]]: number of labels."
 msgstr ""
 
-#. type: Bullet: '- '
-#: docs/use.md
-#, markdown-text
-msgid "[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts through the label, the backing holds them together. [[ui:No cut]]: the printer waits, swipe its panel to cut."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/use.md
-#, markdown-text
-msgid "[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] (Brother: Standard) for softer ones, black and white (400 lpi) for text and codes."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/use.md
-#, markdown-text
-msgid "Colour correction: brightness and colour balance (red, green, blue), for this print only, not stored in the printer."
-msgstr ""
-
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Printers without these options print with the settings made on the printer itself."
+msgid "The print dialog only shows what the printer can do; the options of each printer are listed under [Printers](printer.md). Printers without such options print with the settings made on the printer itself."
 msgstr ""
 
 #. type: Plain text

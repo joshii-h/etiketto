@@ -214,14 +214,44 @@ def _gaierror(*_args, **_kwargs):
     raise socket.gaierror("not found")
 
 
-def test_resolve_host_gives_the_preferred_address_only(monkeypatch):
-    # many addresses: connecting to all of them would wait the timeout for each
-    addresses = [
-        (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("192.0.2.%d" % n, 0)) for n in (7, 8)
-    ]
-    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port, type: addresses)
+V6 = (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("2001:db8::7", 0, 0, 0))
+LINK_LOCAL = (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("fe80::7", 0, 0, 3))
+
+
+def _v4(n):
+    return (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("192.0.2.%d" % n, 0))
+
+
+@pytest.mark.parametrize(
+    "found, address",
+    [
+        ([_v4(7), _v4(8)], "192.0.2.7"),  # many: only one, or each waits the timeout
+        ([V6, _v4(7)], "192.0.2.7"),  # IPv4 even if IPv6 comes first
+        ([V6], "2001:db8::7"),
+        ([LINK_LOCAL], "fe80::7%3"),  # the interface stays
+    ],
+)
+def test_resolve_host_gives_one_address(monkeypatch, found, address):
+    asked = []
+
+    def getaddrinfo(host, port, family, type):
+        asked.append(family)
+        return found
+
+    monkeypatch.setattr(socket, "getaddrinfo", getaddrinfo)
     monkeypatch.setattr(mdns, "avahi_resolve", lambda host: pytest.fail("no avahi needed"))
-    assert mdns.resolve_host("printer.lan") == "192.0.2.7"
+    assert mdns.resolve_host("printer.lan") == address
+    mdns.resolve_host("printer.lan", socket.AF_INET)
+    assert asked == [socket.AF_UNSPEC, socket.AF_INET]
+
+
+def test_resolve_host_names_the_idna_codec_refuses(monkeypatch):
+    def getaddrinfo(*_args):
+        raise UnicodeError("label empty or too long")
+
+    monkeypatch.setattr(socket, "getaddrinfo", getaddrinfo)
+    with pytest.raises(OSError, match="not a host name"):
+        mdns.resolve_host("a..b")
 
 
 @pytest.mark.parametrize("host", ["", "printer.lan\x00.evil", "printer\nlan", "a\x7fb"])

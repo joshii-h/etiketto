@@ -11,6 +11,7 @@ import io
 import json
 import math
 import re
+import socket
 import time
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
@@ -351,7 +352,8 @@ def encode_jpeg(image: Image.Image, mode: PrintMode) -> bytes:
 def _connect(host: str, port: int):
     from labelprinter.connection import Connection
 
-    return Connection(mdns.resolve_host(host), port, PRINT_TIMEOUT)
+    # labelprinter opens an IPv4 socket
+    return Connection(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
 
 
 class _Busy(ValueError):

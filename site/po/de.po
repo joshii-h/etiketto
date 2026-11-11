@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:27+0100\n"
+"POT-Creation-Date: 2026-11-11 21:33+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -74,18 +74,14 @@ msgstr ""
 msgid ""
 "**Other printers**: printing goes through a backend interface; a new printer"
 " is a new backend. The protocols of the supported printers are described in "
-"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)"
-"  (Brother VC-500W) and "
-"[docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)"
-"  (cab)."
+"[docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), "
+"one file per printer."
 msgstr ""
 "**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein "
 "neuer Drucker ist ein neues Backend. Die Protokolle der unterstützten "
 "Drucker stehen in "
-"[docs/protocol.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/protocol.md)"
-" (Brother VC-500W) und "
-"[docs/cab.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/cab.md)"
-" (cab)."
+"[docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), "
+"eine Datei pro Drucker."
 
 #. type: Title #
 #: docs/index.md
@@ -345,12 +341,12 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "[[ui:content scaled down to fit]]: the content does not fit the label.  Make"
-" the label longer, use [[ui:Automatic length]] on tape, or shorten the "
-"content."
+" the label longer or larger, use [[ui:Automatic length]] on tape, or shorten"
+" the content."
 msgstr ""
 "[[ui:content scaled down to fit]]: Der Inhalt passt nicht auf das Etikett. "
-"Das Etikett länger machen, auf Band [[ui:Automatic length]] verwenden oder "
-"den Inhalt kürzen."
+"Das Etikett länger oder grösser machen, auf Band [[ui:Automatic length]] "
+"verwenden oder den Inhalt kürzen."
 
 #. type: Title ##
 #: docs/printer.md
@@ -458,6 +454,42 @@ msgid ""
 msgstr ""
 "Reinigung: Reinigungskassette CK-1000 einlegen, die Reinigung startet von "
 "selbst. Bei Streifen oder alle 20 bis 30 Etiketten."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Print options { #vc500w-print }"
+msgstr "Druckoptionen { #vc500w-print }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts "
+"through the label, the backing holds them together. [[ui:No cut]]: the "
+"printer waits, swipe its panel to cut."
+msgstr ""
+"[[ui:Cut]]: [[ui:Full cut]] trennt die Etiketten. [[ui:Half cut]] schneidet "
+"durch das Etikett, das Trägerpapier hält sie zusammen. [[ui:No cut]]: Der "
+"Drucker wartet, zum Schneiden über sein Panel wischen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] "
+"(Brother: Standard) for softer ones, black and white (400 lpi) for text and "
+"codes."
+msgstr ""
+"[[ui:Colours]]: [[ui:Vivid]] für die stärksten Farben, [[ui:Normal]] (bei "
+"Brother: Standard) für sanftere, Schwarzweiss (400 lpi) für Text und Codes."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Colour correction: brightness and colour balance (red, green, blue), for "
+"this print only, not stored in the printer."
+msgstr ""
+"Farbkorrektur: Helligkeit und Farbbalance (Rot, Grün, Blau), nur für diesen "
+"Druck, nicht im Drucker gespeichert."
 
 #. type: Title ###
 #: docs/printer.md
@@ -582,9 +614,9 @@ msgid ""
 "sets the sensor for each job. Continuous media and a cutter are not "
 "supported yet."
 msgstr ""
-"Etiketten: Stanzetiketten mit Lücke, Etikettensensor „Gap Sensor“. Etiketto "
-"stellt den Sensor bei jedem Auftrag ein. Endlosmaterial und Schneidemesser "
-"werden noch nicht unterstützt."
+"Etiketten: gestanzte Etiketten mit Lücke, Etikettensensor „Gap Sensor“. "
+"Etiketto stellt den Sensor bei jedem Auftrag ein. Endlosmaterial und "
+"Schneidemesser werden noch nicht unterstützt."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -795,11 +827,11 @@ msgstr "Gestanzte Etiketten haben statt einer Länge eine feste Grösse:"
 #. type: Plain text
 #: docs/use.md
 msgid ""
-"![Die-cut label on a cab printer](media/die-cut.png#only-light)  ![Die-cut "
-"label on a cab printer](media/die-cut-dark.png#only-dark)"
+"![Die-cut label](media/die-cut.png#only-light)  ![Die-cut label](media/die-"
+"cut-dark.png#only-dark)"
 msgstr ""
-"![Stanzetikett auf einem cab-Drucker](media/die-cut.png#only-light)  "
-"![Stanzetikett auf einem cab-Drucker](media/die-cut-dark.png#only-dark)"
+"![Gestanztes Etikett](media/die-cut.png#only-light)  ![Gestanztes "
+"Etikett](media/die-cut-dark.png#only-dark)"
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -867,54 +899,21 @@ msgstr ""
 "![Druckdialog](media/print.png#only-light)  ![Druckdialog](media/print-"
 "dark.png#only-dark)"
 
-#. type: Plain text
-#: docs/use.md
-msgid "The print dialog only shows what the printer can do."
-msgstr "Der Druckdialog zeigt nur, was der Drucker kann."
-
 #. type: Bullet: '- '
 #: docs/use.md
 msgid "[[ui:Copies]]: number of labels."
 msgstr "[[ui:Copies]]: Anzahl Etiketten."
 
-#. type: Bullet: '- '
-#: docs/use.md
-msgid ""
-"[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts "
-"through the label, the backing holds them together. [[ui:No cut]]: the "
-"printer waits, swipe its panel to cut."
-msgstr ""
-"[[ui:Cut]]: [[ui:Full cut]] trennt die Etiketten. [[ui:Half cut]] schneidet "
-"durch das Etikett, das Trägerpapier hält sie zusammen. [[ui:No cut]]: Der "
-"Drucker wartet, zum Schneiden über sein Panel wischen."
-
-#. type: Bullet: '- '
-#: docs/use.md
-msgid ""
-"[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] "
-"(Brother: Standard) for softer ones, black and white (400 lpi) for text and "
-"codes."
-msgstr ""
-"[[ui:Colours]]: [[ui:Vivid]] für die stärksten Farben, [[ui:Normal]] (bei "
-"Brother: Standard) für sanftere, Schwarzweiss (400 lpi) für Text und Codes."
-
-#. type: Bullet: '- '
-#: docs/use.md
-msgid ""
-"Colour correction: brightness and colour balance (red, green, blue), for "
-"this print only, not stored in the printer."
-msgstr ""
-"Farbkorrektur: Helligkeit und Farbbalance (Rot, Grün, Blau), nur für diesen "
-"Druck, nicht im Drucker gespeichert."
-
 #. type: Plain text
 #: docs/use.md
 msgid ""
-"Printers without these options print with the settings made on the printer "
-"itself."
+"The print dialog only shows what the printer can do; the options of each "
+"printer are listed under [Printers](printer.md). Printers without such "
+"options print with the settings made on the printer itself."
 msgstr ""
-"Drucker ohne diese Optionen drucken mit den Einstellungen, die am Drucker "
-"selbst gemacht sind."
+"Der Druckdialog zeigt nur, was der Drucker kann; die Optionen jedes Druckers"
+" stehen unter [Drucker](printer.md). Drucker ohne solche Optionen drucken "
+"mit den Einstellungen, die am Drucker selbst gemacht sind."
 
 #. type: Plain text
 #: docs/use.md
