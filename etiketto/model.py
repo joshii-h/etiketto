@@ -15,6 +15,9 @@ MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may 
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
+# {=counter}: up to 15 digits stay exact in the interface's number fields
+MAX_COUNTER = 10**15 - 1
+MAX_COUNTER_STEP = 10**6
 # a label file is read whole before it is parsed: refuse absurd sizes (the
 # json documentation advises a limit for data from untrusted sources)
 MAX_FILE_BYTES = 200 * 1024 * 1024
@@ -46,6 +49,8 @@ class TextElement:
     size_pt: float = 0.0  # 0 = fit to tape height
     color: str = "#000000"
     align: Literal["left", "center", "right"] = "left"
+    # for the command line: `etiketto print --set NAME=VALUE` replaces the text
+    name: str = ""
     kind: Literal["text"] = "text"
 
 
@@ -69,6 +74,7 @@ class CodeElement:
     data: str = "https://"
     symbology: Literal["qr", "code128", "ean13"] = "qr"
     color: str = "#000000"
+    name: str = ""  # see TextElement.name
     kind: Literal["code"] = "code"
 
 
@@ -98,6 +104,10 @@ class Label:
     # runs across the roll (along the print head) or along it like on tape
     gap_mm: float = 3.0
     orientation: Literal["across", "along"] = "along"
+    # {=counter} (see variables.py): the number of the next printed label and
+    # how much it goes up per label; printing moves counter_next on
+    counter_next: int = 1
+    counter_step: int = 1
 
     # --- die-cut labels ----------------------------------------------------
 
@@ -241,11 +251,26 @@ class Label:
         self.align = _choice(self.align, ("start", "center", "end"), "align")
         self.background = _str(self.background, "background")
         self.border_color = _str(self.border_color, "border_color")
+        self.counter_next = _int(self.counter_next, 0, MAX_COUNTER, "counter_next")
+        self.counter_step = _int(self.counter_step, 1, MAX_COUNTER_STEP, "counter_step")
 
     def save(self, path: str | Path) -> None:
         path = Path(path)
         tmp = path.with_name(path.name + ".tmp")
         tmp.write_text(json.dumps(self.to_dict(), indent=1, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(path)
+
+    @staticmethod
+    def store_counter(path: str | Path, counter_next: int) -> None:
+        """Write a new counter_next into a saved label and change nothing else
+        (the command line prints with overrides that must not be saved)."""
+        path = Path(path)
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise LabelError("not_label", "not an Etiketto file")
+        data["counter_next"] = counter_next
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
         tmp.replace(path)
 
     @classmethod
@@ -286,6 +311,12 @@ def _clamp(value, lower: float, upper: float, name: str) -> float:
     return float(min(upper, max(lower, value)))
 
 
+def _int(value, lower: int, upper: int, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise _damaged("%s must be a whole number" % name)
+    return min(upper, max(lower, value))
+
+
 def _choice(value, allowed: tuple, name: str):
     if value not in allowed:
         raise _damaged("invalid %s %r" % (name, value))
@@ -315,11 +346,13 @@ def _element_from_dict(item) -> Element:
         element.bold, element.italic = bool(element.bold), bool(element.italic)
         element.size_pt = _clamp(element.size_pt, 0, 300, "size_pt")
         element.align = _choice(element.align, ("left", "center", "right"), "align")
+        element.name = _str(element.name, "name")
     elif isinstance(element, ImageElement):
         element.data = _str(element.data, "image data")
         element.name = _str(element.name, "image name")
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
+        element.name = _str(element.name, "name")
         element.symbology = _choice(element.symbology, ("qr", "code128", "ean13"), "symbology")
     return element

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from etiketto.backends.base import PrinterError, PrinterInfo
+from etiketto.backends.base import PrinterError, PrinterInfo, PrintOptions, PrintResult
 from etiketto.model import ImageElement, LabelError, TextElement
 from etiketto.render import RenderWarning
 from etiketto.ui.i18n import _, isolate, month_name
@@ -94,6 +94,7 @@ def warning_text(warning: RenderWarning) -> str:
         "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
+        "unknown_variable": _("Element %(n)d: %(name)s is not a known variable"),
     }
     return texts.get(warning.key, warning.key) % warning.params
 
@@ -172,6 +173,20 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
     if code in ("too_long", "too_wide"):
         text %= {"max": unit.format(max_mm)}
     return text
+
+
+def printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
+    """What became of a print job that did not fail."""
+    if result and result.queued:  # other jobs first: not printed yet, nothing wrong
+        return _("Sent to the printer – it prints when its turn comes")
+    if not (options and result and result.mode and result.mode != options.mode):
+        return _("Printed")
+    return _(
+        "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
+    ) % {
+        "wanted": MODE_NAMES.get(options.mode, options.mode),
+        "used": MODE_NAMES.get(result.mode, result.mode),
+    }
 
 
 def stage_text(stage: str) -> str | None:

@@ -16,12 +16,15 @@ from etiketto.backends.base import (
     PrintResult,
     Progress,
 )
+from etiketto.job import Job, PrepareFailed
+from etiketto.model import Label
 from etiketto.ui.i18n import _, isolate
 from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     MODE_NAMES,
     error_details,
+    printed_text,
     printer_error_text,
     stage_text,
 )
@@ -37,6 +40,7 @@ class PrintFlow:
     def __init__(self, window: Window):
         self.window = window
         self.busy = False
+        self._printing: Label | None = None
 
     def _modes(self) -> tuple[PrintMode, ...]:
         return self.window.backend.modes(self.window.printer.info)
@@ -213,8 +217,13 @@ class PrintFlow:
         if not host:
             window.toast(_("No printer yet – search for one or enter its address"))
             return
-        backend = window.backend
-        label, safe_mm = copy.deepcopy(window.label), window.printer_settings.safe_mm
+        job = Job(
+            window.backend,
+            copy.deepcopy(window.label),
+            options,
+            window.printer_settings.safe_mm,
+        )
+        self._printing = window.label  # the counter moves on in this label only
         self.busy = True
         window.print_button.set_sensitive(False)
         window.print_button.set_label(_("Printing…"))
@@ -225,16 +234,16 @@ class PrintFlow:
         def work():
             # rendering a long label takes a moment: not in the main loop
             try:
-                image = backend.prepare(label, options, safe_mm)
+                result = job.run(host, progress)
+            except PrepareFailed as e:
+                cause = e.__cause__ or e
+                GLib.idle_add(
+                    self.done, cause, _("The label cannot be prepared for printing."), job
+                )
             except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self.done, e, _("The label cannot be prepared for printing."))
-                return
-            try:
-                result = backend.print_label(image, host, options, progress)
-            except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self.done, e)
-                return
-            GLib.idle_add(self.done, None, None, options, result)
+                GLib.idle_add(self.done, e, None, job)
+            else:
+                GLib.idle_add(self.done, None, None, job, result)
 
         threading.Thread(target=work, name="etiketto-print", daemon=True).start()
 
@@ -253,7 +262,7 @@ class PrintFlow:
         self,
         error: Exception | None,
         message: str | None = None,
-        options: PrintOptions | None = None,
+        job: Job | None = None,
         result: PrintResult | None = None,
     ) -> bool:
         window = self.window
@@ -261,25 +270,17 @@ class PrintFlow:
         window.print_button.set_sensitive(True)
         window.print_button.set_label(_("Print"))
         window.banner.set_revealed(False)
+        counter = job.next_counter() if job and job.printed else None
+        # the printed numbers are used up, also on failure; not in a label
+        # opened while printing
+        if counter is not None and window.label is self._printing:
+            window.set_counter_next(counter)
         if error:
             self.failed(error, message or printer_error_text(error, window.unit))
         else:
-            window.toast(self._printed_text(options, result))
+            window.toast(printed_text(job.options if job else None, result))
         window.printer.refresh()
         return False
-
-    @staticmethod
-    def _printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
-        if result and result.queued:  # other jobs first: not printed yet, nothing wrong
-            return _("Sent to the printer – it prints when its turn comes")
-        if not (options and result and result.mode and result.mode != options.mode):
-            return _("Printed")
-        return _(
-            "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
-        ) % {
-            "wanted": MODE_NAMES.get(options.mode, options.mode),
-            "used": MODE_NAMES.get(result.mode, result.mode),
-        }
 
     def failed(self, error: Exception, message: str) -> None:
         """A dialog: what happened and what to do, the original text on request."""

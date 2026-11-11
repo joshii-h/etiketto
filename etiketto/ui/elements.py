@@ -15,6 +15,11 @@ from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 from etiketto.model import ImageElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
+from etiketto.ui.variables import (  # noqa: E402
+    insert_into_entry,
+    insert_into_text_view,
+    variable_button,
+)
 from etiketto.ui.widgets import color_button, combo_row, flat_button, spin_row  # noqa: E402
 
 if TYPE_CHECKING:
@@ -93,7 +98,7 @@ class ElementsGroup(Adw.PreferencesGroup):
             row.add_suffix(button)
 
     def _text_rows(self, row: Adw.ExpanderRow, element: TextElement, set_attr) -> None:
-        row.add_row(self._text_view_row(element, set_attr))
+        row.add_row(self._text_view_row(element, set_attr, self.window.open_url))
         row.add_row(self._font_row(element, set_attr))
         size = spin_row(
             _("Size"),
@@ -110,9 +115,18 @@ class ElementsGroup(Adw.PreferencesGroup):
         row.add_row(
             combo_row(_("Line alignment"), TEXT_ALIGNS, element.align, lambda v: set_attr(align=v))
         )
+        row.add_row(self._name_row(element, set_attr))
 
     @staticmethod
-    def _text_view_row(element: TextElement, set_attr) -> Adw.PreferencesRow:
+    def _name_row(element, set_attr) -> Adw.EntryRow:
+        """The name `etiketto print --set NAME=VALUE` refers to."""
+        name = Adw.EntryRow(title=_("Name for the command line"))
+        name.set_text(element.name)
+        name.connect("changed", lambda e: set_attr(name=e.get_text().strip()))
+        return name
+
+    @staticmethod
+    def _text_view_row(element: TextElement, set_attr, open_url) -> Adw.PreferencesRow:
         view = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, accepts_tab=False)
         view.set_top_margin(8)
         view.set_bottom_margin(8)
@@ -125,10 +139,13 @@ class ElementsGroup(Adw.PreferencesGroup):
                 text=buf.get_text(buf.get_start_iter(), buf.get_end_iter(), False)
             ),
         )
-        frame = Gtk.Frame(
-            child=view, margin_start=12, margin_end=12, margin_top=8, margin_bottom=8
-        )
-        return Adw.PreferencesRow(activatable=False, child=frame)
+        frame = Gtk.Frame(child=view, hexpand=True)
+        box = Gtk.Box(spacing=6, margin_start=12, margin_end=6, margin_top=8, margin_bottom=8)
+        box.append(frame)
+        button = variable_button(lambda p: insert_into_text_view(view, p), open_url)
+        button.set_valign(Gtk.Align.START)
+        box.append(button)
+        return Adw.PreferencesRow(activatable=False, child=box)
 
     @staticmethod
     def _font_row(element: TextElement, set_attr) -> Adw.ActionRow:
@@ -173,7 +190,11 @@ class ElementsGroup(Adw.PreferencesGroup):
         data = Adw.EntryRow(title=_("Content (link, text, number)"))
         data.set_text(element.data)
         data.connect("changed", lambda e: set_attr(data=e.get_text()))
+        data.add_suffix(
+            variable_button(lambda p: insert_into_entry(data, p), self.window.open_url)
+        )
         row.add_row(data)
         color = Adw.ActionRow(title=_("Colour"))
         color.add_suffix(color_button(element.color, lambda v: set_attr(color=v)))
         row.add_row(color)
+        row.add_row(self._name_row(element, set_attr))

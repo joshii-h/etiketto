@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+from datetime import datetime
 from pathlib import Path
 
 import gi
@@ -27,7 +29,9 @@ from etiketto.ui.printer import Printer  # noqa: E402
 from etiketto.ui.printing import PrintFlow  # noqa: E402
 from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
 from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
+from etiketto.ui.variables import CounterGroup  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
+from etiketto.variables import Values, expand_label  # noqa: E402
 
 
 class Window(Adw.ApplicationWindow):
@@ -47,6 +51,8 @@ class Window(Adw.ApplicationWindow):
         self._render_source = 0
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
+        # random variables ({=uuid}, {=id}) keep their preview value while editing
+        self._preview_random = os.urandom(64)
 
         # the controllers come first: the layout and the sidebar use them
         self.printer = Printer(self)
@@ -143,7 +149,13 @@ class Window(Adw.ApplicationWindow):
             self.sidebar.remove(group)
         self.label_group = LabelGroup(self)
         self.elements_group = ElementsGroup(self)
-        self._groups = [self.printer.group(), self.label_group, self.elements_group]
+        self.counter_group = CounterGroup(self.label, self.mark_changed)
+        self._groups = [
+            self.printer.group(),
+            self.label_group,
+            self.elements_group,
+            self.counter_group,
+        ]
         for group in self._groups:
             self.sidebar.add(group)
 
@@ -197,7 +209,13 @@ class Window(Adw.ApplicationWindow):
     def mark_changed(self) -> None:
         self.dirty = True
         self.update_title()
+        self.counter_group.update()
         self.schedule_render()
+
+    def set_counter_next(self, value: int) -> None:
+        """After printing: the counter of the next label, a change of the document."""
+        self.label.counter_next = value
+        self.mark_changed()
 
     def _structure_changed(self) -> None:
         """A change the sidebar has to show with other rows."""
@@ -250,13 +268,21 @@ class Window(Adw.ApplicationWindow):
         """The label rendered for the current printer model and safety margin,
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
+        label, warnings = expand_label(self.label, self.preview_values())
         rendered = render(
-            self.label,
+            label,
             dpi=backend.capabilities.dpi,
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
         )
+        rendered.warnings[:0] = warnings
         return rendered, backend.preview(rendered.image, self.print_flow.mode)
+
+    def preview_values(self) -> Values:
+        """The variables as the next print fills them in: now, the next counter."""
+        return Values.for_label(
+            self.label, datetime.now(), random=lambda n: self._preview_random[:n]
+        )
 
     def schedule_render(self) -> None:
         if self._render_source:
