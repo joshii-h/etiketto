@@ -87,8 +87,9 @@ class FakeBus:
         assert args[5:] == (0, 0)  # IPv4 address, no flags
         if name not in self.resolve:
             raise GLib.Error("timeout")
-        host, address = self.resolve[name]
-        return FakeReply((0, 0, name, "_ipp._tcp", "local", host, 0, address, 631, [], 0))
+        host, address, *txt = self.resolve[name]
+        record = txt[0] if txt else []
+        return FakeReply((0, 0, name, "_ipp._tcp", "local", host, 0, address, 631, record, 0))
 
     def _ResolveHostName(self, path, iface, args):
         assert args == (-1, 0, args[2], 0, 0)
@@ -281,3 +282,16 @@ def test_resolve_host_local_not_found(monkeypatch):
     monkeypatch.setattr(mdns, "avahi_resolve", lambda host: None)
     with pytest.raises(OSError, match="VC.local"):
         mdns.resolve_host("VC.local")
+
+
+def test_browse_services_gives_port_and_txt(bus):
+    record = [b"rp=ipp/print", b"PDL=application/pdf,image/urf", b"=no key", [102, 108]]
+    bus(
+        FakeBus(
+            items=[_item("VC-500W (Office)")],
+            resolve={"VC-500W (Office)": ("hp.local", "192.0.2.20", record)},
+        )
+    )
+    services = mdns.browse_services("_ipp._tcp", is_vc, timeout=5)
+    txt = {"rp": "ipp/print", "pdl": "application/pdf,image/urf", "fl": ""}
+    assert services == [mdns.Service("VC-500W (Office)", "hp.local", "192.0.2.20", 631, txt)]

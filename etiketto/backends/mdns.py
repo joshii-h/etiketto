@@ -9,6 +9,7 @@ from __future__ import annotations
 import socket
 from collections.abc import Callable
 from contextlib import suppress
+from dataclasses import dataclass
 
 from gi.repository import Gio, GLib
 
@@ -36,8 +37,30 @@ def _call(bus, path, interface, method, params, reply, timeout_ms):
     )
 
 
+@dataclass(frozen=True)
+class Service:
+    """A resolved DNS-SD service: what browse() reports, plus port and the
+    TXT record (keys in lower case), e.g. an IPP printer's "rp" path."""
+
+    name: str
+    host: str
+    address: str
+    port: int
+    txt: dict[str, str]
+
+
 def browse(service_type: str, match: Callable[[str], bool], timeout: float = 3.0):
-    """Services of a type whose name matches, resolved to host and address.
+    """Printers of a service type whose name matches, as FoundPrinter."""
+    return [
+        FoundPrinter(name=s.name, host=s.host, address=s.address)
+        for s in browse_services(service_type, match, timeout)
+    ]
+
+
+def browse_services(
+    service_type: str, match: Callable[[str], bool], timeout: float = 3.0
+) -> list[Service]:
+    """Services of a type whose name matches, resolved.
 
     Stops when Avahi reports that it has seen everything it knows about
     ("AllForNow"); timeout is the upper limit."""
@@ -92,14 +115,25 @@ def _free(bus, path: str) -> None:
         _call(bus, path, BROWSER, "Free", None, None, 1000)
 
 
-def _resolve_service(bus, item) -> FoundPrinter | None:
+def _resolve_service(bus, item) -> Service | None:
     interface, protocol, name, stype, domain = item
     params = GLib.Variant("(iisssiu)", (interface, protocol, name, stype, domain, PROTO_INET, 0))
     try:
         reply = _call(bus, "/", SERVER, "ResolveService", params, "(iissssisqaayu)", 3000).unpack()
     except GLib.Error:
         return None
-    return FoundPrinter(name=name, host=reply[5], address=reply[7])
+    return Service(name, reply[5], reply[7], reply[8], _txt(reply[9]))
+
+
+def _txt(record) -> dict[str, str]:
+    """TXT strings ("key=value", as byte arrays) as a dict."""
+    entries = {}
+    for raw in record:
+        text = bytes(raw).decode("utf-8", "replace")
+        key, _sep, value = text.partition("=")
+        if key:
+            entries[key.lower()] = value
+    return entries
 
 
 def resolve_host(host: str, family: int = socket.AF_UNSPEC) -> str:
