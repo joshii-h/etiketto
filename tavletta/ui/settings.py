@@ -16,12 +16,12 @@ CONFIG_DIR = Path(GLib.get_user_config_dir()) / "tavletta"
 TEMPLATE_DIR = Path(GLib.get_user_data_dir()) / "tavletta" / "templates"
 SETTINGS_FILE = CONFIG_DIR / "settings.json"
 
-# settings of Tavletta 0.1 that belong to the VC-500W
+# settings of early versions that belong to the VC-500W
 LEGACY_PRINTER_KEYS = ("host", "safe_mm", "cut", "mode")
 
 
 def migrate(data: dict) -> dict:
-    """Move the printer settings of Tavletta 0.1 to data["printers"]["vc500w"]."""
+    """Move the printer settings of early versions to data["printers"]["vc500w"]."""
     legacy = {key: data.pop(key) for key in LEGACY_PRINTER_KEYS if key in data}
     if not legacy:
         return data

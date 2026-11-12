@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 16:04+0100\n"
+"PO-Revision-Date: 2026-11-12 16:53+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: vi\n"
 "Language: vi\n"
@@ -304,8 +304,8 @@ msgstr "lấy mã truy cập do bạn tự chọn từ đầu vào chuẩn (lưu
 msgid "Unknown printer model: %s"
 msgstr "Kiểu máy in không xác định: %s"
 
-#: tavletta/cli.py:464 tavletta/ui/files.py:89 tavletta/ui/files.py:142
-#: tavletta/ui/texts.py:303 tavletta/ui/texts.py:640
+#: tavletta/cli.py:464 tavletta/ui/files.py:84 tavletta/ui/files.py:137
+#: tavletta/ui/texts.py:318 tavletta/ui/texts.py:655
 #: tavletta/server/service.py:675
 #, python-format
 msgid "Cannot open %s"
@@ -354,7 +354,7 @@ msgid ""
 "Several printers found – choose one with --host (tavletta list-printers)"
 msgstr "Tìm thấy nhiều máy in – hãy chọn một máy bằng --host (tavletta list-printers)"
 
-#: tavletta/cli.py:744 tavletta/ui/texts.py:683 tavletta/server/service.py:1253
+#: tavletta/cli.py:744 tavletta/ui/texts.py:698 tavletta/server/service.py:1253
 #, python-format
 msgid "Cannot save %s"
 msgstr "Không thể lưu %s"
@@ -389,7 +389,7 @@ msgstr "Không có hàng nào để in"
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "Nhãn dùng một tệp dữ liệu nằm ngoài thư mục của nó: hãy chỉ định bằng --data"
 
-#: tavletta/cli.py:1009 tavletta/ui/window.py:844
+#: tavletta/cli.py:1009 tavletta/ui/window.py:849
 #: tavletta/server/service.py:817
 #, python-format
 msgid "No such column: %s"
@@ -441,8 +441,8 @@ msgstr "Bảng (CSV, ODS, XLSX)"
 msgid "Choose data file"
 msgstr "Chọn tệp dữ liệu"
 
-#: tavletta/ui/data.py:108 tavletta/ui/files.py:109 tavletta/ui/files.py:131
-#: tavletta/ui/files.py:212 tavletta/ui/texts.py:205
+#: tavletta/ui/data.py:108 tavletta/ui/files.py:104 tavletta/ui/files.py:126
+#: tavletta/ui/files.py:207 tavletta/ui/texts.py:207
 msgid "Only local files can be used"
 msgstr "Chỉ dùng được tập tin cục bộ"
 
@@ -544,8 +544,8 @@ msgstr "Chưa có nội dung"
 msgid "Add text, an image, a symbol or a code"
 msgstr "Thêm văn bản, ảnh, biểu tượng hoặc mã"
 
-#: tavletta/ui/elements.py:104 tavletta/ui/texts.py:243
-#: tavletta/ui/window.py:956
+#: tavletta/ui/elements.py:104 tavletta/ui/texts.py:258
+#: tavletta/ui/window.py:961
 msgid "Text"
 msgstr "Văn bản"
 
@@ -582,7 +582,7 @@ msgid "Move up"
 msgstr "Chuyển lên trước"
 
 #: tavletta/ui/elements.py:226 tavletta/ui/elements.py:363
-#: tavletta/ui/freelayout.py:183
+#: tavletta/ui/freelayout.py:190
 msgid "Size"
 msgstr "Cỡ"
 
@@ -602,7 +602,7 @@ msgstr "Tên cho dòng lệnh"
 msgid "Font"
 msgstr "Phông chữ"
 
-#: tavletta/ui/elements.py:302 tavletta/ui/freelayout.py:207
+#: tavletta/ui/elements.py:302 tavletta/ui/freelayout.py:214
 msgid "Bold"
 msgstr "Đậm"
 
@@ -639,7 +639,7 @@ msgstr "Vùng"
 msgid "Scale"
 msgstr "Tỉ lệ"
 
-#: tavletta/ui/elements.py:344 tavletta/ui/texts.py:247
+#: tavletta/ui/elements.py:344 tavletta/ui/texts.py:262
 msgid "Symbol"
 msgstr "Biểu tượng"
 
@@ -654,7 +654,7 @@ msgid ""
 "is light"
 msgstr "Máy in đen trắng in biểu tượng màu đen, hoặc màu trắng nếu màu sáng"
 
-#: tavletta/ui/elements.py:381 tavletta/ui/freelayout.py:159
+#: tavletta/ui/elements.py:381 tavletta/ui/freelayout.py:166
 #: tavletta/ui/styles.py:113
 msgid "Rotation"
 msgstr "Xoay"
@@ -671,83 +671,83 @@ msgstr "Nội dung (liên kết, văn bản, số)"
 msgid "Colour"
 msgstr "Màu"
 
-#: tavletta/ui/files.py:57
+#: tavletta/ui/files.py:50
 msgid "Tavletta labels"
 msgstr "Nhãn Tavletta"
 
-#: tavletta/ui/files.py:62
+#: tavletta/ui/files.py:55
 msgid "Images"
 msgstr "Ảnh"
 
-#: tavletta/ui/files.py:65 tavletta/ui/label_group.py:138
+#: tavletta/ui/files.py:60 tavletta/ui/label_group.py:138
 msgid "Choose image"
 msgstr "Chọn ảnh"
 
-#: tavletta/ui/files.py:85
+#: tavletta/ui/files.py:80
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Không thể mở mẫu %(name)s"
 
-#: tavletta/ui/files.py:99
+#: tavletta/ui/files.py:94
 msgid "Open label"
 msgstr "Mở nhãn"
 
-#: tavletta/ui/files.py:116
+#: tavletta/ui/files.py:111
 msgid "PDF documents and images"
 msgstr "Tài liệu PDF và ảnh"
 
-#: tavletta/ui/files.py:121
+#: tavletta/ui/files.py:116
 msgid "Open shipping label"
 msgstr "Mở nhãn vận chuyển"
 
-#: tavletta/ui/files.py:186
+#: tavletta/ui/files.py:181
 msgid "label"
 msgstr "nhãn"
 
-#: tavletta/ui/files.py:230
+#: tavletta/ui/files.py:225
 msgid "Save label"
 msgstr "Lưu nhãn"
 
-#: tavletta/ui/files.py:238 tavletta/ui/window.py:191
+#: tavletta/ui/files.py:233 tavletta/ui/window.py:196
 msgid "Save as template…"
 msgstr "Lưu thành mẫu…"
 
-#: tavletta/ui/files.py:247 tavletta/ui/files.py:260
+#: tavletta/ui/files.py:242 tavletta/ui/files.py:255
 #, python-format
 msgid "Saved %s"
 msgstr "Đã lưu %s"
 
-#: tavletta/ui/files.py:273
+#: tavletta/ui/files.py:268
 msgid "Export PNG"
 msgstr "Xuất ra PNG"
 
-#: tavletta/ui/files.py:281 tavletta/ui/window.py:869
+#: tavletta/ui/files.py:276 tavletta/ui/window.py:874
 msgid "The preview cannot be drawn"
 msgstr "Không vẽ được bản xem trước"
 
-#: tavletta/ui/files.py:283
+#: tavletta/ui/files.py:278
 msgid "Exported"
 msgstr "Đã xuất"
 
-#: tavletta/ui/files.py:293
+#: tavletta/ui/files.py:288
 msgid "No templates yet – use “Save as template…”"
 msgstr "Chưa có mẫu – hãy dùng “Lưu thành mẫu…”"
 
-#: tavletta/ui/files.py:320 tavletta/ui/label_group.py:67
-#: tavletta/ui/shortcuts.py:45 tavletta/ui/window.py:71
-#: tavletta/ui/window.py:217
+#: tavletta/ui/files.py:315 tavletta/ui/label_group.py:67
+#: tavletta/ui/shortcuts.py:45 tavletta/ui/window.py:76
+#: tavletta/ui/window.py:222
 msgid "Label"
 msgstr "Nhãn"
 
-#: tavletta/ui/files.py:330
+#: tavletta/ui/files.py:325
 msgid "Discard changes?"
 msgstr "Bỏ các thay đổi?"
 
-#: tavletta/ui/files.py:331
+#: tavletta/ui/files.py:326
 msgid "The current label has unsaved changes."
 msgstr "Nhãn hiện tại có thay đổi chưa lưu."
 
-#: tavletta/ui/files.py:333
+#: tavletta/ui/files.py:328
 msgid "Discard"
 msgstr "Bỏ"
 
@@ -771,87 +771,87 @@ msgstr "Các phần tử được xếp nối tiếp nhau dọc theo băng"
 msgid "Layout"
 msgstr "Bố cục"
 
-#: tavletta/ui/freelayout.py:100
+#: tavletta/ui/freelayout.py:107
 msgid "Position and size"
 msgstr "Vị trí và kích thước"
 
-#: tavletta/ui/freelayout.py:101
+#: tavletta/ui/freelayout.py:108
 msgid "From the label's top left corner"
 msgstr "Tính từ góc trên bên trái của nhãn"
 
-#: tavletta/ui/freelayout.py:108
+#: tavletta/ui/freelayout.py:115
 msgid "To the top left corner of the letters' ink"
 msgstr "Đến góc trên bên trái của mực chữ"
 
-#: tavletta/ui/freelayout.py:109
+#: tavletta/ui/freelayout.py:116
 msgid "To the top left corner of the first module, without the quiet zone"
 msgstr "Đến góc trên bên trái của mô-đun đầu tiên, không tính vùng yên tĩnh"
 
-#: tavletta/ui/freelayout.py:123 tavletta/ui/image_crop.py:82
+#: tavletta/ui/freelayout.py:130 tavletta/ui/image_crop.py:82
 #: tavletta/ui/label_group.py:335 tavletta/ui/styles.py:507
 msgid "Height"
 msgstr "Chiều cao"
 
-#: tavletta/ui/freelayout.py:136
+#: tavletta/ui/freelayout.py:143
 msgid "Module size"
 msgstr "Kích thước mô-đun"
 
-#: tavletta/ui/freelayout.py:142
+#: tavletta/ui/freelayout.py:149
 #, python-format
 msgid "%(unit)s, rounded to whole printer dots"
 msgstr "%(unit)s, làm tròn thành điểm in nguyên"
 
-#: tavletta/ui/freelayout.py:149
+#: tavletta/ui/freelayout.py:156
 msgid "Bar height"
 msgstr "Chiều cao vạch"
 
-#: tavletta/ui/freelayout.py:185
+#: tavletta/ui/freelayout.py:192
 #, python-format
 msgid "%(unit)s, the font's height"
 msgstr "%(unit)s, chiều cao phông (em)"
 
-#: tavletta/ui/freelayout.py:207
+#: tavletta/ui/freelayout.py:214
 msgid "Regular"
 msgstr "Thường"
 
-#: tavletta/ui/freelayout.py:216
+#: tavletta/ui/freelayout.py:223
 msgid "Weight"
 msgstr "Độ đậm"
 
-#: tavletta/ui/freelayout.py:228
+#: tavletta/ui/freelayout.py:235
 msgid "As the bold button sets it"
 msgstr "Theo nút in đậm"
 
-#: tavletta/ui/freelayout.py:251
+#: tavletta/ui/freelayout.py:258
 msgid "Standard (medium)"
 msgstr "Chuẩn (trung bình)"
 
 #. translators: the share of a QR code that may be damaged and still read
-#: tavletta/ui/freelayout.py:253
+#: tavletta/ui/freelayout.py:260
 #, python-format
 msgid "Low (%d %%)"
 msgstr "Thấp (%d%%)"
 
-#: tavletta/ui/freelayout.py:254
+#: tavletta/ui/freelayout.py:261
 #, python-format
 msgid "Medium (%d %%)"
 msgstr "Trung bình (%d%%)"
 
-#: tavletta/ui/freelayout.py:255
+#: tavletta/ui/freelayout.py:262
 #, python-format
 msgid "Quartile (%d %%)"
 msgstr "Tứ phân (%d%%)"
 
-#: tavletta/ui/freelayout.py:256
+#: tavletta/ui/freelayout.py:263
 #, python-format
 msgid "High (%d %%)"
 msgstr "Cao (%d%%)"
 
-#: tavletta/ui/freelayout.py:259
+#: tavletta/ui/freelayout.py:266
 msgid "Error correction"
 msgstr "Sửa lỗi"
 
-#: tavletta/ui/freelayout.py:264
+#: tavletta/ui/freelayout.py:271
 msgid "How much of the code may be damaged and still be read"
 msgstr "Bao nhiêu phần của mã có thể bị hỏng mà vẫn đọc được"
 
@@ -941,7 +941,7 @@ msgstr "Kéo để chọn phần ảnh cần giữ lại"
 #: tavletta/ui/image_crop.py:64 tavletta/ui/printer.py:233
 #: tavletta/ui/printing.py:431 tavletta/ui/printing.py:673
 #: tavletta/ui/sheets.py:206 tavletta/ui/sheets.py:365
-#: tavletta/ui/symbols.py:79 tavletta/ui/window.py:885
+#: tavletta/ui/symbols.py:79 tavletta/ui/window.py:890
 msgid "Cancel"
 msgstr "Hủy"
 
@@ -950,11 +950,11 @@ msgstr "Hủy"
 msgid "Apply"
 msgstr "Áp dụng"
 
-#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:109
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:110
 msgid "Left"
 msgstr "Trái"
 
-#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:160
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:161
 msgid "Top"
 msgstr "Trên"
 
@@ -1449,7 +1449,7 @@ msgid "Print label"
 msgstr "In nhãn"
 
 #: tavletta/ui/printing.py:432 tavletta/ui/printing.py:758
-#: tavletta/ui/shortcuts.py:51 tavletta/ui/window.py:179
+#: tavletta/ui/shortcuts.py:51 tavletta/ui/window.py:184
 msgid "Print"
 msgstr "In"
 
@@ -1525,7 +1525,7 @@ msgstr "In thất bại"
 msgid "Details"
 msgstr "Chi tiết"
 
-#: tavletta/ui/printing.py:770 tavletta/ui/window.py:909
+#: tavletta/ui/printing.py:770 tavletta/ui/window.py:914
 msgid "Report"
 msgstr "Báo cáo"
 
@@ -1602,7 +1602,7 @@ msgstr "Nhấp vào một nhãn để bỏ qua hoặc để in lại lên nó. C
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Các nhãn %s lấn vào lề mà máy in không in được"
 
-#: tavletta/ui/shipping.py:199 tavletta/ui/texts.py:260
+#: tavletta/ui/shipping.py:199 tavletta/ui/texts.py:275
 msgid "Shipping label"
 msgstr "Nhãn vận chuyển"
 
@@ -1638,27 +1638,27 @@ msgstr "Gợi ý tiếp theo"
 msgid "Page"
 msgstr "Trang"
 
-#: tavletta/ui/shortcuts.py:47 tavletta/ui/window.py:188
+#: tavletta/ui/shortcuts.py:47 tavletta/ui/window.py:193
 msgid "New label"
 msgstr "Nhãn mới"
 
-#: tavletta/ui/shortcuts.py:48 tavletta/ui/window.py:151
+#: tavletta/ui/shortcuts.py:48 tavletta/ui/window.py:156
 msgid "Open"
 msgstr "Mở"
 
-#: tavletta/ui/shortcuts.py:49 tavletta/ui/window.py:164
+#: tavletta/ui/shortcuts.py:49 tavletta/ui/window.py:169
 msgid "Save"
 msgstr "Lưu"
 
-#: tavletta/ui/shortcuts.py:50 tavletta/ui/window.py:190
+#: tavletta/ui/shortcuts.py:50 tavletta/ui/window.py:195
 msgid "Save as…"
 msgstr "Lưu thành…"
 
-#: tavletta/ui/shortcuts.py:52 tavletta/ui/window.py:169
+#: tavletta/ui/shortcuts.py:52 tavletta/ui/window.py:174
 msgid "Undo"
 msgstr "Hoàn tác"
 
-#: tavletta/ui/shortcuts.py:53 tavletta/ui/window.py:170
+#: tavletta/ui/shortcuts.py:53 tavletta/ui/window.py:175
 msgid "Redo"
 msgstr "Làm lại"
 
@@ -1702,11 +1702,11 @@ msgstr "Chuyển phần tử đang mở ra sau"
 msgid "General"
 msgstr "Chung"
 
-#: tavletta/ui/shortcuts.py:82 tavletta/ui/window.py:196
+#: tavletta/ui/shortcuts.py:82 tavletta/ui/window.py:201
 msgid "Keyboard shortcuts"
 msgstr "Phím tắt"
 
-#: tavletta/ui/shortcuts.py:83 tavletta/ui/window.py:197
+#: tavletta/ui/shortcuts.py:83 tavletta/ui/window.py:202
 msgid "Help"
 msgstr "Trợ giúp"
 
@@ -1889,7 +1889,7 @@ msgstr "Không đọc được ảnh"
 msgid "Crop…"
 msgstr "Cắt…"
 
-#: tavletta/ui/styles.py:403 tavletta/ui/texts.py:67
+#: tavletta/ui/styles.py:403 tavletta/ui/texts.py:68
 msgid "Brightness"
 msgstr "Độ sáng"
 
@@ -1990,738 +1990,745 @@ msgstr "Dùng gần đây"
 msgid "No symbol found"
 msgstr "Không tìm thấy biểu tượng nào"
 
-#: tavletta/ui/texts.py:32
+#: tavletta/ui/texts.py:33
 msgid "Full cut"
 msgstr "Cắt đứt"
 
-#: tavletta/ui/texts.py:33
+#: tavletta/ui/texts.py:34
 msgid "Half cut"
 msgstr "Cắt nửa"
 
-#: tavletta/ui/texts.py:34
+#: tavletta/ui/texts.py:35
 msgid "Cut after the last label"
 msgstr "Cắt sau nhãn cuối cùng"
 
-#: tavletta/ui/texts.py:35
+#: tavletta/ui/texts.py:36
 msgid "No cut"
 msgstr "Không cắt"
 
-#: tavletta/ui/texts.py:41
+#: tavletta/ui/texts.py:42
 msgid "Chain printing"
 msgstr "In nối tiếp"
 
-#: tavletta/ui/texts.py:42
+#: tavletta/ui/texts.py:43
 msgid "Saves tape: the last label stays in the printer until the next print"
 msgstr "Tiết kiệm băng: nhãn cuối cùng nằm lại trong máy in đến lần in sau"
 
-#: tavletta/ui/texts.py:44
+#: tavletta/ui/texts.py:45
 msgid "High resolution"
 msgstr "Độ phân giải cao"
 
-#: tavletta/ui/texts.py:44
+#: tavletta/ui/texts.py:45
 msgid "Twice as fine along the tape, prints more slowly"
 msgstr "Mịn gấp đôi theo chiều dài băng, in chậm hơn"
 
-#: tavletta/ui/texts.py:48
+#: tavletta/ui/texts.py:49
 msgid "Laminated tape"
 msgstr "Băng ép màng"
 
-#: tavletta/ui/texts.py:49
+#: tavletta/ui/texts.py:50
 msgid "Non-laminated tape"
 msgstr "Băng không ép màng"
 
-#: tavletta/ui/texts.py:50
+#: tavletta/ui/texts.py:51
 msgid "Fabric tape"
 msgstr "Băng vải"
 
-#: tavletta/ui/texts.py:51
+#: tavletta/ui/texts.py:52
 msgid "FLe tape"
 msgstr "Băng FLe"
 
-#: tavletta/ui/texts.py:52
+#: tavletta/ui/texts.py:53
 msgid "Flexible ID tape"
 msgstr "Băng ID mềm dẻo"
 
-#: tavletta/ui/texts.py:53
+#: tavletta/ui/texts.py:54
 msgid "Satin tape"
 msgstr "Băng satin"
 
-#: tavletta/ui/texts.py:54
+#: tavletta/ui/texts.py:55
 msgid "Heat-shrink tube 2:1"
 msgstr "Ống co nhiệt 2:1"
 
-#: tavletta/ui/texts.py:55
+#: tavletta/ui/texts.py:56
 msgid "Heat-shrink tube 3:1"
 msgstr "Ống co nhiệt 3:1"
 
-#: tavletta/ui/texts.py:59
+#: tavletta/ui/texts.py:60
 msgid "Vivid"
 msgstr "Rực rỡ"
 
-#: tavletta/ui/texts.py:60
+#: tavletta/ui/texts.py:61
 msgid "Normal"
 msgstr "Thường"
 
-#: tavletta/ui/texts.py:61
+#: tavletta/ui/texts.py:62
 msgid "Black and white (sharper)"
 msgstr "Đen trắng (sắc nét hơn)"
 
-#: tavletta/ui/texts.py:62
+#: tavletta/ui/texts.py:63
 msgid "Black"
 msgstr "Đen"
 
-#: tavletta/ui/texts.py:63
+#: tavletta/ui/texts.py:64
 msgid "Red and black"
 msgstr "Đỏ và đen"
 
-#: tavletta/ui/texts.py:65
+#: tavletta/ui/texts.py:66
 msgid "Standard"
 msgstr "Tiêu chuẩn"
 
-#: tavletta/ui/texts.py:65
+#: tavletta/ui/texts.py:66
 msgid "High resolution (600 dpi)"
 msgstr "Độ phân giải cao (600 dpi)"
 
-#: tavletta/ui/texts.py:68
+#: tavletta/ui/texts.py:69
 msgid "Red"
 msgstr "Đỏ"
 
-#: tavletta/ui/texts.py:69
+#: tavletta/ui/texts.py:70
 msgid "Green"
 msgstr "Xanh lá"
 
-#: tavletta/ui/texts.py:70
+#: tavletta/ui/texts.py:71
 msgid "Blue"
 msgstr "Xanh dương"
 
-#: tavletta/ui/texts.py:72
+#: tavletta/ui/texts.py:73
 msgid "Start"
 msgstr "Đầu"
 
-#: tavletta/ui/texts.py:72 tavletta/ui/texts.py:109
+#: tavletta/ui/texts.py:73 tavletta/ui/texts.py:110
 msgid "Centre"
 msgstr "Giữa"
 
-#: tavletta/ui/texts.py:72
+#: tavletta/ui/texts.py:73
 msgid "End"
 msgstr "Cuối"
 
-#: tavletta/ui/texts.py:73
+#: tavletta/ui/texts.py:74
 msgid "Across the roll"
 msgstr "Ngang cuộn"
 
-#: tavletta/ui/texts.py:73
+#: tavletta/ui/texts.py:74
 msgid "Along the roll"
 msgstr "Dọc cuộn"
 
-#: tavletta/ui/texts.py:75
+#: tavletta/ui/texts.py:76
 msgid "Single label"
 msgstr "Nhãn đơn"
 
-#: tavletta/ui/texts.py:75
+#: tavletta/ui/texts.py:76
 msgid "Label sheet"
 msgstr "Tờ nhãn"
 
-#: tavletta/ui/texts.py:78
+#: tavletta/ui/texts.py:79
 msgid "Resolution"
 msgstr "Độ phân giải"
 
-#: tavletta/ui/texts.py:79
+#: tavletta/ui/texts.py:80
 msgid "Label sensor"
 msgstr "Cảm biến nhãn"
 
-#: tavletta/ui/texts.py:80
+#: tavletta/ui/texts.py:81
 msgid "After printing"
 msgstr "Sau khi in"
 
-#: tavletta/ui/texts.py:81
+#: tavletta/ui/texts.py:82
 msgid "Darkness"
 msgstr "Độ đậm"
 
-#: tavletta/ui/texts.py:82
+#: tavletta/ui/texts.py:83
 msgid "Print density"
 msgstr "Độ đậm khi in"
 
-#: tavletta/ui/texts.py:83
+#: tavletta/ui/texts.py:84
 msgid "Speed"
 msgstr "Tốc độ"
 
-#: tavletta/ui/texts.py:84
+#: tavletta/ui/texts.py:85
 msgid "Print upside down"
 msgstr "In lộn ngược"
 
-#: tavletta/ui/texts.py:85
+#: tavletta/ui/texts.py:86
 msgid "Print method"
 msgstr "Phương thức in"
 
-#: tavletta/ui/texts.py:89
+#: tavletta/ui/texts.py:90
 msgid "As reported by the printer"
 msgstr "Theo máy in báo"
 
-#: tavletta/ui/texts.py:90
+#: tavletta/ui/texts.py:91
 msgid "As set on the printer"
 msgstr "Theo cài đặt trên máy in"
 
-#: tavletta/ui/texts.py:91
+#: tavletta/ui/texts.py:92
 msgid "Gap between labels"
 msgstr "Khe hở giữa các nhãn"
 
-#: tavletta/ui/texts.py:92
+#: tavletta/ui/texts.py:93
 msgid "Black mark"
 msgstr "Vạch đen"
 
-#: tavletta/ui/texts.py:93
+#: tavletta/ui/texts.py:94
 msgid "Continuous media"
 msgstr "Giấy liên tục"
 
-#: tavletta/ui/texts.py:94
+#: tavletta/ui/texts.py:95
 msgid "Transparent labels"
 msgstr "Nhãn trong suốt"
 
-#: tavletta/ui/texts.py:95
+#: tavletta/ui/texts.py:96
 msgid "Tear off"
 msgstr "Xé"
 
-#: tavletta/ui/texts.py:96
+#: tavletta/ui/texts.py:97
 msgid "Peel off"
 msgstr "Bóc"
 
-#: tavletta/ui/texts.py:97
+#: tavletta/ui/texts.py:98
 msgid "Cut off"
 msgstr "Cắt"
 
-#: tavletta/ui/texts.py:98
+#: tavletta/ui/texts.py:99
 msgid "Thermal transfer (ribbon)"
 msgstr "In truyền nhiệt (ruy băng)"
 
-#: tavletta/ui/texts.py:99
+#: tavletta/ui/texts.py:100
 msgid "Thermal direct"
 msgstr "In nhiệt trực tiếp"
 
-#: tavletta/ui/texts.py:109
+#: tavletta/ui/texts.py:110
 msgid "Right"
 msgstr "Phải"
 
-#: tavletta/ui/texts.py:114
+#: tavletta/ui/texts.py:115
 msgid "2D codes"
 msgstr "Mã 2D"
 
-#: tavletta/ui/texts.py:116
+#: tavletta/ui/texts.py:117
 msgid "QR code"
 msgstr "Mã QR"
 
-#: tavletta/ui/texts.py:123
+#: tavletta/ui/texts.py:124
 msgid "Linear barcodes"
 msgstr "Mã vạch tuyến tính"
 
-#: tavletta/ui/texts.py:138
+#: tavletta/ui/texts.py:139
 msgid ""
 "Application identifiers in brackets, e.g. "
 "(01)09501101530003(17)261231(10)AB12"
 msgstr "Số phân định ứng dụng trong ngoặc, ví dụ (01)09501101530003(17)261231(10)AB12"
 
-#: tavletta/ui/texts.py:141
+#: tavletta/ui/texts.py:142
 msgid "Links, text, Wi-Fi access; phones read it"
 msgstr "Liên kết, văn bản, truy cập Wi-Fi; điện thoại đọc được"
 
-#: tavletta/ui/texts.py:142
+#: tavletta/ui/texts.py:143
 msgid "Text or numbers in little space, e.g. on small parts"
 msgstr "Văn bản hoặc số trong không gian nhỏ, ví dụ trên linh kiện nhỏ"
 
-#: tavletta/ui/texts.py:143
+#: tavletta/ui/texts.py:144
 msgid "Much text, e.g. an address or a document number"
 msgstr "Nhiều văn bản, ví dụ địa chỉ hoặc số hiệu tài liệu"
 
-#: tavletta/ui/texts.py:144
+#: tavletta/ui/texts.py:145
 msgid "Text or numbers; needs no blank margin, e.g. on tickets"
 msgstr "Văn bản hoặc số; không cần lề trống, ví dụ trên vé"
 
-#: tavletta/ui/texts.py:145
+#: tavletta/ui/texts.py:146
 msgid "Latin letters, digits and punctuation"
 msgstr "Chữ cái Latinh, chữ số và dấu câu"
 
-#: tavletta/ui/texts.py:146
+#: tavletta/ui/texts.py:147
 msgid "Capital letters, digits, spaces and - . $ / + %"
 msgstr "Chữ in hoa, chữ số, dấu cách và - . $ / + %"
 
-#: tavletta/ui/texts.py:147
+#: tavletta/ui/texts.py:148
 msgid "Latin letters, digits and punctuation; shorter than Code 39"
 msgstr "Chữ cái Latinh, chữ số và dấu câu; ngắn hơn Code 39"
 
-#: tavletta/ui/texts.py:148
+#: tavletta/ui/texts.py:149
 msgid "12 digits, the check digit is added (or 13 with it)"
 msgstr "12 chữ số, số kiểm tra được thêm tự động (hoặc 13 chữ số kèm số kiểm tra)"
 
-#: tavletta/ui/texts.py:149
+#: tavletta/ui/texts.py:150
 msgid "7 digits, the check digit is added (or 8 with it)"
 msgstr "7 chữ số, số kiểm tra được thêm tự động (hoặc 8 chữ số kèm số kiểm tra)"
 
-#: tavletta/ui/texts.py:150
+#: tavletta/ui/texts.py:151
 msgid "11 digits, the check digit is added (or 12 with it)"
 msgstr "11 chữ số, số kiểm tra được thêm tự động (hoặc 12 chữ số kèm số kiểm tra)"
 
-#: tavletta/ui/texts.py:151
+#: tavletta/ui/texts.py:152
 msgid "7 digits starting with 0 or 1, the check digit is added (or 8 with it)"
 msgstr "7 chữ số bắt đầu bằng 0 hoặc 1, số kiểm tra được thêm tự động (hoặc 8 chữ số kèm số kiểm tra)"
 
-#: tavletta/ui/texts.py:152
+#: tavletta/ui/texts.py:153
 msgid ""
 "13 digits of a shipping carton's GTIN, the check digit is added (or 14 with "
 "it)"
 msgstr "13 chữ số GTIN của thùng hàng vận chuyển, số kiểm tra được thêm tự động (hoặc 14 chữ số kèm số kiểm tra)"
 
-#: tavletta/ui/texts.py:158
+#: tavletta/ui/texts.py:159
 msgid "Whole area, centred"
 msgstr "Cả vùng, căn giữa"
 
-#: tavletta/ui/texts.py:158
+#: tavletta/ui/texts.py:159
 msgid "Fill the label, edges cut off"
 msgstr "Lấp đầy nhãn, cắt bớt mép"
 
-#: tavletta/ui/texts.py:160
+#: tavletta/ui/texts.py:161
 msgid "Middle"
 msgstr "Giữa"
 
-#: tavletta/ui/texts.py:160
+#: tavletta/ui/texts.py:161
 msgid "Bottom"
 msgstr "Dưới"
 
-#: tavletta/ui/texts.py:162
+#: tavletta/ui/texts.py:163
 msgid "Automatic"
 msgstr "Tự động"
 
-#: tavletta/ui/texts.py:163
+#: tavletta/ui/texts.py:164
 msgid "Threshold (drawings, logos)"
 msgstr "Ngưỡng (hình vẽ, logo)"
 
-#: tavletta/ui/texts.py:164
+#: tavletta/ui/texts.py:165
 msgid "Dithering (photos)"
 msgstr "Khuếch tán điểm (ảnh chụp)"
 
-#: tavletta/ui/texts.py:165
+#: tavletta/ui/texts.py:166
 msgid "Ordered pattern"
 msgstr "Mẫu có thứ tự"
 
-#: tavletta/ui/texts.py:168
+#: tavletta/ui/texts.py:169
 msgctxt "line style"
 msgid "Solid"
 msgstr "Nét liền"
 
-#: tavletta/ui/texts.py:169
+#: tavletta/ui/texts.py:170
 msgid "Dashed"
 msgstr "Nét đứt"
 
-#: tavletta/ui/texts.py:170 tavletta/ui/texts.py:195
+#: tavletta/ui/texts.py:171 tavletta/ui/texts.py:196
 msgid "Dotted"
 msgstr "Chấm chấm"
 
-#: tavletta/ui/texts.py:172
+#: tavletta/ui/texts.py:173
 msgid "Double"
 msgstr "Đôi"
 
-#: tavletta/ui/texts.py:174
+#: tavletta/ui/texts.py:175
 msgid "Line"
 msgstr "Đường kẻ"
 
-#: tavletta/ui/texts.py:175
+#: tavletta/ui/texts.py:176
 msgid "Rectangle"
 msgstr "Hình chữ nhật"
 
-#: tavletta/ui/texts.py:176
+#: tavletta/ui/texts.py:177
 msgid "Ellipse"
 msgstr "Hình elip"
 
-#: tavletta/ui/texts.py:177
+#: tavletta/ui/texts.py:178
 msgid "Separator"
 msgstr "Đường phân cách"
 
-#: tavletta/ui/texts.py:180
+#: tavletta/ui/texts.py:181
 msgid "Horizontal"
 msgstr "Ngang"
 
-#: tavletta/ui/texts.py:181
+#: tavletta/ui/texts.py:182
 msgid "Vertical"
 msgstr "Dọc"
 
-#: tavletta/ui/texts.py:182
+#: tavletta/ui/texts.py:183
 msgid "Diagonal, rising"
 msgstr "Chéo, đi lên"
 
-#: tavletta/ui/texts.py:183
+#: tavletta/ui/texts.py:184
 msgid "Diagonal, falling"
 msgstr "Chéo, đi xuống"
 
-#: tavletta/ui/texts.py:186
+#: tavletta/ui/texts.py:187
 msgctxt "arrows"
 msgid "None"
 msgstr "Không có"
 
-#: tavletta/ui/texts.py:187
+#: tavletta/ui/texts.py:188
 msgid "At the start"
 msgstr "Ở đầu"
 
-#: tavletta/ui/texts.py:188
+#: tavletta/ui/texts.py:189
 msgid "At the end"
 msgstr "Ở cuối"
 
-#: tavletta/ui/texts.py:189
+#: tavletta/ui/texts.py:190
 msgid "At both ends"
 msgstr "Ở cả hai đầu"
 
-#: tavletta/ui/texts.py:192
+#: tavletta/ui/texts.py:193
 msgctxt "fill"
 msgid "None"
 msgstr "Không tô"
 
-#: tavletta/ui/texts.py:193
+#: tavletta/ui/texts.py:194
 msgctxt "fill"
 msgid "Solid"
 msgstr "Tô đặc"
 
-#: tavletta/ui/texts.py:194
+#: tavletta/ui/texts.py:195
 msgid "Hatched"
 msgstr "Gạch chéo"
 
-#: tavletta/ui/texts.py:196
+#: tavletta/ui/texts.py:197
 msgid "Grid"
 msgstr "Lưới"
 
-#: tavletta/ui/texts.py:211
+#. translators: %(formats)s is a list of file formats: PNG, JPEG, …
+#: tavletta/ui/texts.py:218
 #, python-format
-msgid "Not an image: %s"
-msgstr "Không phải ảnh: %s"
+msgid ""
+"%(name)s is not an image Tavletta can use. Images in %(formats)s can be used."
+msgstr "%(name)s không phải là ảnh mà Tavletta có thể dùng. Có thể dùng ảnh dạng %(formats)s."
+
+#: tavletta/ui/texts.py:226
+#, python-format
+msgid "%(name)s is not a label, an image or a data file"
+msgstr "%(name)s không phải là nhãn, ảnh hay tệp dữ liệu"
 
 #. translators: the print density a NIIMBOT model uses by default
-#: tavletta/ui/texts.py:229
+#: tavletta/ui/texts.py:244
 msgctxt "print density"
 msgid "Default"
 msgstr "Mặc định"
 
-#: tavletta/ui/texts.py:233
+#: tavletta/ui/texts.py:248
 #, python-format
 msgid "%d %%"
 msgstr "%d%%"
 
 #. translators: print speed in inches per second, as label printers state it
-#: tavletta/ui/texts.py:236
+#: tavletta/ui/texts.py:251
 #, python-format
 msgid "%d in/s"
 msgstr "%d inch/giây"
 
-#: tavletta/ui/texts.py:245
+#: tavletta/ui/texts.py:260
 msgid "Image"
 msgstr "Ảnh"
 
-#: tavletta/ui/texts.py:280
+#: tavletta/ui/texts.py:295
 #, python-format
 msgid "Endless, %(width)s wide"
 msgstr "Liên tục, rộng %(width)s"
 
-#: tavletta/ui/texts.py:290
+#: tavletta/ui/texts.py:305
 msgid ""
 "Check that all of the label is inside the selection. Drag to move it or its "
 "edges, or draw a new one."
 msgstr "Kiểm tra xem toàn bộ nhãn có nằm trong vùng chọn không. Kéo để di chuyển vùng chọn hoặc các cạnh của nó, hoặc vẽ vùng mới."
 
-#: tavletta/ui/texts.py:294
+#: tavletta/ui/texts.py:309
 msgid ""
 "Several areas could be the label. Check the selection or try the next one."
 msgstr "Nhiều vùng có thể là nhãn. Kiểm tra vùng chọn hoặc thử vùng tiếp theo."
 
-#: tavletta/ui/texts.py:296
+#: tavletta/ui/texts.py:311
 msgid "Everything printed on the page is selected. Drag to choose the label."
 msgstr "Mọi thứ được in trên trang đã được chọn. Kéo để chọn nhãn."
 
-#: tavletta/ui/texts.py:297
+#: tavletta/ui/texts.py:312
 msgid "Nothing is printed on this page."
 msgstr "Không có gì được in trên trang này."
 
-#: tavletta/ui/texts.py:302
+#: tavletta/ui/texts.py:317
 msgid "PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "Tệp PDF cần Poppler (poppler-glib), nhưng chưa được cài đặt"
 
-#: tavletta/ui/texts.py:313
+#: tavletta/ui/texts.py:328
 msgid "System printer (CUPS, IPP)"
 msgstr "Máy in hệ thống (CUPS, IPP)"
 
-#: tavletta/ui/texts.py:314
+#: tavletta/ui/texts.py:329
 msgid "Receipt printer (ESC/POS)"
 msgstr "Máy in hóa đơn (ESC/POS)"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: tavletta/ui/texts.py:316
+#: tavletta/ui/texts.py:331
 #, python-format
 msgid "%s, continuous rolls"
 msgstr "%s, cuộn liên tục"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: tavletta/ui/texts.py:318
+#: tavletta/ui/texts.py:333
 #, python-format
 msgid "%s, die-cut labels"
 msgstr "%s, nhãn cắt sẵn"
 
-#: tavletta/ui/texts.py:325
+#: tavletta/ui/texts.py:340
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "Phần tử %(n)d: mã đang trống"
 
-#: tavletta/ui/texts.py:326
+#: tavletta/ui/texts.py:341
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "Phần tử %(n)d: EAN-13 cần đúng 12 chữ số"
 
-#: tavletta/ui/texts.py:327
+#: tavletta/ui/texts.py:342
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Phần tử %(n)d: số kiểm tra EAN-13 không đúng"
 
-#: tavletta/ui/texts.py:328
+#: tavletta/ui/texts.py:343
 #, python-format
 msgid "Element %(n)d: Code 128 holds at most %(max)d characters"
 msgstr "Phần tử %(n)d: Code 128 chứa tối đa %(max)d ký tự"
 
-#: tavletta/ui/texts.py:330
+#: tavletta/ui/texts.py:345
 #, python-format
 msgid ""
 "Element %(n)d: the bars are too thin to scan reliably – use a longer or "
 "larger label, or shorter content"
 msgstr "Phần tử %(n)d: các vạch quá mảnh để quét ổn định – hãy dùng nhãn dài hơn hoặc lớn hơn, hoặc nội dung ngắn hơn"
 
-#: tavletta/ui/texts.py:334
+#: tavletta/ui/texts.py:349
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Phần tử %(n)d: Code 128 chỉ chấp nhận chữ cái Latinh, chữ số và dấu câu"
 
-#: tavletta/ui/texts.py:336
+#: tavletta/ui/texts.py:351
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "Phần tử %(n)d: EAN-8 cần 7 chữ số, hoặc 8 chữ số kèm số kiểm tra"
 
-#: tavletta/ui/texts.py:337
+#: tavletta/ui/texts.py:352
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "Phần tử %(n)d: UPC-A cần 11 chữ số, hoặc 12 chữ số kèm số kiểm tra"
 
-#: tavletta/ui/texts.py:339
+#: tavletta/ui/texts.py:354
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "Phần tử %(n)d: UPC-E cần 7 chữ số bắt đầu bằng 0 hoặc 1, hoặc 8 chữ số kèm số kiểm tra"
 
-#: tavletta/ui/texts.py:341
+#: tavletta/ui/texts.py:356
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "Phần tử %(n)d: ITF-14 cần 13 chữ số, hoặc 14 chữ số kèm số kiểm tra"
 
-#: tavletta/ui/texts.py:342
+#: tavletta/ui/texts.py:357
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "Phần tử %(n)d: số kiểm tra không đúng"
 
-#: tavletta/ui/texts.py:344
+#: tavletta/ui/texts.py:359
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "Phần tử %(n)d: Code 39 chỉ chấp nhận chữ in hoa, chữ số, dấu cách và - . $ / + %%"
 
-#: tavletta/ui/texts.py:347
+#: tavletta/ui/texts.py:362
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "Phần tử %(n)d: Code 93 chỉ chấp nhận chữ cái Latinh, chữ số và dấu câu"
 
-#: tavletta/ui/texts.py:350
+#: tavletta/ui/texts.py:365
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "Phần tử %(n)d: dữ liệu GS1 chỉ chấp nhận chữ cái Latinh, chữ số và dấu câu"
 
-#: tavletta/ui/texts.py:353
+#: tavletta/ui/texts.py:368
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "Phần tử %(n)d: dữ liệu GS1 phải là các số phân định ứng dụng trong ngoặc, mỗi số theo sau là giá trị của nó, ví dụ (01)09501101530003(10)AB12"
 
-#: tavletta/ui/texts.py:356
+#: tavletta/ui/texts.py:371
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "Phần tử %(n)d: (%(ai)s) không phải là số phân định ứng dụng GS1"
 
-#: tavletta/ui/texts.py:358
+#: tavletta/ui/texts.py:373
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "Phần tử %(n)d: giá trị của số phân định ứng dụng (%(ai)s) có độ dài không đúng"
 
-#: tavletta/ui/texts.py:361
+#: tavletta/ui/texts.py:376
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "Phần tử %(n)d: số kiểm tra của số phân định ứng dụng (%(ai)s) không đúng"
 
-#: tavletta/ui/texts.py:364
+#: tavletta/ui/texts.py:379
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "Phần tử %(n)d: giá trị của số phân định ứng dụng (%(ai)s) không hợp lệ: có ngày, số hoặc ký tự không được phép"
 
-#: tavletta/ui/texts.py:368
+#: tavletta/ui/texts.py:383
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "Phần tử %(n)d: không có số UPC-A nào rút gọn thành các chữ số UPC-E này – hãy kiểm tra hoặc dùng UPC-A"
 
-#: tavletta/ui/texts.py:372
+#: tavletta/ui/texts.py:387
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "Phần tử %(n)d: máy quét đặt ở chế độ Full ASCII đọc $, /, + hoặc %% đứng trước chữ in hoa thành một ký tự khác"
 
-#: tavletta/ui/texts.py:375
+#: tavletta/ui/texts.py:390
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Phần tử %(n)d: nội dung quá dài cho loại mã này"
 
-#: tavletta/ui/texts.py:376
+#: tavletta/ui/texts.py:391
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Phần tử %(n)d: không thể mã hóa nội dung bằng loại mã này"
 
-#: tavletta/ui/texts.py:378
+#: tavletta/ui/texts.py:393
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Phần tử %(n)d: loại mã này cần thư viện Zint (zint-bindings), nhưng thư viện chưa được cài đặt"
 
-#: tavletta/ui/texts.py:381
+#: tavletta/ui/texts.py:396
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Phần tử %(n)d: không đọc được ảnh"
 
-#: tavletta/ui/texts.py:382
+#: tavletta/ui/texts.py:397
 #, python-format
 msgid "Element %(n)d: this symbol is not in the symbol library"
 msgstr "Phần tử %(n)d: biểu tượng này không có trong thư viện biểu tượng"
 
-#: tavletta/ui/texts.py:383
+#: tavletta/ui/texts.py:398
 #, python-format
 msgid "Element %(n)d: the document cannot be read"
 msgstr "Phần tử %(n)d: không đọc được tài liệu"
 
-#: tavletta/ui/texts.py:385
+#: tavletta/ui/texts.py:400
 #, python-format
 msgid ""
 "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "Phần tử %(n)d: tệp PDF cần Poppler (poppler-glib), nhưng chưa được cài đặt"
 
-#: tavletta/ui/texts.py:387
+#: tavletta/ui/texts.py:402
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Không vẽ được phần tử %(n)d"
 
-#: tavletta/ui/texts.py:389
+#: tavletta/ui/texts.py:404
 msgid ""
 "Safety margin, border, its inset and edge spacing leave no room – reduce them"
 msgstr "Lề an toàn, viền, phần thụt vào của viền và khoảng cách mép không còn chỗ trống – hãy giảm bớt"
 
-#: tavletta/ui/texts.py:391
+#: tavletta/ui/texts.py:406
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Chiều dài cố định ngắn hơn khoảng cách – hãy tăng chiều dài"
 
-#: tavletta/ui/texts.py:392
+#: tavletta/ui/texts.py:407
 msgid "The background image cannot be read"
 msgstr "Không đọc được ảnh nền"
 
-#: tavletta/ui/texts.py:394
+#: tavletta/ui/texts.py:409
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Phần tử %(n)d: mô-đun của mã chỉ rộng một điểm in và có thể không quét được – hãy phóng to mã"
 
-#: tavletta/ui/texts.py:398
+#: tavletta/ui/texts.py:413
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Phần tử %(n)d: khoảng trống mã cần xung quanh không đủ chỗ – hãy phóng to mã"
 
-#: tavletta/ui/texts.py:402
+#: tavletta/ui/texts.py:417
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Phần tử %(n)d: mã không vừa chỗ của nó, kể cả với một điểm in mỗi mô-đun – hãy phóng to nhãn hoặc rút ngắn nội dung"
 
-#: tavletta/ui/texts.py:405
+#: tavletta/ui/texts.py:420
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "Phần tử %(n)d: %(name)s không phải biến đã biết"
 
-#: tavletta/ui/texts.py:407
+#: tavletta/ui/texts.py:422
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "Phần tử %(n)d: ngày của %(name)s trước năm 1 hoặc sau năm 9999"
 
-#: tavletta/ui/texts.py:410
+#: tavletta/ui/texts.py:425
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "Phần tử %(n)d: biến %(name)s… chưa được đóng – hãy kết thúc bằng }"
 
-#: tavletta/ui/texts.py:413
+#: tavletta/ui/texts.py:428
 #, python-format
 msgid ""
 "Element %(n)d: on a black-and-white printer it hardly stands out from what "
 "lies behind it, as a whole or in part – choose another colour or move it"
 msgstr "Phần tử %(n)d: trên máy in đen trắng, nó hầu như không nổi bật so với những gì phía sau, toàn bộ hoặc một phần – hãy chọn màu khác hoặc di chuyển nó"
 
-#: tavletta/ui/texts.py:416
+#: tavletta/ui/texts.py:431
 #, python-format
 msgid "Element %(n)d: the shape has neither a line nor a fill"
 msgstr "Phần tử %(n)d: hình không có cả đường kẻ lẫn phần tô"
 
-#: tavletta/ui/texts.py:418
+#: tavletta/ui/texts.py:433
 #, python-format
 msgid ""
 "Element %(n)d reaches beyond the edge of the label and is cut off there – "
 "move it or make it smaller"
 msgstr "Phần tử %(n)d vượt ra ngoài mép nhãn và bị cắt ở đó – hãy di chuyển hoặc thu nhỏ nó"
 
-#: tavletta/ui/texts.py:422
+#: tavletta/ui/texts.py:437
 #, python-format
 msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "Phần tử %(n)d: đệm, khung, viền chữ hoặc bóng không còn chỗ cho chữ – hãy giảm bớt"
 
-#: tavletta/ui/texts.py:437
+#: tavletta/ui/texts.py:452
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Số tờ đã in: %(n)d trên %(total)d."
 
-#: tavletta/ui/texts.py:439
+#: tavletta/ui/texts.py:454
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Số nhãn đã in: %(n)d trên %(total)d."
 
-#: tavletta/ui/texts.py:443
+#: tavletta/ui/texts.py:458
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Các tờ còn chờ trong hàng đợi đã bị hủy."
 
-#: tavletta/ui/texts.py:445
+#: tavletta/ui/texts.py:460
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Các nhãn còn chờ trong hàng đợi đã bị hủy."
 
-#: tavletta/ui/texts.py:452
+#: tavletta/ui/texts.py:467
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -2729,92 +2736,92 @@ msgid ""
 "size and the gap."
 msgstr "Nhãn có kích thước %(size)s với khe hở %(gap)s, nên cứ %(pitch)s lại bắt đầu một nhãn mới. Máy in đo được cứ %(measured)s có một nhãn. Hãy kiểm tra kích thước nhãn và khe hở."
 
-#: tavletta/ui/texts.py:468
+#: tavletta/ui/texts.py:483
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Không tìm thấy máy in. Hãy kiểm tra máy in đã bật và ở cùng mạng, hoặc nhập địa chỉ IP của máy in."
 
-#: tavletta/ui/texts.py:472
+#: tavletta/ui/texts.py:487
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "Không tìm thấy máy in qua USB. Hãy kiểm tra cáp và máy in đã bật, không ở chế độ ngủ, rồi tìm lại."
 
-#: tavletta/ui/texts.py:475
+#: tavletta/ui/texts.py:490
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Máy in không phản hồi. Hãy kiểm tra máy in đã bật và không ở chế độ ngủ."
 
-#: tavletta/ui/texts.py:477
+#: tavletta/ui/texts.py:492
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "Máy in đã ngừng nhận dữ liệu. Hãy kiểm tra xem máy có báo lỗi không, chẳng hạn hết nhãn hoặc nắp đang mở, rồi thử lại."
 
-#: tavletta/ui/texts.py:481
+#: tavletta/ui/texts.py:496
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Máy in từ chối kết nối. Hãy tắt rồi bật lại máy in. Nếu giao diện web của máy in có tùy chọn “Port 9100”, hãy bật tùy chọn đó."
 
-#: tavletta/ui/texts.py:484
+#: tavletta/ui/texts.py:499
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Chưa lắp hộp băng. Hãy lắp hộp băng rồi thử lại."
 
-#: tavletta/ui/texts.py:485
+#: tavletta/ui/texts.py:500
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Nắp máy in đang mở. Hãy đóng nắp rồi thử lại."
 
-#: tavletta/ui/texts.py:486
+#: tavletta/ui/texts.py:501
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Nhãn bị kẹt. Hãy mở nắp, lấy nhãn ra rồi thử lại."
 
-#: tavletta/ui/texts.py:487
+#: tavletta/ui/texts.py:502
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Không nhận ra hộp băng. Hãy lắp lại hoặc thử hộp băng khác."
 
-#: tavletta/ui/texts.py:488
+#: tavletta/ui/texts.py:503
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Máy in đang bận. Hãy chờ một chút rồi thử lại."
 
-#: tavletta/ui/texts.py:489
+#: tavletta/ui/texts.py:504
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Nhãn quá dài cho máy in này: tối đa %(max)s."
 
-#: tavletta/ui/texts.py:490
+#: tavletta/ui/texts.py:505
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Nhãn quá rộng cho máy in này: tối đa %(max)s."
 
-#: tavletta/ui/texts.py:491
+#: tavletta/ui/texts.py:506
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Máy in đã hết nhãn. Hãy lắp cuộn mới và thử lại."
 
-#: tavletta/ui/texts.py:492
+#: tavletta/ui/texts.py:507
 msgid "The print head is open. Close it and try again."
 msgstr "Đầu in đang mở. Hãy đóng lại và thử lại."
 
-#: tavletta/ui/texts.py:494
+#: tavletta/ui/texts.py:509
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Máy in không tìm thấy nhãn tiếp theo. Hãy kiểm tra nhãn đã được lắp đúng chưa và có đi qua cảm biến nhãn không."
 
-#: tavletta/ui/texts.py:498
+#: tavletta/ui/texts.py:513
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Ruy băng có vấn đề. Hãy kiểm tra ruy băng đã được lắp đúng chưa và có khớp với phương thức in đã đặt trên máy in không."
 
-#: tavletta/ui/texts.py:504
+#: tavletta/ui/texts.py:519
 #, python-format
 msgid ""
 "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
 "without one need “%(direct)s” under “%(method)s”."
 msgstr "Máy in không tìm thấy ruy băng. Hãy lắp ruy băng rồi thử lại. Nhãn in không cần ruy băng cần chọn “%(direct)s” trong “%(method)s”."
 
-#: tavletta/ui/texts.py:511
+#: tavletta/ui/texts.py:526
 #, python-format
 msgid ""
 "A ribbon is loaded, but the printer prints without it (thermal direct). For "
@@ -2822,239 +2829,239 @@ msgid ""
 "remove the ribbon."
 msgstr "Đã lắp ruy băng nhưng máy in đang in không dùng ruy băng (in nhiệt trực tiếp). Với nhãn cần ruy băng, hãy chọn “%(transfer)s” trong “%(method)s”, hoặc tháo ruy băng ra."
 
-#: tavletta/ui/texts.py:516
+#: tavletta/ui/texts.py:531
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Máy in đang tạm dừng. Hãy tiếp tục trên màn hình của máy rồi thử lại."
 
-#: tavletta/ui/texts.py:517
+#: tavletta/ui/texts.py:532
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Máy in đã hết giấy. Hãy nạp giấy rồi thử lại."
 
-#: tavletta/ui/texts.py:519
+#: tavletta/ui/texts.py:534
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Giấy bị kẹt. Hãy lấy giấy ra theo hướng dẫn trên màn hình của máy in rồi thử lại."
 
-#: tavletta/ui/texts.py:521
+#: tavletta/ui/texts.py:536
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Máy in đã hết mực hoặc toner. Hãy thay rồi thử lại."
 
-#: tavletta/ui/texts.py:522
+#: tavletta/ui/texts.py:537
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Máy in không thể in cỡ này. Hãy chọn cỡ giấy mà máy in hỗ trợ."
 
-#: tavletta/ui/texts.py:524
+#: tavletta/ui/texts.py:539
 msgid ""
 "The printer takes none of the formats Tavletta can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Máy in không nhận định dạng nào mà Tavletta có thể gửi (PDF, PWG Raster, JPEG)."
 
-#: tavletta/ui/texts.py:527
+#: tavletta/ui/texts.py:542
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: tavletta/ui/texts.py:531
+#: tavletta/ui/texts.py:546
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: tavletta/ui/texts.py:535
+#: tavletta/ui/texts.py:550
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Lệnh in đã bị hủy trên máy in hoặc trong hàng đợi."
 
-#: tavletta/ui/texts.py:536
+#: tavletta/ui/texts.py:551
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "Máy in không báo độ phân giải kịp thời. Hãy chọn trong “%s”."
 
-#: tavletta/ui/texts.py:539
+#: tavletta/ui/texts.py:554
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "Cuộn đang lắp không khớp với nhãn. Hãy lắp cuộn phù hợp, hoặc chọn kích thước nhãn hay kiểu máy in theo cuộn đang lắp."
 
-#: tavletta/ui/texts.py:542
+#: tavletta/ui/texts.py:557
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "Pin máy in yếu – hãy sạc hoặc cắm bộ đổi nguồn."
 
-#: tavletta/ui/texts.py:543
+#: tavletta/ui/texts.py:558
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "Đầu in quá nóng. Hãy đợi đến khi nguội, rồi thử lại."
 
-#: tavletta/ui/texts.py:545
+#: tavletta/ui/texts.py:560
 msgid ""
 "Tavletta cannot print on this printer model: it does not take the raster "
 "images Tavletta sends."
 msgstr "Tavletta không thể in trên mẫu máy in này: máy không nhận ảnh raster mà Tavletta gửi."
 
-#: tavletta/ui/texts.py:549
+#: tavletta/ui/texts.py:564
 msgid "Tavletta does not know this printer model and cannot print on it yet."
 msgstr "Tavletta chưa biết mẫu máy in này và chưa thể in trên nó."
 
-#: tavletta/ui/texts.py:552
+#: tavletta/ui/texts.py:567
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "Máy in đang ở chế độ Editor Lite và hiện ra như một ổ USB. Hãy tắt Editor Lite trên máy in (đèn của nó tắt), rồi tìm lại."
 
-#: tavletta/ui/texts.py:556
+#: tavletta/ui/texts.py:571
 msgid ""
 "Tavletta is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Tavletta không được phép dùng cổng USB của máy in. Hãy thêm người dùng của bạn vào nhóm “lp” (sudo usermod -aG lp $USER), rồi đăng xuất và đăng nhập lại."
 
-#: tavletta/ui/texts.py:560
+#: tavletta/ui/texts.py:575
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "Trang quá lớn để tạo ở độ phân giải mà máy in nhận. Hãy chọn khổ giấy nhỏ hơn hoặc in trên máy in nhận PDF."
 
-#: tavletta/ui/texts.py:564
+#: tavletta/ui/texts.py:579
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Ở độ phân giải của máy in này, mã không vừa nhãn và sẽ bị cắt. Hãy phóng to nhãn hoặc rút ngắn nội dung của mã."
 
-#: tavletta/ui/texts.py:568
+#: tavletta/ui/texts.py:583
 msgid ""
 "Tavletta is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Tavletta không được phép dùng cổng nối tiếp của máy in. Hãy thêm người dùng của bạn vào nhóm “dialout” (sudo usermod -aG dialout $USER; trên Arch Linux nhóm tên là “uucp”), rồi đăng xuất và đăng nhập lại."
 
-#: tavletta/ui/texts.py:573
+#: tavletta/ui/texts.py:588
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Máy in báo có sự cố. Hãy tắt rồi bật lại máy in, sau đó thử lại lần nữa."
 
-#: tavletta/ui/texts.py:584
+#: tavletta/ui/texts.py:599
 msgid "Printed"
 msgstr "Đã in"
 
-#: tavletta/ui/texts.py:590
+#: tavletta/ui/texts.py:605
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Đã gửi đến máy in – sẽ được in khi đến lượt"
 
-#: tavletta/ui/texts.py:592
+#: tavletta/ui/texts.py:607
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "Đã gửi đến máy in – máy in không xác nhận đã in"
 
-#: tavletta/ui/texts.py:596
+#: tavletta/ui/texts.py:611
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Đã in bằng “%(used)s” vì cuộn đang lắp cần như vậy"
 
-#: tavletta/ui/texts.py:600
+#: tavletta/ui/texts.py:615
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Chế độ màu “%(wanted)s” không có trên máy in này, đã in bằng “%(used)s”"
 
-#: tavletta/ui/texts.py:610
+#: tavletta/ui/texts.py:625
 msgid "Warming up…"
 msgstr "Đang làm nóng…"
 
-#: tavletta/ui/texts.py:611
+#: tavletta/ui/texts.py:626
 msgid "Cooling down…"
 msgstr "Đang làm nguội…"
 
-#: tavletta/ui/texts.py:612
+#: tavletta/ui/texts.py:627
 msgid "Cleaning…"
 msgstr "Đang làm sạch…"
 
-#: tavletta/ui/texts.py:613
+#: tavletta/ui/texts.py:628
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Vuốt trên bảng điều khiển của máy in để cắt nhãn"
 
-#: tavletta/ui/texts.py:615
+#: tavletta/ui/texts.py:630
 msgid "Out of paper – load paper to continue"
 msgstr "Hết giấy – hãy nạp giấy để tiếp tục"
 
-#: tavletta/ui/texts.py:616
+#: tavletta/ui/texts.py:631
 msgid "Cover open – close it to continue"
 msgstr "Nắp đang mở – hãy đóng nắp để tiếp tục"
 
-#: tavletta/ui/texts.py:617
+#: tavletta/ui/texts.py:632
 msgid "Paper jammed – remove it to continue"
 msgstr "Kẹt giấy – hãy lấy giấy ra để tiếp tục"
 
-#: tavletta/ui/texts.py:628
+#: tavletta/ui/texts.py:643
 msgid "This label needs a newer version of Tavletta"
 msgstr "Nhãn này cần phiên bản Tavletta mới hơn"
 
-#: tavletta/ui/texts.py:630
+#: tavletta/ui/texts.py:645
 #, python-format
 msgid "%s is not an Tavletta label"
 msgstr "%s không phải là nhãn Tavletta"
 
-#: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651
+#: tavletta/ui/texts.py:646 tavletta/ui/texts.py:666
 #: tavletta/server/service.py:686
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tệp bị hỏng: %s"
 
-#: tavletta/ui/texts.py:638
+#: tavletta/ui/texts.py:653
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Tệp dữ liệu %s không còn nữa. Hãy chọn lại hoặc gỡ bỏ."
 
-#: tavletta/ui/texts.py:642
+#: tavletta/ui/texts.py:657
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s không có trang tính nào tên %(sheet)s"
 
-#: tavletta/ui/texts.py:644
+#: tavletta/ui/texts.py:659
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s không phải là bảng. Hãy dùng tệp CSV, ODS hoặc XLSX."
 
-#: tavletta/ui/texts.py:646
+#: tavletta/ui/texts.py:661
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s quá lớn cho nhãn hàng loạt. Hãy chia thành các tệp nhỏ hơn hoặc xóa các hàng và cột không cần thiết."
 
-#: tavletta/ui/texts.py:649
+#: tavletta/ui/texts.py:664
 #, python-format
 msgid "%s contains no data."
 msgstr "%s không có dữ liệu."
 
-#: tavletta/ui/texts.py:660
+#: tavletta/ui/texts.py:675
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Việc in đã dừng ở hàng %(row)d. Để tiếp tục, hãy in lại từ hàng %(row)d."
 
-#: tavletta/ui/texts.py:664
+#: tavletta/ui/texts.py:679
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Số bản của hàng %(row)d đã in: %(copies)d."
 
-#: tavletta/ui/texts.py:669
+#: tavletta/ui/texts.py:684
 #, python-format
 msgid "Row %(row)d goes at position %(position)d of sheet %(sheet)d."
 msgstr "Hàng %(row)d nằm ở vị trí %(position)d của tờ %(sheet)d."
 
-#: tavletta/ui/texts.py:680
+#: tavletta/ui/texts.py:695
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Không thể lưu %s: không có quyền ghi vào đó"
 
-#: tavletta/ui/texts.py:682
+#: tavletta/ui/texts.py:697
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Không thể lưu %s: đĩa đã đầy"
 
-#: tavletta/ui/texts.py:692
+#: tavletta/ui/texts.py:707
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
@@ -3120,70 +3127,70 @@ msgstr "Số tiếp theo"
 msgid "Step"
 msgstr "Bước nhảy"
 
-#: tavletta/ui/window.py:158
+#: tavletta/ui/window.py:163
 msgid "Templates"
 msgstr "Mẫu"
 
-#: tavletta/ui/window.py:189
+#: tavletta/ui/window.py:194
 msgid "Shipping label…"
 msgstr "Nhãn vận chuyển…"
 
-#: tavletta/ui/window.py:192
+#: tavletta/ui/window.py:197
 msgid "Data for serial labels…"
 msgstr "Dữ liệu cho nhãn hàng loạt…"
 
-#: tavletta/ui/window.py:193
+#: tavletta/ui/window.py:198
 msgid "Forget allowed data files"
 msgstr "Quên các tệp dữ liệu đã cho phép"
 
-#: tavletta/ui/window.py:194
+#: tavletta/ui/window.py:199
 msgid "Export PNG…"
 msgstr "Xuất ra PNG…"
 
-#: tavletta/ui/window.py:198
+#: tavletta/ui/window.py:203
 msgid "Report a problem…"
 msgstr "Báo cáo sự cố…"
 
-#: tavletta/ui/window.py:199
+#: tavletta/ui/window.py:204
 msgid "About Tavletta"
 msgstr "Giới thiệu Tavletta"
 
-#: tavletta/ui/window.py:678
+#: tavletta/ui/window.py:683
 msgid "Unsaved label"
 msgstr "Nhãn chưa lưu"
 
-#: tavletta/ui/window.py:837
+#: tavletta/ui/window.py:842
 msgid "content scaled down to fit"
 msgstr "đã thu nhỏ nội dung cho vừa"
 
-#: tavletta/ui/window.py:841
+#: tavletta/ui/window.py:846
 #, python-format
 msgid "Problem: %s"
 msgstr "Sự cố: %s"
 
-#: tavletta/ui/window.py:860
+#: tavletta/ui/window.py:865
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Quá dài cho máy in này: tối đa %s"
 
-#: tavletta/ui/window.py:864
+#: tavletta/ui/window.py:869
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Quá rộng cho máy in này: tối đa %s"
 
-#: tavletta/ui/window.py:936
+#: tavletta/ui/window.py:941
 msgid "The browser cannot be opened"
 msgstr "Không thể mở trình duyệt"
 
-#: tavletta/ui/window.py:938
+#: tavletta/ui/window.py:943
 msgid "Copy link"
 msgstr "Sao chép liên kết"
 
-#: tavletta/ui/window.py:1009
+#: tavletta/ui/window.py:1014
 msgid "Only local files can be dropped"
 msgstr "Chỉ thả được tập tin cục bộ"
 
-#: tavletta/ui/window.py:1047
+#: tavletta/ui/window.py:1067
 msgid "Please wait until printing has finished"
 msgstr "Vui lòng chờ in xong"
 

@@ -28,7 +28,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from tavletta import app, model  # noqa: E402
+from tavletta import app, imageformats, model  # noqa: E402
 from tavletta.backends.base import (  # noqa: E402
     BadCassette,
     CassetteInfo,
@@ -229,8 +229,21 @@ def test_image_from_path(tmp_path):
     with pytest.raises(ValueError, match="Only local files"):
         texts.image_from_path(None)
     (tmp_path / "notes.txt").write_text("hello")
-    with pytest.raises(ValueError, match="Not an image: notes.txt"):
+    with pytest.raises(ValueError, match="notes.txt\u2069 is not an image Tavletta can use"):
         texts.image_from_path(str(tmp_path / "notes.txt"))
+
+
+@pytest.mark.parametrize("suffix", ["ico", "ppm", "tga", "eps"])
+def test_image_formats_a_label_cannot_embed(tmp_path, suffix):
+    """Formats Pillow reads but a label may not embed (the renderer would
+    draw a placeholder): refused when imported, saying which can be used."""
+    from PIL import Image
+
+    path = tmp_path / ("a." + suffix)
+    Image.new("RGB", (16, 16), "red").save(path)
+    with pytest.raises(ValueError) as refused:
+        texts.image_from_path(str(path))
+    assert "PNG, JPEG, GIF, BMP, WebP, TIFF" in str(refused.value)
 
 
 def test_settings_roundtrip(gui_env):
@@ -444,7 +457,12 @@ def test_choose_image(window, file_dialog, tmp_path):
     (tmp_path / "x.txt").write_text("no")
     file_dialog.result = tmp_path / "x.txt"
     window.files.choose_image(picked.append)
-    assert picked == [] and toast_titles(window) == ["Not an image: x.txt"]
+    assert picked == [] and toast_titles(window) == [texts.unusable_image_text("x.txt")]
+    flt = file_dialog.instances[-1].kwargs["filters"].get_item(0)
+    _name, rules = flt.to_gvariant().unpack()
+    types = {rule for kind, rule in rules if kind == 1}  # mime types; 0: patterns
+    assert types == set(imageformats.MIME_TYPES)  # not every pixbuf format
+    assert len(rules) == len(imageformats.MIME_TYPES) + len(imageformats.SUFFIXES)
     file_dialog.result = png_file(tmp_path / "ok.png")
     window.activate_action("win.add-image", None)
     assert window.label.elements[-1].name == "ok.png"
@@ -1189,8 +1207,34 @@ def test_drop_rejects(window, tmp_path):
     assert drop(window, Gio.File.new_for_uri("https://example.org/x.png")) is False
     (tmp_path / "t.txt").write_text("x")
     assert drop(window, Gio.File.new_for_path(str(tmp_path / "t.txt"))) is False
-    assert toast_titles(window) == ["Only local files can be dropped", "Not an image: t.txt"]
+    assert toast_titles(window) == [
+        "Only local files can be dropped",
+        texts.unknown_file_text("t.txt"),
+    ]
     assert len(window.label.elements) == 1
+
+
+def test_drop_an_unknown_file(window, tmp_path):
+    """A file that is neither a label, an image nor data (a file of the
+    old name, a document) is not taken for an image; an image in a format
+    a label cannot embed says which formats it can; an image without a
+    known name is one by its content."""
+    from PIL import Image
+
+    (tmp_path / "old.etiketto").write_text('{"tape_mm": 12}')
+    (tmp_path / "notes.odt").write_bytes(b"PK\x03\x04")
+    Image.new("RGB", (16, 16), "red").save(tmp_path / "icon.ico")
+    for name in ("old.etiketto", "notes.odt", "icon.ico"):
+        assert drop(window, Gio.File.new_for_path(str(tmp_path / name))) is False
+    assert toast_titles(window) == [
+        texts.unknown_file_text("old.etiketto"),
+        texts.unknown_file_text("notes.odt"),
+        texts.unusable_image_text("icon.ico"),
+    ]
+    assert len(window.label.elements) == 1
+    Image.new("RGB", (16, 16), "red").save(tmp_path / "scan", format="PNG")  # no suffix
+    assert drop(window, Gio.File.new_for_path(str(tmp_path / "scan"))) is True
+    assert window.label.elements[-1].name == "scan"
 
 
 def test_drop_label_on_dirty_window_asks(window, saved):

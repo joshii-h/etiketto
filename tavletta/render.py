@@ -20,7 +20,7 @@ from typing import NamedTuple
 
 from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageStat
 
-from tavletta import codes, imagefx, shapes, typeset
+from tavletta import codes, imageformats, imagefx, shapes, typeset
 from tavletta.codes import CodeError
 from tavletta.model import (
     CodeElement,
@@ -373,10 +373,8 @@ def _largest(fits, low: float, high: float) -> float:
 # a warning filter to keep it quiet would not be safe in threads.
 IMAGE_FILE_PIXELS = 80_000_000
 Image.MAX_IMAGE_PIXELS = None
-# image files a label may embed: what Pillow decodes itself, quickly. Not
-# EPS (Ghostscript would run it), not ICO/ICNS/CUR (decoded when opened,
-# before their size can be checked), not the dozens of rarer formats.
-IMAGE_FORMATS = ("PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF")
+# image files a label may embed: the one list (tavletta.imageformats)
+IMAGE_FORMATS = imageformats.FORMATS
 # within limits: decoded images of the render running in this thread,
 # each image once however often the label uses it; never kept afterwards
 _RENDER_CACHE: ContextVar[dict | None] = ContextVar("render_cache", default=None)

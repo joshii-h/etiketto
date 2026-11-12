@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from tavletta import imageformats
 from tavletta.backends.base import PrinterError, PrinterInfo, PrintOptions, PrintResult
 from tavletta.merge import MergeError
 from tavletta.model import (
@@ -200,15 +201,29 @@ TARGET_NAMES = {"4x6": "4 × 6″", "a6": "A6", "a4": "A4"}
 
 
 def image_from_path(path) -> ImageElement:
-    """Read an image file into an element; ValueError if it is not an image."""
+    """Read an image file into an element; ValueError if it is not an
+    image in one of the formats a label may embed (imageformats)."""
     if not path:
         raise ValueError(_("Only local files can be used"))
     try:
-        with Image.open(path) as img:
+        with Image.open(path, formats=imageformats.FORMATS) as img:
             img.verify()
         return ImageElement.from_file(path)
     except Exception as e:  # noqa: BLE001 - PIL raises many kinds
-        raise ValueError(_("Not an image: %s") % Path(path).name) from e
+        raise ValueError(unusable_image_text(Path(path).name)) from e
+
+
+def unusable_image_text(name: str) -> str:
+    # translators: %(formats)s is a list of file formats: PNG, JPEG, …
+    return _("%(name)s is not an image Tavletta can use. Images in %(formats)s can be used.") % {
+        "name": isolate(name),
+        "formats": isolate(imageformats.NAMES),
+    }
+
+
+def unknown_file_text(name: str) -> str:
+    """A dropped file that is neither a label nor an image nor data."""
+    return _("%(name)s is not a label, an image or a data file") % {"name": isolate(name)}
 
 
 def setting_title(key: str) -> str:
