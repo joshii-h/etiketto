@@ -300,12 +300,18 @@ def hard(img: Image.Image, red: bool = False) -> Image.Image:
     return Image.merge("RGBA", (grey, grey, grey, img.getchannel("A").point(HALF)))
 
 
-def has_tones(img: Image.Image) -> bool:
-    """Whether a part has opaque pixels between black and white (a colour
-    emoji in a text): those need a drawing's or photo's conversion."""
+def tones(img: Image.Image) -> str:
+    """What a part drawn in black and white holds: "hard" (only black and
+    white, transparency hard edged: nothing to convert), "edges" (soft
+    edges of transparency) or "colour" (opaque pixels between black and
+    white, like a colour emoji in a text: a drawing's or photo's
+    conversion)."""
     if img.mode != "RGBA":
         img = img.convert("RGBA")
-    return sum(img.convert("L").histogram(img.getchannel("A").point(HALF))[1:255]) > 0
+    alpha = img.getchannel("A")
+    if sum(img.convert("L").histogram(alpha.point(HALF))[1:255]):
+        return "colour"
+    return "edges" if sum(alpha.histogram()[1:255]) else "hard"
 
 
 # --- inks -------------------------------------------------------------------------

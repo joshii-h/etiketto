@@ -146,9 +146,18 @@ def render_text(
         limits = (_width_limit(element, room, wrap), height)
         size = _fitted_size(element, measure, limits, dpi)
     block = draw(size)
+    block.colour_glyphs = _colour_glyphs(element.text)  # type: ignore[attr-defined]
     if inks.mono:  # reduced to a fixed length: laid out again (see _resize)
         block.info["redraw"] = _TextRedraw(element, size, dpi, block.height)
     return block
+
+
+def _colour_glyphs(text: str) -> bool:
+    """Whether a text may hold colour glyphs (emoji), which a black-and-white
+    printer gets converted like a picture."""
+    return any(
+        ord(char) >= 0x1F000 or 0x2600 <= ord(char) <= 0x27BF or char == "\ufe0f" for char in text
+    )
 
 
 def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
@@ -738,8 +747,8 @@ def _mono_part(element: Element, part: Image.Image, inks: Inks, dpi: float) -> I
         border = _color(inks.color(element.border_color))
         radius, width = shapes.px(element.corner_mm, dpi), shapes.px(element.border_mm, dpi)
         hard = imagefx.framed(hard, radius, width, border, antialias=False)
-    elif isinstance(element, TextElement) and imagefx.has_tones(part):
-        hard = imagefx.black_and_white(part, "auto", red=inks.red)  # a colour emoji
+    elif isinstance(element, TextElement):
+        hard = _mono_text_part(part, inks)
     else:
         hard = imagefx.hard(part, inks.red)
     for name in ("code_row0", "code_module", "code_problems"):  # what _place needs
@@ -750,6 +759,21 @@ def _mono_part(element: Element, part: Image.Image, inks: Inks, dpi: float) -> I
 
 # a background darker or lighter than this takes black or white ink as its own
 DARK_BEHIND, LIGHT_BEHIND = 40, 215
+
+
+def _mono_text_part(part: Image.Image, inks: Inks) -> Image.Image:
+    """A text drawn without anti-aliasing in black and white is ready as it
+    is; one with a colour emoji is converted like a drawing or photo."""
+    if inks.red:
+        return imagefx.hard(part, True)
+    if not getattr(part, "colour_glyphs", True):
+        return part  # drawn without anti-aliasing in black and white: as it is
+    tones = imagefx.tones(part)
+    if tones == "hard":
+        return part
+    if tones == "colour":
+        return imagefx.black_and_white(part, "auto")
+    return imagefx.hard(part)
 
 
 def _visible(part: Image.Image, inks: Inks) -> bool:
@@ -976,8 +1000,12 @@ def _dithered(label: Label, img: Image.Image, inks: Inks) -> Image.Image:
     if label.background_image and label.background_image.data:  # opaque: no compositing
         return imagefx.floyd_steinberg(img.convert("L")).convert("RGB")
     level = round(imagefx.luma(_color(label.background, "#ffffff")))
-    if level >= 255 or level <= 0:
-        return Image.new("RGB", img.size, (255, 255, 255) if level >= 255 else (0, 0, 0))
+    if level >= 255 or level <= 0:  # white or black already
+        return (
+            img
+            if img.getpixel((0, 0)) in ((0, 0, 0), (255, 255, 255))
+            else (Image.new("RGB", img.size, (255, 255, 255) if level >= 255 else (0, 0, 0)))
+        )
     tile = imagefx.ordered(Image.new("L", (8, 8), level))
     return imagefx.tiled(tile, img.size).convert("RGB")
 
@@ -1140,7 +1168,7 @@ def _mono_parts(label: Label, parts, places, canvas, inks: Inks, geometry, warni
             if _ink_choice(element, local) != _ink_choice(element, inks):
                 part = _redrawn(element, part, f, dpi, local, step)
         part = _mono_part(element, part, local, dpi)
-        if _shows_ink(element) and not _visible(part, local):
+        if _shows_ink(element) and not _ink_shows(element, part, local):
             warnings.append(RenderWarning("no_contrast", {"n": index}))
         done.append(part)
     return done
@@ -1160,6 +1188,25 @@ def _ink_choice(element: Element, inks: Inks) -> tuple:
     if isinstance(element, ImageElement):
         return (inks.color(element.border_color),)
     return (inks.color(getattr(element, "color", "#000000")),)
+
+
+def _ink_shows(element: Element, part: Image.Image, inks: Inks) -> bool:
+    """Whether an element shows against what lies under it: by its inks
+    (quick), an image by its pixels."""
+    if isinstance(element, ImageElement):
+        return _visible(part, inks)
+    choice = _ink_choice(element, inks)
+    if isinstance(element, TextElement) and choice[1]:  # a box: it shows, or the text on it
+        choice = (choice[1],)
+    return any(_ink_visible(ink, inks) for ink in choice[:1] if ink)
+
+
+def _ink_visible(ink: str, inks: Inks) -> bool:
+    if inks.red and imagefx.mono_ink(_color(ink), 255, True) == imagefx.RED:
+        return not inks.behind_red
+    if _color(ink) == (0, 0, 0):
+        return inks.background > DARK_BEHIND
+    return inks.background < LIGHT_BEHIND
 
 
 def _shows_ink(element: Element) -> bool:

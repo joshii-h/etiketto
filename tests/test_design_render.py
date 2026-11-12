@@ -1065,3 +1065,13 @@ def test_short_lines_keep_whole_arrow_heads_within_the_line():
     assert img.width == shapes.px(1, 300)
     alpha = img.getchannel("A")
     assert alpha.getbbox() and alpha.getbbox()[2] <= img.width
+
+
+def test_texts_without_colour_glyphs_are_used_as_drawn():
+    assert not render_module._colour_glyphs("Lager 12 – Regal")
+    assert render_module._colour_glyphs("Party \U0001f389")
+    assert render_module._colour_glyphs("☀")
+    block = render_text(TextElement(text="Hg", size_pt=20), 1000, 300, mono=True)
+    assert render_module._mono_part(TextElement(), block, render_module.Inks(True), 300) is block
+    label = Label(tape_mm=12, elements=[TextElement(text="Hi \U0001f389")])
+    assert greys(render(label, dpi=300, mono=True).image) == 0
