@@ -116,8 +116,10 @@ Each element has [[ui:Position]]:
   uses a threshold for drawings and logos and dithering for photos;
   [[ui:Threshold]] sets which grey still prints black.
 - Colours print black, or white if they are lighter than what lies behind
-  them (the background colour or image, or a text's box). An element that
-  would print in the colour of the background gets a warning.
+  them (the background colour or image, or a text's box); an element over
+  a light and a dark part takes the colour that shows on most of it.
+- A warning says when an element would hardly stand out from what lies
+  behind it; codes need more contrast than text, so that they scan.
 - The background colour or image is dithered on its own.
 - A shadow prints solid in the other colour, one dot apart from the
   letters. Outlines and shadows are at least one printer dot.

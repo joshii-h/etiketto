@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:29+0100\n"
+"POT-Creation-Date: 2026-11-12 14:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1665,7 +1665,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Colours print black, or white if they are lighter than what lies behind them (the background colour or image, or a text's box). An element that would print in the colour of the background gets a warning."
+msgid "Colours print black, or white if they are lighter than what lies behind them (the background colour or image, or a text's box); an element over a light and a dark part takes the colour that shows on most of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A warning says when an element would hardly stand out from what lies behind it; codes need more contrast than text, so that they scan."
 msgstr ""
 
 #. type: Bullet: '- '
