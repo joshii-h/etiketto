@@ -39,6 +39,7 @@ from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     MODE_NAMES,
+    QUALITY_NAMES,
     data_error_text,
     error_details,
     printed_text,
@@ -78,8 +79,17 @@ class PrintFlow:
         saved = self.window.printer_settings.get("mode")
         return saved if saved in ids else ids[0]
 
+    def _quality(self) -> str:
+        """The quality of the last print, if the printer offers one."""
+        ids = self.window.backend.qualities(self.window.printer.info)
+        saved = self.window.printer_settings.get("quality")
+        return saved if saved in ids else (ids or ("",))[0]
+
+    def _cut_modes(self) -> tuple[str, ...]:
+        return self.window.backend.cut_modes(self.window.printer.info)
+
     def _cut(self) -> str:
-        cut_modes = self.window.backend.capabilities.cut_modes
+        cut_modes = self._cut_modes()
         saved = self.window.printer_settings.get("cut", "full")
         return saved if saved in cut_modes else (cut_modes or ("",))[0]
 
@@ -100,6 +110,8 @@ class PrintFlow:
             return
         if tape := window.printer.other_tape():
             self._wrong_cassette_dialog(tape)
+        elif size := window.printer.other_label_size():
+            self._other_size_dialog(size)
         elif pitch := window.printer.other_pitch():
             self._wrong_labels_dialog(pitch)
         else:
@@ -129,6 +141,19 @@ class PrintFlow:
 
     def _wrong_cassette_dialog(self, inserted_mm: float) -> None:
         unit, label = self.window.unit, self.window.label
+        if self.window.backend.capabilities.media == "roll":
+            self._warn(
+                _("Wrong roll"),
+                _(
+                    "The label is designed for a %(label)s roll, but a %(tape)s roll is "
+                    "loaded. The label would be scaled to the roll."
+                )
+                % {
+                    "label": isolate(unit.tape_name(label.tape_mm)),
+                    "tape": isolate(unit.tape_name(inserted_mm)),
+                },
+            )
+            return
         self._warn(
             _("Wrong cassette"),
             _(
@@ -138,6 +163,20 @@ class PrintFlow:
             % {
                 "label": isolate(unit.tape_name(label.tape_mm)),
                 "tape": isolate(unit.tape_name(inserted_mm)),
+            },
+        )
+
+    def _other_size_dialog(self, loaded: tuple[float, float]) -> None:
+        unit, label = self.window.unit, self.window.label
+        self._warn(
+            _("Different labels loaded"),
+            _(
+                "The label is %(size)s, but labels of %(loaded)s are loaded. Check the "
+                "label size, or load the matching roll."
+            )
+            % {
+                "size": isolate(unit.size(*label.media_size())),
+                "loaded": isolate(unit.size(*loaded)),
             },
         )
 
@@ -166,11 +205,11 @@ class PrintFlow:
         self.window.schedule_render()  # black and white shows grey
 
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print; on
+        """Copies, cut, mode and quality for the print dialog, from the last print; on
         a label sheet the number of labels (the chosen positions) and
         whether to print the outlines; with a data file the rows to print, all
         of them."""
-        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode, "quality": self._quality()}
         sheet, choice = self.window.sheet, self.window.label.sheet
         if sheet and choice:
             choices["copies"] = len(first_positions(sheet, choice.positions))
@@ -244,14 +283,23 @@ class PrintFlow:
         ]
         if self.window.data.active:
             rows.extend(self._row_range(choices))
-        if caps.cut_modes:
-            cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
+        cut_modes = self._cut_modes()
+        if cut_modes:
+            cuts = [(key, name) for key, name in CUT_MODES if key in cut_modes]
             rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
         modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self._modes()]
         if len(modes) > 1:
             rows.append(
                 combo_row(
                     _("Colours"), modes, choices["mode"], lambda v: self._on_print_mode(choices, v)
+                )
+            )
+        qualities = self.window.backend.qualities(self.window.printer.info)
+        if len(qualities) > 1:
+            names = [(q, QUALITY_NAMES.get(q, q)) for q in qualities]
+            rows.append(
+                combo_row(
+                    _("Quality"), names, choices["quality"], lambda v: choices.update(quality=v)
                 )
             )
         if caps.supports_color_adjust:
@@ -341,6 +389,8 @@ class PrintFlow:
         window = self.window
         settings = window.printer_settings
         settings.update(cut=choices["cut"], mode=choices["mode"])
+        if choices["quality"]:
+            settings.update(quality=choices["quality"])
         options = PrintOptions(
             copies=choices["copies"],
             cut=choices["cut"],
@@ -349,6 +399,7 @@ class PrintFlow:
             data_format=settings.data_format,
             gap_mm=window.label.gap_mm,
             settings=settings.backend_settings(),
+            quality=choices["quality"],
         )
         if window.data.active:
             indexes = row_span(choices["first"], choices["last"], len(window.data.rows))

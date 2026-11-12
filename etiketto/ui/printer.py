@@ -12,7 +12,7 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
-from etiketto.backends import backends  # noqa: E402
+from etiketto.backends import backends, get_backend  # noqa: E402
 from etiketto.backends.base import Choice, PrinterInfo, Setting, Toggle  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
@@ -294,7 +294,24 @@ class Printer:
             window.label_group.tape_row.set_selected(widths.index(tape))
             window.dirty = False
             window.update_title()
+        self._offer_other_media(info)
         return False
+
+    def _offer_other_media(self, info: PrinterInfo) -> None:
+        """The loaded media fits another printer model entry (die-cut labels
+        instead of a continuous roll): offer to switch to it."""
+        other = info.media_backend
+        if not other or other == self.window.backend.id:
+            return
+        try:
+            backend = get_backend(other)
+        except KeyError:
+            return
+        self.window.offer(
+            _("The loaded roll is for “%s”") % backend_name(backend),
+            _("Switch"),
+            lambda: self.window.set_backend(other),
+        )
 
     # --- does the loaded material fit the label? ----------------------------------------
 
@@ -304,6 +321,17 @@ class Printer:
         if not self.window.backend.capabilities.continuous or not info or not info.tape_mm:
             return None
         return info.tape_mm if info.tape_mm != label.tape_mm else None
+
+    def other_label_size(self) -> tuple[float, float] | None:
+        """Die-cut printers: the loaded label size if it is not the label's."""
+        info, label = self.info, self.window.label
+        if self.window.backend.capabilities.continuous or not info or not info.label_mm:
+            return None
+        size = label.media_size()
+        differs = any(
+            abs(a - b) > PITCH_TOLERANCE_MM for a, b in zip(info.label_mm, size, strict=True)
+        )
+        return info.label_mm if differs else None
 
     def other_pitch(self) -> float | None:
         """Die-cut printers: the measured label distance if it is not the label's."""
@@ -368,9 +396,11 @@ class Printer:
             if info.pitch_mm:
                 return _("Ready · a label every %s") % unit.format(info.pitch_mm)
             return _("Ready")
+        roll = self.window.backend.capabilities.media == "roll"
         if not info.tape_mm:
-            return _("No cassette inserted")
-        parts = [_("%s cassette") % isolate(unit.tape_name(info.tape_mm))]
+            return _("No roll loaded") if roll else _("No cassette inserted")
+        name = isolate(unit.tape_name(info.tape_mm))
+        parts = [_("%s roll") % name if roll else _("%s cassette") % name]
         remaining = self._remaining_text(info)
         if remaining:
             parts.append(remaining)
@@ -392,10 +422,20 @@ class Printer:
             (_("Model"), self.window.backend.display_name(info)),
             (_("Address"), isolate(self.host) if self.host else ""),
             (_("Firmware"), info.firmware),
-            (_("Cassette"), isolate(unit.tape_name(info.tape_mm)) if info.tape_mm else ""),
+            self._media_row(info),
             (_("Label distance"), unit.format(info.pitch_mm) if info.pitch_mm else ""),
             (_("Remaining tape"), self._remaining_text(info) or ""),
         ]
+
+    def _media_row(self, info: PrinterInfo) -> tuple[str, str]:
+        """The loaded cassette or roll; die-cut labels by their size."""
+        unit = self.window.unit
+        if info.label_mm:
+            return _("Roll"), isolate(unit.size(*info.label_mm))
+        value = isolate(unit.tape_name(info.tape_mm)) if info.tape_mm else ""
+        if self.window.backend.capabilities.media == "roll":
+            return _("Roll"), value
+        return _("Cassette"), value
 
     def _cassette_rows(self, info: PrinterInfo) -> list[tuple[str, str]]:
         cassette = info.cassette

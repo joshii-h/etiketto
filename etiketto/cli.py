@@ -658,10 +658,12 @@ def series_backend(series: Series) -> Backend:
 
 
 def _options(backend: Backend, printer: PrinterSettings, copies: int, gap_mm: float):
-    """Cut, mode and colours as last chosen in the app, if the printer has them."""
-    cut_modes = backend.capabilities.cut_modes
+    """Cut, mode, quality and colours as last chosen in the app, if the
+    printer has them."""
+    cut_modes = backend.cut_modes(None)
     modes = [m.id for m in backend.modes(None)]
-    cut, mode = printer.get("cut", "full"), printer.get("mode")
+    qualities = backend.qualities(None)
+    cut, mode, quality = printer.get("cut", "full"), printer.get("mode"), printer.get("quality")
     return PrintOptions(
         copies=copies,
         cut=cut if cut in cut_modes else (cut_modes or ("",))[0],
@@ -670,6 +672,7 @@ def _options(backend: Backend, printer: PrinterSettings, copies: int, gap_mm: fl
         data_format=printer.data_format,
         gap_mm=gap_mm,
         settings=printer.backend_settings(),
+        quality=quality if quality in qualities else (qualities or ("",))[0],
     )
 
 

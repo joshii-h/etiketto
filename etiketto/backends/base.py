@@ -25,7 +25,10 @@ from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, RenderWarning, render
 ColorModel = Literal["color", "mono", "two-color"]
 # rounding in unit conversions must not make a label "too long" or "too wide"
 LIMIT_SLACK_MM = 0.01
-CUT_MODES = ("full", "half", "none")
+# every cut mode a backend may offer; "end": one cut after the last label of
+# a job, the copies stay together
+CUT_MODES = ("full", "half", "end", "none")
+DEFAULT_CUT_MODES = ("full", "half", "none")
 
 
 # --- what a printer can do --------------------------------------------------
@@ -106,7 +109,7 @@ class Capabilities:
     dpi: float  # resolution across the tape the preview is rendered at
     modes: tuple[PrintMode, ...]  # fallback when the printer does not report its modes
     color_model: ColorModel = "color"
-    cut_modes: tuple[str, ...] = CUT_MODES  # empty: the printer does not cut
+    cut_modes: tuple[str, ...] = DEFAULT_CUT_MODES  # empty: the printer does not cut
     reports_remaining: bool = False  # remaining tape in the status
     supports_color_adjust: bool = False  # brightness / colour balance per job
     # endless tape: the label grows with its content. False: die-cut labels
@@ -120,11 +123,16 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
-    # continuous only: the tape comes in cassettes the printer recognises
+    # continuous only: the printer recognises the inserted tape or roll
     # (else the paper width is the user's choice and nothing is "inserted")
     cassettes: bool = True
     # printer settings the interface offers in the printer group
     settings: tuple[Setting, ...] = ()
+    # print qualities ("standard", "high"); empty or one: the interface offers no choice
+    qualities: tuple[str, ...] = ()
+    # continuous tape comes as a "cassette" (VC-500W) or a "roll" (Brother QL):
+    # the word the interface uses for it
+    media: str = "cassette"
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -212,6 +220,12 @@ class PrinterInfo:
     margins: tuple[Margins, ...] = ()
     # the resolution the label is printed at, if it is not Capabilities.dpi
     dpi: float | None = None
+    qualities: tuple[str, ...] = ()  # print qualities of the connected model; empty = unknown
+    # die-cut: the size of the loaded labels (width, height), if the printer knows it
+    label_mm: tuple[float, float] | None = None
+    # the id of another backend that fits the loaded media (e.g. die-cut
+    # labels loaded while the label is for continuous rolls); "" = none
+    media_backend: str = ""
 
 
 # --- a print job ------------------------------------------------------------
@@ -262,6 +276,7 @@ class PrintOptions:
     # the printer the job is for, so that prepare() can render for what this
     # printer reported (its resolution); "" = not known
     host: str = ""
+    quality: str = ""  # one of Capabilities.qualities; empty = the first
 
 
 @dataclass(frozen=True)
@@ -272,6 +287,9 @@ class PrintResult:
     # the job waits in the printer's queue: it prints when its turn comes,
     # nothing went wrong (yet)
     queued: bool = False
+    # why the mode differs: "roll" = the loaded roll needs it; "" = the
+    # printer does not have the requested mode
+    reason: str = ""
 
 
 @dataclass(frozen=True)
@@ -420,6 +438,13 @@ class RenderAgain(PrinterError):
     (it now renders for the reported resolution) and print once more."""
 
 
+class WrongMedia(PrinterError):
+    """The loaded roll is of another kind or size than the label (a
+    continuous roll for a die-cut label or the other way round)."""
+
+    code = "wrong_media"
+
+
 class UsbNotFound(PrinterNotFound):
     """No such printer on USB, or it went away (unplugged, switched off,
     asleep): the advice differs from a printer in the network."""
@@ -547,6 +572,20 @@ class Backend(ABC):
         """The resolution a job with these options is rendered at, for the
         preview: capabilities.dpi, unless a setting chooses another one."""
         return self.capabilities.dpi
+
+    @property
+    def settings_id(self) -> str:
+        """The key of this backend's settings; backends for the same printer
+        (one per kind of media) share one."""
+        return self.id
+
+    def cut_modes(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Cut modes of the connected printer, else the documented ones."""
+        return self.capabilities.cut_modes
+
+    def qualities(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Print qualities of the connected printer, else the documented ones."""
+        return (info.qualities if info else ()) or self.capabilities.qualities
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)

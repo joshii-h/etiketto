@@ -38,8 +38,8 @@ class PrepareFailed(Exception):
 def merge_results(results: list[PrintResult | None]) -> PrintResult | None:
     """One result for the copies sent one by one."""
     queued = any(r.queued for r in results if r)
-    mode = next((r.mode for r in results if r and r.mode), "")
-    return PrintResult(mode=mode, queued=queued) if mode or queued else None
+    mode, reason = next(((r.mode, r.reason) for r in results if r and r.mode), ("", ""))
+    return PrintResult(mode=mode, queued=queued, reason=reason) if mode or queued else None
 
 
 class Job:

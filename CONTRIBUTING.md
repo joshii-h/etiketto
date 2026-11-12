@@ -119,7 +119,7 @@ extension of the interface first; please open an issue before you start.
            dpi=300,  # resolution across the tape
            modes=(PrintMode("standard", lpi=300),),
            color_model="mono",  # "color", "mono" or "two-color"
-           cut_modes=("full",),  # empty: the printer has no cutter
+           cut_modes=("full",),  # of "full", "half", "end", "none"; empty: no cutter
            reports_remaining=False,
            supports_color_adjust=False,
            continuous=True,  # endless tape, False: die-cut labels (see above)
@@ -130,6 +130,7 @@ extension of the interface first; please open an issue before you start.
            max_length_mm=None,  # longer labels are refused
            cassettes=True,  # continuous: the printer recognises the inserted tape
            settings=(),  # Choice/Level: printer settings shown in the printer group
+           qualities=(),  # e.g. ("standard", "high"); one or none: no choice
        )
 
        def discover(self, timeout=3.0): ...  # -> list[FoundPrinter]
@@ -183,6 +184,11 @@ extension of the interface first; please open an issue before you start.
      on port 9100 or USB and asks short questions where silence is no
      error. The subclass builds the job (`build_job`) and, if the language
      has a status, reads it (`ask_status`, `problem`); see `zpl.py`.
+   - `qualities(info)` returns the print qualities the connected printer
+     offers (`PrinterInfo.qualities`), falling back to
+     `capabilities.qualities`; the chosen one is `PrintOptions.quality`.
+   - A printer that takes continuous rolls and die-cut labels can be two
+     backends sharing one module, one per kind (see `brother_ql.py`).
 
 2. Register it in `etiketto/backends/__init__.py` (`_load()`), or ship it as
    a separate package with an entry point in the group `etiketto.backends`

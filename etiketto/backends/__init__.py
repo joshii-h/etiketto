@@ -36,6 +36,7 @@ def _load() -> None:
     if _loaded:
         return
     _loaded = True
+    from etiketto.backends.brother_ql import BrotherQL, BrotherQLDieCut
     from etiketto.backends.cab import Cab
     from etiketto.backends.dymo import Dymo
     from etiketto.backends.epl import Epl
@@ -45,7 +46,18 @@ def _load() -> None:
     from etiketto.backends.vc500w import VC500W
     from etiketto.backends.zpl import Zpl
 
-    for backend in (VC500W(), Cab(), SystemPrinter(), Zpl(), Epl(), Tspl(), EscPos(), Dymo()):
+    for backend in (
+        VC500W(),
+        Cab(),
+        BrotherQL(),
+        BrotherQLDieCut(),
+        SystemPrinter(),
+        Zpl(),
+        Epl(),
+        Tspl(),
+        EscPos(),
+        Dymo(),
+    ):
         register(backend)
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:

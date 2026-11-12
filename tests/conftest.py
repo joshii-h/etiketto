@@ -20,9 +20,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from gi.repository import Gio, GLib
 from PIL import Image, ImageChops
 
-from etiketto.backends import backends, cab, get_backend, ipp, mdns, raw, usb, vc500w
+from etiketto.backends import backends, brother_ql, cab, get_backend, ipp, mdns, raw, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -81,6 +82,7 @@ def _no_network(request, monkeypatch):
 
     monkeypatch.setattr(vc500w, "_connect", refusal("printer"))
     monkeypatch.setattr(cab, "_connect", refusal("printer"))
+    monkeypatch.setattr(brother_ql, "_connect", refusal("printer"))
     monkeypatch.setattr(raw, "_connect", refusal("printer"))  # ZPL, EPL2, TSPL, ESC/POS, DYMO
     # nor search the real network for them (mDNS)
     monkeypatch.setattr(raw, "_browse", lambda *_args, **_kwargs: [])
@@ -262,7 +264,6 @@ def gtk_available() -> bool:
 
 def pump(condition=None, timeout=3.0) -> bool:
     """Run the GLib main loop until condition() is true (or once if None)."""
-    from gi.repository import GLib
 
     context = GLib.MainContext.default()
     deadline = time.monotonic() + timeout
@@ -280,7 +281,7 @@ def pump(condition=None, timeout=3.0) -> bool:
 def gtk_app():
     if not gtk_available():
         pytest.skip("no display for GTK")
-    from gi.repository import Adw, Gio
+    from gi.repository import Adw
 
     application = Adw.Application(
         application_id="xyz.joshuahirsig.Etiketto.Tests",
@@ -394,7 +395,6 @@ def _busy(win) -> bool:
 
 def render_now(win) -> None:
     """Run the debounced preview render immediately."""
-    from gi.repository import GLib
 
     if win._render_source:
         GLib.source_remove(win._render_source)

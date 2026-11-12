@@ -21,13 +21,21 @@ from etiketto.units import Unit
 # cassettes older than this get a hint: old ZINK paper prints paler
 OLD_CASSETTE_DAYS = 2 * 365
 
-CUT_MODES = [("full", _("Full cut")), ("half", _("Half cut")), ("none", _("No cut"))]
+CUT_MODES = [
+    ("full", _("Full cut")),
+    ("half", _("Half cut")),
+    ("end", _("Cut after the last label")),
+    ("none", _("No cut")),
+]
 # print modes by protocol name; unknown modes are shown by their name
 MODE_NAMES = {
     "vivid": _("Vivid"),
     "color": _("Normal"),
     "bw": _("Black and white (sharper)"),
+    "black": _("Black"),
+    "red": _("Red and black"),
 }
+QUALITY_NAMES = {"standard": _("Standard"), "high": _("High resolution (600 dpi)")}
 COLOR_ADJUST_ROWS = [
     ("brightness", _("Brightness")),
     ("red", _("Red")),
@@ -215,6 +223,10 @@ def backend_name(backend) -> str:
     names = {
         "system": _("System printer (CUPS, IPP)"),
         "escpos": _("Receipt printer (ESC/POS)"),
+        # translators: %s is a printer model, e.g. "Brother QL"
+        "brother_ql": _("%s, continuous rolls") % backend.name,
+        # translators: %s is a printer model, e.g. "Brother QL"
+        "brother_ql_diecut": _("%s, die-cut labels") % backend.name,
     }
     return names.get(backend.id, backend.name)
 
@@ -385,6 +397,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
         "resolution": _("The printer did not report its resolution in time. Choose it under “%s”.")
         % SETTING_TITLES["dpi"],
+        "wrong_media": _(
+            "The loaded roll does not match the label. Load a matching roll, or choose "
+            "the label size or printer model of the roll that is loaded."
+        ),
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
@@ -414,6 +430,10 @@ def printed_remark(options: PrintOptions | None, result: PrintResult | None) -> 
         return _("Sent to the printer – it prints when its turn comes")
     if not (options and result and result.mode and result.mode != options.mode):
         return None
+    if result.reason == "roll":
+        return _("Printed with “%(used)s”, as the loaded roll needs it") % {
+            "used": MODE_NAMES.get(result.mode, result.mode)
+        }
     return _(
         "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
     ) % {

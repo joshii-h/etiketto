@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:18+0100\n"
+"POT-Creation-Date: 2026-11-12 10:22+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -637,6 +637,190 @@ msgstr "Streifen: mit der CK-1000 reinigen."
 #: docs/printer.md
 msgid "Content askew: insert the cassette straight."
 msgstr "Inhalt schief: Kassette gerade einlegen."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Brother QL { #brother-ql }"
+msgstr "Brother QL { #brother-ql }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto prints on Brother QL label printers from the QL-500 to the "
+"QL-1115NWB, red and black too on the QL-800, QL-810W and QL-820NWB. This has "
+"not been tried on a printer yet: it follows the protocol as others "
+"documented it. Reports of what works and what does not are very welcome."
+msgstr ""
+"Etiketto druckt auf Etikettendruckern Brother QL vom QL-500 bis zum "
+"QL-1115NWB, auf dem QL-800, QL-810W und QL-820NWB auch rot und schwarz. Das "
+"wurde noch auf keinem Drucker ausprobiert: Es folgt dem Protokoll, wie "
+"andere es beschrieben haben. Rückmeldungen, was geht und was nicht, sind "
+"sehr willkommen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Printer model]]: the QL appears twice. Choose \"Brother QL, continuous "
+"rolls\" for continuous DK rolls (the label is as long as its content or has "
+"a fixed length) and \"Brother QL, die-cut labels\" for die-cut DK labels of "
+"a fixed size.  Both use the same printer and settings. If the printer has "
+"the other kind of roll loaded, Etiketto offers to [[ui:Switch]]."
+msgstr ""
+"[[ui:Printer model]]: Der QL steht zweimal in der Liste. „Brother QL, "
+"Endlosrollen“ für DK-Endlosrollen (das Etikett ist so lang wie sein Inhalt "
+"oder hat eine feste Länge), „Brother QL, gestanzte Etiketten“ für gestanzte "
+"DK-Etiketten fester Grösse. Beide nutzen denselben Drucker und dieselben "
+"Einstellungen. Ist im Drucker die andere Art Rolle eingelegt, bietet "
+"Etiketto [[ui:Switch]] an."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Network: models with Wi-Fi or LAN are reached on port 9100.  [[ui:Search for "
+"printers]] finds them, or enter the address."
+msgstr ""
+"Netzwerk: Modelle mit WLAN oder LAN werden über Port 9100 erreicht. "
+"[[ui:Search for printers]] findet sie, sonst die Adresse eingeben."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"USB: plug the printer in; [[ui:Search for printers]] finds it. On the QL-700 "
+"and the QL-800 series, switch off \"Editor Lite\" first (hold its button "
+"until the green light goes out), otherwise the printer appears as a USB "
+"drive."
+msgstr ""
+"USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn. Beim "
+"QL-700 und der QL-800-Serie zuerst „Editor Lite“ ausschalten (Taste halten, "
+"bis die grüne Lampe erlischt), sonst erscheint der Drucker als USB-Laufwerk."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Before each print Etiketto reads which roll is loaded. A continuous roll of "
+"another width is printed scaled to it after a warning ([[ui:Wrong roll]]); "
+"die-cut labels of another size get a warning too ([[ui:Different labels "
+"loaded]])."
+msgstr ""
+"Vor jedem Druck liest Etiketto, welche Rolle eingelegt ist. Auf eine "
+"Endlosrolle anderer Breite wird nach einer Warnung ([[ui:Wrong roll]]) "
+"passend skaliert gedruckt; gestanzte Etiketten anderer Grösse ergeben "
+"ebenfalls eine Warnung ([[ui:Different labels loaded]])."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Die-cut labels: choose the [[ui:Label size]] of the roll. The printer finds "
+"the labels by itself; leave the [[ui:Gap]] at 3 mm. About 1.5 mm at the "
+"sides and 3 mm at both ends of each label cannot be printed: a [[ui:Safety "
+"margin]] of 3 mm keeps content away from there."
+msgstr ""
+"Gestanzte Etiketten: die [[ui:Label size]] der Rolle wählen. Der Drucker "
+"findet die Etiketten selbst, die [[ui:Gap]] bei 3 mm lassen. Etwa 1,5 mm an "
+"den Seiten und 3 mm an beiden Enden jedes Etiketts sind nicht bedruckbar: "
+"Ein [[ui:Safety margin]] von 3 mm hält den Inhalt davon fern."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Black and white without dithering: text and codes stay sharp, photos become "
+"hard black and white, as the preview shows."
+msgstr ""
+"Schwarzweiss ohne Rasterung: Text und Codes bleiben scharf, Fotos werden "
+"hart schwarzweiss, wie die Vorschau zeigt."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Print options { #brother-ql-print }"
+msgstr "Druckoptionen { #brother-ql-print }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Cut]]: [[ui:Full cut]] after every label, [[ui:Cut after the last "
+"label]] keeps the copies together as one strip, [[ui:No cut]]. The QL-500 "
+"has no cutter and no cut option."
+msgstr ""
+"[[ui:Cut]]: [[ui:Full cut]] nach jedem Etikett, [[ui:Cut after the last "
+"label]] hält die Kopien als einen Streifen zusammen, [[ui:No cut]]. Der "
+"QL-500 hat kein Schneidwerk und keine Schnittwahl."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a 62 "
+"mm continuous roll is loaded; red parts of the label print red on the red "
+"and black roll DK-22251. That roll needs a red and black job even for black "
+"labels: if the choice does not fit the loaded roll, the printer refuses the "
+"job, Etiketto prints it the other way and says so.  From then on the choice "
+"follows the roll."
+msgstr ""
+"[[ui:Colours]]: [[ui:Red and black]] erscheint bei der QL-800-Serie, wenn "
+"eine 62-mm-Endlosrolle eingelegt ist. Rote Teile des Etiketts werden auf der "
+"rot-schwarzen Rolle DK-22251 rot gedruckt. Diese Rolle braucht auch für "
+"schwarze Etiketten einen rot-schwarzen Druckauftrag: Passt die Wahl nicht "
+"zur eingelegten Rolle, lehnt der Drucker den Auftrag ab, Etiketto druckt ihn "
+"auf die andere Art und sagt das. Danach folgt die Wahl der Rolle."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution "
+"along the roll; printing takes longer. Offered on the QL-570, QL-580N, "
+"QL-700, QL-710W, QL-720NW, the QL-800 series and the QL-1100 series."
+msgstr ""
+"[[ui:Quality]]: [[ui:High resolution (600 dpi)]] verdoppelt die Auflösung "
+"entlang der Rolle, der Druck dauert länger. Angeboten beim QL-570, QL-580N, "
+"QL-700, QL-710W, QL-720NW, der QL-800-Serie und der QL-1100-Serie."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #brother-ql-problems }"
+msgstr "Probleme { #brother-ql-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Connected, the printer does not report its state]]: some models do not "
+"answer status requests over the network. Printing works, but Etiketto cannot "
+"check the roll first."
+msgstr ""
+"[[ui:Connected, the printer does not report its state]]: Manche Modelle "
+"beantworten über das Netzwerk keine Statusabfragen. Drucken geht, aber "
+"Etiketto kann die Rolle vorher nicht prüfen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"\"The loaded roll does not match the label\": a die-cut roll is loaded for a "
+"label on continuous roll, or the other way round. Load the other roll or "
+"choose the other entry under [[ui:Printer model]]."
+msgstr ""
+"„Die eingelegte Rolle passt nicht zum Etikett“: Eine Rolle mit gestanzten "
+"Etiketten ist eingelegt, das Etikett ist aber für eine Endlosrolle, oder "
+"umgekehrt. Die andere Rolle einlegen oder unter [[ui:Printer model]] den "
+"anderen Eintrag wählen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Out of labels: load a new roll. Cover open: close it. Label jammed: open the "
+"cover and remove it, check the cutter."
+msgstr ""
+"Keine Etiketten mehr: neue Rolle einlegen. Deckel offen: schliessen. Etikett "
+"eingeklemmt: Deckel öffnen, Etikett entfernen, Schneidwerk prüfen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Red parts print black: red and black only works on the QL-800 series with "
+"the DK-22251 roll."
+msgstr ""
+"Rote Teile werden schwarz gedruckt: Rot und Schwarz geht nur mit der QL-800-"
+"Serie und der Rolle DK-22251."
 
 #. type: Title ##
 #: docs/printer.md
