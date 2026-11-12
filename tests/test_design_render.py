@@ -1067,14 +1067,36 @@ def test_short_lines_keep_whole_arrow_heads_within_the_line():
     assert alpha.getbbox() and alpha.getbbox()[2] <= img.width
 
 
-def test_texts_without_colour_glyphs_are_used_as_drawn():
-    assert not render_module._colour_glyphs("Lager 12 – Regal")
-    assert render_module._colour_glyphs("Party \U0001f389")
-    assert render_module._colour_glyphs("☀")
+@pytest.mark.parametrize(
+    "emoji",
+    [
+        "\U0001f389",
+        "\u2b50",
+        "\u231a",
+        "\u23f0",
+        "\u2b06",
+        "\u25b6",
+        "\u25c0",
+        "\u23e9",
+        "\u3030",
+        "\u3297",
+        "\u2600",
+    ],
+)
+def test_colour_emoji_never_reach_a_mono_printer_in_colour(emoji):
+    """Decided from the pixels, not from code points."""
+    label = Label(tape_mm=12, elements=[TextElement(text="Hi " + emoji)])
+    for red in (False, True):
+        image = render(label, dpi=300, mono=True, red=red).image.convert("RGB")
+        colours = {c for _n, c in image.getcolors(1 << 24)}
+        allowed = {(0, 0, 0), (255, 255, 255)} | ({(255, 0, 0)} if red else set())
+        assert colours <= allowed, (emoji, red, colours - allowed)
+
+
+def test_a_plain_mono_text_is_used_as_drawn():
     block = render_text(TextElement(text="Hg", size_pt=20), 1000, 300, mono=True)
+    assert imagefx.tones(block) == "hard"
     assert render_module._mono_part(TextElement(), block, render_module.Inks(True), 300) is block
-    label = Label(tape_mm=12, elements=[TextElement(text="Hi \U0001f389")])
-    assert greys(render(label, dpi=300, mono=True).image) == 0
 
 
 def test_a_box_or_outline_makes_a_text_show():
@@ -1091,3 +1113,154 @@ def test_a_box_or_outline_makes_a_text_show():
     )
     warnings = render(label, dpi=300, mono=True).warnings
     assert warnings == [render_module.RenderWarning("no_contrast", {"n": 3})]
+
+
+# --- review 3 ----------------------------------------------------------------------------
+
+
+def test_an_inset_too_large_across_the_tape_is_reduced():
+    label = Label(tape_mm=12, border_mm=0.5, border_inset_mm=10, elements=[TextElement(text="x")])
+    rendered = render(label, dpi=254, safe_mm=1)
+    assert [w.key for w in rendered.warnings] == ["no_room"]
+    f = render_module._frame(label, 254, 1, None, 0, [])
+    assert f.inset > 0 and f.inner == shapes.px(2, 254) + (f.inner - shapes.px(2, 254))
+    assert f.inner >= shapes.px(2, 254)
+
+
+@pytest.mark.parametrize(
+    "options, warns",
+    [
+        ({"color": "#ff0000", "box_color": "#e53935", "red": True}, True),  # red on red
+        ({"color": "#ff0000", "box_color": "#e53935"}, False),  # black box, white letters
+        ({"color": "#ffffff", "box_color": "#ffffff"}, True),  # white in white
+        ({"color": "#000000", "box_color": "#ffffff"}, False),
+        ({"color": "#ffffff", "box_color": "#ffffff", "outline_mm": 0.3}, False),
+        ({"color": "#000000", "inverted": True}, False),  # cut out of a black box
+        ({"color": "#ffffff", "inverted": True}, True),  # a white box on white
+    ],
+)
+def test_letters_in_a_box_need_another_ink_than_the_box(options, warns):
+    options = dict(options)
+    red = options.pop("red", False)
+    label = Label(tape_mm=12, elements=[TextElement(text="Box", padding_mm=0.5, **options)])
+    keys = [w.key for w in render(label, dpi=300, mono=True, red=red).warnings]
+    assert (keys == ["no_contrast"]) is warns, keys
+
+
+@pytest.mark.parametrize(
+    "background, colour, text_warns, code_warns",
+    [
+        ("#c8c8c8", "#ffffff", True, True),  # white on light grey
+        ("#303030", "#000000", True, True),  # black on dark grey
+        ("#808080", "#000000", False, True),  # a code needs more than text
+        ("#ffffff", "#000000", False, False),
+        ("#000000", "#ffffff", False, False),
+    ],
+)
+def test_low_contrast_warns_codes_more_strictly(background, colour, text_warns, code_warns):
+    def warns(element):
+        label = Label(tape_mm=12, background=background, elements=[element])
+        return [w.key for w in render(label, dpi=300, mono=True).warnings] == ["no_contrast"]
+
+    assert warns(TextElement(text="Text", color=colour)) is text_warns
+    assert warns(CodeElement(data="x", color=colour)) is code_warns
+
+
+def straddling(dark_share: float) -> Label:
+    """A text over a background that is dark on its left part, light on
+    the rest; the text starts at the very left."""
+    img = Image.new("RGB", (1000, 100), "white")
+    ImageDraw.Draw(img).rectangle((0, 0, round(1000 * dark_share), 100), fill="#101010")
+    return Label(
+        tape_mm=12,
+        auto_length=False,
+        length_mm=60,
+        margin_mm=0,
+        align="start",
+        background_image=ImageElement(data=b64(img)),
+        elements=[TextElement(text="MMMMMMMMMM", color="#808080", size_pt=20)],
+    )
+
+
+def test_a_straddling_text_takes_the_ink_of_most_of_its_letters():
+    mostly_light = render(straddling(0.15), dpi=300, safe_mm=0, mono=True)
+    right = mostly_light.image.convert("L").crop((400, 0, 600, mostly_light.image.height))
+    assert right.histogram()[0] > 0  # black letters on the light part
+    mostly_dark = render(straddling(0.85), dpi=300, safe_mm=0, mono=True)
+    left = mostly_dark.image.convert("L").crop((50, 0, 250, mostly_dark.image.height))
+    assert left.histogram()[255] > 0  # white letters on the dark part
+
+
+def test_a_straddling_text_warns_when_much_of_it_is_lost():
+    assert render(straddling(0.05), dpi=300, safe_mm=0, mono=True).warnings == []
+    keys = [w.key for w in render(straddling(0.45), dpi=300, safe_mm=0, mono=True).warnings]
+    assert keys == ["no_contrast"]
+
+
+def test_a_flat_logo_saved_as_jpeg_is_a_drawing():
+    logo = Image.new("RGB", (200, 120), "white")
+    draw = ImageDraw.Draw(logo)
+    draw.rectangle((20, 20, 180, 100), fill=(120, 120, 120))
+    draw.ellipse((60, 40, 140, 80), fill=(40, 40, 40))
+    buf = io.BytesIO()
+    logo.save(buf, "JPEG", quality=70)
+    jpeg = Image.open(io.BytesIO(buf.getvalue())).convert("L")
+    assert len(set(jpeg.histogram())) > 20  # noisy tones
+    assert imagefx.is_drawing(jpeg)
+    photo = Image.open(io.BytesIO(base64.b64decode(gradient((256, 40))))).convert("L")
+    assert not imagefx.is_drawing(photo)
+
+
+def test_a_reduced_mono_text_comes_close_to_its_size():
+    element = TextElement(text="Regal 12 links", frame_mm=0.3, padding_mm=1, size_pt=30)
+    block = render_text(element, 1000, 300, mono=True)
+    target = (round(block.width * 0.63), round(block.height * 0.63))
+    small = block.info["redraw"](*target)
+    assert small.width <= target[0] and small.height <= target[1]
+    assert small.width > 0.97 * target[0] or small.height > 0.97 * target[1]
+
+
+def test_a_thin_outline_keeps_a_dot_when_reduced():
+    element = TextElement(text="O", size_pt=40, outline_mm=0.09, outline_color="#000000")
+    block = render_text(element, 1000, 300, mono=True)
+    small = block.info["redraw"](block.width // 4, block.height // 4)
+    assert (255, 255, 255) in {p[:3] for p in pixels(small) if p[3]}  # the outline is there
+
+
+def test_a_transparent_background_image_shows_the_label_colour():
+    logo = Image.new("RGBA", (200, 50), (0, 0, 0, 0))
+    ImageDraw.Draw(logo).ellipse((5, 5, 45, 45), fill=(200, 0, 0, 255))
+    label = Label(
+        tape_mm=12,
+        background="#ffff00",
+        background_image=ImageElement(data=b64(logo)),
+        auto_length=False,
+        length_mm=48,
+    )
+    image = render(label, dpi=100, safe_mm=0).image
+    assert image.getpixel((image.width - 3, 3)) == (255, 255, 0)
+    assert render_module.background_brightness(label) > 150
+
+
+def test_a_redraw_that_fails_keeps_the_first_part(monkeypatch):
+    label = Label(
+        tape_mm=12,
+        background_image=ImageElement(data=half_dark(dark=250)),
+        auto_length=False,
+        length_mm=80,
+        align="start",
+        elements=[TextElement(text="Lo", color="#a0a0a0", size_pt=10)],
+    )
+    calls = []
+    original = render_module.render_element
+
+    def failing(*args, **kwargs):
+        calls.append(kwargs.get("inks"))
+        if len(calls) > 1:  # the redraw against the dark part
+            raise RuntimeError("no font")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(render_module, "render_element", failing)
+    rendered = render(label, dpi=300, safe_mm=0, mono=True)
+    assert len(calls) == 2 and calls[1].background < 128  # redrawn for the dark part
+    assert greys(rendered.image) == 0

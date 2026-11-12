@@ -16,7 +16,7 @@ from functools import lru_cache, partial
 from types import MappingProxyType
 from typing import NamedTuple
 
-from PIL import Image, ImageDraw, ImageOps, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageStat
 
 from etiketto import codes, imagefx, shapes, typeset
 from etiketto.codes import CodeError
@@ -146,18 +146,9 @@ def render_text(
         limits = (_width_limit(element, room, wrap), height)
         size = _fitted_size(element, measure, limits, dpi)
     block = draw(size)
-    block.colour_glyphs = _colour_glyphs(element.text)  # type: ignore[attr-defined]
     if inks.mono:  # reduced to a fixed length: laid out again (see _resize)
         block.info["redraw"] = _TextRedraw(element, size, dpi, block.height)
     return block
-
-
-def _colour_glyphs(text: str) -> bool:
-    """Whether a text may hold colour glyphs (emoji), which a black-and-white
-    printer gets converted like a picture."""
-    return any(
-        ord(char) >= 0x1F000 or 0x2600 <= ord(char) <= 0x27BF or char == "\ufe0f" for char in text
-    )
 
 
 def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
@@ -178,7 +169,7 @@ def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
 # the lengths of a text element that scale with it when it is laid out
 # again at a smaller size
 TEXT_LENGTHS = ("padding_mm", "corner_mm", "frame_mm", "outline_mm", "shadow_mm", "max_width_mm")
-REDRAW_TRIES = 12
+REDRAW_TRIES = 20
 
 
 class _TextRedraw:
@@ -192,18 +183,33 @@ class _TextRedraw:
         self.element, self.size, self.dpi, self.height = element, size, dpi, max(1, height)
 
     def __call__(self, width: int, height: int) -> Image.Image | None:
-        scale = height / self.height
-        for _try in range(REDRAW_TRIES):
-            changes = {name: getattr(self.element, name) * scale for name in TEXT_LENGTHS}
-            element = replace(self.element, **changes)
-            wrap = mm_to_px(element.max_width_mm, self.dpi) if element.max_width_mm > 0 else None
-            img = _text_block(
-                element, self.size * scale, antialias=False, dpi=self.dpi, wrap_px=wrap
-            )
-            if img.width <= width and img.height <= height:
-                return img
-            scale *= 0.95
-        return None
+        def fits(scale: float) -> bool:
+            element, size, wrap = self._at(scale)
+            w, h = typeset.size_of(element, size, dpi=self.dpi, antialias=False, wrap_px=wrap)
+            return w <= width and h <= height
+
+        high = height / self.height
+        low = high
+        for _try in range(REDRAW_TRIES):  # smaller in steps until it fits …
+            if fits(low):
+                break
+            high, low = low, low * 0.9
+        else:
+            return None
+        if low < high:  # … then as large as fits (bisection)
+            while high - low > 0.002:
+                middle = (low + high) / 2
+                low, high = (middle, high) if fits(middle) else (low, middle)
+        element, size, wrap = self._at(low)
+        img = _text_block(element, size, antialias=False, dpi=self.dpi, wrap_px=wrap)
+        return img if img.width <= width and img.height <= height else None
+
+    def _at(self, scale: float) -> tuple[TextElement, float, int | None]:
+        """The element with every length scaled, its font size, its wrap width."""
+        changes = {name: getattr(self.element, name) * scale for name in TEXT_LENGTHS}
+        element = replace(self.element, **changes)
+        wrap = mm_to_px(element.max_width_mm, self.dpi) if element.max_width_mm > 0 else None
+        return element, self.size * scale, wrap
 
 
 def _fill_height(measure, height: int) -> float:
@@ -763,17 +769,14 @@ DARK_BEHIND, LIGHT_BEHIND = 40, 215
 
 def _mono_text_part(part: Image.Image, inks: Inks) -> Image.Image:
     """A text drawn without anti-aliasing in black and white is ready as it
-    is; one with a colour emoji is converted like a drawing or photo."""
-    if inks.red:
-        return imagefx.hard(part, True)
-    if not getattr(part, "colour_glyphs", True):
-        return part  # drawn without anti-aliasing in black and white: as it is
+    is; one with colour pixels (a colour emoji, whatever its code point) is
+    converted like a drawing or photo. Decided from the pixels."""
     tones = imagefx.tones(part)
     if tones == "hard":
         return part
     if tones == "colour":
-        return imagefx.black_and_white(part, "auto")
-    return imagefx.hard(part)
+        return imagefx.black_and_white(part, "auto", red=inks.red)
+    return imagefx.hard(part, inks.red)
 
 
 def _visible(part: Image.Image, inks: Inks) -> bool:
@@ -841,15 +844,27 @@ def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings
     margin = mm_to_px(label.margin_mm, dpi) if label.margin_mm > 0 else 0
     border = mm_to_px(label.border_mm, dpi) if label.border_mm > 0 else 0
     safe = mm_to_px(safe_mm, dpi) if safe_mm > 0 else 0
-    inset = mm_to_px(label.border_inset_mm, dpi) if border and label.border_inset_mm > 0 else 0
+    inset = _inset(label, dpi, tape - 2 * (edge + safe + border), warnings) if border else 0
     frame = safe + inset + border
     inner = tape - 2 * (edge + frame)
     if inner < mm_to_px(2, dpi):
-        warnings.append(RenderWarning("no_room"))
+        if RenderWarning("no_room") not in warnings:
+            warnings.append(RenderWarning("no_room"))
         inset = 0  # as without an inset: the border on the safety margin
         frame = min(safe + border, max(0, tape // 2 - edge - 1))
         inner = max(1, tape - 2 * (edge + frame))
     return _Frame(tape, max(0, bleed_px), margin, safe, border, frame, inner, inset)
+
+
+def _inset(label: Label, dpi: float, room: int, warnings) -> int:
+    """The border's inset in pixels; one too large for the tape is reduced
+    (as along a short label), so the content keeps its smallest height."""
+    inset = mm_to_px(label.border_inset_mm, dpi) if label.border_inset_mm > 0 else 0
+    most = max(0, (room - mm_to_px(2, dpi)) // 2)
+    if inset > most:
+        warnings.append(RenderWarning("no_room"))
+        return most
+    return inset
 
 
 def _element_warning(element: Element, index: int, error: Exception) -> RenderWarning:
@@ -979,12 +994,17 @@ def _fit_length(
 
 
 def _canvas(label: Label, size: tuple[int, int], warnings) -> Image.Image:
-    """The background in colour: its colour, its image covering it."""
+    """The background in colour: its colour, its image covering it (where
+    the image is transparent, the colour shows)."""
     img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
-            bg = _decoded(label.background_image.data).convert("RGB")
-            img.paste(_cover(bg, img.size), (0, 0))
+            bg = _decoded(label.background_image.data)
+            if bg.getchannel("A").getextrema()[0] == 255:  # opaque: as before
+                img.paste(_cover(bg.convert("RGB"), img.size), (0, 0))
+            else:
+                cover = _cover(bg, img.size)
+                img.paste(cover.convert("RGB"), (0, 0), cover)
         except Exception:  # noqa: BLE001
             warnings.append(RenderWarning("background_unreadable"))
     return img
@@ -1013,33 +1033,57 @@ def _dithered(label: Label, img: Image.Image, inks: Inks) -> Image.Image:
 def background_brightness(label: Label) -> float:
     """How bright the label's background is (0-255) for a first choice of
     black-and-white inks: its colour, or the average of its background
-    image. render() then decides each element against what lies under it
-    (_local_inks)."""
+    image on that colour. render() then decides each element against what
+    lies under it (_local_inks)."""
+    colour = _color(label.background, "#ffffff")
     if label.background_image and label.background_image.data:
         try:
-            return _image_brightness(label.background_image.data)
+            return _image_brightness(label.background_image.data, colour)
         except Exception:  # noqa: BLE001 - render() warns about it
             pass
-    return imagefx.luma(_color(label.background, "#ffffff"))
+    return imagefx.luma(colour)
 
 
 @lru_cache(maxsize=4)
-def _image_brightness(data: str) -> float:
-    small = _decoded(data).convert("RGB").reduce(16) if min(_decoded(data).size) >= 64 else None
-    small = small or _decoded(data).convert("RGB")
-    return imagefx.luma(ImageStat.Stat(small).mean)  # type: ignore[arg-type]
+def _image_brightness(data: str, colour: tuple[int, int, int]) -> float:
+    image = _decoded(data)
+    small = image.reduce(16) if min(image.size) >= 64 else image
+    flat = Image.new("RGBA", small.size, (*colour, 255))
+    flat.alpha_composite(small)
+    return imagefx.luma(ImageStat.Stat(flat.convert("RGB")).mean)  # type: ignore[arg-type]
 
 
-def _local_inks(canvas: Image.Image, box, inks: Inks) -> Inks:
-    """The inks for an element against what lies under its rectangle on the
-    background (a background image's dark or light part, red on a black and
-    red printer)."""
-    area = canvas.crop(box)
+def _local_inks(area: Image.Image, mask: Image.Image | None, inks: Inks) -> Inks:
+    """The inks for an element against what lies under it on the background
+    (area: the background under its rectangle; mask: where it has ink, so
+    an element straddling a dark and a light part takes the ink that shows
+    on most of its letters; red on a black and red printer)."""
     if not area.width or not area.height:
         return inks
-    brightness = imagefx.luma(ImageStat.Stat(area).mean)  # type: ignore[arg-type]
+    if mask is not None and not mask.getbbox():
+        mask = None
+    brightness = ImageStat.Stat(area.convert("L"), mask).mean[0]
     behind_red = inks.red and ImageStat.Stat(imagefx.red_mask(area)).mean[0] >= 128
     return replace(inks, background=brightness, behind_red=behind_red)
+
+
+# ink and what lies behind it at least this far apart in brightness (0-255):
+# text, symbols and lines; codes need more for a scanner
+CONTRAST = 80
+CODE_CONTRAST = 160
+LOST_SHARE = 0.25  # more of an element's ink than this without contrast: a warning
+
+
+def _lost(area: Image.Image, mask: Image.Image, ink: str, minimum: int) -> float:
+    """The share of an element's ink pixels (mask) whose background lies
+    too near the ink's brightness (a part of a straddling element lost)."""
+    total = mask.histogram()[255]
+    if not total or ink == "":
+        return 0.0
+    level = 255 if _color(ink) == (255, 255, 255) else 0
+    near = ImageChops.difference(area.convert("L"), Image.new("L", area.size, level))
+    close = near.point([255] * minimum + [0] * (256 - minimum))
+    return close.histogram(mask)[255] / total
 
 
 def _top(element: Element, part: Image.Image, f: _Frame) -> int:
@@ -1162,13 +1206,16 @@ def _mono_parts(label: Label, parts, places, canvas, inks: Inks, geometry, warni
     for index, (element, part, (x, y)) in enumerate(
         zip(label.elements, parts, places, strict=True), 1
     ):
-        local = inks
+        local, lost = inks, 0.0
         if not plain and not isinstance(element, PageElement):
-            local = _local_inks(canvas, (x, y, x + part.width, y + part.height), inks)
+            area = canvas.crop((x, y, x + part.width, y + part.height))
+            mask = part.getchannel("A").point(imagefx.HALF)
+            local = _local_inks(area, mask, inks)
             if _ink_choice(element, local) != _ink_choice(element, inks):
                 part = _redrawn(element, part, f, dpi, local, step)
+            lost = _lost(area, mask, _main_ink(element, local), _contrast(element))
         part = _mono_part(element, part, local, dpi)
-        if _shows_ink(element) and not _ink_shows(element, part, local):
+        if _shows_ink(element) and (lost > LOST_SHARE or not _ink_shows(element, part, local)):
             warnings.append(RenderWarning("no_contrast", {"n": index}))
         done.append(part)
     return done
@@ -1190,26 +1237,44 @@ def _ink_choice(element: Element, inks: Inks) -> tuple:
     return (inks.color(getattr(element, "color", "#000000")),)
 
 
+def _contrast(element: Element) -> int:
+    return CODE_CONTRAST if isinstance(element, CodeElement) else CONTRAST
+
+
+def _main_ink(element: Element, inks: Inks) -> str:
+    """The ink that has to stand out against the background ("" for a text
+    in a box: the box decides, see _ink_shows)."""
+    choice = _ink_choice(element, inks)
+    if isinstance(element, TextElement) and choice[1]:
+        return ""
+    return choice[0] if not isinstance(element, ImageElement) else ""
+
+
 def _ink_shows(element: Element, part: Image.Image, inks: Inks) -> bool:
-    """Whether an element shows against what lies under it: by its inks
-    (quick), an image by its pixels."""
+    """Whether an element shows against what lies under it, by its inks
+    (quick; an image by its pixels): ink and background far enough apart in
+    brightness (CONTRAST, codes CODE_CONTRAST); letters on a box in another
+    ink than the box; letters cut out of a box: the box against the label."""
     if isinstance(element, ImageElement):
         return _visible(part, inks)
     choice = _ink_choice(element, inks)
     if isinstance(element, TextElement):
         text, box, outline, _shadow = choice
-        if box and (_ink_visible(box, inks) or text != box):
-            return True  # the box shows, or the letters on it (cut out: the label)
+        if element.inverted:  # the box is in the text's colour (mono_text)
+            return _ink_visible(text, inks)
+        if box:
+            return text != box or (bool(outline) and outline != box)
         return any(_ink_visible(ink, inks) for ink in (text, outline) if ink)
-    return _ink_visible(choice[0], inks)
+    return _ink_visible(choice[0], inks, _contrast(element))
 
 
-def _ink_visible(ink: str, inks: Inks) -> bool:
+def _ink_visible(ink: str, inks: Inks, minimum: int = CONTRAST) -> bool:
     if inks.red and imagefx.mono_ink(_color(ink), 255, True) == imagefx.RED:
         return not inks.behind_red
-    if _color(ink) == (0, 0, 0):
-        return inks.background > DARK_BEHIND
-    return inks.background < LIGHT_BEHIND
+    if inks.behind_red:  # black or white on red ink: other inks
+        return True
+    level = 0 if _color(ink) == (0, 0, 0) else 255
+    return abs(level - inks.background) >= minimum
 
 
 def _shows_ink(element: Element) -> bool:

@@ -177,9 +177,11 @@ def ordered(grey: Image.Image) -> Image.Image:
 
 
 # a picture whose pixels are almost all (TONE_COVER) in at most this many
-# grey levels is a drawing, also in flat middle tones (a grey logo)
+# bands of TONE_BAND grey levels is a drawing, also in flat middle tones (a
+# grey logo) and with the noise of JPEG compression around its tones
 DRAWING_TONES = 8
 TONE_COVER = 0.95
+TONE_BAND = 16
 
 
 def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
@@ -191,12 +193,14 @@ def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
         return True
     if sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
         return True
-    covered = 0
-    for tones, count in enumerate(sorted(histogram, reverse=True)[:DRAWING_TONES], 1):
-        covered += count
-        if covered >= TONE_COVER * total:
-            return tones <= DRAWING_TONES
-    return False
+    return few_tones(histogram, total)
+
+
+def few_tones(histogram: list[int], total: int) -> bool:
+    """Whether the DRAWING_TONES fullest bands of grey (of 16) hold almost
+    all pixels: a few flat tones, each with some noise around it."""
+    bands = sorted(sum(histogram[i : i + TONE_BAND]) for i in range(0, 256, TONE_BAND))
+    return sum(bands[-DRAWING_TONES:]) >= TONE_COVER * total
 
 
 def otsu(histogram: list[int]) -> int:
@@ -308,6 +312,13 @@ def tones(img: Image.Image) -> str:
     conversion)."""
     if img.mode != "RGBA":
         img = img.convert("RGBA")
+    colours: list | None = img.getcolors(16)  # quick: a few colours, or None
+    if colours is not None:
+        inks = {c[:3] for _n, c in colours if c[3] >= 128}
+        if inks <= {(0, 0, 0), (255, 255, 255), RED}:
+            soft = any(0 < c[3] < 255 for _n, c in colours)
+            return "edges" if soft else "hard"
+        return "colour"
     alpha = img.getchannel("A")
     if sum(img.convert("L").histogram(alpha.point(HALF))[1:255]):
         return "colour"

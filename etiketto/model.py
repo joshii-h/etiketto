@@ -333,7 +333,7 @@ def _boxed(text) -> bool:
 
 
 # fields that change nothing unless another one is set (by class name): an
-# outline colour without an outline is neither written nor a feature
+# outline colour without an outline is still written, but is no feature
 EFFECTIVE: dict[str, dict[str, Callable[[Any], bool]]] = {
     "TextElement": {
         "min_size_pt": lambda e: e.shrink,
