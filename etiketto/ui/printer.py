@@ -289,9 +289,10 @@ class Printer:
             window.rebuild_sidebar()  # rows for what this model takes
         self.update_row()
         # the printer's margins (labels that reach into them), its resolution
-        # (reported now, or by a raw printer's query): the preview and its
-        # code warnings at the resolution the label is printed at
-        if window.sheet or window.print_dpi() != window.rendered_dpi:
+        # (reported now, or by a raw printer's query) or print area (a
+        # P-touch's pins for the loaded tape): the preview and its code
+        # warnings as the label is printed
+        if window.sheet or window.render_geometry() != window.rendered_geometry:
             window.schedule_render()
         widths = window.backend.capabilities.tape_widths_mm
         fresh = window.adopts_tape and window.path is None and not window.dirty

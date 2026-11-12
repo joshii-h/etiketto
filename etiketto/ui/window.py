@@ -66,6 +66,9 @@ class Window(Adw.ApplicationWindow):
         # the resolution the preview was last rendered at (print_dpi()):
         # its code warnings hold for that one
         self.rendered_dpi: float | None = None
+        # what the preview was rendered for: (resolution, Raster: tape,
+        # print head, reductions), see render_geometry()
+        self.rendered_geometry: tuple | None = None
         self.expand_index = -1
         self.last_dialog = None
         self._render_source = 0
@@ -469,6 +472,7 @@ class Window(Adw.ApplicationWindow):
         backend = self.backend
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
         options = self.render_options()
+        self.rendered_geometry = self.render_geometry()
         self.rendered_dpi = backend.render_dpi(label.tape_mm, options, PREVIEW_MAX_DPI)
         rendered = backend.render_label(
             label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
@@ -479,6 +483,14 @@ class Window(Adw.ApplicationWindow):
         if sheet and self.label.sheet:  # round labels and CDs: their shape
             image = clip_preview(image, sheet, self.label.sheet.rotated)
         return rendered, image
+
+    def render_geometry(self) -> tuple:
+        """What a render for the next print depends on besides the label:
+        the resolution and the raster (the tape or print area in pixels,
+        the head's reductions), from the printer as last asked."""
+        options = self.render_options()
+        dpi = self.backend.render_dpi(self.label.tape_mm, options, PREVIEW_MAX_DPI)
+        return dpi, self.backend.label_raster(self.label, options)
 
     def render_for(self, options: PrintOptions) -> Rendered:
         """The label (the next print's values) rendered for these options:

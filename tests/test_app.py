@@ -3864,3 +3864,23 @@ def test_the_code_check_renders_with_the_dialogs_high_resolution(ptouch_window_1
     respond(win.get_visible_dialog(), "print")
     assert pump(lambda: not win.print_flow.busy)
     assert len(ptouch_env.prints) == 1 and ptouch_env.prints[0][2].high_res
+
+
+def test_the_preview_follows_the_print_area_the_printer_reports(
+    ptouch_window_12mm, ptouch_env, monkeypatch
+):
+    """Same resolution, another print area (what the printer reported makes
+    the backend's raster another, e.g. fewer pins for a tube): the preview
+    is rendered again for it, not only when the resolution changes."""
+    win = ptouch_window_12mm
+    render_now(win)
+    before = win.rendered_geometry
+    backend = win.backend
+    real = backend.label_raster
+    monkeypatch.setattr(
+        backend, "label_raster", lambda label, options: replace(real(label, options), tape_px=50)
+    )
+    win.printer.found(ptouch_env.info)
+    assert pump(lambda: win.rendered_geometry != before)
+    assert win.rendered_geometry[0] == before[0]  # the same resolution
+    assert win.rendered_geometry[1].tape_px == 50
