@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Alapértelmezett",
     "Ideas for the variables (counter, date, UUID), no code": "Ötletek a változókhoz (számláló, dátum, UUID), kód nélkül",
     "Waiting for the printer's answer…": "Várakozás a nyomtató válaszára…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "nyomtatás a nyomtatótípus alapértékeivel az alkalmazásban legutóbb választott vágás, mód, minőség és nyomtatóbeállítások helyett",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "nyomtatás a nyomtatótípus alapértékeivel az alkalmazásban legutóbb választott vágás, színek, minőség, extrák (láncnyomtatás, nagy felbontás, szalagelőtolás) és nyomtatóbeállítások helyett; a cím és a biztonsági margó marad",
 }

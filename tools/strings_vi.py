@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Mặc định",
     "Ideas for the variables (counter, date, UUID), no code": "Ý tưởng cho các biến (bộ đếm, ngày, UUID), không dùng mã",
     "Waiting for the printer's answer…": "Đang chờ máy in trả lời…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "in với giá trị mặc định của kiểu máy in thay vì kiểu cắt, chế độ, chất lượng và cài đặt máy in đã chọn lần cuối trong ứng dụng",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "in với giá trị mặc định của kiểu máy in thay vì kiểu cắt, màu, chất lượng, tùy chọn thêm (in nối tiếp, độ phân giải cao, nạp băng) và cài đặt máy in đã chọn lần cuối trong ứng dụng; địa chỉ và lề an toàn được giữ nguyên",
 }

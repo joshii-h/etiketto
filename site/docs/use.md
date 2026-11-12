@@ -269,10 +269,13 @@ etiketto --version
 - It prints with the choices last made in the app for that printer
   model: cut, colours, quality, chain printing, high resolution, tape feed
   and the printer settings. `--printer-defaults` takes the model's
-  defaults instead.
+  defaults for these instead; the printer's address and the
+  [[ui:Safety margin]] stay as set in the app.
 - Some printers are asked before the label is drawn, because it depends
   on what they report (the tape, the resolution); a printer that does not
   answer within 5 s (2 s for `--dry-run`) gets the label drawn without.
+  A question still on its way then gets up to 10 s more to end before
+  the label is sent (Etiketto says so); an answer in that time is used.
   `--no-query` skips the question.
 - Serial labels: one label for each row of the data file, `--copies` of
   each; `--data` gives the data file (by default the label's own, if it

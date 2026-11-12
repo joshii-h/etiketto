@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "По умолчанию",
     "Ideas for the variables (counter, date, UUID), no code": "Идеи для переменных (счётчик, дата, UUID), без кода",
     "Waiting for the printer's answer…": "Ожидание ответа принтера…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "печатать с настройками модели принтера по умолчанию вместо обрезки, режима, качества и настроек принтера, выбранных в приложении последними",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "печатать с настройками модели принтера по умолчанию вместо обрезки, цветов, качества, дополнений (цепная печать, высокое разрешение, подача ленты) и настроек принтера, выбранных в приложении последними; адрес и безопасное поле сохраняются",
 }

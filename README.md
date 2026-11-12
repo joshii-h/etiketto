@@ -215,13 +215,15 @@ value as it is). `--set date=2026-12-31` prints with another date.
 It prints with the choices last made in the app for that printer model:
 cut, colours, quality, the P-touch's chain printing, high resolution and
 tape feed, and the printer settings (label sensor, darkness …);
-`--printer-defaults` takes the model's defaults instead.
+`--printer-defaults` takes the model's defaults for these instead (the
+printer's address and the safety margin stay as set in the app).
 Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
 range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO and office printers: the resolution; a dry run waits
 2 s); the label is then checked for that printer. A question still on its
 way after that gets up to 10 s more to end before printing (Etiketto says
-so); what it brings later still sets the resolution the label is drawn at.
+so; an answer in that time is used); what it brings later still sets the
+resolution the label is drawn at.
 `--no-query` skips the question. A label set up for a label sheet prints on it as in the
 window: each copy (with `--data`, each copy of each row) at the next of
 the chosen positions.

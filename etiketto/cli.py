@@ -202,8 +202,9 @@ def parser() -> argparse.ArgumentParser:
         "--printer-defaults",
         action="store_true",
         help=_(
-            "print with the printer model's defaults instead of the cut, mode, quality and "
-            "printer settings last chosen in the app"
+            "print with the printer model's defaults instead of the cut, colours, quality, "
+            "extras (chain printing, high resolution, tape feed) and printer settings last "
+            "chosen in the app; the address and the safety margin stay"
         ),
     )
     print_.add_argument(

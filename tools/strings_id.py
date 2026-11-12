@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Bawaan",
     "Ideas for the variables (counter, date, UUID), no code": "Ide untuk variabel (penghitung, tanggal, UUID), tanpa kode",
     "Waiting for the printer's answer…": "Menunggu jawaban printer…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "cetak dengan bawaan model printer, bukan potongan, mode, kualitas, dan pengaturan printer yang terakhir dipilih di aplikasi",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "cetak dengan bawaan model printer, bukan potongan, warna, kualitas, tambahan (cetak berantai, resolusi tinggi, umpan pita), dan pengaturan printer yang terakhir dipilih di aplikasi; alamat dan margin aman tetap",
 }

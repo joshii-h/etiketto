@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "ค่าเริ่มต้น",
     "Ideas for the variables (counter, date, UUID), no code": "แนวคิดสำหรับตัวแปร (ตัวนับ วันที่ UUID) ไม่มีโค้ด",
     "Waiting for the printer's answer…": "กำลังรอคำตอบจากเครื่องพิมพ์…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "พิมพ์ด้วยค่าเริ่มต้นของรุ่นเครื่องพิมพ์ แทนการตัด โหมด คุณภาพ และการตั้งค่าเครื่องพิมพ์ที่เลือกไว้ล่าสุดในแอป",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "พิมพ์ด้วยค่าเริ่มต้นของรุ่นเครื่องพิมพ์ แทนการตัด สี คุณภาพ ตัวเลือกเพิ่มเติม (พิมพ์ต่อเนื่อง ความละเอียดสูง การป้อนเทป) และการตั้งค่าเครื่องพิมพ์ที่เลือกไว้ล่าสุดในแอป ที่อยู่และระยะขอบปลอดภัยยังคงเดิม",
 }

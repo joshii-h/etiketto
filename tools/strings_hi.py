@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "डिफ़ॉल्ट",
     "Ideas for the variables (counter, date, UUID), no code": "वेरिएबल के लिए विचार (काउंटर, तारीख़, UUID), कोई कोड नहीं",
     "Waiting for the printer's answer…": "प्रिंटर के उत्तर की प्रतीक्षा…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "ऐप में पिछली बार चुने गए कट, मोड, गुणवत्ता और प्रिंटर सेटिंग की जगह प्रिंटर मॉडल की डिफ़ॉल्ट सेटिंग से प्रिंट करें",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "ऐप में पिछली बार चुने गए कट, रंग, गुणवत्ता, अतिरिक्त विकल्पों (चेन प्रिंटिंग, उच्च रिज़ॉल्यूशन, टेप फ़ीड) और प्रिंटर सेटिंग की जगह प्रिंटर मॉडल की डिफ़ॉल्ट सेटिंग से प्रिंट करें; पता और सुरक्षा मार्जिन वही रहते हैं",
 }

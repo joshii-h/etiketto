@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Domyślna",
     "Ideas for the variables (counter, date, UUID), no code": "Pomysły na zmienne (licznik, data, UUID), bez kodu",
     "Waiting for the printer's answer…": "Oczekiwanie na odpowiedź drukarki…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "drukuj z ustawieniami domyślnymi modelu drukarki zamiast cięcia, trybu, jakości i ustawień drukarki wybranych ostatnio w aplikacji",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "drukuj z ustawieniami domyślnymi modelu drukarki zamiast cięcia, kolorów, jakości, dodatków (druk łańcuchowy, wysoka rozdzielczość, posuw taśmy) i ustawień drukarki wybranych ostatnio w aplikacji; adres i margines bezpieczeństwa pozostają",
 }

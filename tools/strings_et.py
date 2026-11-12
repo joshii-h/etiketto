@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Vaikimisi",
     "Ideas for the variables (counter, date, UUID), no code": "Ideed muutujate jaoks (loendur, kuupäev, UUID), koodi ei kasutata",
     "Waiting for the printer's answer…": "Ootan printeri vastust…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "prindi printerimudeli vaikeväärtustega, mitte rakenduses viimati valitud lõike, režiimi, kvaliteedi ja printeriseadetega",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "prindi printerimudeli vaikeväärtustega, mitte rakenduses viimati valitud lõike, värvide, kvaliteedi, lisade (ahelprint, kõrge eraldusvõime, lindi etteanne) ja printeriseadetega; aadress ja ohutusvaru jäävad",
 }

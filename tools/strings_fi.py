@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Oletus",
     "Ideas for the variables (counter, date, UUID), no code": "Ideoita muuttujiin (laskuri, päivämäärä, UUID), ei koodia",
     "Waiting for the printer's answer…": "Odotetaan tulostimen vastausta…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "tulosta tulostinmallin oletuksilla eikä sovelluksessa viimeksi valituilla leikkauksella, tilalla, laadulla ja tulostinasetuksilla",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "tulosta tulostinmallin oletuksilla sovelluksessa viimeksi valittujen leikkauksen, värien, laadun, lisävalintojen (ketjutulostus, suuri tarkkuus, nauhan syöttö) ja tulostinasetusten sijaan; osoite ja turvamarginaali säilyvät",
 }

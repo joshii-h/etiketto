@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Standaard",
     "Ideas for the variables (counter, date, UUID), no code": "Ideeën voor de variabelen (teller, datum, UUID), geen code",
     "Waiting for the printer's answer…": "Wachten op het antwoord van de printer…",
-    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "afdrukken met de standaardwaarden van het printermodel in plaats van de snijwijze, modus, kwaliteit en printerinstellingen die laatst in de app zijn gekozen",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "afdrukken met de standaardwaarden van het printermodel in plaats van de snijwijze, kleuren, kwaliteit, extra’s (kettingprint, hoge resolutie, tapetoevoer) en printerinstellingen die laatst in de app zijn gekozen; adres en veiligheidsmarge blijven",
 }
