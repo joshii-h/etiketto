@@ -527,15 +527,18 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 
 ## Server build
 
-- `packaging/docker/Dockerfile`: Debian slim with Python, PyGObject,
-  Pango and Cairo (no GTK), the app in a venv, user `tavletta` (uid
-  10001), `MALLOC_ARENA_MAX=2`. No volumes: mount the labels at
-  `/labels` and `printers.toml`, `tokens.toml` (and, if wanted,
+- `packaging/docker/Dockerfile`: Debian slim with its security updates,
+  Python, PyGObject, Pango and Cairo (no GTK), Poppler for the PDF pages
+  of shipping labels (about 35 MB with its libraries), the app in a venv,
+  user `tavletta` (uid 10001), `MALLOC_ARENA_MAX=2`, a `HEALTHCHECK` on
+  `/api/v1/health`, `LICENSE` and `THIRD_PARTY_NOTICES.md` in
+  `/usr/share/doc/tavletta`. No volumes: mount the labels at `/labels` and `printers.toml`, `tokens.toml` (and, if wanted,
   `tavletta/settings.json`) at `/config` (`XDG_CONFIG_HOME`), readable by
   whatever user the container runs as. It listens on all interfaces of
   the container, so it does not start without a token.
-- `packaging/docker/compose.yaml`: network printers, running as the
-  owner of `config/` and `labels/` (`user:`, `TAVLETTA_UID` and
+- `packaging/docker/compose.yaml`: the published image
+  `ghcr.io/joshii-h/tavletta:1.1` ([Container image](#container)), network
+  printers, running as the owner of `config/` and `labels/` (`user:`, `TAVLETTA_UID` and
   `TAVLETTA_GID`, 1000 by default), 1 GB memory, 128 processes. `config/` with
   `printers.toml` and `tokens.toml` mounted read-only as a folder (a single
   mounted file would keep showing the old file after `token new` replaced
@@ -548,6 +551,13 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   talk USB themselves, with the groups `lp` and `dialout`. CUPS queues of the host (USB printers set up there
   too) are at `ipp://localhost:631/printers/<queue>`; name them in
   `printers.toml`.
+- `packaging/docker/compose.build.yaml`, an override
+  (`-f compose.yaml -f compose.build.yaml up -d --build`): builds the image
+  from the checkout as `tavletta-server` instead of pulling it.
+- `packaging/docker/smoke-test.sh IMAGE`: starts the image as
+  `compose.yaml` does (read-only, no capabilities, not root) with a
+  throwaway token, asks for `/health` and a preview of
+  `docs/examples/shelf.tavletta` and waits for the healthcheck.
 - `packaging/systemd/tavletta.service`: a user service on `127.0.0.1:8790`
   with MCP and a token file; it makes the labels and config folders,
   then runs sandboxed: the system read-only (`ProtectSystem=strict`), the
@@ -571,9 +581,9 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 ```sh
 cd packaging/docker
 mkdir -p config labels && cp printers.example.toml config/printers.toml
-docker compose build
+docker compose pull
 docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint tavletta \
-    tavletta-server token new shipping-pc --role print \
+    ghcr.io/joshii-h/tavletta:1.1 token new shipping-pc --role print \
     --tokens /config/tokens.toml --printers /config/printers.toml
 docker compose up -d
 ```
@@ -582,7 +592,40 @@ For a quick try without files:
 
 ```sh
 docker run -e TAVLETTA_TOKEN="$(openssl rand -hex 32)" \
-    -v ~/Labels:/labels -p 127.0.0.1:8790:8790 tavletta-server
+    -v ~/Labels:/labels -p 127.0.0.1:8790:8790 ghcr.io/joshii-h/tavletta:1.1
+```
+
+## Container image { #container }
+
+`.github/workflows/docker.yml` builds the image on GitHub (the push mirror)
+for `linux/amd64` and `linux/arm64` and publishes it as
+`ghcr.io/joshii-h/tavletta`:
+
+| Tag | |
+|---|---|
+| `1.1.0` | a release, from its tag `v1.1.0` |
+| `1.1` | the latest bug fix release of 1.1 (what `compose.yaml` uses) |
+| `latest` | the latest release (not a pre-release) |
+| `edge` | the state of `main`, not a release |
+
+```sh
+docker pull ghcr.io/joshii-h/tavletta:1.1.0
+```
+
+Before anything is pushed the amd64 image is started with
+`packaging/docker/smoke-test.sh` and scanned with Trivy; a release with a
+fixable critical or high vulnerability is not published. Pull requests and
+manual runs build without pushing. Each pushed image has an SBOM and SLSA
+provenance (BuildKit), a GitHub build provenance attestation and a keyless
+cosign signature. To check that an image was built by this workflow from
+this repository:
+
+```sh
+gh attestation verify oci://ghcr.io/joshii-h/tavletta:1.1.0 --repo joshii-h/tavletta
+cosign verify ghcr.io/joshii-h/tavletta:1.1.0 \
+    --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+    --certificate-identity-regexp '^https://github\.com/joshii-h/tavletta/\.github/workflows/docker\.yml@refs/tags/v'
+docker buildx imagetools inspect ghcr.io/joshii-h/tavletta:1.1.0 --format '{{ json .SBOM }}'
 ```
 
 ## Roadmap

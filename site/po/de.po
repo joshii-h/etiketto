@@ -2535,6 +2535,88 @@ msgstr ""
 "Technische Details und Sicherheit: "
 "[docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
 
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Container image { #container }"
+msgstr "Container-Image { #container }"
+
+#. type: Plain text
+#: docs/server.md
+msgid ""
+"The print server is published as a container image for amd64 and arm64 (also "
+"a Raspberry Pi with a 64-bit system):"
+msgstr ""
+"Der Druckserver wird als Container-Image für amd64 und arm64 veröffentlicht "
+"(auch für einen Raspberry Pi mit 64-Bit-System):"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "docker pull ghcr.io/joshii-h/tavletta:1.1.0\n"
+msgstr "docker pull ghcr.io/joshii-h/tavletta:1.1.0\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`1.1.0` is a release, `1.1` the latest bug fix release of 1.1, `latest` the "
+"latest release. `edge` is the state of development, not a release."
+msgstr ""
+"`1.1.0` ist eine Version, `1.1` die neueste Fehlerbehebungsversion von 1.1, "
+"`latest` die neueste Version. `edge` ist der Stand der Entwicklung, keine "
+"Version."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`packaging/docker/compose.yaml` uses the published image: `docker compose "
+"pull`, then `docker compose up -d`."
+msgstr ""
+"`packaging/docker/compose.yaml` verwendet das veröffentlichte Image: `docker "
+"compose pull`, dann `docker compose up -d`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"To build the image yourself instead, add `compose.build.yaml`: `docker "
+"compose -f compose.yaml -f compose.build.yaml up -d --build`."
+msgstr ""
+"Um das Image stattdessen selbst zu bauen, `compose.build.yaml` hinzufügen: "
+"`docker compose -f compose.yaml -f compose.build.yaml up -d --build`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"The image runs without root rights and reports its state to Docker "
+"(`HEALTHCHECK`)."
+msgstr ""
+"Das Image läuft ohne Root-Rechte und meldet Docker seinen Zustand "
+"(`HEALTHCHECK`)."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Check that an image was built from Tavletta's repository, with the [GitHub "
+"CLI](https://cli.github.com) or [cosign](https://docs.sigstore.dev):"
+msgstr ""
+"Prüfen, dass ein Image aus dem Repository von Tavletta gebaut wurde, mit der "
+"[GitHub CLI](https://cli.github.com) oder [cosign](https://"
+"docs.sigstore.dev):"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"gh attestation verify oci://ghcr.io/joshii-h/tavletta:1.1.0 --repo joshii-h/tavletta\n"
+"cosign verify ghcr.io/joshii-h/tavletta:1.1.0 \\\n"
+"    --certificate-oidc-issuer https://token.actions.githubusercontent.com \\\n"
+"    --certificate-identity-regexp '^https://github\\.com/joshii-h/tavletta/\\.github/workflows/docker\\.yml@refs/tags/v'\n"
+msgstr ""
+"gh attestation verify oci://ghcr.io/joshii-h/tavletta:1.1.0 --repo joshii-h/tavletta\n"
+"cosign verify ghcr.io/joshii-h/tavletta:1.1.0 \\\n"
+"    --certificate-oidc-issuer https://token.actions.githubusercontent.com \\\n"
+"    --certificate-identity-regexp '^https://github\\.com/joshii-h/tavletta/\\.github/workflows/docker\\.yml@refs/tags/v'\n"
+
 #. type: Title #
 #: docs/sheets.md
 #, no-wrap
