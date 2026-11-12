@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 15:52+0100\n"
+"POT-Creation-Date: 2026-11-12 16:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,6 +67,12 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
+msgid "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta."
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
 msgid "![Main window](media/main.png#only-light)  ![Main window](media/main-dark.png#only-dark)"
 msgstr ""
 
@@ -74,6 +80,12 @@ msgstr ""
 #: docs/index.md
 #, markdown-text
 msgid "Text, images, [symbols](use.md), QR codes and barcodes of many types; backgrounds printed edge to edge"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "[Text styles](use.md#text-style), [lines and shapes](use.md#shapes), and a [free layout](use.md#free-layout) with each element at its own place; undo and redo"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -104,6 +116,12 @@ msgstr ""
 #: docs/index.md
 #, markdown-text
 msgid "Finds the printer in the network and on USB, reads what is loaded and explains printer problems in plain words"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "A [print server](server.md) for other programs and AI assistants"
 msgstr ""
 
 #. type: Bullet: '- '

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 15:59+0100\n"
+"PO-Revision-Date: 2026-11-12 16:04+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -18,20 +18,26 @@ msgstr "बॉक्स और फ़्रेम"
 msgid "Design and print labels"
 msgstr "लेबल डिज़ाइन और प्रिंट करें"
 
+#: tavletta/app.py:220
+msgid ""
+"Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
+"tav-LET-ta."
+msgstr "Tavletta रोमांश भाषा में छोटी तख़्ती को कहते हैं (tavla, यानी तख़्ता/मेज़ से)। उच्चारण: tav-LET-ta।"
+
 #. translators: replace with your name to be credited in the About dialog
-#: tavletta/app.py:222
+#: tavletta/app.py:226
 msgid "translator-credits"
 msgstr "Tavletta contributors"
 
-#: tavletta/app.py:230
+#: tavletta/app.py:234
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "वेरिएबल के लिए विचार (काउंटर, तारीख़, UUID), कोई कोड नहीं"
 
-#: tavletta/app.py:233
+#: tavletta/app.py:237
 msgid "Protocol knowledge"
 msgstr "प्रोटोकॉल की जानकारी"
 
-#: tavletta/app.py:238
+#: tavletta/app.py:242
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "

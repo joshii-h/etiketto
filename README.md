@@ -6,6 +6,8 @@ network on endless tape or on die-cut labels. Tavletta talks to each
 printer in its own language, finds it on the network and explains printer
 problems in plain words.
 
+Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.
+
 GTK 4 and libadwaita, in 27 languages: English, German, French, Italian,
 Spanish, Portuguese (Portugal and Brazil), Dutch, Swedish, Finnish,
 Estonian, Polish, Hungarian, Russian, Ukrainian, Turkish, Arabic, Hindi,
@@ -77,7 +79,8 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Tavlett
 - Label sheets on office printers: over 1700 sheets (Avery, Zweckform,
   Herma …) found by part number or size, start at any position on a partly
   used sheet, outlines for a test print; warns about the printer's margins
-- Text with any installed font, bold/italic, underline, strikethrough,
+- Text with any installed font, a font weight (thin to black) or bold,
+  italic, underline, strikethrough,
   colour, multiple lines, letter and line spacing, size fitted to the label
   or fixed in pt, shrunk to fit or wrapped at a width, vertical; white on
   black, a box or a frame with rounded corners, an outline and a shadow;
@@ -93,7 +96,11 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Tavlett
   or bottom and with its own spacing
 - Black-and-white printers: text without anti-aliasing, codes, symbols,
   lines and borders converted on their own to sharp black and white, images
-  by their own method
+  by their own method; each element in black or white against what lies
+  under it, and a warning where it would not stand out from the background
+- Free layout: instead of one after another, each element at its own
+  position (x and y), with its size, a code's module size and a QR code's
+  error correction; switching keeps the places the elements had
 - Undo and redo, keyboard shortcuts to add, duplicate, remove and move
   elements, a shortcuts window
 - Codes: QR code, Data Matrix, PDF417, Aztec; Code 128, Code 39, Code 93,
@@ -125,7 +132,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Tavlett
   display, with copies, counter start and texts set per job
 - Print server: `tavletta serve` offers a REST API (OpenAPI 3.1) and MCP
   for AI assistants (`tavletta mcp` for Claude Desktop and Claude Code),
-  with print jobs queued per printer; a Dockerfile and a systemd unit
+  with print jobs queued per printer, named printers with their settings
+  (`printers.toml`), access tokens with roles; a Dockerfile, a Docker
+  Compose example and a systemd unit
 - Serial labels: placeholders such as `{Name}` in texts and codes, filled
   from each row of a CSV, ODS or XLSX file; step through the rows in the
   preview and print all of them, or a range, on any printer
@@ -291,7 +300,9 @@ flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta 
 `tavletta serve` prints for other programs, without a window or display:
 a REST API under `/api/v1` (JSON; the OpenAPI description at
 `/api/v1/openapi.json`) to list printers and labels, ask a printer for its
-state, render a preview, and print with values, data rows and copies. Jobs
+state, render a preview, and print with values, data rows and copies,
+with each named printer's settings (print method, print upside down,
+quality …) from `printers.toml`. Jobs
 are queued, one per printer at a time, and can be canceled between two
 labels; counters are saved as on the command line. `--mcp` serves the same
 as MCP tools at `/mcp`; `tavletta mcp` speaks MCP on standard input and
@@ -318,7 +329,8 @@ are in `packaging/`. Details, API reference and security notes:
 
 Elements (text, image, symbol, code, line or shape) are placed one after another along the label,
 each filling the label's height unless a text, symbol or shape has a fixed size, and
-centred across it unless aligned at the top or bottom.
+centred across it unless aligned at the top or bottom. In the free layout
+each element has its own position instead.
 
 - **Endless tape**: the label is either exactly as long as its content plus
   the spacing (*Automatic length*) or has a fixed length; the content is

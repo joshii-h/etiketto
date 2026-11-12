@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 15:52+0100\n"
+"POT-Creation-Date: 2026-11-12 16:04+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -104,6 +104,15 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 msgid ""
+"Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
+"tav-LET-ta."
+msgstr ""
+"Tavletta ist rätoromanisch für „Täfelchen“ (von tavla, Tafel). Gesprochen "
+"tav-LET-ta."
+
+#. type: Plain text
+#: docs/index.md
+msgid ""
 "![Main window](media/main.png#only-light)  ![Main window](media/main-"
 "dark.png#only-dark)"
 msgstr ""
@@ -118,6 +127,17 @@ msgid ""
 msgstr ""
 "Text, Bilder, [Symbole](use.md), QR-Codes und Barcodes vieler Arten; "
 "Hintergründe randlos gedruckt"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid ""
+"[Text styles](use.md#text-style), [lines and shapes](use.md#shapes), and a "
+"[free layout](use.md#free-layout) with each element at its own place; undo "
+"and redo"
+msgstr ""
+"[Textgestaltung](use.md#text-style), [Linien und Formen](use.md#shapes) und "
+"eine [freie Anordnung](use.md#free-layout) mit jedem Element an seinem "
+"eigenen Platz; Rückgängig und Wiederholen"
 
 #. type: Bullet: '- '
 #: docs/index.md
@@ -156,6 +176,11 @@ msgid ""
 msgstr ""
 "Findet den Drucker im Netzwerk und an USB, liest aus, was eingelegt ist, und"
 " erklärt Druckerprobleme in Klartext"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid "A [print server](server.md) for other programs and AI assistants"
+msgstr "Ein [Druckserver](server.md) für andere Programme und KI-Assistenten"
 
 #. type: Bullet: '- '
 #: docs/index.md

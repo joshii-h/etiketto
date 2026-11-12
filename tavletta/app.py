@@ -214,7 +214,11 @@ class App(Adw.Application):
             version=__version__,
             developer_name="Joshua Hirsig",
             license_type=Gtk.License.AGPL_3_0,
-            comments=_("Design and print labels"),
+            comments=_("Design and print labels")
+            + "\n\n"
+            + _(
+                "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta."
+            ),
             website="https://git.joshuahirsig.xyz/joshii/tavletta",
             issue_url="https://git.joshuahirsig.xyz/joshii/tavletta/issues",
             copyright="© 2026 Joshua Hirsig",

@@ -790,4 +790,5 @@ TRANSLATIONS = {
     "The label is too large: at most %d images and codes": "A címke túl nagy: legfeljebb %d kép és kód",
     "Not a valid printer address pattern: %s": "Érvénytelen nyomtatócím-minta: %s",
     "A chosen token must not look like a made one (etk_…)": "A választott token nem hasonlíthat egy létrehozottra (etk_…)",
+    "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "A Tavletta rétorománul kis táblát jelent (a tavla, tábla/deszka szóból). Kiejtése: tav-LET-ta.",
 }

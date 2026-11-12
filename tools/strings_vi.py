@@ -790,4 +790,5 @@ TRANSLATIONS = {
     "The label is too large: at most %d images and codes": "Nhãn quá lớn: tối đa %d hình ảnh và mã",
     "Not a valid printer address pattern: %s": "Không phải mẫu địa chỉ máy in hợp lệ: %s",
     "A chosen token must not look like a made one (etk_…)": "Mã truy cập tự chọn không được trông giống mã được tạo (etk_…)",
+    "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta trong tiếng Romansh nghĩa là tấm bảng nhỏ (từ tavla, bảng/tấm ván). Đọc là tav-LET-ta.",
 }

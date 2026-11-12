@@ -790,4 +790,5 @@ TRANSLATIONS = {
     "The label is too large: at most %d images and codes": "Het etiket is te groot: maximaal %d afbeeldingen en codes",
     "Not a valid printer address pattern: %s": "Geen geldig printeradrespatroon: %s",
     "A chosen token must not look like a made one (etk_…)": "Een gekozen token mag niet op een aangemaakt token lijken (etk_…)",
+    "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta is Reto-Romaans voor een klein tafeltje of plankje (van tavla, tafel/plank). Uitspraak: tav-LET-ta.",
 }

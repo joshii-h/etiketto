@@ -790,4 +790,5 @@ TRANSLATIONS = {
     "The label is too large: at most %d images and codes": "Silt on liiga suur: kuni %d pilti ja koodi",
     "Not a valid printer address pattern: %s": "Pole kehtiv printeri aadressi muster: %s",
     "A chosen token must not look like a made one (etk_…)": "Valitud pääsuluba ei tohi välja näha nagu loodud pääsuluba (etk_…)",
+    "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta tähendab romanši keeles väikest tahvlit (sõnast tavla, tahvel/laud). Hääldus: tav-LET-ta.",
 }

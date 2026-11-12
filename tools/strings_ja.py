@@ -790,4 +790,5 @@ TRANSLATIONS = {
     "The label is too large: at most %d images and codes": "ラベルが大きすぎます: 画像とコードは最大 %d 個です",
     "Not a valid printer address pattern: %s": "有効なプリンターアドレスのパターンではありません: %s",
     "A chosen token must not look like a made one (etk_…)": "自分で決めたトークンは、生成されたトークンのような形にはできません (etk_…)",
+    "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta はロマンシュ語で「小さな板」の意味です（tavla「板」から）。発音は tav-LET-ta。",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 15:59+0100\n"
+"PO-Revision-Date: 2026-11-12 16:04+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: zh_CN\n"
 "Language: zh_CN\n"
@@ -18,20 +18,26 @@ msgstr "方框与外框"
 msgid "Design and print labels"
 msgstr "设计并打印标签"
 
+#: tavletta/app.py:220
+msgid ""
+"Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
+"tav-LET-ta."
+msgstr "Tavletta 在罗曼什语中意为“小板子”（源自 tavla，板、桌）。读作 tav-LET-ta。"
+
 #. translators: replace with your name to be credited in the About dialog
-#: tavletta/app.py:222
+#: tavletta/app.py:226
 msgid "translator-credits"
 msgstr "Tavletta contributors"
 
-#: tavletta/app.py:230
+#: tavletta/app.py:234
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "变量（计数器、日期、UUID）的构思，不含其代码"
 
-#: tavletta/app.py:233
+#: tavletta/app.py:237
 msgid "Protocol knowledge"
 msgstr "协议知识"
 
-#: tavletta/app.py:238
+#: tavletta/app.py:242
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "

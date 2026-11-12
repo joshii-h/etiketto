@@ -5,11 +5,16 @@ USB: on label printers with endless tape or die-cut labels, and on office
 printers, one label per page or on label sheets. It talks to each printer
 in its own language.
 
+Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.
+
 ![Main window](media/main.png#only-light)
 ![Main window](media/main-dark.png#only-dark)
 
 - Text, images, [symbols](use.md), QR codes and barcodes of many
   types; backgrounds printed edge to edge
+- [Text styles](use.md#text-style), [lines and shapes](use.md#shapes),
+  and a [free layout](use.md#free-layout) with each element at its own
+  place; undo and redo
 - Preview at print resolution: what you see is what is printed
 - Endless tape as long as the content, or die-cut labels of any size
 - [Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX
@@ -18,6 +23,7 @@ in its own language.
   carrier's PDF
 - Finds the printer in the network and on USB, reads what is loaded and explains
   printer problems in plain words
+- A [print server](server.md) for other programs and AI assistants
 - 27 languages, follows the light or dark mode of the desktop
 
 The supported printers and what each one can do are listed under
