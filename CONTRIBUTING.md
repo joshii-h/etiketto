@@ -128,6 +128,8 @@ extension of the interface first; please open an issue before you start.
            data_formats=("jpeg",),  # the first one is the default
            min_length_mm=0,  # shorter labels are extended
            max_length_mm=None,  # longer labels are refused
+           cassettes=True,  # continuous: the printer recognises the inserted tape
+           settings=(),  # Choice/Level: printer settings shown in the printer group
        )
 
        def discover(self, timeout=3.0): ...  # -> list[FoundPrinter]
@@ -168,6 +170,19 @@ extension of the interface first; please open an issue before you start.
      (`PrinterInfo.modes`), falling back to `capabilities.modes`.
    - Override `preview(image, mode)` if a mode changes the result (the
      VC-500W shows black and white as grey).
+   - `settings`: printer settings of the backend's own (resolution, label
+     sensor, darkness, ...) as `Choice` (protocol values, the first is the
+     default) or `Level` (steps; None keeps the printer's own setting). The
+     interface shows a row for each in the printer group, keeps the values
+     in `settings.json` and hands them over in `PrintOptions.settings`; read
+     them with `Backend.setting()`. Name new keys and values in
+     `ui/texts.py` (`SETTING_TITLES`, `CHOICE_NAMES`).
+   - A printer that takes the label as a bitmap in a command language
+     (like ZPL, TSPL, ESC/POS) can subclass `raw.RawBackend`: it finds the
+     printers on USB and by mDNS by their IEEE 1284 command set, connects
+     on port 9100 or USB and asks short questions where silence is no
+     error. The subclass builds the job (`build_job`) and, if the language
+     has a status, reads it (`ask_status`, `problem`); see `zpl.py`.
 
 2. Register it in `etiketto/backends/__init__.py` (`_load()`), or ship it as
    a separate package with an entry point in the group `etiketto.backends`

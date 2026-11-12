@@ -17,7 +17,7 @@ from PIL import Image  # noqa: E402
 
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
-from etiketto.backends.base import Backend, margins_for  # noqa: E402
+from etiketto.backends.base import Backend, PrintOptions, margins_for  # noqa: E402
 from etiketto.model import (  # noqa: E402
     MAX_COUNTER,
     CodeElement,
@@ -443,12 +443,17 @@ class Window(Adw.ApplicationWindow):
 
     def print_dpi(self) -> float:
         """The resolution the label is printed at: the printer's own if it
-        said (a page printer at 203 dpi), else the model's; for the preview
+        said (a page printer at 203 dpi), else the one the printer settings
+        choose (a ZPL printer at 300 dpi), else the model's; for the preview
         and the export at most PREVIEW_MAX_DPI (an A4 page at 1200 dpi would
         be 140 megapixels, rendered on every keystroke)."""
         info = self.printer.info
-        dpi = info.dpi if info and info.dpi else self.backend.capabilities.dpi
-        return min(dpi, PREVIEW_MAX_DPI)
+        if info and info.dpi:
+            return min(info.dpi, PREVIEW_MAX_DPI)
+        options = PrintOptions(
+            settings=self.printer_settings.backend_settings(), host=self.printer.host or ""
+        )
+        return min(self.backend.render_dpi(options), PREVIEW_MAX_DPI)
 
     def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,

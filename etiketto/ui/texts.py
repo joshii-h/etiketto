@@ -38,6 +38,26 @@ ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
 ORIENTATIONS = [("across", _("Across the roll")), ("along", _("Along the roll"))]
 # page printers: the label as a page of its own, or on a label sheet
 PRINT_ON = [("page", _("Single label")), ("sheet", _("Label sheet"))]
+# a backend's own printer settings (Capabilities.settings): titles by key
+SETTING_TITLES = {
+    "dpi": _("Resolution"),
+    "media": _("Label sensor"),
+    "finish": _("After printing"),
+    "darkness": _("Darkness"),
+    "speed": _("Speed"),
+    "upside_down": _("Print upside down"),
+}
+# their values by protocol name; resolutions are shown as "203 dpi"
+CHOICE_NAMES = {
+    "auto": _("As reported by the printer"),
+    "printer": _("As set on the printer"),
+    "gap": _("Gap between labels"),
+    "mark": _("Black mark"),
+    "continuous": _("Continuous media"),
+    "tear": _("Tear off"),
+    "peel": _("Peel off"),
+    "cut": _("Cut off"),
+}
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
@@ -106,6 +126,28 @@ def image_from_path(path) -> ImageElement:
         raise ValueError(_("Not an image: %s") % Path(path).name) from e
 
 
+def setting_title(key: str) -> str:
+    return SETTING_TITLES.get(key, key)
+
+
+def choice_name(value: str) -> str:
+    if value in CHOICE_NAMES:
+        return CHOICE_NAMES[value]
+    return "%s dpi" % value if value.isdigit() else value
+
+
+def level_name(key: str, value: int | None) -> str:
+    """A step of a Level setting; None keeps the printer's own setting."""
+    if value is None:
+        return CHOICE_NAMES["printer"]
+    if key == "darkness":
+        return _("%d %%") % value
+    if key == "speed":
+        # translators: print speed in inches per second, as label printers state it
+        return _("%d in/s") % value
+    return str(value)
+
+
 def element_title(element) -> str:
     if isinstance(element, TextElement):
         first = (element.text.splitlines() or [""])[0]
@@ -170,7 +212,10 @@ def source_error_text(error: SourceError, name: str) -> str:
 
 def backend_name(backend) -> str:
     """The name of a printer model in the list; brand names stay as they are."""
-    names = {"system": _("System printer (CUPS, IPP)")}
+    names = {
+        "system": _("System printer (CUPS, IPP)"),
+        "escpos": _("Receipt printer (ESC/POS)"),
+    }
     return names.get(backend.id, backend.name)
 
 
@@ -338,6 +383,8 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "resolution": _("The printer did not report its resolution in time. Choose it under “%s”.")
+        % SETTING_TITLES["dpi"],
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."

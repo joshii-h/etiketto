@@ -50,11 +50,13 @@ def test_unknown_backend():
 
 def test_register_orders_default_first(mono):
     # the default first, then by name, whatever the case
-    assert [b.id for b in backends()] == ["vc500w", "cab", "system", "fake-mono"]
+    # names: cab, CUPS / IPP, DYMO, ESC/POS, Fake Mono, TSPL, Zebra EPL2, Zebra ZPL
+    builtin = ["cab", "system", "dymo", "escpos"]
+    assert [b.id for b in backends()] == ["vc500w", *builtin, "fake-mono", "tspl", "epl", "zpl"]
     assert get_backend("fake-mono") is mono
     registry.unregister("fake-mono")
     registry.unregister("fake-mono")  # twice is fine
-    assert [b.id for b in backends()] == ["vc500w", "cab", "system"]
+    assert [b.id for b in backends()] == ["vc500w", *builtin, "tspl", "epl", "zpl"]
 
 
 def test_register_needs_an_id():
@@ -85,13 +87,18 @@ def test_entry_points(monkeypatch):
     monkeypatch.setattr(registry, "_registry", {})
     ids = [b.id for b in backends()]
     assert groups == ["etiketto.backends"]
-    assert ids[0] == "vc500w" and sorted(ids[1:]) == ["cab", "fake-mono", "plugin", "system"]
+    assert ids[0] == "vc500w"
+    assert sorted(ids[1:]) == sorted(
+        ["cab", "fake-mono", "plugin", "system", "zpl", "epl", "tspl", "escpos", "dymo"]
+    )
     backends()  # loaded once only
     assert groups == ["etiketto.backends"]
 
 
 def test_every_backend_has_a_contract_test():
     import test_cab  # noqa: F401 - define their BackendContract subclasses
+    import test_raw_backends  # noqa: F401
+    import test_system  # noqa: F401
     import test_vc500w  # noqa: F401
 
     tested = {cls.backend_id for cls in BackendContract.__subclasses__()}
@@ -202,3 +209,13 @@ def test_a_code_too_large_for_the_tape_is_not_printed():
     label = Label(tape_mm=9, elements=[CodeElement("x" * 1000)])  # 105 modules on 9 mm
     with pytest.raises(CodeTooLarge):
         get_backend("vc500w").prepare(label, PrintOptions())
+
+
+def test_the_preview_resolution_follows_a_dpi_setting():
+    from etiketto.backends.base import PrintOptions
+
+    zpl = get_backend("zpl")
+    assert zpl.render_dpi(PrintOptions(settings={"dpi": "300"})) == pytest.approx(12 * 25.4)
+    assert zpl.render_dpi(PrintOptions(settings={"dpi": "600"})) == pytest.approx(24 * 25.4)
+    vc500w = get_backend("vc500w")
+    assert vc500w.render_dpi(PrintOptions()) == vc500w.capabilities.dpi

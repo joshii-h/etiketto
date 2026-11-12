@@ -58,6 +58,12 @@ class UsbPrinter:
     manufacturer: str
     model: str
     serial: str = ""
+    command_set: str = ""  # the printer languages, e.g. "ZPL" or "EPL,ZPL"
+
+    @property
+    def commands(self) -> tuple[str, ...]:
+        """The command set as a list in capitals: ("EPL", "ZPL")."""
+        return tuple(c.strip().upper() for c in self.command_set.split(",") if c.strip())
 
     @property
     def address(self) -> str:
@@ -100,6 +106,7 @@ def printers() -> list[UsbPrinter]:
                 fields.get("MANUFACTURER", ""),
                 fields.get("MODEL", ""),
                 serial,
+                fields.get("COMMAND SET", ""),
             )
         )
     return found
@@ -177,6 +184,8 @@ class Connection:
     def __init__(self, device: Path, timeout: float, wait: float | None = None):
         self.device = device
         self.timeout = timeout
+        # bytes per second a job may average at least (see sendall)
+        self.min_rate: float = MIN_RATE
         self.fd = -1
         wait = BUSY_WAIT if wait is None else wait
         self.lock = _device_lock(device)
@@ -193,9 +202,9 @@ class Connection:
         data (paper out, buffer full): PrinterStalled once it took nothing
         for the timeout. Every write that gets bytes through starts the
         timeout again, so a large job on a slow port goes through; one that
-        trickles still ends after timeout + len(data) / MIN_RATE."""
+        trickles still ends after timeout + len(data) / min_rate."""
         start = time.monotonic()
-        end = start + self.timeout + len(data) / MIN_RATE
+        end = start + self.timeout + len(data) / self.min_rate
         idle = start + self.timeout
         view = memoryview(data)
         while view:

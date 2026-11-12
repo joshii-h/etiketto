@@ -669,6 +669,7 @@ def _options(backend: Backend, printer: PrinterSettings, copies: int, gap_mm: fl
         color=printer.color_adjust,
         data_format=printer.data_format,
         gap_mm=gap_mm,
+        settings=printer.backend_settings(),
     )
 
 

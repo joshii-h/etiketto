@@ -1,13 +1,13 @@
 """Shared fixtures: images, labels, a fake VC-500W and a GTK window.
 
-The printer is never contacted: vc500w._connect is always replaced, either by
-a refusal (autouse) or by FakeVC500W, which answers the protocol like the
-device does. IPP (ipp.send: CUPS on this computer, network printers) and
-Avahi (the system D-Bus) are refused too, unless a test brings its own fake
-(or is marked real_ipp: a server on 127.0.0.1). A refusal is recorded and
-fails the test at its end, also when it happened in a background thread,
-where an exception is lost. The GUI tests replace query/print/discover of
-every backend.
+The printer is never contacted: vc500w._connect (cab._connect, raw._connect)
+is always replaced, either by a refusal (autouse) or by FakeVC500W, which
+answers the protocol like the device does. IPP (ipp.send: CUPS on this
+computer, network printers) and Avahi (the system D-Bus, raw._browse) are
+refused too, unless a test brings its own fake (or is marked real_ipp: a
+server on 127.0.0.1). A refusal is recorded and fails the test at its end,
+also when it happened in a background thread, where an exception is lost.
+The GUI tests replace query/print/discover of every backend.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import backends, cab, get_backend, ipp, mdns, usb, vc500w
+from etiketto.backends import backends, cab, get_backend, ipp, mdns, raw, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -81,6 +81,9 @@ def _no_network(request, monkeypatch):
 
     monkeypatch.setattr(vc500w, "_connect", refusal("printer"))
     monkeypatch.setattr(cab, "_connect", refusal("printer"))
+    monkeypatch.setattr(raw, "_connect", refusal("printer"))  # ZPL, EPL2, TSPL, ESC/POS, DYMO
+    # nor search the real network for them (mDNS)
+    monkeypatch.setattr(raw, "_browse", lambda *_args, **_kwargs: [])
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
     monkeypatch.setattr(mdns.Gio, "bus_get_sync", refusal("D-Bus"))

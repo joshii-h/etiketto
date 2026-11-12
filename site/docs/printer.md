@@ -165,6 +165,62 @@ as one page of exactly its size, unscaled.
 - The job is held in the queue (until it is released, or until a password
   is entered): Etiketto cancels it. Check the queue in the system settings.
 
+## Label printers with ZPL, EPL2, TSPL, ESC/POS or DYMO { #raw }
+
+Etiketto prints on label printers that take the label as an image in their
+own printer language. These printers have not been tried with Etiketto yet:
+if you have one, a report of what works and what does not helps a lot
+([[ui:Report a problem…]]).
+
+| Printer model in Etiketto | Printers |
+|---|---|
+| Zebra ZPL | Zebra GK, GX, ZD, ZT and other printers with ZPL, also ZPL compatible printers of other makers |
+| Zebra EPL2 | Zebra LP/TLP 2824 and 2844, GK420 and GX420 set to EPL2 |
+| TSPL (TSC, Munbyn, iDPRT, Xprinter, Rollo) | TSC printers and most 4 × 6 in shipping label printers |
+| [[ui:Receipt printer (ESC/POS)]] | Epson TM and compatible receipt printers on 58 or 80 mm paper |
+| DYMO LabelWriter | LabelWriter 300, 400 and 450 series, 4XL (not the 550 and 5XL) |
+
+- Connection: over the network on port 9100, or USB. Plug a USB printer in
+  and use [[ui:Search for printers]]. Some low-cost shipping label printers
+  do not show up as a printer on USB; Etiketto cannot find those.
+- [[ui:Resolution]]: choose the resolution of the print head (203, 300 or
+  600 dpi). Zebra printers report it: [[ui:As reported by the printer]].
+- [[ui:Label sensor]]: [[ui:As set on the printer]] keeps the printer's own
+  setting. [[ui:Gap between labels]] for die-cut labels,
+  [[ui:Black mark]] for labels with a black mark on the back,
+  [[ui:Continuous media]] for a roll without gaps. Set the [[ui:Label size]]
+  and the [[ui:Gap]] (or the height of the mark) like the roll.
+- [[ui:After printing]]: [[ui:Tear off]], [[ui:Peel off]] or
+  [[ui:Cut off]], if the printer has a peeler or a cutter.
+  [[ui:As set on the printer]] leaves the printer's own setting.
+- [[ui:Darkness]] and [[ui:Speed]] change the printer's setting for this
+  print; [[ui:As set on the printer]] leaves it alone.
+- [[ui:Print upside down]]: for a printer that puts out the label the
+  wrong way round.
+- Receipt printers print the label on endless paper: choose the paper width
+  under [[ui:Tape width]]. The printable width is narrower than the paper
+  (48 mm on 58 mm paper, 72 mm on 80 mm paper). [[ui:Cut]] in the print
+  dialog cuts the paper after each label.
+
+### Problems { #raw-problems }
+
+- [[ui:Reachable · the printer reports no status]]: the printer takes jobs
+  but answers no questions, which many of these printers do (EPL2 printers
+  never answer). Problems such as an open cover then show on the printer
+  only.
+- The printer did not report its resolution in time: choose it under
+  [[ui:Resolution]] instead of [[ui:As reported by the printer]].
+- The label comes out upside down: switch on [[ui:Print upside down]], and
+  please report it with the printer model; the orientation could not be
+  tried on a printer yet.
+- Print too pale or too dark: change [[ui:Darkness]].
+- The printer prints several blank labels or stops between labels: the
+  [[ui:Label sensor]] does not match the roll, or the printer has to measure
+  the labels again (most printers do that with a long press on Feed).
+- Nothing is printed and the printer shows no problem: check that its
+  printer language is the one chosen in Etiketto (many printers can switch
+  between ZPL and EPL2, or between TSPL and ESC/POS).
+
 ## Help
 
 Something else? [[ui:Report a problem…]] in the main menu (also offered with

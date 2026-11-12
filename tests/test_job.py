@@ -296,3 +296,18 @@ def test_per_label_renders_on_sheets_render_again_at_another_resolution():
     assert source is not None and source(1).size == (42, 1)
     assert texts(job.backend.prepared)[-1] == "2"
     assert _EachCopy(sheet_job("{=counter}", 2)).at_dpi(42) is None
+
+
+def test_a_printer_with_another_resolution_gets_the_label_rendered_again():
+    from etiketto.backends.base import RenderAgain
+
+    class Changing(Recording):
+        def print_label(self, image, host, options, progress=None):
+            if not self.prepared[1:]:  # the first image was made for another resolution
+                raise RenderAgain("printer reported 300 dpi")
+            return super().print_label(image, host, options, progress)
+
+    job = make_job("{=date:%Y}", 1, Changing())
+    job.run("zebra.local")
+    assert texts(job.backend.prepared) == ["2026", "2026"]
+    assert job.printed == 1 and job.options.host == "zebra.local"

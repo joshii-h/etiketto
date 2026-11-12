@@ -23,6 +23,7 @@ from etiketto.backends.base import (
     PrintResult,
     Progress,
     ProgressCallback,
+    RenderAgain,
 )
 from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM, RenderWarning, render
@@ -130,20 +131,25 @@ class Job:
         whole job. Interrupted (Ctrl+C) during a send, the labels of that
         send count as printed: the printer may have them, and a number
         skipped is better than one printed twice."""
+        if not self.options.host:  # prepare() renders for this printer
+            self.options = replace(self.options, host=host)
         if self.sheet is not None:
             return self._run_sheets(self.sheet, host, progress)
         if not self.per_copy:
-            _copy, image = next(self.images())
-            return self._send(image, host, self.options, progress)
+            label = self.expanded(1)[0]
+            return self._send(self.image(label), label, host, self.options, progress)
         single = replace(self.options, copies=1)
         results = []
-        for copy, image in self.images():
-            results.append(self._send(image, host, single, self._progress(progress, copy)))
+        for copy, label in self.labels():
+            progress_of_copy = self._progress(progress, copy)
+            results.append(self._send(self.image(label), label, host, single, progress_of_copy))
         return merge_results(results)
 
-    def _send(self, image, host: str, options: PrintOptions, progress) -> PrintResult | None:
+    def _send(
+        self, image, label: Label, host: str, options: PrintOptions, progress
+    ) -> PrintResult | None:
         try:
-            result = self.backend.print_label(image, host, options, progress)
+            result = self._print_label(image, label, host, options, progress)
         except PrinterError as e:
             done = e.params.get("printed", 0)
             if isinstance(done, int) and not isinstance(done, bool):
@@ -158,6 +164,14 @@ class Job:
             raise
         self.printed += options.copies
         return result
+
+    def _print_label(self, image, label: Label, host: str, options, progress):
+        """Print; once more, rendered anew, if the printer reported another
+        resolution than the image was made for (RenderAgain)."""
+        try:
+            return self.backend.print_label(image, host, options, progress)
+        except RenderAgain:
+            return self.backend.print_label(self.image(label), host, options, progress)
 
     def _run_sheets(
         self, sheet: SheetJob, host: str, progress: ProgressCallback | None
