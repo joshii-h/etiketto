@@ -87,7 +87,7 @@ _clock = time.monotonic
 
 
 def nominal_width(width_mm: float) -> int:
-    return VC500W.capabilities.nearest_tape(width_mm)
+    return int(VC500W.capabilities.nearest_tape(width_mm))  # all its widths are whole mm
 
 
 def configured_host() -> str | None:

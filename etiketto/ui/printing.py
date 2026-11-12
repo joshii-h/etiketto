@@ -20,12 +20,13 @@ from etiketto.ui.i18n import _, isolate
 from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
+    EXTRA_SWITCHES,
     MODE_NAMES,
     error_details,
     printer_error_text,
     stage_text,
 )
-from etiketto.ui.widgets import combo_row, list_dialog, spin_row
+from etiketto.ui.widgets import combo_row, length_row, list_dialog, spin_row
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
@@ -48,8 +49,14 @@ class PrintFlow:
         saved = self.window.printer_settings.get("mode")
         return saved if saved in ids else ids[0]
 
+    def _cut_modes(self) -> tuple[str, ...]:
+        return self.window.backend.cut_modes(self.window.printer.info)
+
+    def _extras(self) -> tuple[str, ...]:
+        return self.window.backend.extras(self.window.printer.info)
+
     def _cut(self) -> str:
-        cut_modes = self.window.backend.capabilities.cut_modes
+        cut_modes = self._cut_modes()
         saved = self.window.printer_settings.get("cut", "full")
         return saved if saved in cut_modes else (cut_modes or ("",))[0]
 
@@ -111,8 +118,20 @@ class PrintFlow:
         self.window.schedule_render()  # black and white shows grey
 
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print."""
-        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        """Copies, cut and mode for the print dialog, from the last print;
+        the extra settings the printer has (Capabilities.extras) too."""
+        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        settings = self.window.printer_settings
+        extras = self._extras()
+        for name in ("chain", "high_res"):
+            if name in extras:
+                choices[name] = settings.get(name) is True
+        if "feed" in extras:
+            low, high, default = self.window.backend.capabilities.feed_mm
+            feed = settings.get("feed_mm", default)
+            ok = isinstance(feed, (int, float)) and not isinstance(feed, bool)
+            choices["feed_mm"] = min(high, max(low, float(feed))) if ok else default
+        return choices
 
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
@@ -121,9 +140,11 @@ class PrintFlow:
         rows: list[Gtk.Widget] = [
             spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
         ]
-        if caps.cut_modes:
-            cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
+        cut_modes = self._cut_modes()
+        if cut_modes:
+            cuts = [(key, name) for key, name in CUT_MODES if key in cut_modes]
             rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
+        rows += self._extra_rows(choices)
         modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self._modes()]
         if len(modes) > 1:
             rows.append(
@@ -133,6 +154,32 @@ class PrintFlow:
             )
         if caps.supports_color_adjust:
             rows.append(self._color_adjust_row())
+        return rows
+
+    def _extra_rows(self, choices: dict) -> list[Gtk.Widget]:
+        """Chain printing, high resolution and tape feed, where the printer has them."""
+        rows: list[Gtk.Widget] = []
+        for name, title, subtitle in EXTRA_SWITCHES:
+            if name in choices:
+                row = Adw.SwitchRow(title=title, subtitle=subtitle, active=choices[name])
+                row.connect(
+                    "notify::active", lambda r, _p, n=name: choices.update({n: r.get_active()})
+                )
+                rows.append(row)
+        if "feed_mm" in choices:
+            low, high, _default = self.window.backend.capabilities.feed_mm
+            rows.append(
+                length_row(
+                    self.window.unit,
+                    _("Tape feed"),
+                    choices["feed_mm"],
+                    low,
+                    high,
+                    0.5,
+                    lambda v: choices.update(feed_mm=v),
+                    _("%(unit)s of blank tape before and after each label"),
+                )
+            )
         return rows
 
     def _color_adjust_row(self) -> Adw.ExpanderRow:
@@ -193,7 +240,8 @@ class PrintFlow:
             return
         window = self.window
         settings = window.printer_settings
-        settings.update(cut=choices["cut"], mode=choices["mode"])
+        extras = {key: choices[key] for key in ("chain", "high_res", "feed_mm") if key in choices}
+        settings.update(cut=choices["cut"], mode=choices["mode"], **extras)
         self.start(
             PrintOptions(
                 copies=choices["copies"],
@@ -202,6 +250,7 @@ class PrintFlow:
                 color=settings.color_adjust,
                 data_format=settings.data_format,
                 gap_mm=window.label.gap_mm,
+                **extras,
             )
         )
 

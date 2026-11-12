@@ -25,6 +25,11 @@ ColorModel = Literal["color", "mono", "two-color"]
 # rounding in unit conversions must not make a label "too long" or "too wide"
 LIMIT_SLACK_MM = 0.01
 CUT_MODES = ("full", "half", "none")
+# settings a backend may offer beyond copies, cut and mode (Capabilities.extras):
+# "chain": no feed after the last label, so the next job starts without a
+# blank piece; "high_res": twice the resolution along the tape; "feed": the
+# blank tape before and after each label (PrintOptions.feed_mm)
+EXTRAS = ("chain", "high_res", "feed")
 
 
 # --- what a printer can do --------------------------------------------------
@@ -48,7 +53,7 @@ class LabelSize:
 
 @dataclass(frozen=True)
 class Capabilities:
-    tape_widths_mm: tuple[int, ...]  # endless tape; empty for die-cut printers
+    tape_widths_mm: tuple[float, ...]  # endless tape; empty for die-cut printers
     dpi: float  # resolution across the tape the preview is rendered at
     modes: tuple[PrintMode, ...]  # fallback when the printer does not report its modes
     color_model: ColorModel = "color"
@@ -66,6 +71,9 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
+    extras: tuple[str, ...] = ()  # of EXTRAS: what the interface offers on top
+    # "feed": (smallest, largest, default) in mm
+    feed_mm: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -73,7 +81,7 @@ class Capabilities:
     def too_wide(self, width_mm: float) -> bool:
         return self.max_width_mm is not None and width_mm > self.max_width_mm + LIMIT_SLACK_MM
 
-    def nearest_tape(self, width_mm: float) -> int:
+    def nearest_tape(self, width_mm: float) -> float:
         return min(self.tape_widths_mm, key=lambda w: abs(w - width_mm))
 
 
@@ -107,12 +115,13 @@ class CassetteInfo:
     serial: str = ""
     made: date | None = None  # production date, if the serial number reveals it
     printable_mm: float | None = None
+    media: str = ""  # kind of tape, e.g. "laminated", "heat_shrink_2"; "" = not reported
 
 
 @dataclass
 class PrinterInfo:
     model: str
-    tape_mm: int | None  # nominal cassette width, None = no cassette
+    tape_mm: float | None  # nominal cassette width, None = no cassette
     remaining_mm: int | None
     total_mm: int | None
     state: str
@@ -167,6 +176,10 @@ class PrintOptions:
     color: ColorAdjust = field(default_factory=ColorAdjust)
     data_format: str = "rawrgb"  # backends fall back to their own default
     gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
+    # Capabilities.extras: only backends that offer them look at these
+    chain: bool = False
+    high_res: bool = False
+    feed_mm: float | None = None  # None: the backend's default
 
 
 @dataclass(frozen=True)
@@ -326,6 +339,26 @@ class UsbPermission(PrinterError):
     code = "usb_permission"
 
 
+class LowBattery(PrinterError):
+    code = "battery"
+
+
+class Overheated(PrinterError):
+    code = "overheat"
+
+
+class UnsupportedModel(PrinterError):
+    """A model of the printer family that Etiketto cannot print on."""
+
+    code = "unsupported_model"
+
+
+class EditorLite(PrinterError):
+    """A P-touch in "Editor Lite" mode: on USB it is a drive, not a printer."""
+
+    code = "editor_lite"
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 
@@ -411,6 +444,14 @@ class Backend(ABC):
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
+
+    def cut_modes(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Cut modes of the connected printer, else the documented ones."""
+        return self.capabilities.cut_modes
+
+    def extras(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Capabilities.extras the connected printer has, else all of them."""
+        return self.capabilities.extras
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)

@@ -32,6 +32,17 @@ SAME_SIZE_MM = 0.05
 INVERTED = GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.INVERT_BOOLEAN
 
 
+def _tape_key(width_mm: float) -> str:
+    """ "12" for 12 mm tape (also 12.0), "3.5" for 3.5 mm."""
+    return "%g" % width_mm
+
+
+def _tape_width(key: str) -> float:
+    """12, not 12.0: tape widths in files and settings stay as they were."""
+    width = float(key)
+    return int(width) if width.is_integer() else width
+
+
 def _size_key(width_mm: float, height_mm: float) -> str:
     return "%g×%g" % (width_mm, height_mm)
 
@@ -67,13 +78,14 @@ class LabelGroup(Adw.PreferencesGroup):
     def _add_tape_rows(self) -> None:
         window = self.window
         widths = [
-            (str(w), window.unit.tape_name(w)) for w in window.backend.capabilities.tape_widths_mm
+            (_tape_key(w), window.unit.tape_name(w))
+            for w in window.backend.capabilities.tape_widths_mm
         ]
         self.tape_row = combo_row(
             _("Tape width"),
             widths,
-            str(window.label.tape_mm),
-            lambda v: window.change(tape_mm=int(v)),
+            _tape_key(window.label.tape_mm),
+            lambda v: window.change(tape_mm=_tape_width(v)),
         )
         self.add(self.tape_row)
         self._add_length_rows()

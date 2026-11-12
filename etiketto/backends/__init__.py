@@ -37,11 +37,13 @@ def _load() -> None:
         return
     _loaded = True
     from etiketto.backends.cab import Cab
+    from etiketto.backends.ptouch import PTouch
     from etiketto.backends.system import SystemPrinter
     from etiketto.backends.vc500w import VC500W
 
     register(VC500W())
     register(Cab())
+    register(PTouch())
     register(SystemPrinter())
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:

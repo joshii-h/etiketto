@@ -17,6 +17,7 @@ from etiketto.backends.base import PrinterInfo  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
+    MEDIA_NAMES,
     backend_name,
     cassette_age_hint,
     code_text,
@@ -254,7 +255,7 @@ class Printer:
 
     # --- does the loaded material fit the label? ----------------------------------------
 
-    def other_tape(self) -> int | None:
+    def other_tape(self) -> float | None:
         """Tape printers: the inserted tape width if the label has another one."""
         info, label = self.info, self.window.label
         if not self.window.backend.capabilities.continuous or not info or not info.tape_mm:
@@ -357,6 +358,7 @@ class Printer:
         printable = self.window.unit.format(cassette.printable_mm) if cassette.printable_mm else ""
         made = cassette.made
         return [
+            (_("Tape type"), MEDIA_NAMES.get(cassette.media, "")),
             (_("Printable width"), printable),
             (_("Lot number"), isolate(cassette.lot) if cassette.lot else ""),
             (_("Serial number"), isolate(cassette.serial) if cassette.serial else ""),
@@ -384,7 +386,7 @@ class Printer:
         if not info:
             return None
         if self.window.backend.capabilities.continuous:
-            media = "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no")
+            media = "%s cassette" % ("%g mm" % info.tape_mm if info.tape_mm else "no")
         else:
             media = "label every %s mm" % ("%g" % info.pitch_mm if info.pitch_mm else "?")
         parts = [self.window.backend.display_name(info), media, info.state]
