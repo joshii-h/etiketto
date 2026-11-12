@@ -8,6 +8,7 @@ and sent on its own, so five copies are five numbers.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Iterator, Mapping
 from dataclasses import replace
 from datetime import datetime
@@ -58,6 +59,7 @@ class Job:
         self.values = values or Values.for_label(label, datetime.now(), options.copies)
         self.columns = columns  # serial labels: the row the placeholders are filled from
         self.printed = 0
+        self.stopped = False  # run() ended early because `stop` was set
         # the first label is filled in once: its UUID is the same in the
         # check and the print; the others are made as they are needed, a
         # job of many copies does not keep them all
@@ -107,8 +109,17 @@ class Job:
         except Exception as e:  # noqa: BLE001 - whatever went wrong while drawing
             raise PrepareFailed(str(e)) from e
 
-    def run(self, host: str, progress: ProgressCallback | None = None) -> PrintResult | None:
+    def run(
+        self,
+        host: str,
+        progress: ProgressCallback | None = None,
+        stop: threading.Event | None = None,
+    ) -> PrintResult | None:
         """Print; raises PrepareFailed or the backend's PrinterError.
+
+        `stop` is looked at between two copies sent one by one: the copy
+        being printed is finished, the first one too; `stopped` tells.
+        Copies the printer makes of one render cannot be stopped.
 
         `printed` counts the labels that came out: those sent before a
         failure, and those a backend reports in PrinterError.params
@@ -122,7 +133,11 @@ class Job:
             return self._send(image, host, self.options, progress)
         single = replace(self.options, copies=1)
         results = []
-        for copy, image in self.images():
+        for copy, label in self.labels():
+            if self.printed and stop is not None and stop.is_set():
+                self.stopped = True
+                break
+            image = self.image(label)
             results.append(self._send(image, host, single, self._progress(progress, copy)))
         return merge_results(results)
 

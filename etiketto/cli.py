@@ -4,6 +4,8 @@
     etiketto print FILE [options]    print a label file
     etiketto print FILE --data ROWS  one label for each row of a data file
     etiketto list-printers           printers found on the network
+    etiketto serve [options]         print server: REST API, MCP (server/)
+    etiketto mcp [options]           MCP on stdin/stdout, for AI clients
     etiketto --version, --help
 
 Printing needs no display: rendering uses Pango and Cairo, not GTK, and
@@ -73,7 +75,8 @@ from etiketto.ui.texts import (
 from etiketto.units import unit_for
 from etiketto.variables import BUILTIN, Values, label_names
 
-COMMANDS = ("print", "list-printers", "--version", "--help", "-h")
+COMMANDS = ("print", "list-printers", "serve", "mcp", "--version", "--help", "-h")
+DEFAULT_PORT = 8790
 
 EXIT_OK = 0
 EXIT_PRINTER = 1  # the printer cannot be reached or reports a problem; none found
@@ -237,7 +240,65 @@ def parser() -> argparse.ArgumentParser:
         description=_("List the printers found on the network: model, address, name."),
     )
     listing.add_argument("--printer", metavar="ID", help=_("only this printer model: %s") % ids)
+    _server_parsers(commands)
     return parser
+
+
+def _server_options(command: argparse.ArgumentParser) -> None:
+    """What `serve` and `mcp` share: where the labels are, which printers."""
+    command.add_argument(
+        "--labels-dir",
+        metavar="DIR",
+        type=Path,
+        help=_("the folder with the label files the server may use"),
+    )
+    command.add_argument(
+        "--allow-printer",
+        metavar="ADDR",
+        action="append",
+        default=[],
+        help=_("only print on this printer address (* matches anything); repeatable"),
+    )
+
+
+def _server_parsers(commands) -> None:
+    serve = commands.add_parser(
+        "serve",
+        help=_("run a print server with a REST API"),
+        description=_("Run a print server: a REST API and, with --mcp, MCP for AI clients."),
+    )
+    serve.add_argument(
+        "--host", default="127.0.0.1", help=_("address to listen on (default 127.0.0.1)")
+    )
+    serve.add_argument(
+        "--port",
+        type=_number(0, 65535),
+        default=DEFAULT_PORT,
+        help=_("port to listen on (default %d)") % DEFAULT_PORT,
+    )
+    serve.add_argument(
+        "--token-file",
+        metavar="FILE",
+        type=Path,
+        help=_("file with the access token; else the environment variable ETIKETTO_TOKEN"),
+    )
+    serve.add_argument("--mcp", action="store_true", help=_("also serve MCP at /mcp"))
+    serve.add_argument(
+        "--allow-origin",
+        metavar="URL",
+        action="append",
+        default=[],
+        help=_("allow requests from web pages of this origin; repeatable"),
+    )
+    _server_options(serve)
+    mcp = commands.add_parser(
+        "mcp",
+        help=_("serve MCP on standard input and output"),
+        description=_(
+            "Serve MCP on standard input and output, for AI clients such as Claude Desktop."
+        ),
+    )
+    _server_options(mcp)
 
 
 # --- print ------------------------------------------------------------------
@@ -813,6 +874,10 @@ def run(argv: list[str]) -> int:
     try:
         if args.command == "print":
             return print_command(args)
+        if args.command in ("serve", "mcp"):
+            from etiketto.server import main as server
+
+            return server.serve(args) if args.command == "serve" else server.mcp(args)
         return list_command(args)
     except CliError as e:
         _say(str(e))

@@ -276,7 +276,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
       --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
-      etiketto/backends/*.py etiketto/merge/*.py
+      etiketto/backends/*.py etiketto/merge/*.py etiketto/server/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run
