@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "프린터로 보냈습니다 – 프린터가 인쇄를 확인하지 않았습니다",
     "The printer's battery is low – charge it or connect the power adapter.": "프린터 배터리가 부족합니다 – 충전하거나 전원 어댑터를 연결하세요.",
     "do not ask the printer before rendering (its model, tape and resolution)": "렌더링 전에 프린터에 묻지 않음 (모델, 테이프, 해상도)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d행은 %(sheet)d번째 시트의 %(position)d번 위치에 들어갑니다.",
 }

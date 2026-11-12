@@ -1020,3 +1020,24 @@ def test_a_printer_that_answers_too_late_is_not_waited_for(mono, monkeypatch):
     monkeypatch.setattr(mono, "query", lambda host: release.wait(5) and mono.info)
     assert cli.ask_printer(mono, "h", wait=0.05) is None
     release.set()
+
+
+def test_label_sheets_on_the_command_line(tmp_path, monkeypatch):
+    """A label for a sheet prints on the sheet as in the window: each copy
+    (or copy of a row) a position from the chosen ones on."""
+    from etiketto.backends import get_backend
+    from etiketto.model import SheetChoice
+    from etiketto.ui.settings import Settings
+
+    monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "settings.json")
+    system = get_backend("system")
+    printer = Settings({"printers": {"system": {"outlines": True}}}).printer(system)
+    label = Label(printer="system", orientation="across", elements=[TextElement(text="x")])
+    label.sheet = SheetChoice("Avery L7160", [3, 4])
+    job = cli._sheet_job(label, system, printer, 5)
+    assert job is not None and job.count == 5 and job.positions == (3, 4) and job.outlines
+    assert [len(page) for page in job.slots()] == [2, 3]
+    label.sheet = SheetChoice("Future 1")
+    assert cli._sheet_job(label, system, printer, 5) is None  # unknown to this version
+    label.sheet = None
+    assert cli._sheet_job(label, system, printer, 5) is None

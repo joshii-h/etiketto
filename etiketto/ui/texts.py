@@ -535,9 +535,12 @@ def data_error_text(error: Exception, name: str) -> str:
     return texts.get(error.code, _("The file is damaged: %s")) % name
 
 
-def series_stop_text(row: int, copies_printed: int = 0) -> str:
+def series_stop_text(
+    row: int, copies_printed: int = 0, position: tuple[int, int] | None = None
+) -> str:
     """Where a series stopped and how to go on; with the copies of that row
-    the printer had already printed, so none is printed twice by mistake."""
+    the printer had already printed, so none is printed twice by mistake;
+    on label sheets where that row's label goes (position, sheet)."""
     text = _("Printing stopped at row %(row)d. To continue, print again from row %(row)d.") % {
         "row": row
     }
@@ -545,6 +548,12 @@ def series_stop_text(row: int, copies_printed: int = 0) -> str:
         text += " " + _("Copies of row %(row)d already printed: %(copies)d.") % {
             "row": row,
             "copies": copies_printed,
+        }
+    if position:
+        text += " " + _("Row %(row)d goes at position %(position)d of sheet %(sheet)d.") % {
+            "row": row,
+            "position": position[0],
+            "sheet": position[1],
         }
     return text
 

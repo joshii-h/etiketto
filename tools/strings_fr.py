@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "Envoyé à l’imprimante – elle n’a pas confirmé l’impression",
     "The printer's battery is low – charge it or connect the power adapter.": "La batterie de l’imprimante est faible – rechargez-la ou branchez l’adaptateur secteur.",
     "do not ask the printer before rendering (its model, tape and resolution)": "ne pas interroger l’imprimante avant le rendu (son modèle, son ruban et sa résolution)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "La ligne %(row)d va à la position %(position)d de la planche %(sheet)d.",
 }

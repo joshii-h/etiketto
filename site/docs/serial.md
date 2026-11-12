@@ -80,6 +80,11 @@ data file instead of printing the placeholders.
 - If the printer reports a problem, printing stops at that row; the
   message says how many copies of it were already printed. Solve the
   problem, then print again starting from that row.
+- On a label sheet each position gets one label: the rows in order, the
+  copies of a row on the positions after each other, starting at the
+  positions chosen for the first sheet. All sheets are one print job, so
+  [[ui:Stop]] is not offered. After a problem the message also says at
+  which position of which sheet the row to go on from belongs.
 
 ## Command line
 

@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "أُرسل إلى الطابعة – لم تؤكد الطباعة",
     "The printer's battery is low – charge it or connect the power adapter.": "بطارية الطابعة منخفضة – اشحنها أو وصّل محوّل الطاقة.",
     "do not ask the printer before rendering (its model, tape and resolution)": "لا تسأل الطابعة قبل الرسم (طرازها وشريطها ودقتها)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "الصف %(row)d يأتي في الموضع %(position)d من الورقة %(sheet)d.",
 }

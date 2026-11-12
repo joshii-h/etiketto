@@ -4,6 +4,7 @@ printing one label per row with a fake printer."""
 from __future__ import annotations
 
 import threading
+from dataclasses import replace
 from datetime import datetime
 
 import pytest
@@ -340,3 +341,93 @@ def test_codes_are_checked_with_the_counter_of_each_row():
     rows = [{"Prefix": "4006381333"}] * 3
     values = Values(datetime(2026, 1, 1), counter=98, copies=1)
     assert unprintable_rows(label, rows, range(3), values) == [3]  # 100: 13 digits
+
+
+# --- serial labels on label sheets -----------------------------------------------------
+
+
+class SheetPrinter(Recorder):
+    """A page printer: keeps the pages; fails on a chosen sheet (1-based)
+    with the sheets before counted printed, as the system printer does."""
+
+    def __init__(self):
+        super().__init__()
+        self.pages: list = []
+        self.fail_sheet = 0
+        self.progress: list = []
+
+    def print_pages(self, pages, host, options, progress=None):
+        self.options = options
+        for n, page in enumerate(pages, 1):
+            if n == self.fail_sheet:
+                raise PaperJam("jam", printed=n - 1, copies=len(pages), pages=True)
+            self.pages.append(page)
+            if progress:
+                progress(Progress(n, len(pages)))
+        return
+
+
+def sheet_series(positions=(), copies=1, indexes=range(3), label=None):
+    from etiketto.sheets import find
+    from etiketto.sheets.layout import SheetJob
+
+    sheet = SheetJob(find("Avery L7160"), 0, tuple(positions))  # 21 per sheet
+    values = Values(datetime(2026, 1, 1), counter=1)
+    return Series(
+        label or shelf_label(), ROWS, indexes, PrintOptions(copies=copies), 1.0, values, sheet
+    )
+
+
+def test_serial_labels_fill_the_positions_of_label_sheets():
+    """Each position one label: the rows in order, the copies of a row on
+    consecutive positions, from the chosen positions of the first sheet."""
+    backend = SheetPrinter()
+    events = []
+    outcome = print_series(backend, "office", sheet_series(copies=2), events.append)
+    assert texts(backend) == ["Screws", "Screws", "Washers", "Washers", "Fuses", "Fuses"]
+    assert len(backend.pages) == 1 and backend.options.copies == 6
+    assert outcome.printed == [1, 2, 3] and outcome.labels == 6
+    assert [(e.label, e.labels, e.row) for e in events] == [(1, 1, 1)]
+
+
+def test_serial_labels_on_sheets_count_per_position():
+    """Variables that change per label: each position its own counter."""
+    label = Label(
+        tape_mm=12, printer="fake-mono", elements=[TextElement(text="{=counter} {Name}")]
+    )
+    backend = SheetPrinter()
+    outcome = print_series(backend, "office", sheet_series(copies=2, label=label))
+    assert [lab.elements[0].text for lab in backend.prepared] == [
+        "1 Screws",
+        "2 Screws",
+        "3 Washers",
+        "4 Washers",
+        "5 Fuses",
+        "6 Fuses",
+    ]
+    assert outcome.counter == 7
+
+
+def test_serial_labels_on_sheets_fail_with_where_to_go_on():
+    """The second sheet jams: the rows of the first sheet are printed, the
+    error names the next row, its copies already out and its position."""
+    rows = [{"Name": "R%d" % n, "Code": "C", "Shelf": "S"} for n in range(1, 31)]
+    backend = SheetPrinter()
+    backend.fail_sheet = 2
+    series = replace(sheet_series(positions=range(16, 21), copies=2), rows=rows, indexes=range(30))
+    with pytest.raises(SeriesError) as info:
+        print_series(backend, "office", series)
+    error = info.value
+    # 5 positions on the first sheet: rows 1, 2 and the first copy of row 3
+    assert error.printed == [1, 2] and error.row == 3 and error.copies_printed == 1
+    assert error.position == (1, 2)  # its second copy: the first position of sheet 2
+    assert error.outcome.labels == 5
+
+
+def test_serial_labels_on_sheets_that_cannot_be_drawn():
+    backend = SheetPrinter()
+    backend.prepare_error = RuntimeError("cairo")
+    with pytest.raises(SeriesError) as info:
+        print_series(backend, "office", sheet_series())
+    assert info.value.preparing and info.value.row == 1 and info.value.position == (1, 1)
+    assert backend.pages == []

@@ -541,16 +541,34 @@ def test_the_preview_is_never_finer_than_600_dpi(make_window, system_env):
     assert win.rendered.image.width == round(60 / 25.4 * 600)
 
 
-def test_serial_labels_are_not_printed_on_sheets_yet(office, system_env, tmp_path):
+def test_serial_labels_on_label_sheets(office, system_env, tmp_path):
+    """A data file and a label sheet: each position one row, in one job of
+    sheets; the dialog asks for copies of each label, the rows and outlines."""
     win = office
     label = Label(printer="system", orientation="across", elements=[TextElement(text="{Name}")])
     label.sheet = SheetChoice("Avery L7160", list(range(21)))
     win.set_label(label, None)
     rows = tmp_path / "rows.csv"
-    rows.write_text("Name\nA\nB\n", encoding="utf-8")
+    rows.write_text("Name\nA\nB\nC\n", encoding="utf-8")
     win.data.attach(rows)
     assert pump(lambda: win.data.state != "loading") and win.data.active
     render_now(win)
     win.print_flow.on_print()
-    assert toast_titles(win)[-1] == "Serial labels cannot be printed on label sheets yet"
-    assert not win.print_flow.busy and system_env.pages == [] and system_env.labels == []
+    dialog = win.last_dialog
+    titles = [row.get_title() for row in walk(dialog) if isinstance(row, Adw.PreferencesRow)]
+    assert titles[:4] == ["Copies of each label", "From row", "To row", "Print outlines"]
+    one(dialog, Adw.SpinRow, title="Copies of each label").set_value(2)
+    respond(dialog, "print")
+    assert pump(lambda: not win.print_flow.busy)
+    ((pages, _host, options),) = system_env.pages
+    assert len(pages) == 1 and options.copies == 6  # 3 rows, 2 copies: 6 positions
+    assert toast_titles(win)[-1] == "Printed rows 1 to 3"
+
+
+def test_where_a_series_on_sheets_goes_on():
+    from etiketto.ui.texts import series_stop_text
+
+    assert series_stop_text(3, 1, (4, 2)) == (
+        "Printing stopped at row 3. To continue, print again from row 3. "
+        "Copies of row 3 already printed: 1. Row 3 goes at position 4 of sheet 2."
+    )

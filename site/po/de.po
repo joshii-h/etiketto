@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:03+0100\n"
+"POT-Creation-Date: 2026-11-12 11:21+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1870,6 +1870,22 @@ msgstr ""
 "Meldet der Drucker ein Problem, hält der Druck bei dieser Zeile an; die "
 "Meldung sagt, wie viele Exemplare davon schon gedruckt sind. Das Problem "
 "beheben, dann ab dieser Zeile erneut drucken."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"On a label sheet each position gets one label: the rows in order, the copies "
+"of a row on the positions after each other, starting at the positions chosen "
+"for the first sheet. All sheets are one print job, so [[ui:Stop]] is not "
+"offered. After a problem the message also says at which position of which "
+"sheet the row to go on from belongs."
+msgstr ""
+"Auf einem Etikettenbogen bekommt jede Position ein Etikett: die Zeilen der "
+"Reihe nach, die Kopien einer Zeile auf aufeinanderfolgenden Positionen, "
+"beginnend bei den Positionen, die für den ersten Bogen gewählt sind. Alle "
+"Bögen sind ein Druckauftrag, darum gibt es kein [[ui:Stop]]. Nach einem "
+"Problem nennt die Meldung auch, an welche Position welches Bogens die "
+"Zeile gehört, mit der es weitergeht."
 
 #. type: Title ##
 #: docs/serial.md

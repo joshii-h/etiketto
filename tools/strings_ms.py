@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "Dihantar ke pencetak – pencetak tidak mengesahkan pencetakan",
     "The printer's battery is low – charge it or connect the power adapter.": "Bateri pencetak lemah – cas atau sambungkan penyesuai kuasa.",
     "do not ask the printer before rendering (its model, tape and resolution)": "jangan tanya pencetak sebelum memaparkan (model, pita dan resolusinya)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Baris %(row)d diletakkan pada kedudukan %(position)d helaian %(sheet)d.",
 }

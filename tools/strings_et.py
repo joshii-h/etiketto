@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "Saadetud printerisse – printer ei kinnitanud printimist",
     "The printer's battery is low – charge it or connect the power adapter.": "Printeri aku on tühjenemas – lae seda või ühenda toiteadapter.",
     "do not ask the printer before rendering (its model, tape and resolution)": "ära küsi printerilt enne renderdamist (mudel, lint ja eraldusvõime)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rida %(row)d läheb lehe %(sheet)d kohale %(position)d.",
 }

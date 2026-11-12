@@ -60,6 +60,8 @@ from etiketto.serial import (
     unknown_columns,
     unprintable_rows,
 )
+from etiketto.sheets import find as find_sheet
+from etiketto.sheets.layout import SheetJob
 from etiketto.ui.i18n import _
 from etiketto.ui.settings import PrinterSettings, Settings
 from etiketto.ui.texts import (
@@ -644,7 +646,7 @@ def _send_series(args, series: Series, host: str, unit) -> int:
                 message, code = _("The label cannot be prepared for printing."), EXIT_LABEL
             else:
                 message, code = printer_error_text(e.error, unit), EXIT_PRINTER
-            where = series_stop_text(e.row, e.copies_printed)
+            where = series_stop_text(e.row, e.copies_printed, e.position)
             raise CliError(message + " " + where, code) from None
         finally:
             with _uninterrupted():
@@ -700,13 +702,26 @@ def _job(args, settings: Settings | None, now: datetime | None):
     )
     rows, indexes = _data(args, label)
     columns = rows[indexes[0]] if rows else None
-    job = Job(backend, label, options, printer.safe_mm, values, columns)
+    sheet = _sheet_job(label, backend, printer, args.copies * max(1, len(indexes)))
+    job = Job(backend, label, options, printer.safe_mm, values, columns, sheet)
     _check(job)
     series = None
     if rows:
-        series = Series(label, rows, indexes, options, printer.safe_mm, values)
+        series = Series(label, rows, indexes, options, printer.safe_mm, values, sheet)
         _check_rows(series)
     return job, printer, settings, series
+
+
+def _sheet_job(label: Label, backend: Backend, printer: PrinterSettings, count: int):
+    """The label sheet the label is printed on, as in the window: each copy
+    (or each copy of each row) a position, from the chosen positions on;
+    None for a label of its own page or a sheet this version does not know."""
+    choice = label.sheet
+    sheet = find_sheet(choice.id) if choice and backend.capabilities.pages else None
+    if sheet is None or choice is None:
+        return None
+    outlines = printer.get("outlines", False) is True
+    return SheetJob(sheet, count, tuple(choice.positions), choice.rotated, outlines)
 
 
 def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:

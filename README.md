@@ -213,7 +213,9 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--host` the printer set in the app is used, or the only one found.
 Printers whose label depends on what they report (P-touch: model and tape;
 ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution) are asked first, for at most
-5 s; `--no-query` skips that.
+5 s; `--no-query` skips that. A label set up for a label sheet prints on it as in the
+window: each copy (with `--data`, each copy of each row) at the next of
+the chosen positions.
 `--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
 (by default the label's own data file, if it lies beside it), `--sheet`
 and `--rows 3-10` choose which; the counter goes on from row to row.

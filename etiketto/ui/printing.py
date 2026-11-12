@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 import threading
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -125,12 +125,6 @@ class PrintFlow:
         """Why a linked data file cannot be printed from: a label with its
         placeholders unfilled is never what was wanted."""
         data = self.window.data
-        if data.active and self.window.sheet:
-            # TODO: serial labels on label sheets – one print_pages() job whose
-            # label source gives position n the row indexes[n // copies]
-            # (sheets.layout.LabelSource, see job._EachCopy), the counter
-            # going on per position; the outcome counted from the sheets printed
-            return _("Serial labels cannot be printed on label sheets yet")
         if data.path is None or data.active:
             return None
         if data.state == "loading":
@@ -224,7 +218,8 @@ class PrintFlow:
         copies = 1
         sheet, choice = self.window.sheet, self.window.label.sheet
         if sheet and choice:
-            copies = len(first_positions(sheet, choice.positions))
+            if not self.window.data.active:  # serial labels: copies of each row
+                copies = len(first_positions(sheet, choice.positions))
             choices["outlines"] = bool(self.window.printer_settings.get("outlines", False))
         choices["copies"] = copies
         if self.window.data.active:
@@ -259,10 +254,14 @@ class PrintFlow:
             0,
             lambda v: self._on_labels(choices, int(v)),
         )
+        return [labels, self._outlines_row(choices)]
+
+    @staticmethod
+    def _outlines_row(choices: dict) -> Adw.SwitchRow:
         outlines = Adw.SwitchRow(title=_("Print outlines"), subtitle=_("To test on plain paper"))
         outlines.set_active(choices["outlines"])
         outlines.connect("notify::active", lambda r, _p: choices.update(outlines=r.get_active()))
-        return [labels, outlines]
+        return outlines
 
     def _on_labels(self, choices: dict, count: int) -> None:
         self._set_copies(choices, count)
@@ -304,7 +303,7 @@ class PrintFlow:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported;
         on a label sheet the number of labels and the outlines."""
-        if self.window.sheet:
+        if self.window.sheet and not self.window.data.active:
             return self._sheet_rows(choices)
         caps = self.window.backend.capabilities
         copies = _("Copies of each label") if self.window.data.active else _("Copies")
@@ -313,6 +312,8 @@ class PrintFlow:
         ]
         if self.window.data.active:
             rows.extend(self._row_range(choices))
+        if self.window.sheet:  # serial labels on sheets: one position per label
+            return [*rows, self._outlines_row(choices)]
         cut_modes = self._cut_modes()
         if cut_modes:
             cuts = [(key, name) for key, name in CUT_MODES if key in cut_modes]
@@ -461,12 +462,20 @@ class PrintFlow:
             info=window.printer.info,
             **extras,
         )
+        job = self.sheet_job(choices)
         if window.data.active:
             indexes = row_span(choices["first"], choices["last"], len(window.data.rows))
-            self._codes_first(lambda: self.start_series(options, indexes))
+            if job:  # a position for each label of each row
+                job = replace(job, count=len(indexes) * options.copies)
+
+            def series(sheet: SheetJob | None = None) -> None:
+                self.start_series(options, indexes, sheet)
+
+            self._codes_first(lambda: self._margins_first(job, series))
             return
-        job = self.sheet_job(choices)
-        self._codes_first(lambda: self._margins_first(options, job))
+        self._codes_first(
+            lambda: self._margins_first(job, lambda sheet=None: self.start(options, sheet))
+        )
 
     def _codes_first(self, then) -> None:
         """Codes that may not scan at the printer's resolution (the preview
@@ -490,17 +499,17 @@ class PrintFlow:
             then,
         )
 
-    def _margins_first(self, options: PrintOptions, job: SheetJob | None) -> None:
+    def _margins_first(self, job: SheetJob | None, start: Callable[..., None]) -> None:
         """Labels on a sheet whose content reaches into the printer's
-        margins: ask first."""
+        margins: ask first. start(job): print (a single label: start())."""
         window = self.window
         if job is None:
-            self.start(options)
+            start()
             return
         window.printer_settings.update(outlines=job.outlines)
         cut = window.positions_in_margins({p for page in job.slots() for p in page})
         if not cut:
-            self.start(options, job)
+            start(job)
             return
         window.confirm(
             _("Labels in the printer's margin"),
@@ -512,7 +521,7 @@ class PrintFlow:
             % {"positions": isolate(numbers_text(cut))},
             "print",
             _("Print anyway"),
-            lambda: self.start(options, job),
+            lambda: start(job),
         )
 
     # --- job ----------------------------------------------------------------------
@@ -565,9 +574,12 @@ class PrintFlow:
 
         threading.Thread(target=work, name="etiketto-print", daemon=True).start()
 
-    def start_series(self, options: PrintOptions, indexes: Sequence[int]) -> None:
+    def start_series(
+        self, options: PrintOptions, indexes: Sequence[int], sheet: SheetJob | None = None
+    ) -> None:
         """One label per row in `indexes`; a Stop button in the banner ends
-        the series after the label being printed."""
+        the series after the label being printed. On label sheets (`sheet`)
+        one job of sheets, each position a label: it cannot be stopped."""
         window = self.window
         # the file may have been read again, with fewer rows, since the dialog
         indexes = [index for index in indexes if 0 <= index < len(window.data.rows)]
@@ -587,11 +599,12 @@ class PrintFlow:
             options,
             window.printer_settings.safe_mm,
             Values.for_label(label, datetime.now(), options.copies),
+            sheet,
         )
         self._printing = window.label  # the counter moves on in this label only
         self._stop.clear()
         window.banner.set_title(GLib.markup_escape_text(_("Printing serial labels")))
-        window.banner.set_button_label(_("Stop"))
+        window.banner.set_button_label(None if sheet else _("Stop"))
         window.banner.set_revealed(True)
 
         def progress(event: SeriesProgress):
@@ -697,7 +710,7 @@ class PrintFlow:
             message = _("The label cannot be prepared for printing.")
         else:  # also a code too large for the printer (CodeTooLarge)
             message = printer_error_text(error.error, self.window.unit)
-        where = series_stop_text(error.row, error.copies_printed)
+        where = series_stop_text(error.row, error.copies_printed, error.position)
         self.failed(error.error, message + "\n\n" + where)
         return False
 

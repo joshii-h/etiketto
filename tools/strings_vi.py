@@ -526,4 +526,5 @@ TRANSLATIONS = {
     "Sent to the printer – it did not confirm printing": "Đã gửi đến máy in – máy in không xác nhận đã in",
     "The printer's battery is low – charge it or connect the power adapter.": "Pin máy in yếu – hãy sạc hoặc cắm bộ đổi nguồn.",
     "do not ask the printer before rendering (its model, tape and resolution)": "không hỏi máy in trước khi kết xuất (kiểu máy, băng và độ phân giải)",
+    "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Hàng %(row)d nằm ở vị trí %(position)d của tờ %(sheet)d.",
 }
