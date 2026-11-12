@@ -6,6 +6,10 @@
 #   systemctl --user daemon-reload && systemctl --user enable --now etiketto
 #   journalctl --user -u etiketto -f
 #
+# Update this file together with Etiketto: Type=notify needs a version
+# that says it is ready (1.1 or newer), an older one is stopped after the
+# start timeout.
+#
 # Labels are read from ~/.local/share/etiketto/labels. Without lingering
 # (loginctl enable-linger) the service runs only while you are logged in.
 

@@ -33,7 +33,7 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--labels-dir` | the only folder label and data files are read from; `~/.local/share/etiketto/labels` by default (made if missing) |
 | `--mcp` | MCP (Streamable HTTP) at `/mcp` as well |
 | `--allow-origin` | web origin whose pages may call the server (`https://app.example`): CORS preflights are answered and the answers carry `Access-Control-Allow-Origin`; repeatable |
-| `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A name pattern (`*.local`, `cups.example.com`) matches host names; an address pattern (an address or network as Python's ipaddress reads it, `192.168.1.0/24`, `2001:db8::/32`, or four IPv4 parts with `*` for whole parts, `192.168.1.*`; `*.*`, `123` or `*.5` are name patterns) matches IP addresses only, a host name if every address it resolves to matches one of them (so `192.168.1.evil.example` is not in `192.168.1.*`); the server then prints on the first address the resolver gives (only that one; there is no trying the others), not on the name (a name looked up again could point elsewhere; an `ipps` printer must then accept its IP address). `*` allows everything without a lookup; repeatable |
+| `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A pattern of only digits, dots and `*` is an address pattern: four IPv4 parts, `*` standing for whole parts (`192.168.1.*`, `10.*`, `*.5`, `*.*`); a network as Python's ipaddress reads it (`192.168.1.0/24`, `2001:db8::/32`) is one too. Address patterns match IP addresses only, a host name if every address it resolves to matches one of them (so `192.168.1.evil.example` is not in `192.168.1.*`, and `*.*` matches `printer.local` only by the addresses it resolves to, not by its name). Any other pattern is a name pattern (`*.local`, `cups.example.com`) and matches host names. The server then prints on the first address the resolver gives (only that one; there is no trying the others), not on the name (a name looked up again could point elsewhere; an `ipps` printer must then accept its IP address). `*` alone allows everything without a lookup. A pattern that can never match is refused at startup: a network that is none (`10.0.0.0/33`), an address pattern with a part over 255 or a leading zero (`010.1.1.1`), a `*` within a part (`10*`), more than four parts, or fewer than four without a `*` (`1.2.3`, `10`); repeatable |
 | `--max-body` | largest request body in MB, 4 by default (parsed JSON takes many times its size) |
 | `--max-labels` | most labels in one print job, copies times rows; 10 000 by default (413 `too_many_labels`) |
 | `--trusted-proxy` | a reverse proxy, best its own address (`172.30.0.10/32`), whose `X-Forwarded-For` names the client: the rate limit, the 8 requests per client and the log use that address (all header lines together, ports taken off; anything that is no address stops the search at the proxy), the proxy itself is not held to 8 connections. `0.0.0.0/0` or `::/0` (everyone) is warned about. With a proxy, publish the server's port nowhere else; repeatable |
@@ -116,7 +116,9 @@ description = "PC at gate 2"
   `--from-stdin` takes a token you chose from standard input instead
   (asked for without echo on a terminal; printable ASCII, at least 16
   characters; not printed again, a line says it was added; refused if it
-  is in the file already under another name) and keeps it as an scrypt
+  is in the file already under another name, or if it looks like a
+  made one, `etk_` with an id: it would be looked for by that id, which
+  no entry has) and keeps it as an scrypt
   hash, which slows down guessing a chosen token;
   `--scrypt` does that for a made one too (random tokens need no slow
   hash). The default file is `~/.config/etiketto/tokens.toml`.
@@ -385,11 +387,16 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 - **Codes**: a QR code is made once per render as a small image (one
   pixel per module); a barcode is kept as its string of modules with the
   quiet zones the standards ask for (10 modules for Code 128, 11 and 7
-  for EAN-13). Bars are drawn whole modules wide: every module the same
-  number of pixels, the barcode centred in its place; a barcode that is
-  not scaled down has at least one pixel per module. Squeezed below one
-  pixel per module (a label scaled down to its length) it is drawn
-  anyway and warned about (`barcode_narrow`). The digits are drawn as
+  for EAN-13). A barcode takes the width it had before 1.1 for its
+  height (the proportions python-barcode drew it in: 1 mm quiet zones,
+  0.3 mm modules, 10 mm bars and the digits), so a label keeps its
+  length; only where that would be less than one pixel per module (a
+  narrow tape at a low resolution) is it made wider, one pixel per
+  module, and the label a little longer. Bars are drawn whole pixels per
+  module within that width: every module the same number of pixels, the
+  barcode centred in its place. A barcode whose modules are thinner than
+  0.17 mm or 2 printer dots (squeezed, or simply small) is drawn anyway
+  and warned about (`barcode_narrow`): it may not scan. The digits are drawn as
   text at their final size. A Code 128 holds at most 200 characters; a
   longer one is refused for printing in the window, on the command line
   and by the server, as for serial labels.
@@ -508,7 +515,12 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   tokens.toml the reload does nothing, the server goes on). The unit is
   `Type=notify`: the server tells systemd it is ready once it listens, so
   a reload is not sent while it starts; `etiketto serve` also ignores
-  SIGHUP from its first line until its handler is installed.
+  SIGHUP before it imports anything (the first thing the `etiketto`
+  launcher does) until its handler is installed. The unit and the
+  package must be updated together: a unit of `Type=notify` with an
+  older Etiketto that never says it is ready is stopped after the start
+  timeout, and an older unit with a newer Etiketto loses the readiness
+  (the notification is ignored, nothing breaks).
 
 ```sh
 cd packaging/docker
