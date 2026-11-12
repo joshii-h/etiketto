@@ -55,7 +55,7 @@ from etiketto.backends.base import (
     report_progress,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM
+from etiketto.render import DEFAULT_SAFE_MM, Rendered
 
 CUPS_URI = "ipp://localhost/"
 DPI = 300.0
@@ -694,6 +694,22 @@ class SystemPrinter(Backend):
         a printer that takes PWG Raster at another one."""
         return self._prepare_at(label, options, safe_mm, DPI)
 
+    def render_label(
+        self,
+        label: Label,
+        options: PrintOptions,
+        safe_mm: float = DEFAULT_SAFE_MM,
+        max_dpi: float | None = None,
+        bleed: bool = True,
+        dpi: float | None = None,
+    ) -> Rendered:
+        """As every backend, but a page too large for the resolution is
+        refused before it is rendered (PageTooLarge), as the print refuses
+        it: the command line's check would otherwise render 140 megapixels."""
+        at = dpi or self.render_dpi(label.tape_mm, options, max_dpi)
+        check_size(*label.media_size(), at)
+        return super().render_label(label, options, safe_mm, max_dpi, bleed, dpi)
+
     def _prepare_at(
         self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
     ) -> Image.Image:
@@ -763,6 +779,11 @@ def check_page_size(page: Image.Image, dpi: int) -> None:
         page.width / DPI * 25.4,
         page.height / DPI * 25.4,
     )
+    check_size(width_mm, height_mm, dpi)
+
+
+def check_size(width_mm: float, height_mm: float, dpi: float) -> None:
+    """PageTooLarge for a page of this size at dpi (see check_page_size)."""
     pixels = (width_mm / 25.4 * dpi) * (height_mm / 25.4 * dpi)
     if pixels > MAX_PAGE_PIXELS:
         raise PageTooLarge(

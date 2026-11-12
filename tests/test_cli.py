@@ -1144,3 +1144,16 @@ def test_a_dry_runs_late_answer_changes_nothing(monkeypatch):
     monkeypatch.setattr(type(zpl), "query", query)
     cli.ask_printer(zpl, "zebra.local", wait=1.0, finish=0.0)
     assert zpl.reported == {}
+
+
+def test_a_page_too_large_for_the_check_is_refused(mono, label_file, monkeypatch, capsys):
+    from etiketto.backends.base import PageTooLarge
+
+    path = label_file(TextElement(text="x"))
+
+    def too_large(*_args, **_kwargs):
+        raise PageTooLarge("210 x 297 mm at 1200 dpi")
+
+    monkeypatch.setattr(mono, "render_label", too_large)
+    assert run("print", path, "--dry-run") == cli.EXIT_LABEL
+    assert err(capsys).startswith("etiketto: The page is too large")

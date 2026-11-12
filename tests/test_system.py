@@ -2191,3 +2191,21 @@ def test_pages_are_rendered_through_render_label(monkeypatch):
     image.info["render_at"](203)
     assert seen == [system.DPI, 203]
     assert backend.query_before_render
+
+
+def test_the_check_refuses_a_page_too_large_before_rendering_it(monkeypatch):
+    """Rendered for the check like the print: a page too large for the only
+    resolution is refused before 140 megapixels are drawn."""
+    from etiketto.backends.base import PageTooLarge, PrinterInfo
+
+    backend = get_backend("system")
+    drawn = []
+    monkeypatch.setattr(system.Backend, "render_label", lambda *a, **k: drawn.append(1))
+    a4 = Label(printer="system", orientation="across", auto_length=False)
+    a4.set_media_size(210, 297)
+    office = PrinterInfo("Office", None, None, None, "IDLE", dpi=1200)
+    with pytest.raises(PageTooLarge):
+        backend.render_label(a4, PrintOptions(info=office))
+    assert drawn == []
+    backend.render_label(a4, PrintOptions(info=office), max_dpi=600)  # the preview's
+    assert drawn == [1]

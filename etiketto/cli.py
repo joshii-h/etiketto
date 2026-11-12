@@ -361,7 +361,11 @@ def _check(job: Job) -> None:
     label = job.label
     if not label.elements and not label.background_image:
         raise CliError(_("The label is empty"), EXIT_LABEL)
-    for warning in job.check():
+    try:
+        warnings = job.check()
+    except PrinterError as e:  # a page too large for the printer's resolution
+        raise CliError(printer_error_text(e, unit_for("mm")), EXIT_LABEL) from None
+    for warning in warnings:
         if warning.key in REFUSED:
             raise CliError(warning_text(warning), EXIT_LABEL)
         _say(warning_text(warning))
