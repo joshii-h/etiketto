@@ -63,14 +63,30 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   paper, so the job is canceled with the paper size message; an ignored
   `copies` means it prints one, the others follow as below. [spec]
 - `Print-Job` with one page in the label's exact size: PDF if the printer
-  or CUPS takes it (one JPEG per page at quality 95 without chroma
-  subsampling, so that small text stays sharp; the page exactly the size in
-  millimetres, A4 is 595.276 × 841.89 pt), else PWG Raster, which
-  every IPP Everywhere printer must take (8-bit sRGB or sGray, at 300 dpi
-  or the next resolution the printer lists), else JPEG. `media-col`
+  or CUPS takes it, else PWG Raster, which every IPP Everywhere printer
+  must take, else JPEG (quality 95 without chroma subsampling). `media-col`
   carries the size, `print-scaling=none` (if supported) keeps it at 100 %,
   `copies` is the number of labels, `requesting-user-name` the login
   name. [spec]
+- Image quality: shipping labels, barcodes and small text must arrive as
+  rendered, without grey edges a thermal printer would dither. The PDF
+  embeds each page without loss (`FlateDecode`): 1 bit per pixel when the
+  page is only black and white, 8-bit `DeviceGray` when it is grey, else
+  8-bit `DeviceRGB`; the page exactly the size in millimetres (A4 is
+  595.276 × 841.89 pt), the image at 300 dpi. A mostly white page stays
+  small: a black-and-white 4 × 6 inch label is about 2 kB, an A4 page
+  filled with large text (grey edges: 8 bits) 40 to 80 kB, where JPEG at
+  quality 95 made 300 to 370 kB, with grey noise around every edge. PWG Raster (8-bit sRGB or sGray) is
+  made at 300 dpi or the next resolution the printer lists, and the label
+  (or the label sheet's pages) is rendered again at that resolution
+  instead of resized, so a 203 dpi printer gets 812 × 1218 pixels for
+  4 × 6 inches, sharp. Only a page that cannot be rendered again is
+  resized: pixel by pixel (nearest neighbour) for a whole multiple such as
+  600 dpi, smoothly otherwise. [confirmed with ippeveprinter: a black and
+  white 4 × 6 inch label (QR code) arrives with 0 grey pixels as PDF (1-bit
+  image, 1.9 kB; Ghostscript renders it at 203, 300 and 600 dpi without a
+  grey pixel) and as PWG Raster at 203, 300 and 600 dpi (812 × 1218,
+  1200 × 1800, 2400 × 3600 pixels, 2.3 to 3 kB)]
 - Copies: if the upper bound of `copies-supported` is below the number of
   labels, PWG Raster carries the page several times in one job
   (`TotalPageCount`), at most 10 pages per job (the document is made in
@@ -164,7 +180,8 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 Several labels on one sheet of paper (A4, US Letter, others), placed as
 the gLabels template database says (`etiketto/sheets`, see below).
 
-- Each page is composed at 300 dpi: the paper's size from the template,
+- Each page is composed at 300 dpi (PWG Raster: at the printer's
+  resolution, the labels rendered at it too): the paper's size from the template,
   every label at its exact position (rounded to the pixel, 0.08 mm), round
   labels, ellipses and CDs clipped to their shape (rectangles are printed to
   their edges). Each position gets its own label image from a source

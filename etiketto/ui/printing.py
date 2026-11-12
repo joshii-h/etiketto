@@ -17,7 +17,14 @@ from etiketto.backends.base import (
     PrintResult,
     Progress,
 )
-from etiketto.sheets.layout import MAX_LABELS, LabelSource, Pages, SheetJob, first_positions
+from etiketto.sheets.layout import (
+    MAX_LABELS,
+    Copies,
+    LabelSource,
+    Pages,
+    SheetJob,
+    first_positions,
+)
 from etiketto.ui.i18n import _, isolate
 from etiketto.ui.sheets import numbers_text
 from etiketto.ui.texts import (
@@ -37,7 +44,7 @@ if TYPE_CHECKING:
 def copies_of(image: Image.Image) -> LabelSource:
     """The same label at every position of a sheet. (A mail merge gives
     each position its own label instead: label_at(n) renders row n.)"""
-    return lambda _n: image
+    return Copies(image)
 
 
 class PrintFlow:

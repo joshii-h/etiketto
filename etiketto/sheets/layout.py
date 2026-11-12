@@ -29,6 +29,22 @@ MARGIN_SLACK_MM = 0.05  # rounding in the printer's hundredths of mm
 LabelSource = Callable[[int], Image.Image]
 
 
+class Copies:
+    """A label source: the same label at every position. Can render it
+    again at another resolution if the image says how
+    (info["render_at"](dpi), as the system printer's prepare() makes it)."""
+
+    def __init__(self, image: Image.Image):
+        self.image = image
+
+    def __call__(self, _n: int) -> Image.Image:
+        return self.image
+
+    def at_dpi(self, dpi: float) -> Copies | None:
+        render_at = self.image.info.get("render_at")
+        return Copies(render_at(dpi)) if callable(render_at) else None
+
+
 def px(mm: float, dpi: float) -> int:
     return round(mm / 25.4 * dpi)
 
@@ -78,6 +94,13 @@ class Pages(Sequence[Image.Image]):
 
     def __len__(self) -> int:
         return len(self._slots)
+
+    def at_dpi(self, dpi: float) -> Pages | None:
+        """The same pages composed at another resolution, the labels
+        rendered at it too; None if the label source cannot render again."""
+        at_dpi = getattr(self.label_at, "at_dpi", None)
+        source = at_dpi(dpi) if at_dpi is not None else None
+        return Pages(self.job, source, dpi) if source is not None else None
 
     @overload
     def __getitem__(self, index: int) -> Image.Image: ...

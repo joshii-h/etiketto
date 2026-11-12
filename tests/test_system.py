@@ -3,9 +3,10 @@ against a fake that answers IPP requests by operation."""
 
 from __future__ import annotations
 
-import io
+import re
 import ssl
 import struct
+import zlib
 from types import SimpleNamespace
 
 import pytest
@@ -36,9 +37,9 @@ from etiketto.backends.base import (
     UnsupportedSize,
     margins_for,
 )
-from etiketto.model import Label, TextElement
+from etiketto.model import CodeElement, Label, TextElement
 from etiketto.sheets import find
-from etiketto.sheets.layout import Pages, SheetJob, px
+from etiketto.sheets.layout import Copies, Pages, SheetJob, px
 
 A4 = {"x-dimension": [21000], "y-dimension": [29700]}
 CUSTOM = {"x-dimension": [(7620, 21590)], "y-dimension": [(12700, 35560)]}  # like the HP
@@ -433,18 +434,52 @@ def test_no_format_the_printer_takes(fake):
         _print()
 
 
+IMAGE_RE = re.compile(
+    rb"/Width (\d+) /Height (\d+) /ColorSpace /(\w+) /BitsPerComponent (\d+) "
+    rb"/Filter /FlateDecode /Length (\d+) >>\nstream\n"
+)
+
+
+def pdf_images(data: bytes) -> list[tuple[Image.Image, str, int]]:
+    """The images in a PDF from pdf.encode(): image, colour space, bits."""
+    found = []
+    for match in IMAGE_RE.finditer(data):
+        width, height, space, bits, length = match.groups()
+        raw = zlib.decompress(data[match.end() : match.end() + int(length)])
+        mode = {(b"DeviceGray", b"1"): "1", (b"DeviceGray", b"8"): "L"}.get((space, bits), "RGB")
+        size = (int(width), int(height))
+        found.append((Image.frombytes(mode, size, raw), space.decode(), int(bits)))
+    return found
+
+
 def test_pdf_keeps_small_text_sharp():
-    image = Image.new("RGB", (400, 100), "white")
-    for x in range(0, 400, 2):  # one-pixel stripes: the worst case for JPEG
+    image = Image.new("RGB", (401, 100), "white")
+    for x in range(0, 401, 2):  # one-pixel stripes: the worst case for JPEG
         image.paste((0, 0, 0), (x, 0, x + 1, 100))
     data, _mime = system.document(image, {"document-format-supported": ["application/pdf"]})
-    start = data.index(b"\xff\xd8")
-    embedded = Image.open(io.BytesIO(data[start : data.index(b"\xff\xd9", start) + 2]))
-    worst = max(
-        abs(a - b)
-        for a, b in zip(embedded.convert("L").tobytes(), image.convert("L").tobytes(), strict=True)
-    )
-    assert worst < 60  # quality 75 with subsampling smears it by far more
+    [(embedded, space, bits)] = pdf_images(data)
+    assert (space, bits) == ("DeviceGray", 1)  # black and white only: 1 bit per pixel
+    assert embedded.convert("RGB").tobytes() == image.tobytes()  # every pixel as it was
+    assert len(data) < 2000  # and small
+
+
+@pytest.mark.parametrize(
+    "colour, space, bits",
+    [((0, 0, 0), "DeviceGray", 1), ((90, 90, 90), "DeviceGray", 8), ((200, 0, 0), "DeviceRGB", 8)],
+)
+def test_pdf_pages_in_the_smallest_lossless_form(colour, space, bits):
+    image = Image.new("RGB", (37, 20), "white")
+    image.paste(colour, (3, 4, 30, 15))
+    [(embedded, found_space, found_bits)] = pdf_images(pdf.encode([image], 300))
+    assert (found_space, found_bits) == (space, bits)
+    assert embedded.convert("RGB").tobytes() == image.tobytes()
+
+
+def test_pdf_of_an_a4_label_is_small():
+    page = Image.new("RGB", (2480, 3508), "white")  # A4 at 300 dpi
+    page.paste((0, 0, 0), (300, 300, 2000, 900))
+    page.info["size_mm"] = (210, 297)
+    assert len(pdf.encode([page], 300)) < 20_000  # a JPEG of it is about 300 kB
 
 
 def test_pwg_raster_in_the_printers_colour_space_and_resolution(fake):
@@ -455,6 +490,58 @@ def test_pwg_raster_in_the_printers_colour_space_and_resolution(fake):
     page = pwg.decode(data)
     assert mime == "image/pwg-raster" and page.mode == "L" and page.size == (236, 118)
     assert struct.unpack_from(">II", data, 4 + 276) == (600, 600)  # HWResolution
+
+
+def _shipping_label() -> Label:
+    """A 4 × 6 inch label of pure black and white: a QR code, no text."""
+    label = Label(printer="system", margin_mm=3, elements=[CodeElement("1Z999AA10123456784")])
+    label.auto_length, label.orientation = False, "along"
+    label.set_media_size(101.6, 152.4)
+    return label
+
+
+def _greys(image: Image.Image) -> int:
+    """Pixels that are neither black nor white."""
+    return sum(image.convert("L").histogram()[1:255])
+
+
+def test_pwg_raster_at_a_whole_multiple_doubles_pixels(fake):
+    fake.formats, fake.sizes, fake.pwg_resolutions = ["image/pwg-raster"], [], [(600, 600, 3)]
+    image = _image(119, 59, size_mm=(10.075, 4.995))
+    for x in range(0, 119, 2):  # one-pixel stripes
+        image.paste((0, 0, 0), (x, 0, x + 1, 59))
+    _print(image)
+    page = pwg.decode(fake.documents[0][1])
+    assert page.size == (238, 118) and _greys(page) == 0  # no grey edges
+    assert page.tobytes() == image.resize((238, 118), Image.Resampling.NEAREST).tobytes()
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+def test_a_label_is_rendered_at_the_printers_resolution(fake, dpi):
+    fake.formats, fake.sizes, fake.pwg_resolutions = ["image/pwg-raster"], [], [(dpi, dpi, 3)]
+    backend = get_backend("system")
+    image = backend.prepare(_shipping_label(), PrintOptions())
+    assert _greys(image) == 0
+    backend.print_label(image, "HP_Office", PrintOptions())
+    page = pwg.decode(fake.documents[0][1])
+    assert page.size == (px(101.6, dpi), px(152.4, dpi))  # rendered again, not resized
+    assert _greys(page) == 0
+
+
+def test_label_sheet_pages_are_composed_at_the_printers_resolution(fake):
+    fake.formats, fake.pwg_resolutions = ["image/pwg-raster"], [(203, 203, 3)]
+    backend = get_backend("system")
+    sheet = find("Avery L7160")
+    label = _shipping_label()
+    label.orientation = "across"  # the QR code fits on the label unscaled
+    label.set_media_size(sheet.width, sheet.height)
+    image = backend.prepare(label, PrintOptions())
+    pages = Pages(SheetJob(sheet, 30), Copies(image), backend.capabilities.dpi)
+    backend.print_pages(pages, "HP_Office", PrintOptions())
+    found = pwg.decode_all(fake.documents[0][1])
+    assert [p.size for p in found] == [(px(210, 203), px(297, 203))] * 2
+    assert all(_greys(page) == 0 for page in found)
+    assert Pages(SheetJob(sheet, 1), lambda n: image, 300).at_dpi(203) is None  # cannot
 
 
 @pytest.mark.parametrize(
