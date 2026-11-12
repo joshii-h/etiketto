@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "لا تسأل الطابعة قبل الرسم (طرازها وشريطها ودقتها)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "الصف %(row)d يأتي في الموضع %(position)d من الورقة %(sheet)d.",
     "print density\x04Default": "افتراضي",
+    "Ideas for the variables (counter, date, UUID), no code": "أفكار للمتغيرات (العدّاد والتاريخ وUUID)، دون شيفرة",
 }

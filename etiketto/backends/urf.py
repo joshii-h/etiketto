@@ -4,8 +4,9 @@ count, then per page a 32-byte header and the pixel rows, compressed like
 PWG Raster's.
 
 The byte layout follows the open source implementations that define the
-format (OpenPrinting libcups, cups/raster-stream.c, and PAPPL, both
-Apache-2.0); this is a new implementation, no code is copied.
+format (OpenPrinting libcups, cups/raster-stream.c; PAPPL; libcupsfilters,
+cupsfilters/raster.c; all Apache-2.0); this is a new implementation, no
+code is copied.
 """
 
 from __future__ import annotations

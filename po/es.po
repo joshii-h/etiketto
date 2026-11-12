@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 11:53+0100\n"
+"PO-Revision-Date: 2026-11-12 12:15+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: es\n"
 "Language: es\n"
@@ -10,20 +10,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: etiketto/app.py:182 etiketto/cli.py:153
+#: etiketto/app.py:200 etiketto/cli.py:153
 msgid "Design and print labels"
 msgstr "Diseñe e imprima etiquetas"
 
 #. translators: replace with your name to be credited in the About dialog
-#: etiketto/app.py:187
+#: etiketto/app.py:205
 msgid "translator-credits"
 msgstr "Etiketto contributors"
 
-#: etiketto/app.py:192
+#: etiketto/app.py:213
+msgid "Ideas for the variables (counter, date, UUID), no code"
+msgstr "Ideas para las variables (contador, fecha, UUID), sin código"
+
+#: etiketto/app.py:216
 msgid "Protocol knowledge"
 msgstr "Conocimiento de protocolos"
 
-#: etiketto/app.py:197
+#: etiketto/app.py:221
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "

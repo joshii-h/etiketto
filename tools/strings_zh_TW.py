@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "算繪前不詢問印表機（型號、標籤帶和解析度）",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "第 %(row)d 列位於第 %(sheet)d 張標籤紙的第 %(position)d 個位置。",
     "print density\x04Default": "預設",
+    "Ideas for the variables (counter, date, UUID), no code": "變數（計數器、日期、UUID）的構想，不含其程式碼",
 }

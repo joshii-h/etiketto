@@ -6,6 +6,15 @@ is code and data that are part of Etiketto or its Flatpak; section 2 the
 sources of protocol knowledge, used as facts only: no code of theirs is
 included, the protocols were written anew.
 
+## Licence expressions
+
+- The Python package (sdist and wheel, `pyproject.toml`): what it contains,
+  Etiketto's code and the data and code derived from others:
+  `AGPL-3.0-or-later AND MIT AND Apache-2.0`.
+- The app as the Flatpak ships it (the metainfo's `project_license`): the
+  package and the libraries the Flatpak bundles for it:
+  `AGPL-3.0-or-later AND MIT AND Apache-2.0 AND BSD-3-Clause AND MIT-CMU AND (GPL-2.0-only OR GPL-3.0-only)`.
+
 ## 1. Shipped or derived
 
 ### ThermalPrint (MIT)
@@ -74,8 +83,9 @@ Google's Material Icons (Apache-2.0). Notice and license text:
 libzint 2.15.0 (<https://zint.org.uk>), Copyright (C) 2009-2025 Robin
 Stuart and contributors, BSD-3-Clause, encodes most code types. It comes
 inside zint-bindings; its license text is in
-[`build-aux/flatpak/LICENSE.zint`](build-aux/flatpak/LICENSE.zint), and the
-Flatpak installs it as `share/licenses/xyz.joshuahirsig.Etiketto/zint/LICENSE`.
+[`build-aux/flatpak/LICENSE.zint`](build-aux/flatpak/LICENSE.zint) (in the
+source distribution too), and the Flatpak installs it as
+`share/licenses/xyz.joshuahirsig.Etiketto/LICENSE.zint`.
 
 ### zint-bindings (Apache-2.0)
 
@@ -98,7 +108,7 @@ Barrera et al., MIT license; a dependency, bundled in the Flatpak.
 
 Image handling (<https://python-pillow.org>), Copyright (c) 1997-2011 by
 Secret Labs AB, (c) 1995-2011 by Fredrik Lundh and contributors, (c)
-2010 by Jeffrey A. Clark and contributors, MIT-CMU (HPND) license; a
+2010 by Jeffrey 'Alex' Clark and contributors, MIT-CMU (HPND) license; a
 dependency, bundled in the Flatpak.
 
 ### Poppler and poppler-data (Flatpak only)
@@ -114,7 +124,7 @@ It also bundles poppler-data (encoding files for Chinese, Japanese, Korean
 and Cyrillic text in PDF files): <https://poppler.freedesktop.org>. Its
 CMap files are under the Adobe licence in `COPYING.adobe` of its source
 (BSD-3-Clause style, Copyright 1990-2019 Adobe); the cidToUnicode,
-nameToUnicode and unicodeMap files are Copyright Glyph & Cog, LLC, under
+nameToUnicode and unicodeMap files are Copyright 1996-2011 Glyph & Cog, LLC, under
 GPL-2.0-only OR GPL-3.0-only; its Makefile is under the MIT licence.
 
 Outside the Flatpak, Poppler comes from the distribution.
@@ -149,6 +159,17 @@ Outside the Flatpak, Poppler comes from the distribution.
 - **Brother's Raster Command References** (QL series; PT-E550W/P750W/P710BT,
   PT-P900 series): Brother's public developer documents for the QL and
   P-touch backends.
+- **The printer makers' manuals**: Zebra's "ZPL II Programming Guide" and
+  "EPL2 Programming Guide", TSC's "TSPL/TSPL2 Programming Manual", Epson's
+  "ESC/POS Command Reference" and DYMO's "LabelWriter 450 Series Technical
+  Reference Manual"; what Etiketto takes from them is marked [spec] in
+  `docs/`.
+- **Brother's Android app "Color Label Editor 2"** 1.1.6: an
+  interoperability analysis for the VC-500W (permitted under Swiss URG
+  Art. 21 / EU Directive 2009/24/EC Art. 6), our own description in
+  `docs/vc500w.md`; no Brother code is included.
+- **m7i.org**'s reverse engineering of the VC-500W
+  (<https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/>).
 - **cab's JScript Programming Manual** (<https://www.cab.de/en/programming>):
   the cab backend; no reverse engineering, no cab code.
 - **labelburg** (<https://github.com/DL6ER/labelburg>), DL6ER, GPL-3.0:

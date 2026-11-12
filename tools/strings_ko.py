@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "렌더링 전에 프린터에 묻지 않음 (모델, 테이프, 해상도)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d행은 %(sheet)d번째 시트의 %(position)d번 위치에 들어갑니다.",
     "print density\x04Default": "기본값",
+    "Ideas for the variables (counter, date, UUID), no code": "변수(카운터, 날짜, UUID)에 대한 아이디어, 코드는 포함되지 않음",
 }

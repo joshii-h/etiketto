@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:21+0100\n"
+"POT-Creation-Date: 2026-11-12 12:16+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -854,8 +854,12 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/printer.md
-msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
-msgstr "USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn."
+msgid ""
+"USB: plug the printer in; [[ui:Search for printers]] finds it. Printing over "
+"USB has not been tried on a printer yet."
+msgstr ""
+"USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn. Drucken "
+"über USB wurde noch nicht an einem Drucker ausprobiert."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -966,6 +970,11 @@ msgstr ""
 "Schrumpfschlauch: PT-P700, PT-P750W, PT-E550W, PT-P710BT, die Serie PT-P900, "
 "die Serie PT-D und ältere Modelle wie der PT-2430PC. Noch nicht an einem "
 "Drucker ausprobiert."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
+msgstr "USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn."
 
 #. type: Bullet: '- '
 #: docs/printer.md

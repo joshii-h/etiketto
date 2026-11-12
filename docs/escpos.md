@@ -2,7 +2,7 @@
 
 How Etiketto prints labels on receipt printers that speak ESC/POS: Epson's
 TM series and the many compatible receipt printers. The label is printed on
-endless paper, as long as its content. **Untested on hardware**: no ESC/POS
+endless paper, as long as its content. **Not yet tried on a printer**: no ESC/POS
 printer was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)

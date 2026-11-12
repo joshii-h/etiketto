@@ -2,8 +2,8 @@
 
 How Etiketto talks to printers that speak TSPL or TSPL2: TSC's printers and
 the many low-cost shipping label printers built on the same language
-(Munbyn, iDPRT, Xprinter, Rollo, Phomemo, Marklife, …). **Untested on
-hardware**: no TSPL printer was available while this was written.
+(Munbyn, iDPRT, Xprinter, Rollo, Phomemo, Marklife, …). **Not yet tried
+on a printer**: no TSPL printer was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)
 by Michael R Sweet (Apache-2.0, `lprint-tspl.c`), which prints on several of

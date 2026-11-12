@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "描画の前にプリンターに問い合わせない（機種、テープ、解像度）",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "行 %(row)d はシート %(sheet)d の位置 %(position)d に入ります。",
     "print density\x04Default": "標準",
+    "Ideas for the variables (counter, date, UUID), no code": "変数（カウンター、日付、UUID）のアイデア。コードは含まれていません",
 }

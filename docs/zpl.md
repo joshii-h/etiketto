@@ -2,7 +2,7 @@
 
 How Etiketto talks to printers that speak ZPL (Zebra Programming Language):
 Zebra's desktop and industrial printers (GK, GX, ZD, ZT series and others)
-and the many printers that emulate ZPL. **Untested on hardware**: no ZPL
+and the many printers that emulate ZPL. **Not yet tried on a printer**: no ZPL
 printer was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)

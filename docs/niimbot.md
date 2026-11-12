@@ -15,8 +15,8 @@ source projects:
   long row runs, stock label widths (`printers.json`), and the models it
   has tried on hardware (B1, B4, D11 H, B3S P).
 
-No code of either project is included. **Etiketto has not been tried on a
-NIIMBOT printer yet.**
+No code of either project is included. **Not yet tried on a printer**: no
+NIIMBOT printer was at hand.
 
 Markers: **[spec]** in the sources above, **[assumed]** likely but not in
 the sources and untested, **[open]** unknown.
@@ -295,11 +295,15 @@ printing on it is refused.
 | B18 | 3584 | 203 | 96 | 15 mm | gap, transparent, continuous | 1 to 3, 2 |
 | H1S | 4352 | 203 | 96 | 15 mm | gap, continuous, transparent | 1 to 3, 2 |
 
-The print dialog offers the density range and label types of the connected
-model ("Print density", "Label type"). Both are saved once per printer
-family, not per model: a saved density outside the connected model's range
-is clamped into it (5 on a D11 becomes 3), a label type the model does not
-take falls back to its default. B18's black-mark-gap and heat-shrink tube
+The printer group offers the density range and label types of the
+connected model as printer settings ("Print density", "Label sensor";
+`Backend.settings(info)`, rebuilt when another model answers; "Default" is
+the model's own density, which Etiketto sends). Both are saved once per
+printer family, not per model (`settings.json`, `printers.niimbot`): a
+saved density outside the connected model's range is clamped into it (5
+on a D11 becomes 3), a label type the model does not take falls back to
+its default. Earlier versions stored density 0 for the default and
+"black_mark"; they are migrated when read. B18's black-mark-gap and heat-shrink tube
 media are not offered.
 
 ## To check on a printer

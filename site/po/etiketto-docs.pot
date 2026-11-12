@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:21+0100\n"
+"POT-Creation-Date: 2026-11-12 12:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -584,7 +584,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it. Printing over USB has not been tried on a printer yet."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -663,6 +663,12 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Etiketto prints on Brother P-touch tape printers with TZe tape and HSe heat-shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900 series, the PT-D series and older models such as the PT-2430PC. Not tried on a printer yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
 msgstr ""
 
 #. type: Bullet: '- '

@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "fråga inte skrivaren före renderingen (modell, tejp och upplösning)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rad %(row)d hamnar på position %(position)d på ark %(sheet)d.",
     "print density\x04Default": "Standard",
+    "Ideas for the variables (counter, date, UUID), no code": "Idéer till variablerna (räknare, datum, UUID), ingen kod",
 }

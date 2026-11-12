@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "älä kysy tulostimelta ennen piirtämistä (malli, nauha ja tarkkuus)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rivi %(row)d tulee arkin %(sheet)d paikkaan %(position)d.",
     "print density\x04Default": "Oletus",
+    "Ideas for the variables (counter, date, UUID), no code": "Ideoita muuttujiin (laskuri, päivämäärä, UUID), ei koodia",
 }

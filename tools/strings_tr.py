@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "işlemeden önce yazıcıyı sorgulama (modeli, bandı ve çözünürlüğü)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d. satır %(sheet)d. sayfanın %(position)d. konumuna gelir.",
     "print density\x04Default": "Varsayılan",
+    "Ideas for the variables (counter, date, UUID), no code": "Değişkenler için fikirler (sayaç, tarih, UUID), kod içermez",
 }

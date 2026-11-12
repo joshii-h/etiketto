@@ -2,7 +2,7 @@
 
 How Etiketto talks to printers that speak EPL2 (Eltron Programming
 Language): Zebra LP/TLP 2824 and 2844, GK420 and GX420 set to EPL, and
-compatibles. **Untested on hardware**: no EPL2 printer was available while
+compatibles. **Not yet tried on a printer**: no EPL2 printer was available while
 this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)

@@ -1,8 +1,8 @@
 # Brother P-touch raster protocol
 
 What Etiketto knows about printing on Brother P-touch tape printers (TZe
-laminated tape, HSe heat-shrink tube). Etiketto has not printed on a
-P-touch yet: no printer of the family was at hand. Everything below comes
+laminated tape, HSe heat-shrink tube). **Not yet tried on a printer**: no
+P-touch was at hand. Everything below comes
 from Brother's documents and from two open source projects, and is written
 anew; no code of either project is included.
 

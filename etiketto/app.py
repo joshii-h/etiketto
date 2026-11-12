@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -25,7 +26,7 @@ APP_ID = "xyz.joshuahirsig.Etiketto"
 # THIRD_PARTY_NOTICES.md has the details and the license texts
 LEGAL: tuple[tuple[str, str, Gtk.License, str | None], ...] = (
     ("labelprinter", "© 2021 Andrea Micheloni and contributors", Gtk.License.AGPL_3_0, None),
-    ("gLabels", "© 2001-2026 Jaye Evins", Gtk.License.MIT_X11, None),
+    ("gLabels templates", "© 2001-2026 Jaye Evins", Gtk.License.MIT_X11, None),
     (
         "Material Design Icons",
         "© Austin Andrews and contributors (Pictogrammers)",
@@ -42,16 +43,32 @@ LEGAL: tuple[tuple[str, str, Gtk.License, str | None], ...] = (
         Gtk.License.MIT_X11,
         None,
     ),
-    # Flatpak only (elsewhere the distribution's): Xpdf's code GPL-2.0-only OR
-    # GPL-3.0-only, Poppler's additions GPL-2.0-or-later
     (
-        "Poppler, poppler-data",
+        "Pillow",
+        "© 1997-2011 Secret Labs AB, © 1995-2011 Fredrik Lundh and contributors, "
+        "© 2010 Jeffrey 'Alex' Clark and contributors",
+        Gtk.License.CUSTOM,
+        "MIT-CMU (HPND)",
+    ),
+)
+# bundled in the Flatpak only (elsewhere the distribution's): Xpdf's code
+# GPL-2.0-only OR GPL-3.0-only, Poppler's additions GPL-2.0-or-later
+FLATPAK_LEGAL: tuple[tuple[str, str, Gtk.License, str | None], ...] = (
+    (
+        "Poppler and poppler-data",
         "© The Poppler developers, © 1996-2011 Glyph &amp; Cog, LLC, © 1990-2019 Adobe",
         Gtk.License.CUSTOM,
         "GPL-2.0-only OR GPL-3.0-only; BSD-3-Clause (poppler-data CMaps)",
     ),
 )
-# printer protocols written anew from what these document (no code of theirs)
+
+
+def legal_sections() -> tuple[tuple[str, str, Gtk.License, str | None], ...]:
+    """What the About dialog credits: Poppler only where Etiketto ships it."""
+    flatpak = bool(os.environ.get("FLATPAK_ID")) or Path("/.flatpak-info").exists()
+    return LEGAL + FLATPAK_LEGAL if flatpak else LEGAL
+
+
 PROTOCOL_SOURCES = (
     "LPrint",
     "libcups",
@@ -64,6 +81,7 @@ PROTOCOL_SOURCES = (
     "niimbluelib",
     "Thermalith",
     "barnguard",
+    "m7i.org",
 )
 
 
@@ -186,8 +204,14 @@ class App(Adw.Application):
             # translators: replace with your name to be credited in the About dialog
             translator_credits=_("translator-credits"),
         )
-        for title, holder, license_type, text in LEGAL:
+        for title, holder, license_type, text in legal_sections():
             about.add_legal_section(title, holder, license_type, text)
+        about.add_legal_section(
+            "labelburg",
+            None,
+            Gtk.License.CUSTOM,
+            GLib.markup_escape_text(_("Ideas for the variables (counter, date, UUID), no code")),
+        )
         about.add_legal_section(
             _("Protocol knowledge"),
             None,

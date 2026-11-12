@@ -1,8 +1,8 @@
 # DYMO LabelWriter
 
 How Etiketto talks to DYMO LabelWriter printers: 300, 310, 315, 320, 330,
-400, 450 (Turbo, Twin Turbo, DUO label side) and 4XL. **Untested on
-hardware**: no LabelWriter was available while this was written.
+400, 450 (Turbo, Twin Turbo, DUO label side) and 4XL. **Not yet tried
+on a printer**: no LabelWriter was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)
 by Michael R Sweet (Apache-2.0, `lprint-dymo.c`, which goes back to the

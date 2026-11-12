@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "не опитувати принтер перед рендерингом (модель, стрічка і роздільна здатність)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Рядок %(row)d потрапляє на позицію %(position)d аркуша %(sheet)d.",
     "print density\x04Default": "Типова",
+    "Ideas for the variables (counter, date, UUID), no code": "Ідеї для змінних (лічильник, дата, UUID), без коду",
 }

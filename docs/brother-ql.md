@@ -1,8 +1,8 @@
 # Brother QL: raster commands over the network and USB
 
 How Etiketto talks to Brother QL label printers (QL-500 to QL-1115NWB,
-including the red and black QL-800, QL-810W and QL-820NWB). No QL printer
-was available while this was written. The sources are Brother's public
+including the red and black QL-800, QL-810W and QL-820NWB). **Not yet
+tried on a printer**: no QL printer was available while this was written. The sources are Brother's public
 "Raster Command Reference" documents (QL-500/550/560/570/580N/650TD/700/
 1050/1060N, QL-710W/720NW, QL-800/810W/820NWB, QL-1100/1110NWB/1115NWB)
 and the source code of [brother_ql](https://github.com/pklaus/brother_ql)

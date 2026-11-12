@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 11:53+0100\n"
+"POT-Creation-Date: 2026-11-12 12:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,24 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: etiketto/app.py:182 etiketto/cli.py:153
+#: etiketto/app.py:200 etiketto/cli.py:153
 msgid "Design and print labels"
 msgstr ""
 
 #. translators: replace with your name to be credited in the About dialog
-#: etiketto/app.py:187
+#: etiketto/app.py:205
 msgid "translator-credits"
 msgstr ""
 
-#: etiketto/app.py:192
+#: etiketto/app.py:213
+msgid "Ideas for the variables (counter, date, UUID), no code"
+msgstr ""
+
+#: etiketto/app.py:216
 msgid "Protocol knowledge"
 msgstr ""
 
-#: etiketto/app.py:197
+#: etiketto/app.py:221
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "

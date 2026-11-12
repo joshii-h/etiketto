@@ -3753,18 +3753,29 @@ def test_serial_port_and_battery_texts():
     assert texts.choice_name("transparent") == "Transparent labels"
 
 
-def test_third_party_notices_name_everything_the_about_dialog_credits():
-    """THIRD_PARTY_NOTICES.md is the complete list: every legal section of
-    the About dialog and every protocol source is in it."""
+def test_third_party_notices_and_the_about_dialog_name_the_same():
+    """THIRD_PARTY_NOTICES.md is the complete list: its shipped components
+    are the About dialog's legal sections and its protocol sources the
+    About dialog's list, both ways; labelburg is in both."""
+    import re
     from pathlib import Path
 
     notices = (Path(__file__).parent.parent / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
-    for name, _holder, _license, _text in app.LEGAL:
-        for part in name.split(", "):
-            assert part in notices, part
-    for source in app.PROTOCOL_SOURCES:
-        assert "**%s**" % source in notices, source
-    assert "labelburg" in notices
+    shipped, sources = notices.split("## 2. ")
+    headings = {re.sub(r" \(.*\)$", "", h) for h in re.findall(r"^### (.+)$", shipped, re.M)}
+    credited = {name for name, *_rest in app.LEGAL + app.FLATPAK_LEGAL}
+    assert headings == credited
+    bold = set(re.findall(r"\*\*(.+?)\*\*", sources))
+    documents = {name for name in bold if re.search(r"manual|Manual|References|app ", name)}
+    assert bold - documents == set(app.PROTOCOL_SOURCES) | {"labelburg"}
+
+
+def test_poppler_is_credited_where_it_is_shipped(monkeypatch, tmp_path):
+    monkeypatch.delenv("FLATPAK_ID", raising=False)
+    monkeypatch.setattr(app, "Path", lambda _p: tmp_path / "no-flatpak-info")
+    assert app.legal_sections() == app.LEGAL
+    monkeypatch.setenv("FLATPAK_ID", "xyz.joshuahirsig.Etiketto")
+    assert app.legal_sections() == app.LEGAL + app.FLATPAK_LEGAL
 
 
 def test_the_preview_follows_a_resolution_the_printer_reports_later(

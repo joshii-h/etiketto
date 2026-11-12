@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "không hỏi máy in trước khi kết xuất (kiểu máy, băng và độ phân giải)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Hàng %(row)d nằm ở vị trí %(position)d của tờ %(sheet)d.",
     "print density\x04Default": "Mặc định",
+    "Ideas for the variables (counter, date, UUID), no code": "Ý tưởng cho các biến (bộ đếm, ngày, UUID), không dùng mã",
 }

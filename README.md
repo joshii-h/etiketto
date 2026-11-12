@@ -19,16 +19,16 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Printer | Labels | What Etiketto does with it | Protocol |
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
-| Brother QL (QL-500 to QL-1115NWB), **untested on hardware** | Black on DK continuous rolls (12 to 104 mm, any length) or die-cut DK labels; red and black on the QL-800 series with DK-22251 | Reads the loaded roll and the printer's problems; full cut, cut after the last label or no cut; 600 dpi on the models that have it | Brother's raster commands on TCP port 9100 or USB ([docs/brother-ql.md](docs/brother-ql.md)) |
-| Brother P-touch (PT-P700, PT-P750W, PT-E550W, PT-P710BT, PT-P900 series, PT-D series, older PT models), **untested on hardware** | Black on TZe tape 3.5 to 36 mm wide and HSe heat-shrink tube, any length | Detects the tape, its type and printable width; full, half or no cut, chain printing, high resolution, tape feed; explains Editor Lite mode | Brother's raster commands on USB or TCP port 9100 ([docs/ptouch.md](docs/ptouch.md)) |
+| Brother QL (QL-500 to QL-1115NWB), **not yet tried on a printer** | Black on DK continuous rolls (12 to 104 mm, any length) or die-cut DK labels; red and black on the QL-800 series with DK-22251 | Reads the loaded roll and the printer's problems; full cut, cut after the last label or no cut; 600 dpi on the models that have it | Brother's raster commands on TCP port 9100 or USB ([docs/brother-ql.md](docs/brother-ql.md)) |
+| Brother P-touch (PT-P700, PT-P750W, PT-E550W, PT-P710BT, PT-P900 series, PT-D series, older PT models), **not yet tried on a printer** | Black on TZe tape 3.5 to 36 mm wide and HSe heat-shrink tube, any length | Detects the tape, its type and printable width; full, half or no cut, chain printing, high resolution, tape feed; explains Editor Lite mode | Brother's raster commands on USB or TCP port 9100 ([docs/ptouch.md](docs/ptouch.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
-| NIIMBOT B1, B21, B3S, B4, D11, D110, D101, **untested on hardware** | Black on die-cut labels, continuous rolls or labels with black marks, 203 or 300 dpi, up to 104 mm wide depending on the model | Reads the model and offers its print density and label types; reports each label and how many came out before a problem | NIIMBOT's packet protocol on USB serial ([docs/niimbot.md](docs/niimbot.md)) |
+| NIIMBOT B1, B21, B3S, B4, D11, D110, D101, **not yet tried on a printer** | Black on die-cut labels, continuous rolls or labels with black marks, 203 or 300 dpi, up to 108 mm wide depending on the model | Reads the model and offers its print density and label types; reports each label and how many came out before a problem | NIIMBOT's packet protocol on USB serial ([docs/niimbot.md](docs/niimbot.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size, or on label sheets (A4, US Letter, over 1700 sheets); explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
-| Zebra and compatibles (ZPL), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203, 300 or 600 dpi | Reads model and resolution; reports paper out, head open, ribbon and pause; label sensor, tear-off, peel-off or cutter, darkness and speed | ZPL on TCP port 9100 or USB ([docs/zpl.md](docs/zpl.md)) |
-| Zebra EPL2 printers (LP/TLP 2824, 2844 and others), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203 or 300 dpi | Label sensor and darkness; no status | EPL2 on TCP port 9100 or USB ([docs/epl.md](docs/epl.md)) |
-| TSPL printers: TSC, Munbyn, iDPRT, Xprinter, Rollo and other 4 × 6 in shipping label printers, **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 108 mm wide, 203 or 300 dpi | Reports head open, paper and ribbon problems where the printer answers; label sensor, tear-off, peel-off or cutter, darkness and speed | TSPL on TCP port 9100 or USB ([docs/tspl.md](docs/tspl.md)) |
-| Receipt printers with ESC/POS (Epson TM and compatibles), **untested on hardware** | Black on 58 or 80 mm paper rolls, as long as the content | Reports cover open and paper end where the printer answers; full, partial or no cut | ESC/POS on TCP port 9100 or USB ([docs/escpos.md](docs/escpos.md)) |
-| DYMO LabelWriter 300, 400 and 450 series, 4XL, **untested on hardware** | Black on DYMO die-cut labels, 300 dpi | Reports no paper and paper jam where the printer answers; darkness | DYMO's raster commands on USB ([docs/dymo.md](docs/dymo.md)) |
+| Zebra and compatibles (ZPL), **not yet tried on a printer** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203, 300 or 600 dpi | Reads model and resolution; reports paper out, head open, ribbon and pause; label sensor, tear-off, peel-off or cutter, darkness and speed | ZPL on TCP port 9100 or USB ([docs/zpl.md](docs/zpl.md)) |
+| Zebra EPL2 printers (LP/TLP 2824, 2844 and others), **not yet tried on a printer** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203 or 300 dpi | Label sensor and darkness; no status | EPL2 on TCP port 9100 or USB ([docs/epl.md](docs/epl.md)) |
+| TSPL printers: TSC, Munbyn, iDPRT, Xprinter, Rollo and other 4 × 6 in shipping label printers, **not yet tried on a printer** | Black on die-cut labels, black marks or continuous media up to 108 mm wide, 203 or 300 dpi | Reports head open, paper and ribbon problems where the printer answers; label sensor, tear-off, peel-off or cutter, darkness and speed | TSPL on TCP port 9100 or USB ([docs/tspl.md](docs/tspl.md)) |
+| Receipt printers with ESC/POS (Epson TM and compatibles), **not yet tried on a printer** | Black on 58 or 80 mm paper rolls, as long as the content | Reports cover open and paper end where the printer answers; full, partial or no cut | ESC/POS on TCP port 9100 or USB ([docs/escpos.md](docs/escpos.md)) |
+| DYMO LabelWriter 300, 400 and 450 series, 4XL, **not yet tried on a printer** | Black on DYMO die-cut labels, 300 dpi | Reports no paper and paper jam where the printer answers; darkness | DYMO's raster commands on USB or TCP port 9100 ([docs/dymo.md](docs/dymo.md)) |
 
 Connections: network (LAN or Wi-Fi) for all but NIIMBOT; USB too, through the
 kernel's printer driver: cab printers, Brother QL and P-touch printers, the
@@ -211,9 +211,10 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--no-save-counter` prints a read-only label without saving the counter
 (the next print repeats the numbers). Without
 `--host` the printer set in the app is used, or the only one found.
-Printers whose label depends on what they report (P-touch: model and tape;
-ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution) are asked first, for at most
-5 s; `--no-query` skips that. A label set up for a label sheet prints on it as in the
+Printers whose label depends on what they report are asked first, for at
+most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
+range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution); `--no-query`
+skips that. A label set up for a label sheet prints on it as in the
 window: each copy (with `--data`, each copy of each row) at the next of
 the chosen positions.
 `--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
@@ -275,9 +276,10 @@ review and merge happen.
 
 The Brother VC-500W protocol was reverse engineered by
 [m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/);
-Etiketto prints through its descendant
-[labelprinter](https://github.com/sgrimee/labelprinter-vc500w)
-(m7i.org → lenchan139 → sgrimee).
+Etiketto prints through its descendant labelprinter (m7i.org → lenchan139
+→ [sgrimee](https://github.com/sgrimee/labelprinter-vc500w)), in a fork
+pinned to a reviewed commit until its fixes are merged:
+<https://github.com/joshii-h/labelprinter-vc500w>.
 
 The VC-500W on USB follows the observations of
 [barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
@@ -314,10 +316,12 @@ Most code types are encoded by [Zint](https://zint.org.uk) (libzint,
 Copyright (C) 2009-2025 Robin Stuart and contributors, BSD-3-Clause) through
 [zint-bindings](https://github.com/bindreams/zint-bindings) (Anna Zhukova,
 Apache-2.0); Etiketto takes Zint's modules and draws them itself. The
-Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/zint/LICENSE`.
+Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/LICENSE.zint`.
 QR codes come from [segno](https://github.com/heuer/segno) (BSD-3-Clause),
 Code 128 and EAN-13 from
 [python-barcode](https://github.com/WhyNotHugo/python-barcode) (MIT).
+Images are handled by [Pillow](https://python-pillow.org) (Secret Labs AB,
+Fredrik Lundh, Jeffrey 'Alex' Clark and contributors; MIT-CMU).
 
 The label sheet templates come from the template database of
 [gLabels](https://github.com/j-evins/glabels-qt) by Jaye Evins, MIT license,
@@ -365,10 +369,14 @@ listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
 templates (`etiketto/sheets/templates.json`) and the parts derived from
 ThermalPrint are MIT licensed, the symbols (`etiketto/symbols/mdi.json.gz`)
-Apache-2.0 licensed; the Flatpak also bundles BSD-3-Clause libraries (Zint,
-segno), see Credits and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Not
+Apache-2.0 licensed. The Python package as a whole:
+`AGPL-3.0-or-later AND MIT AND Apache-2.0` (`pyproject.toml`); the app as
+the Flatpak ships it, with the libraries it bundles (Zint, segno, Pillow,
+Poppler): `AGPL-3.0-or-later AND MIT AND Apache-2.0 AND BSD-3-Clause AND MIT-CMU AND (GPL-2.0-only OR GPL-3.0-only)` (the metainfo). Details and licence texts:
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Not
 affiliated with Brother Industries, cab Produkttechnik GmbH & Co. KG or the
 makers of the other printers; "Brother", "ColAura", "VC-500W", "P-touch",
 "TZe", "HSe", "cab", "EOS", "SQUIX", "MACH", "Zebra", "ZPL", "EPL", "TSC",
-"TSPL", "Munbyn", "iDPRT", "Xprinter", "Rollo", "Epson", "ESC/POS", "DYMO", "LabelWriter" and "NIIMBOT" are trademarks of their
-owners.
+"TSPL", "Munbyn", "iDPRT", "Xprinter", "Rollo", "Epson", "ESC/POS", "DYMO",
+"LabelWriter" and "NIIMBOT" are trademarks of their owners; ZINK is a
+trademark of ZINK Holdings LLC.

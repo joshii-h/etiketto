@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "jangan tanyakan printer sebelum merender (model, pita, dan resolusinya)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Baris %(row)d berada di posisi %(position)d pada lembar %(sheet)d.",
     "print density\x04Default": "Bawaan",
+    "Ideas for the variables (counter, date, UUID), no code": "Ide untuk variabel (penghitung, tanggal, UUID), tanpa kode",
 }

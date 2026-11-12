@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "não consultar a impressora antes de renderizar (modelo, fita e resolução)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "A linha %(row)d vai na posição %(position)d da folha %(sheet)d.",
     "print density\x04Default": "Padrão",
+    "Ideas for the variables (counter, date, UUID), no code": "Ideias para as variáveis (contador, data, UUID), sem código",
 }

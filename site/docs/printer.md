@@ -168,7 +168,8 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
   display). Etiketto uses the "RawIP" port 9100 with the JScript interpreter,
   both are the printer's defaults (Setup > Interfaces > Network services and
   Setup > Interpreter).
-- USB: plug the printer in; [[ui:Search for printers]] finds it.
+- USB: plug the printer in; [[ui:Search for printers]] finds it. Printing
+  over USB has not been tried on a printer yet.
 - Labels: die-cut labels with a gap, label sensor "Gap Sensor". Etiketto
   sets the sensor for each job. Continuous media and a cutter are not
   supported yet.

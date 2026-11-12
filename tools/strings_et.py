@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "ära küsi printerilt enne renderdamist (mudel, lint ja eraldusvõime)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rida %(row)d läheb lehe %(sheet)d kohale %(position)d.",
     "print density\x04Default": "Vaikimisi",
+    "Ideas for the variables (counter, date, UUID), no code": "Ideed muutujate jaoks (loendur, kuupäev, UUID), koodi ei kasutata",
 }

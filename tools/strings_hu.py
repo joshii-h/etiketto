@@ -519,4 +519,5 @@ TRANSLATIONS = {
     "do not ask the printer before rendering (its model, tape and resolution)": "ne kérdezze le a nyomtatót a megjelenítés előtt (típus, szalag és felbontás)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "A(z) %(row)d. sor a(z) %(sheet)d. ív %(position)d. helyére kerül.",
     "print density\x04Default": "Alapértelmezett",
+    "Ideas for the variables (counter, date, UUID), no code": "Ötletek a változókhoz (számláló, dátum, UUID), kód nélkül",
 }
