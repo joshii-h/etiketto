@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s fájlt a számítógép bármely felhasználója módosíthatja: futtassa rá a chmod 600 parancsot",
     "%s is in use by another program – try again later": "%s fájlt egy másik program használja – próbálja újra később",
     "At most %d labels in one print job": "Egy nyomtatási feladatban legfeljebb %d címke",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "%(n)d. elem: a Code 128 legfeljebb %(max)d karaktert tartalmazhat",
+    "expected 12 hexadecimal digits (written by token new)": "12 hexadecimális számjegy várható (a token new írja)",
+    "The server is busy – try again later": "A kiszolgáló foglalt – próbálja újra később",
+    "The request has more than one Content-Length": "A kérésben több Content-Length is szerepel",
+    "The request body is incomplete": "A kérés törzse hiányos",
+    "The token %(name)s was added to %(file)s.": "A(z) %(name)s token hozzáadva ehhez: %(file)s.",
+    "Access token: ": "Hozzáférési token: ",
+    "This token is in the file already, as %s": "Ez a token már szerepel a fájlban, %s néven",
 }

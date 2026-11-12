@@ -19,6 +19,7 @@ from PIL import Image
 from etiketto import cli
 from etiketto.backends.base import PaperJam, PrinterInfo
 from etiketto.model import CodeElement, Label, TextElement
+from etiketto.server import http as server_http
 from etiketto.server import jobs as jobs_module
 from etiketto.server import main as server_main
 from etiketto.server.http import _host_name, _matches, binds_loopback, is_loopback
@@ -218,13 +219,14 @@ def test_body_size_limit(make_server):
 
 def test_connection_limit(api, monkeypatch):
     server = api.server
-    for _n in range(32):
+    total = server_http.MAX_CONNECTIONS + server_http.RESERVED
+    for _n in range(total):
         assert server._slots.acquire(blocking=False)
     try:
         with pytest.raises((ConnectionError, http.client.HTTPException, OSError)):
             call(api.base, "GET", "/api/v1/health")
     finally:
-        for _n in range(32):
+        for _n in range(total):
             server._slots.release()
     assert call(api.base, "GET", "/api/v1/health")[0] == 200
 

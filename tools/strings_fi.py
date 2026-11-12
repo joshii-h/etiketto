@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "kuka tahansa tämän tietokoneen käyttäjä voi muuttaa tiedostoa %s: suorita sille chmod 600",
     "%s is in use by another program – try again later": "%s on toisen ohjelman käytössä – yritä myöhemmin uudelleen",
     "At most %d labels in one print job": "Yhdessä tulostustyössä enintään %d tarraa",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Elementti %(n)d: Code 128 voi sisältää enintään %(max)d merkkiä",
+    "expected 12 hexadecimal digits (written by token new)": "odotettiin 12 heksadesimaalinumeroa (kirjoittaa token new)",
+    "The server is busy – try again later": "Palvelin on varattu – yritä myöhemmin uudelleen",
+    "The request has more than one Content-Length": "Pyynnössä on useampi kuin yksi Content-Length",
+    "The request body is incomplete": "Pyynnön runko on vajaa",
+    "The token %(name)s was added to %(file)s.": "Pääsytunnus %(name)s lisättiin tiedostoon %(file)s.",
+    "Access token: ": "Pääsytunnus: ",
+    "This token is in the file already, as %s": "Tämä pääsytunnus on jo tiedostossa nimellä %s",
 }

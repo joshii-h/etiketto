@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s kan ändras av alla användare på den här datorn: kör chmod 600 på den",
     "%s is in use by another program – try again later": "%s används av ett annat program – försök igen senare",
     "At most %d labels in one print job": "Högst %d etiketter i ett utskriftsjobb",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Element %(n)d: Code 128 rymmer högst %(max)d tecken",
+    "expected 12 hexadecimal digits (written by token new)": "förväntade 12 hexadecimala siffror (skrivs av token new)",
+    "The server is busy – try again later": "Servern är upptagen – försök igen senare",
+    "The request has more than one Content-Length": "Förfrågan har mer än en Content-Length",
+    "The request body is incomplete": "Förfrågningsinnehållet är ofullständigt",
+    "The token %(name)s was added to %(file)s.": "Token %(name)s lades till i %(file)s.",
+    "Access token: ": "Åtkomsttoken: ",
+    "This token is in the file already, as %s": "Denna token finns redan i filen, som %s",
 }

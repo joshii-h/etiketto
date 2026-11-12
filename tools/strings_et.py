@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s on selle arvuti kõigi kasutajate poolt muudetav: rakenda sellele chmod 600",
     "%s is in use by another program – try again later": "%s on teise programmi kasutuses – proovi hiljem uuesti",
     "At most %d labels in one print job": "Ühes prinditöös kuni %d silti",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Element %(n)d: Code 128 mahutab kõige rohkem %(max)d märki",
+    "expected 12 hexadecimal digits (written by token new)": "oodati 12 kuueteistkümnendnumbrit (kirjutab token new)",
+    "The server is busy – try again later": "Server on hõivatud – proovi hiljem uuesti",
+    "The request has more than one Content-Length": "Päringul on rohkem kui üks Content-Length",
+    "The request body is incomplete": "Päringu sisu on poolik",
+    "The token %(name)s was added to %(file)s.": "Pääsuluba %(name)s lisati faili %(file)s.",
+    "Access token: ": "Pääsuluba: ",
+    "This token is in the file already, as %s": "See pääsuluba on failis juba olemas nimega %s",
 }

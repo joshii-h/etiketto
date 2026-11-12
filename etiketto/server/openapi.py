@@ -313,6 +313,7 @@ def _operation(summary: str, responses: dict, **extra) -> dict:
     responses.setdefault("405", _error("Not a method of this path"))
     responses.setdefault("408", _error("The request took longer than 30 s to send"))
     responses.setdefault("500", _error("An error of the server (logged)"))
+    responses.setdefault("503", _error("Busy: no request slot, render slot or thread free"))
     responses.setdefault("501", {"description": "A method HTTP knows but the server does not"})
     responses.setdefault("421", _error("Not a loopback Host on a loopback server"))
     if "requestBody" in extra:

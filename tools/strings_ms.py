@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s boleh diubah oleh setiap pengguna komputer ini: jalankan chmod 600 padanya",
     "%s is in use by another program – try again later": "%s sedang digunakan oleh program lain – cuba lagi kemudian",
     "At most %d labels in one print job": "Paling banyak %d label dalam satu kerja cetak",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Elemen %(n)d: Code 128 memuatkan paling banyak %(max)d aksara",
+    "expected 12 hexadecimal digits (written by token new)": "dijangka 12 digit perenambelasan (ditulis oleh token new)",
+    "The server is busy – try again later": "Pelayan sibuk – cuba lagi kemudian",
+    "The request has more than one Content-Length": "Permintaan mempunyai lebih daripada satu Content-Length",
+    "The request body is incomplete": "Badan permintaan tidak lengkap",
+    "The token %(name)s was added to %(file)s.": "Token %(name)s telah ditambah ke %(file)s.",
+    "Access token: ": "Token akses: ",
+    "This token is in the file already, as %s": "Token ini sudah ada dalam fail, sebagai %s",
 }

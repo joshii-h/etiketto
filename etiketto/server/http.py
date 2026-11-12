@@ -32,7 +32,7 @@ import socket
 import threading
 import time
 from collections import defaultdict, deque
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -57,6 +57,7 @@ PARSES = 2
 ANSWER_SECONDS = 60.0  # to send the answer, once the request is in
 MAX_CONNECTIONS = 32
 MAX_PER_CLIENT = 8  # connections from one address at once
+RESERVED = 2  # connections beyond MAX_CONNECTIONS, for /health only
 REQUEST_SECONDS = 30.0  # to send the whole request: line, headers and body
 # without a token a web page could make the server ask printers with an
 # <img src=...>: requests that contact printers need this header then,
@@ -136,8 +137,31 @@ def rate_key(address: str) -> str:
     if isinstance(ip, ipaddress.IPv6Address):
         if ip.ipv4_mapped:
             return str(ip.ipv4_mapped)
+        if ip.is_link_local:  # fe80::/64 is every computer of the link
+            return str(ip)
         return str(ipaddress.ip_network("%s/64" % ip, strict=False))
     return str(ip)
+
+
+def _hop(text: str) -> str | None:
+    """An address of X-Forwarded-For, a port taken off ("192.0.2.1:5000",
+    "[2001:db8::1]:443"); None for anything that is no address."""
+    text = text.strip()
+    if text.startswith("["):
+        text = text[1 : text.find("]")] if "]" in text else ""
+    elif text.count(":") == 1:
+        text = text.split(":")[0]
+    try:
+        return str(ipaddress.ip_address(text))
+    except ValueError:
+        return None
+
+
+def _plain(ip):
+    """An IPv4-mapped IPv6 address as the IPv4 address it is."""
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+        return ip.ipv4_mapped
+    return ip
 
 
 class RateLimit:
@@ -148,25 +172,34 @@ class RateLimit:
     def __init__(self, limit: int = AUTH_FAILURES, window: float = 60.0):
         self.limit, self.window = limit, window
         self._failures: dict[str, deque[float]] = {}
+        self._blocked: dict[str, float] = {}  # until when (monotonic)
         self._lock = threading.Lock()
 
     def blocked(self, client: str) -> bool:
+        """Blocked from the tenth wrong token within a minute until a minute
+        after it."""
         with self._lock:
-            failures = self._failures.get(client)
-            if not failures:
+            until = self._blocked.get(client)
+            if until is None:
                 return False
-            while failures and time.monotonic() - failures[0] > self.window:
-                failures.popleft()
-            if not failures:
-                del self._failures[client]
-            return len(failures) >= self.limit
+            if time.monotonic() < until:
+                return True
+            del self._blocked[client]
+            self._failures.pop(client, None)
+            return False
 
     def failed(self, client: str) -> None:
+        now = time.monotonic()
         with self._lock:
             if client not in self._failures and len(self._failures) >= self.MAX_CLIENTS:
                 self._failures.pop(next(iter(self._failures)))  # the oldest makes room
             # never more than the limit kept: enough to know it is reached
-            self._failures.setdefault(client, deque(maxlen=self.limit)).append(time.monotonic())
+            failures = self._failures.setdefault(client, deque(maxlen=self.limit))
+            failures.append(now)
+            if len(failures) >= self.limit and now - failures[0] <= self.window:
+                self._blocked[client] = now + self.window
+                if len(self._blocked) > self.MAX_CLIENTS:
+                    self._blocked.pop(next(iter(self._blocked)))
 
 
 class Server(ThreadingHTTPServer):
@@ -181,7 +214,11 @@ class Server(ThreadingHTTPServer):
         self.rate_limit = RateLimit()
         self.parses = threading.BoundedSemaphore(PARSES)
         self.reaper = Reaper()
-        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
+        # a few more connections than requests: /health is answered even
+        # when every request slot is taken
+        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS + RESERVED)
+        self.requests = threading.BoundedSemaphore(MAX_CONNECTIONS)
+        self._forwarded: dict[str, int] = defaultdict(int)
         self._clients: dict[str, int] = defaultdict(int)
         self._clients_lock = threading.Lock()
         self.address_family = socket.AF_INET6 if ":" in address else socket.AF_INET
@@ -190,10 +227,26 @@ class Server(ThreadingHTTPServer):
     def trusted(self, address: str) -> bool:
         """Whether the address is a reverse proxy given with --trusted-proxy."""
         try:
-            ip = ipaddress.ip_address(address)
+            ip = _plain(ipaddress.ip_address(address))
         except ValueError:
             return False
         return any(ip in network for network in self.config.trusted_proxies)
+
+    @contextlib.contextmanager
+    def forwarded(self, client: str) -> Iterator[bool]:
+        """Count a request of a client behind a trusted proxy."""
+        with self._clients_lock:
+            allowed = self._forwarded[client] < MAX_PER_CLIENT
+            if allowed:
+                self._forwarded[client] += 1
+        try:
+            yield allowed
+        finally:
+            if allowed:
+                with self._clients_lock:
+                    self._forwarded[client] -= 1
+                    if self._forwarded[client] <= 0:
+                        del self._forwarded[client]
 
     def _admit(self, client: str) -> bool:
         """A slot for one more connection, at most MAX_PER_CLIENT per address
@@ -220,6 +273,11 @@ class Server(ThreadingHTTPServer):
             return
         try:
             super().process_request(request, client_address)
+        except RuntimeError:  # no thread to be had (TasksMax, memory)
+            self._leave(client)
+            with contextlib.suppress(OSError):
+                request.sendall(b"HTTP/1.0 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n")
+            self.shutdown_request(request)
         except BaseException:
             self._leave(client)
             raise
@@ -338,10 +396,13 @@ class Handler(BaseHTTPRequestHandler):
         """The client's address; behind a trusted proxy the last address in
         X-Forwarded-For that is no trusted proxy itself."""
         peer = self.client_address[0]
-        forwarded = self.headers.get("X-Forwarded-For") if hasattr(self, "headers") else None
-        if not forwarded or not self.server.trusted(peer):
+        lines = self.headers.get_all("X-Forwarded-For") if hasattr(self, "headers") else None
+        if not lines or not self.server.trusted(peer):
             return peer
-        for hop in reversed([part.strip() for part in forwarded.split(",")]):
+        hops = [_hop(part) for line in lines for part in line.split(",")]
+        for hop in reversed(hops):
+            if hop is None:  # not an address: nothing before it can be trusted
+                return peer
             if not self.server.trusted(hop):
                 return hop
         return peer
@@ -378,8 +439,33 @@ class Handler(BaseHTTPRequestHandler):
             return
         if method not in ("POST",) or self._path() == PREFIX + "/health":
             self._request_in()  # no body to wait for
-        with language(self.headers.get("Accept-Language")):
-            self._answer(method)
+        with language(self.headers.get("Accept-Language")), self._admitted() as admitted:
+            if admitted:
+                self._answer(method)
+            else:
+                self.close_connection = True
+                self._error(ApiError(503, "busy", _("The server is busy – try again later")))
+
+    @contextlib.contextmanager
+    def _admitted(self) -> Iterator[bool]:
+        """A request slot (/health needs none: a few connections are kept
+        for it); behind a trusted proxy at most MAX_PER_CLIENT per client
+        it names, as for clients connecting themselves."""
+        if self._path() == PREFIX + "/health":
+            yield True
+            return
+        if not self.server.requests.acquire(blocking=False):
+            yield False
+            return
+        try:
+            forwarded = self.client() if self.server.trusted(self.client_address[0]) else None
+            if forwarded is None:
+                yield True
+                return
+            with self.server.forwarded(forwarded) as allowed:
+                yield allowed
+        finally:
+            self.server.requests.release()
 
     def _answer(self, method: str) -> None:
         """Check and route the request; every problem becomes an answer."""
@@ -466,6 +552,8 @@ class Handler(BaseHTTPRequestHandler):
     def _body(self) -> bytes:
         if self.headers.get("Transfer-Encoding"):
             raise ApiError(411, "length_required", _("The request needs a Content-Length"))
+        if len(self.headers.get_all("Content-Length") or []) > 1:  # which one counts?
+            raise bad_request(_("The request has more than one Content-Length"))
         value = self.headers.get("Content-Length", "").strip()
         if not (value.isascii() and value.isdigit()):  # not "+5", " 5", "٥"
             raise ApiError(411, "length_required", _("The request needs a Content-Length"))
@@ -473,8 +561,10 @@ class Handler(BaseHTTPRequestHandler):
         if length > self.server.config.max_body:
             raise ApiError(413, "too_large", _("The request is too large"))
         body = self.rfile.read(length)
-        if len(body) < length:  # cut off at the deadline, or the client stopped
-            raise TimeoutError("request body incomplete")
+        if len(body) < length:
+            if self.server.reaper.expired(self.connection):  # cut off at the deadline
+                raise TimeoutError("request body incomplete")
+            raise bad_request(_("The request body is incomplete"))  # the client stopped
         self._request_in()
         return body
 
@@ -486,16 +576,20 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self) -> object:
         self._json_type()
         body = self._body()
-        large = len(body) > LARGE_BODY
-        if large:  # parsed, it takes many times its size: a few at a time
-            self.server.parses.acquire()
-        try:
-            return json.loads(body)
-        except (ValueError, RecursionError):
-            raise bad_request(_("The request is not valid JSON"), "not_json") from None
-        finally:
-            if large:
-                self.server.parses.release()
+        with self._parsing(body):
+            try:
+                return json.loads(body)
+            except (ValueError, RecursionError):
+                raise bad_request(_("The request is not valid JSON"), "not_json") from None
+
+    @contextlib.contextmanager
+    def _parsing(self, body: bytes) -> Iterator[None]:
+        """A large body takes many times its size once parsed: a few at a time."""
+        if len(body) <= LARGE_BODY:
+            yield
+            return
+        with self.server.parses:
+            yield
 
     # --- routes -------------------------------------------------------------------
 
@@ -587,7 +681,9 @@ class Handler(BaseHTTPRequestHandler):
         headers = {key.lower(): value for key, value in self.headers.items()}
         if method == "POST":
             self._json_type()
-            reply = transport.post(headers, self._body(), self.caller)
+            body = self._body()
+            with self._parsing(body):
+                reply = transport.post(headers, body, self.caller)
         elif method == "DELETE":
             reply = transport.delete(headers, self.caller)
         else:
@@ -650,7 +746,7 @@ class Handler(BaseHTTPRequestHandler):
             self.client() if hasattr(self, "headers") else self.client_address[0],
             getattr(self, "who", "-"),
             getattr(self, "command", None) or "-",
-            self._path(),
+            self._path() or "-",
             status,
         )
 

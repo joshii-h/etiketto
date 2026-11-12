@@ -631,7 +631,9 @@ class HttpTransport:
         answer = self.mcp.handle(message, session, caller)
         if answer is None or "error" in answer:
             return Reply(200, answer)
-        self._open(session)
+        if not self._open(session, caller.named):
+            error = RpcError(INTERNAL_ERROR, "Too many sessions, try again later")
+            return Reply(503, _error(message.get("id"), error))
         return Reply(200, answer, {"Mcp-Session-Id": session.id})
 
     def delete(self, headers: Mapping[str, str], caller: Caller = LOCAL) -> Reply:
@@ -644,16 +646,20 @@ class HttpTransport:
             self._sessions.pop(session_id, None)
         return Reply(204)
 
-    def _open(self, session: Session) -> None:
+    def _open(self, session: Session, limited: bool) -> bool:
+        """Keep a new session. Only a session of the same token ever makes
+        room (its own unused longest); a named token has at most
+        MAX_SESSIONS_PER_OWNER. False: the table is full of others'."""
         with self._lock:
             self._expire()
             own = [s for s in self._sessions.values() if s.owner == session.owner]
-            if len(own) >= MAX_SESSIONS_PER_OWNER or len(self._sessions) >= MAX_SESSIONS:
-                # the token's own session unused longest makes room; only
-                # when it has none, the one unused longest of all
-                oldest = min(own or self._sessions.values(), key=lambda s: s.used)
-                del self._sessions[oldest.id]
+            full = len(self._sessions) >= MAX_SESSIONS
+            if own and (full or (limited and len(own) >= MAX_SESSIONS_PER_OWNER)):
+                del self._sessions[min(own, key=lambda s: s.used).id]
+            elif full:
+                return False
             self._sessions[session.id] = session
+            return True
 
     def _session(self, session_id: str, caller: Caller = LOCAL) -> Session | None:
         """The session, if the same token opened it."""

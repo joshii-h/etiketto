@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s को इस कंप्यूटर का हर उपयोगकर्ता बदल सकता है: उस पर chmod 600 चलाएँ",
     "%s is in use by another program – try again later": "%s किसी अन्य प्रोग्राम द्वारा उपयोग में है – बाद में फिर से प्रयास करें",
     "At most %d labels in one print job": "एक प्रिंट जॉब में अधिकतम %d लेबल",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "तत्व %(n)d: Code 128 में अधिकतम %(max)d वर्ण हो सकते हैं",
+    "expected 12 hexadecimal digits (written by token new)": "12 हेक्साडेसिमल अंक अपेक्षित हैं (token new द्वारा लिखे गए)",
+    "The server is busy – try again later": "सर्वर व्यस्त है – बाद में फिर से प्रयास करें",
+    "The request has more than one Content-Length": "अनुरोध में एक से अधिक Content-Length है",
+    "The request body is incomplete": "अनुरोध बॉडी अधूरी है",
+    "The token %(name)s was added to %(file)s.": "टोकन %(name)s को %(file)s में जोड़ा गया।",
+    "Access token: ": "एक्सेस टोकन: ",
+    "This token is in the file already, as %s": "यह टोकन फ़ाइल में पहले से %s के रूप में मौजूद है",
 }

@@ -112,6 +112,8 @@ def serve(args) -> int:
             % args.host,
             EXIT_USAGE,
         )
+    # before the server exists: a reload sent while it starts must not end it
+    signal.signal(signal.SIGHUP, lambda _signum, _frame: _reload(tokens))
     service = _service(args, printers)
     config = Config(
         args.host,
@@ -132,12 +134,18 @@ def serve(args) -> int:
             % {"address": "%s:%d" % (args.host, args.port), "reason": e.strerror or e},
             EXIT_USAGE,
         ) from None
-    signal.signal(signal.SIGHUP, lambda _signum, _frame: _reload(tokens))
     return _run(server, service)
 
 
 def _warn(args, printers, tokens) -> None:
     """Settings that work, but likely not as meant."""
+    for network in getattr(args, "trusted_proxy", []):
+        if network.prefixlen == 0:
+            log.warning(
+                "--trusted-proxy %s trusts every address: any client can name any "
+                "address in X-Forwarded-For; give the proxy's own address",
+                network,
+            )
     if tokens is None:
         return
     if os.environ.get(TOKEN_VARIABLE):
@@ -236,20 +244,28 @@ def token_new(args) -> int:
         if created and path.exists() and path.stat().st_size == 0:
             path.unlink()  # the empty file made for it
         raise
-    if not args.from_stdin:
+    if args.from_stdin:
+        message = _("The token %(name)s was added to %(file)s.") % {
+            "name": args.name,
+            "file": path,
+        }
+    else:
         sys.stdout.write(token + "\n")
         sys.stdout.flush()
-        sys.stderr.write(
-            "etiketto: "
-            + _("The token is shown only this once; %s keeps only its hash.") % path
-            + "\n"
-        )
+        message = _("The token is shown only this once; %s keeps only its hash.") % path
+    sys.stderr.write("etiketto: " + message + "\n")
     return EXIT_OK
 
 
 def _chosen_token() -> tuple[str, str]:
-    """A token people chose, from standard input: kept as an scrypt hash."""
-    token = sys.stdin.readline().strip()
+    """A token people chose, from standard input (asked for without echo
+    on a terminal): kept as an scrypt hash."""
+    if sys.stdin.isatty():
+        import getpass
+
+        token = getpass.getpass(_("Access token: ")).strip()
+    else:
+        token = sys.stdin.readline().strip()
     if not token or not all(33 <= ord(c) < 127 for c in token):
         raise CliError(
             _("The access token may only contain printable ASCII characters without spaces"),
@@ -299,13 +315,38 @@ def _add(args, path: Path, printers, token: str, ident: str) -> None:
         args.description or "",
         ident,
     )
-    if old.strip() and any(e.caller.name == args.name for e in _entries(path, printers)):
+    _check_file_mode(path)
+    entries = _entries(path, printers) if old.strip() else []
+    if any(e.caller.name == args.name for e in entries):
         raise CliError(_("A token named %s exists already") % args.name, EXIT_USAGE)
+    _refuse_same_token(token, entries)
     _check_new(path, old + entry, printers)
     try:
         write_file(path, (old + entry).encode())
     except OSError as e:
         raise _unreadable(path, e) from None
+
+
+def _check_file_mode(path: Path) -> None:
+    """As the server reads it: a file every user may change is refused."""
+    from etiketto.server.config import ConfigError, _check_mode
+
+    try:
+        _check_mode(path)
+    except ConfigError as e:
+        raise CliError(str(e), EXIT_FILE) from None
+
+
+def _refuse_same_token(token: str, entries) -> None:
+    """A token already in the file under another name (a chosen one could
+    be): the same token twice, with maybe two roles."""
+    from etiketto.server.config import token_matches
+
+    for entry in entries:
+        if token_matches(token, entry.hash):
+            raise CliError(
+                _("This token is in the file already, as %s") % entry.caller.name, EXIT_USAGE
+            )
 
 
 def _printers_file(path: Path | None):

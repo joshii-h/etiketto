@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s może zmienić każdy użytkownik tego komputera: wykonaj na nim chmod 600",
     "%s is in use by another program – try again later": "%s jest używany przez inny program – spróbuj ponownie później",
     "At most %d labels in one print job": "Maksymalnie %d etykiet w jednym zadaniu drukowania",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Element %(n)d: Code 128 mieści najwyżej %(max)d znaków",
+    "expected 12 hexadecimal digits (written by token new)": "oczekiwano 12 cyfr szesnastkowych (zapisuje je token new)",
+    "The server is busy – try again later": "Serwer jest zajęty – spróbuj ponownie później",
+    "The request has more than one Content-Length": "Żądanie ma więcej niż jeden nagłówek Content-Length",
+    "The request body is incomplete": "Treść żądania jest niekompletna",
+    "The token %(name)s was added to %(file)s.": "Token %(name)s został dodany do %(file)s.",
+    "Access token: ": "Token dostępu: ",
+    "This token is in the file already, as %s": "Ten token jest już w pliku jako %s",
 }

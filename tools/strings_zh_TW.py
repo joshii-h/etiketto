@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "此電腦的所有使用者都能變更 %s：請對其執行 chmod 600",
     "%s is in use by another program – try again later": "%s 正由另一個程式使用，請稍後再試",
     "At most %d labels in one print job": "一個列印工作中最多 %d 個標籤",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "元素 %(n)d：Code 128 最多容納 %(max)d 個字元",
+    "expected 12 hexadecimal digits (written by token new)": "應為 12 位十六進位數字（由 token new 寫入）",
+    "The server is busy – try again later": "伺服器忙碌中，請稍後再試",
+    "The request has more than one Content-Length": "要求包含多個 Content-Length",
+    "The request body is incomplete": "要求主體不完整",
+    "The token %(name)s was added to %(file)s.": "權杖 %(name)s 已加入 %(file)s。",
+    "Access token: ": "存取權杖：",
+    "This token is in the file already, as %s": "此權杖已在檔案中，名稱為 %s",
 }

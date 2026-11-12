@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s はこのコンピューターのすべてのユーザーが変更できます: chmod 600 を実行してください",
     "%s is in use by another program – try again later": "%s は別のプログラムが使用中です。しばらくしてからもう一度お試しください",
     "At most %d labels in one print job": "1 つの印刷ジョブで最大 %d 枚のラベルです",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "要素 %(n)d: Code 128 に入れられるのは最大 %(max)d 文字です",
+    "expected 12 hexadecimal digits (written by token new)": "16 進数 12 桁が必要です (token new が書き込みます)",
+    "The server is busy – try again later": "サーバーがビジー状態です。しばらくしてからもう一度お試しください",
+    "The request has more than one Content-Length": "リクエストに Content-Length が複数あります",
+    "The request body is incomplete": "リクエスト本文が不完全です",
+    "The token %(name)s was added to %(file)s.": "トークン %(name)s を %(file)s に追加しました。",
+    "Access token: ": "アクセストークン: ",
+    "This token is in the file already, as %s": "このトークンはすでに %s としてファイルにあります",
 }

@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s peut être modifié par tous les utilisateurs de cet ordinateur\xa0: appliquez-lui chmod 600",
     "%s is in use by another program – try again later": "%s est utilisé par un autre programme – réessayez plus tard",
     "At most %d labels in one print job": "%d étiquettes au maximum dans une tâche d’impression",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Élément %(n)d\xa0: Code 128 contient au maximum %(max)d caractères",
+    "expected 12 hexadecimal digits (written by token new)": "12 chiffres hexadécimaux attendus (écrits par token new)",
+    "The server is busy – try again later": "Le serveur est occupé – réessayez plus tard",
+    "The request has more than one Content-Length": "La requête comporte plus d’un Content-Length",
+    "The request body is incomplete": "Le corps de la requête est incomplet",
+    "The token %(name)s was added to %(file)s.": "Le jeton %(name)s a été ajouté à %(file)s.",
+    "Access token: ": "Jeton d’accès\xa0: ",
+    "This token is in the file already, as %s": "Ce jeton figure déjà dans le fichier, sous le nom %s",
 }

@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "이 컴퓨터의 모든 사용자가 %s을(를) 변경할 수 있습니다: chmod 600을 적용하십시오",
     "%s is in use by another program – try again later": "다른 프로그램이 %s을(를) 사용 중입니다 – 나중에 다시 시도하십시오",
     "At most %d labels in one print job": "인쇄 작업 하나에 라벨은 최대 %d개까지 가능합니다",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "요소 %(n)d: Code 128에는 최대 %(max)d자까지 넣을 수 있습니다",
+    "expected 12 hexadecimal digits (written by token new)": "16진수 12자리가 필요함(token new가 기록함)",
+    "The server is busy – try again later": "서버가 사용 중입니다 – 나중에 다시 시도하십시오",
+    "The request has more than one Content-Length": "요청에 Content-Length가 두 개 이상 있습니다",
+    "The request body is incomplete": "요청 본문이 불완전합니다",
+    "The token %(name)s was added to %(file)s.": "토큰 %(name)s을(를) %(file)s에 추가했습니다.",
+    "Access token: ": "액세스 토큰: ",
+    "This token is in the file already, as %s": "이 토큰은 이미 파일에 %s(으)로 있습니다",
 }

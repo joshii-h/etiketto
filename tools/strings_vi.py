@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "mọi người dùng của máy tính này đều có thể thay đổi %s: hãy chạy chmod 600 cho nó",
     "%s is in use by another program – try again later": "%s đang được một chương trình khác sử dụng – hãy thử lại sau",
     "At most %d labels in one print job": "Tối đa %d nhãn trong một lệnh in",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Phần tử %(n)d: Code 128 chứa tối đa %(max)d ký tự",
+    "expected 12 hexadecimal digits (written by token new)": "cần 12 chữ số thập lục phân (do token new ghi)",
+    "The server is busy – try again later": "Máy chủ đang bận – hãy thử lại sau",
+    "The request has more than one Content-Length": "Yêu cầu có nhiều hơn một Content-Length",
+    "The request body is incomplete": "Nội dung yêu cầu không đầy đủ",
+    "The token %(name)s was added to %(file)s.": "Đã thêm mã truy cập %(name)s vào %(file)s.",
+    "Access token: ": "Mã truy cập: ",
+    "This token is in the file already, as %s": "Mã truy cập này đã có trong tệp, với tên %s",
 }

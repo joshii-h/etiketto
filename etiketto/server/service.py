@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 from etiketto import __version__
 from etiketto.backends import backends, get_backend
@@ -91,6 +91,7 @@ DISCOVERY_SECONDS = 30.0  # printers found are remembered this long
 STATUS_SECONDS = 5.0  # the state of printers in the list, as long
 MAX_HOST = 512
 RENDERS = 2  # renders for previews and checks at once: a large label takes much memory
+RENDER_WAIT = 20.0  # seconds a request waits for one, then 503
 # what one label of a request may be: a text of thousands of lines, or
 # thousands of elements, would take gigabytes and minutes to render
 MAX_ELEMENTS = 200
@@ -207,23 +208,43 @@ def _resolved(name: str) -> list[str]:
         return []
 
 
-def host_allowed(name: str, patterns: tuple[str, ...]) -> bool:
-    """Whether a printer's host matches --allow-printer. Patterns are
-    compared with the host, never the whole address (a path or a user name
-    cannot make "evil/x.printers.lan" pass "*.printers.lan"). Address
-    patterns (192.168.1.0/24, 192.168.1.*) match IP addresses only, a name
-    by all the addresses it resolves to: "192.168.1.evil.example" is no
-    address in 192.168.1.*. Name patterns match names."""
+def host_allowed(name: str, patterns: tuple[str, ...]) -> str | None:
+    """The host to print on if it matches --allow-printer, else None.
+    Patterns are compared with the host, never the whole address (a path
+    or a user name cannot make "evil/x.printers.lan" pass "*.printers.lan").
+    "*" allows everything (no lookup). Name patterns match names. Address
+    patterns (192.168.1.0/24, 192.168.1.*) match IP addresses; a name only
+    if every address it resolves to matches one of them, and then the
+    address checked is returned, to be printed on: a name looked up again
+    could point elsewhere by then (DNS rebinding)."""
+    if "*" in patterns:
+        return name
     is_ip = bool(_ip_matches(name, "*"))
-    for pattern in patterns:
-        if not _ip_pattern(pattern):
-            if not is_ip and fnmatch.fnmatchcase(name, pattern.lower()):
-                return True
-            continue
-        addresses = [name] if is_ip else _resolved(name)
-        if addresses and all(_ip_matches(a, pattern) for a in addresses):
-            return True
-    return False
+    names = [p for p in patterns if not _ip_pattern(p)]
+    if not is_ip and any(fnmatch.fnmatchcase(name, p.lower()) for p in names):
+        return name
+    return _address_allowed(name, is_ip, [p for p in patterns if _ip_pattern(p)])
+
+
+def _address_allowed(name: str, is_ip: bool, patterns: list[str]) -> str | None:
+    """The address of `name` if every address it has matches a pattern."""
+    if not patterns:
+        return None
+    resolved = [name] if is_ip else _resolved(name)
+    if resolved and all(any(_ip_matches(a, p) for p in patterns) for a in resolved):
+        return resolved[0]
+    return None
+
+
+def with_address(host: str, address: str) -> str:
+    """The printer address with its host replaced by an IP address."""
+    scheme = "://" in host
+    parts = urlsplit(host if scheme else "//" + host)
+    netloc = "[%s]" % address if ":" in address else address
+    if parts.port:
+        netloc += ":%d" % parts.port
+    text = urlunsplit(parts._replace(netloc=netloc))
+    return text if scheme else text[2:]
 
 
 DEFAULT_PORTS = {"ipp": 631, "ipps": 631, "http": 80, "https": 443}
@@ -280,7 +301,8 @@ class Service:
         self._found_lock = threading.Lock()
         self._label_locks: dict[str, threading.Lock] = {}
         self._searches: dict[str, threading.Lock] = {}
-        self._states: dict[str, tuple[float, dict]] = {}
+        self._states: dict[str, tuple[float, PrinterInfo | Exception]] = {}
+        self._asking: dict[str, threading.Lock] = {}
         self._renders = threading.BoundedSemaphore(RENDERS)
 
     def close(self, timeout: float = 30.0) -> None:
@@ -323,23 +345,41 @@ class Service:
             for p, state in zip(chosen, states, strict=True)
         ]
 
+    def _probe(self, printer: NamedPrinter) -> PrinterInfo | Exception:
+        """What the printer answered (or the error), remembered a few
+        seconds and asked for once at a time per printer: a list asked for
+        often must not keep every printer busy. Kept raw, so each answer is
+        in the language of its request."""
+        with self._found_lock:
+            asking = self._asking.setdefault(printer.name, threading.Lock())
+        with asking:
+            with self._found_lock:
+                cached = self._states.get(printer.name)
+            if cached and time.monotonic() - cached[0] < STATUS_SECONDS:
+                return cached[1]
+            try:
+                outcome: PrinterInfo | Exception = get_backend(printer.backend).query(printer.host)
+            except Exception as e:  # noqa: BLE001 - the backend's errors, like in the window
+                _detach(e)
+                outcome = e
+            with self._found_lock:
+                self._states[printer.name] = (time.monotonic(), outcome)
+            return outcome
+
+    def _named_state(self, printer: NamedPrinter) -> dict:
+        """The state of a printer of printers.toml; ApiError if it fails."""
+        settings = self._named_settings(printer)
+        outcome = self._probe(printer)
+        if isinstance(outcome, Exception):
+            raise _printer_failed(outcome, settings)
+        return self._info(get_backend(printer.backend), printer.host, outcome, settings)
+
     def _state(self, printer: NamedPrinter) -> dict:
-        """A printer's state for the list, remembered a few seconds (a list
-        asked for often must not keep every printer busy); a problem is part
-        of the state."""
-        with self._found_lock:
-            cached = self._states.get(printer.name)
-        if cached and time.monotonic() - cached[0] < STATUS_SECONDS:
-            return cached[1]
+        """A printer's state for the list; a problem is part of the state."""
         try:
-            state = self._query(
-                get_backend(printer.backend), printer.host, self._named_settings(printer)
-            )
+            return self._named_state(printer)
         except ApiError as e:
-            state = {"state": "UNREACHABLE", "error": e.to_dict()}
-        with self._found_lock:
-            self._states[printer.name] = (time.monotonic(), state)
-        return state
+            return {"state": "UNREACHABLE", "error": e.to_dict()}
 
     def _named_settings(self, printer: NamedPrinter) -> Settings:
         """The app's settings, with this printer's own for its model."""
@@ -427,8 +467,7 @@ class Service:
             if host is not None:
                 raise _host_given()
             named = self._named(printer, caller)
-            data = self._query(get_backend(named.backend), named.host, self._named_settings(named))
-            return dict(data, name=named.name)
+            return dict(self._named_state(named), name=named.name)
         if host is not None and not caller.may("print"):
             # a preview token must not make the server contact any address
             raise ApiError(403, "forbidden", _("This access token may not do this"))
@@ -440,9 +479,7 @@ class Service:
         try:
             info = backend.query(host)
         except Exception as e:  # noqa: BLE001 - the backend's errors, like in the window
-            unit = unit_for(settings.units)
-            code = e.code if isinstance(e, PrinterError) else "generic"
-            raise ApiError(502, "printer_" + code, printer_error_text(e, unit)) from None
+            raise _printer_failed(e, settings) from None
         return self._info(backend, host, info, settings)
 
     def _info(self, backend: Backend, host: str, info: PrinterInfo, settings: Settings) -> dict:
@@ -485,11 +522,14 @@ class Service:
         name = host_name(host)
         if name is None:
             raise invalid_field("host")
-        if self.allowed_hosts and not host_allowed(name, self.allowed_hosts):
+        if not self.allowed_hosts:
+            return host
+        checked = host_allowed(name, self.allowed_hosts)
+        if checked is None:
             raise ApiError(
                 403, "host_not_allowed", _("This printer address is not allowed: %s") % host
             )
-        return host
+        return host if checked == name else with_address(host, checked)
 
     def _print_host(self, request: PrintRequest, prepared: Prepared) -> str:
         """The address asked for, the one set in the app, or the only
@@ -710,11 +750,15 @@ class Service:
     def _rendering(self, prepared: Prepared) -> Iterator[None]:
         """Render for a request: two at a time, within the limits."""
         caps = prepared.backend.capabilities
-        with self._renders, limited(MAX_PIXELS, caps.max_length_mm):
-            try:
+        if not self._renders.acquire(timeout=RENDER_WAIT):  # both busy with large labels
+            raise ApiError(503, "busy", _("The server is busy – try again later"))
+        try:
+            with limited(MAX_PIXELS, caps.max_length_mm):
                 yield
-            except RenderTooLarge:
-                raise _too_large() from None
+        except RenderTooLarge:
+            raise _too_large() from None
+        finally:
+            self._renders.release()
 
     @staticmethod
     def _printer_image(job: Job, label: Label):
@@ -752,6 +796,7 @@ class Service:
 
         job = PrintJob(prepared.backend.id, host, name, total, run, warnings=warnings)
         job.owner = caller.name
+        job.limited = caller.named
         job.printer_name = prepared.named.name if prepared.named else ""
         job.key = queue_key(host)
         job.cost = _cost(prepared)
@@ -977,6 +1022,11 @@ def _detach(error: BaseException | None) -> None:
         error.__traceback__ = None
         error.__context__ = error.__cause__ = None
         error = inner if isinstance(inner, BaseException) else None
+
+
+def _printer_failed(error: Exception, settings: Settings) -> ApiError:
+    code = error.code if isinstance(error, PrinterError) else "generic"
+    return ApiError(502, "printer_" + code, printer_error_text(error, unit_for(settings.units)))
 
 
 def _too_large() -> ApiError:

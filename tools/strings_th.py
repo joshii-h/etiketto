@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "ผู้ใช้ทุกคนของคอมพิวเตอร์เครื่องนี้แก้ไข %s ได้: ใช้ chmod 600 กับไฟล์นี้",
     "%s is in use by another program – try again later": "%s กำลังถูกใช้งานโดยโปรแกรมอื่น – โปรดลองอีกครั้งในภายหลัง",
     "At most %d labels in one print job": "ไม่เกิน %d ฉลากในงานพิมพ์หนึ่งงาน",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "องค์ประกอบ %(n)d: Code 128 มีได้ไม่เกิน %(max)d อักขระ",
+    "expected 12 hexadecimal digits (written by token new)": "ต้องเป็นเลขฐานสิบหก 12 หลัก (เขียนโดย token new)",
+    "The server is busy – try again later": "เซิร์ฟเวอร์ไม่ว่าง – โปรดลองอีกครั้งในภายหลัง",
+    "The request has more than one Content-Length": "คำขอมี Content-Length มากกว่าหนึ่งรายการ",
+    "The request body is incomplete": "เนื้อหาคำขอไม่ครบถ้วน",
+    "The token %(name)s was added to %(file)s.": "เพิ่มโทเค็น %(name)s ลงใน %(file)s แล้ว",
+    "Access token: ": "โทเค็นการเข้าถึง: ",
+    "This token is in the file already, as %s": "โทเค็นนี้มีอยู่ในไฟล์แล้วในชื่อ %s",
 }

@@ -167,7 +167,7 @@ def test_tokens_file(tmp_path, printers_file):
         % (cfg.hash_token("a"), cfg.hash_token("b", "scrypt"))
     )
     entries = {e.caller.name: e for e in load_tokens(write(tmp_path / "t.toml", text), printers)}
-    assert entries["terminal"].caller == Caller("terminal", "print", frozenset({"lager"}))
+    assert entries["terminal"].caller == Caller("terminal", "print", frozenset({"lager"}), True)
     assert entries["until"].caller.role == "print"
     assert entries["until"].expires.date() == dt.date(2030, 1, 3)  # through the whole day
     assert entries["moment"].expires.tzinfo is not None

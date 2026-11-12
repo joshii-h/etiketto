@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "%s bu bilgisayarın her kullanıcısı tarafından değiştirilebilir: ona chmod 600 uygulayın",
     "%s is in use by another program – try again later": "%s başka bir program tarafından kullanılıyor – daha sonra yeniden deneyin",
     "At most %d labels in one print job": "Bir yazdırma işinde en fazla %d etiket",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "Öge %(n)d: Code 128 en fazla %(max)d karakter alabilir",
+    "expected 12 hexadecimal digits (written by token new)": "12 onaltılık basamak bekleniyordu (token new tarafından yazılır)",
+    "The server is busy – try again later": "Sunucu meşgul – daha sonra yeniden deneyin",
+    "The request has more than one Content-Length": "İstekte birden fazla Content-Length var",
+    "The request body is incomplete": "İstek gövdesi eksik",
+    "The token %(name)s was added to %(file)s.": "%(name)s belirteci %(file)s dosyasına eklendi.",
+    "Access token: ": "Erişim belirteci: ",
+    "This token is in the file already, as %s": "Bu belirteç dosyada zaten %s adıyla var",
 }

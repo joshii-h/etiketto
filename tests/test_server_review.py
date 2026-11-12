@@ -232,28 +232,35 @@ def test_large_bodies_are_parsed_a_few_at_a_time(make_server, monkeypatch):
     real = server.parses
 
     class Counting:
-        def acquire(self):
+        def __enter__(self):
             acquired.append(1)
-            return real.acquire()
+            return real.__enter__()
 
-        def release(self):
-            real.release()
+        def __exit__(self, *args):
+            return real.__exit__(*args)
 
     server.parses = Counting()
     assert call(base, "POST", "/api/v1/preview", body={"label": "box"})[0] == 200
     assert acquired == [1]
 
 
-def test_pending_jobs_per_owner_and_by_size(api, server_env, monkeypatch):
+def test_pending_jobs_per_owner_and_by_size(make_server, secured, server_env, monkeypatch):
     printer = server_env.printer
     printer.gate = threading.Event()
     monkeypatch.setattr(jobs_module, "MAX_PER_OWNER", 1)
-    call(api.base, "POST", "/api/v1/print", body={"label": "box", "no_save_counter": True})
-    status, _r, body = call(api.base, "POST", "/api/v1/print", body={"label": "box"})
-    assert status == 429 and body["error"]["code"] == "queue_full"
-    monkeypatch.setattr(jobs_module, "MAX_PER_OWNER", 10)
+    body = {"label": "box", "printer": "office", "no_save_counter": True}
+    other = token("other")
+    call(secured.base, "POST", "/api/v1/print", body=body, token=other)
+    status, _r, answer = call(secured.base, "POST", "/api/v1/print", body=body, token=other)
+    assert status == 429 and answer["error"]["code"] == "queue_full"
+    # a server without named tokens: everyone is one caller, only the overall limit
+    _server, plain = make_server()
+    for _n in range(2):
+        assert call(
+            plain, "POST", "/api/v1/print", body={"label": "box", "no_save_counter": True}
+        )[0] in (200, 202)
     monkeypatch.setattr(jobs_module, "MAX_PENDING_BYTES", 100)
-    status, _r, body = call(api.base, "POST", "/api/v1/print", body={"label": "box"})
+    status, _r, _b = call(plain, "POST", "/api/v1/print", body={"label": "box"})
     assert status == 429
     printer.gate.set()
 
@@ -623,13 +630,22 @@ def test_default_printer_among_the_tokens_own(make_server, server_env, tmp_path)
 
 def test_sessions_per_owner(monkeypatch, server_env):
     monkeypatch.setattr(mcp_module, "MAX_SESSIONS_PER_OWNER", 2)
+    monkeypatch.setattr(mcp_module, "MAX_SESSIONS", 4)
     transport = mcp_module.HttpTransport(mcp_module.Mcp(Service(server_env.labels)))
     init = json.dumps(request("initialize", {})).encode()
-    other = transport.post({}, init, Caller("b")).headers["Mcp-Session-Id"]
-    mine = [transport.post({}, init, Caller("a")).headers["Mcp-Session-Id"] for _n in range(3)]
-    assert transport._session(mine[0], Caller("a")) is None  # its own oldest went
-    assert transport._session(mine[2], Caller("a")) is not None
-    assert transport._session(other, Caller("b")) is not None  # the other token's stays
+    a, b, c = (Caller(name, named=True) for name in "abc")
+    other = transport.post({}, init, b).headers["Mcp-Session-Id"]
+    mine = [transport.post({}, init, a).headers["Mcp-Session-Id"] for _n in range(3)]
+    assert transport._session(mine[0], a) is None  # its own oldest went
+    assert transport._session(mine[2], a) is not None
+    assert transport._session(other, b) is not None  # the other token's stays
+    transport.post({}, init, b)
+    reply = transport.post({}, init, c)  # full of others' sessions: refused
+    assert reply.status == 503 and transport._session(other, b) is not None
+    # one shared token (not named): only the overall limit, its own oldest goes
+    shared = Caller("token")
+    first = transport.post({}, init, shared)
+    assert first.status == 503  # the table is full of a's and b's
 
 
 def test_cancelled_with_an_odd_id_is_ignored(server_env):

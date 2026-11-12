@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 11:40+0100\n"
+"PO-Revision-Date: 2026-11-12 13:09+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: vi\n"
 "Language: vi\n"
@@ -254,18 +254,18 @@ msgid ""
 msgstr "lấy mã truy cập do bạn tự chọn từ đầu vào chuẩn (lưu bằng scrypt) thay vì tạo mã mới"
 
 #: etiketto/cli.py:417 etiketto/server/config.py:216
-#: etiketto/server/service.py:419
+#: etiketto/server/service.py:458
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Kiểu máy in không xác định: %s"
 
-#: etiketto/cli.py:424 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:567
+#: etiketto/cli.py:424 etiketto/ui/files.py:66 etiketto/ui/texts.py:238
+#: etiketto/server/service.py:606
 #, python-format
 msgid "Cannot open %s"
 msgstr "Không thể mở %s"
 
-#: etiketto/cli.py:446 etiketto/server/main.py:203
+#: etiketto/cli.py:446 etiketto/server/main.py:218
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s không phải ngày, cần ví dụ 2026-12-31 hoặc 2026-12-31T08:30"
@@ -281,7 +281,7 @@ msgid "The label has no element or variable named %s"
 msgstr "Nhãn không có phần tử hoặc biến nào tên %s"
 
 #: etiketto/cli.py:505 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:787
+#: etiketto/server/service.py:831
 msgid "The label is empty"
 msgstr "Nhãn đang trống"
 
@@ -295,8 +295,8 @@ msgstr "--output ghi ảnh PNG: hãy đặt tên kết thúc bằng .png"
 
 #: etiketto/cli.py:605 etiketto/cli.py:639 etiketto/cli.py:758
 #: etiketto/cli.py:786 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:728 etiketto/server/service.py:933
-#: etiketto/server/service.py:1049
+#: etiketto/server/service.py:771 etiketto/server/service.py:977
+#: etiketto/server/service.py:1106
 msgid "The label cannot be prepared for printing."
 msgstr "Không thể chuẩn bị nhãn để in."
 
@@ -309,16 +309,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Tìm thấy nhiều máy in – hãy chọn một máy bằng --host (etiketto list-printers)"
 
-#: etiketto/cli.py:679 etiketto/ui/texts.py:271 etiketto/server/service.py:1039
+#: etiketto/cli.py:679 etiketto/ui/texts.py:272 etiketto/server/service.py:1096
 #, python-format
 msgid "Cannot save %s"
 msgstr "Không thể lưu %s"
 
-#: etiketto/cli.py:681 etiketto/server/service.py:1042
+#: etiketto/cli.py:681 etiketto/server/service.py:1099
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "các nhãn đã được in, nhưng giá trị bộ đếm tiếp theo chưa được lưu"
 
-#: etiketto/cli.py:696 etiketto/server/service.py:811
+#: etiketto/cli.py:696 etiketto/server/service.py:855
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "không có gì được in: giá trị bộ đếm tiếp theo sẽ không lưu được"
 
@@ -335,11 +335,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet và --rows cần một tệp dữ liệu (--data)"
 
 #: etiketto/cli.py:880 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:654
+#: etiketto/server/service.py:693
 msgid "No rows to print"
 msgstr "Không có hàng nào để in"
 
-#: etiketto/cli.py:889 etiketto/ui/window.py:389 etiketto/server/service.py:707
+#: etiketto/cli.py:889 etiketto/ui/window.py:389 etiketto/server/service.py:746
 #, python-format
 msgid "No such column: %s"
 msgstr "Không có cột này: %s"
@@ -361,7 +361,7 @@ msgstr "Hàng: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "Đang chờ một lần in khác của %s hoàn tất…"
 
-#: etiketto/cli.py:914 etiketto/server/service.py:927
+#: etiketto/cli.py:914 etiketto/server/service.py:971
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s vẫn đang bị khóa bởi một lần in khác – hãy thử lại sau"
@@ -1231,281 +1231,286 @@ msgstr "Phần tử %(n)d: EAN-13 cần đúng 12 chữ số"
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Phần tử %(n)d: số kiểm tra EAN-13 không đúng"
 
-#: etiketto/ui/texts.py:91
+#: etiketto/ui/texts.py:90
+#, python-format
+msgid "Element %(n)d: Code 128 holds at most %(max)d characters"
+msgstr "Phần tử %(n)d: Code 128 chứa tối đa %(max)d ký tự"
+
+#: etiketto/ui/texts.py:92
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Phần tử %(n)d: Code 128 chỉ chấp nhận chữ cái Latinh, chữ số và dấu câu"
 
-#: etiketto/ui/texts.py:93
+#: etiketto/ui/texts.py:94
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Phần tử %(n)d: không đọc được ảnh"
 
-#: etiketto/ui/texts.py:94
+#: etiketto/ui/texts.py:95
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Không vẽ được phần tử %(n)d"
 
-#: etiketto/ui/texts.py:95
+#: etiketto/ui/texts.py:96
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "Lề an toàn, viền và khoảng cách mép không còn chỗ trống – hãy giảm bớt"
 
-#: etiketto/ui/texts.py:96
+#: etiketto/ui/texts.py:97
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Chiều dài cố định ngắn hơn khoảng cách – hãy tăng chiều dài"
 
-#: etiketto/ui/texts.py:97
+#: etiketto/ui/texts.py:98
 msgid "The background image cannot be read"
 msgstr "Không đọc được ảnh nền"
 
-#: etiketto/ui/texts.py:98
+#: etiketto/ui/texts.py:99
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "Phần tử %(n)d: %(name)s không phải biến đã biết"
 
-#: etiketto/ui/texts.py:100
+#: etiketto/ui/texts.py:101
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "Phần tử %(n)d: ngày của %(name)s trước năm 1 hoặc sau năm 9999"
 
-#: etiketto/ui/texts.py:103
+#: etiketto/ui/texts.py:104
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "Phần tử %(n)d: biến %(name)s… chưa được đóng – hãy kết thúc bằng }"
 
-#: etiketto/ui/texts.py:116
+#: etiketto/ui/texts.py:117
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Số nhãn đã in: %(n)d trên %(total)d."
 
-#: etiketto/ui/texts.py:121
+#: etiketto/ui/texts.py:122
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Các nhãn còn chờ trong hàng đợi đã bị hủy."
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:131
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Không tìm thấy máy in. Hãy kiểm tra máy in đã bật và ở cùng mạng, hoặc nhập địa chỉ IP của máy in."
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:134
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Máy in không phản hồi. Hãy kiểm tra máy in đã bật và không ở chế độ ngủ."
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:136
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Máy in từ chối kết nối. Hãy tắt rồi bật lại máy in. Nếu giao diện web của máy in có tùy chọn “Port 9100”, hãy bật tùy chọn đó."
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:139
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Chưa lắp hộp băng. Hãy lắp hộp băng rồi thử lại."
 
-#: etiketto/ui/texts.py:139
+#: etiketto/ui/texts.py:140
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Nắp máy in đang mở. Hãy đóng nắp rồi thử lại."
 
-#: etiketto/ui/texts.py:140
+#: etiketto/ui/texts.py:141
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Nhãn bị kẹt. Hãy mở nắp, lấy nhãn ra rồi thử lại."
 
-#: etiketto/ui/texts.py:141
+#: etiketto/ui/texts.py:142
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Không nhận ra hộp băng. Hãy lắp lại hoặc thử hộp băng khác."
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:143
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Máy in đang bận. Hãy chờ một chút rồi thử lại."
 
-#: etiketto/ui/texts.py:143
+#: etiketto/ui/texts.py:144
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Nhãn quá dài cho máy in này: tối đa %(max)s."
 
-#: etiketto/ui/texts.py:144
+#: etiketto/ui/texts.py:145
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Nhãn quá rộng cho máy in này: tối đa %(max)s."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:146
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Máy in đã hết nhãn. Hãy lắp cuộn mới và thử lại."
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:147
 msgid "The print head is open. Close it and try again."
 msgstr "Đầu in đang mở. Hãy đóng lại và thử lại."
 
-#: etiketto/ui/texts.py:148
+#: etiketto/ui/texts.py:149
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Máy in không tìm thấy nhãn tiếp theo. Hãy kiểm tra nhãn đã được lắp đúng chưa và có đi qua cảm biến nhãn không."
 
-#: etiketto/ui/texts.py:152
+#: etiketto/ui/texts.py:153
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Ruy băng có vấn đề. Hãy kiểm tra ruy băng đã được lắp đúng chưa và có khớp với phương thức in đã đặt trên máy in không."
 
-#: etiketto/ui/texts.py:155
+#: etiketto/ui/texts.py:156
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Máy in đang tạm dừng. Hãy tiếp tục trên màn hình của máy rồi thử lại."
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:157
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Máy in đã hết giấy. Hãy nạp giấy rồi thử lại."
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:159
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Giấy bị kẹt. Hãy lấy giấy ra theo hướng dẫn trên màn hình của máy in rồi thử lại."
 
-#: etiketto/ui/texts.py:160
+#: etiketto/ui/texts.py:161
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Máy in đã hết mực hoặc toner. Hãy thay rồi thử lại."
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:162
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Máy in không thể in cỡ này. Hãy chọn cỡ giấy mà máy in hỗ trợ."
 
-#: etiketto/ui/texts.py:163
+#: etiketto/ui/texts.py:164
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Máy in không nhận định dạng nào mà Etiketto có thể gửi (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:167
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: etiketto/ui/texts.py:170
+#: etiketto/ui/texts.py:171
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: etiketto/ui/texts.py:174
+#: etiketto/ui/texts.py:175
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Lệnh in đã bị hủy trên máy in hoặc trong hàng đợi."
 
-#: etiketto/ui/texts.py:176
+#: etiketto/ui/texts.py:177
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Máy in báo có sự cố. Hãy tắt rồi bật lại máy in, sau đó thử lại lần nữa."
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:188
 msgid "Printed"
 msgstr "Đã in"
 
-#: etiketto/ui/texts.py:193
+#: etiketto/ui/texts.py:194
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Đã gửi đến máy in – sẽ được in khi đến lượt"
 
-#: etiketto/ui/texts.py:197
+#: etiketto/ui/texts.py:198
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Chế độ màu “%(wanted)s” không có trên máy in này, đã in bằng “%(used)s”"
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:208
 msgid "Warming up…"
 msgstr "Đang làm nóng…"
 
-#: etiketto/ui/texts.py:208
+#: etiketto/ui/texts.py:209
 msgid "Cooling down…"
 msgstr "Đang làm nguội…"
 
-#: etiketto/ui/texts.py:209
+#: etiketto/ui/texts.py:210
 msgid "Cleaning…"
 msgstr "Đang làm sạch…"
 
-#: etiketto/ui/texts.py:210
+#: etiketto/ui/texts.py:211
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Vuốt trên bảng điều khiển của máy in để cắt nhãn"
 
-#: etiketto/ui/texts.py:212
+#: etiketto/ui/texts.py:213
 msgid "Out of paper – load paper to continue"
 msgstr "Hết giấy – hãy nạp giấy để tiếp tục"
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:214
 msgid "Cover open – close it to continue"
 msgstr "Nắp đang mở – hãy đóng nắp để tiếp tục"
 
-#: etiketto/ui/texts.py:214
+#: etiketto/ui/texts.py:215
 msgid "Paper jammed – remove it to continue"
 msgstr "Kẹt giấy – hãy lấy giấy ra để tiếp tục"
 
-#: etiketto/ui/texts.py:225
+#: etiketto/ui/texts.py:226
 msgid "This label needs a newer version of Etiketto"
 msgstr "Nhãn này cần phiên bản Etiketto mới hơn"
 
-#: etiketto/ui/texts.py:227
+#: etiketto/ui/texts.py:228
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s không phải là nhãn Etiketto"
 
-#: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:578
+#: etiketto/ui/texts.py:229 etiketto/ui/texts.py:249
+#: etiketto/server/service.py:617
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tệp bị hỏng: %s"
 
-#: etiketto/ui/texts.py:235
+#: etiketto/ui/texts.py:236
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Tệp dữ liệu %s không còn nữa. Hãy chọn lại hoặc gỡ bỏ."
 
-#: etiketto/ui/texts.py:239
+#: etiketto/ui/texts.py:240
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s không có trang tính nào tên %(sheet)s"
 
-#: etiketto/ui/texts.py:241
+#: etiketto/ui/texts.py:242
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s không phải là bảng. Hãy dùng tệp CSV, ODS hoặc XLSX."
 
-#: etiketto/ui/texts.py:243
+#: etiketto/ui/texts.py:244
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s quá lớn cho nhãn hàng loạt. Hãy chia thành các tệp nhỏ hơn hoặc xóa các hàng và cột không cần thiết."
 
-#: etiketto/ui/texts.py:246
+#: etiketto/ui/texts.py:247
 #, python-format
 msgid "%s contains no data."
 msgstr "%s không có dữ liệu."
 
-#: etiketto/ui/texts.py:254
+#: etiketto/ui/texts.py:255
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Việc in đã dừng ở hàng %(row)d. Để tiếp tục, hãy in lại từ hàng %(row)d."
 
-#: etiketto/ui/texts.py:258
+#: etiketto/ui/texts.py:259
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Số bản của hàng %(row)d đã in: %(copies)d."
 
-#: etiketto/ui/texts.py:268
+#: etiketto/ui/texts.py:269
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Không thể lưu %s: không có quyền ghi vào đó"
 
-#: etiketto/ui/texts.py:270
+#: etiketto/ui/texts.py:271
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Không thể lưu %s: đĩa đã đầy"
 
-#: etiketto/ui/texts.py:280
+#: etiketto/ui/texts.py:281
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
@@ -1660,7 +1665,7 @@ msgid "%(file)s: %(key)s: %(problem)s"
 msgstr "%(file)s: %(key)s: %(problem)s"
 
 #: etiketto/server/config.py:85 etiketto/server/config.py:89
-#: etiketto/server/config.py:95 etiketto/server/main.py:273
+#: etiketto/server/config.py:95 etiketto/server/main.py:296
 #, python-format
 msgid "Cannot read %(file)s: %(reason)s"
 msgstr "Không thể đọc %(file)s: %(reason)s"
@@ -1669,11 +1674,11 @@ msgstr "Không thể đọc %(file)s: %(reason)s"
 msgid "expected a table"
 msgstr "cần một bảng"
 
-#: etiketto/server/config.py:115 etiketto/server/config.py:403
+#: etiketto/server/config.py:115 etiketto/server/config.py:409
 msgid "missing"
 msgstr "bị thiếu"
 
-#: etiketto/server/config.py:118 etiketto/server/config.py:406
+#: etiketto/server/config.py:118
 msgid "expected text"
 msgstr "cần văn bản"
 
@@ -1723,32 +1728,36 @@ msgstr "kiểu máy in này không cắt"
 msgid "this printer model has no colour settings"
 msgstr "kiểu máy in này không có thiết lập màu"
 
-#: etiketto/server/config.py:364
+#: etiketto/server/config.py:370
 msgid "expected a date such as 2027-12-31"
 msgstr "cần một ngày như 2027-12-31"
 
-#: etiketto/server/config.py:377
+#: etiketto/server/config.py:383
 msgid "the same token twice"
 msgstr "cùng một mã truy cập hai lần"
 
-#: etiketto/server/config.py:390
+#: etiketto/server/config.py:396
 #, python-format
 msgid "%s can be changed by every user of this computer: chmod 600 it"
 msgstr "mọi người dùng của máy tính này đều có thể thay đổi %s: hãy chạy chmod 600 cho nó"
 
-#: etiketto/server/config.py:400
+#: etiketto/server/config.py:406
 msgid "not a token hash: expected sha256:… or scrypt:…"
 msgstr "không phải giá trị băm của mã: cần sha256:… hoặc scrypt:…"
 
-#: etiketto/server/config.py:419
+#: etiketto/server/config.py:412
+msgid "expected 12 hexadecimal digits (written by token new)"
+msgstr "cần 12 chữ số thập lục phân (do token new ghi)"
+
+#: etiketto/server/config.py:425
 msgid "expected a list of printer names"
 msgstr "cần một danh sách tên máy in"
 
-#: etiketto/server/config.py:421
+#: etiketto/server/config.py:427
 msgid "printers can only be limited with --printers"
 msgstr "chỉ có thể giới hạn máy in khi dùng --printers"
 
-#: etiketto/server/config.py:423 etiketto/server/service.py:357
+#: etiketto/server/config.py:429 etiketto/server/service.py:397
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Máy in không xác định: %s"
@@ -1758,55 +1767,67 @@ msgstr "Máy in không xác định: %s"
 msgid "Invalid value for %s"
 msgstr "Giá trị không hợp lệ cho %s"
 
-#: etiketto/server/http.py:377 etiketto/server/http.py:391
+#: etiketto/server/http.py:438 etiketto/server/http.py:481
 msgid "The request took too long"
 msgstr "Yêu cầu mất quá nhiều thời gian"
 
-#: etiketto/server/http.py:394
+#: etiketto/server/http.py:447 etiketto/server/service.py:754
+msgid "The server is busy – try again later"
+msgstr "Máy chủ đang bận – hãy thử lại sau"
+
+#: etiketto/server/http.py:484
 msgid "Internal error"
 msgstr "Lỗi nội bộ"
 
-#: etiketto/server/http.py:399
+#: etiketto/server/http.py:489
 msgid "This server only answers on its local address"
 msgstr "Máy chủ này chỉ trả lời trên địa chỉ cục bộ của nó"
 
-#: etiketto/server/http.py:403
+#: etiketto/server/http.py:493
 msgid "Requests from this web page are not allowed"
 msgstr "Không cho phép yêu cầu từ trang web này"
 
-#: etiketto/server/http.py:421
+#: etiketto/server/http.py:511
 msgid "Too many requests – try again later"
 msgstr "Quá nhiều yêu cầu – hãy thử lại sau"
 
-#: etiketto/server/http.py:423
+#: etiketto/server/http.py:513
 msgid "Access token missing or wrong"
 msgstr "Thiếu mã truy cập hoặc mã truy cập sai"
 
-#: etiketto/server/http.py:464 etiketto/server/http.py:467
+#: etiketto/server/http.py:554 etiketto/server/http.py:559
 msgid "The request needs a Content-Length"
 msgstr "Yêu cầu cần có Content-Length"
 
-#: etiketto/server/http.py:470
+#: etiketto/server/http.py:556
+msgid "The request has more than one Content-Length"
+msgstr "Yêu cầu có nhiều hơn một Content-Length"
+
+#: etiketto/server/http.py:562
 msgid "The request is too large"
 msgstr "Yêu cầu quá lớn"
 
-#: etiketto/server/http.py:480
+#: etiketto/server/http.py:567
+msgid "The request body is incomplete"
+msgstr "Nội dung yêu cầu không đầy đủ"
+
+#: etiketto/server/http.py:574
 msgid "Send the request as application/json"
 msgstr "Hãy gửi yêu cầu dưới dạng application/json"
 
-#: etiketto/server/http.py:491
+#: etiketto/server/http.py:583
 msgid "The request is not valid JSON"
 msgstr "Yêu cầu không phải JSON hợp lệ"
 
-#: etiketto/server/http.py:504 etiketto/server/http.py:514
+#: etiketto/server/http.py:602 etiketto/server/http.py:612
 msgid "Not found"
 msgstr "Không tìm thấy"
 
-#: etiketto/server/http.py:513
+#: etiketto/server/http.py:611
 msgid "Method not allowed"
 msgstr "Phương thức không được phép"
 
-#: etiketto/server/http.py:530
+#: etiketto/server/http.py:628
 #, python-format
 msgid "Send the header %s with this request"
 msgstr "Hãy gửi tiêu đề %s cùng yêu cầu này"
@@ -1821,12 +1842,12 @@ msgstr "Thư mục nhãn %s không tồn tại"
 msgid "Cannot read the token file %s"
 msgstr "Không thể đọc tệp mã truy cập %s"
 
-#: etiketto/server/main.py:54 etiketto/server/main.py:248
+#: etiketto/server/main.py:54 etiketto/server/main.py:271
 msgid ""
 "The access token may only contain printable ASCII characters without spaces"
 msgstr "Mã truy cập chỉ được chứa các ký tự ASCII in được, không có khoảng trắng"
 
-#: etiketto/server/main.py:59 etiketto/server/main.py:253
+#: etiketto/server/main.py:59 etiketto/server/main.py:276
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "Mã truy cập phải dài ít nhất %d ký tự"
@@ -1839,36 +1860,50 @@ msgstr "Hãy dùng --printers hoặc --allow-printer, không dùng cả hai"
 msgid "Use either --tokens or --token-file"
 msgstr "Hãy dùng --tokens hoặc --token-file, không dùng cả hai"
 
-#: etiketto/server/main.py:115
+#: etiketto/server/main.py:109
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "Từ chối lắng nghe trên %s khi không có mã truy cập: hãy đặt ETIKETTO_TOKEN hoặc dùng --token-file"
 
-#: etiketto/server/main.py:137
+#: etiketto/server/main.py:133
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "Không thể lắng nghe trên %(address)s: %(reason)s"
 
-#: etiketto/server/main.py:215
+#: etiketto/server/main.py:230
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Tên không hợp lệ: chữ cái, chữ số, . _ - (tối đa 64)"
 
-#: etiketto/server/main.py:226
+#: etiketto/server/main.py:241
 #, python-format
 msgid "%s is in use by another program – try again later"
 msgstr "%s đang được một chương trình khác sử dụng – hãy thử lại sau"
 
-#: etiketto/server/main.py:237
+#: etiketto/server/main.py:248
+#, python-format
+msgid "The token %(name)s was added to %(file)s."
+msgstr "Đã thêm mã truy cập %(name)s vào %(file)s."
+
+#: etiketto/server/main.py:255
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "Mã chỉ hiển thị một lần này; %s chỉ lưu giá trị băm của mã."
 
-#: etiketto/server/main.py:296
+#: etiketto/server/main.py:266
+msgid "Access token: "
+msgstr "Mã truy cập: "
+
+#: etiketto/server/main.py:321
 #, python-format
 msgid "A token named %s exists already"
 msgstr "Đã có mã tên %s"
+
+#: etiketto/server/main.py:348
+#, python-format
+msgid "This token is in the file already, as %s"
+msgstr "Mã truy cập này đã có trong tệp, với tên %s"
 
 #: etiketto/server/paths.py:39
 #, python-format
@@ -1912,66 +1947,66 @@ msgstr "Quá nhiều cột: tối đa %d"
 msgid "Too many cells: at most %d"
 msgstr "Quá nhiều ô: tối đa %d"
 
-#: etiketto/server/service.py:370
+#: etiketto/server/service.py:409
 msgid "Choose a printer by its name"
 msgstr "Hãy chọn máy in theo tên"
 
-#: etiketto/server/service.py:435 etiketto/server/service.py:968
+#: etiketto/server/service.py:473 etiketto/server/service.py:1012
 msgid "This access token may not do this"
 msgstr "Mã truy cập này không được phép làm việc này"
 
-#: etiketto/server/service.py:485
+#: etiketto/server/service.py:521
 msgid "No printer address: give it as host"
 msgstr "Không có địa chỉ máy in: hãy cung cấp dưới dạng host"
 
-#: etiketto/server/service.py:491
+#: etiketto/server/service.py:530
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Địa chỉ máy in này không được phép: %s"
 
-#: etiketto/server/service.py:662
+#: etiketto/server/service.py:701
 msgid "A sheet needs a data file"
 msgstr "Trang tính cần có tệp dữ liệu"
 
-#: etiketto/server/service.py:668
+#: etiketto/server/service.py:707
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "Nhãn dùng một tệp dữ liệu nằm ngoài thư mục nhãn: hãy gửi kèm các hàng của tệp đó"
 
-#: etiketto/server/service.py:743
+#: etiketto/server/service.py:786
 #, python-format
 msgid "At most %d labels in one print job"
 msgstr "Tối đa %d nhãn trong một lệnh in"
 
-#: etiketto/server/service.py:763
+#: etiketto/server/service.py:807
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Quá nhiều lệnh in đang chờ – hãy thử lại sau"
 
-#: etiketto/server/service.py:949
+#: etiketto/server/service.py:993
 #, python-format
 msgid "No such print job: %s"
 msgstr "Không có lệnh in này: %s"
 
-#: etiketto/server/service.py:961
+#: etiketto/server/service.py:1005
 msgid "The print job has already finished"
 msgstr "Lệnh in đã hoàn tất"
 
-#: etiketto/server/service.py:984
+#: etiketto/server/service.py:1033
 msgid "The label is too large to render"
 msgstr "Nhãn quá lớn để kết xuất"
 
-#: etiketto/server/service.py:1010
+#: etiketto/server/service.py:1059
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "Nhãn quá lớn: tối đa %(elements)d phần tử và %(chars)d ký tự trong một văn bản"
 
-#: etiketto/server/service.py:1020
+#: etiketto/server/service.py:1077
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Tối đa %d bản trên máy in này"
 
-#: etiketto/server/service.py:1025
+#: etiketto/server/service.py:1082
 msgid "Printers are chosen by name: leave out host"
 msgstr "Máy in được chọn theo tên: hãy bỏ host"

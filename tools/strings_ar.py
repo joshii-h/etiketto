@@ -445,4 +445,12 @@ TRANSLATIONS = {
     "%s can be changed by every user of this computer: chmod 600 it": "يمكن لكل مستخدمي هذا الحاسوب تغيير %s: نفّذ عليه chmod 600",
     "%s is in use by another program – try again later": "%s قيد الاستخدام من برنامج آخر – حاول مجددًا لاحقًا",
     "At most %d labels in one print job": "%d ملصق كحد أقصى في مهمة طباعة واحدة",
+    "Element %(n)d: Code 128 holds at most %(max)d characters": "العنصر %(n)d: يتسع Code 128 لـ %(max)d حرفًا كحد أقصى",
+    "expected 12 hexadecimal digits (written by token new)": "المتوقع 12 رقمًا ست عشريًا (يكتبها token new)",
+    "The server is busy – try again later": "الخادم مشغول – حاول مجددًا لاحقًا",
+    "The request has more than one Content-Length": "يحتوي الطلب على أكثر من Content-Length واحد",
+    "The request body is incomplete": "نص الطلب غير مكتمل",
+    "The token %(name)s was added to %(file)s.": "أُضيف الرمز %(name)s إلى %(file)s.",
+    "Access token: ": "رمز الوصول: ",
+    "This token is in the file already, as %s": "هذا الرمز موجود في الملف بالفعل باسم %s",
 }

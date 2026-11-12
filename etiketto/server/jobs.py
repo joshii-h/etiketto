@@ -30,7 +30,7 @@ MAX_PENDING = 100  # jobs waiting or printing, on all printers together
 MAX_PER_OWNER = 20  # of them for one token
 # what waiting jobs may hold in memory (labels, images, data rows), about
 MAX_PENDING_BYTES = 256 * 1024 * 1024
-MAX_QUEUES = 64  # printers with a worker at once
+MAX_QUEUES = 16  # printers with a worker at once (each a thread)
 IDLE_SECONDS = 60.0  # a worker without jobs ends after this long
 MAX_KEPT = 1000  # finished jobs kept to be asked for
 KEEP_SECONDS = 24 * 3600
@@ -66,6 +66,9 @@ class PrintJob:
     remark: Callable[[], str | None] | None = None
     warnings: list = field(default_factory=list)  # the check's warnings (RenderWarning)
     owner: str = ""  # the name of the token that asked for it
+    # a named token of tokens.toml: held to MAX_PER_OWNER (one shared token,
+    # or none, is everyone: only the overall limit applies)
+    limited: bool = False
     cost: int = 0  # bytes the request holds while the job waits, about
     key: str = ""  # the printer's address, normalised: one queue per printer
     printer_name: str = ""  # its name in printers.toml, if any
@@ -148,11 +151,11 @@ class JobQueue:
 
     def _admit(self, job: PrintJob) -> None:
         pending = [j for j in self._jobs.values() if j.state not in FINISHED]
-        own = sum(1 for j in pending if j.owner == job.owner)
-        cost = sum(j.cost for j in pending) + job.cost
-        if self._closed or len(pending) >= MAX_PENDING or own >= MAX_PER_OWNER:
+        if self._closed or len(pending) >= MAX_PENDING:
             raise QueueFull
-        if cost > MAX_PENDING_BYTES:
+        if job.limited and sum(j.owner == job.owner for j in pending) >= MAX_PER_OWNER:
+            raise QueueFull
+        if sum(j.cost for j in pending) + job.cost > MAX_PENDING_BYTES:
             raise QueueFull
 
     def _start(self, key: tuple[str, str]) -> None:

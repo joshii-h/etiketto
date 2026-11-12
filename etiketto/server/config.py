@@ -269,6 +269,7 @@ class Caller:
     name: str
     role: str = "admin"
     printers: frozenset[str] | None = None
+    named: bool = False  # a token of tokens.toml (not the one token, not none)
 
     def may(self, role: str) -> bool:
         return ROLES.index(self.role) >= ROLES.index(role)
@@ -408,12 +409,12 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
         raise table.fail("role", _("missing"))
     ident = table.text("id")
     if ident and not re.fullmatch(r"[0-9a-f]{12}", ident):
-        raise table.fail("id", _("expected text"))
+        raise table.fail("id", _("expected 12 hexadecimal digits (written by token new)"))
     chosen = _token_printers(table, printers)
     expires = _expiry(table)
     table.text("description")
     table.done()
-    return TokenEntry(Caller(name, role, chosen), stored, expires, ident)
+    return TokenEntry(Caller(name, role, chosen, named=True), stored, expires, ident)
 
 
 def _token_printers(table: _Table, printers) -> frozenset[str] | None:
@@ -484,8 +485,11 @@ class TokenStore:
         with self._lock:
             entries = [e for e in self._entries if e.valid(now)]
             known = self._known.get(key)
-        if known is not None:
-            return known.caller if known in entries else None
+        if known is not None and known in entries:
+            return known.caller
+        if known is not None:  # its entry changed or expired: forget, look again
+            with self._lock:
+                self._known.pop(key, None)
         entry = self._match(token, entries, cheap_only)
         if entry is not None:
             with self._lock:
@@ -495,15 +499,30 @@ class TokenStore:
 
     @staticmethod
     def _match(token: str, entries: list[TokenEntry], cheap_only: bool) -> TokenEntry | None:
-        """The entry of a token: by the id in it, else SHA-256 entries (fast),
-        else scrypt entries one after the other."""
-        ident = TOKEN_ID.match(token)
-        if ident:
-            entries = [e for e in entries if e.id == ident.group(1)] or entries
-        order = sorted(entries, key=lambda e: not e.hash.startswith("sha256:"))
-        if cheap_only:
-            order = [e for e in order if e.hash.startswith("sha256:")]
+        """The entry of a token: an entry with an id only for a token that
+        carries it (so a token cannot make the server try them all), others
+        among the entries without an id: SHA-256 first (fast), then scrypt
+        one after the other."""
+        candidates = _candidates(token, entries)
+        order = [e for e in candidates if _fast(e)]
+        if not cheap_only:
+            order += [e for e in candidates if not _fast(e)]
         return next((e for e in order if token_matches(token, e.hash)), None)
+
+
+def _candidates(token: str, entries: list[TokenEntry]) -> list[TokenEntry]:
+    """The entry with the token's id; without one (or an id no entry has),
+    the entries without an id."""
+    ident = TOKEN_ID.match(token)
+    if ident:
+        mine = [e for e in entries if e.id == ident.group(1)]
+        if mine:
+            return mine
+    return [e for e in entries if not e.id]
+
+
+def _fast(entry: TokenEntry) -> bool:
+    return entry.hash.startswith("sha256:")
 
 
 def new_token() -> tuple[str, str]:
