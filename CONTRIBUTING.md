@@ -250,24 +250,27 @@ adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 Format version 2: a file lists the `"features"` it needs, a reader refuses
 features it does not know ("needs a newer version") instead of printing the
 label wrongly; version 1 readers refuse every version 2 file as "newer". A
-label without features stays version 1 and opens everywhere. A new feature
-adds a name to `model.FEATURES` and a line to `Label.features()`, not a
-version. The features (`model.FEATURES`):
+label without features stays version 1 and opens everywhere.
+
+The rule: everything added after version 1 that an older Etiketto would
+print wrongly, drop when it saves, call damaged or refuse with an unclear
+message is a feature, new element kinds included. A new one adds a name to
+`model.FEATURES` and a line to `Label.features()`, never a version. The
+features (`model.FEATURES`):
 
 - `"barcodes"`: a code of a type added after the first versions
   (`model.BARCODES`: Data Matrix, PDF417, Aztec, Code 39, Code 93, EAN-8,
   UPC-A, UPC-E, ITF-14, GS1-128, GS1 DataMatrix); codes store their type in
-  `symbology` (`model.SYMBOLOGIES`). Version 1 readers would call the file
-  damaged.
+  `symbology` (`model.SYMBOLOGIES`).
 - `"symbols"`: a symbol element (see Symbols below).
+- `"pages"`: a page element, an area of a PDF or image (shipping labels).
+- `"sheets"`: printed on a label sheet (`sheet`); older versions would print
+  one label of the sheet's size on a page of its own.
 - `"serial"`: a linked data file (`data_file`); older versions would print
   `{Name}` as it is.
 - `"variables"`: variables (`{=date}`, `{=counter}` …) in texts or codes, or
   a counter other than the default; older versions would print `{=date}` as
   it is and drop the counter when they save.
-
-Shipping labels (element kind `page`) need no feature: versions before them
-refuse the unknown element kind as "newer" already.
 
 ## Codes
 

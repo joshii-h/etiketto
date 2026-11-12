@@ -20,18 +20,25 @@ from typing import Literal
 # Version 1: every label. Version 2: the file lists "features" it needs; an
 # Etiketto that does not know one of them refuses the file ("newer") instead
 # of printing it wrongly. A file is written with version 2 only if it uses a
-# feature, so labels without one still open in every version. New features
-# add a name to FEATURES, not a version.
+# feature, so labels without one still open in every version.
+# The rule: everything added after version 1 that an older Etiketto would
+# print wrongly, drop when it saves, call damaged or refuse with an unclear
+# message is a feature: new element kinds too (older readers would refuse
+# them as an unknown kind, the feature names what is missing). New ones add
+# a name to FEATURES and a line to Label.features(), never a version.
 FORMAT_VERSION = 2
-# "barcodes": a code of a symbology added after version 1 (BARCODES); version
-# 1 readers would call the file damaged; "symbols": a symbol element
-# (SymbolElement; earlier readers also refuse the unknown element kind)
+# "barcodes": a code of a symbology added after version 1 (BARCODES)
+# "symbols": a symbol element (SymbolElement)
+# "pages": a page element, an area of a PDF or image (PageElement, shipping
+# labels)
+# "sheets": printed on a label sheet (Label.sheet); older versions would print
+# one label of the sheet's size on its own page
 # "variables": {=date}, {=counter} … in texts and codes, and the counter
 # fields; older versions would print "{=date}" as it is and drop the counter
 # when they save
 # "serial": a linked data file whose rows fill {Column} placeholders; older
 # versions would print "{Name}" as it is
-FEATURES = frozenset({"barcodes", "symbols", "serial", "variables"})
+FEATURES = frozenset({"barcodes", "symbols", "pages", "sheets", "serial", "variables"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -358,6 +365,10 @@ class Label:
             found.append("barcodes")
         if any(isinstance(e, SymbolElement) for e in self.elements):
             found.append("symbols")
+        if any(isinstance(e, PageElement) for e in self.elements):
+            found.append("pages")
+        if self.sheet is not None:
+            found.append("sheets")
         if self.data_file:
             found.append("serial")
         if self._uses_variables():

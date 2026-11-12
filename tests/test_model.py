@@ -589,7 +589,7 @@ def test_a_label_with_both_features(tmp_path):
     Label.store_counter(path, 9)  # the command line keeps what it does not change
     stored = json.loads(path.read_text(encoding="utf-8"))
     assert stored["features"] == ["serial", "variables"] and stored["counter_next"] == 9
-    assert {"barcodes", "symbols", "serial", "variables"} == model.FEATURES
+    assert {"barcodes", "symbols", "pages", "sheets", "serial", "variables"} == model.FEATURES
 
 
 def test_every_feature_at_once(tmp_path):
@@ -608,3 +608,20 @@ def test_every_feature_at_once(tmp_path):
     data = label.to_dict()
     assert data["version"] == 2
     assert data["features"] == ["barcodes", "symbols", "serial", "variables"]
+
+
+def test_shipping_labels_and_label_sheets_are_features_too(tmp_path):
+    """The one rule: what an older version would print wrongly or refuse
+    unclearly is a feature, new element kinds included."""
+    from etiketto.model import PageElement
+
+    page = Label(tape_mm=25, elements=[PageElement(data="eA==", name="label.pdf")])
+    assert page.to_dict()["features"] == ["pages"]
+    sheet = Label(printer="system", orientation="across", elements=[TextElement(text="A")])
+    sheet.sheet = SheetChoice("Avery L7160", [0])
+    data = sheet.to_dict()
+    assert data["version"] == 2 and data["features"] == ["sheets"]
+    assert Label.from_dict(data).sheet == sheet.sheet  # this version reads it
+    with pytest.raises(LabelError) as info:  # one that does not know it refuses
+        Label.from_dict({**data, "features": ["sheets", "holograms"]})
+    assert info.value.code == "newer"
