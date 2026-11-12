@@ -19,14 +19,16 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Printer | Labels | What Etiketto does with it | Protocol |
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
+| Brother P-touch (PT-P700, PT-P750W, PT-E550W, PT-P710BT, PT-P900 series, PT-D series, older PT models), untested on hardware | Black on TZe tape 3.5 to 36 mm wide and HSe heat-shrink tube, any length | Detects the tape, its type and printable width; full, half or no cut, chain printing, high resolution, tape feed; explains Editor Lite mode | Brother's raster commands on USB or TCP port 9100 ([docs/ptouch.md](docs/ptouch.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
-Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
-kernel's printer driver: cab printers and the VC-500W are found on USB by
-themselves, and the system printer reaches every printer CUPS has, USB
-included. On USB, the VC-500W and cab printers have not been tried on a
-printer yet. Your user needs to be in the group `lp`
+Connections: network (LAN or Wi-Fi) for all of them (P-touch: the models
+with network); USB too, through the kernel's printer driver: cab printers,
+P-touch printers and the VC-500W are found on USB by themselves, and the
+system printer reaches every printer CUPS has, USB included. On USB, the
+VC-500W and cab printers have not been tried on a printer yet; P-touch
+printers have not been tried at all. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.
 
@@ -162,6 +164,15 @@ The VC-500W on USB follows the observations of
 [barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
 MPL-2.0), written anew; no barnguard code is included.
 
+Printing on Brother P-touch printers follows Brother's Raster Command
+References (PT-E550W/P750W/P710BT, PT-P900 series) with the model list,
+USB IDs and quirks documented by
+[ptouch-print](https://git.familie-radermacher.ch/linux/ptouch-print.git)
+(Dominic Radermacher, GPL-3.0-only) and the command sequence and print
+area tables of [ptouch](https://github.com/nbuchwitz/ptouch) (Nicolai
+Buchwitz, LGPL-2.1-or-later); written anew from these facts, no code of
+either is included.
+
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
@@ -170,5 +181,5 @@ reverse engineering and no cab code are involved.
 
 AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
 Brother Industries or cab Produkttechnik GmbH & Co. KG; "Brother",
-"ColAura", "VC-500W", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
+"ColAura", "VC-500W", "P-touch", "TZe", "HSe", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
 owners.

@@ -163,6 +163,12 @@ extension of the interface first; please open an issue before you start.
      `display_name(info)` if the printer reports its exact model.
    - `modes(info)` returns the modes the connected printer reports
      (`PrinterInfo.modes`), falling back to `capabilities.modes`.
+   - `cut_modes(info)` and `extras(info)` narrow `capabilities.cut_modes`
+     and `capabilities.extras` to what the connected model can do. Extras
+     are settings the print dialog offers on top (`"chain"`, `"high_res"`,
+     `"feed"` with `capabilities.feed_mm`); they arrive in
+     `PrintOptions.chain`, `high_res` and `feed_mm`. See the P-touch
+     backend.
    - Override `preview(image, mode)` if a mode changes the result (the
      VC-500W shows black and white as grey).
 

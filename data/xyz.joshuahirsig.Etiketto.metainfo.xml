@@ -56,12 +56,13 @@
     <p>Supported printers:</p>
     <ul>
       <li>Brother VC-500W (also sold as ColAura): colour labels on ZINK tape, with cassette detection, vivid colours and cut modes</li>
+      <li>Brother P-touch tape printers (PT-P700, PT-P750W, PT-P900 series and others): black on TZe tape and heat-shrink tube, with tape detection, cut and chain printing</li>
       <li>cab EOS2, EOS5, SQUIX 4 and MACH 4S: die-cut labels in black, with a check of the loaded roll</li>
       <li>Any printer the system knows through CUPS or IPP, such as office printers: one label per page at its exact size</li>
     </ul>
     <p>
       Etiketto is not affiliated with Brother Industries or cab Produkttechnik.
-      Brother, ColAura, VC-500W, cab, EOS, SQUIX and MACH are trademarks of their
+      Brother, ColAura, VC-500W, P-touch, TZe, cab, EOS, SQUIX and MACH are trademarks of their
       owners; ZINK is a trademark of ZINK Holdings LLC.
     </p>
   </description>

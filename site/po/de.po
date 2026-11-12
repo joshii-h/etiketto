@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 22:47+0100\n"
+"POT-Creation-Date: 2026-11-12 02:58+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -753,6 +753,180 @@ msgstr "Angehalten: Drucker am Display fortsetzen."
 msgid ""
 "Print too pale or too dark: change the heat level in the printer's setup."
 msgstr "Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "Brother P-touch { #ptouch }"
+msgstr "Brother P-touch { #ptouch }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto prints on Brother P-touch tape printers with TZe tape and HSe heat-"
+"shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900 series, "
+"the PT-D series and older models such as the PT-2430PC. Not tried on a "
+"printer yet."
+msgstr ""
+"Etiketto druckt auf Brother-P-touch-Banddruckern mit TZe-Band und HSe-"
+"Schrumpfschlauch: PT-P700, PT-P750W, PT-E550W, PT-P710BT, die Serie PT-P900, "
+"die Serie PT-D und ältere Modelle wie der PT-2430PC. Noch nicht an einem "
+"Drucker ausprobiert."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the "
+"printer, or enter its address. Etiketto uses port 9100."
+msgstr ""
+"Netzwerk (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): Die Suche findet den "
+"Drucker, oder seine Adresse eingeben. Etiketto verwendet Port 9100."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Bluetooth is not supported; models with Bluetooth print over USB."
+msgstr ""
+"Bluetooth wird nicht unterstützt; Modelle mit Bluetooth drucken über USB."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Editor Lite: with the Editor Lite lamp on, the printer is a USB drive and "
+"cannot print. Switch Editor Lite off, then search again."
+msgstr ""
+"Editor Lite: Leuchtet die Lampe von Editor Lite, ist der Drucker ein USB-"
+"Laufwerk und kann nicht drucken. Editor Lite ausschalten, dann erneut suchen."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Tape { #ptouch-tape }"
+msgstr "Band { #ptouch-tape }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Etiketto shows the inserted tape, its type (laminated, heat-shrink "
+"tube, ...) and the printable width under [[ui:Printer details]]."
+msgstr ""
+"Etiketto zeigt unter [[ui:Printer details]] das eingelegte Band, seinen Typ "
+"(laminiert, Schrumpfschlauch, ...) und die druckbare Breite."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The label fills the printable part of the tape. The edges of the tape stay "
+"blank: on 12 mm tape about 9.9 mm are printed."
+msgstr ""
+"Das Etikett füllt den bedruckbaren Teil des Bandes. Die Ränder des Bandes "
+"bleiben leer: Auf 12-mm-Band werden etwa 9,9 mm bedruckt."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Heat-shrink tube: choose the nearest [[ui:Tape width]] (12 mm for an 11.2 mm "
+"tube)."
+msgstr ""
+"Schrumpfschlauch: die nächstliegende [[ui:Tape width]] wählen (12 mm für "
+"einen Schlauch mit 11,2 mm)."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Print in black: on coloured tape the tape's ink colour prints. Images are "
+"printed in black and white without dithering."
+msgstr ""
+"Schwarz gestalten: Auf farbigem Band druckt die Farbe des Bandes. Bilder "
+"werden schwarzweiss ohne Rasterung gedruckt."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Print options { #ptouch-print }"
+msgstr "Druckoptionen { #ptouch-print }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Cut]]: [[ui:Full cut]] cuts each label off. [[ui:Half cut]] cuts "
+"through the label, the backing holds the labels together. [[ui:No cut]] "
+"prints the labels as one strip. The strip is cut after the last label.  "
+"Models with a cutter lever have no cut setting."
+msgstr ""
+"[[ui:Cut]]: [[ui:Full cut]] schneidet jedes Etikett ab. [[ui:Half cut]] "
+"schneidet durch das Etikett, das Trägerpapier hält die Etiketten zusammen. "
+"[[ui:No cut]] druckt die Etiketten als einen Streifen. Der Streifen wird "
+"nach dem letzten Etikett abgeschnitten. Modelle mit Schneidhebel haben keine "
+"Einstellung zum Schneiden."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Chain printing]]: the last label stays in the printer and comes out "
+"with the next print. Saves about 25 mm of tape per print."
+msgstr ""
+"[[ui:Chain printing]]: Das letzte Etikett bleibt im Drucker und kommt mit "
+"dem nächsten Druck heraus. Spart etwa 25 mm Band pro Druck."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "[[ui:High resolution]]: finer print along the tape, slower."
+msgstr "[[ui:High resolution]]: feinerer Druck entlang des Bandes, langsamer."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm."
+msgstr ""
+"[[ui:Tape feed]]: leeres Band vor und nach jedem Etikett, mindestens 2 mm."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The first label after switching on starts with a blank piece: the cutter "
+"sits behind the print head."
+msgstr ""
+"Das erste Etikett nach dem Einschalten beginnt mit einem leeren Stück: Das "
+"Schneidwerk sitzt hinter dem Druckkopf."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #ptouch-problems }"
+msgstr "Probleme { #ptouch-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Wrong cassette]]: another tape width is inserted. The label is scaled "
+"to the tape."
+msgstr ""
+"[[ui:Wrong cassette]]: Ein Band anderer Breite ist eingelegt. Das Etikett "
+"wird auf das Band skaliert."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Cover open, no tape, tape not recognised: close the cover, insert the tape "
+"until it clicks."
+msgstr ""
+"Deckel offen, kein Band, Band nicht erkannt: Deckel schliessen, Band "
+"einlegen, bis es einrastet."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Batteries low: connect the power adapter."
+msgstr "Batterien schwach: Netzteil anschliessen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Print head too hot: wait a few minutes."
+msgstr "Druckkopf zu heiss: einige Minuten warten."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "Model not supported: Etiketto knows the models listed above."
+msgstr "Modell nicht unterstützt: Etiketto kennt die oben genannten Modelle."
 
 #. type: Title ##
 #: docs/printer.md
