@@ -9,7 +9,8 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   # GPU, and printers on USB (/dev/usb/lp*, the kernel's printer class
-  # driver; --device=usb only covers raw libusb access)
+  # driver; --device=usb only covers raw libusb access), also those on a
+  # USB serial port (/dev/ttyACM*, NIIMBOT; serial ports have no portal)
   - --device=all
   # printers on the network: TCP 9100, IPP to the printer or to CUPS on
   # localhost:631

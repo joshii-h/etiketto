@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 22:47+0100\n"
+"POT-Creation-Date: 2026-11-12 02:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,7 +235,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "No permission for the USB port: your user needs to be in the group `lp`.  Run `sudo usermod -aG lp $USER`, then log out and in again."
+msgid "No permission for the USB port: your user needs to be in the group `lp`.  Run `sudo usermod -aG lp $USER`, then log out and in again. NIIMBOT printers use another group, see [NIIMBOT](#niimbot)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -543,6 +543,90 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Print too pale or too dark: change the heat level in the printer's setup."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "NIIMBOT { #niimbot }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11, D110, D101 and related models. It has not been tried on a printer yet; please report how it works."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in and switch it on; [[ui:Search for printers]] finds it. Otherwise enter its port, for example `/dev/ttyACM0`, under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The port belongs to the group `dialout` (Fedora, Debian, Ubuntu) or `uucp` (Arch Linux), not `lp`. Run `sudo usermod -aG dialout $USER` (on Arch Linux: `uucp`), then log out and in again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Bluetooth is not supported yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Label size]]: the labels on the roll, the width across the printer.  On the D11, D110 and D101 the roll is narrow (12 mm on a D11): choose [[ui:Along the roll]] under [[ui:Content direction]] for text along the label."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "A label a little wider than the print head is cut to the middle: a B1 prints 48 mm of a 50 mm label. Keep 1 mm or more as [[ui:Safety margin]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "In the print dialog: [[ui:Print density]] (higher prints darker) and [[ui:Label type]] (labels with gaps, black marks, a continuous roll or transparent labels, as loaded). Etiketto offers what the connected model takes and remembers the choice."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #niimbot-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No permission for the serial port: add your user to the group, see above."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer not reachable]] right after plugging in: some systems probe new serial ports for a modem first. Wait a few seconds, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open, out of labels or a low battery: close the cover, load a roll or charge the printer, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Printing fails after some copies: the message says how many labels were already printed. The job is canceled, nothing prints later on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The printer is found, but printing reports an unknown model: Etiketto does not know its model number yet. Please [[ui:Report a problem…]], the report contains the number."
 msgstr ""
 
 #. type: Title ##

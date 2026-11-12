@@ -20,15 +20,19 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
+| NIIMBOT B1, B21, B3S, B4, D11, D110, D101 (untested on hardware) | Black on die-cut labels, continuous rolls or labels with black marks, 203 or 300 dpi, up to 104 mm wide depending on the model | Reads the model and offers its print density and label types; reports each label and how many came out before a problem | NIIMBOT's packet protocol on USB serial ([docs/niimbot.md](docs/niimbot.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
-Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
+Connections: network (LAN or Wi-Fi) for all but NIIMBOT; USB too, through the
 kernel's printer driver: cab printers and the VC-500W are found on USB by
 themselves, and the system printer reaches every printer CUPS has, USB
 included. On USB, the VC-500W and cab printers have not been tried on a
 printer yet. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.
+NIIMBOT printers are a serial port on USB (`/dev/ttyACM*`), found by
+themselves too; they need the group `dialout` (Fedora, Debian, Ubuntu) or
+`uucp` (Arch Linux) instead of `lp`. Bluetooth is not supported yet.
 
 Each printer family is a backend; adding one does not touch the rest of
 the app, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
@@ -166,9 +170,15 @@ Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
 
+The NIIMBOT protocol is written anew from the protocol knowledge in
+[niimbluelib](https://github.com/MultiMote/niimbluelib) (MultiMote, MIT)
+and [Thermalith](https://github.com/EvilGeniusLabs-ca/Thermalith) /
+Niimbot.Net (EvilGeniusLabs, GPL-3.0-or-later); no code of either is
+included.
+
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
-Brother Industries or cab Produkttechnik GmbH & Co. KG; "Brother",
-"ColAura", "VC-500W", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
-owners.
+Brother Industries, cab Produkttechnik GmbH & Co. KG or NIIMBOT; "Brother",
+"ColAura", "VC-500W", "cab", "EOS", "SQUIX", "MACH" and "NIIMBOT" are
+trademarks of their owners.

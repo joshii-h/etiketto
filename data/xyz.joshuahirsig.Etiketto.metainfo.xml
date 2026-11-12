@@ -57,12 +57,13 @@
     <ul>
       <li>Brother VC-500W (also sold as ColAura): colour labels on ZINK tape, with cassette detection, vivid colours and cut modes</li>
       <li>cab EOS2, EOS5, SQUIX 4 and MACH 4S: die-cut labels in black, with a check of the loaded roll</li>
+      <li>NIIMBOT B1, B21, B3S, B4, D11, D110, D101 and related models on USB (not yet tried on a printer): labels in black, with print density and label type</li>
       <li>Any printer the system knows through CUPS or IPP, such as office printers: one label per page at its exact size</li>
     </ul>
     <p>
-      Etiketto is not affiliated with Brother Industries or cab Produkttechnik.
-      Brother, ColAura, VC-500W, cab, EOS, SQUIX and MACH are trademarks of their
-      owners; ZINK is a trademark of ZINK Holdings LLC.
+      Etiketto is not affiliated with Brother Industries, cab Produkttechnik or
+      NIIMBOT. Brother, ColAura, VC-500W, cab, EOS, SQUIX, MACH and NIIMBOT are
+      trademarks of their owners; ZINK is a trademark of ZINK Holdings LLC.
     </p>
   </description>
 
@@ -123,6 +124,7 @@
     <keyword>cab</keyword>
     <keyword>EOS2</keyword>
     <keyword>SQUIX</keyword>
+    <keyword>NIIMBOT</keyword>
   </keywords>
 
   <branding>

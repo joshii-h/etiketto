@@ -174,6 +174,14 @@ extension of the interface first; please open an issue before you start.
      the printer language works on USB too, open `usb://` addresses with
      `usb.connect()` (a socket-like object on `/dev/usb/lpN`) and list
      `usb.printers()` of your maker in `discover`; see the cab backend.
+   - Printers that are a serial port on USB (CDC ACM, `/dev/ttyACM*`) use
+     `serialport.Port` and list `serialport.devices()`; see the NIIMBOT
+     backend. Tests talk to a fake printer on a pseudo terminal; conftest
+     refuses to open real serial ports.
+   - Settings per job: `Capabilities.density` (a `Density` range) and
+     `Capabilities.media_types` (see `base.MEDIA_TYPES`) add "Print
+     density" and "Label type" to the print dialog; override
+     `density(info)` and `media_types(info)` if they depend on the model.
 
 3. Tests: add `tests/test_<name>.py` with a fake of the printer's protocol
    (never the real device) and a subclass of

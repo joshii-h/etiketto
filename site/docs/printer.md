@@ -13,7 +13,8 @@ section below.
   IP. Switch the printer off and on again. On USB: check the cable and
   search again.
 - No permission for the USB port: your user needs to be in the group `lp`.
-  Run `sudo usermod -aG lp $USER`, then log out and in again.
+  Run `sudo usermod -aG lp $USER`, then log out and in again. NIIMBOT
+  printers use another group, see [NIIMBOT](#niimbot).
 - USB printer not found: check the cable, switch the printer on and wake it
   up (a sleeping printer can drop off USB), then search again.
 - "The printer is busy" on USB: only one program can use a USB printer at a
@@ -132,6 +133,45 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
   direct mode.
 - Paused: resume the printer on its display.
 - Print too pale or too dark: change the heat level in the printer's setup.
+
+## NIIMBOT { #niimbot }
+
+Etiketto prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11,
+D110, D101 and related models. It has not been tried on a printer yet;
+please report how it works.
+
+- USB: plug the printer in and switch it on; [[ui:Search for printers]]
+  finds it. Otherwise enter its port, for example `/dev/ttyACM0`, under
+  [[ui:Host name or IP address]].
+- The port belongs to the group `dialout` (Fedora, Debian, Ubuntu) or
+  `uucp` (Arch Linux), not `lp`. Run `sudo usermod -aG dialout $USER`
+  (on Arch Linux: `uucp`), then log out and in again.
+- Bluetooth is not supported yet.
+- [[ui:Label size]]: the labels on the roll, the width across the printer.
+  On the D11, D110 and D101 the roll is narrow (12 mm on a D11): choose
+  [[ui:Along the roll]] under [[ui:Content direction]] for text along the
+  label.
+- A label a little wider than the print head is cut to the middle: a B1
+  prints 48 mm of a 50 mm label. Keep 1 mm or more as
+  [[ui:Safety margin]].
+- In the print dialog: [[ui:Print density]] (higher prints darker) and
+  [[ui:Label type]] (labels with gaps, black marks, a continuous roll or
+  transparent labels, as loaded). Etiketto offers what the connected model
+  takes and remembers the choice.
+
+### Problems { #niimbot-problems }
+
+- No permission for the serial port: add your user to the group, see above.
+- [[ui:Printer not reachable]] right after plugging in: some systems probe
+  new serial ports for a modem first. Wait a few seconds, then
+  [[ui:Refresh]].
+- Cover open, out of labels or a low battery: close the cover, load a roll
+  or charge the printer, then [[ui:Refresh]].
+- Printing fails after some copies: the message says how many labels were
+  already printed. The job is canceled, nothing prints later on its own.
+- The printer is found, but printing reports an unknown model: Etiketto
+  does not know its model number yet. Please
+  [[ui:Report a problem…]], the report contains the number.
 
 ## System printer (CUPS, IPP) { #system }
 
