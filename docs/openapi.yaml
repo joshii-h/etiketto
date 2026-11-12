@@ -128,6 +128,9 @@ x-tavletta-error-codes:
   code: label_unprintable
   meaning: 'It would print wrongly: a missing column, a bad code, …'
 - status: 422
+  code: pages_not_allowed
+  meaning: Document pages in label_content need the server switch --allow-pdf-pages.
+- status: 422
   code: data_outside
   meaning: The label's data file lies outside the labels folder.
 - status: 422

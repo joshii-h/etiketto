@@ -93,6 +93,7 @@ Every error is JSON with a stable code and a message for people:
 | 422 | `label_newer` | The label needs a newer Tavletta: update the server. |
 | 422 | `label_damaged` | The label file is damaged. |
 | 422 | `label_unprintable` | It would print wrongly: a missing column, a bad code, … |
+| 422 | `pages_not_allowed` | Document pages in label_content need the server switch `--allow-pdf-pages`. |
 | 422 | `data_outside` | The label's data file lies outside the labels folder. |
 | 422 | `data_problem` | The data file cannot be read, or has no such sheet. |
 | 422 | `prepare_failed` | The label cannot be prepared for the printer. |
