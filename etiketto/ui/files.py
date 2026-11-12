@@ -253,8 +253,11 @@ class Files:
 
     def write(self, path: Path) -> None:
         window = self.window
+        if window.path and _same_file(window.path, str(path)):
+            window.sync_counter()  # the command line may have printed meanwhile
         if self._save_label(path):
             window.path = path
+            window.remember_saved()
             window.dirty = False
             window.update_title()
 

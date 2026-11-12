@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+from datetime import datetime
 from pathlib import Path
 
 import gi
@@ -16,7 +18,14 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend, margins_for  # noqa: E402
-from etiketto.model import CodeElement, Label, SheetChoice, SymbolElement, TextElement  # noqa: E402
+from etiketto.model import (  # noqa: E402
+    MAX_COUNTER,
+    CodeElement,
+    Label,
+    SheetChoice,
+    SymbolElement,
+    TextElement,
+)
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
@@ -32,7 +41,9 @@ from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
 from etiketto.ui.sheets import PositionsDialog, SheetChooser, margins_note  # noqa: E402
 from etiketto.ui.symbols import SymbolChooser  # noqa: E402
 from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
+from etiketto.ui.variables import CounterGroup  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
+from etiketto.variables import Values, expand_label  # noqa: E402
 
 PREVIEW_MAX_DPI = 600.0  # the preview at most this fine (see Window.print_dpi)
 
@@ -55,6 +66,16 @@ class Window(Adw.ApplicationWindow):
         self._render_source = 0
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
+        # random variables ({=uuid}, {=id}) keep their preview value while editing
+        self._preview_random = os.urandom(64)
+        # {=copies} in the preview: the number in the print dialog while it is open
+        self.planned_copies = 1
+        # counter_next as saved in self.path when it was opened or saved, and
+        # the file's stat() then: a different value there means the command
+        # line printed meanwhile (see sync_counter)
+        self.saved_counter: int | None = None
+        self._saved_stamp: tuple | None = None
+        self.counter_edited = False  # the user changed the next number since
 
         # the controllers come first: the layout and the sidebar use them
         self.printer = Printer(self)
@@ -152,7 +173,13 @@ class Window(Adw.ApplicationWindow):
             self.sidebar.remove(group)
         self.label_group = LabelGroup(self)
         self.elements_group = ElementsGroup(self)
-        self._groups = [self.printer.group(), self.label_group, self.elements_group]
+        self.counter_group = CounterGroup(self.label, self.mark_changed, self._counter_edited)
+        self._groups = [
+            self.printer.group(),
+            self.label_group,
+            self.elements_group,
+            self.counter_group,
+        ]
         for group in self._groups:
             self.sidebar.add(group)
 
@@ -206,7 +233,43 @@ class Window(Adw.ApplicationWindow):
     def mark_changed(self) -> None:
         self.dirty = True
         self.update_title()
+        self.counter_group.update()
         self.schedule_render()
+
+    def set_counter_next(self, value: int) -> None:
+        """After printing: the counter of the next label, a change of the document."""
+        self.label.counter_next = min(value, MAX_COUNTER)
+        self.mark_changed()
+
+    def _counter_edited(self) -> None:
+        self.counter_edited = True
+
+    def remember_saved(self) -> None:
+        """The label in self.path is as it is here: opened or just saved."""
+        self.saved_counter = self.label.counter_next if self.path else None
+        self._saved_stamp = _stamp(self.path) if self.path else None
+        self.counter_edited = False
+
+    def sync_counter(self) -> None:
+        """Before printing and saving: if the file changed since it was
+        opened or saved and its counter moved on (`etiketto print` printed
+        from it), go on from there; numbers already printed are not printed
+        again. A next number typed in here since then is kept as it is. The
+        file is only read if its stat() changed: no reading on every print.
+        The window does not lock the file (see cli.py); printing from both
+        at the same moment is not covered."""
+        if self.path is None:
+            return
+        stamp = _stamp(self.path)
+        if stamp is None or stamp == self._saved_stamp:
+            return
+        self._saved_stamp = stamp
+        saved = Label.saved_counter(self.path)
+        if saved is None or saved == self.saved_counter:
+            return
+        self.saved_counter = saved
+        if saved > self.label.counter_next and not self.counter_edited:
+            self.set_counter_next(saved)
 
     def _structure_changed(self) -> None:
         """A change the sidebar has to show with other rows."""
@@ -249,6 +312,7 @@ class Window(Adw.ApplicationWindow):
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
         self.path = path
+        self.remember_saved()
         self.dirty = False
         self._geometries = {}
         self.expand_index = -1
@@ -359,18 +423,29 @@ class Window(Adw.ApplicationWindow):
         at the resolution it is printed at (codes and thin lines differ),
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
+        label, warnings = expand_label(self.label, self.preview_values())
         rendered = render(
-            self.label,
+            label,
             dpi=self.print_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
             mono=backend.capabilities.color_model == "mono",
         )
+        rendered.warnings[:0] = warnings
         image = backend.preview(rendered.image, self.print_flow.mode)
         sheet = self.sheet
         if sheet and self.label.sheet:  # round labels and CDs: their shape
             image = clip_preview(image, sheet, self.label.sheet.rotated)
         return rendered, image
+
+    def preview_values(self) -> Values:
+        """The variables as the next print fills them in: now, the next counter."""
+        return Values.for_label(
+            self.label,
+            datetime.now(),
+            self.planned_copies,
+            random=lambda n: self._preview_random[:n],
+        )
 
     def schedule_render(self) -> None:
         if self._render_source:
@@ -558,3 +633,12 @@ class Window(Adw.ApplicationWindow):
 
         self.files.confirm_discard(close)
         return True
+
+
+def _stamp(path: Path) -> tuple | None:
+    """What changes when the file is written: replaced (inode), size, time."""
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)

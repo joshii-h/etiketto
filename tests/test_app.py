@@ -27,7 +27,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto import app  # noqa: E402
+from etiketto import app, model  # noqa: E402
 from etiketto.backends.base import (  # noqa: E402
     BadCassette,
     CassetteInfo,
@@ -2196,3 +2196,233 @@ def test_a_printer_that_stopped_taking_data_needs_attention():
     assert text.startswith("The printer stopped taking data.")
     assert text != texts.code_text("timeout", MILLIMETRES)  # not "does not answer"
     assert "stalled" not in texts.CONNECTION_ERRORS  # reachable: "Printer needs attention"
+
+
+# --- variables -------------------------------------------------------------------------
+
+
+def variable_popover(row):
+    button = one(row, Gtk.MenuButton, tooltip="Insert variable")
+    return button.get_popover()
+
+
+def choose_variable(popover, title):
+    rows = find(popover.get_child(), Adw.ActionRow)
+    row = next(r for r in rows if r.get_title() == title)
+    row.get_parent().emit("row-activated", row)
+
+
+def test_insert_variable_into_a_text(window, launched):
+    view = one(window.sidebar, Gtk.TextView)
+    buffer = view.get_buffer()
+    buffer.set_text("Packed ")
+    buffer.place_cursor(buffer.get_end_iter())
+    popover = variable_popover(window.elements_group)
+    titles = [r.get_title() for r in find(popover.get_child(), Adw.ActionRow)]
+    assert titles[:3] == ["Date", "Best before (in 30 days)", "Time"] and "UUID" in titles
+    assert find(popover.get_child(), Adw.ActionRow)[0].get_subtitle() == "⁨{=date}⁩"
+    choose_variable(popover, "Date")
+    assert window.label.elements[0].text == "Packed {=date}"
+    help_button = one(popover.get_child(), Gtk.Button, tooltip=None)
+    assert help_button.get_label() == "More about variables"
+    help_button.emit("clicked")
+    assert launched == [i18n.docs_url() + "use/#variables"]
+
+
+def test_insert_variable_into_a_code(window):
+    window.add_element(CodeElement(data="https://x/"))
+    entry = one(window.sidebar, Adw.EntryRow, title="Content (link, text, number)")
+    entry.set_position(len("https://"))
+    expander = find(window.sidebar, Adw.ExpanderRow)[1]
+    choose_variable(variable_popover(expander), "Counter with leading zeros")
+    assert window.label.elements[1].data == "https://{=counter:0001}x/"
+    assert entry.get_position() == len("https://{=counter:0001}")
+
+
+def test_the_preview_shows_the_values_of_the_next_print(window):
+    window.label.elements[0].text = "{=counter:000} {=uuid} {=nope}"
+    window.label.counter_next = 7
+    first, _image = window.render_image()
+    again, _image = window.render_image()
+    assert first.image.tobytes() == again.image.tobytes()  # the UUID stays while editing
+    assert first.warnings == [render_warning("unknown_variable", {"n": 1, "name": "{=nope}"})]
+    assert texts.warning_text(first.warnings[0]) == "Element 1: {=nope} is not a known variable"
+    values = window.preview_values()
+    assert (values.counter, values.copy, values.copies) == (7, 1, 1)
+
+
+def render_warning(key, params):
+    from etiketto.render import RenderWarning
+
+    return RenderWarning(key, params)
+
+
+def test_counter_group_follows_the_label(window):
+    group = window.counter_group
+    assert not group.get_visible()
+    one(window.sidebar, Gtk.TextView).get_buffer().set_text("No. {=counter}")
+    assert group.get_visible()
+    next_row = one(group, Adw.SpinRow, title="Next number")
+    step_row = one(group, Adw.SpinRow, title="Step")
+    window.dirty = False
+    next_row.set_value(41)
+    step_row.set_value(5)
+    assert (window.label.counter_next, window.label.counter_step) == (41, 5)
+    assert window.dirty
+    window.set_counter_next(100)
+    assert next_row.get_value() == 100
+    one(window.sidebar, Gtk.TextView).get_buffer().set_text("plain")
+    assert not group.get_visible()
+
+
+def test_element_names_for_the_command_line(window):
+    window.add_element(CodeElement(data="x"))
+    rows = find(window.sidebar, Adw.EntryRow, title="Name for the command line")
+    assert len(rows) == 2
+    rows[0].set_text(" title ")
+    rows[1].set_text("link")
+    assert [e.name for e in window.label.elements] == ["title", "link"]
+
+
+def test_printing_moves_the_counter_on(ready, gui_env):
+    ready.label.elements[0].text = "No. {=counter} {=copy}/{=copies}"
+    ready.label.counter_next = 5
+    ready.dirty = False
+    ready.print_flow.start(PrintOptions(copies=3))
+    assert pump(lambda: not ready.print_flow.busy)
+    assert len(gui_env.prints) == 3  # a render per label
+    assert [options.copies for _image, _host, options in gui_env.prints] == [1, 1, 1]
+    assert ready.label.counter_next == 8
+    assert ready.dirty  # the document remembers the next number
+    assert one(ready.counter_group, Adw.SpinRow, title="Next number").get_value() == 8
+    assert toast_titles(ready)[-1] == "Printed"
+
+
+def test_a_failed_print_keeps_the_numbers_already_printed(ready, gui_env):
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 1
+    calls = []
+    original = gui_env.backend.print_label
+
+    def second_fails(image, host, options, progress=None):
+        calls.append(1)
+        if len(calls) == 2:
+            raise PaperJam("jam")
+        return original(image, host, options, progress)
+
+    gui_env.backend.print_label = second_fails
+    ready.print_flow.start(PrintOptions(copies=3))
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 2
+    respond(ready.get_visible_dialog(), "close")
+
+
+def test_a_label_opened_while_printing_keeps_its_counter(ready, gui_env):
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 1
+    ready.print_flow.start(PrintOptions(copies=2))
+    other = Label(tape_mm=25, elements=[TextElement(text="{=counter}")], counter_next=50)
+    ready.set_label(other, None)
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 50
+
+
+def test_printing_goes_on_from_a_counter_the_command_line_moved_on(ready, gui_env, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 5
+    ready.files.write(path)
+    Label.store_counter(path, 20)  # `etiketto print` printed 5 to 19 meanwhile
+    ready.print_flow.start(PrintOptions(copies=2))
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 22
+    ready.files.write(path)
+    assert Label.load(path).counter_next == 22
+
+
+def test_a_counter_set_back_on_purpose_stays(ready, gui_env, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 50
+    ready.files.write(path)
+    ready.set_counter_next(1)  # the file did not change: the window's value counts
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 2
+    ready.files.write(path)
+    assert Label.load(path).counter_next == 2
+
+
+def test_saving_keeps_a_counter_the_command_line_moved_on(window, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    window.label.elements[0].text = "{=counter}"
+    window.files.write(path)
+    Label.store_counter(path, 9)
+    window.change(margin_mm=3.0)
+    window.files.write(path)
+    assert Label.load(path).counter_next == 9 and window.label.counter_next == 9
+    other = tmp_path / "copy.etiketto"
+    Label.store_counter(path, 30)
+    window.files.write(other)  # another file: nothing to go on from
+    assert Label.load(other).counter_next == 9
+    window.set_counter_next(10**20)
+    assert window.label.counter_next == model.MAX_COUNTER
+
+
+def test_the_preview_counts_the_copies_of_the_print_dialog(ready):
+    ready.label.elements[0].text = "{=copy}/{=copies}"
+    ready.print_flow.on_print()
+    spin = one(ready.last_dialog, Adw.SpinRow, title="Copies")
+    spin.set_value(4)
+    assert ready.planned_copies == 4 and ready.preview_values().copies == 4
+    respond(ready.last_dialog, "cancel")
+    assert ready.planned_copies == 1
+
+
+def test_a_next_number_typed_in_wins_over_the_file(ready, gui_env, tmp_path, monkeypatch):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 5
+    ready.files.write(path)
+    one(ready.counter_group, Adw.SpinRow, title="Next number").set_value(3)
+    assert ready.counter_edited
+    Label.store_counter(path, 20)  # the command line printed meanwhile
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 4  # printed 3, as typed in
+    ready.files.write(path)
+    assert not ready.counter_edited and Label.load(path).counter_next == 4
+
+
+def test_the_file_is_read_only_when_it_changed(window, tmp_path, monkeypatch):
+    path = tmp_path / "serial.etiketto"
+    window.label.elements[0].text = "{=counter}"
+    window.files.write(path)
+    reads = []
+    real = Label.saved_counter
+    monkeypatch.setattr(Label, "saved_counter", staticmethod(lambda p: reads.append(p) or real(p)))
+    window.sync_counter()
+    assert reads == []  # unchanged: not read
+    Label.store_counter(path, 12)
+    window.sync_counter()
+    window.sync_counter()
+    assert len(reads) == 1 and window.label.counter_next == 12
+    path.unlink()
+    window.sync_counter()  # gone: nothing to go on from
+    assert window.label.counter_next == 12
+
+
+def test_a_read_only_label_is_not_saved_over(window, tmp_path):
+    path = tmp_path / "locked.etiketto"
+    window.files.write(path)
+    path.chmod(0o444)
+    try:
+        window.change(margin_mm=3.0)
+        window.files.write(path)
+        assert window.dirty
+        assert toast_titles(window)[-1].startswith("Cannot save locked.etiketto")
+        assert Label.load(path).margin_mm == 2.0
+        window.files.write(tmp_path / "copy.etiketto")  # Save as: works
+        assert not window.dirty and window.path == tmp_path / "copy.etiketto"
+    finally:
+        path.chmod(0o644)

@@ -1,5 +1,6 @@
 import base64
 import json
+from pathlib import Path
 
 import pytest
 
@@ -44,7 +45,7 @@ def test_roundtrip(tmp_path, png_b64):
     path = tmp_path / "a.etiketto"
     label.save(path)
     assert Label.load(path) == label
-    assert not (tmp_path / "a.etiketto.tmp").exists()
+    assert [p.name for p in tmp_path.iterdir()] == ["a.etiketto"]  # no temporary file left
     data = json.loads(path.read_text(encoding="utf-8"))
     assert data["version"] == 1  # nothing a version 1 reader would miss
     assert "features" not in data
@@ -62,15 +63,16 @@ def test_save_is_atomic(tmp_path, monkeypatch):
     path.write_text("old content")
     written = []
 
-    def broken_replace(self, target):
-        written.append(self.read_text(encoding="utf-8"))
+    def broken_replace(source, target):
+        written.append(Path(source).read_text(encoding="utf-8"))
         raise OSError("disk full")
 
-    monkeypatch.setattr(model.Path, "replace", broken_replace)
+    monkeypatch.setattr(model.os, "replace", broken_replace)
     with pytest.raises(OSError):
         Label(tape_mm=12).save(path)
     assert path.read_text() == "old content"
     assert json.loads(written[0])["tape_mm"] == 12  # went to the temporary file
+    assert [p.name for p in tmp_path.iterdir()] == ["a.etiketto"]  # and that is gone
 
 
 def test_defaults_from_empty_dict():

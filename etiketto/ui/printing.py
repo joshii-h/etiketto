@@ -8,7 +8,6 @@ from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from gi.repository import Adw, GLib, Gtk
-from PIL import Image
 
 from etiketto.backends.base import (
     CodeTooLarge,
@@ -19,14 +18,9 @@ from etiketto.backends.base import (
     PrintResult,
     Progress,
 )
-from etiketto.sheets.layout import (
-    MAX_LABELS,
-    Copies,
-    LabelSource,
-    Pages,
-    SheetJob,
-    first_positions,
-)
+from etiketto.job import Job, PrepareFailed
+from etiketto.model import Label
+from etiketto.sheets.layout import MAX_LABELS, SheetJob, first_positions
 from etiketto.ui.i18n import _, isolate
 from etiketto.ui.sheets import numbers_text
 from etiketto.ui.texts import (
@@ -34,6 +28,7 @@ from etiketto.ui.texts import (
     CUT_MODES,
     MODE_NAMES,
     error_details,
+    printed_text,
     printer_error_text,
     stage_text,
     warning_text,
@@ -47,12 +42,6 @@ if TYPE_CHECKING:
 CODE_WARNINGS = ("code_too_big", "code_quiet", "code_thin")
 
 
-def copies_of(image: Image.Image) -> LabelSource:
-    """The same label at every position of a sheet. (A mail merge gives
-    each position its own label instead: label_at(n) renders row n.)"""
-    return Copies(image)
-
-
 class PrintFlow:
     """From the Print button to the result: checks, dialog, job, progress."""
 
@@ -60,6 +49,7 @@ class PrintFlow:
         self.window = window
         self.busy = False
         self.open_dialog: Adw.AlertDialog | None = None  # the print dialog, while open
+        self._printing: Label | None = None
 
     def _modes(self) -> tuple[PrintMode, ...]:
         return self.window.backend.modes(self.window.printer.info)
@@ -145,6 +135,7 @@ class PrintFlow:
         if sheet and choice:
             choices["copies"] = len(first_positions(sheet, choice.positions))
             choices["outlines"] = bool(self.window.printer_settings.get("outlines", False))
+        self._plan_copies(choices["copies"])
         return choices
 
     def _sheet_rows(self, choices: dict) -> list[Gtk.Widget]:
@@ -163,7 +154,7 @@ class PrintFlow:
         return [labels, outlines]
 
     def _on_labels(self, choices: dict, count: int) -> None:
-        choices.update(copies=count)
+        self._set_copies(choices, count)
         if self.open_dialog:
             self.open_dialog.set_body(self._body(choices))
 
@@ -187,6 +178,17 @@ class PrintFlow:
         sheets = _("Sheets: %d") % len(job.slots())
         return " · ".join((window.size_text(), job.sheet.id, sheets))
 
+    def _plan_copies(self, copies: int) -> None:
+        """{=copies} in the preview: as many as the dialog would print."""
+        changed = self.window.planned_copies != copies
+        self.window.planned_copies = copies
+        if changed:
+            self.window.schedule_render()
+
+    def _set_copies(self, choices: dict, copies: int) -> None:
+        choices.update(copies=copies)
+        self._plan_copies(copies)
+
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported;
@@ -195,7 +197,7 @@ class PrintFlow:
             return self._sheet_rows(choices)
         caps = self.window.backend.capabilities
         rows: list[Gtk.Widget] = [
-            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
+            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: self._set_copies(choices, int(v)))
         ]
         if caps.cut_modes:
             cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
@@ -266,6 +268,7 @@ class PrintFlow:
 
     def _on_response(self, result: str, choices: dict) -> None:
         self.open_dialog = None
+        self._plan_copies(1)  # the preview shows a single label again
         if result != "print":
             return
         window = self.window
@@ -331,14 +334,22 @@ class PrintFlow:
 
     # --- job ----------------------------------------------------------------------
 
-    def start(self, options: PrintOptions, job: SheetJob | None = None) -> None:
+    def start(self, options: PrintOptions, sheet: SheetJob | None = None) -> None:
         window = self.window
         host = window.printer.host
         if not host:
             window.toast(_("No printer yet – search for one or enter its address"))
             return
-        backend = window.backend
-        label, safe_mm = copy.deepcopy(window.label), window.printer_settings.safe_mm
+        window.sync_counter()  # the command line may have printed from the file
+        job = Job(
+            window.backend,
+            copy.deepcopy(window.label),
+            options,
+            window.printer_settings.safe_mm,
+            sheet=sheet,
+        )
+        prepare_failed = _("The label cannot be prepared for printing.")
+        self._printing = window.label  # the counter moves on in this label only
         self.busy = True
         window.print_button.set_sensitive(False)
         window.print_button.set_label(_("Printing…"))
@@ -349,23 +360,16 @@ class PrintFlow:
         def work():
             # rendering a long label takes a moment: not in the main loop
             try:
-                image = backend.prepare(label, options, safe_mm)
-            except PrinterError as e:  # a code that does not fit: its own message
-                GLib.idle_add(self.done, e)
-                return
+                result = job.run(host, progress)
+            except PrepareFailed as e:
+                cause = e.__cause__ or e
+                # a code that does not fit: its own message
+                message = None if isinstance(cause, PrinterError) else prepare_failed
+                GLib.idle_add(self.done, cause, message, job)
             except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self.done, e, _("The label cannot be prepared for printing."))
-                return
-            try:
-                if job is None:
-                    result = backend.print_label(image, host, options, progress)
-                else:
-                    pages = Pages(job, copies_of(image), backend.capabilities.dpi)
-                    result = backend.print_pages(pages, host, options, progress)
-            except Exception as e:  # noqa: BLE001
-                GLib.idle_add(self.done, e)
-                return
-            GLib.idle_add(self.done, None, None, options, result)
+                GLib.idle_add(self.done, e, None, job)
+            else:
+                GLib.idle_add(self.done, None, None, job, result)
 
         threading.Thread(target=work, name="etiketto-print", daemon=True).start()
 
@@ -384,7 +388,7 @@ class PrintFlow:
         self,
         error: Exception | None,
         message: str | None = None,
-        options: PrintOptions | None = None,
+        job: Job | None = None,
         result: PrintResult | None = None,
     ) -> bool:
         window = self.window
@@ -392,25 +396,17 @@ class PrintFlow:
         window.print_button.set_sensitive(True)
         window.print_button.set_label(_("Print"))
         window.banner.set_revealed(False)
+        counter = job.next_counter() if job and job.printed else None
+        # the printed numbers are used up, also on failure; not in a label
+        # opened while printing
+        if counter is not None and window.label is self._printing:
+            window.set_counter_next(counter)
         if error:
             self.failed(error, message or printer_error_text(error, window.unit))
         else:
-            window.toast(self._printed_text(options, result))
+            window.toast(printed_text(job.options if job else None, result))
         window.printer.refresh()
         return False
-
-    @staticmethod
-    def _printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
-        if result and result.queued:  # other jobs first: not printed yet, nothing wrong
-            return _("Sent to the printer – it prints when its turn comes")
-        if not (options and result and result.mode and result.mode != options.mode):
-            return _("Printed")
-        return _(
-            "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
-        ) % {
-            "wanted": MODE_NAMES.get(options.mode, options.mode),
-            "used": MODE_NAMES.get(result.mode, result.mode),
-        }
 
     def failed(self, error: Exception, message: str) -> None:
         """A dialog: what happened and what to do, the original text on request."""

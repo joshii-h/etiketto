@@ -209,11 +209,10 @@ reader refuses features it does not know. A label without features stays
 version 1 and opens everywhere. A new feature adds a name to
 `model.FEATURES`, not a version.
 
-TODO at integration: the branches `variables-cli` and `mail-merge` bring the
-same `features` list (`"serial"`, `"variables"`). When they meet this one,
-keep a single `FORMAT_VERSION = 2`, `FEATURES = {"barcodes", "symbols",
-"serial", "variables"}` and one `Label.features()` that lists all of them;
-the tests for each feature stay.
+TODO at integration: the branch `mail-merge` brings the feature `"serial"`.
+When it meets this one, keep the single `FORMAT_VERSION = 2`, `FEATURES =
+{"barcodes", "symbols", "variables", "serial"}` and one `Label.features()`
+that lists all of them; the tests for each feature stay.
 
 ## Codes
 

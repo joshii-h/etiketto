@@ -3,8 +3,16 @@
 from __future__ import annotations
 
 import base64
+import contextlib
 import copy
+import errno
+import fcntl
 import json
+import os
+import secrets
+import stat
+import time
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -18,13 +26,19 @@ FORMAT_VERSION = 2
 # "barcodes": a code of a symbology added after version 1 (BARCODES); version
 # 1 readers would call the file damaged; "symbols": a symbol element
 # (SymbolElement; earlier readers also refuse the unknown element kind)
-FEATURES = frozenset({"barcodes", "symbols"})
+# "variables": {=date}, {=counter} … in texts and codes, and the counter
+# fields; older versions would print "{=date}" as it is and drop the counter
+# when they save
+FEATURES = frozenset({"barcodes", "symbols", "variables"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
+# {=counter}: up to 15 digits stay exact in the interface's number fields
+MAX_COUNTER = 10**15 - 1
+MAX_COUNTER_STEP = 10**6
 # a label file is read whole before it is parsed: refuse absurd sizes (the
 # json documentation advises a limit for data from untrusted sources)
 MAX_FILE_BYTES = 200 * 1024 * 1024
@@ -57,6 +71,8 @@ class TextElement:
     size_pt: float = 0.0  # 0 = fit to tape height
     color: str = "#000000"
     align: Literal["left", "center", "right"] = "left"
+    # for the command line: `etiketto print --set NAME=VALUE` replaces the text
+    name: str = ""
     kind: Literal["text"] = "text"
 
 
@@ -99,6 +115,7 @@ class CodeElement:
     data: str = "https://"
     symbology: str = "qr"  # one of SYMBOLOGIES
     color: str = "#000000"
+    name: str = ""  # see TextElement.name
     kind: Literal["code"] = "code"
 
 
@@ -220,6 +237,10 @@ class Label:
     # page printers only: printed on a label sheet instead of one page of
     # the label's size; None: a page of its own
     sheet: SheetChoice | None = None
+    # {=counter} (see variables.py): the number of the next printed label and
+    # how much it goes up per label; printing moves counter_next on
+    counter_next: int = 1
+    counter_step: int = 1
 
     # --- die-cut labels ----------------------------------------------------
 
@@ -322,14 +343,26 @@ class Label:
     # --- persistence -------------------------------------------------------
 
     def features(self) -> list[str]:
-        """What the label uses that older versions cannot print (FEATURES)."""
+        """What the label uses that older versions cannot print as meant
+        (FEATURES)."""
         codes = [e for e in self.elements if isinstance(e, CodeElement)]
         found = []
         if any(e.symbology in BARCODES for e in codes):
             found.append("barcodes")
         if any(isinstance(e, SymbolElement) for e in self.elements):
             found.append("symbols")
+        if self._uses_variables():
+            found.append("variables")
         return found
+
+    def _uses_variables(self) -> bool:
+        if (self.counter_next, self.counter_step) != (1, 1):
+            return True
+        return any(
+            "{=" in (e.data if isinstance(e, CodeElement) else e.text)
+            for e in self.elements
+            if isinstance(e, (TextElement, CodeElement))
+        )
 
     def to_dict(self) -> dict:
         data = asdict(self)
@@ -406,25 +439,247 @@ class Label:
         self.align = _choice(self.align, ("start", "center", "end"), "align")
         self.background = _str(self.background, "background")
         self.border_color = _str(self.border_color, "border_color")
+        self.counter_next = _int(self.counter_next, 0, MAX_COUNTER, "counter_next")
+        self.counter_step = _int(self.counter_step, 1, MAX_COUNTER_STEP, "counter_step")
 
     def save(self, path: str | Path) -> None:
-        path = Path(path)
-        tmp = path.with_name(path.name + ".tmp")
-        tmp.write_text(json.dumps(self.to_dict(), indent=1, ensure_ascii=False), encoding="utf-8")
-        tmp.replace(path)
+        write_file(path, json.dumps(self.to_dict(), indent=1, ensure_ascii=False).encode())
+
+    @staticmethod
+    def store_counter(path: str | Path, counter_next: int) -> None:
+        """Write a new counter_next into a saved label and change nothing else
+        (the command line prints with overrides that must not be saved)."""
+        data = json.loads(read_file(path).decode("utf-8"))
+        if not isinstance(data, dict):
+            raise LabelError("not_label", "not an Etiketto file")
+        data["counter_next"] = min(max(counter_next, 0), MAX_COUNTER)
+        features = data.get("features")
+        features = list(features) if isinstance(features, list) else []
+        if "variables" not in features:  # see FEATURES
+            data["features"] = features + ["variables"]
+        version = data.get("version", 1)
+        if not isinstance(version, int) or isinstance(version, bool) or version < FORMAT_VERSION:
+            data["version"] = FORMAT_VERSION
+        write_file(path, json.dumps(data, indent=1, ensure_ascii=False).encode())
+
+    @staticmethod
+    def saved_counter(path: str | Path) -> int | None:
+        """counter_next as saved in the file; None if it cannot be read."""
+        try:
+            data = json.loads(read_file(path).decode("utf-8"))
+        except (OSError, ValueError, RecursionError):
+            return None
+        value = data.get("counter_next", 1) if isinstance(data, dict) else None
+        if isinstance(value, bool) or not isinstance(value, int):
+            return None
+        return min(max(value, 0), MAX_COUNTER)
 
     @classmethod
     def load(cls, path: str | Path) -> Label:
         """OSError if the file cannot be read, LabelError for its content."""
-        path = Path(path)
-        if path.stat().st_size > MAX_FILE_BYTES:
-            raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
-        raw = path.read_bytes()
+        raw = read_file(path)
         try:
             data = json.loads(raw.decode("utf-8"))
         except (ValueError, RecursionError) as e:  # no JSON, not UTF-8, absurdly nested
             raise LabelError("not_label", str(e) or type(e).__name__) from e
         return cls.from_dict(data)
+
+
+# --- files ------------------------------------------------------------------
+
+
+def read_file(path: str | Path) -> bytes:
+    """The content of a label file, read only up to MAX_FILE_BYTES. Only a
+    regular file: a device like /dev/zero never ends, a FIFO would block
+    (opened without blocking to find out)."""
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    try:
+        regular = stat.S_ISREG(os.fstat(fd).st_mode)
+    except BaseException:
+        os.close(fd)
+        raise
+    if not regular:  # also a folder: closed here, open() would leave it open
+        os.close(fd)
+        raise LabelError("not_label", "not a regular file")
+    with open(fd, "rb") as f:  # owns fd from here on
+        raw = f.read(MAX_FILE_BYTES + 1)
+    if len(raw) > MAX_FILE_BYTES:
+        raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
+    return raw
+
+
+def write_file(path: str | Path, data: bytes) -> None:
+    """Replace the file at `path` with `data` in one step: a crash leaves the
+    old or the new file, never half of one.
+
+    - A symbolic link stays a link: the file it points to is replaced.
+    - The file keeps its permissions and, where allowed, its owner and group.
+    - The temporary file next to it has a random name and is created
+      exclusively (O_EXCL, O_NOFOLLOW): a link planted under a predictable
+      name cannot redirect the write, and the window and the command line
+      writing the same label at once do not share one temporary file.
+    - File and directory are flushed to the disk before and after the rename.
+
+    Flatpak: a file opened through the document portal lives on its FUSE
+    file system (/run/user/…/doc/). The portal handles the rename of a file
+    within its directory, but only that file is exported, not its folder;
+    should a portal version refuse the temporary file, saving fails with an
+    error and the label stays unchanged. Not testable outside the sandbox.
+    """
+    target = Path(os.path.realpath(path))
+    try:
+        old: os.stat_result | None = os.stat(target)
+    except FileNotFoundError:
+        old = None
+    if old and not os.access(target, os.W_OK):  # replacing would get round it
+        raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), str(path))
+    fd, tmp = _create_temporary(target, 0o600 if old else 0o666)  # new: the umask applies
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+            f.flush()
+            if old:
+                _keep_owner_and_mode(f.fileno(), old)
+            with contextlib.suppress(OSError):  # EINVAL/ENOTSUP: no fsync there
+                os.fsync(f.fileno())
+        os.replace(tmp, target)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
+    _sync_directory(target.parent)
+
+
+def writable(path: str | Path) -> bool:
+    """Whether write_file(path) can work: it refuses a file without write
+    permission, and makes the new file in the folder, so both have to be
+    writable. Owner, mode and fsync are best effort, not needed."""
+    target = os.path.realpath(path)
+    if os.path.exists(target) and not os.access(target, os.W_OK):
+        return False
+    return os.access(os.path.dirname(target), os.W_OK | os.X_OK)
+
+
+def _create_temporary(target: Path, mode: int) -> tuple[int, str]:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    for _attempt in range(100):
+        tmp = str(target.with_name(".%s.%s.tmp" % (target.name, secrets.token_hex(6))))
+        try:
+            return os.open(tmp, flags, mode), tmp
+        except FileExistsError:  # pragma: no cover - 48 random bits
+            continue
+    raise FileExistsError("no free temporary name next to %s" % target.name)  # pragma: no cover
+
+
+def _keep_owner_and_mode(fd: int, old: os.stat_result) -> None:
+    if (old.st_uid, old.st_gid) != (os.getuid(), os.getgid()):
+        # only root may give a file away; a group of one's own works for all
+        with contextlib.suppress(OSError):
+            os.fchown(fd, old.st_uid, old.st_gid)
+        with contextlib.suppress(OSError):
+            os.fchown(fd, -1, old.st_gid)
+    # best effort: on vfat/NTFS mounts (fixed owner and mode) changing them
+    # fails, and the file gets the mount's mode anyway, like a new file
+    with contextlib.suppress(OSError):
+        os.fchmod(fd, stat.S_IMODE(old.st_mode))
+
+
+def _sync_directory(directory: Path) -> None:
+    """The rename itself on the disk; not every file system can do this."""
+    with contextlib.suppress(OSError):
+        fd = os.open(directory, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+
+@contextlib.contextmanager
+def locked(
+    path: str | Path, waiting: Callable[[], None] | None = None, timeout: float = 60.0
+) -> Iterator[None]:
+    """Hold an exclusive lock (flock) on the label file: two command line
+    prints of the same label run one after the other, so no counter value
+    is printed twice. write_file() replaces the file, a waiting process
+    would then hold a lock on the old one: it checks that the locked file
+    is still the one at `path`, else it locks the new one. Without a lock
+    (no such file, a file system without flock) it goes on unlocked.
+
+    waiting() is called once if another process holds the lock; after
+    `timeout` seconds LockTimeout is raised. The file is opened for
+    writing where allowed (flock over NFS needs that), else for reading.
+    Anything but a regular file (a FIFO would block the open) is not
+    opened here: the load that follows refuses it."""
+    target = os.path.realpath(path)
+    deadline = time.monotonic() + timeout
+    while True:
+        fd = _open_for_lock(target)
+        if fd is None:
+            yield  # the load that follows says what is wrong
+            return
+        try:
+            _lock(fd, waiting, deadline)
+            waiting = None
+            if _same_inode(fd, target):
+                break
+        except LockTimeout:
+            os.close(fd)
+            raise
+        except OSError:  # no flock on this file system
+            os.close(fd)
+            yield
+            return
+        os.close(fd)  # replaced meanwhile: lock the new file
+    try:
+        yield
+    finally:
+        os.close(fd)  # closing releases the lock
+
+
+class LockTimeout(OSError):
+    """Another process held the label file longer than the timeout."""
+
+
+def _open_for_lock(target: str) -> int | None:
+    try:
+        if not stat.S_ISREG(os.stat(target).st_mode):
+            return None
+    except OSError:
+        return None
+    for flags in (os.O_RDWR, os.O_RDONLY):
+        try:
+            return os.open(target, flags | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
+        except OSError as e:
+            if isinstance(e, PermissionError) or e.errno == errno.EROFS:
+                continue  # not for writing: for reading then
+            return None
+    return None
+
+
+def _lock(fd: int, waiting: Callable[[], None] | None, deadline: float) -> None:
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return
+    except BlockingIOError:
+        if waiting:
+            waiting()
+    while True:  # poll: flock itself has no timeout
+        time.sleep(0.1)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                raise LockTimeout(errno.EWOULDBLOCK, "label file locked") from None
+
+
+def _same_inode(fd: int, path: str) -> bool:
+    try:
+        now = os.stat(path)
+    except OSError:
+        return False
+    mine = os.fstat(fd)
+    return (mine.st_dev, mine.st_ino) == (now.st_dev, now.st_ino)
 
 
 # --- validation helpers -----------------------------------------------------
@@ -449,6 +704,12 @@ def _clamp(value, lower: float, upper: float, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise _damaged("%s must be a number" % name)
     return float(min(upper, max(lower, value)))
+
+
+def _int(value, lower: int, upper: int, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise _damaged("%s must be a whole number" % name)
+    return min(upper, max(lower, value))
 
 
 def _choice(value, allowed: tuple, name: str):
@@ -480,6 +741,7 @@ def _element_from_dict(item) -> Element:
         element.bold, element.italic = bool(element.bold), bool(element.italic)
         element.size_pt = _clamp(element.size_pt, 0, 300, "size_pt")
         element.align = _choice(element.align, ("left", "center", "right"), "align")
+        element.name = _str(element.name, "name")
     elif isinstance(element, ImageElement):
         element.data = _str(element.data, "image data")
         element.name = _str(element.name, "image name")
@@ -490,6 +752,7 @@ def _element_from_dict(item) -> Element:
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
+        element.name = _str(element.name, "name")
         element.symbology = _str(element.symbology, "symbology")
         if element.symbology not in SYMBOLOGIES:  # a symbology added later
             raise LabelError("newer", "unknown symbology %r" % element.symbology)

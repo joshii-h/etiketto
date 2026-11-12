@@ -2078,3 +2078,52 @@ def test_pdf_pages_in_other_modes(mode, space, size):
     page = Image.new("RGB", (8, 4), (200, 30, 30)).convert(mode)
     found, bits, raw = pdf.pixels(page)
     assert (found, bits) == (space, 8) and len(raw) == 8 * 4 * size
+
+
+# --- print jobs with variables ------------------------------------------------------------
+
+
+def _job(text, copies):
+    from datetime import datetime
+
+    from etiketto.job import Job
+    from etiketto.variables import Values
+
+    label = Label(elements=[TextElement(text=text)])
+    label.switch_printer("system")
+    options = PrintOptions(copies=copies)
+    values = Values.for_label(label, datetime(2026, 3, 1), copies)
+    return Job(get_backend("system"), label, options, values=values)
+
+
+def test_a_job_counts_the_copies_the_printer_finished(fake):
+    """One job with copies: the printer says how many came out."""
+    from etiketto.ui.texts import printer_error_text
+    from etiketto.units import unit_for
+
+    fake.copies_supported = (1, 1)
+    fake.job_states = [5, 9, 9, 8]  # two copies printed, the third aborted
+    job = _job("Packed {=date:%d.%m.%Y}", 3)
+    with pytest.raises(PrinterError) as info:
+        job.run("HP_Office")
+    assert job.printed == 2
+    assert info.value.params == {"printed": 2, "copies": 3}
+    assert printer_error_text(info.value, unit_for("mm")).endswith(
+        "Labels already printed: 2 of 3."
+    )
+
+
+def test_a_counter_job_counts_the_labels_sent_before_the_failure(fake):
+    """A job per label (the counter): the error tells the whole job."""
+    from etiketto.ui.texts import printer_error_text
+    from etiketto.units import unit_for
+
+    fake.job_states = [5, 9, 8]  # the first label printed, the second aborted
+    job = _job("No. {=counter}", 3)
+    with pytest.raises(PrinterError) as info:
+        job.run("HP_Office")
+    assert job.printed == 1 and job.next_counter() == 2
+    assert info.value.params == {"printed": 1, "copies": 3}
+    assert printer_error_text(info.value, unit_for("mm")).endswith(
+        "Labels already printed: 1 of 3."
+    )
