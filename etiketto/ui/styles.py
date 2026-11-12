@@ -15,9 +15,9 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gtk  # noqa: E402
 
-from etiketto.model import ImageElement, ShapeElement, TextElement  # noqa: E402
+from etiketto.model import EFFECTIVE, ImageElement, ShapeElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     ARROWS,
@@ -56,11 +56,37 @@ def subpage_row(window: Window, element, title: str, subtitle: str, rows: Rows) 
     row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
     row.connect(
         "activated",
-        lambda _r: window.push_subpage(
-            title, GLib.markup_escape_text(element_title(element)), rows
-        ),
+        lambda _r: window.push_subpage(title, element_title(element), rows, element),
     )
     return row
+
+
+class _Follow:
+    """set_attr for a page of options that also keeps rows without effect
+    insensitive (model.EFFECTIVE: the outline colour while there is no
+    outline, the smallest size while not shrinking …)."""
+
+    def __init__(self, element, set_attr: SetAttr):
+        self.element, self.set_attr = element, set_attr
+        self.conditions = EFFECTIVE.get(type(element).__name__, {})
+        self.widgets: dict[str, Gtk.Widget] = {}
+
+    def __call__(self, **changes) -> None:
+        self.set_attr(**changes)
+        self.update()
+
+    def track(self, name: str, widget: Gtk.Widget) -> Gtk.Widget:
+        self.widgets[name] = widget
+        self.update()
+        return widget
+
+    def update(self) -> None:
+        for name, widget in self.widgets.items():
+            widget.set_sensitive(self.conditions[name](self.element))
+
+
+def _page(rows, window: Window, element, set_attr: SetAttr, group) -> None:
+    rows(window, group, element, _Follow(element, set_attr))
 
 
 def _rotation_row(element, set_attr: SetAttr) -> Adw.ComboRow:
@@ -146,7 +172,7 @@ def text_rows(window: Window, row: Adw.ExpanderRow, element: TextElement, set_at
                 element,
                 title,
                 subtitle,
-                partial(rows, window, element=element, set_attr=set_attr),
+                partial(_page, rows, window, element, set_attr),
             )
         )
 
@@ -184,18 +210,17 @@ def _text_fit(window: Window, group, element: TextElement, set_attr) -> None:
             _("Smaller until it fits the tape height and the label length"),
         )
     )
-    group.add(
-        spin_row(
-            _("Smallest size"),
-            element.min_size_pt,
-            0,
-            300,
-            1,
-            0,
-            lambda v: set_attr(min_size_pt=v),
-            subtitle=_("pt, when shrinking"),
-        )
+    smallest = spin_row(
+        _("Smallest size"),
+        element.min_size_pt,
+        0,
+        300,
+        1,
+        0,
+        lambda v: set_attr(min_size_pt=v),
+        subtitle=_("pt, when shrinking"),
     )
+    group.add(set_attr.track("min_size_pt", smallest))
     group.add(
         length_row(
             window.unit,
@@ -241,17 +266,17 @@ def _text_box(window: Window, group, element: TextElement, set_attr) -> None:
         (_("Padding"), "padding_mm", 20),
         (_("Corner radius"), "corner_mm", 50),
     ):
-        group.add(
-            length_row(
-                unit,
-                title,
-                getattr(element, attr),
-                0,
-                upper,
-                0.5,
-                lambda v, a=attr: set_attr(**{a: v}),
-            )
+        row = length_row(
+            unit,
+            title,
+            getattr(element, attr),
+            0,
+            upper,
+            0.5,
+            lambda v, a=attr: set_attr(**{a: v}),
+            _("%(unit)s, with a box or frame"),
         )
+        group.add(set_attr.track(attr, row))
     group.add(
         length_row(
             unit,
@@ -284,7 +309,7 @@ def _text_effects(window: Window, group, element: TextElement, set_attr) -> None
         colour = color_button(
             getattr(element, colour_attr), lambda v, a=colour_attr: set_attr(**{a: v})
         )
-        line.add_suffix(_named(colour, name))
+        line.add_suffix(set_attr.track(colour_attr, _named(colour, name)))
         group.add(line)
 
 
@@ -308,7 +333,7 @@ def image_rows(window: Window, row: Adw.ExpanderRow, element: ImageElement, set_
                 element,
                 title,
                 subtitle,
-                partial(rows, window, element=element, set_attr=set_attr),
+                partial(_page, rows, window, element, set_attr),
             )
         )
 
@@ -376,14 +401,8 @@ def _image_mono(window: Window, group, element: ImageElement, set_attr) -> None:
         lambda v: set_attr(threshold=int(v)),
         subtitle=_("Lighter pixels print white"),
     )
-    level.set_sensitive(element.mode == "threshold")
-
-    def mode(value: str) -> None:
-        level.set_sensitive(value == "threshold")
-        set_attr(mode=value)
-
-    group.add(combo_row(_("Method"), IMAGE_MODES, element.mode, mode))
-    group.add(level)
+    group.add(combo_row(_("Method"), IMAGE_MODES, element.mode, lambda v: set_attr(mode=v)))
+    group.add(set_attr.track("threshold", level))
 
 
 def _image_frame(window: Window, group, element: ImageElement, set_attr) -> None:
@@ -409,7 +428,7 @@ def _image_frame(window: Window, group, element: ImageElement, set_attr) -> None
         _("%(unit)s, 0 = none"),
     )
     colour = color_button(element.border_color, lambda v: set_attr(border_color=v))
-    border.add_suffix(_named(colour, _("Colour of the border")))
+    border.add_suffix(set_attr.track("border_color", _named(colour, _("Colour of the border"))))
     group.add(border)
 
 

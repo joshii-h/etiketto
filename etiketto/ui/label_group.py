@@ -149,13 +149,18 @@ class LabelGroup(Adw.PreferencesGroup):
 
     def _add_border_row(self) -> None:
         window, lab = self.window, self.window.label
+
+        def set_width(value: float) -> None:
+            window.change(border_mm=value)
+            self._show_border_style(shape)
+
         border = self._length_row(
             _("Border"),
             lab.border_mm,
             0,
             5,
             0.1,
-            lambda v: window.change(border_mm=v),
+            set_width,
             _("%(unit)s, 0 = none"),
         )
         border.add_suffix(color_button(lab.border_color, lambda v: window.change(border_color=v)))
@@ -190,7 +195,18 @@ class LabelGroup(Adw.PreferencesGroup):
                 _("extra %(unit)s inside the safety margin"),
             )
         )
+        self._show_border_style(shape)
         self.add(shape)
+
+    def _show_border_style(self, shape: Adw.ExpanderRow) -> None:
+        """The border's shape does nothing without a border: off, and why."""
+        has_border = self.window.label.border_mm > 0
+        shape.set_sensitive(has_border)
+        shape.set_subtitle(
+            _("Corners, line and distance from the edge")
+            if has_border
+            else _("Set a border width first")
+        )
 
     def _add_length_rows(self) -> None:
         """Length, automatic length and alignment: only for endless tape."""

@@ -86,6 +86,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         self.window = window
         # the rows open, the one opened last at the end: the open element
         self._open: list[int] = []
+        self.rows: list[Adw.ExpanderRow] = []
         self._add_menu_button()
 
         if not window.label.elements:
@@ -95,7 +96,9 @@ class ElementsGroup(Adw.PreferencesGroup):
             empty.add_css_class("dim-label")
             self.add(empty)
         for index, element in enumerate(window.label.elements):
-            self.add(self._element_row(index, element))
+            row = self._element_row(index, element)
+            self.rows.append(row)
+            self.add(row)
 
     def _add_menu_button(self) -> None:
         add_menu = Gio.Menu()
@@ -170,6 +173,21 @@ class ElementsGroup(Adw.PreferencesGroup):
             found += ElementsGroup._fields(child)
             child = child.get_next_sibling()
         return found
+
+    def open_page(self, index: int, title: str) -> bool:
+        """Open the page of options of that title of element index again
+        (after the sidebar was rebuilt); False if there is none."""
+        if not 0 <= index < len(self.rows):
+            return False
+        child = self.rows[index].get_first_child()
+        stack = [child] if child else []
+        while stack:
+            widget = stack.pop()
+            if isinstance(widget, Adw.ActionRow) and widget.get_title() == title:
+                widget.emit("activated")
+                return True
+            stack.extend(n for n in (widget.get_next_sibling(), widget.get_first_child()) if n)
+        return False
 
     def _on_expanded(self, index: int, expanded: bool) -> None:
         """The open element is the one the shortcuts (Ctrl+D, Delete,

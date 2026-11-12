@@ -77,6 +77,10 @@ class Window(Adw.ApplicationWindow):
         self._render_source = 0
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
+        self._subpage: tuple[int, str] = (-1, "")  # the open page of options
+        # a change undo cannot take back (the counter moved by printing, a
+        # shipping label not saved yet): unsaved even at the saved step
+        self.dirty_outside = False
         # random variables ({=uuid}, {=id}) keep their preview value while editing
         self._preview_random = os.urandom(64)
         # {=copies} in the preview: the number in the print dialog while it is open
@@ -196,9 +200,10 @@ class Window(Adw.ApplicationWindow):
         paned.set_end_child(self.sidebar_nav)
         return paned
 
-    def push_subpage(self, title: str, subtitle: str, rows) -> Adw.NavigationPage:
+    def push_subpage(self, title: str, subtitle: str, rows, element=None) -> Adw.NavigationPage:
         """A page of further options in the sidebar; rows(group) fills it.
-        Its header names the element (subtitle), its back button returns."""
+        Its header names the element (subtitle, plain text), its back button
+        returns. A rebuilt sidebar opens it again (rebuild_sidebar)."""
         header = Adw.HeaderBar(show_start_title_buttons=False, show_end_title_buttons=False)
         header.set_title_widget(Adw.WindowTitle(title=title, subtitle=subtitle))
         group = Adw.PreferencesGroup()
@@ -208,7 +213,10 @@ class Window(Adw.ApplicationWindow):
         toolbar = Adw.ToolbarView(content=page)
         toolbar.add_top_bar(header)
         subpage = Adw.NavigationPage(title=title, child=toolbar)
+        no_field_undo(page)
         self.sidebar_nav.push(subpage)
+        index = next((i for i, e in enumerate(self.label.elements) if e is element), -1)
+        self._subpage = (index, title)
         return subpage
 
     def _on_templates_menu(self, button, _pspec) -> None:
@@ -216,9 +224,20 @@ class Window(Adw.ApplicationWindow):
             self.files.fill_templates()
 
     def rebuild_sidebar(self) -> None:
-        # an open page of options belongs to the rows rebuilt here
+        # an open page of options belongs to the rows rebuilt here: closed,
+        # and opened again from the new rows (the user stays on it)
+        reopen = None
         if self.sidebar_nav.get_visible_page() is not self.sidebar_root:
+            reopen = self._subpage
+            self.sidebar_nav.set_animate_transitions(False)
             self.sidebar_nav.pop_to_page(self.sidebar_root)
+        self._build_groups()
+        no_field_undo(self.sidebar)
+        if reopen:
+            self.elements_group.open_page(*reopen)
+        self.sidebar_nav.set_animate_transitions(True)
+
+    def _build_groups(self) -> None:
         for group in self._groups:
             self.sidebar.remove(group)
         self.label_group = LabelGroup(self)
@@ -297,6 +316,7 @@ class Window(Adw.ApplicationWindow):
         document that undo does not take back (it would print numbers again)."""
         self.label.counter_next = min(value, MAX_COUNTER)
         self.history.patch("counter_next", self.label.counter_next)
+        self.dirty_outside = True
         self.mark_changed(record=False)
 
     # --- undo and redo -------------------------------------------------------------
@@ -308,24 +328,25 @@ class Window(Adw.ApplicationWindow):
                 action.set_enabled(enabled)
 
     def undo(self, *_args) -> None:
-        self._restore(self.history.undo())
+        focus = _focused_field(self.get_focus())  # before anything changes
+        self._restore(self.history.undo(), focus)
 
     def redo(self, *_args) -> None:
-        self._restore(self.history.redo())
+        focus = _focused_field(self.get_focus())
+        self._restore(self.history.redo(), focus)
 
-    def _restore(self, label: Label | None) -> None:
+    def _restore(self, label: Label | None, focus: tuple[str, int] | None = None) -> None:
         if label is None:
             return
         printer_changed = label.printer != self.label.printer
         data_changed = label.data_file != self.label.data_file
         sheet_changed = label.data_sheet != self.label.data_sheet
-        focus = _field_name(self.get_focus())
         self.label = label
         if self.expand_index >= len(label.elements):
             self.expand_index = -1
         self.rebuild_sidebar()
         self.mark_changed(record=False)
-        self.dirty = not self.history.at_saved
+        self.dirty = self.dirty_outside or not self.history.at_saved
         self.update_title()
         if data_changed:
             self.data.follow_label()
@@ -335,7 +356,7 @@ class Window(Adw.ApplicationWindow):
             self.printer.info = None
             self.printer.refresh()
         if focus:
-            _refocus(self.sidebar, focus)
+            _refocus(self.sidebar_nav, *focus)
 
     # --- the open element ------------------------------------------------------------
 
@@ -379,6 +400,7 @@ class Window(Adw.ApplicationWindow):
         self.saved_counter = self.label.counter_next if self.path else None
         self._saved_stamp = _stamp(self.path) if self.path else None
         self.counter_edited = False
+        self.dirty_outside = False
         self.history.mark_saved()
 
     def sync_counter(self) -> None:
@@ -444,7 +466,7 @@ class Window(Adw.ApplicationWindow):
             self.printer.info = None
         self.path = path
         self.remember_saved()
-        self.dirty = False
+        self.dirty = self.dirty_outside = False
         self.history.reset(label)
         self.update_history_actions()
         self._geometries = {}
@@ -844,29 +866,59 @@ class Window(Adw.ApplicationWindow):
 FIELD = "field:"  # widget names of the text fields undo gives the focus back to
 
 
-def _field_name(widget) -> str | None:
-    """The name of the text field (elements.py) that holds the focus."""
+def _focused_field(widget) -> tuple[str, int] | None:
+    """The text field (elements.py names them) that holds the focus and the
+    cursor's place in it; None for any other widget."""
     while widget is not None:
-        name = widget.get_name()
+        name = widget.get_name() or ""
         if name.startswith(FIELD):
-            return name
+            return name, _cursor(widget)
         widget = widget.get_parent()
     return None
 
 
-def _refocus(root, name: str) -> None:
-    """Give the focus back to the text field of that name, cursor at the end."""
+def _cursor(widget) -> int:
+    if isinstance(widget, Gtk.TextView):
+        buffer = widget.get_buffer()
+        return buffer.get_iter_at_mark(buffer.get_insert()).get_offset()
+    if isinstance(widget, Gtk.Editable):
+        return widget.get_position()
+    return -1
+
+
+def _refocus(root, name: str, cursor: int = -1) -> bool:
+    """Give the focus back to the text field of that name, the cursor where
+    it was (or at the end if the text is shorter now)."""
     child = root.get_first_child()
     while child:
-        if child.get_name() == name:
+        if (child.get_name() or "") == name:
             child.grab_focus()
             if isinstance(child, Gtk.TextView):
                 buffer = child.get_buffer()
-                buffer.place_cursor(buffer.get_end_iter())
+                end = buffer.get_char_count()
+                buffer.place_cursor(
+                    buffer.get_iter_at_offset(min(cursor, end) if cursor >= 0 else end)
+                )
             elif isinstance(child, Gtk.Editable):
-                child.set_position(-1)
-            return
-        _refocus(child, name)
+                end = len(child.get_text())
+                child.set_position(min(cursor, end) if cursor >= 0 else -1)
+            return True
+        if _refocus(child, name, cursor):
+            return True
+        child = child.get_next_sibling()
+    return False
+
+
+def no_field_undo(root) -> None:
+    """The text fields' own undo off, in spin rows too: the window's undo
+    is the one that counts (History)."""
+    child = root.get_first_child()
+    while child:
+        if isinstance(child, Gtk.TextView):
+            child.get_buffer().set_enable_undo(False)
+        elif isinstance(child, Gtk.Text):
+            child.set_enable_undo(False)
+        no_field_undo(child)
         child = child.get_next_sibling()
 
 

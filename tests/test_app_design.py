@@ -92,8 +92,11 @@ def test_the_page_names_the_element_and_goes_back(window):
     window.sidebar_nav.pop()
     pump()
     assert window.sidebar_nav.get_visible_page() is window.sidebar_root
-    open_page(window, "Label", "Box and frame")
-    window.rebuild_sidebar()  # its rows belong to the old sidebar
+    old = open_page(window, "Label", "Box and frame")
+    window.rebuild_sidebar()  # its rows belong to the old sidebar: opened again
+    shown = window.sidebar_nav.get_visible_page()
+    assert shown is not old and shown.get_title() == "Box and frame"
+    window.remove_element(0)  # the element is gone: back to the sidebar
     assert window.sidebar_nav.get_visible_page() is window.sidebar_root
 
 
@@ -510,3 +513,112 @@ def test_without_a_shortcuts_window_the_action_is_off(make_window, gtk_app, monk
 def test_undo_buttons_in_the_header(window):
     buttons = [b for b in find(window, Gtk.Button) if b.get_action_name() == "win.undo"]
     assert len(buttons) == 1 and buttons[0].get_tooltip_text() == "Undo"
+
+
+# --- review 2 ---------------------------------------------------------------------------
+
+
+def test_undo_with_the_focus_on_other_widgets(window):
+    """A spin row, a switch on a page of options, the page itself: undo
+    works and leaves the history consistent."""
+    window.change(margin_mm=5)
+    spin = one(window.sidebar, Adw.SpinRow, title="Size")
+    spin.grab_focus()
+    activate(window, "undo")
+    assert window.label.margin_mm == 2
+    activate(window, "redo")
+    assert window.label.margin_mm == 5
+    page = open_page(window, "Label", "Box and frame")
+    switch = one(page, Adw.SwitchRow, title="White on black")
+    switch.set_active(True)
+    switch.grab_focus()
+    activate(window, "undo")
+    assert not window.label.elements[0].inverted
+    assert window.sidebar_nav.get_visible_page().get_title() == "Box and frame"
+    window.sidebar.grab_focus()
+    activate(window, "undo")
+    assert window.label.margin_mm == 2 and not enabled(window, "undo")
+
+
+def test_undo_keeps_the_cursor_in_its_place(window):
+    view = one(window.sidebar, Gtk.TextView)
+    view.get_buffer().set_text("Hello world")
+    window.change(margin_mm=4)
+    view = one(window.sidebar, Gtk.TextView)
+    buffer = view.get_buffer()
+    buffer.place_cursor(buffer.get_iter_at_offset(5))
+    view.grab_focus()
+    activate(window, "undo")
+    view = one(window.sidebar, Gtk.TextView)
+    buffer = view.get_buffer()
+    assert window.get_focus() is view
+    assert buffer.get_iter_at_mark(buffer.get_insert()).get_offset() == 5
+
+
+def test_no_field_has_its_own_undo(window):
+    open_page(window, "Label", "Spacing and fitting")
+    texts_found = find(window.sidebar_nav, Gtk.Text)
+    assert texts_found and not any(t.get_enable_undo() for t in texts_found)
+    assert not any(v.get_buffer().get_enable_undo() for v in find(window.sidebar, Gtk.TextView))
+
+
+def test_the_page_header_shows_the_title_as_it_is(window):
+    window.label.elements[0].text = "A & B <x>"
+    window.rebuild_sidebar()
+    page = open_page(window, "A &amp; B &lt;x&gt;", "Position")
+    assert one(page, Adw.WindowTitle).get_subtitle() == "A & B <x>"
+
+
+def test_undo_stays_on_the_open_page(window):
+    page = open_page(window, "Label", "Outline and shadow")
+    one(page, Adw.SpinRow, title="Outline").set_value(0.5)
+    activate(window, "undo")
+    shown = window.sidebar_nav.get_visible_page()
+    assert shown.get_title() == "Outline and shadow"
+    assert one(shown, Adw.SpinRow, title="Outline").get_value() == 0
+
+
+def test_a_printed_counter_keeps_the_label_unsaved(window, tmp_path):
+    window.files.write(tmp_path / "a.etiketto")
+    window.change(margin_mm=5)
+    window.set_counter_next(9)
+    activate(window, "undo")
+    assert window.dirty  # the counter moved on and is not saved
+
+
+def test_an_unsaved_shipping_label_stays_unsaved(window):
+    window.set_label(Label(), None)
+    window.dirty = window.dirty_outside = True  # as _use_shipping_label leaves it
+    window.change(margin_mm=5)
+    activate(window, "undo")
+    assert window.dirty
+
+
+def test_rows_without_effect_are_off(window):
+    element = window.label.elements[0]
+    page = open_page(window, "Label", "Spacing and fitting")
+    smallest = one(page, Adw.SpinRow, title="Smallest size")
+    assert not smallest.get_sensitive()
+    one(page, Adw.SwitchRow, title="Shrink to fit").set_active(True)
+    assert smallest.get_sensitive()
+    window.sidebar_nav.pop()
+    page = open_page(window, "Label", "Box and frame")
+    padding = one(page, Adw.SpinRow, title="Padding")
+    assert not padding.get_sensitive() and padding.get_subtitle() == "mm, with a box or frame"
+    one(page, Adw.SwitchRow, title="White on black").set_active(True)
+    assert padding.get_sensitive()
+    window.sidebar_nav.pop()
+    page = open_page(window, "Label", "Outline and shadow")
+    outline = one(page, Adw.SpinRow, title="Outline")
+    colour = one(outline, Gtk.ColorDialogButton)
+    assert not colour.get_sensitive()
+    outline.set_value(0.3)
+    assert colour.get_sensitive() and element.outline_mm == 0.3
+
+
+def test_the_border_style_needs_a_border(window):
+    style = one(window.label_group, Adw.ExpanderRow, title="Border style")
+    assert not style.get_sensitive() and style.get_subtitle() == "Set a border width first"
+    one(window.label_group, Adw.SpinRow, title="Border").set_value(0.5)
+    assert style.get_sensitive()
+    assert style.get_subtitle() == "Corners, line and distance from the edge"

@@ -155,7 +155,7 @@ class Files:
 
     def _use_shipping_label(self, element: PageElement, target: Target | None) -> None:
         self.window.set_label(self._new_shipping_label(element, target), None)
-        self.window.dirty = True  # nothing saved yet
+        self.window.dirty = self.window.dirty_outside = True  # nothing saved yet
         self.window.update_title()
 
     def edit_area(self, element: PageElement) -> None:
