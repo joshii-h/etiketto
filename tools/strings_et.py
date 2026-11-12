@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Element %(n)d: Code 128 lubab ainult ladina tähti, numbreid ja kirjavahemärke",
     "Element %(n)d: the image cannot be read": "Element %(n)d: pilti ei saa lugeda",
     "Element %(n)d cannot be drawn": "Elementi %(n)d ei saa joonistada",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Element %(n)d: fonti %(font)s pole paigaldatud – kasutatakse teist fonti",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Ohutusvaru, ääris, selle sissenihe ja servavahe ei jäta ruumi – vähenda neid",
     "The fixed length is shorter than the spacing – increase it": "Fikseeritud pikkus on vahest lühem – suurenda seda",
     "The background image cannot be read": "Taustapilti ei saa lugeda",

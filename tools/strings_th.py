@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "องค์ประกอบ %(n)d: Code 128 รับเฉพาะอักษรละติน ตัวเลข และเครื่องหมายวรรคตอน",
     "Element %(n)d: the image cannot be read": "องค์ประกอบ %(n)d: อ่านรูปภาพไม่ได้",
     "Element %(n)d cannot be drawn": "วาดองค์ประกอบ %(n)d ไม่ได้",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "องค์ประกอบ %(n)d: ไม่ได้ติดตั้งฟอนต์ %(font)s – จะใช้ฟอนต์อื่นแทน",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "ระยะขอบปลอดภัย กรอบ ระยะร่นเข้าของกรอบ และระยะขอบไม่เหลือพื้นที่ – โปรดลดลง",
     "The fixed length is shorter than the spacing – increase it": "ความยาวคงที่สั้นกว่าระยะห่าง – โปรดเพิ่ม",
     "The background image cannot be read": "อ่านรูปพื้นหลังไม่ได้",

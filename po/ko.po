@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 17:12+0100\n"
+"PO-Revision-Date: 2026-11-12 17:18+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: ko\n"
 "Language: ko\n"
@@ -306,14 +306,14 @@ msgid ""
 msgstr "토큰을 만드는 대신 직접 고른 토큰을 표준 입력에서 받음 (scrypt로 저장)"
 
 #: tavletta/cli.py:466 tavletta/server/config.py:219
-#: tavletta/server/service.py:537
+#: tavletta/server/service.py:538
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "알 수 없는 프린터 모델: %s"
 
 #: tavletta/cli.py:473 tavletta/ui/files.py:84 tavletta/ui/files.py:137
-#: tavletta/ui/texts.py:318 tavletta/ui/texts.py:655
-#: tavletta/server/service.py:685
+#: tavletta/ui/texts.py:318 tavletta/ui/texts.py:658
+#: tavletta/server/service.py:686
 #, python-format
 msgid "Cannot open %s"
 msgstr "열 수 없음: %s"
@@ -334,7 +334,7 @@ msgid "The label has no element or variable named %s"
 msgstr "라벨에 %s라는 이름의 요소나 변수가 없습니다"
 
 #: tavletta/cli.py:562 tavletta/ui/printing.py:123
-#: tavletta/server/service.py:1013
+#: tavletta/server/service.py:1015
 msgid "The label is empty"
 msgstr "라벨이 비어 있습니다"
 
@@ -347,9 +347,9 @@ msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output은 PNG 이미지를 씁니다: .png로 끝나는 이름을 지정하세요"
 
 #: tavletta/cli.py:655 tavletta/cli.py:864 tavletta/ui/printing.py:553
-#: tavletta/ui/printing.py:715 tavletta/server/service.py:918
-#: tavletta/server/service.py:941 tavletta/server/service.py:1190
-#: tavletta/server/service.py:1335
+#: tavletta/ui/printing.py:715 tavletta/server/service.py:920
+#: tavletta/server/service.py:943 tavletta/server/service.py:1192
+#: tavletta/server/service.py:1347
 msgid "The label cannot be prepared for printing."
 msgstr "라벨을 인쇄용으로 준비할 수 없습니다."
 
@@ -362,16 +362,16 @@ msgid ""
 "Several printers found – choose one with --host (tavletta list-printers)"
 msgstr "프린터가 여러 대 발견되었습니다 – --host로 하나를 선택하세요 (tavletta list-printers)"
 
-#: tavletta/cli.py:755 tavletta/ui/texts.py:698 tavletta/server/service.py:1325
+#: tavletta/cli.py:755 tavletta/ui/texts.py:701 tavletta/server/service.py:1337
 #, python-format
 msgid "Cannot save %s"
 msgstr "저장할 수 없음: %s"
 
-#: tavletta/cli.py:757 tavletta/server/service.py:1328
+#: tavletta/cli.py:757 tavletta/server/service.py:1340
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "라벨은 인쇄되었지만 다음 카운터 값은 저장되지 않았습니다"
 
-#: tavletta/cli.py:772 tavletta/server/service.py:1042
+#: tavletta/cli.py:772 tavletta/server/service.py:1044
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "아무것도 인쇄되지 않았습니다: 다음 카운터 값을 저장할 수 없습니다"
 
@@ -389,7 +389,7 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet와 --rows에는 데이터 파일(--data)이 필요합니다"
 
 #: tavletta/cli.py:983 tavletta/ui/printing.py:585
-#: tavletta/server/service.py:782
+#: tavletta/server/service.py:783
 msgid "No rows to print"
 msgstr "인쇄할 행이 없습니다"
 
@@ -398,7 +398,7 @@ msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "라벨이 폴더 밖에 있는 데이터 파일을 사용합니다: --data로 지정하십시오"
 
 #: tavletta/cli.py:1020 tavletta/ui/window.py:849
-#: tavletta/server/service.py:835
+#: tavletta/server/service.py:837
 #, python-format
 msgid "No such column: %s"
 msgstr "없는 열: %s"
@@ -420,7 +420,7 @@ msgstr "행: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "%s의 다른 인쇄가 끝나기를 기다리는 중…"
 
-#: tavletta/cli.py:1045 tavletta/server/service.py:1184
+#: tavletta/cli.py:1045 tavletta/server/service.py:1186
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s이(가) 아직 다른 인쇄에 의해 잠겨 있습니다 – 나중에 다시 시도하세요"
@@ -2644,99 +2644,105 @@ msgid "Element %(n)d cannot be drawn"
 msgstr "요소 %(n)d을(를) 그릴 수 없습니다"
 
 #: tavletta/ui/texts.py:404
+#, python-format
+msgid ""
+"Element %(n)d: the font %(font)s is not installed – another font is used"
+msgstr "요소 %(n)d: 글꼴 %(font)s이(가) 설치되어 있지 않아 다른 글꼴을 사용합니다"
+
+#: tavletta/ui/texts.py:407
 msgid ""
 "Safety margin, border, its inset and edge spacing leave no room – reduce them"
 msgstr "안전 여백, 테두리, 테두리의 안쪽 거리, 가장자리 간격 때문에 공간이 없습니다 – 줄이십시오"
 
-#: tavletta/ui/texts.py:406
+#: tavletta/ui/texts.py:409
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "고정 길이가 간격보다 짧습니다 – 늘리십시오"
 
-#: tavletta/ui/texts.py:407
+#: tavletta/ui/texts.py:410
 msgid "The background image cannot be read"
 msgstr "배경 이미지를 읽을 수 없습니다"
 
-#: tavletta/ui/texts.py:409
+#: tavletta/ui/texts.py:412
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "요소 %(n)d: 코드의 모듈 너비가 인쇄 점 하나뿐이라 스캔되지 않을 수 있습니다 – 코드를 크게 하세요"
 
-#: tavletta/ui/texts.py:413
+#: tavletta/ui/texts.py:416
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "요소 %(n)d: 코드 주위에 필요한 여백이 들어가지 않습니다 – 코드를 크게 하세요"
 
-#: tavletta/ui/texts.py:417
+#: tavletta/ui/texts.py:420
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "요소 %(n)d: 모듈당 인쇄 점 하나로도 코드가 자리에 들어가지 않습니다 – 라벨을 크게 하거나 내용을 줄이세요"
 
-#: tavletta/ui/texts.py:420
+#: tavletta/ui/texts.py:423
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "요소 %(n)d: %(name)s은(는) 알려진 변수가 아닙니다"
 
-#: tavletta/ui/texts.py:422
+#: tavletta/ui/texts.py:425
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "요소 %(n)d: %(name)s의 날짜가 1년 이전이거나 9999년 이후입니다"
 
-#: tavletta/ui/texts.py:425
+#: tavletta/ui/texts.py:428
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "요소 %(n)d: 변수 %(name)s…이(가) 닫히지 않았습니다 – }로 끝내세요"
 
-#: tavletta/ui/texts.py:428
+#: tavletta/ui/texts.py:431
 #, python-format
 msgid ""
 "Element %(n)d: on a black-and-white printer it hardly stands out from what "
 "lies behind it, as a whole or in part – choose another colour or move it"
 msgstr "요소 %(n)d: 흑백 프린터에서는 전체 또는 일부가 뒤에 있는 것과 거의 구별되지 않습니다 – 다른 색을 선택하거나 위치를 옮기세요"
 
-#: tavletta/ui/texts.py:431
+#: tavletta/ui/texts.py:434
 #, python-format
 msgid "Element %(n)d: the shape has neither a line nor a fill"
 msgstr "요소 %(n)d: 도형에 선도 채우기도 없습니다"
 
-#: tavletta/ui/texts.py:433
+#: tavletta/ui/texts.py:436
 #, python-format
 msgid ""
 "Element %(n)d reaches beyond the edge of the label and is cut off there – "
 "move it or make it smaller"
 msgstr "요소 %(n)d이(가) 라벨 가장자리를 넘어 그곳에서 잘립니다 – 옮기거나 작게 하세요"
 
-#: tavletta/ui/texts.py:437
+#: tavletta/ui/texts.py:440
 #, python-format
 msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "요소 %(n)d: 안쪽 여백, 틀, 윤곽선 또는 그림자 때문에 텍스트 공간이 없습니다 – 더 작게 하세요"
 
-#: tavletta/ui/texts.py:452
+#: tavletta/ui/texts.py:455
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "이미 인쇄된 시트: %(total)d장 중 %(n)d장."
 
-#: tavletta/ui/texts.py:454
+#: tavletta/ui/texts.py:457
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "이미 인쇄된 라벨: %(total)d개 중 %(n)d개."
 
-#: tavletta/ui/texts.py:458
+#: tavletta/ui/texts.py:461
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "대기열에서 기다리던 시트는 취소되었습니다."
 
-#: tavletta/ui/texts.py:460
+#: tavletta/ui/texts.py:463
 msgid "The labels still waiting in the queue were canceled."
 msgstr "대기열에서 기다리던 라벨은 취소되었습니다."
 
-#: tavletta/ui/texts.py:467
+#: tavletta/ui/texts.py:470
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -2744,92 +2750,92 @@ msgid ""
 "size and the gap."
 msgstr "라벨은 %(size)s이고 간격은 %(gap)s이므로 %(pitch)s마다 새 라벨이 시작됩니다. 프린터는 %(measured)s마다 라벨을 측정했습니다. 라벨 크기와 간격을 확인하세요."
 
-#: tavletta/ui/texts.py:483
+#: tavletta/ui/texts.py:486
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "프린터를 찾을 수 없습니다. 프린터가 켜져 있고 같은 네트워크에 있는지 확인하거나 IP 주소를 입력하십시오."
 
-#: tavletta/ui/texts.py:487
+#: tavletta/ui/texts.py:490
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "USB에서 프린터를 찾을 수 없습니다. 케이블을 확인하고 프린터가 켜져 있으며 절전 상태가 아닌지 확인한 다음 다시 검색하십시오."
 
-#: tavletta/ui/texts.py:490
+#: tavletta/ui/texts.py:493
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "프린터가 응답하지 않습니다. 프린터가 켜져 있고 절전 상태가 아닌지 확인하십시오."
 
-#: tavletta/ui/texts.py:492
+#: tavletta/ui/texts.py:495
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "프린터가 더 이상 데이터를 받지 않습니다. 라벨이 없거나 덮개가 열려 있는 등 프린터에 문제가 표시되는지 확인한 후 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:496
+#: tavletta/ui/texts.py:499
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "프린터가 연결을 거부합니다. 프린터를 껐다가 다시 켜십시오. 웹 인터페이스에 “Port 9100” 옵션이 있으면 켜십시오."
 
-#: tavletta/ui/texts.py:499
+#: tavletta/ui/texts.py:502
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "카세트가 없습니다. 카세트를 넣고 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:500
+#: tavletta/ui/texts.py:503
 msgid "The printer's cover is open. Close it and try again."
 msgstr "프린터 덮개가 열려 있습니다. 덮개를 닫고 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:501
+#: tavletta/ui/texts.py:504
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "라벨이 걸렸습니다. 덮개를 열고 라벨을 빼낸 뒤 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:502
+#: tavletta/ui/texts.py:505
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "카세트를 인식할 수 없습니다. 다시 넣거나 다른 카세트를 사용하십시오."
 
-#: tavletta/ui/texts.py:503
+#: tavletta/ui/texts.py:506
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "프린터가 사용 중입니다. 잠시 후 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:504
+#: tavletta/ui/texts.py:507
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "이 프린터에는 라벨이 너무 깁니다. 최대 %(max)s입니다."
 
-#: tavletta/ui/texts.py:505
+#: tavletta/ui/texts.py:508
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "라벨이 이 프린터에는 너무 넓습니다. 최대 %(max)s입니다."
 
-#: tavletta/ui/texts.py:506
+#: tavletta/ui/texts.py:509
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "프린터에 라벨이 없습니다. 새 롤을 넣고 다시 시도하세요."
 
-#: tavletta/ui/texts.py:507
+#: tavletta/ui/texts.py:510
 msgid "The print head is open. Close it and try again."
 msgstr "프린트 헤드가 열려 있습니다. 닫고 다시 시도하세요."
 
-#: tavletta/ui/texts.py:509
+#: tavletta/ui/texts.py:512
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "프린터가 다음 라벨을 찾지 못합니다. 라벨이 올바르게 들어 있고 라벨 센서를 통과하는지 확인하세요."
 
-#: tavletta/ui/texts.py:513
+#: tavletta/ui/texts.py:516
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "리본에 문제가 있습니다. 올바르게 끼워졌는지, 프린터에 설정된 인쇄 방식과 맞는지 확인하세요."
 
-#: tavletta/ui/texts.py:519
+#: tavletta/ui/texts.py:522
 #, python-format
 msgid ""
 "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
 "without one need “%(direct)s” under “%(method)s”."
 msgstr "프린터가 리본을 찾지 못합니다. 리본을 끼우고 다시 시도하십시오. 리본 없이 인쇄하는 라벨은 “%(method)s”에서 “%(direct)s”을(를) 선택해야 합니다."
 
-#: tavletta/ui/texts.py:526
+#: tavletta/ui/texts.py:529
 #, python-format
 msgid ""
 "A ribbon is loaded, but the printer prints without it (thermal direct). For "
@@ -2837,239 +2843,239 @@ msgid ""
 "remove the ribbon."
 msgstr "리본이 끼워져 있지만 프린터가 리본 없이 인쇄합니다(직접 감열). 리본이 필요한 라벨은 “%(method)s”에서 “%(transfer)s”을(를) 선택하거나 리본을 빼십시오."
 
-#: tavletta/ui/texts.py:531
+#: tavletta/ui/texts.py:534
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "프린터가 일시 정지되었습니다. 프린터 화면에서 다시 시작한 뒤 다시 시도하세요."
 
-#: tavletta/ui/texts.py:532
+#: tavletta/ui/texts.py:535
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "프린터에 용지가 없습니다. 용지를 넣고 다시 시도하세요."
 
-#: tavletta/ui/texts.py:534
+#: tavletta/ui/texts.py:537
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "용지가 걸렸습니다. 프린터 화면의 안내에 따라 제거한 뒤 다시 시도하세요."
 
-#: tavletta/ui/texts.py:536
+#: tavletta/ui/texts.py:539
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "프린터의 토너 또는 잉크가 떨어졌습니다. 교체한 뒤 다시 시도하세요."
 
-#: tavletta/ui/texts.py:537
+#: tavletta/ui/texts.py:540
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "프린터가 이 크기를 인쇄할 수 없습니다. 프린터가 지원하는 용지 크기를 선택하세요."
 
-#: tavletta/ui/texts.py:539
+#: tavletta/ui/texts.py:542
 msgid ""
 "The printer takes none of the formats Tavletta can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "프린터가 Tavletta에서 보낼 수 있는 형식(PDF, PWG Raster, JPEG)을 하나도 받지 않습니다."
 
-#: tavletta/ui/texts.py:542
+#: tavletta/ui/texts.py:545
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "프린터 대기열이 일시 정지되었습니다. 시스템 프린터 설정에서 다시 시작한 뒤 다시 시도하세요."
 
-#: tavletta/ui/texts.py:546
+#: tavletta/ui/texts.py:549
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "인쇄 작업이 대기열에서 보류되었습니다. 예를 들어 해제되거나 암호가 입력될 때까지입니다. 시스템 프린터 설정에서 대기열을 확인한 뒤 다시 시도하세요."
 
-#: tavletta/ui/texts.py:550
+#: tavletta/ui/texts.py:553
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "인쇄 작업이 프린터 또는 대기열에서 취소되었습니다."
 
-#: tavletta/ui/texts.py:551
+#: tavletta/ui/texts.py:554
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "프린터가 제때 해상도를 알리지 않았습니다. “%s”에서 선택하십시오."
 
-#: tavletta/ui/texts.py:554
+#: tavletta/ui/texts.py:557
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "넣은 롤이 라벨과 맞지 않습니다. 맞는 롤을 넣거나, 넣은 롤에 맞는 라벨 크기나 프린터 모델을 선택하세요."
 
-#: tavletta/ui/texts.py:557
+#: tavletta/ui/texts.py:560
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "프린터 배터리가 부족합니다 – 충전하거나 전원 어댑터를 연결하세요."
 
-#: tavletta/ui/texts.py:558
+#: tavletta/ui/texts.py:561
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "프린트 헤드가 너무 뜨겁습니다. 식을 때까지 기다린 다음 다시 시도하세요."
 
-#: tavletta/ui/texts.py:560
+#: tavletta/ui/texts.py:563
 msgid ""
 "Tavletta cannot print on this printer model: it does not take the raster "
 "images Tavletta sends."
 msgstr "Tavletta는 이 프린터 모델에서 인쇄할 수 없습니다: Tavletta가 보내는 래스터 이미지를 받지 않습니다."
 
-#: tavletta/ui/texts.py:564
+#: tavletta/ui/texts.py:567
 msgid "Tavletta does not know this printer model and cannot print on it yet."
 msgstr "Tavletta는 이 프린터 모델을 알지 못해 아직 인쇄할 수 없습니다."
 
-#: tavletta/ui/texts.py:567
+#: tavletta/ui/texts.py:570
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "프린터가 Editor Lite 모드여서 USB 드라이브로 표시됩니다. 프린터에서 Editor Lite를 끈 다음(램프가 꺼짐) 다시 검색하세요."
 
-#: tavletta/ui/texts.py:571
+#: tavletta/ui/texts.py:574
 msgid ""
 "Tavletta is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Tavletta에 프린터의 USB 포트를 사용할 권한이 없습니다. 사용자를 “lp” 그룹에 추가한(sudo usermod -aG lp $USER) 뒤 로그아웃했다가 다시 로그인하세요."
 
-#: tavletta/ui/texts.py:575
+#: tavletta/ui/texts.py:578
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "프린터가 받는 해상도로 만들기에는 페이지가 너무 큽니다. 더 작은 용지 크기를 선택하거나 PDF를 받는 프린터로 인쇄하세요."
 
-#: tavletta/ui/texts.py:579
+#: tavletta/ui/texts.py:582
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "이 프린터의 해상도에서는 코드가 라벨에 들어가지 않아 잘립니다. 라벨을 크게 하거나 코드 내용을 줄이세요."
 
-#: tavletta/ui/texts.py:583
+#: tavletta/ui/texts.py:586
 msgid ""
 "Tavletta is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Tavletta에 프린터의 직렬 포트를 사용할 권한이 없습니다. 사용자를 “dialout” 그룹에 추가한(sudo usermod -aG dialout $USER, Arch Linux에서는 그룹 이름이 “uucp”) 뒤 로그아웃했다가 다시 로그인하세요."
 
-#: tavletta/ui/texts.py:588
+#: tavletta/ui/texts.py:591
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "프린터에서 문제를 보고했습니다. 프린터를 껐다가 다시 켠 뒤 다시 시도하십시오."
 
-#: tavletta/ui/texts.py:599
+#: tavletta/ui/texts.py:602
 msgid "Printed"
 msgstr "인쇄함"
 
-#: tavletta/ui/texts.py:605
+#: tavletta/ui/texts.py:608
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "프린터로 보냄 – 차례가 되면 인쇄됩니다"
 
-#: tavletta/ui/texts.py:607
+#: tavletta/ui/texts.py:610
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "프린터로 보냈습니다 – 프린터가 인쇄를 확인하지 않았습니다"
 
-#: tavletta/ui/texts.py:611
+#: tavletta/ui/texts.py:614
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "넣은 롤에 필요하므로 “%(used)s”(으)로 인쇄했습니다"
 
-#: tavletta/ui/texts.py:615
+#: tavletta/ui/texts.py:618
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "이 프린터에서는 “%(wanted)s” 색상 모드를 쓸 수 없어 “%(used)s”(으)로 인쇄했습니다"
 
-#: tavletta/ui/texts.py:625
+#: tavletta/ui/texts.py:628
 msgid "Warming up…"
 msgstr "예열 중…"
 
-#: tavletta/ui/texts.py:626
+#: tavletta/ui/texts.py:629
 msgid "Cooling down…"
 msgstr "냉각 중…"
 
-#: tavletta/ui/texts.py:627
+#: tavletta/ui/texts.py:630
 msgid "Cleaning…"
 msgstr "청소 중…"
 
-#: tavletta/ui/texts.py:628
+#: tavletta/ui/texts.py:631
 msgid "Swipe the printer's panel to cut the label"
 msgstr "프린터 패널을 밀어 라벨을 자르십시오"
 
-#: tavletta/ui/texts.py:630
+#: tavletta/ui/texts.py:633
 msgid "Out of paper – load paper to continue"
 msgstr "용지 없음 – 계속하려면 용지를 넣으세요"
 
-#: tavletta/ui/texts.py:631
+#: tavletta/ui/texts.py:634
 msgid "Cover open – close it to continue"
 msgstr "덮개 열림 – 계속하려면 덮개를 닫으세요"
 
-#: tavletta/ui/texts.py:632
+#: tavletta/ui/texts.py:635
 msgid "Paper jammed – remove it to continue"
 msgstr "용지 걸림 – 계속하려면 용지를 제거하세요"
 
-#: tavletta/ui/texts.py:643
+#: tavletta/ui/texts.py:646
 msgid "This label needs a newer version of Tavletta"
 msgstr "이 라벨을 열려면 새 버전의 Tavletta가 필요합니다"
 
-#: tavletta/ui/texts.py:645
+#: tavletta/ui/texts.py:648
 #, python-format
 msgid "%s is not an Tavletta label"
 msgstr "Tavletta 라벨이 아님: %s"
 
-#: tavletta/ui/texts.py:646 tavletta/ui/texts.py:666
-#: tavletta/server/service.py:696
+#: tavletta/ui/texts.py:649 tavletta/ui/texts.py:669
+#: tavletta/server/service.py:697
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "파일이 손상됨: %s"
 
-#: tavletta/ui/texts.py:653
+#: tavletta/ui/texts.py:656
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "데이터 파일 %s이(가) 더 이상 없습니다. 다시 선택하거나 제거하십시오."
 
-#: tavletta/ui/texts.py:657
+#: tavletta/ui/texts.py:660
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s에 %(sheet)s 시트가 없습니다"
 
-#: tavletta/ui/texts.py:659
+#: tavletta/ui/texts.py:662
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s은(는) 표가 아닙니다. CSV, ODS 또는 XLSX 파일을 사용하십시오."
 
-#: tavletta/ui/texts.py:661
+#: tavletta/ui/texts.py:664
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s은(는) 데이터 병합 라벨에 쓰기에 너무 큽니다. 더 작은 파일로 나누거나 필요 없는 행과 열을 제거하십시오."
 
-#: tavletta/ui/texts.py:664
+#: tavletta/ui/texts.py:667
 #, python-format
 msgid "%s contains no data."
 msgstr "%s에 데이터가 없습니다."
 
-#: tavletta/ui/texts.py:675
+#: tavletta/ui/texts.py:678
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "%(row)d행에서 인쇄가 멈췄습니다. 계속하려면 %(row)d행부터 다시 인쇄하십시오."
 
-#: tavletta/ui/texts.py:679
+#: tavletta/ui/texts.py:682
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "%(row)d행에서 이미 인쇄된 매수: %(copies)d."
 
-#: tavletta/ui/texts.py:684
+#: tavletta/ui/texts.py:687
 #, python-format
 msgid "Row %(row)d goes at position %(position)d of sheet %(sheet)d."
 msgstr "%(row)d행은 %(sheet)d번째 시트의 %(position)d번 위치에 들어갑니다."
 
-#: tavletta/ui/texts.py:695
+#: tavletta/ui/texts.py:698
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "저장할 수 없음: %s (쓰기 권한 없음)"
 
-#: tavletta/ui/texts.py:697
+#: tavletta/ui/texts.py:700
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "저장할 수 없음: %s (디스크 공간 부족)"
 
-#: tavletta/ui/texts.py:707
+#: tavletta/ui/texts.py:710
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
@@ -3296,7 +3302,7 @@ msgstr "프린터 이름 목록이 필요함"
 msgid "printers can only be limited with --printers"
 msgstr "프린터 제한은 --printers와 함께일 때만 가능"
 
-#: tavletta/server/config.py:479 tavletta/server/service.py:476
+#: tavletta/server/config.py:479 tavletta/server/service.py:477
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "알 수 없는 프린터: %s"
@@ -3310,7 +3316,7 @@ msgstr "%s에 잘못된 값"
 msgid "The request took too long"
 msgstr "요청 시간이 너무 오래 걸렸습니다"
 
-#: tavletta/server/http.py:473 tavletta/server/service.py:1246
+#: tavletta/server/http.py:473 tavletta/server/service.py:1258
 msgid "The server is busy – try again later"
 msgstr "서버가 사용 중입니다 – 나중에 다시 시도하십시오"
 
@@ -3495,75 +3501,75 @@ msgstr "열이 너무 많음: 최대 %d"
 msgid "Too many cells: at most %d"
 msgstr "셀이 너무 많음: 최대 %d"
 
-#: tavletta/server/service.py:488
+#: tavletta/server/service.py:489
 msgid "Choose a printer by its name"
 msgstr "이름으로 프린터를 선택하십시오"
 
-#: tavletta/server/service.py:552 tavletta/server/service.py:1225
+#: tavletta/server/service.py:553 tavletta/server/service.py:1237
 msgid "This access token may not do this"
 msgstr "이 액세스 토큰으로는 이 작업을 할 수 없습니다"
 
-#: tavletta/server/service.py:600
+#: tavletta/server/service.py:601
 msgid "No printer address: give it as host"
 msgstr "프린터 주소 없음: host로 지정하십시오"
 
-#: tavletta/server/service.py:609
+#: tavletta/server/service.py:610
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "허용되지 않는 프린터 주소: %s"
 
-#: tavletta/server/service.py:704
+#: tavletta/server/service.py:705
 msgid "Document pages in label_content are not allowed (--allow-pdf-pages)"
 msgstr "label_content에서는 문서 페이지를 사용할 수 없습니다 (--allow-pdf-pages)"
 
-#: tavletta/server/service.py:790
+#: tavletta/server/service.py:791
 msgid "A sheet needs a data file"
 msgstr "시트에는 데이터 파일이 필요합니다"
 
-#: tavletta/server/service.py:796
+#: tavletta/server/service.py:797
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "라벨이 라벨 폴더 밖에 있는 데이터 파일을 사용합니다: 그 행도 함께 보내십시오"
 
-#: tavletta/server/service.py:962
+#: tavletta/server/service.py:964
 #, python-format
 msgid "At most %d labels in one print job"
 msgstr "인쇄 작업 하나에 라벨은 최대 %d개까지 가능합니다"
 
-#: tavletta/server/service.py:989
+#: tavletta/server/service.py:991
 msgid "Too many print jobs are waiting – try again later"
 msgstr "대기 중인 인쇄 작업이 너무 많습니다 – 나중에 다시 시도하십시오"
 
-#: tavletta/server/service.py:1206
+#: tavletta/server/service.py:1208
 #, python-format
 msgid "No such print job: %s"
 msgstr "없는 인쇄 작업: %s"
 
-#: tavletta/server/service.py:1218
+#: tavletta/server/service.py:1220
 msgid "The print job has already finished"
 msgstr "인쇄 작업이 이미 끝났습니다"
 
-#: tavletta/server/service.py:1250
+#: tavletta/server/service.py:1262
 msgid "The label is too large to render"
 msgstr "라벨이 너무 커서 렌더링할 수 없습니다"
 
-#: tavletta/server/service.py:1264
+#: tavletta/server/service.py:1276
 #, python-format
 msgid "The label is too large: at most %d images and codes"
 msgstr "라벨이 너무 큽니다: 이미지와 코드는 최대 %d개까지 가능합니다"
 
-#: tavletta/server/service.py:1287
+#: tavletta/server/service.py:1299
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "라벨이 너무 큽니다: 요소는 최대 %(elements)d개, 텍스트당 최대 %(chars)d자까지 가능합니다"
 
-#: tavletta/server/service.py:1306
+#: tavletta/server/service.py:1318
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "이 프린터에서는 최대 %d매까지 가능합니다"
 
-#: tavletta/server/service.py:1311
+#: tavletta/server/service.py:1323
 msgid "Printers are chosen by name: leave out host"
 msgstr "프린터는 이름으로 선택합니다: host를 지정하지 마십시오"

@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "元素 %(n)d：Code 128 只接受拉丁字母、数字和标点符号",
     "Element %(n)d: the image cannot be read": "元素 %(n)d：无法读取图像",
     "Element %(n)d cannot be drawn": "无法绘制元素 %(n)d",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "元素 %(n)d：未安装字体 %(font)s – 将使用其他字体",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "安全边距、边框及其内缩和边缘间距已占满空间，请减小",
     "The fixed length is shorter than the spacing – increase it": "固定长度比间距还短，请增大",
     "The background image cannot be read": "无法读取背景图像",

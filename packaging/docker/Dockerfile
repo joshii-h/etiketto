@@ -32,12 +32,19 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends gir1.2-poppler-0.18 \
     && rm -rf /var/lib/apt/lists/*
+# Fonts: a label drawn in a font the server lacks is drawn in another one
+# (and the preview and the job warn: font_missing). These cover common
+# office and label fonts in about 15 MB: DejaVu, Source Sans 3, Liberation
+# (metrics of Arial, Times New Roman, Courier New) and Carlito (Calibri).
+# More Debian packages: --build-arg FONTS="... fonts-noto-core" (about
+# 40 MB more); fonts of your own: mount a folder at /usr/local/share/fonts.
+ARG FONTS="fonts-dejavu-core fonts-adobe-sourcesans3 fonts-liberation fonts-crosextra-carlito"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        python3 python3-gi python3-gi-cairo gir1.2-pango-1.0 fontconfig fonts-dejavu-core \
+        python3 python3-gi python3-gi-cairo gir1.2-pango-1.0 fontconfig ${FONTS} \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --uid 10001 --home-dir /data --create-home tavletta \
-    && install -d -o tavletta -g tavletta -m 0755 /labels /config
+    && install -d -o tavletta -g tavletta -m 0755 /labels /config /usr/local/share/fonts
 COPY --from=build /opt/tavletta /opt/tavletta
 # the licence and the notices of what Tavletta bundles
 COPY --from=build /src/LICENSE /src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavletta/
@@ -46,8 +53,11 @@ COPY --from=build /src/LICENSE /src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavlet
 # folders, no volumes: Compose (or docker run -v) says what goes there, and
 # any user id can read them (compose.yaml runs as the owner of the files).
 # MALLOC_ARENA_MAX: threads do not each keep memory a large label used.
+# Fonts mounted at /usr/local/share/fonts are found when the server starts
+# (fontconfig reads that folder; its cache goes to /tmp, as / is read-only).
 ENV PATH=/opt/tavletta/bin:$PATH \
     XDG_CONFIG_HOME=/config \
+    XDG_CACHE_HOME=/tmp \
     MALLOC_ARENA_MAX=2 \
     PYTHONUNBUFFERED=1
 USER tavletta

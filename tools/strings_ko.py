@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "요소 %(n)d: Code 128에는 라틴 문자, 숫자, 문장 부호만 쓸 수 있습니다",
     "Element %(n)d: the image cannot be read": "요소 %(n)d: 이미지를 읽을 수 없습니다",
     "Element %(n)d cannot be drawn": "요소 %(n)d을(를) 그릴 수 없습니다",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "요소 %(n)d: 글꼴 %(font)s이(가) 설치되어 있지 않아 다른 글꼴을 사용합니다",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "안전 여백, 테두리, 테두리의 안쪽 거리, 가장자리 간격 때문에 공간이 없습니다 – 줄이십시오",
     "The fixed length is shorter than the spacing – increase it": "고정 길이가 간격보다 짧습니다 – 늘리십시오",
     "The background image cannot be read": "배경 이미지를 읽을 수 없습니다",

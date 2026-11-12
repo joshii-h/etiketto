@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Element %(n)d: Code 128 accepterar endast latinska bokstäver, siffror och skiljetecken",
     "Element %(n)d: the image cannot be read": "Element %(n)d: bilden kan inte läsas",
     "Element %(n)d cannot be drawn": "Element %(n)d kan inte ritas",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Element %(n)d: typsnittet %(font)s är inte installerat – ett annat används",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Säkerhetsmarginal, kant, dess indrag och kantavstånd lämnar inget utrymme – minska dem",
     "The fixed length is shorter than the spacing – increase it": "Den fasta längden är kortare än avståndet – öka den",
     "The background image cannot be read": "Bakgrundsbilden kan inte läsas",

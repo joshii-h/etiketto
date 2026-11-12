@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "要素 %(n)d: Code 128 で使えるのはラテン文字、数字、記号のみです",
     "Element %(n)d: the image cannot be read": "要素 %(n)d: 画像を読み込めません",
     "Element %(n)d cannot be drawn": "要素 %(n)d を描画できません",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "要素 %(n)d: フォント %(font)s がインストールされていません – 別のフォントを使います",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "安全マージン、枠線、その内側へのずらし、端の余白で場所がありません。小さくしてください",
     "The fixed length is shorter than the spacing – increase it": "固定の長さが間隔より短くなっています。長くしてください",
     "The background image cannot be read": "背景画像を読み込めません",

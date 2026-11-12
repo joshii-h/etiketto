@@ -48,7 +48,7 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: image_unreadable, page_unreadable,
     pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
-    outside_label (the free layout), background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
+    outside_label (the free layout), font_missing (the server: typeset.font_installed), background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
     tavletta.codes.CodeError; codes that may not scan or do not fit:
     code_thin, code_quiet, code_too_big, barcode_narrow; code128_long: a Code 128 longer
     than CODE128_MAX characters)."""

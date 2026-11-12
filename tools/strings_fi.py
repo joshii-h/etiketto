@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Elementti %(n)d: Code 128 hyväksyy vain latinalaiset kirjaimet, numerot ja välimerkit",
     "Element %(n)d: the image cannot be read": "Elementti %(n)d: kuvaa ei voi lukea",
     "Element %(n)d cannot be drawn": "Elementtiä %(n)d ei voi piirtää",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Elementti %(n)d: fonttia %(font)s ei ole asennettu – käytetään toista fonttia",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Turvamarginaali, reunus, sen sisennys ja reunaväli eivät jätä tilaa – pienennä niitä",
     "The fixed length is shorter than the spacing – increase it": "Kiinteä pituus on lyhyempi kuin väli – kasvata sitä",
     "The background image cannot be read": "Taustakuvaa ei voi lukea",

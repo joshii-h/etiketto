@@ -1,0 +1,73 @@
+# Tavletta print server as a system service, for a server (site/docs/server-install.md).
+#
+#   python3 -m venv --system-site-packages /opt/tavletta
+#   /opt/tavletta/bin/pip install <the Tavletta source or wheel>
+#   useradd --system --home-dir /var/lib/tavletta --create-home --shell /usr/sbin/nologin tavletta
+#   install -d -o tavletta -g tavletta -m 0750 /etc/tavletta /var/lib/tavletta/labels
+#   # printers.toml and tokens.toml into /etc/tavletta, owned by tavletta, mode 600
+#   cp packaging/systemd/tavletta-server.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now tavletta-server
+#   journalctl -u tavletta-server -f
+#
+# For one user on a desktop: tavletta.service (a user service).
+#
+# The server listens on 127.0.0.1 only: a reverse proxy on this host adds
+# HTTPS for other computers. To listen on the network itself, change
+# --host (a token is required then) and open the port in the firewall.
+
+[Unit]
+Description=Tavletta print server (REST API and MCP)
+Documentation=https://tavletta.joshuahirsig.xyz/en/server-install/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# ready once it listens (sd_notify): a reload sent before is not lost
+Type=notify
+NotifyAccess=main
+User=tavletta
+Group=tavletta
+ExecStart=/opt/tavletta/bin/tavletta serve --host 127.0.0.1 --port 8790 --mcp --printers /etc/tavletta/printers.toml --tokens /etc/tavletta/tokens.toml --labels-dir /var/lib/tavletta/labels
+# SIGHUP reads tokens.toml again (it is also read again when it changes)
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+# SIGTERM: waiting jobs are canceled, a printing one finishes its label and
+# saves the counter
+TimeoutStopSec=60
+# fontconfig's cache and the like; fonts of your own go to /usr/local/share/fonts
+Environment=XDG_CACHE_HOME=/var/cache/tavletta
+CacheDirectory=tavletta
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+# the labels: counters are saved into the label files
+ReadWritePaths=/var/lib/tavletta
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+# network printers, CUPS and Avahi (D-Bus); netlink for name lookups
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# a label that renders large is refused at 40 megapixels; this bounds the rest
+MemoryMax=1G
+# fewer malloc arenas: threads do not each keep memory a large label used
+Environment=MALLOC_ARENA_MAX=2
+TasksMax=128
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "%(n)d. elem: a Code 128 csak latin betűket, számjegyeket és írásjeleket fogad el",
     "Element %(n)d: the image cannot be read": "%(n)d. elem: a kép nem olvasható",
     "Element %(n)d cannot be drawn": "%(n)d. elem: nem rajzolható meg",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "%(n)d. elem: a(z) %(font)s betűtípus nincs telepítve – más betűtípus lesz használva",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "A biztonsági margó, a keret, annak behúzása és a szélső térköz nem hagy helyet – csökkentse őket",
     "The fixed length is shorter than the spacing – increase it": "A rögzített hossz rövidebb a térköznél – növelje",
     "The background image cannot be read": "A háttérkép nem olvasható",

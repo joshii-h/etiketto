@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Elemen %(n)d: Code 128 hanya menerima huruf Latin, digit dan tanda baca",
     "Element %(n)d: the image cannot be read": "Elemen %(n)d: imej tidak dapat dibaca",
     "Element %(n)d cannot be drawn": "Elemen %(n)d tidak dapat dilukis",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Elemen %(n)d: fon %(font)s tidak dipasang – fon lain digunakan",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Jidar keselamatan, sempadan, jarak ke dalamnya dan jarak tepi tidak meninggalkan ruang – kurangkan nilainya",
     "The fixed length is shorter than the spacing – increase it": "Panjang tetap lebih pendek daripada jarak – tambahkan panjangnya",
     "The background image cannot be read": "Imej latar tidak dapat dibaca",

@@ -15,3 +15,7 @@ repo/
 .pytest_cache/
 .hypothesis/
 site/build/
+# the deployment files of packaging/docker (compose.yaml): tokens, labels, fonts
+packaging/docker/config/
+packaging/docker/labels/
+packaging/docker/fonts/

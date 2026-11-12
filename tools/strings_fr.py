@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Élément %(n)d\xa0: Code 128 n’accepte que les lettres latines, les chiffres et la ponctuation",
     "Element %(n)d: the image cannot be read": "Élément %(n)d\xa0: l’image est illisible",
     "Element %(n)d cannot be drawn": "Impossible de dessiner l’élément %(n)d",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Élément %(n)d\xa0: la police %(font)s n’est pas installée – une autre police est utilisée",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "La marge de sécurité, la bordure, son retrait et la marge latérale ne laissent aucune place – réduisez-les",
     "The fixed length is shorter than the spacing – increase it": "La longueur fixe est plus courte que l’espacement – augmentez-la",
     "The background image cannot be read": "L’image de fond est illisible",

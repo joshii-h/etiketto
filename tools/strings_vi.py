@@ -128,6 +128,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Phần tử %(n)d: Code 128 chỉ chấp nhận chữ cái Latinh, chữ số và dấu câu",
     "Element %(n)d: the image cannot be read": "Phần tử %(n)d: không đọc được ảnh",
     "Element %(n)d cannot be drawn": "Không vẽ được phần tử %(n)d",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Phần tử %(n)d: phông chữ %(font)s chưa được cài đặt – một phông khác sẽ được dùng",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Lề an toàn, viền, phần thụt vào của viền và khoảng cách mép không còn chỗ trống – hãy giảm bớt",
     "The fixed length is shorter than the spacing – increase it": "Chiều dài cố định ngắn hơn khoảng cách – hãy tăng chiều dài",
     "The background image cannot be read": "Không đọc được ảnh nền",
