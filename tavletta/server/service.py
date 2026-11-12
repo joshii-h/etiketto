@@ -73,6 +73,7 @@ from tavletta.server.jobs import PRINTING, WAITING, Failure, JobQueue, PrintJob,
 from tavletta.server.paths import LabelsDir
 from tavletta.server.requests import LabelRequest, PreviewRequest, PrintRequest
 from tavletta.sheets.layout import SheetJob
+from tavletta.typeset import font_installed
 from tavletta.ui.i18n import _
 from tavletta.ui.settings import PrinterSettings, Settings
 from tavletta.ui.texts import (
@@ -811,6 +812,7 @@ class Service:
                 image = prepared.backend.preview(rendered.image, prepared.options.mode)
             buffer = io.BytesIO()
             image.save(buffer, format="PNG")
+        warnings += font_warnings(prepared.label)
         texts = [_warning(w.key, warning_text(w)) for w in warnings]
         if prepared.rows and (unknown := unknown_columns(prepared.label, list(prepared.rows[0]))):
             names = ", ".join("{%s}" % name for name in unknown)
@@ -912,7 +914,7 @@ class Service:
                 _("At most %d labels in one print job") % self.max_labels,
             )
         with self._rendering(prepared):
-            warnings = self._check(prepared)
+            warnings = self._check(prepared) + font_warnings(prepared.label)
         save = self._saves(prepared, request.no_save_counter)
         return Checked(request, prepared, warnings, save, total)
 
@@ -1146,6 +1148,16 @@ class Service:
             raise ApiError(409, "job_finished", _("The print job has already finished"))
         self.jobs.cancel(job)
         return job
+
+
+def font_warnings(label: Label) -> list[RenderWarning]:
+    """Texts in a font this computer does not have (a server or container
+    without the fonts of the designer's computer): drawn in another one."""
+    return [
+        RenderWarning("font_missing", {"n": n, "font": element.font})
+        for n, element in enumerate(label.elements, 1)
+        if isinstance(element, TextElement) and not font_installed(element.font)
+    ]
 
 
 def _require(caller: Caller, role: str) -> None:

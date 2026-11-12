@@ -1,6 +1,6 @@
 # Tavletta print server with Docker Compose: network printers (docs/server.md).
 #
-#   mkdir -p config labels
+#   mkdir -p config labels fonts
 #   cp printers.example.toml config/printers.toml   # name your printers
 #   docker compose build
 #   docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint tavletta \
@@ -52,6 +52,9 @@ services:
       # printers.toml, tokens.toml (hashes only), tavletta/settings.json if wanted
       - ./config:/config:ro
       - ./labels:/labels  # the label files (.tavletta) and their data files
+      # fonts of your own (.ttf, .otf), e.g. the corporate font; read when
+      # the server starts: docker compose restart after adding one
+      - ./fonts:/usr/local/share/fonts:ro
     read_only: true
     tmpfs:
       - /tmp

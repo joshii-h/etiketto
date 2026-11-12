@@ -127,6 +127,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Elemento %(n)d: Code 128 solo admite letras latinas, dígitos y signos de puntuación",
     "Element %(n)d: the image cannot be read": "Elemento %(n)d: no se puede leer la imagen",
     "Element %(n)d cannot be drawn": "No se puede dibujar el elemento %(n)d",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Elemento %(n)d: la fuente %(font)s no está instalada – se usa otra",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "El margen de seguridad, el borde, su desplazamiento interior y el margen lateral no dejan espacio: redúzcalos",
     "The fixed length is shorter than the spacing – increase it": "La longitud fija es menor que el espaciado: auméntela",
     "The background image cannot be read": "No se puede leer la imagen de fondo",

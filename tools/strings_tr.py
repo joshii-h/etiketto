@@ -127,6 +127,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "Öge %(n)d: Code 128 yalnızca Latin harfleri, rakamlar ve noktalama işaretleri kabul eder",
     "Element %(n)d: the image cannot be read": "Öge %(n)d: görüntü okunamıyor",
     "Element %(n)d cannot be drawn": "Öge %(n)d çizilemiyor",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "Öge %(n)d: %(font)s yazı tipi yüklü değil – başka bir yazı tipi kullanılıyor",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "Güvenlik payı, kenarlık, kenarlığın içe kaydırması ve kenar aralığı yer bırakmıyor – bunları azaltın",
     "The fixed length is shorter than the spacing – increase it": "Sabit uzunluk aralıktan kısa – uzunluğu artırın",
     "The background image cannot be read": "Arka plan görüntüsü okunamıyor",

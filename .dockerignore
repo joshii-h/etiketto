@@ -8,3 +8,6 @@ site
 tests
 docs
 .flatpak-builder
+packaging/docker/config
+packaging/docker/labels
+packaging/docker/fonts

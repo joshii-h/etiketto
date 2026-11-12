@@ -127,6 +127,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "तत्व %(n)d: Code 128 केवल लैटिन अक्षर, अंक और विराम चिह्न स्वीकार करता है",
     "Element %(n)d: the image cannot be read": "तत्व %(n)d: छवि पढ़ी नहीं जा सकती",
     "Element %(n)d cannot be drawn": "तत्व %(n)d नहीं बनाया जा सकता",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "तत्व %(n)d: फ़ॉन्ट %(font)s इंस्टॉल नहीं है – कोई दूसरा फ़ॉन्ट उपयोग होगा",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "सुरक्षा हाशिया, बॉर्डर, उसकी भीतरी दूरी और किनारे का अंतराल कोई जगह नहीं छोड़ते – इन्हें कम करें",
     "The fixed length is shorter than the spacing – increase it": "निश्चित लंबाई अंतराल से छोटी है – इसे बढ़ाएँ",
     "The background image cannot be read": "पृष्ठभूमि छवि पढ़ी नहीं जा सकती",

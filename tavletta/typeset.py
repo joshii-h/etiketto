@@ -11,6 +11,7 @@ leaves out scripts whose letters join (CURSIVE).
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, replace
 
 import cairo
@@ -129,8 +130,51 @@ def extras(element: TextElement, dpi: float) -> Extras:
     )
 
 
+# names fontconfig always resolves to some font: never "missing"
+GENERIC_FONTS = frozenset(
+    {"sans", "sans-serif", "serif", "monospace", "mono", "system-ui", "cursive", "fantasy"}
+)
+_fonts: dict[str, bool] = {}  # family (case folded) -> installed, per process
+_fonts_lock = threading.Lock()
+
+
+def font_installed(family: str) -> bool:
+    """Whether fontconfig has the font a text asks for, or one of a list
+    ("Source Sans 3, Sans"); else Pango silently draws it in another one.
+    Generic names always count. Asked once per family and process: fonts
+    added later count after a restart, as Pango keeps its font list."""
+    names = [name.strip() for name in (family or "Sans").split(",") if name.strip()]
+    return not names or any(_installed(name) for name in names)
+
+
+def _installed(name: str) -> bool:
+    key = name.casefold()
+    if key in GENERIC_FONTS:
+        return True
+    with _fonts_lock:
+        if key not in _fonts:
+            _fonts[key] = _look_up(name)
+        return _fonts[key]
+
+
+def _look_up(name: str) -> bool:
+    """A family of that name, or a font fontconfig finds for it whose family
+    begins the name (a style named as a family: "Source Code Pro Black")."""
+    key = name.casefold()
+    fontmap = PangoCairo.FontMap.get_default()
+    if any(f.get_name().casefold() == key for f in fontmap.list_families()):
+        return True
+    desc = Pango.FontDescription()
+    desc.set_family(name)
+    font = fontmap.load_font(fontmap.create_context(), desc)
+    loaded = font.describe().get_family().casefold() if font is not None else ""
+    return bool(loaded) and (key == loaded or key.startswith(loaded + " "))
+
+
 # the weights Pango names; a font weight between them takes the nearest
-WEIGHTS = sorted(int(w) for w in Pango.Weight)
+# (its members, not the enum iterated: PyGObject 3.50 of Debian 13, the
+# server image, cannot iterate an enum)
+WEIGHTS = sorted({int(w) for w in vars(Pango.Weight).values() if isinstance(w, Pango.Weight)})
 
 
 def weight(element: TextElement) -> Pango.Weight:

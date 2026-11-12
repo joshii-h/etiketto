@@ -127,6 +127,7 @@ TRANSLATIONS = {
     "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation": "العنصر %(n)d: لا يقبل Code 128 إلا الحروف اللاتينية والأرقام وعلامات الترقيم",
     "Element %(n)d: the image cannot be read": "العنصر %(n)d: تعذّرت قراءة الصورة",
     "Element %(n)d cannot be drawn": "تعذّر رسم العنصر %(n)d",
+    "Element %(n)d: the font %(font)s is not installed – another font is used": "العنصر %(n)d: الخط %(font)s غير مثبّت – يُستخدم خط آخر",
     "Safety margin, border, its inset and edge spacing leave no room – reduce them": "لا يترك هامش الأمان والإطار وإزاحته للداخل وتباعد الحواف أي مساحة – قلّلها",
     "The fixed length is shorter than the spacing – increase it": "الطول الثابت أقصر من التباعد – زِده",
     "The background image cannot be read": "تعذّرت قراءة صورة الخلفية",

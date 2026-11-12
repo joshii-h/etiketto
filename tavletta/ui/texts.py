@@ -385,6 +385,9 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
         ),
         "element_failed": _("Element %(n)d cannot be drawn"),
+        "font_missing": _(
+            "Element %(n)d: the font %(font)s is not installed – another font is used"
+        ),
         "no_room": _(
             "Safety margin, border, its inset and edge spacing leave no room – reduce them"
         ),
