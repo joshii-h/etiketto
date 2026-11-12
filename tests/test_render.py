@@ -667,7 +667,7 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     # block height not proportional to the size: the first estimate overshoots
     sizes = []
 
-    def fake_block(element, size_px):
+    def fake_block(element, size_px, **_options):
         sizes.append(size_px)
         return Image.new("RGBA", (10, round(size_px + 40)))
 

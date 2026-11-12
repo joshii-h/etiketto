@@ -589,7 +589,7 @@ def test_a_label_with_both_features(tmp_path):
     Label.store_counter(path, 9)  # the command line keeps what it does not change
     stored = json.loads(path.read_text(encoding="utf-8"))
     assert stored["features"] == ["serial", "variables"] and stored["counter_next"] == 9
-    assert {"barcodes", "symbols", "serial", "variables"} == model.FEATURES
+    assert {"barcodes", "symbols", "serial", "variables", "styles", "shapes"} == model.FEATURES
 
 
 def test_every_feature_at_once(tmp_path):

@@ -107,7 +107,7 @@ class Job:
             caps.dpi,
             safe_mm=self.safe_mm,
             min_length_mm=caps.min_length_mm,
-            mono=caps.color_model == "mono",
+            mono=self.backend.renders_mono(self.options.mode),
         )
         return warnings + rendered.warnings
 

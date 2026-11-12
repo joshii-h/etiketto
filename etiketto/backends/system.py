@@ -702,7 +702,7 @@ class SystemPrinter(Backend):
             dpi=dpi,
             safe_mm=safe_mm,
             min_length_mm=self.capabilities.min_length_mm,
-            mono=self.capabilities.color_model == "mono",
+            mono=self.renders_mono(options.mode),
         )
         check_codes(rendered.warnings)  # at the resolution it is printed at
         image = rendered.image

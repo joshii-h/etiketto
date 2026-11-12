@@ -673,6 +673,12 @@ class Backend(ABC):
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)
 
+    def renders_mono(self, mode: str = "") -> bool:
+        """Whether a label for the given print mode is rendered in black and
+        white (render(mono=True)): a mono printer, unless a mode prints in
+        colour (the Brother QL's red and black)."""
+        return self.capabilities.color_model == "mono"
+
     def preview(self, image: Image.Image, mode: str = "") -> Image.Image:
         """What the printer makes of the image in the given print mode."""
         return apply_color_model(image, self.capabilities.color_model)
@@ -689,7 +695,7 @@ class Backend(ABC):
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
-            mono=self.capabilities.color_model == "mono",
+            mono=self.renders_mono(options.mode),
         )
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image

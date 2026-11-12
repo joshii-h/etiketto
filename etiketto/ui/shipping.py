@@ -423,7 +423,7 @@ class ShippingDialog(Adw.Dialog):
             label,
             dpi=RESULT_DPI,
             safe_mm=self.window.printer_settings.safe_mm,
-            mono=backend.capabilities.color_model == "mono",
+            mono=backend.renders_mono(),
         )
         image = backend.preview(rendered.image)
         texture = Gdk.MemoryTexture.new(

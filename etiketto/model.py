@@ -13,9 +13,9 @@ import secrets
 import stat
 import time
 from collections.abc import Callable, Iterator
-from dataclasses import asdict, dataclass, field
+from dataclasses import MISSING, asdict, dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 # Version 1: every label. Version 2: the file lists "features" it needs; an
 # Etiketto that does not know one of them refuses the file ("newer") instead
@@ -31,7 +31,13 @@ FORMAT_VERSION = 2
 # when they save
 # "serial": a linked data file whose rows fill {Column} placeholders; older
 # versions would print "{Name}" as it is
-FEATURES = frozenset({"barcodes", "symbols", "serial", "variables"})
+# "styles": a design option added later (STYLE_FIELDS: text decoration and
+# boxes, image adjustments, the border's shape, an element's own alignment
+# or spacing) set to anything but its default; older versions would ignore
+# the field and print the label differently
+# "shapes": a line or shape element (ShapeElement; earlier readers also
+# refuse the unknown element kind)
+FEATURES = frozenset({"barcodes", "symbols", "serial", "variables", "styles", "shapes"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -64,8 +70,23 @@ def _damaged(detail: str) -> LabelError:
     return LabelError("damaged", detail)
 
 
+ROTATIONS = (0, 90, 180, 270)
+VALIGNS = ("top", "center", "bottom")
+MAX_GAP_AFTER_MM = 50.0
+
+
+@dataclass(kw_only=True)  # after each kind's own fields in __init__
+class Placed:
+    """Where an element sits in its place along the tape: across the tape
+    (valign) and the space after it (gap_mm; None: the label's spacing).
+    Every element kind has these fields."""
+
+    valign: Literal["top", "center", "bottom"] = "center"
+    gap_mm: float | None = None
+
+
 @dataclass
-class TextElement:
+class TextElement(Placed):
     text: str = "Text"
     font: str = "Sans"  # fontconfig family
     bold: bool = True
@@ -76,13 +97,54 @@ class TextElement:
     # for the command line: `etiketto print --set NAME=VALUE` replaces the text
     name: str = ""
     kind: Literal["text"] = "text"
+    # --- the feature "styles" (STYLE_FIELDS) ---
+    underline: bool = False
+    strikethrough: bool = False
+    letter_spacing: float = 0.0  # % of the font size, may be negative
+    line_spacing: float = 1.0  # times the font's own line height
+    # fitting: shrink until it fits the tape height and the room along a
+    # fixed length (or max_width_mm), not below min_size_pt
+    shrink: bool = False
+    min_size_pt: float = 0.0
+    max_width_mm: float = 0.0  # wrap lines at this width; 0 = only at line breaks
+    rotation: int = 0  # clockwise; 90 and 270: vertical text
+    # white on black: the text cut out of a box in its colour
+    inverted: bool = False
+    box_color: str = ""  # a box behind the text; "" = none
+    padding_mm: float = 0.0  # between the text and its box or frame
+    corner_mm: float = 0.0  # radius of the box's and frame's corners
+    frame_mm: float = 0.0  # a frame in the text colour around it
+    outline_mm: float = 0.0  # a line around each letter
+    outline_color: str = "#ffffff"
+    shadow_mm: float = 0.0  # offset of a shadow down and to the right
+    shadow_color: str = "#808080"
+
+
+IMAGE_MODES = ("auto", "threshold", "dither", "ordered")
 
 
 @dataclass
-class ImageElement:
+class ImageElement(Placed):
     data: str = ""  # base64 encoded image file, keeps documents self-contained
     name: str = ""  # original file name, for display only
     kind: Literal["image"] = "image"
+    # --- the feature "styles" (STYLE_FIELDS) ---
+    # black-and-white printers: "auto" (threshold for drawings, dithering
+    # for photos), "threshold", "dither" (Floyd-Steinberg) or "ordered" (Bayer)
+    mode: Literal["auto", "threshold", "dither", "ordered"] = "auto"
+    threshold: int = 128  # 1-254: lighter pixels become white
+    brightness: float = 0.0  # -100 … 100
+    contrast: float = 0.0  # -100 … 100
+    gamma: float = 1.0  # 0.2 … 5
+    invert: bool = False
+    rotation: int = 0  # clockwise
+    mirror: bool = False  # left and right swapped
+    flip: bool = False  # upside down
+    # the part of the image (before turning) as fractions: x, y, width, height
+    crop: list[float] = field(default_factory=lambda: [0.0, 0.0, 1.0, 1.0])
+    corner_mm: float = 0.0  # rounded corners
+    border_mm: float = 0.0  # a border around the image
+    border_color: str = "#000000"
 
     @classmethod
     def from_file(cls, path: str | Path) -> ImageElement:
@@ -113,7 +175,7 @@ SYMBOLOGIES = FIRST_SYMBOLOGIES + BARCODES
 
 
 @dataclass
-class CodeElement:
+class CodeElement(Placed):
     data: str = "https://"
     symbology: str = "qr"  # one of SYMBOLOGIES
     color: str = "#000000"
@@ -121,13 +183,12 @@ class CodeElement:
     kind: Literal["code"] = "code"
 
 
-ROTATIONS = (0, 90, 180, 270)
 MAX_SYMBOL_PATH = 100_000  # etiketto.symbols.path.MAX_PATH_CHARS
 MAX_SYMBOL_NAME = 100  # the longest icon name has 41 characters
 
 
 @dataclass
-class SymbolElement:
+class SymbolElement(Placed):
     """A symbol of the symbol library (etiketto.symbols), drawn as a vector
     path at the printer's resolution. The file keeps the name, for the
     chooser, and a copy of the path, which is what is drawn: the label looks
@@ -146,7 +207,7 @@ FITS = ("fit", "fill")
 
 
 @dataclass
-class PageElement:
+class PageElement(Placed):
     """A page of a PDF or an image file, cropped to one area and printed at
     the label's size: a shipping label. The file is kept (of a PDF with
     several pages only the chosen page where it can be copied unchanged,
@@ -172,7 +233,34 @@ class PageElement:
         return cls(data=base64.b64encode(path.read_bytes()).decode(), name=path.name)
 
 
-Element = TextElement | ImageElement | CodeElement | SymbolElement | PageElement
+SHAPES = ("line", "rectangle", "ellipse", "separator")
+DIRECTIONS = ("horizontal", "vertical", "up", "down")  # up/down: diagonal, rising or falling
+LINE_STYLES = ("solid", "dashed", "dotted")
+ARROWS = ("none", "start", "end", "both")
+FILLS = ("none", "solid", "hatched", "dotted", "grid")  # the patterns stay 1 bit
+MAX_LINE_MM = 10.0
+
+
+@dataclass
+class ShapeElement(Placed):
+    """A line, a rectangle (rounded with corner_mm), an ellipse or a
+    separator (a line across the whole content height) in the row of
+    elements. Lines are at least one printer dot wide."""
+
+    shape: Literal["line", "rectangle", "ellipse", "separator"] = "line"
+    direction: Literal["horizontal", "vertical", "up", "down"] = "horizontal"  # lines
+    width_mm: float = 10.0  # along the tape
+    height_mm: float = 0.0  # across; 0 = the content height
+    line_mm: float = 0.5  # 0: no outline (a filled rectangle or ellipse)
+    line_style: Literal["solid", "dashed", "dotted"] = "solid"
+    arrows: Literal["none", "start", "end", "both"] = "none"  # lines
+    corner_mm: float = 0.0  # rectangles
+    fill: Literal["none", "solid", "hatched", "dotted", "grid"] = "none"
+    color: str = "#000000"
+    kind: Literal["shape"] = "shape"
+
+
+Element = TextElement | ImageElement | CodeElement | SymbolElement | PageElement | ShapeElement
 # an Etiketto that does not know a kind refuses the file as "newer"
 ELEMENT_TYPES = {
     "text": TextElement,
@@ -180,7 +268,77 @@ ELEMENT_TYPES = {
     "code": CodeElement,
     "symbol": SymbolElement,
     "page": PageElement,
+    "shape": ShapeElement,
 }
+BORDER_STYLES = ("solid", "dashed", "dotted", "double")
+_PLACED = ("valign", "gap_mm")
+# the fields of the feature "styles": written only when they differ from
+# their default (the default is how earlier versions print), so a label
+# without them opens in earlier versions; a ShapeElement is new as a whole
+STYLE_FIELDS: dict[type, tuple[str, ...]] = {
+    TextElement: _PLACED
+    + (
+        "underline",
+        "strikethrough",
+        "letter_spacing",
+        "line_spacing",
+        "shrink",
+        "min_size_pt",
+        "max_width_mm",
+        "rotation",
+        "inverted",
+        "box_color",
+        "padding_mm",
+        "corner_mm",
+        "frame_mm",
+        "outline_mm",
+        "outline_color",
+        "shadow_mm",
+        "shadow_color",
+    ),
+    ImageElement: _PLACED
+    + (
+        "mode",
+        "threshold",
+        "brightness",
+        "contrast",
+        "gamma",
+        "invert",
+        "rotation",
+        "mirror",
+        "flip",
+        "crop",
+        "corner_mm",
+        "border_mm",
+        "border_color",
+    ),
+    CodeElement: _PLACED,
+    SymbolElement: _PLACED,
+    PageElement: _PLACED,
+    ShapeElement: _PLACED,
+}
+LABEL_STYLE_FIELDS = ("border_radius_mm", "border_style", "border_inset_mm")
+
+
+def default_of(cls: type, name: str):
+    """The default value of a dataclass field."""
+    spec = cls.__dataclass_fields__[name]  # type: ignore[attr-defined]
+    if spec.default_factory is not MISSING:
+        return spec.default_factory()
+    return spec.default
+
+
+def styled(item, names: tuple[str, ...]) -> bool:
+    """Whether any of the fields differs from its default."""
+    return any(getattr(item, name) != default_of(type(item), name) for name in names)
+
+
+def _compact(item, data: dict, names: tuple[str, ...]) -> dict:
+    """data without the fields that have their default value."""
+    for name in names:
+        if getattr(item, name) == default_of(type(item), name):
+            data.pop(name, None)
+    return data
 
 
 @dataclass
@@ -230,6 +388,10 @@ class Label:
     background_image: ImageElement | None = None  # covers the whole label
     border_mm: float = 0.0
     border_color: str = "#000000"
+    # --- the feature "styles" (STYLE_FIELDS) ---
+    border_radius_mm: float = 0.0
+    border_style: Literal["solid", "dashed", "dotted", "double"] = "solid"
+    border_inset_mm: float = 0.0  # further in than the safety margin
     elements: list[Element] = field(default_factory=list)
     printer: str = DEFAULT_PRINTER  # backend id; files without it are for the VC-500W
     # die-cut labels only: the gap to the next label, and whether the content
@@ -352,17 +514,23 @@ class Label:
     def features(self) -> list[str]:
         """What the label uses that older versions cannot print as meant
         (FEATURES)."""
-        codes = [e for e in self.elements if isinstance(e, CodeElement)]
-        found = []
-        if any(e.symbology in BARCODES for e in codes):
-            found.append("barcodes")
-        if any(isinstance(e, SymbolElement) for e in self.elements):
-            found.append("symbols")
-        if self.data_file:
-            found.append("serial")
-        if self._uses_variables():
-            found.append("variables")
-        return found
+        kinds = {type(e) for e in self.elements}
+        uses = {
+            "barcodes": any(
+                isinstance(e, CodeElement) and e.symbology in BARCODES for e in self.elements
+            ),
+            "symbols": SymbolElement in kinds,
+            "serial": bool(self.data_file),
+            "variables": self._uses_variables(),
+            "styles": self._styled(),
+            "shapes": ShapeElement in kinds,
+        }
+        return [name for name, used in uses.items() if used]
+
+    def _styled(self) -> bool:
+        return styled(self, LABEL_STYLE_FIELDS) or any(
+            styled(e, STYLE_FIELDS[type(e)]) for e in self.elements
+        )
 
     def _uses_variables(self) -> bool:
         if (self.counter_next, self.counter_step) != (1, 1):
@@ -374,7 +542,14 @@ class Label:
         )
 
     def to_dict(self) -> dict:
-        data = asdict(self)
+        data = _compact(self, asdict(self), LABEL_STYLE_FIELDS)
+        data["elements"] = [
+            _compact(e, item, STYLE_FIELDS[type(e)])
+            for e, item in zip(self.elements, data["elements"], strict=True)
+        ]
+        if self.background_image:  # its image options are not used
+            image = self.background_image
+            data["background_image"] = _compact(image, asdict(image), STYLE_FIELDS[ImageElement])
         features = self.features()
         data["version"] = FORMAT_VERSION if features else 1
         if features:
@@ -445,6 +620,9 @@ class Label:
         self.margin_mm = _clamp(self.margin_mm, 0, 20, "margin_mm")
         self.edge_mm = _clamp(self.edge_mm, 0, 10, "edge_mm")
         self.border_mm = _clamp(self.border_mm, 0, 5, "border_mm")
+        self.border_radius_mm = _clamp(self.border_radius_mm, 0, 50, "border_radius_mm")
+        self.border_style = _choice(self.border_style, BORDER_STYLES, "border_style")
+        self.border_inset_mm = _clamp(self.border_inset_mm, 0, 10, "border_inset_mm")
         self.align = _choice(self.align, ("start", "center", "end"), "align")
         self.background = _str(self.background, "background")
         self.border_color = _str(self.border_color, "border_color")
@@ -783,6 +961,27 @@ def _str(value, name: str) -> str:
     return value
 
 
+def _flag(value, name: str) -> bool:
+    if not isinstance(value, bool):  # bool("false") would be True
+        raise _damaged("%s must be true or false" % name)
+    return value
+
+
+def _rotation(value) -> int:
+    if isinstance(value, bool) or value not in ROTATIONS:
+        raise _damaged("invalid rotation %r" % (value,))
+    return ROTATIONS[ROTATIONS.index(value)]  # 90, not 90.0
+
+
+def _crop(crop) -> list[float]:
+    """An area as fractions x, y, width, height, at least 1 % on each side."""
+    if not isinstance(crop, list) or len(crop) != 4:
+        raise _damaged("crop must be a list of four numbers")
+    x, y, w, h = (_clamp(v, 0, 1, "crop") for v in crop)
+    x, y = min(x, 0.99), min(y, 0.99)
+    return [x, y, max(0.01, min(w, 1 - x)), max(0.01, min(h, 1 - y))]
+
+
 def _element_from_dict(item) -> Element:
     if not isinstance(item, dict):
         raise _damaged("element must be an object")
@@ -793,29 +992,84 @@ def _element_from_dict(item) -> Element:
         raise LabelError("newer", "unknown element type %r" % kind)
     cls = ELEMENT_TYPES[kind]
     element = cls(**_known_fields(cls, item))
-    if isinstance(element, TextElement):
-        element.text = _str(element.text, "text")
-        element.font = _str(element.font, "font")
-        element.color = _str(element.color, "color")
-        element.bold, element.italic = bool(element.bold), bool(element.italic)
-        element.size_pt = _clamp(element.size_pt, 0, 300, "size_pt")
-        element.align = _choice(element.align, ("left", "center", "right"), "align")
-        element.name = _str(element.name, "name")
-    elif isinstance(element, ImageElement):
-        element.data = _str(element.data, "image data")
-        element.name = _str(element.name, "image name")
-    elif isinstance(element, SymbolElement):
-        _validate_symbol(element)
-    elif isinstance(element, PageElement):
-        _validate_page(element)
-    else:
-        element.data = _str(element.data, "code data")
-        element.color = _str(element.color, "color")
-        element.name = _str(element.name, "name")
-        element.symbology = _str(element.symbology, "symbology")
-        if element.symbology not in SYMBOLOGIES:  # a symbology added later
-            raise LabelError("newer", "unknown symbology %r" % element.symbology)
+    _validate_placed(element)
+    _VALIDATORS[cls](element)
     return element
+
+
+def _validate_placed(element: Placed) -> None:
+    element.valign = _choice(element.valign, VALIGNS, "valign")
+    if element.gap_mm is not None:
+        element.gap_mm = _clamp(element.gap_mm, 0, MAX_GAP_AFTER_MM, "gap_mm")
+
+
+def _validate_text(element: TextElement) -> None:
+    element.text = _str(element.text, "text")
+    element.font = _str(element.font, "font")
+    element.color = _str(element.color, "color")
+    element.bold, element.italic = bool(element.bold), bool(element.italic)
+    element.size_pt = _clamp(element.size_pt, 0, 300, "size_pt")
+    element.align = _choice(element.align, ("left", "center", "right"), "align")
+    element.name = _str(element.name, "name")
+    for name in ("underline", "strikethrough", "shrink", "inverted"):
+        setattr(element, name, _flag(getattr(element, name), name))
+    for name in ("box_color", "outline_color", "shadow_color"):
+        setattr(element, name, _str(getattr(element, name), name))
+    element.rotation = _rotation(element.rotation)
+    for name, lower, upper in (
+        ("letter_spacing", -50, 200),
+        ("line_spacing", 0.5, 3),
+        ("min_size_pt", 0, 300),
+        ("max_width_mm", 0, MAX_SIZE_MM),
+        ("padding_mm", 0, 20),
+        ("corner_mm", 0, 50),
+        ("frame_mm", 0, 5),
+        ("outline_mm", 0, 5),
+        ("shadow_mm", 0, 5),
+    ):
+        setattr(element, name, _clamp(getattr(element, name), lower, upper, name))
+
+
+def _validate_image(element: ImageElement) -> None:
+    element.data = _str(element.data, "image data")
+    element.name = _str(element.name, "image name")
+    element.mode = _choice(element.mode, IMAGE_MODES, "mode")
+    element.threshold = _int(element.threshold, 1, 254, "threshold")
+    for name in ("invert", "mirror", "flip"):
+        setattr(element, name, _flag(getattr(element, name), name))
+    element.rotation = _rotation(element.rotation)
+    element.crop = _crop(element.crop)
+    element.border_color = _str(element.border_color, "border_color")
+    for name, lower, upper in (
+        ("brightness", -100, 100),
+        ("contrast", -100, 100),
+        ("gamma", 0.2, 5),
+        ("corner_mm", 0, 50),
+        ("border_mm", 0, 5),
+    ):
+        setattr(element, name, _clamp(getattr(element, name), lower, upper, name))
+
+
+def _validate_code(element: CodeElement) -> None:
+    element.data = _str(element.data, "code data")
+    element.color = _str(element.color, "color")
+    element.name = _str(element.name, "name")
+    element.symbology = _str(element.symbology, "symbology")
+    if element.symbology not in SYMBOLOGIES:  # a symbology added later
+        raise LabelError("newer", "unknown symbology %r" % element.symbology)
+
+
+def _validate_shape(element: ShapeElement) -> None:
+    element.shape = _choice(element.shape, SHAPES, "shape")
+    element.direction = _choice(element.direction, DIRECTIONS, "direction")
+    element.line_style = _choice(element.line_style, LINE_STYLES, "line_style")
+    element.arrows = _choice(element.arrows, ARROWS, "arrows")
+    element.fill = _choice(element.fill, FILLS, "fill")
+    element.color = _str(element.color, "color")
+    element.width_mm = _clamp(element.width_mm, 0.1, MAX_SIZE_MM, "width_mm")
+    element.height_mm = _clamp(element.height_mm, 0, MAX_SIZE_MM, "height_mm")
+    element.line_mm = _clamp(element.line_mm, 0, MAX_LINE_MM, "line_mm")
+    element.corner_mm = _clamp(element.corner_mm, 0, 50, "corner_mm")
 
 
 def _validate_symbol(element: SymbolElement) -> None:
@@ -827,10 +1081,7 @@ def _validate_symbol(element: SymbolElement) -> None:
         raise _damaged("symbol path too long")
     element.color = _str(element.color, "color")
     element.size_mm = _clamp(element.size_mm, 0, MAX_SIZE_MM, "size_mm")
-    rotation = element.rotation
-    if isinstance(rotation, bool) or rotation not in ROTATIONS:
-        raise _damaged("invalid rotation %r" % (rotation,))
-    element.rotation = ROTATIONS[ROTATIONS.index(rotation)]  # 90, not 90.0
+    element.rotation = _rotation(element.rotation)
 
 
 def _validate_page(element: PageElement) -> None:
@@ -843,9 +1094,14 @@ def _validate_page(element: PageElement) -> None:
         raise _damaged("invalid rotation")
     element.rotation = int(_choice(element.rotation, ROTATIONS, "rotation"))  # 90, not 90.0
     element.fit = _choice(element.fit, FITS, "fit")
-    crop = element.crop
-    if not isinstance(crop, list) or len(crop) != 4:
-        raise _damaged("crop must be a list of four numbers")
-    x, y, w, h = (_clamp(v, 0, 1, "crop") for v in crop)
-    x, y = min(x, 0.99), min(y, 0.99)
-    element.crop = [x, y, max(0.01, min(w, 1 - x)), max(0.01, min(h, 1 - y))]
+    element.crop = _crop(element.crop)
+
+
+_VALIDATORS: dict[type, Callable[[Any], None]] = {
+    TextElement: _validate_text,
+    ImageElement: _validate_image,
+    CodeElement: _validate_code,
+    SymbolElement: _validate_symbol,
+    PageElement: _validate_page,
+    ShapeElement: _validate_shape,
+}
