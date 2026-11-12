@@ -3811,3 +3811,32 @@ def test_the_preview_is_rendered_at_the_quality_last_printed(ql_window, ql_env):
 def test_the_report_names_a_ql_roll_as_a_roll(ql_window, ql_env):
     line = ql_window.printer.description()
     assert "62 mm roll" in line and "cassette" not in line
+
+
+@pytest.fixture
+def ptouch_window_12mm(make_window, ptouch_env):
+    win = make_window()
+    model = one(win.sidebar, Adw.ComboRow, title="Printer model")
+    model.set_selected(_items(model).index("Brother P-touch"))
+    assert pump(lambda: win.printer.info is ptouch_env.info)
+    win.label_group.tape_row.set_selected(3)  # 12 mm
+    assert win.label.tape_mm == 12
+    return win
+
+
+def test_preview_and_export_show_the_whole_tape(ptouch_window_12mm, tmp_path):
+    """A P-touch prints 9 of 12 mm (its pins): the preview and the PNG
+    show the whole 12 mm tape, the printed strip in its middle on the
+    label's background, not a strip of 9 mm."""
+    win = ptouch_window_12mm
+    win.label.background = "#000080"  # printed black by the mono P-touch
+    render_now(win)
+    _rendered, image = win.render_image()
+    dpi = win.print_dpi()
+    assert image.height == round(12 / 25.4 * dpi)
+    assert image.getpixel((image.width // 2, 0))[:3] == (0, 0, 0)  # the background
+    win.files.export_png(tmp_path / "x.png")
+    from PIL import Image
+
+    with Image.open(tmp_path / "x.png") as png:
+        assert png.height == image.height

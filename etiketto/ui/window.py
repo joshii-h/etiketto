@@ -13,7 +13,7 @@ gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
-from PIL import Image  # noqa: E402
+from PIL import Image, ImageColor  # noqa: E402
 
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
@@ -474,11 +474,24 @@ class Window(Adw.ApplicationWindow):
             label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
         )
         rendered.warnings[:0] = warnings
-        image = backend.preview(rendered.image, self.print_flow.mode)
+        image = backend.preview(self._on_tape(rendered.image, label), self.print_flow.mode)
         sheet = self.sheet
         if sheet and self.label.sheet:  # round labels and CDs: their shape
             image = clip_preview(image, sheet, self.label.sheet.rotated)
         return rendered, image
+
+    def _on_tape(self, image: Image.Image, label: Label) -> Image.Image:
+        """Endless tape: the render covers only what the head prints (a
+        P-touch's or QL's printable width); preview and export show the
+        whole tape, the strip on the label's background in its middle."""
+        if not self.backend.capabilities.continuous:
+            return image
+        tape = round(label.tape_mm / 25.4 * self.rendered_dpi) if self.rendered_dpi else 0
+        if image.height >= tape:
+            return image
+        whole = Image.new("RGB", (image.width, tape), _color_of(label.background))
+        whole.paste(image.convert("RGB"), (0, (tape - image.height) // 2))
+        return whole
 
     def preview_values(self) -> Values:
         """The variables as the next print fills them in: now, the next counter."""
@@ -707,3 +720,11 @@ def _stamp(path: Path) -> tuple | None:
     except OSError:
         return None
     return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)
+
+
+def _color_of(value: str) -> tuple[int, int, int]:
+    """The label's background colour; white if it cannot be read."""
+    try:
+        return ImageColor.getrgb(value)[:3]
+    except ValueError:
+        return (255, 255, 255)
