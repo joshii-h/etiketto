@@ -152,3 +152,25 @@ def test_shared_images_count_once(monkeypatch):
         label.margin_mm = n
         history.record(label)
     assert sum(1 for _ in iter(history.undo, None)) == 10
+
+
+def test_whole_number_choices_are_steps_of_their_own():
+    from etiketto.history import typing_key
+
+    assert typing_key("element:0", {"rotation": 90}) is None
+    assert typing_key("element:0", {"threshold": 100}) == "element:0:threshold"
+    assert typing_key("label", {"margin_mm": 2.0}) == "label:margin_mm"
+
+
+def test_saving_ends_a_typing_step():
+    clock = Clock()
+    label = Label(elements=[TextElement(text="a")])
+    history = History(label, clock)
+    label.elements[0].text = "ab"
+    history.record(label, "element:0:text")
+    history.mark_saved()
+    label.elements[0].text = "abc"
+    history.record(label, "element:0:text")  # within the time, but after saving
+    assert not history.at_saved
+    assert history.undo().elements[0].text == "ab"
+    assert history.at_saved

@@ -19,16 +19,16 @@ LIMIT = 200
 LIMIT_BYTES = 256 * 2**20
 COALESCE_SECONDS = 1.5
 TYPED = frozenset({"text", "data", "name"})  # fields typed into
+SPUN = frozenset({"threshold"})  # whole numbers from a spin button
 
 
 def typing_key(prefix: str, changes: dict) -> str | None:
     """The key that joins a change with the one before: typing into a text
-    field or changing a number (a spin button); None (a step of its own)
-    for switches, choices and colours."""
-    numbers = all(
-        isinstance(v, (int, float)) and not isinstance(v, bool) for v in changes.values()
-    )
-    if not changes or not (numbers or set(changes) <= TYPED):
+    field or changing a number in a spin button (a float, or a field in
+    SPUN); None (a step of its own) for switches, choices (also whole
+    numbers like a rotation) and colours."""
+    spun = all(isinstance(v, float) for v in changes.values()) or set(changes) <= SPUN
+    if not changes or not (spun or set(changes) <= TYPED):
         return None
     return prefix + ":" + ",".join(sorted(changes))
 
@@ -70,7 +70,9 @@ class History:
         return self._current is self._saved
 
     def mark_saved(self) -> None:
+        """The label as it is now was saved; the next change is a new step."""
         self._saved = self._current
+        self._last = (None, 0.0)
 
     def record(self, label: Label, key: str | None = None) -> None:
         """The label after a change. key: what was changed (typing_key());
