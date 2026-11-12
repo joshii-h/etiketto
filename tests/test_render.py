@@ -405,7 +405,9 @@ def test_qr_is_square_coloured_and_transparent():
 def test_qr_on_label_shows_background(make_label):
     img = render(make_label(background="#00ff00", elements=[CodeElement(data="x" * 20)])).image
     x0, y0, x1, y1 = ink_bbox(img, (0, 255, 0))
-    assert (x1 - x0, y1 - y0) == (INNER, INNER)
+    # 25 modules of 10 px (274 / 25 = 10.96): centred in the element's space
+    assert (x1 - x0, y1 - y0) == (250, 250)
+    assert y0 == FRAME + (INNER - 250) // 2
     colours = set(pixels(img.crop((x0, y0, x1, y1))))
     assert colours == {(0, 0, 0), (0, 255, 0)}
 
@@ -450,6 +452,82 @@ def test_invalid_codes_warn(make_label, symbology, data, key):
 )
 def test_check_code_accepts(symbology, data):
     render_module.check_code(CodeElement(data=data, symbology=symbology))  # no exception
+
+
+def _runs(row):
+    """Lengths of the runs of equal values in a row of pixels."""
+    runs, last = [], None
+    for value in row:
+        if value == last:
+            runs[-1] += 1
+        else:
+            runs.append(1)
+            last = value
+    return runs
+
+
+def _pattern(symbology, data):
+    import barcode
+
+    pattern = "".join(barcode.get_barcode_class(symbology)(data).build())
+    return [len(run) for run in pattern.replace("01", "0 1").replace("10", "1 0").split()]
+
+
+def _on_white(part):
+    page = Image.new("L", part.size, 255)
+    page.paste(part.convert("L"), (0, 0), part)
+    return page
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+@pytest.mark.parametrize(
+    "symbology, data", [("code128", "1Z999AA10123456784"), ("ean13", "4006381333931")]
+)
+def test_barcode_modules_are_whole_pixels(symbology, data, dpi):
+    height = mm_to_px(12, dpi)
+    page = _on_white(render_module.render_code(CodeElement(data, symbology=symbology), height))
+    assert set(pixels(page)) == {0, 255}  # 1 bit: nothing a printer has to round
+    y = round(height * 6 / render_module.BAR_TOTAL_MM)  # through the bars
+    row = list(pixels(page.crop((0, y, page.width, y + 1))))
+    runs = _runs(row)[1:-1]  # without the quiet zones
+    module = min(runs)
+    assert [run / module for run in runs] == _pattern(symbology, data)
+    modules = sum(runs) // module
+    # the widest whole module that fits the bars' share of the designed width
+    space = page.width * modules * 0.3 / (2 + modules * 0.3)
+    assert module == int(space / modules) and sum(runs) > space - modules
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+def test_qr_modules_are_whole_square_pixels(dpi):
+    height = mm_to_px(12, dpi)
+    part = render_module.render_code(CodeElement("https://example.org/etiketto"), height)
+    assert part.size == (height, height)  # the element keeps its size
+    page = _on_white(part)
+    assert set(pixels(page)) == {0, 255}
+    x0, y0, x1, y1 = ink_bbox(page, 255)
+    count = 29  # version 3
+    module = (x1 - x0) // count
+    assert (x1 - x0, y1 - y0) == (count * module, count * module)
+    assert module == height // count  # the widest that fits
+    assert (x0, y0) == ((height - count * module) // 2,) * 2  # centred
+    # finder pattern: 7 modules dark-light-dark-light-dark 1:1:3:1:1
+    row = list(pixels(page.crop((x0, y0 + 3 * module, x0 + 7 * module, y0 + 3 * module + 1))))
+    assert _runs(row) == [module, module, 3 * module, module, module]
+
+
+def test_a_code_scaled_to_fit_keeps_whole_modules(make_label):
+    code = CodeElement("1Z999AA10123456784", symbology="code128")
+    label = make_label(elements=[code], auto_length=False, length_mm=40)
+    rendered = render(label, dpi=300)
+    assert rendered.overflow
+    grey = rendered.image.convert("L")
+    assert set(pixels(grey)) == {0, 255}  # drawn again, not resampled
+    _x0, y0, _x1, y1 = ink_bbox(grey, 255)
+    row = list(pixels(grey.crop((0, y0 + 2, grey.width, y0 + 3))))
+    runs = _runs(row)[1:-1]
+    module = min(runs)
+    assert [run / module for run in runs] == _pattern("code128", code.data)
 
 
 def test_other_element_errors(make_label, monkeypatch):
