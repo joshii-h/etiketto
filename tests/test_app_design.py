@@ -622,3 +622,102 @@ def test_the_border_style_needs_a_border(window):
     one(window.label_group, Adw.SpinRow, title="Border").set_value(0.5)
     assert style.get_sensitive()
     assert style.get_subtitle() == "Corners, line and distance from the edge"
+
+
+# --- review 3 ---------------------------------------------------------------------------
+
+
+def page_header(win) -> tuple[str, str]:
+    page = win.sidebar_nav.get_visible_page()
+    if page is win.sidebar_root:
+        return ("", "")
+    title = one(page, Adw.WindowTitle)
+    return (title.get_title(), title.get_subtitle())
+
+
+def two_texts(win):
+    win.label.elements[0].text = "First"
+    win.add_element(TextElement(text="Second"))
+    win.expand_index = -1
+    win.rebuild_sidebar()
+
+
+def test_the_open_page_follows_its_element_when_moved(window):
+    two_texts(window)
+    open_page(window, "Second", "Box and frame")
+    window.move_element(1, 0)
+    assert page_header(window) == ("Box and frame", "Second")
+    window.move_element(0, 1)
+    assert page_header(window) == ("Box and frame", "Second")
+
+
+def test_the_open_page_follows_its_element_through_delete_and_undo(window):
+    two_texts(window)
+    open_page(window, "Second", "Position")
+    window.remove_element(0)  # another element goes: the page stays on "Second"
+    assert page_header(window) == ("Position", "Second")
+    activate(window, "undo")  # it comes back before "Second"
+    assert page_header(window) == ("Position", "Second")
+    activate(window, "redo")
+    assert page_header(window) == ("Position", "Second")
+
+
+def test_adding_an_element_keeps_the_page(window):
+    two_texts(window)
+    open_page(window, "First", "Spacing and fitting")
+    window.add_element(ShapeElement())
+    assert page_header(window) == ("Spacing and fitting", "First")
+
+
+def test_removing_the_open_element_closes_its_page(window):
+    two_texts(window)
+    open_page(window, "Second", "Box and frame")
+    window.remove_element(1)
+    assert window.sidebar_nav.get_visible_page() is window.sidebar_root
+    activate(window, "undo")  # back: the page is not reopened by itself
+    assert len(window.label.elements) == 2
+
+
+def test_a_duplicate_is_another_element(window):
+    from etiketto.model import element_id
+
+    window.expand_index = 0
+    activate(window, "duplicate-element")
+    first, second = window.label.elements
+    assert element_id(first) != element_id(second)
+
+
+def test_undo_gives_the_focus_back_to_rows(window):
+    window.change(margin_mm=5)
+    spin = one(window.sidebar, Adw.SpinRow, title="Spacing")
+    spin.grab_focus()
+    activate(window, "undo")
+    assert window.label.margin_mm == 2
+    focus = window.get_focus()
+    spin = one(window.sidebar, Adw.SpinRow, title="Spacing")
+    assert focus is spin or focus.is_ancestor(spin)
+    page = open_page(window, "Label", "Box and frame")
+    switch = one(page, Adw.SwitchRow, title="White on black")
+    switch.set_active(True)
+    switch.grab_focus()
+    activate(window, "undo")
+    page = window.sidebar_nav.get_visible_page()
+    switch = one(page, Adw.SwitchRow, title="White on black")
+    focus = window.get_focus()
+    assert focus is switch or focus.is_ancestor(switch)
+
+
+def test_hints_on_rows_and_buttons_without_effect(window):
+    window.add_element(ImageElement(data=png(), name="logo.png"))
+    page = open_page(window, "logo.png", "Black and white")
+    level = one(page, Adw.SpinRow, title="Threshold")
+    assert level.get_subtitle() == "Only for the method Threshold"
+    one(page, Adw.ComboRow, title="Method").set_selected(1)
+    assert level.get_subtitle() == "Lighter pixels print white"
+    window.sidebar_nav.pop()
+    page = open_page(window, "logo.png", "Corners and border")
+    border = one(page, Adw.SpinRow, title="Border")
+    colour = one(border, Gtk.ColorDialogButton)
+    assert colour.get_tooltip_text() == "Choose a width first"
+    border.set_value(0.5)
+    assert colour.get_tooltip_text() == "Colour of the border"

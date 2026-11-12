@@ -29,6 +29,8 @@ from etiketto.model import (  # noqa: E402
     SheetChoice,
     SymbolElement,
     TextElement,
+    element_id,
+    new_id,
 )
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.serial import unknown_columns  # noqa: E402
@@ -77,7 +79,7 @@ class Window(Adw.ApplicationWindow):
         self._render_source = 0
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
-        self._subpage: tuple[int, str] = (-1, "")  # the open page of options
+        self._subpage: tuple[int, str] = (0, "")  # the open page: element id, title
         # a change undo cannot take back (the counter moved by printing, a
         # shipping label not saved yet): unsaved even at the saved step
         self.dirty_outside = False
@@ -215,8 +217,7 @@ class Window(Adw.ApplicationWindow):
         subpage = Adw.NavigationPage(title=title, child=toolbar)
         no_field_undo(page)
         self.sidebar_nav.push(subpage)
-        index = next((i for i, e in enumerate(self.label.elements) if e is element), -1)
-        self._subpage = (index, title)
+        self._subpage = (element_id(element) if element is not None else 0, title)
         return subpage
 
     def _on_templates_menu(self, button, _pspec) -> None:
@@ -233,8 +234,11 @@ class Window(Adw.ApplicationWindow):
             self.sidebar_nav.pop_to_page(self.sidebar_root)
         self._build_groups()
         no_field_undo(self.sidebar)
-        if reopen:
-            self.elements_group.open_page(*reopen)
+        if reopen:  # the same element, wherever it is now (moved, undone)
+            ident, title = reopen
+            ids = [element_id(e) for e in self.label.elements]
+            if ident and ident in ids:
+                self.elements_group.open_page(ids.index(ident), title)
         self.sidebar_nav.set_animate_transitions(True)
 
     def _build_groups(self) -> None:
@@ -328,14 +332,57 @@ class Window(Adw.ApplicationWindow):
                 action.set_enabled(enabled)
 
     def undo(self, *_args) -> None:
-        focus = _focused_field(self.get_focus())  # before anything changes
+        focus = self._focus_key()  # before anything changes
         self._restore(self.history.undo(), focus)
 
     def redo(self, *_args) -> None:
-        focus = _focused_field(self.get_focus())
+        focus = self._focus_key()
         self._restore(self.history.redo(), focus)
 
-    def _restore(self, label: Label | None, focus: tuple[str, int] | None = None) -> None:
+    def _focus_key(self):
+        """What holds the focus, to find it again in the rebuilt sidebar: a
+        named text field, or a row by its page, kind, title and place."""
+        widget = self.get_focus()
+        field = _focused_field(widget)
+        if field:
+            return ("field", *field)
+        while widget is not None and not isinstance(widget, Adw.PreferencesRow):
+            widget = widget.get_parent()
+        if widget is None:
+            return None
+        page = self.sidebar_nav.get_visible_page()
+        rows = [
+            r
+            for r in _rows(page)
+            if type(r) is type(widget) and r.get_title() == widget.get_title()
+        ]
+        if widget not in rows:
+            return None
+        cursor = widget.get_position() if isinstance(widget, Gtk.Editable) else -1
+        return (
+            "row",
+            page.get_title(),
+            type(widget),
+            widget.get_title(),
+            rows.index(widget),
+            cursor,
+        )
+
+    def _refocus(self, key) -> None:
+        if key[0] == "field":
+            _refocus(self.sidebar_nav, key[1], key[2])
+            return
+        _kind, page_title, cls, title, place, cursor = key
+        page = self.sidebar_nav.get_visible_page()
+        if page.get_title() != page_title:
+            return
+        rows = [r for r in _rows(page) if type(r) is cls and r.get_title() == title]
+        if place < len(rows):
+            rows[place].grab_focus()
+            if cursor >= 0 and isinstance(rows[place], Gtk.Editable):
+                rows[place].set_position(cursor)
+
+    def _restore(self, label: Label | None, focus=None) -> None:
         if label is None:
             return
         printer_changed = label.printer != self.label.printer
@@ -356,7 +403,7 @@ class Window(Adw.ApplicationWindow):
             self.printer.info = None
             self.printer.refresh()
         if focus:
-            _refocus(self.sidebar_nav, *focus)
+            self._refocus(focus)
 
     # --- the open element ------------------------------------------------------------
 
@@ -369,7 +416,9 @@ class Window(Adw.ApplicationWindow):
         index = self._current()
         if index is None:
             return
-        self.label.elements.insert(index + 1, copy.deepcopy(self.label.elements[index]))
+        duplicate = copy.deepcopy(self.label.elements[index])
+        new_id(duplicate)  # another element, not the same one twice
+        self.label.elements.insert(index + 1, duplicate)
         self.expand_index = index + 1
         self._structure_changed()
 
@@ -907,6 +956,18 @@ def _refocus(root, name: str, cursor: int = -1) -> bool:
             return True
         child = child.get_next_sibling()
     return False
+
+
+def _rows(root) -> list:
+    """The rows of the sidebar or a page, in order."""
+    found = []
+    child = root.get_first_child()
+    while child:
+        if isinstance(child, Adw.PreferencesRow):
+            found.append(child)
+        found += _rows(child)
+        child = child.get_next_sibling()
+    return found
 
 
 def no_field_undo(root) -> None:

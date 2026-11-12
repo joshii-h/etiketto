@@ -69,20 +69,35 @@ class _Follow:
     def __init__(self, element, set_attr: SetAttr):
         self.element, self.set_attr = element, set_attr
         self.conditions = EFFECTIVE.get(type(element).__name__, {})
-        self.widgets: dict[str, Gtk.Widget] = {}
+        # field: (widget, hint shown while it is off, what it shows else)
+        self.widgets: dict[str, tuple[Gtk.Widget, str, str]] = {}
 
     def __call__(self, **changes) -> None:
         self.set_attr(**changes)
         self.update()
 
-    def track(self, name: str, widget: Gtk.Widget) -> Gtk.Widget:
-        self.widgets[name] = widget
+    def track(self, name: str, widget: Gtk.Widget, hint: str = "") -> Gtk.Widget:
+        """Follow a widget; hint: why it is off (a row's subtitle or a
+        button's tooltip while it is)."""
+        own = (
+            widget.get_subtitle()
+            if isinstance(widget, Adw.ActionRow)
+            else widget.get_tooltip_text()
+        )
+        self.widgets[name] = (widget, hint, own or "")
         self.update()
         return widget
 
     def update(self) -> None:
-        for name, widget in self.widgets.items():
-            widget.set_sensitive(self.conditions[name](self.element))
+        for name, (widget, hint, own) in self.widgets.items():
+            on = self.conditions[name](self.element)
+            widget.set_sensitive(on)
+            if hint:
+                text = own if on else hint
+                if isinstance(widget, Adw.ActionRow):
+                    widget.set_subtitle(text)
+                else:
+                    widget.set_tooltip_text(text)
 
 
 def _page(rows, window: Window, element, set_attr: SetAttr, group) -> None:
@@ -309,7 +324,9 @@ def _text_effects(window: Window, group, element: TextElement, set_attr) -> None
         colour = color_button(
             getattr(element, colour_attr), lambda v, a=colour_attr: set_attr(**{a: v})
         )
-        line.add_suffix(set_attr.track(colour_attr, _named(colour, name)))
+        line.add_suffix(
+            set_attr.track(colour_attr, _named(colour, name), _("Choose a width first"))
+        )
         group.add(line)
 
 
@@ -402,7 +419,7 @@ def _image_mono(window: Window, group, element: ImageElement, set_attr) -> None:
         subtitle=_("Lighter pixels print white"),
     )
     group.add(combo_row(_("Method"), IMAGE_MODES, element.mode, lambda v: set_attr(mode=v)))
-    group.add(set_attr.track("threshold", level))
+    group.add(set_attr.track("threshold", level, _("Only for the method Threshold")))
 
 
 def _image_frame(window: Window, group, element: ImageElement, set_attr) -> None:
@@ -428,7 +445,11 @@ def _image_frame(window: Window, group, element: ImageElement, set_attr) -> None
         _("%(unit)s, 0 = none"),
     )
     colour = color_button(element.border_color, lambda v: set_attr(border_color=v))
-    border.add_suffix(set_attr.track("border_color", _named(colour, _("Colour of the border"))))
+    border.add_suffix(
+        set_attr.track(
+            "border_color", _named(colour, _("Colour of the border")), _("Choose a width first")
+        )
+    )
     group.add(border)
 
 
