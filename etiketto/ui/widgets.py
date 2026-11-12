@@ -8,7 +8,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 
-from gi.repository import Adw, Gdk, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, Gio, Gtk  # noqa: E402
 
 
 def rgba_to_hex(rgba: Gdk.RGBA) -> str:
@@ -31,6 +31,36 @@ def combo_row(title: str, items, current: str, on_change) -> Adw.ComboRow:
     keys = [key for key, _label in items]
     model = Gtk.StringList.new([label for _key, label in items])
     row = Adw.ComboRow(title=title, model=model)
+    row.set_selected(keys.index(current) if current in keys else 0)
+    row.connect("notify::selected", lambda r, _p: on_change(keys[r.get_selected()]))
+    return row
+
+
+def grouped_combo_row(title: str, groups, current: str, on_change) -> Adw.ComboRow:
+    """A choice of (key, label) items in groups of (heading, items), each
+    group under its heading; on_change(key) when another is chosen."""
+    keys = [key for _heading, items in groups for key, _label in items]
+    sections = Gio.ListStore(item_type=Gio.ListModel)
+    for _heading, items in groups:
+        sections.append(Gtk.StringList.new([label for _key, label in items]))
+    starts, position = {}, 0
+    for heading, items in groups:
+        starts[position] = heading
+        position += len(items)
+
+    def bind(_factory, header: Gtk.ListHeader):
+        header.get_child().set_label(starts.get(header.get_start(), ""))
+
+    headers = Gtk.SignalListItemFactory()
+    headers.connect(
+        "setup",
+        lambda _f, header: header.set_child(
+            Gtk.Label(xalign=0, css_classes=["heading"], margin_top=6, margin_bottom=3)
+        ),
+    )
+    headers.connect("bind", bind)
+    row = Adw.ComboRow(title=title, model=Gtk.FlattenListModel(model=sections))
+    row.set_header_factory(headers)
     row.set_selected(keys.index(current) if current in keys else 0)
     row.connect("notify::selected", lambda r, _p: on_change(keys[r.get_selected()]))
     return row

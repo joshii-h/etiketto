@@ -46,7 +46,8 @@ def test_roundtrip(tmp_path, png_b64):
     assert Label.load(path) == label
     assert not (tmp_path / "a.etiketto.tmp").exists()
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["version"] == FORMAT_VERSION
+    assert data["version"] == 1  # nothing a version 1 reader would miss
+    assert "features" not in data
     assert [e["kind"] for e in data["elements"]] == ["text", "image", "code"]
 
 
@@ -167,7 +168,8 @@ def test_supported_tape_widths(tape):
         {"elements": [{"kind": "image", "name": 3}]},
         {"elements": [{"kind": "code", "data": 4006381333931}]},
         {"elements": [{"kind": "code", "color": None}]},
-        {"elements": [{"kind": "code", "symbology": "pdf417"}]},
+        {"elements": [{"kind": "code", "symbology": "maxicode"}]},  # a newer type
+        {"elements": [{"kind": "code", "symbology": 5}]},
         {"background_image": {"data": 5}},
         {"background_image": "abc"},
     ],

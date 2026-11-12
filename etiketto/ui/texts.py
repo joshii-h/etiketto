@@ -37,7 +37,52 @@ PRINT_ON = [("page", _("Single label")), ("sheet", _("Label sheet"))]
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
-SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13")]
+# the code types in the order and groups of the choice; names of standards
+# are not translated
+SYMBOLOGY_GROUPS = [
+    (
+        _("2D codes"),
+        [
+            ("qr", _("QR code")),
+            ("datamatrix", "Data Matrix"),
+            ("pdf417", "PDF417"),
+            ("aztec", "Aztec"),
+        ],
+    ),
+    (
+        _("Linear barcodes"),
+        [
+            ("code128", "Code 128"),
+            ("code39", "Code 39"),
+            ("code93", "Code 93"),
+            ("ean13", "EAN-13"),
+            ("ean8", "EAN-8"),
+            ("upca", "UPC-A"),
+            ("upce", "UPC-E"),
+            ("itf14", "ITF-14"),
+        ],
+    ),
+    ("GS1", [("gs1_128", "GS1-128"), ("gs1_datamatrix", "GS1 DataMatrix")]),
+]
+SYMBOLOGIES = [item for _group, items in SYMBOLOGY_GROUPS for item in items]
+_GS1_HELP = _("Application identifiers in brackets, e.g. (01)09501101530003(17)261231(10)AB12")
+# what each code type is for and what it accepts
+SYMBOLOGY_HELP = {
+    "qr": _("Links, text, Wi-Fi access; phones read it"),
+    "datamatrix": _("Text or numbers in little space, e.g. on small parts"),
+    "pdf417": _("Much text, e.g. an address or a document number"),
+    "aztec": _("Text or numbers; needs no blank margin, e.g. on tickets"),
+    "code128": _("Latin letters, digits and punctuation"),
+    "code39": _("Capital letters, digits, spaces and - . $ / + %"),
+    "code93": _("Latin letters, digits and punctuation; shorter than Code 39"),
+    "ean13": _("12 digits, the check digit is added (or 13 with it)"),
+    "ean8": _("7 digits, the check digit is added (or 8 with it)"),
+    "upca": _("11 digits, the check digit is added (or 12 with it)"),
+    "upce": _("7 digits starting with 0 or 1, the check digit is added (or 8 with it)"),
+    "itf14": _("13 digits of a shipping carton's GTIN, the check digit is added (or 14 with it)"),
+    "gs1_128": _GS1_HELP,
+    "gs1_datamatrix": _GS1_HELP,
+}
 
 
 def image_from_path(path) -> ImageElement:
@@ -90,6 +135,43 @@ def warning_text(warning: RenderWarning) -> str:
         "ean13_check": _("Element %(n)d: the EAN-13 check digit is wrong"),
         "code128_charset": _(
             "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
+        ),
+        "ean8_digits": _("Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"),
+        "upca_digits": _("Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"),
+        "upce_digits": _(
+            "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the check digit"
+        ),
+        "itf14_digits": _("Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"),
+        "code_check": _("Element %(n)d: the check digit is wrong"),
+        "code39_charset": _(
+            "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . $ / + %%"
+        ),
+        "code93_charset": _(
+            "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
+        ),
+        "gs1_charset": _(
+            "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
+        ),
+        "gs1_syntax": _(
+            "Element %(n)d: GS1 data must be application identifiers in brackets, each followed "
+            "by its value, e.g. (01)09501101530003(10)AB12"
+        ),
+        "gs1_ai": _("Element %(n)d: (%(ai)s) is not a GS1 application identifier"),
+        "gs1_length": _(
+            "Element %(n)d: the value of application identifier (%(ai)s) has the wrong length"
+        ),
+        "gs1_check": _(
+            "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
+        ),
+        "gs1_value": _(
+            "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a date, "
+            "number or character it does not allow"
+        ),
+        "code_too_long": _("Element %(n)d: the content is too long for this type of code"),
+        "code_invalid": _("Element %(n)d: the content cannot be encoded in this type of code"),
+        "code_unavailable": _(
+            "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is "
+            "not installed"
         ),
         "image_unreadable": _("Element %(n)d: the image cannot be read"),
         "element_failed": _("Element %(n)d cannot be drawn"),

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 23:03+0100\n"
+"POT-Creation-Date: 2026-11-12 08:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -746,35 +746,49 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "**Code**: QR code, Code 128 or EAN-13."
+msgid "**Code**: [[ui:Type]] offers 2D codes (QR code, Data Matrix, PDF417, Aztec), linear barcodes (Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A, UPC-E, ITF-14) and GS1 codes (GS1-128, GS1 DataMatrix). Below the type it says what the type is for and what it accepts."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid ""
-"Codes print sharp on every printer: each bar and square is a whole number of"
-" printer dots, as close to the designed width as the element's space allows,"
-" with the blank margin a scanner needs. The code may come out slightly "
-"smaller than designed, centred in its space."
+msgid "EAN, UPC and ITF-14: enter the digits without the check digit, it is added; with it, it is checked."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid ""
-"A code whose bars are only one printer dot wide, or without room for its "
-"blank margin, may not scan: Etiketto warns before printing, make the code "
-"larger. A code that does not fit at all is not printed."
+msgid "GS1-128 and GS1 DataMatrix: application identifiers in brackets, each followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.  Etiketto checks identifiers, lengths, dates and check digits and says which identifier is wrong. GS1-128 shows the identifiers in brackets below the bars."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid ""
-"Labels made with earlier versions: QR codes come out up to about a third "
-"smaller (their blank margin is now inside the element), barcodes slightly "
-"wider."
+msgid "Content a code type cannot take is not changed silently: the element is crossed out and a warning says why."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels with a code type other than QR code, Code 128 and EAN-13 do not open in earlier versions of Etiketto: they say the label needs a newer version."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Codes print sharp on every printer: each bar and square is a whole number of printer dots, as close to the designed width as the element's space allows, with the blank margin a scanner needs. The code may come out slightly smaller than designed, centred in its space."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A code whose bars are only one printer dot wide, or without room for its blank margin, may not scan: Etiketto warns before printing, make the code larger. A code that does not fit at all is not printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels made with earlier versions: QR codes come out up to about a third smaller (their blank margin is now inside the element), barcodes slightly wider."
 msgstr ""
 
 #. type: Title ##

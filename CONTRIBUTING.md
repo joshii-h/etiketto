@@ -59,7 +59,7 @@ gettext from your distribution (see README for package names).
 git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
 cd etiketto
 uv venv --system-site-packages .venv
-uv pip install --python .venv/bin/python -e . pytest pytest-cov hypothesis ruff
+uv pip install --python .venv/bin/python -e . pytest pytest-cov hypothesis ruff zxing-cpp
 .venv/bin/python -m etiketto.app
 ```
 
@@ -195,6 +195,37 @@ to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`;
 labels on a label sheet (page printers) store `sheet`: its id, the
 positions on the first sheet and whether the content is turned. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
+
+Codes store their type in `symbology` (`model.SYMBOLOGIES`). A label with a
+type added after the first versions (`model.BARCODES`: Data Matrix, PDF417,
+Aztec, Code 39, Code 93, EAN-8, UPC-A, UPC-E, ITF-14, GS1-128, GS1
+DataMatrix) is written as format version 2 with `"features": ["barcodes"]`:
+version 1 readers refuse it as "newer" instead of calling it damaged, and a
+reader refuses features it does not know. A label without features stays
+version 1 and opens everywhere. A new feature adds a name to
+`model.FEATURES`, not a version.
+
+TODO at integration: the branches `variables-cli` and `mail-merge` bring the
+same `features` list (`"serial"`, `"variables"`). When they meet this one,
+keep a single `FORMAT_VERSION = 2`, `FEATURES = {"barcodes", "serial",
+"variables"}` and one `Label.features()` that lists all three; the tests for
+each feature stay.
+
+## Codes
+
+`etiketto/codes.py` encodes, `etiketto/render.py` draws. The encoders only
+deliver modules (rows of `1` and `0`), never a picture: Zint's raw
+`encoded_data`, segno's matrix, python-barcode's pattern. The drawing makes
+each module a whole number of printer dots and keeps the quiet zone each
+standard asks for (`codes.SPECS`) inside the element. QR codes (segno),
+Code 128 and EAN-13 (python-barcode) keep their encoders so labels made
+before print the same modules; Zint would choose other QR masks and Code 128
+code sets. A new symbology needs an entry in `codes.SPECS`, in
+`model.BARCODES`, in `ui/texts.SYMBOLOGY_GROUPS` and `SYMBOLOGY_HELP`, a
+sample in `tests/test_codes.py` (decoded with zxing-cpp) and its input
+checks: content Zint would change silently (lower case in Code 39, a wrong
+check digit) is refused before it is encoded, with a warning key and its
+text in `ui/texts.warning_text()`.
 
 ## Label sheets
 

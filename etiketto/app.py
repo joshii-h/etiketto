@@ -127,7 +127,7 @@ class App(Adw.Application):
         self._maybe_screenshot(window)
 
     def on_about(self, *_args):
-        Adw.AboutDialog(
+        about = Adw.AboutDialog(
             application_name="Etiketto",
             application_icon=APP_ID,
             version=__version__,
@@ -139,7 +139,15 @@ class App(Adw.Application):
             copyright="© 2026 Joshua Hirsig",
             # translators: replace with your name to be credited in the About dialog
             translator_credits=_("translator-credits"),
-        ).present(self.get_active_window())
+        )
+        # draws most code types (etiketto.codes)
+        about.add_legal_section(
+            "Zint", "© 2009-2025 Robin Stuart and contributors", Gtk.License.BSD_3, None
+        )
+        about.add_legal_section(
+            "zint-bindings", "© 2024-2025 Anna Zhukova", Gtk.License.APACHE_2_0, None
+        )
+        about.present(self.get_active_window())
 
 
 # entry points: running the real application is not part of the tests

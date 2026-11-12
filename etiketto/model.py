@@ -9,7 +9,15 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Literal
 
-FORMAT_VERSION = 1
+# Version 1: every label. Version 2: the file lists "features" it needs; an
+# Etiketto that does not know one of them refuses the file ("newer") instead
+# of printing it wrongly. A file is written with version 2 only if it uses a
+# feature, so labels without one still open in every version. New features
+# add a name to FEATURES, not a version.
+FORMAT_VERSION = 2
+# "barcodes": a code of a symbology added after version 1 (BARCODES); version
+# 1 readers would call the file damaged
+FEATURES = frozenset({"barcodes"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -66,10 +74,29 @@ class ImageElement:
         return base64.b64decode(self.data)
 
 
+# the symbologies of the first versions, and those added since (the feature
+# "barcodes"); how each is drawn: etiketto.codes
+FIRST_SYMBOLOGIES = ("qr", "code128", "ean13")
+BARCODES = (
+    "code39",
+    "code93",
+    "ean8",
+    "upca",
+    "upce",
+    "itf14",
+    "gs1_128",
+    "datamatrix",
+    "gs1_datamatrix",
+    "pdf417",
+    "aztec",
+)
+SYMBOLOGIES = FIRST_SYMBOLOGIES + BARCODES
+
+
 @dataclass
 class CodeElement:
     data: str = "https://"
-    symbology: Literal["qr", "code128", "ean13"] = "qr"
+    symbology: str = "qr"  # one of SYMBOLOGIES
     color: str = "#000000"
     kind: Literal["code"] = "code"
 
@@ -237,9 +264,17 @@ class Label:
 
     # --- persistence -------------------------------------------------------
 
+    def features(self) -> list[str]:
+        """What the label uses that older versions cannot print (FEATURES)."""
+        codes = [e for e in self.elements if isinstance(e, CodeElement)]
+        return ["barcodes"] if any(e.symbology in BARCODES for e in codes) else []
+
     def to_dict(self) -> dict:
         data = asdict(self)
-        data["version"] = FORMAT_VERSION
+        features = self.features()
+        data["version"] = FORMAT_VERSION if features else 1
+        if features:
+            data["features"] = features
         return data
 
     @classmethod
@@ -254,6 +289,11 @@ class Label:
             raise _damaged("invalid format version %r" % (version,))
         if version > FORMAT_VERSION:
             raise LabelError("newer", "file was written by a newer Etiketto (format %s)" % version)
+        features = data.pop("features", [])
+        if not isinstance(features, list) or not all(isinstance(f, str) for f in features):
+            raise _damaged("features must be a list of names")
+        if unknown := sorted(set(features) - FEATURES):
+            raise LabelError("newer", "file needs features of a newer Etiketto: %s" % unknown)
         items = data.pop("elements", [])
         if not isinstance(items, list):
             raise _damaged("elements must be a list")
@@ -384,5 +424,7 @@ def _element_from_dict(item) -> Element:
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
-        element.symbology = _choice(element.symbology, ("qr", "code128", "ean13"), "symbology")
+        element.symbology = _str(element.symbology, "symbology")
+        if element.symbology not in SYMBOLOGIES:  # a symbology added later
+            raise LabelError("newer", "unknown symbology %r" % element.symbology)
     return element

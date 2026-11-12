@@ -14,8 +14,20 @@ from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from etiketto.model import ImageElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
-from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
-from etiketto.ui.widgets import color_button, combo_row, flat_button, spin_row  # noqa: E402
+from etiketto.ui.texts import (  # noqa: E402
+    SYMBOLOGY_GROUPS,
+    SYMBOLOGY_HELP,
+    TEXT_ALIGNS,
+    element_icon,
+    element_title,
+)
+from etiketto.ui.widgets import (  # noqa: E402
+    color_button,
+    combo_row,
+    flat_button,
+    grouped_combo_row,
+    spin_row,
+)
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
@@ -167,9 +179,13 @@ class ElementsGroup(Adw.PreferencesGroup):
         row.add_row(image_row)
 
     def _code_rows(self, row: Adw.ExpanderRow, element, set_attr) -> None:
-        row.add_row(
-            combo_row(_("Type"), SYMBOLOGIES, element.symbology, lambda v: set_attr(symbology=v))
-        )
+        def set_type(symbology: str) -> None:
+            kind.set_subtitle(SYMBOLOGY_HELP.get(symbology, ""))
+            set_attr(symbology=symbology)
+
+        kind = grouped_combo_row(_("Type"), SYMBOLOGY_GROUPS, element.symbology, set_type)
+        kind.set_subtitle(SYMBOLOGY_HELP.get(element.symbology, ""))
+        row.add_row(kind)
         data = Adw.EntryRow(title=_("Content (link, text, number)"))
         data.set_text(element.data)
         data.connect("changed", lambda e: set_attr(data=e.get_text()))
