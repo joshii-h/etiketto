@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "먼저 테두리 두께를 설정하세요",
     "%(unit)s, with a box or frame": "%(unit)s, 상자나 틀이 있을 때",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "요소 %(n)d: 안쪽 여백, 틀, 윤곽선 또는 그림자 때문에 텍스트 공간이 없습니다 – 더 작게 하세요",
+    "Choose a width first": "먼저 두께를 설정하세요",
+    "Only for the method Threshold": "임계값 방식에만 해당",
 }

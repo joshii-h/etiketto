@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Määra esmalt äärise laius",
     "%(unit)s, with a box or frame": "%(unit)s, kasti või raamiga",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: sisevahe, raam, kontuur või vari ei jäta tekstile ruumi – vähenda neid",
+    "Choose a width first": "Määra esmalt laius",
+    "Only for the method Threshold": "Ainult meetodi Lävi jaoks",
 }

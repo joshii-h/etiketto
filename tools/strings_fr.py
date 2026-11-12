@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Définissez d’abord une épaisseur de bordure",
     "%(unit)s, with a box or frame": "%(unit)s, avec un encadré ou un cadre",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Élément %(n)d\xa0: la marge intérieure, le cadre, le contour ou l’ombre ne laissent aucune place au texte – réduisez-les",
+    "Choose a width first": "Définissez d’abord une épaisseur",
+    "Only for the method Threshold": "Uniquement pour la méthode Seuil",
 }

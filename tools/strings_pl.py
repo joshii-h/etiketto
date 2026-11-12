@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Najpierw ustaw szerokość ramki",
     "%(unit)s, with a box or frame": "%(unit)s, z polem lub ramką",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: margines wewnętrzny, ramka, kontur lub cień nie zostawiają miejsca na tekst – zmniejsz je",
+    "Choose a width first": "Najpierw ustaw szerokość",
+    "Only for the method Threshold": "Tylko dla metody Próg",
 }

@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Aseta ensin reunuksen leveys",
     "%(unit)s, with a box or frame": "%(unit)s, laatikon tai kehyksen kanssa",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elementti %(n)d: täyte, kehys, ääriviiva tai varjo eivät jätä tilaa tekstille – pienennä niitä",
+    "Choose a width first": "Aseta ensin leveys",
+    "Only for the method Threshold": "Vain menetelmälle Kynnys",
 }

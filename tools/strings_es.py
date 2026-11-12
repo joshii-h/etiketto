@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Establezca primero un ancho de borde",
     "%(unit)s, with a box or frame": "%(unit)s, con un recuadro o un marco",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elemento %(n)d: el margen interior, el marco, el contorno o la sombra no dejan espacio para el texto – redúzcalos",
+    "Choose a width first": "Establezca primero un ancho",
+    "Only for the method Threshold": "Solo para el método Umbral",
 }

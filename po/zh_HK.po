@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 13:19+0100\n"
+"PO-Revision-Date: 2026-11-12 14:11+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: zh_HK\n"
 "Language: zh_HK\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: etiketto/app.py:125 etiketto/ui/styles.py:162
+#: etiketto/app.py:125 etiketto/ui/styles.py:177
 msgid "Box and frame"
 msgstr "方框與外框"
 
@@ -221,7 +221,7 @@ msgstr "--sheet 和 --rows 需要資料檔案（--data）"
 msgid "No rows to print"
 msgstr "沒有要列印的列"
 
-#: etiketto/cli.py:756 etiketto/ui/window.py:667
+#: etiketto/cli.py:756 etiketto/ui/window.py:716
 #, python-format
 msgid "No such column: %s"
 msgstr "沒有此欄位：%s"
@@ -376,7 +376,7 @@ msgid "Add text, an image, a symbol or a code"
 msgstr "加入文字、影像、符號或條碼"
 
 #: etiketto/ui/elements.py:105 etiketto/ui/texts.py:230
-#: etiketto/ui/window.py:779
+#: etiketto/ui/window.py:828
 msgid "Text"
 msgstr "文字"
 
@@ -473,7 +473,7 @@ msgstr "縮放"
 msgid "Symbol"
 msgstr "符號"
 
-#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:476
+#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:497
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s，0 = 填滿標籤帶高度"
@@ -484,7 +484,7 @@ msgid ""
 "is light"
 msgstr "黑白印表機會以黑色列印符號，顏色較淺時則以白色列印"
 
-#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:94
+#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:109
 msgid "Rotation"
 msgstr "旋轉"
 
@@ -496,7 +496,7 @@ msgstr "類型"
 msgid "Content (link, text, number)"
 msgstr "內容（連結、文字、號碼）"
 
-#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:511
+#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:532
 msgid "Colour"
 msgstr "顏色"
 
@@ -537,7 +537,7 @@ msgstr "標籤"
 msgid "Save label"
 msgstr "儲存標籤"
 
-#: etiketto/ui/files.py:238 etiketto/ui/window.py:172
+#: etiketto/ui/files.py:238 etiketto/ui/window.py:174
 msgid "Save as template…"
 msgstr "儲存為範本…"
 
@@ -550,7 +550,7 @@ msgstr "已儲存 %s"
 msgid "Export PNG"
 msgstr "匯出為 PNG"
 
-#: etiketto/ui/files.py:281 etiketto/ui/window.py:692
+#: etiketto/ui/files.py:281 etiketto/ui/window.py:741
 msgid "The preview cannot be drawn"
 msgstr "無法繪製預覽"
 
@@ -563,8 +563,8 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "尚無範本，請使用「儲存為範本…」"
 
 #: etiketto/ui/files.py:320 etiketto/ui/label_group.py:67
-#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:63
-#: etiketto/ui/window.py:198
+#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:65
+#: etiketto/ui/window.py:200
 msgid "Label"
 msgstr "標籤"
 
@@ -646,7 +646,7 @@ msgctxt "month name"
 msgid "December"
 msgstr "12 月"
 
-#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:363
+#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:380
 msgid "Whole image"
 msgstr "整張影像"
 
@@ -666,7 +666,7 @@ msgstr "拖曳以選擇要保留的影像部分"
 #: etiketto/ui/image_crop.py:64 etiketto/ui/printer.py:235
 #: etiketto/ui/printing.py:434 etiketto/ui/printing.py:657
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:708
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:757
 msgid "Cancel"
 msgstr "取消"
 
@@ -688,7 +688,7 @@ msgid "Width"
 msgstr "寬度"
 
 #: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:335
-#: etiketto/ui/styles.py:470
+#: etiketto/ui/styles.py:491
 msgid "Height"
 msgstr "高度"
 
@@ -722,12 +722,12 @@ msgstr "背景顏色"
 msgid "Background image"
 msgstr "背景影像"
 
-#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:422
+#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:439
 msgid "Border"
 msgstr "邊框"
 
-#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:289
-#: etiketto/ui/styles.py:307 etiketto/ui/styles.py:428
+#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:304
+#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:445
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s，0 = 無"
@@ -740,12 +740,12 @@ msgstr "邊框樣式"
 msgid "Corners, line and distance from the edge"
 msgstr "圓角、線條及與邊緣的距離"
 
-#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:267
-#: etiketto/ui/styles.py:412 etiketto/ui/styles.py:484
+#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:282
+#: etiketto/ui/styles.py:429 etiketto/ui/styles.py:505
 msgid "Corner radius"
 msgstr "圓角半徑"
 
-#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:479
+#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:500
 msgid "Line style"
 msgstr "線條樣式"
 
@@ -770,7 +770,7 @@ msgstr "自動長度"
 msgid "As long as the content"
 msgstr "與內容等長"
 
-#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:466
+#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:487
 msgid "Length"
 msgstr "長度"
 
@@ -1187,7 +1187,7 @@ msgid "Print label"
 msgstr "列印標籤"
 
 #: etiketto/ui/printing.py:435 etiketto/ui/printing.py:740
-#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:160
+#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:162
 msgid "Print"
 msgstr "列印"
 
@@ -1263,7 +1263,7 @@ msgstr "列印失敗"
 msgid "Details"
 msgstr "詳細資訊"
 
-#: etiketto/ui/printing.py:752 etiketto/ui/window.py:732
+#: etiketto/ui/printing.py:752 etiketto/ui/window.py:781
 msgid "Report"
 msgstr "回報"
 
@@ -1376,27 +1376,27 @@ msgstr "下一個建議"
 msgid "Page"
 msgstr "頁"
 
-#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:169
+#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:171
 msgid "New label"
 msgstr "新增標籤"
 
-#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:132
+#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:134
 msgid "Open"
 msgstr "開啟"
 
-#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:145
+#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:147
 msgid "Save"
 msgstr "儲存"
 
-#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:171
+#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:173
 msgid "Save as…"
 msgstr "另存為…"
 
-#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:150
+#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:152
 msgid "Undo"
 msgstr "復原"
 
-#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:151
+#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:153
 msgid "Redo"
 msgstr "重做"
 
@@ -1440,254 +1440,262 @@ msgstr "將展開的元素往後移"
 msgid "General"
 msgstr "一般"
 
-#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:177
+#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:179
 msgid "Keyboard shortcuts"
 msgstr "鍵盤快捷鍵"
 
-#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:178
+#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:180
 msgid "Help"
 msgstr "說明"
 
-#: etiketto/ui/styles.py:115
+#: etiketto/ui/styles.py:130
 msgid "Position"
 msgstr "位置"
 
-#: etiketto/ui/styles.py:116
+#: etiketto/ui/styles.py:131
 msgid "Across the tape and the space after it"
 msgstr "橫跨標籤帶的位置及其後的間距"
 
-#: etiketto/ui/styles.py:124
+#: etiketto/ui/styles.py:139
 msgid "Vertical alignment"
 msgstr "垂直對齊"
 
-#: etiketto/ui/styles.py:128
+#: etiketto/ui/styles.py:143
 msgid "Space after it"
 msgstr "其後的間距"
 
-#: etiketto/ui/styles.py:143
+#: etiketto/ui/styles.py:158
 msgid "Own spacing"
 msgstr "個別間距"
 
-#: etiketto/ui/styles.py:146
+#: etiketto/ui/styles.py:161
 msgid "Instead of the label's spacing between elements"
 msgstr "取代標籤的元素間距"
 
-#: etiketto/ui/styles.py:158
+#: etiketto/ui/styles.py:173
 msgid "Spacing and fitting"
 msgstr "間距與縮放"
 
-#: etiketto/ui/styles.py:159
+#: etiketto/ui/styles.py:174
 msgid "Letter and line spacing, shrinking, wrapping, rotation"
 msgstr "字元間距與行距、縮小、換行、旋轉"
 
-#: etiketto/ui/styles.py:162
+#: etiketto/ui/styles.py:177
 msgid "White on black, a box behind the text, a frame"
 msgstr "黑底白字、文字後方的方框、外框"
 
-#: etiketto/ui/styles.py:164
+#: etiketto/ui/styles.py:179
 msgid "Outline and shadow"
 msgstr "輪廓與陰影"
 
-#: etiketto/ui/styles.py:165
+#: etiketto/ui/styles.py:180
 msgid ""
 "At least one printer dot; black-and-white printers print the shadow solid"
 msgstr "至少一個列印點；黑白印表機會以實心列印陰影"
 
-#: etiketto/ui/styles.py:183
+#: etiketto/ui/styles.py:198
 msgid "Letter spacing"
 msgstr "字元間距"
 
-#: etiketto/ui/styles.py:190
+#: etiketto/ui/styles.py:205
 msgid "percent of the font size"
 msgstr "字型大小的百分比"
 
-#: etiketto/ui/styles.py:195
+#: etiketto/ui/styles.py:210
 msgid "Line spacing"
 msgstr "行距"
 
-#: etiketto/ui/styles.py:202
+#: etiketto/ui/styles.py:217
 msgid "times the normal line height"
 msgstr "一般行高的倍數"
 
-#: etiketto/ui/styles.py:207
+#: etiketto/ui/styles.py:222
 msgid "Shrink to fit"
 msgstr "縮小以符合"
 
-#: etiketto/ui/styles.py:210
+#: etiketto/ui/styles.py:225
 msgid "Smaller until it fits the tape height and the label length"
 msgstr "縮小直到符合標籤帶高度與標籤長度"
 
-#: etiketto/ui/styles.py:214
+#: etiketto/ui/styles.py:229
 msgid "Smallest size"
 msgstr "最小大小"
 
-#: etiketto/ui/styles.py:221
+#: etiketto/ui/styles.py:236
 msgid "pt, when shrinking"
 msgstr "pt，縮小時"
 
-#: etiketto/ui/styles.py:227
+#: etiketto/ui/styles.py:242
 msgid "Wrap width"
 msgstr "換行寬度"
 
-#: etiketto/ui/styles.py:233
+#: etiketto/ui/styles.py:248
 #, python-format
 msgid "%(unit)s, 0 = only at line breaks"
 msgstr "%(unit)s，0 = 僅在換行處換行"
 
-#: etiketto/ui/styles.py:243
+#: etiketto/ui/styles.py:258
 msgid "White on black"
 msgstr "黑底白字"
 
-#: etiketto/ui/styles.py:246
+#: etiketto/ui/styles.py:261
 msgid "The text cut out of a box in the text colour"
 msgstr "在文字顏色的方框中鏤空文字"
 
-#: etiketto/ui/styles.py:249 etiketto/ui/styles.py:254
+#: etiketto/ui/styles.py:264 etiketto/ui/styles.py:269
 msgid "Background box"
 msgstr "背景方框"
 
-#: etiketto/ui/styles.py:249
+#: etiketto/ui/styles.py:264
 msgid "A box behind the text"
 msgstr "文字後方的方框"
 
-#: etiketto/ui/styles.py:251
+#: etiketto/ui/styles.py:266
 msgid "Colour of the background box"
 msgstr "背景方框的顏色"
 
-#: etiketto/ui/styles.py:266
+#: etiketto/ui/styles.py:281
 msgid "Padding"
 msgstr "內距"
 
-#: etiketto/ui/styles.py:277
+#: etiketto/ui/styles.py:292
 #, python-format
 msgid "%(unit)s, with a box or frame"
 msgstr "%(unit)s，需搭配方框或外框"
 
-#: etiketto/ui/styles.py:283
+#: etiketto/ui/styles.py:298
 msgid "Frame"
 msgstr "外框"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Outline"
 msgstr "輪廓"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Colour of the outline"
 msgstr "輪廓的顏色"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Shadow"
 msgstr "陰影"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Colour of the shadow"
 msgstr "陰影的顏色"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:328 etiketto/ui/styles.py:450
+msgid "Choose a width first"
+msgstr "請先設定寬度"
+
+#: etiketto/ui/styles.py:339
 msgid "Adjust"
 msgstr "調整"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:339
 msgid "Brightness, contrast, turning and mirroring"
 msgstr "亮度、對比、旋轉與鏡像"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "Black and white"
 msgstr "黑白"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "How black-and-white printers print the image"
 msgstr "黑白印表機列印影像的方式"
 
-#: etiketto/ui/styles.py:325
+#: etiketto/ui/styles.py:342
 msgid "Corners and border"
 msgstr "圓角與邊框"
 
-#: etiketto/ui/styles.py:326
+#: etiketto/ui/styles.py:343
 msgid "Rounded corners and a border around the image"
 msgstr "影像的圓角與邊框"
 
-#: etiketto/ui/styles.py:344
+#: etiketto/ui/styles.py:361
 msgid "Crop"
 msgstr "裁切"
 
-#: etiketto/ui/styles.py:354
+#: etiketto/ui/styles.py:371
 msgid "The image cannot be read"
 msgstr "無法讀取影像"
 
-#: etiketto/ui/styles.py:358
+#: etiketto/ui/styles.py:375
 msgid "Crop…"
 msgstr "裁切…"
 
-#: etiketto/ui/styles.py:370 etiketto/ui/texts.py:67
+#: etiketto/ui/styles.py:387 etiketto/ui/texts.py:67
 msgid "Brightness"
 msgstr "亮度"
 
-#: etiketto/ui/styles.py:371
+#: etiketto/ui/styles.py:388
 msgid "Contrast"
 msgstr "對比"
 
-#: etiketto/ui/styles.py:372
+#: etiketto/ui/styles.py:389
 msgid "Gamma"
 msgstr "Gamma"
 
-#: etiketto/ui/styles.py:385
+#: etiketto/ui/styles.py:402
 msgid "Invert"
 msgstr "反轉色彩"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Mirror"
 msgstr "水平鏡像"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Left and right"
 msgstr "左右"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Flip"
 msgstr "垂直翻轉"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Top and bottom"
 msgstr "上下"
 
-#: etiketto/ui/styles.py:395
+#: etiketto/ui/styles.py:412
 msgid "Threshold"
 msgstr "臨界值"
 
-#: etiketto/ui/styles.py:402
+#: etiketto/ui/styles.py:419
 msgid "Lighter pixels print white"
 msgstr "較亮的像素會印成白色"
 
-#: etiketto/ui/styles.py:404
+#: etiketto/ui/styles.py:421
 msgid "Method"
 msgstr "方式"
 
-#: etiketto/ui/styles.py:431
+#: etiketto/ui/styles.py:422
+msgid "Only for the method Threshold"
+msgstr "僅適用於「臨界值」方式"
+
+#: etiketto/ui/styles.py:450
 msgid "Colour of the border"
 msgstr "邊框的顏色"
 
-#: etiketto/ui/styles.py:463
+#: etiketto/ui/styles.py:484
 msgid "Direction"
 msgstr "方向"
 
-#: etiketto/ui/styles.py:481
+#: etiketto/ui/styles.py:502
 msgid "Arrows"
 msgstr "箭頭"
 
-#: etiketto/ui/styles.py:491
+#: etiketto/ui/styles.py:512
 msgid "Fill"
 msgstr "填色"
 
-#: etiketto/ui/styles.py:500
+#: etiketto/ui/styles.py:521
 msgid "Shape"
 msgstr "形狀"
 
-#: etiketto/ui/styles.py:503
+#: etiketto/ui/styles.py:524
 msgid "Line width"
 msgstr "線條寬度"
 
-#: etiketto/ui/styles.py:509
+#: etiketto/ui/styles.py:530
 #, python-format
 msgid "%(unit)s, at least one printer dot"
 msgstr "%(unit)s，至少一個列印點"
@@ -2779,69 +2787,69 @@ msgstr "下一個編號"
 msgid "Step"
 msgstr "步進值"
 
-#: etiketto/ui/window.py:139
+#: etiketto/ui/window.py:141
 msgid "Templates"
 msgstr "範本"
 
-#: etiketto/ui/window.py:170
+#: etiketto/ui/window.py:172
 msgid "Shipping label…"
 msgstr "貨運標籤…"
 
-#: etiketto/ui/window.py:173
+#: etiketto/ui/window.py:175
 msgid "Data for serial labels…"
 msgstr "資料合併標籤的資料…"
 
-#: etiketto/ui/window.py:174
+#: etiketto/ui/window.py:176
 msgid "Forget allowed data files"
 msgstr "忘記已允許的資料檔案"
 
-#: etiketto/ui/window.py:175
+#: etiketto/ui/window.py:177
 msgid "Export PNG…"
 msgstr "匯出為 PNG…"
 
-#: etiketto/ui/window.py:179
+#: etiketto/ui/window.py:181
 msgid "Report a problem…"
 msgstr "回報問題…"
 
-#: etiketto/ui/window.py:180
+#: etiketto/ui/window.py:182
 msgid "About Etiketto"
 msgstr "關於 Etiketto"
 
-#: etiketto/ui/window.py:586
+#: etiketto/ui/window.py:635
 msgid "Unsaved label"
 msgstr "未儲存的標籤"
 
-#: etiketto/ui/window.py:660
+#: etiketto/ui/window.py:709
 msgid "content scaled down to fit"
 msgstr "內容已縮小以符合尺寸"
 
-#: etiketto/ui/window.py:664
+#: etiketto/ui/window.py:713
 #, python-format
 msgid "Problem: %s"
 msgstr "問題：%s"
 
-#: etiketto/ui/window.py:683
+#: etiketto/ui/window.py:732
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "對這台印表機來說太長：最多 %s"
 
-#: etiketto/ui/window.py:687
+#: etiketto/ui/window.py:736
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "對這台印表機太寬：最多 %s"
 
-#: etiketto/ui/window.py:759
+#: etiketto/ui/window.py:808
 msgid "The browser cannot be opened"
 msgstr "無法開啟瀏覽器"
 
-#: etiketto/ui/window.py:761
+#: etiketto/ui/window.py:810
 msgid "Copy link"
 msgstr "複製連結"
 
-#: etiketto/ui/window.py:832
+#: etiketto/ui/window.py:881
 msgid "Only local files can be dropped"
 msgstr "只能拖放本機檔案"
 
-#: etiketto/ui/window.py:853
+#: etiketto/ui/window.py:902
 msgid "Please wait until printing has finished"
 msgstr "請等候列印完成"

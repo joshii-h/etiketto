@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "請先設定邊框寬度",
     "%(unit)s, with a box or frame": "%(unit)s，需搭配方框或外框",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "元素 %(n)d：內距、外框、輪廓或陰影使文字沒有空間 – 請縮小",
+    "Choose a width first": "請先設定寬度",
+    "Only for the method Threshold": "僅適用於「臨界值」方式",
 }

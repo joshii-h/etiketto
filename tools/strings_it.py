@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Imposta prima uno spessore del bordo",
     "%(unit)s, with a box or frame": "%(unit)s, con un riquadro o una cornice",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elemento %(n)d: spaziatura interna, cornice, contorno o ombra non lasciano spazio al testo – riducili",
+    "Choose a width first": "Imposta prima uno spessore",
+    "Only for the method Threshold": "Solo per il metodo Soglia",
 }

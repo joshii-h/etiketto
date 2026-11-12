@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 13:19+0100\n"
+"PO-Revision-Date: 2026-11-12 14:11+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ms\n"
 "Language: ms\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: etiketto/app.py:125 etiketto/ui/styles.py:162
+#: etiketto/app.py:125 etiketto/ui/styles.py:177
 msgid "Box and frame"
 msgstr "Kotak dan bingkai"
 
@@ -221,7 +221,7 @@ msgstr "--sheet dan --rows memerlukan fail data (--data)"
 msgid "No rows to print"
 msgstr "Tiada baris untuk dicetak"
 
-#: etiketto/cli.py:756 etiketto/ui/window.py:667
+#: etiketto/cli.py:756 etiketto/ui/window.py:716
 #, python-format
 msgid "No such column: %s"
 msgstr "Tiada lajur sedemikian: %s"
@@ -376,7 +376,7 @@ msgid "Add text, an image, a symbol or a code"
 msgstr "Tambah teks, imej, simbol atau kod"
 
 #: etiketto/ui/elements.py:105 etiketto/ui/texts.py:230
-#: etiketto/ui/window.py:779
+#: etiketto/ui/window.py:828
 msgid "Text"
 msgstr "Teks"
 
@@ -473,7 +473,7 @@ msgstr "Skala"
 msgid "Symbol"
 msgstr "Simbol"
 
-#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:476
+#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:497
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = penuhi tinggi pita"
@@ -484,7 +484,7 @@ msgid ""
 "is light"
 msgstr "Pencetak hitam putih mencetak simbol dalam warna hitam, atau putih jika warnanya cerah"
 
-#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:94
+#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:109
 msgid "Rotation"
 msgstr "Putaran"
 
@@ -496,7 +496,7 @@ msgstr "Jenis"
 msgid "Content (link, text, number)"
 msgstr "Kandungan (pautan, teks, nombor)"
 
-#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:511
+#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:532
 msgid "Colour"
 msgstr "Warna"
 
@@ -537,7 +537,7 @@ msgstr "label"
 msgid "Save label"
 msgstr "Simpan label"
 
-#: etiketto/ui/files.py:238 etiketto/ui/window.py:172
+#: etiketto/ui/files.py:238 etiketto/ui/window.py:174
 msgid "Save as template…"
 msgstr "Simpan sebagai templat…"
 
@@ -550,7 +550,7 @@ msgstr "%s disimpan"
 msgid "Export PNG"
 msgstr "Eksport sebagai PNG"
 
-#: etiketto/ui/files.py:281 etiketto/ui/window.py:692
+#: etiketto/ui/files.py:281 etiketto/ui/window.py:741
 msgid "The preview cannot be drawn"
 msgstr "Pratonton tidak dapat dilukis"
 
@@ -563,8 +563,8 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "Belum ada templat – gunakan “Simpan sebagai templat…”"
 
 #: etiketto/ui/files.py:320 etiketto/ui/label_group.py:67
-#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:63
-#: etiketto/ui/window.py:198
+#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:65
+#: etiketto/ui/window.py:200
 msgid "Label"
 msgstr "Label"
 
@@ -646,7 +646,7 @@ msgctxt "month name"
 msgid "December"
 msgstr "Disember"
 
-#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:363
+#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:380
 msgid "Whole image"
 msgstr "Seluruh imej"
 
@@ -666,7 +666,7 @@ msgstr "Seret untuk memilih bahagian imej yang hendak disimpan"
 #: etiketto/ui/image_crop.py:64 etiketto/ui/printer.py:235
 #: etiketto/ui/printing.py:434 etiketto/ui/printing.py:657
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:708
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:757
 msgid "Cancel"
 msgstr "Batal"
 
@@ -688,7 +688,7 @@ msgid "Width"
 msgstr "Lebar"
 
 #: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:335
-#: etiketto/ui/styles.py:470
+#: etiketto/ui/styles.py:491
 msgid "Height"
 msgstr "Tinggi"
 
@@ -722,12 +722,12 @@ msgstr "Warna latar"
 msgid "Background image"
 msgstr "Imej latar"
 
-#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:422
+#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:439
 msgid "Border"
 msgstr "Sempadan"
 
-#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:289
-#: etiketto/ui/styles.py:307 etiketto/ui/styles.py:428
+#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:304
+#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:445
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = tiada"
@@ -740,12 +740,12 @@ msgstr "Gaya sempadan"
 msgid "Corners, line and distance from the edge"
 msgstr "Bucu, garisan dan jarak dari tepi"
 
-#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:267
-#: etiketto/ui/styles.py:412 etiketto/ui/styles.py:484
+#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:282
+#: etiketto/ui/styles.py:429 etiketto/ui/styles.py:505
 msgid "Corner radius"
 msgstr "Jejari bucu"
 
-#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:479
+#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:500
 msgid "Line style"
 msgstr "Gaya garisan"
 
@@ -770,7 +770,7 @@ msgstr "Panjang automatik"
 msgid "As long as the content"
 msgstr "Sepanjang kandungan"
 
-#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:466
+#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:487
 msgid "Length"
 msgstr "Panjang"
 
@@ -1187,7 +1187,7 @@ msgid "Print label"
 msgstr "Cetak label"
 
 #: etiketto/ui/printing.py:435 etiketto/ui/printing.py:740
-#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:160
+#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:162
 msgid "Print"
 msgstr "Cetak"
 
@@ -1263,7 +1263,7 @@ msgstr "Pencetakan gagal"
 msgid "Details"
 msgstr "Butiran"
 
-#: etiketto/ui/printing.py:752 etiketto/ui/window.py:732
+#: etiketto/ui/printing.py:752 etiketto/ui/window.py:781
 msgid "Report"
 msgstr "Laporkan"
 
@@ -1376,27 +1376,27 @@ msgstr "Cadangan seterusnya"
 msgid "Page"
 msgstr "Halaman"
 
-#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:169
+#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:171
 msgid "New label"
 msgstr "Label baharu"
 
-#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:132
+#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:134
 msgid "Open"
 msgstr "Buka"
 
-#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:145
+#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:147
 msgid "Save"
 msgstr "Simpan"
 
-#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:171
+#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:173
 msgid "Save as…"
 msgstr "Simpan sebagai…"
 
-#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:150
+#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:152
 msgid "Undo"
 msgstr "Buat asal"
 
-#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:151
+#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:153
 msgid "Redo"
 msgstr "Buat semula"
 
@@ -1440,254 +1440,262 @@ msgstr "Alih elemen yang terbuka ke belakang"
 msgid "General"
 msgstr "Umum"
 
-#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:177
+#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:179
 msgid "Keyboard shortcuts"
 msgstr "Pintasan papan kekunci"
 
-#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:178
+#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:180
 msgid "Help"
 msgstr "Bantuan"
 
-#: etiketto/ui/styles.py:115
+#: etiketto/ui/styles.py:130
 msgid "Position"
 msgstr "Kedudukan"
 
-#: etiketto/ui/styles.py:116
+#: etiketto/ui/styles.py:131
 msgid "Across the tape and the space after it"
 msgstr "Melintang pita dan jarak selepasnya"
 
-#: etiketto/ui/styles.py:124
+#: etiketto/ui/styles.py:139
 msgid "Vertical alignment"
 msgstr "Penjajaran menegak"
 
-#: etiketto/ui/styles.py:128
+#: etiketto/ui/styles.py:143
 msgid "Space after it"
 msgstr "Jarak selepasnya"
 
-#: etiketto/ui/styles.py:143
+#: etiketto/ui/styles.py:158
 msgid "Own spacing"
 msgstr "Jarak sendiri"
 
-#: etiketto/ui/styles.py:146
+#: etiketto/ui/styles.py:161
 msgid "Instead of the label's spacing between elements"
 msgstr "Menggantikan jarak antara elemen label"
 
-#: etiketto/ui/styles.py:158
+#: etiketto/ui/styles.py:173
 msgid "Spacing and fitting"
 msgstr "Jarak dan penyesuaian"
 
-#: etiketto/ui/styles.py:159
+#: etiketto/ui/styles.py:174
 msgid "Letter and line spacing, shrinking, wrapping, rotation"
 msgstr "Jarak huruf dan baris, pengecilan, balut baris, putaran"
 
-#: etiketto/ui/styles.py:162
+#: etiketto/ui/styles.py:177
 msgid "White on black, a box behind the text, a frame"
 msgstr "Putih atas hitam, kotak di belakang teks, bingkai"
 
-#: etiketto/ui/styles.py:164
+#: etiketto/ui/styles.py:179
 msgid "Outline and shadow"
 msgstr "Garis luar dan bayang"
 
-#: etiketto/ui/styles.py:165
+#: etiketto/ui/styles.py:180
 msgid ""
 "At least one printer dot; black-and-white printers print the shadow solid"
 msgstr "Sekurang-kurangnya satu titik cetak; pencetak hitam putih mencetak bayang secara padu"
 
-#: etiketto/ui/styles.py:183
+#: etiketto/ui/styles.py:198
 msgid "Letter spacing"
 msgstr "Jarak huruf"
 
-#: etiketto/ui/styles.py:190
+#: etiketto/ui/styles.py:205
 msgid "percent of the font size"
 msgstr "peratus saiz fon"
 
-#: etiketto/ui/styles.py:195
+#: etiketto/ui/styles.py:210
 msgid "Line spacing"
 msgstr "Jarak baris"
 
-#: etiketto/ui/styles.py:202
+#: etiketto/ui/styles.py:217
 msgid "times the normal line height"
 msgstr "kali ganda tinggi baris biasa"
 
-#: etiketto/ui/styles.py:207
+#: etiketto/ui/styles.py:222
 msgid "Shrink to fit"
 msgstr "Kecilkan supaya muat"
 
-#: etiketto/ui/styles.py:210
+#: etiketto/ui/styles.py:225
 msgid "Smaller until it fits the tape height and the label length"
 msgstr "Dikecilkan sehingga muat dengan tinggi pita dan panjang label"
 
-#: etiketto/ui/styles.py:214
+#: etiketto/ui/styles.py:229
 msgid "Smallest size"
 msgstr "Saiz terkecil"
 
-#: etiketto/ui/styles.py:221
+#: etiketto/ui/styles.py:236
 msgid "pt, when shrinking"
 msgstr "pt, semasa mengecilkan"
 
-#: etiketto/ui/styles.py:227
+#: etiketto/ui/styles.py:242
 msgid "Wrap width"
 msgstr "Lebar balut baris"
 
-#: etiketto/ui/styles.py:233
+#: etiketto/ui/styles.py:248
 #, python-format
 msgid "%(unit)s, 0 = only at line breaks"
 msgstr "%(unit)s, 0 = hanya pada pemisah baris"
 
-#: etiketto/ui/styles.py:243
+#: etiketto/ui/styles.py:258
 msgid "White on black"
 msgstr "Putih atas hitam"
 
-#: etiketto/ui/styles.py:246
+#: etiketto/ui/styles.py:261
 msgid "The text cut out of a box in the text colour"
 msgstr "Teks ditebuk daripada kotak dalam warna teks"
 
-#: etiketto/ui/styles.py:249 etiketto/ui/styles.py:254
+#: etiketto/ui/styles.py:264 etiketto/ui/styles.py:269
 msgid "Background box"
 msgstr "Kotak latar"
 
-#: etiketto/ui/styles.py:249
+#: etiketto/ui/styles.py:264
 msgid "A box behind the text"
 msgstr "Kotak di belakang teks"
 
-#: etiketto/ui/styles.py:251
+#: etiketto/ui/styles.py:266
 msgid "Colour of the background box"
 msgstr "Warna kotak latar"
 
-#: etiketto/ui/styles.py:266
+#: etiketto/ui/styles.py:281
 msgid "Padding"
 msgstr "Lapik"
 
-#: etiketto/ui/styles.py:277
+#: etiketto/ui/styles.py:292
 #, python-format
 msgid "%(unit)s, with a box or frame"
 msgstr "%(unit)s, dengan kotak atau bingkai"
 
-#: etiketto/ui/styles.py:283
+#: etiketto/ui/styles.py:298
 msgid "Frame"
 msgstr "Bingkai"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Outline"
 msgstr "Garis luar"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Colour of the outline"
 msgstr "Warna garis luar"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Shadow"
 msgstr "Bayang"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Colour of the shadow"
 msgstr "Warna bayang"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:328 etiketto/ui/styles.py:450
+msgid "Choose a width first"
+msgstr "Tetapkan lebar dahulu"
+
+#: etiketto/ui/styles.py:339
 msgid "Adjust"
 msgstr "Laraskan"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:339
 msgid "Brightness, contrast, turning and mirroring"
 msgstr "Kecerahan, kontras, putaran dan pencerminan"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "Black and white"
 msgstr "Hitam putih"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "How black-and-white printers print the image"
 msgstr "Cara pencetak hitam putih mencetak imej"
 
-#: etiketto/ui/styles.py:325
+#: etiketto/ui/styles.py:342
 msgid "Corners and border"
 msgstr "Bucu dan sempadan"
 
-#: etiketto/ui/styles.py:326
+#: etiketto/ui/styles.py:343
 msgid "Rounded corners and a border around the image"
 msgstr "Bucu bulat dan sempadan di sekeliling imej"
 
-#: etiketto/ui/styles.py:344
+#: etiketto/ui/styles.py:361
 msgid "Crop"
 msgstr "Pangkas"
 
-#: etiketto/ui/styles.py:354
+#: etiketto/ui/styles.py:371
 msgid "The image cannot be read"
 msgstr "Imej tidak dapat dibaca"
 
-#: etiketto/ui/styles.py:358
+#: etiketto/ui/styles.py:375
 msgid "Crop…"
 msgstr "Pangkas…"
 
-#: etiketto/ui/styles.py:370 etiketto/ui/texts.py:67
+#: etiketto/ui/styles.py:387 etiketto/ui/texts.py:67
 msgid "Brightness"
 msgstr "Kecerahan"
 
-#: etiketto/ui/styles.py:371
+#: etiketto/ui/styles.py:388
 msgid "Contrast"
 msgstr "Kontras"
 
-#: etiketto/ui/styles.py:372
+#: etiketto/ui/styles.py:389
 msgid "Gamma"
 msgstr "Gama"
 
-#: etiketto/ui/styles.py:385
+#: etiketto/ui/styles.py:402
 msgid "Invert"
 msgstr "Songsangkan warna"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Mirror"
 msgstr "Cerminkan"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Left and right"
 msgstr "Kiri dan kanan"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Flip"
 msgstr "Terbalikkan"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Top and bottom"
 msgstr "Atas dan bawah"
 
-#: etiketto/ui/styles.py:395
+#: etiketto/ui/styles.py:412
 msgid "Threshold"
 msgstr "Ambang"
 
-#: etiketto/ui/styles.py:402
+#: etiketto/ui/styles.py:419
 msgid "Lighter pixels print white"
 msgstr "Piksel yang lebih cerah dicetak putih"
 
-#: etiketto/ui/styles.py:404
+#: etiketto/ui/styles.py:421
 msgid "Method"
 msgstr "Kaedah"
 
-#: etiketto/ui/styles.py:431
+#: etiketto/ui/styles.py:422
+msgid "Only for the method Threshold"
+msgstr "Hanya untuk kaedah Ambang"
+
+#: etiketto/ui/styles.py:450
 msgid "Colour of the border"
 msgstr "Warna sempadan"
 
-#: etiketto/ui/styles.py:463
+#: etiketto/ui/styles.py:484
 msgid "Direction"
 msgstr "Arah"
 
-#: etiketto/ui/styles.py:481
+#: etiketto/ui/styles.py:502
 msgid "Arrows"
 msgstr "Anak panah"
 
-#: etiketto/ui/styles.py:491
+#: etiketto/ui/styles.py:512
 msgid "Fill"
 msgstr "Isian"
 
-#: etiketto/ui/styles.py:500
+#: etiketto/ui/styles.py:521
 msgid "Shape"
 msgstr "Bentuk"
 
-#: etiketto/ui/styles.py:503
+#: etiketto/ui/styles.py:524
 msgid "Line width"
 msgstr "Lebar garisan"
 
-#: etiketto/ui/styles.py:509
+#: etiketto/ui/styles.py:530
 #, python-format
 msgid "%(unit)s, at least one printer dot"
 msgstr "%(unit)s, sekurang-kurangnya satu titik cetak"
@@ -2779,69 +2787,69 @@ msgstr "Nombor seterusnya"
 msgid "Step"
 msgstr "Langkah"
 
-#: etiketto/ui/window.py:139
+#: etiketto/ui/window.py:141
 msgid "Templates"
 msgstr "Templat"
 
-#: etiketto/ui/window.py:170
+#: etiketto/ui/window.py:172
 msgid "Shipping label…"
 msgstr "Label penghantaran…"
 
-#: etiketto/ui/window.py:173
+#: etiketto/ui/window.py:175
 msgid "Data for serial labels…"
 msgstr "Data untuk label bersiri…"
 
-#: etiketto/ui/window.py:174
+#: etiketto/ui/window.py:176
 msgid "Forget allowed data files"
 msgstr "Lupakan fail data yang dibenarkan"
 
-#: etiketto/ui/window.py:175
+#: etiketto/ui/window.py:177
 msgid "Export PNG…"
 msgstr "Eksport sebagai PNG…"
 
-#: etiketto/ui/window.py:179
+#: etiketto/ui/window.py:181
 msgid "Report a problem…"
 msgstr "Laporkan masalah…"
 
-#: etiketto/ui/window.py:180
+#: etiketto/ui/window.py:182
 msgid "About Etiketto"
 msgstr "Perihal Etiketto"
 
-#: etiketto/ui/window.py:586
+#: etiketto/ui/window.py:635
 msgid "Unsaved label"
 msgstr "Label belum disimpan"
 
-#: etiketto/ui/window.py:660
+#: etiketto/ui/window.py:709
 msgid "content scaled down to fit"
 msgstr "kandungan dikecilkan supaya muat"
 
-#: etiketto/ui/window.py:664
+#: etiketto/ui/window.py:713
 #, python-format
 msgid "Problem: %s"
 msgstr "Masalah: %s"
 
-#: etiketto/ui/window.py:683
+#: etiketto/ui/window.py:732
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Terlalu panjang untuk pencetak ini: maksimum %s"
 
-#: etiketto/ui/window.py:687
+#: etiketto/ui/window.py:736
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Terlalu lebar untuk pencetak ini: maksimum %s"
 
-#: etiketto/ui/window.py:759
+#: etiketto/ui/window.py:808
 msgid "The browser cannot be opened"
 msgstr "Pelayar tidak dapat dibuka"
 
-#: etiketto/ui/window.py:761
+#: etiketto/ui/window.py:810
 msgid "Copy link"
 msgstr "Salin pautan"
 
-#: etiketto/ui/window.py:832
+#: etiketto/ui/window.py:881
 msgid "Only local files can be dropped"
 msgstr "Hanya fail setempat boleh dilepaskan"
 
-#: etiketto/ui/window.py:853
+#: etiketto/ui/window.py:902
 msgid "Please wait until printing has finished"
 msgstr "Sila tunggu sehingga cetakan selesai"

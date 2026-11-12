@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Hãy đặt độ rộng viền trước",
     "%(unit)s, with a box or frame": "%(unit)s, khi có hộp hoặc khung",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Phần tử %(n)d: đệm, khung, viền chữ hoặc bóng không còn chỗ cho chữ – hãy giảm bớt",
+    "Choose a width first": "Hãy đặt độ rộng trước",
+    "Only for the method Threshold": "Chỉ dành cho phương pháp Ngưỡng",
 }

@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "पहले बॉर्डर की चौड़ाई सेट करें",
     "%(unit)s, with a box or frame": "%(unit)s, बॉक्स या फ़्रेम के साथ",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "तत्व %(n)d: पैडिंग, फ़्रेम, आउटलाइन या छाया पाठ के लिए कोई जगह नहीं छोड़ते – इन्हें छोटा करें",
+    "Choose a width first": "पहले चौड़ाई सेट करें",
+    "Only for the method Threshold": "केवल सीमा मान विधि के लिए",
 }

@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "عيّن عرض الإطار أولًا",
     "%(unit)s, with a box or frame": "%(unit)s، مع مربع أو إطار",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "العنصر %(n)d: لا يترك الحشو أو الإطار أو الحد الخارجي أو الظل أي مساحة للنص – قلّلها",
+    "Choose a width first": "حدّد العرض أولًا",
+    "Only for the method Threshold": "لطريقة «العتبة» فقط",
 }

@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Előbb adja meg a keret vastagságát",
     "%(unit)s, with a box or frame": "%(unit)s, dobozzal vagy kerettel",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "%(n)d. elem: a belső margó, a keret, a körvonal vagy az árnyék nem hagy helyet a szövegnek – csökkentse őket",
+    "Choose a width first": "Előbb adja meg a vastagságot",
+    "Only for the method Threshold": "Csak a Küszöb módszerhez",
 }

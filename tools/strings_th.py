@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "ตั้งความกว้างกรอบก่อน",
     "%(unit)s, with a box or frame": "%(unit)s, ใช้กับกล่องหรือกรอบ",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "องค์ประกอบ %(n)d: ระยะห่างภายใน กรอบ เส้นขอบตัวอักษร หรือเงา ไม่เหลือพื้นที่สำหรับข้อความ – โปรดลดลง",
+    "Choose a width first": "ตั้งความกว้างก่อน",
+    "Only for the method Threshold": "สำหรับวิธีค่าขีดแบ่งเท่านั้น",
 }

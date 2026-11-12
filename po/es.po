@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 13:19+0100\n"
+"PO-Revision-Date: 2026-11-12 14:11+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: es\n"
 "Language: es\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: etiketto/app.py:125 etiketto/ui/styles.py:162
+#: etiketto/app.py:125 etiketto/ui/styles.py:177
 msgid "Box and frame"
 msgstr "Recuadro y marco"
 
@@ -221,7 +221,7 @@ msgstr "--sheet y --rows requieren un archivo de datos (--data)"
 msgid "No rows to print"
 msgstr "No hay filas para imprimir"
 
-#: etiketto/cli.py:756 etiketto/ui/window.py:667
+#: etiketto/cli.py:756 etiketto/ui/window.py:716
 #, python-format
 msgid "No such column: %s"
 msgstr "No existe la columna: %s"
@@ -376,7 +376,7 @@ msgid "Add text, an image, a symbol or a code"
 msgstr "Añada texto, una imagen, un símbolo o un código"
 
 #: etiketto/ui/elements.py:105 etiketto/ui/texts.py:230
-#: etiketto/ui/window.py:779
+#: etiketto/ui/window.py:828
 msgid "Text"
 msgstr "Texto"
 
@@ -473,7 +473,7 @@ msgstr "Escala"
 msgid "Symbol"
 msgstr "Símbolo"
 
-#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:476
+#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:497
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = llenar el alto de la cinta"
@@ -484,7 +484,7 @@ msgid ""
 "is light"
 msgstr "Las impresoras en blanco y negro imprimen los símbolos en negro, o en blanco si el color es claro"
 
-#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:94
+#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:109
 msgid "Rotation"
 msgstr "Rotación"
 
@@ -496,7 +496,7 @@ msgstr "Tipo"
 msgid "Content (link, text, number)"
 msgstr "Contenido (enlace, texto, número)"
 
-#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:511
+#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:532
 msgid "Colour"
 msgstr "Color"
 
@@ -537,7 +537,7 @@ msgstr "etiqueta"
 msgid "Save label"
 msgstr "Guardar etiqueta"
 
-#: etiketto/ui/files.py:238 etiketto/ui/window.py:172
+#: etiketto/ui/files.py:238 etiketto/ui/window.py:174
 msgid "Save as template…"
 msgstr "Guardar como plantilla…"
 
@@ -550,7 +550,7 @@ msgstr "Se guardó %s"
 msgid "Export PNG"
 msgstr "Exportar como PNG"
 
-#: etiketto/ui/files.py:281 etiketto/ui/window.py:692
+#: etiketto/ui/files.py:281 etiketto/ui/window.py:741
 msgid "The preview cannot be drawn"
 msgstr "No se puede dibujar la vista previa"
 
@@ -563,8 +563,8 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "Aún no hay plantillas: use «Guardar como plantilla…»"
 
 #: etiketto/ui/files.py:320 etiketto/ui/label_group.py:67
-#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:63
-#: etiketto/ui/window.py:198
+#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:65
+#: etiketto/ui/window.py:200
 msgid "Label"
 msgstr "Etiqueta"
 
@@ -646,7 +646,7 @@ msgctxt "month name"
 msgid "December"
 msgstr "diciembre"
 
-#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:363
+#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:380
 msgid "Whole image"
 msgstr "Imagen completa"
 
@@ -666,7 +666,7 @@ msgstr "Arrastre para elegir la parte de la imagen que se conserva"
 #: etiketto/ui/image_crop.py:64 etiketto/ui/printer.py:235
 #: etiketto/ui/printing.py:434 etiketto/ui/printing.py:657
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:708
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:757
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -688,7 +688,7 @@ msgid "Width"
 msgstr "Ancho"
 
 #: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:335
-#: etiketto/ui/styles.py:470
+#: etiketto/ui/styles.py:491
 msgid "Height"
 msgstr "Alto"
 
@@ -722,12 +722,12 @@ msgstr "Color de fondo"
 msgid "Background image"
 msgstr "Imagen de fondo"
 
-#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:422
+#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:439
 msgid "Border"
 msgstr "Borde"
 
-#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:289
-#: etiketto/ui/styles.py:307 etiketto/ui/styles.py:428
+#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:304
+#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:445
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = ninguno"
@@ -740,12 +740,12 @@ msgstr "Estilo del borde"
 msgid "Corners, line and distance from the edge"
 msgstr "Esquinas, línea y distancia al borde"
 
-#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:267
-#: etiketto/ui/styles.py:412 etiketto/ui/styles.py:484
+#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:282
+#: etiketto/ui/styles.py:429 etiketto/ui/styles.py:505
 msgid "Corner radius"
 msgstr "Radio de las esquinas"
 
-#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:479
+#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:500
 msgid "Line style"
 msgstr "Estilo de línea"
 
@@ -770,7 +770,7 @@ msgstr "Longitud automática"
 msgid "As long as the content"
 msgstr "Tan larga como el contenido"
 
-#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:466
+#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:487
 msgid "Length"
 msgstr "Longitud"
 
@@ -1187,7 +1187,7 @@ msgid "Print label"
 msgstr "Imprimir etiqueta"
 
 #: etiketto/ui/printing.py:435 etiketto/ui/printing.py:740
-#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:160
+#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:162
 msgid "Print"
 msgstr "Imprimir"
 
@@ -1263,7 +1263,7 @@ msgstr "Falló la impresión"
 msgid "Details"
 msgstr "Detalles"
 
-#: etiketto/ui/printing.py:752 etiketto/ui/window.py:732
+#: etiketto/ui/printing.py:752 etiketto/ui/window.py:781
 msgid "Report"
 msgstr "Informar"
 
@@ -1376,27 +1376,27 @@ msgstr "Siguiente sugerencia"
 msgid "Page"
 msgstr "Página"
 
-#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:169
+#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:171
 msgid "New label"
 msgstr "Etiqueta nueva"
 
-#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:132
+#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:134
 msgid "Open"
 msgstr "Abrir"
 
-#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:145
+#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:147
 msgid "Save"
 msgstr "Guardar"
 
-#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:171
+#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:173
 msgid "Save as…"
 msgstr "Guardar como…"
 
-#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:150
+#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:152
 msgid "Undo"
 msgstr "Deshacer"
 
-#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:151
+#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:153
 msgid "Redo"
 msgstr "Rehacer"
 
@@ -1440,254 +1440,262 @@ msgstr "Mover el elemento abierto hacia atrás"
 msgid "General"
 msgstr "General"
 
-#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:177
+#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:179
 msgid "Keyboard shortcuts"
 msgstr "Atajos de teclado"
 
-#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:178
+#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:180
 msgid "Help"
 msgstr "Ayuda"
 
-#: etiketto/ui/styles.py:115
+#: etiketto/ui/styles.py:130
 msgid "Position"
 msgstr "Posición"
 
-#: etiketto/ui/styles.py:116
+#: etiketto/ui/styles.py:131
 msgid "Across the tape and the space after it"
 msgstr "A lo ancho de la cinta y espacio después"
 
-#: etiketto/ui/styles.py:124
+#: etiketto/ui/styles.py:139
 msgid "Vertical alignment"
 msgstr "Alineación vertical"
 
-#: etiketto/ui/styles.py:128
+#: etiketto/ui/styles.py:143
 msgid "Space after it"
 msgstr "Espacio después"
 
-#: etiketto/ui/styles.py:143
+#: etiketto/ui/styles.py:158
 msgid "Own spacing"
 msgstr "Espaciado propio"
 
-#: etiketto/ui/styles.py:146
+#: etiketto/ui/styles.py:161
 msgid "Instead of the label's spacing between elements"
 msgstr "En lugar del espaciado entre elementos de la etiqueta"
 
-#: etiketto/ui/styles.py:158
+#: etiketto/ui/styles.py:173
 msgid "Spacing and fitting"
 msgstr "Espaciado y ajuste"
 
-#: etiketto/ui/styles.py:159
+#: etiketto/ui/styles.py:174
 msgid "Letter and line spacing, shrinking, wrapping, rotation"
 msgstr "Espaciado entre letras e interlineado, reducción, ajuste de línea, rotación"
 
-#: etiketto/ui/styles.py:162
+#: etiketto/ui/styles.py:177
 msgid "White on black, a box behind the text, a frame"
 msgstr "Blanco sobre negro, un recuadro detrás del texto, un marco"
 
-#: etiketto/ui/styles.py:164
+#: etiketto/ui/styles.py:179
 msgid "Outline and shadow"
 msgstr "Contorno y sombra"
 
-#: etiketto/ui/styles.py:165
+#: etiketto/ui/styles.py:180
 msgid ""
 "At least one printer dot; black-and-white printers print the shadow solid"
 msgstr "Al menos un punto de impresión; las impresoras en blanco y negro imprimen la sombra sólida"
 
-#: etiketto/ui/styles.py:183
+#: etiketto/ui/styles.py:198
 msgid "Letter spacing"
 msgstr "Espaciado entre letras"
 
-#: etiketto/ui/styles.py:190
+#: etiketto/ui/styles.py:205
 msgid "percent of the font size"
 msgstr "porcentaje del tamaño de letra"
 
-#: etiketto/ui/styles.py:195
+#: etiketto/ui/styles.py:210
 msgid "Line spacing"
 msgstr "Interlineado"
 
-#: etiketto/ui/styles.py:202
+#: etiketto/ui/styles.py:217
 msgid "times the normal line height"
 msgstr "veces el alto de línea normal"
 
-#: etiketto/ui/styles.py:207
+#: etiketto/ui/styles.py:222
 msgid "Shrink to fit"
 msgstr "Reducir para ajustar"
 
-#: etiketto/ui/styles.py:210
+#: etiketto/ui/styles.py:225
 msgid "Smaller until it fits the tape height and the label length"
 msgstr "Más pequeño hasta que quepa en el alto de la cinta y el largo de la etiqueta"
 
-#: etiketto/ui/styles.py:214
+#: etiketto/ui/styles.py:229
 msgid "Smallest size"
 msgstr "Tamaño mínimo"
 
-#: etiketto/ui/styles.py:221
+#: etiketto/ui/styles.py:236
 msgid "pt, when shrinking"
 msgstr "pt, al reducir"
 
-#: etiketto/ui/styles.py:227
+#: etiketto/ui/styles.py:242
 msgid "Wrap width"
 msgstr "Ancho de ajuste de línea"
 
-#: etiketto/ui/styles.py:233
+#: etiketto/ui/styles.py:248
 #, python-format
 msgid "%(unit)s, 0 = only at line breaks"
 msgstr "%(unit)s, 0 = solo en los saltos de línea"
 
-#: etiketto/ui/styles.py:243
+#: etiketto/ui/styles.py:258
 msgid "White on black"
 msgstr "Blanco sobre negro"
 
-#: etiketto/ui/styles.py:246
+#: etiketto/ui/styles.py:261
 msgid "The text cut out of a box in the text colour"
 msgstr "El texto calado en un recuadro del color del texto"
 
-#: etiketto/ui/styles.py:249 etiketto/ui/styles.py:254
+#: etiketto/ui/styles.py:264 etiketto/ui/styles.py:269
 msgid "Background box"
 msgstr "Recuadro de fondo"
 
-#: etiketto/ui/styles.py:249
+#: etiketto/ui/styles.py:264
 msgid "A box behind the text"
 msgstr "Un recuadro detrás del texto"
 
-#: etiketto/ui/styles.py:251
+#: etiketto/ui/styles.py:266
 msgid "Colour of the background box"
 msgstr "Color del recuadro de fondo"
 
-#: etiketto/ui/styles.py:266
+#: etiketto/ui/styles.py:281
 msgid "Padding"
 msgstr "Margen interior"
 
-#: etiketto/ui/styles.py:277
+#: etiketto/ui/styles.py:292
 #, python-format
 msgid "%(unit)s, with a box or frame"
 msgstr "%(unit)s, con un recuadro o un marco"
 
-#: etiketto/ui/styles.py:283
+#: etiketto/ui/styles.py:298
 msgid "Frame"
 msgstr "Marco"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Outline"
 msgstr "Contorno"
 
-#: etiketto/ui/styles.py:296
+#: etiketto/ui/styles.py:311
 msgid "Colour of the outline"
 msgstr "Color del contorno"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Shadow"
 msgstr "Sombra"
 
-#: etiketto/ui/styles.py:297
+#: etiketto/ui/styles.py:312
 msgid "Colour of the shadow"
 msgstr "Color de la sombra"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:328 etiketto/ui/styles.py:450
+msgid "Choose a width first"
+msgstr "Establezca primero un ancho"
+
+#: etiketto/ui/styles.py:339
 msgid "Adjust"
 msgstr "Ajustar"
 
-#: etiketto/ui/styles.py:322
+#: etiketto/ui/styles.py:339
 msgid "Brightness, contrast, turning and mirroring"
 msgstr "Brillo, contraste, giro y reflejo"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "Black and white"
 msgstr "Blanco y negro"
 
-#: etiketto/ui/styles.py:323
+#: etiketto/ui/styles.py:340
 msgid "How black-and-white printers print the image"
 msgstr "Cómo imprimen la imagen las impresoras en blanco y negro"
 
-#: etiketto/ui/styles.py:325
+#: etiketto/ui/styles.py:342
 msgid "Corners and border"
 msgstr "Esquinas y borde"
 
-#: etiketto/ui/styles.py:326
+#: etiketto/ui/styles.py:343
 msgid "Rounded corners and a border around the image"
 msgstr "Esquinas redondeadas y un borde alrededor de la imagen"
 
-#: etiketto/ui/styles.py:344
+#: etiketto/ui/styles.py:361
 msgid "Crop"
 msgstr "Recorte"
 
-#: etiketto/ui/styles.py:354
+#: etiketto/ui/styles.py:371
 msgid "The image cannot be read"
 msgstr "No se puede leer la imagen"
 
-#: etiketto/ui/styles.py:358
+#: etiketto/ui/styles.py:375
 msgid "Crop…"
 msgstr "Recortar…"
 
-#: etiketto/ui/styles.py:370 etiketto/ui/texts.py:67
+#: etiketto/ui/styles.py:387 etiketto/ui/texts.py:67
 msgid "Brightness"
 msgstr "Brillo"
 
-#: etiketto/ui/styles.py:371
+#: etiketto/ui/styles.py:388
 msgid "Contrast"
 msgstr "Contraste"
 
-#: etiketto/ui/styles.py:372
+#: etiketto/ui/styles.py:389
 msgid "Gamma"
 msgstr "Gamma"
 
-#: etiketto/ui/styles.py:385
+#: etiketto/ui/styles.py:402
 msgid "Invert"
 msgstr "Invertir"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Mirror"
 msgstr "Reflejar"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:405
 msgid "Left and right"
 msgstr "Izquierda y derecha"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Flip"
 msgstr "Voltear"
 
-#: etiketto/ui/styles.py:390
+#: etiketto/ui/styles.py:407
 msgid "Top and bottom"
 msgstr "Arriba y abajo"
 
-#: etiketto/ui/styles.py:395
+#: etiketto/ui/styles.py:412
 msgid "Threshold"
 msgstr "Umbral"
 
-#: etiketto/ui/styles.py:402
+#: etiketto/ui/styles.py:419
 msgid "Lighter pixels print white"
 msgstr "Los píxeles más claros se imprimen en blanco"
 
-#: etiketto/ui/styles.py:404
+#: etiketto/ui/styles.py:421
 msgid "Method"
 msgstr "Método"
 
-#: etiketto/ui/styles.py:431
+#: etiketto/ui/styles.py:422
+msgid "Only for the method Threshold"
+msgstr "Solo para el método Umbral"
+
+#: etiketto/ui/styles.py:450
 msgid "Colour of the border"
 msgstr "Color del borde"
 
-#: etiketto/ui/styles.py:463
+#: etiketto/ui/styles.py:484
 msgid "Direction"
 msgstr "Dirección"
 
-#: etiketto/ui/styles.py:481
+#: etiketto/ui/styles.py:502
 msgid "Arrows"
 msgstr "Flechas"
 
-#: etiketto/ui/styles.py:491
+#: etiketto/ui/styles.py:512
 msgid "Fill"
 msgstr "Relleno"
 
-#: etiketto/ui/styles.py:500
+#: etiketto/ui/styles.py:521
 msgid "Shape"
 msgstr "Forma"
 
-#: etiketto/ui/styles.py:503
+#: etiketto/ui/styles.py:524
 msgid "Line width"
 msgstr "Grosor de línea"
 
-#: etiketto/ui/styles.py:509
+#: etiketto/ui/styles.py:530
 #, python-format
 msgid "%(unit)s, at least one printer dot"
 msgstr "%(unit)s, al menos un punto de impresión"
@@ -2779,69 +2787,69 @@ msgstr "Siguiente número"
 msgid "Step"
 msgstr "Paso"
 
-#: etiketto/ui/window.py:139
+#: etiketto/ui/window.py:141
 msgid "Templates"
 msgstr "Plantillas"
 
-#: etiketto/ui/window.py:170
+#: etiketto/ui/window.py:172
 msgid "Shipping label…"
 msgstr "Etiqueta de envío…"
 
-#: etiketto/ui/window.py:173
+#: etiketto/ui/window.py:175
 msgid "Data for serial labels…"
 msgstr "Datos para etiquetas en serie…"
 
-#: etiketto/ui/window.py:174
+#: etiketto/ui/window.py:176
 msgid "Forget allowed data files"
 msgstr "Olvidar los archivos de datos permitidos"
 
-#: etiketto/ui/window.py:175
+#: etiketto/ui/window.py:177
 msgid "Export PNG…"
 msgstr "Exportar como PNG…"
 
-#: etiketto/ui/window.py:179
+#: etiketto/ui/window.py:181
 msgid "Report a problem…"
 msgstr "Informar de un problema…"
 
-#: etiketto/ui/window.py:180
+#: etiketto/ui/window.py:182
 msgid "About Etiketto"
 msgstr "Acerca de Etiketto"
 
-#: etiketto/ui/window.py:586
+#: etiketto/ui/window.py:635
 msgid "Unsaved label"
 msgstr "Etiqueta sin guardar"
 
-#: etiketto/ui/window.py:660
+#: etiketto/ui/window.py:709
 msgid "content scaled down to fit"
 msgstr "contenido reducido para que quepa"
 
-#: etiketto/ui/window.py:664
+#: etiketto/ui/window.py:713
 #, python-format
 msgid "Problem: %s"
 msgstr "Problema: %s"
 
-#: etiketto/ui/window.py:683
+#: etiketto/ui/window.py:732
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Demasiado larga para esta impresora: como máximo %s"
 
-#: etiketto/ui/window.py:687
+#: etiketto/ui/window.py:736
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Demasiado ancha para esta impresora: máximo %s"
 
-#: etiketto/ui/window.py:759
+#: etiketto/ui/window.py:808
 msgid "The browser cannot be opened"
 msgstr "No se puede abrir el navegador"
 
-#: etiketto/ui/window.py:761
+#: etiketto/ui/window.py:810
 msgid "Copy link"
 msgstr "Copiar enlace"
 
-#: etiketto/ui/window.py:832
+#: etiketto/ui/window.py:881
 msgid "Only local files can be dropped"
 msgstr "Solo se pueden soltar archivos locales"
 
-#: etiketto/ui/window.py:853
+#: etiketto/ui/window.py:902
 msgid "Please wait until printing has finished"
 msgstr "Espere a que termine la impresión"

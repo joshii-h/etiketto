@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Önce bir kenarlık kalınlığı ayarlayın",
     "%(unit)s, with a box or frame": "%(unit)s, kutu veya çerçeveyle",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Öge %(n)d: iç boşluk, çerçeve, kontur veya gölge metne yer bırakmıyor – bunları küçültün",
+    "Choose a width first": "Önce bir kalınlık ayarlayın",
+    "Only for the method Threshold": "Yalnızca Eşik yöntemi için",
 }

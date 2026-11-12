@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Zuerst eine Rahmenbreite festlegen",
     "%(unit)s, with a box or frame": "%(unit)s, mit Kasten oder Rahmen",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: Innenabstand, Rahmen, Kontur oder Schatten lassen keinen Platz für den Text – sie kleiner machen",
+    "Choose a width first": "Zuerst eine Breite festlegen",
+    "Only for the method Threshold": "Nur für das Verfahren Schwellwert",
 }

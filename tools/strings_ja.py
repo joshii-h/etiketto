@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "先に枠線の幅を設定してください",
     "%(unit)s, with a box or frame": "%(unit)s、ボックスまたは枠がある場合",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "要素 %(n)d: 内側の余白、枠、輪郭、影のためテキストの場所がありません – 小さくしてください",
+    "Choose a width first": "先に幅を設定してください",
+    "Only for the method Threshold": "方式「しきい値」のみ",
 }

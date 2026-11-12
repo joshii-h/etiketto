@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Сначала задайте ширину рамки",
     "%(unit)s, with a box or frame": "%(unit)s, с плашкой или рамкой",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Элемент %(n)d: внутренний отступ, рамка, контур или тень не оставляют места для текста – уменьшите их",
+    "Choose a width first": "Сначала задайте ширину",
+    "Only for the method Threshold": "Только для метода «Порог»",
 }

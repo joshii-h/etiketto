@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Ange först en kantbredd",
     "%(unit)s, with a box or frame": "%(unit)s, med ruta eller ram",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: utfyllnad, ram, kontur eller skugga lämnar inget utrymme för texten – minska dem",
+    "Choose a width first": "Ange först en bredd",
+    "Only for the method Threshold": "Endast för metoden Tröskel",
 }

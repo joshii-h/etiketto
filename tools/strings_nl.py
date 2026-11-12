@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Stel eerst een randbreedte in",
     "%(unit)s, with a box or frame": "%(unit)s, met een vlak of kader",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: binnenmarge, kader, omtrek of schaduw laten geen ruimte over voor de tekst – verklein ze",
+    "Choose a width first": "Stel eerst een breedte in",
+    "Only for the method Threshold": "Alleen voor de methode Drempel",
 }

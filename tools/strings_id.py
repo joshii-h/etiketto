@@ -646,4 +646,6 @@ TRANSLATIONS = {
     "Set a border width first": "Atur lebar bingkai terlebih dahulu",
     "%(unit)s, with a box or frame": "%(unit)s, dengan kotak atau bingkai",
     "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elemen %(n)d: jarak dalam, bingkai, garis luar, atau bayangan tidak menyisakan ruang untuk teks – perkecil nilainya",
+    "Choose a width first": "Atur lebar terlebih dahulu",
+    "Only for the method Threshold": "Hanya untuk metode Ambang",
 }
