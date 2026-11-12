@@ -7,9 +7,10 @@ name = "etiketto"
 dynamic = ["version"]  # etiketto.__version__
 description = "Design and print labels on label printers (GTK4/libadwaita)"
 readme = "README.md"
-# the label sheets (etiketto/sheets/templates.json) come from gLabels, MIT
-license = "AGPL-3.0-or-later AND MIT"
-license-files = ["LICENSE", "etiketto/sheets/LICENSE.glabels"]
+# the label sheets (etiketto/sheets/templates.json) come from gLabels, MIT;
+# the symbols (etiketto/symbols/mdi.json.gz) from Material Design Icons, Apache-2.0
+license = "AGPL-3.0-or-later AND MIT AND Apache-2.0"
+license-files = ["LICENSE", "etiketto/sheets/LICENSE.glabels", "etiketto/symbols/LICENSE.mdi"]
 requires-python = ">=3.11"
 dependencies = [
     "pillow>=10",
@@ -30,6 +31,8 @@ include = ["etiketto*"]
 [tool.setuptools.package-data]
 # label sheets from gLabels, with their MIT license
 "etiketto.sheets" = ["templates.json", "LICENSE.glabels"]
+# symbols from Material Design Icons, with their Apache-2.0 license
+"etiketto.symbols" = ["mdi.json.gz", "LICENSE.mdi"]
 
 [tool.setuptools.dynamic]
 version = {attr = "etiketto.__version__"}
