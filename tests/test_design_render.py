@@ -1264,3 +1264,58 @@ def test_a_redraw_that_fails_keeps_the_first_part(monkeypatch):
     rendered = render(label, dpi=300, safe_mm=0, mono=True)
     assert len(calls) == 2 and calls[1].background < 128  # redrawn for the dark part
     assert greys(rendered.image) == 0
+
+
+def test_an_element_is_drawn_again_in_the_inks_of_its_place(monkeypatch):
+    """Over the dark part of a background image a grey text is drawn again
+    with white letters at the size it was placed at."""
+    label = Label(
+        tape_mm=12,
+        background_image=ImageElement(data=half_dark(dark=250)),
+        auto_length=False,
+        length_mm=80,
+        align="start",
+        elements=[TextElement(text="Lo", color="#a0a0a0", size_pt=10)],
+    )
+    calls = []
+    original = render_module._redrawn
+
+    def recording(element, part, *args):
+        drawn = original(element, part, *args)
+        calls.append((part.size, drawn.size))
+        return drawn
+
+    monkeypatch.setattr(render_module, "_redrawn", recording)
+    rendered = render(label, dpi=300, safe_mm=0, mono=True)
+    assert len(calls) == 1 and calls[0][0] == calls[0][1]  # the same size
+    letters = rendered.image.convert("L").crop(
+        (0, 0, rendered.image.width // 4, rendered.image.height)
+    )
+    assert letters.histogram()[255] > 0 and rendered.warnings == []
+
+
+def test_an_image_over_a_background_image():
+    label = Label(
+        tape_mm=12,
+        background_image=ImageElement(data=half_dark()),
+        elements=[
+            ImageElement(data=gradient(), border_mm=0.3, border_color="#808080"),
+            TextElement(text="Box", box_color="#ffffff", padding_mm=0.5),
+        ],
+    )
+    rendered = render(label, dpi=300, mono=True)
+    assert greys(rendered.image) == 0
+    assert rendered.warnings == []
+
+
+def test_local_inks_and_lost_share_edge_cases():
+    inks = render_module.Inks(True)
+    empty = Image.new("RGB", (0, 0))
+    assert render_module._local_inks(empty, None, inks) is inks
+    area = Image.new("RGB", (4, 4), (10, 10, 10))
+    no_ink = Image.new("L", (4, 4), 0)
+    assert render_module._local_inks(area, no_ink, inks).background == pytest.approx(10)
+    assert render_module._lost(area, no_ink, "#000000", 80) == 0.0
+    full = Image.new("L", (4, 4), 255)
+    assert render_module._lost(area, full, "#000000", 80) == 1.0
+    assert render_module._lost(area, full, "#ffffff", 80) == 0.0
