@@ -48,6 +48,7 @@ from etiketto.backends.base import (
     QueuePaused,
     SuppliesEmpty,
     UnsupportedSize,
+    check_codes,
     error_text,
     network_error,
     report_progress,
@@ -494,6 +495,21 @@ def _pwg_mode(attrs: dict) -> str | None:
     return "L" if "sgray_8" in types else None
 
 
+def print_resolution(attrs: dict) -> float | None:
+    """The resolution the label is rendered at for this printer (see
+    _print): PDF at pdf_resolution, a raster format at the printer's, JPEG
+    at 300 dpi; None if the printer takes no format Etiketto makes."""
+    try:
+        mime = document_format(attrs)
+    except NoFormat:
+        return None
+    if mime == PDF:
+        return float(pdf_resolution(attrs))
+    if mime in RASTERS:
+        return float(_raster_format(attrs, mime)[1])
+    return DPI
+
+
 def _pwg_resolutions(attrs: dict) -> list[int]:
     return [
         r[0]
@@ -655,6 +671,7 @@ class SystemPrinter(Backend):
             error=error.code if error else "",
             firmware=_text(attrs, "printer-firmware-string-version"),
             margins=margins(attrs),
+            dpi=print_resolution(attrs),
         )
 
     def prepare(
@@ -670,9 +687,11 @@ class SystemPrinter(Backend):
         self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
     ) -> Image.Image:
         label = replace(label, auto_length=False)
-        image = render(
+        rendered = render(
             label, dpi=dpi, safe_mm=safe_mm, min_length_mm=self.capabilities.min_length_mm
-        ).image
+        )
+        check_codes(rendered.warnings)  # at the resolution it is printed at
+        image = rendered.image
         image = self.preview(image, options.mode)
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)

@@ -19,7 +19,7 @@ from typing import Literal
 from PIL import Image
 
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, render
+from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, RenderWarning, render
 
 ColorModel = Literal["color", "mono", "two-color"]
 # rounding in unit conversions must not make a label "too long" or "too wide"
@@ -151,6 +151,8 @@ class PrinterInfo:
     pitch_mm: float | None = None  # die-cut: measured distance from label to label
     # page printers: unprintable margins, the paper loaded first; empty = unknown
     margins: tuple[Margins, ...] = ()
+    # the resolution the label is printed at, if it is not Capabilities.dpi
+    dpi: float | None = None
 
 
 # --- a print job ------------------------------------------------------------
@@ -335,6 +337,21 @@ class JobCanceled(PrinterError):
     code = "job_canceled"
 
 
+class CodeTooLarge(PrinterError):
+    """A code does not fit in its space at the printer's resolution, not
+    even at one dot per module: it would be cut off."""
+
+    code = "code_too_large"  # params: n, the element
+
+
+def check_codes(warnings: list[RenderWarning]) -> None:
+    """CodeTooLarge for a code of the render that does not fit (warning
+    code_too_big): printed, it would be cut off or squeezed."""
+    for warning in warnings:
+        if warning.key == "code_too_big":
+            raise CodeTooLarge("element %s" % warning.params.get("n"), **warning.params)
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 
@@ -433,14 +450,16 @@ class Backend(ABC):
     ) -> Image.Image:
         """Render the label for printing (label space: x along the tape)."""
         raster = self.raster(label.tape_mm, options)
-        image = render(
+        rendered = render(
             label,
             dpi=raster.dpi or PRINT_DPI,
             safe_mm=safe_mm,
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
-        ).image
+        )
+        check_codes(rendered.warnings)  # before anything is sent
+        image = rendered.image
         if raster.width_px and image.height > raster.width_px:
             image = image.crop((0, 0, image.width, raster.width_px))
         return self.preview(image, options.mode)

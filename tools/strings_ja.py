@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "ラベル %s がプリンターの印刷できない余白にかかっています",
     "Sheets already printed: %(n)d of %(total)d.": "印刷済みのシート: %(total)d 枚中 %(n)d 枚。",
     "The sheets still waiting in the queue were canceled.": "キューで待機中だったシートはキャンセルされました。",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "要素 %(n)d: コードのバーの幅が印刷ドット1つ分しかないため、読み取れない可能性があります – コードを大きくしてください",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "要素 %(n)d: コードのモジュールの幅が印刷ドット1つ分しかないため、読み取れない可能性があります – コードを大きくしてください",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "要素 %(n)d: コードの周囲に必要な余白が収まりません – コードを大きくしてください",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "要素 %(n)d: 1モジュール1ドットでもコードが領域に収まりません – ラベルを大きくするか内容を短くしてください",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "このプリンターの解像度ではコードがラベルに収まらず、切れてしまいます。ラベルを大きくするか、コードの内容を短くしてください。",
+    "Codes may not scan": "コードを読み取れない可能性があります",
 }

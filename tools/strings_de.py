@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Etiketten %s reichen in den Rand, den der Drucker nicht bedrucken kann",
     "Sheets already printed: %(n)d of %(total)d.": "Bereits gedruckte Bögen: %(n)d von %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Die Bögen, die noch in der Warteschlange standen, wurden abgebrochen.",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: Die Striche des Codes sind nur einen Druckpunkt breit und lassen sich womöglich nicht scannen – Code grösser machen",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: Die Module des Codes sind nur einen Druckpunkt breit und lassen sich womöglich nicht scannen – Code grösser machen",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Element %(n)d: Der Leerraum, den der Code um sich braucht, hat keinen Platz – Code grösser machen",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Element %(n)d: Der Code passt nicht in seinen Platz, auch nicht mit einem Druckpunkt pro Modul – Etikett grösser machen oder den Inhalt kürzen",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Ein Code passt bei der Auflösung dieses Druckers nicht aufs Etikett und würde abgeschnitten. Etikett grösser machen oder den Inhalt des Codes kürzen.",
+    "Codes may not scan": "Codes lassen sich womöglich nicht scannen",
 }

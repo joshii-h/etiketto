@@ -11,7 +11,9 @@ from gi.repository import Adw, GLib, Gtk
 from PIL import Image
 
 from etiketto.backends.base import (
+    CodeTooLarge,
     ColorAdjust,
+    PrinterError,
     PrintMode,
     PrintOptions,
     PrintResult,
@@ -34,11 +36,15 @@ from etiketto.ui.texts import (
     error_details,
     printer_error_text,
     stage_text,
+    warning_text,
 )
 from etiketto.ui.widgets import combo_row, list_dialog, spin_row
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
+
+# render warnings about codes that may not scan, or do not fit
+CODE_WARNINGS = ("code_too_big", "code_quiet", "code_thin")
 
 
 def copies_of(image: Image.Image) -> LabelSource:
@@ -274,10 +280,38 @@ class PrintFlow:
             gap_mm=window.label.gap_mm,
         )
         job = self.sheet_job(choices)
+        self._codes_first(lambda: self._margins_first(options, job))
+
+    def _codes_first(self, then) -> None:
+        """Codes that may not scan at the printer's resolution (the preview
+        is rendered at it): ask first; a code that does not fit: say so,
+        nothing is printed."""
+        rendered = self.window.rendered
+        warnings = [w for w in rendered.warnings if w.key in CODE_WARNINGS] if rendered else []
+        too_big = [w for w in warnings if w.key == "code_too_big"]
+        if too_big:
+            error = CodeTooLarge("element %s" % too_big[0].params.get("n"), **too_big[0].params)
+            self.failed(error, printer_error_text(error, self.window.unit))
+            return
+        if not warnings:
+            then()
+            return
+        self.window.confirm(
+            _("Codes may not scan"),
+            "\n".join(warning_text(w) for w in warnings),
+            "print",
+            _("Print anyway"),
+            then,
+        )
+
+    def _margins_first(self, options: PrintOptions, job: SheetJob | None) -> None:
+        """Labels on a sheet whose content reaches into the printer's
+        margins: ask first."""
+        window = self.window
         if job is None:
             self.start(options)
             return
-        settings.update(outlines=job.outlines)
+        window.printer_settings.update(outlines=job.outlines)
         cut = window.positions_in_margins({p for page in job.slots() for p in page})
         if not cut:
             self.start(options, job)
@@ -316,6 +350,9 @@ class PrintFlow:
             # rendering a long label takes a moment: not in the main loop
             try:
                 image = backend.prepare(label, options, safe_mm)
+            except PrinterError as e:  # a code that does not fit: its own message
+                GLib.idle_add(self.done, e)
+                return
             except Exception as e:  # noqa: BLE001
                 GLib.idle_add(self.done, e, _("The label cannot be prepared for printing."))
                 return

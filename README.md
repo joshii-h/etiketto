@@ -57,7 +57,8 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
 - QR codes, Code 128 and EAN-13 barcodes, every module a whole number of
-  printer dots (pure black and white, never resampled)
+  printer dots, pure black and white, never resampled (except on a colour
+  page too large to send without loss, over 8 MB: then JPEG)
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;

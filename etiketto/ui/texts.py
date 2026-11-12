@@ -97,8 +97,16 @@ def warning_text(warning: RenderWarning) -> str:
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
         "code_thin": _(
-            "Element %(n)d: the code's bars are only one printer dot wide and may not scan "
-            "– make the code larger"
+            "Element %(n)d: the code's modules are only one printer dot wide and may not "
+            "scan – make the code larger"
+        ),
+        "code_quiet": _(
+            "Element %(n)d: the blank space the code needs around it does not fit – make "
+            "the code larger"
+        ),
+        "code_too_big": _(
+            "Element %(n)d: the code does not fit in its space, even at one printer dot per "
+            "module – make the label larger or the content shorter"
         ),
     }
     return texts.get(warning.key, warning.key) % warning.params
@@ -174,6 +182,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "code_too_large": _(
+            "A code does not fit on the label at this printer's resolution and would be cut "
+            "off. Make the label larger or the code's content shorter."
+        ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

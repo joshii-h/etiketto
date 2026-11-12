@@ -17,6 +17,7 @@ from PIL import Image, ImageChops
 
 from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
 from etiketto.backends.base import (
+    CodeTooLarge,
     CoverOpen,
     FoundPrinter,
     JobCanceled,
@@ -656,6 +657,7 @@ def _pdf_image(data: bytes) -> tuple[int, int, int]:
         ((600, 600, 3), 300),  # every pixel doubled exactly
         ((1200, 1200, 3), 300),
         ((720, 720, 3), 300),  # above 600: 300 dpi is fine enough
+        ((72, 72, 3), 300),  # below MIN_DPI: not believed
         ((203, 406, 3), 300),  # not square
         ("x", 300),
     ],
@@ -2029,3 +2031,50 @@ def test_raster_pages_without_a_byte_limit_go_ten_a_job(fake):
     found = [urf.decode(data) for _mime, data in fake.documents]
     assert [len(pages) for pages in found] == [10, 10, 3]
     assert struct.unpack_from(">I", fake.documents[0][1], 8)[0] == 10
+
+
+# --- codes at the printer's resolution ------------------------------------------------------
+
+
+def _code_label(length_mm: float, data: str = "ABC-123ABC-123") -> Label:
+    label = Label(printer="system", orientation="across", elements=[CodeElement(data, "code128")])
+    label.set_media_size(length_mm, 14)
+    return label
+
+
+def test_query_says_the_resolution_the_label_is_printed_at(fake):
+    fake.formats, fake.resolution = ["application/pdf"], (203, 203, 3)
+    assert get_backend("system").query("HP_Office").dpi == 203
+    fake.formats = ["image/pwg-raster"]
+    assert get_backend("system").query("HP_Office").dpi == 300
+    fake.formats = ["image/jpeg"]
+    assert get_backend("system").query("HP_Office").dpi == 300
+    fake.formats = ["text/plain"]
+    assert get_backend("system").query("HP_Office").dpi is None
+
+
+def test_a_code_that_does_not_fit_at_the_printers_resolution_is_not_printed(fake):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (203, 203, 3)
+    backend = get_backend("system")
+    image = backend.prepare(_code_label(27), PrintOptions())  # fits at 300 dpi
+    with pytest.raises(CodeTooLarge) as info:
+        backend.print_label(image, "HP_Office", PrintOptions())
+    assert info.value.params == {"n": 1}
+    assert ipp.PRINT_JOB not in fake.operations()
+    with pytest.raises(CodeTooLarge):  # nor at 300 dpi, where it does not fit either
+        backend.prepare(_code_label(20), PrintOptions())
+
+
+@pytest.mark.parametrize(
+    "mode, space, size",
+    [
+        ("P", "DeviceRGB", 3),
+        ("RGBA", "DeviceRGB", 3),
+        ("CMYK", "DeviceRGB", 3),
+        ("LA", "DeviceGray", 1),
+    ],
+)
+def test_pdf_pages_in_other_modes(mode, space, size):
+    page = Image.new("RGB", (8, 4), (200, 30, 30)).convert(mode)
+    found, bits, raw = pdf.pixels(page)
+    assert (found, bits) == (space, 8) and len(raw) == 8 * 4 * size

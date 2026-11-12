@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Etiketterna %s når in i marginalen som skrivaren inte kan skriva ut på",
     "Sheets already printed: %(n)d of %(total)d.": "Redan utskrivna ark: %(n)d av %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Arken som fortfarande väntade i kön avbröts.",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: kodens streck är bara en skrivarpunkt breda och kanske inte går att skanna – gör koden större",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: kodens moduler är bara en skrivarpunkt breda och kanske inte går att skanna – gör koden större",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Element %(n)d: det tomma utrymme koden behöver runt sig får inte plats – gör koden större",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Element %(n)d: koden får inte plats, inte ens med en skrivarpunkt per modul – gör etiketten större eller innehållet kortare",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "En kod får inte plats på etiketten med den här skrivarens upplösning och skulle skäras av. Gör etiketten större eller kodens innehåll kortare.",
+    "Codes may not scan": "Koderna kanske inte går att skanna",
 }

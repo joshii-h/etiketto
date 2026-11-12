@@ -115,19 +115,32 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   the resolution (600 dpi), Splash still smooths the image; Ghostscript
   doubles it exactly]
 - Codes (QR, Code 128, EAN-13) are drawn at the resolution they print
-  at, never resampled, pure black and white: every module is the designed
-  width rounded to the nearest whole number of dots, or rounded down where
-  the nearest would take the code beyond the element's box (so the layout
-  never changes and nothing overflows), at least one dot; the code is
-  centred in its box. The human-readable text is laid out on its own,
-  without anti-aliasing. A code shrunk to fit a fixed length is drawn
-  again at the smaller size. A code whose modules end up one dot wide gets
-  a warning: it may not scan. (A barcode's box leaves only its quiet zones
-  for rounding up, so a barcode is usually rounded down: a 0.3 mm module
-  at 300 dpi is 3.54 dots and prints at 3; a QR code fills a square box
-  and is always rounded down.)
-- PWG Raster (8-bit sRGB or sGray) is
-  made at 300 dpi or the next resolution the printer lists, and the label
+  at, never resampled, pure black and white, with the quiet zone their
+  standard asks for inside the element (Code 128: 10 modules each side;
+  EAN-13: 11 left, 7 right; QR: 4 all round). Every module is the
+  designed width rounded to the nearest whole number of dots where the
+  code and its quiet zone still fit the element's box, else rounded down
+  (so the layout never changes), at least one dot; the code is centred in
+  its box. The box leaves no room for rounding up unless the designed
+  module is just below a whole number, so in practice a code is rounded
+  down: a 0.3 mm module at 300 dpi is 3.54 dots and prints at 3. EAN-13
+  as its standard draws it: guard bars 5 modules longer, the first digit
+  left of the bars, six digits under each half. QR codes are never Micro
+  QR codes (most phones cannot read those). The human-readable text is
+  laid out on its own, without anti-aliasing, 0.3 mm below the bars; a
+  code shrunk to fit a fixed length is drawn again at the smaller size.
+  Warnings, at the resolution the label is printed at (the preview is
+  rendered at the printer's `printer-resolution-default` when it differs
+  from 300 dpi): modules one dot wide (may not scan); a quiet zone that
+  does not fit even at one dot (may not scan); a code that does not fit
+  its box even at one dot per module (taller than the label, or squeezed
+  by a fixed length). Such a code would be cut off: Etiketto does not
+  print it ("A code does not fit on the label …"), also when only the
+  printer's own resolution shows it, before anything is sent.
+- PWG Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi
+  or the next resolution the printer lists
+  (`pwg-raster-document-resolution-supported`, the `RS` keywords of
+  `urf-supported`; only 100 to 1200 dpi are believed), and the label
   (or the label sheet's pages) is rendered again at that resolution
   instead of resized, so a 203 dpi printer gets 812 × 1218 pixels for
   4 × 6 inches, sharp. Only a page that cannot be rendered again is

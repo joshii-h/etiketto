@@ -332,13 +332,20 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
+    def print_dpi(self) -> float:
+        """The resolution the label is printed at: the printer's own if it
+        said (a page printer at 203 dpi), else the model's."""
+        info = self.printer.info
+        return info.dpi if info and info.dpi else self.backend.capabilities.dpi
+
     def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,
+        at the resolution it is printed at (codes and thin lines differ),
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
         rendered = render(
             self.label,
-            dpi=backend.capabilities.dpi,
+            dpi=self.print_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
         )

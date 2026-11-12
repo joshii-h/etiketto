@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Sildid %s ulatuvad veerisesse, kuhu printer ei saa printida",
     "Sheets already printed: %(n)d of %(total)d.": "Juba prinditud lehti: %(n)d/%(total)d.",
     "The sheets still waiting in the queue were canceled.": "Järjekorras veel oodanud lehed tühistati.",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: koodi ribad on ainult ühe printimispunkti laiused ega pruugi skannida – suurendage koodi",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: koodi moodulid on ainult ühe printimispunkti laiused ega pruugi skannida – suurendage koodi",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Element %(n)d: koodi ümber vajalik tühi ala ei mahu – suurendage koodi",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Element %(n)d: kood ei mahu oma kohale isegi ühe printimispunktiga mooduli kohta – suurendage silti või lühendage sisu",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Selle printeri eraldusvõimega ei mahu kood sildile ja lõigataks ära. Suurendage silti või lühendage koodi sisu.",
+    "Codes may not scan": "Koodid ei pruugi skannida",
 }

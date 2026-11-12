@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s",
     "Sheets already printed: %(n)d of %(total)d.": "Már kinyomtatott ívek: %(n)d / %(total)d.",
     "The sheets still waiting in the queue were canceled.": "A sorban még várakozó ívek nyomtatása megszakadt.",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "%(n)d. elem: a kód vonalai csak egy nyomtatási pont szélesek, ezért lehet, hogy nem olvashatók be – nagyítsa a kódot",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "%(n)d. elem: a kód moduljai csak egy nyomtatási pont szélesek, ezért lehet, hogy nem olvashatók be – nagyítsa a kódot",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "%(n)d. elem: a kód körül szükséges üres hely nem fér el – nagyítsa a kódot",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "%(n)d. elem: a kód modulonként egy nyomtatási ponttal sem fér el a helyén – nagyítsa a címkét vagy rövidítse a tartalmat",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Ennek a nyomtatónak a felbontásán egy kód nem fér el a címkén, és levágódna. Nagyítsa a címkét vagy rövidítse a kód tartalmát.",
+    "Codes may not scan": "Lehet, hogy a kódok nem olvashatók be",
 }

@@ -238,10 +238,12 @@ class Printer:
     def found(self, info: PrinterInfo, generation: int | None = None) -> bool:
         if self._outdated(generation):
             return False
+        dpi = self.info.dpi if self.info else None
         self.info = info
         self.update_row()
         window = self.window
-        if window.sheet:  # the printer's margins: labels that reach into them
+        # the printer's margins (labels that reach into them), its resolution
+        if window.sheet or info.dpi != dpi:
             window.schedule_render()
         widths = window.backend.capabilities.tape_widths_mm
         fresh = window.adopts_tape and window.path is None and not window.dirty

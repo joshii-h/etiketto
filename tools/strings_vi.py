@@ -266,5 +266,9 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Các nhãn %s lấn vào lề mà máy in không in được",
     "Sheets already printed: %(n)d of %(total)d.": "Số tờ đã in: %(n)d trên %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Các tờ còn chờ trong hàng đợi đã bị hủy.",
-    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Phần tử %(n)d: vạch của mã chỉ rộng một điểm in và có thể không quét được – hãy phóng to mã",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Phần tử %(n)d: mô-đun của mã chỉ rộng một điểm in và có thể không quét được – hãy phóng to mã",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Phần tử %(n)d: khoảng trống mã cần xung quanh không đủ chỗ – hãy phóng to mã",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Phần tử %(n)d: mã không vừa chỗ của nó, kể cả với một điểm in mỗi mô-đun – hãy phóng to nhãn hoặc rút ngắn nội dung",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Ở độ phân giải của máy in này, mã không vừa nhãn và sẽ bị cắt. Hãy phóng to nhãn hoặc rút ngắn nội dung của mã.",
+    "Codes may not scan": "Mã có thể không quét được",
 }

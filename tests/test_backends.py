@@ -193,3 +193,12 @@ class TestFakeMono(BackendContract):
             backend.error = PrinterError("out of paper")
 
         return SimpleNamespace(backend=backend, fail=fail, printed=lambda: len(backend.jobs))
+
+
+def test_a_code_too_large_for_the_tape_is_not_printed():
+    from etiketto.backends.base import CodeTooLarge
+    from etiketto.model import CodeElement, Label
+
+    label = Label(tape_mm=9, elements=[CodeElement("x" * 1000)])  # 105 modules on 9 mm
+    with pytest.raises(CodeTooLarge):
+        get_backend("vc500w").prepare(label, PrintOptions())
