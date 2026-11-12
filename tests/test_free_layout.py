@@ -32,9 +32,14 @@ SQUARE = "M0,0H24V24H0Z"
 
 
 def _installed(family: str) -> bool:
-    from etiketto.ui.freelayout import font_weights
+    """Whether the family has a light face of its own (not a substitute)."""
+    import gi
 
-    return 300 in dict(font_weights(family))
+    gi.require_version("PangoCairo", "1.0")
+    from gi.repository import PangoCairo
+
+    found = PangoCairo.FontMap.get_default().get_family(family)
+    return bool(found) and any(int(f.describe().get_weight()) == 300 for f in found.list_faces())
 
 
 # the label of the cablabel template is set in Source Sans; the tests of its
