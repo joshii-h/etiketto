@@ -1142,6 +1142,305 @@ msgstr ""
 "der Zeilennummer."
 
 #. type: Title #
+#: docs/server.md
+#, no-wrap
+msgid "Print server"
+msgstr "Druckserver"
+
+#. type: Plain text
+#: docs/server.md
+msgid ""
+"Other programs and AI assistants can print labels through Etiketto without "
+"opening the window: `etiketto serve` offers a web interface for programs "
+"(REST API), `etiketto mcp` connects AI assistants such as Claude."
+msgstr ""
+"Andere Programme und KI-Assistenten können über Etiketto Etiketten drucken, "
+"ohne das Fenster zu öffnen: `etiketto serve` bietet eine Web-Schnittstelle "
+"für Programme (REST API), `etiketto mcp` verbindet KI-Assistenten wie Claude."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Start { #start }"
+msgstr "Starten { #start }"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "etiketto serve --labels-dir ~/Labels\n"
+msgstr "etiketto serve --labels-dir ~/Labels\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "The server listens on `http://127.0.0.1:8790`, only on this computer."
+msgstr ""
+"Der Server lauscht auf `http://127.0.0.1:8790`, nur auf diesem Computer."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Only label files in the labels folder (and its subfolders) can be used, with "
+"their data files. Without `--labels-dir`: `~/.local/share/etiketto/labels`."
+msgstr ""
+"Nur Etikettendateien im Etikettenordner (und seinen Unterordnern) können "
+"verwendet werden, mit ihren Datendateien. Ohne `--labels-dir`: "
+"`~/.local/share/etiketto/labels`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Printer address, safety margin and print settings are those set in the app."
+msgstr ""
+"Druckeradresse, Sicherheitsabstand und Druckeinstellungen sind die in der "
+"App eingestellten."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "`--mcp` adds the connection for AI assistants at `/mcp`."
+msgstr "`--mcp` fügt die Verbindung für KI-Assistenten unter `/mcp` hinzu."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Stop with Ctrl+C: waiting jobs are canceled, a label being printed is "
+"finished and the counter saved."
+msgstr ""
+"Beenden mit Ctrl+C: Wartende Aufträge werden abgebrochen, ein Etikett, das "
+"gerade gedruckt wird, wird fertig gedruckt und der Zähler gespeichert."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Access token { #token }"
+msgstr "Zugangstoken { #token }"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Create a token and keep it secret:"
+msgstr "Ein Token erstellen und geheim halten:"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  mkdir -p ~/.config/etiketto\n"
+"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
+"  chmod 600 ~/.config/etiketto/token\n"
+"  etiketto serve --token-file ~/.config/etiketto/token\n"
+msgstr ""
+"  mkdir -p ~/.config/etiketto\n"
+"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
+"  chmod 600 ~/.config/etiketto/token\n"
+"  etiketto serve --token-file ~/.config/etiketto/token\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Every request then needs the header `Authorization: Bearer <token>`."
+msgstr "Jede Anfrage braucht dann den Header `Authorization: Bearer <token>`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"To listen on another address (`--host 0.0.0.0`), a token is required.  For "
+"other computers, put a reverse proxy with HTTPS in front."
+msgstr ""
+"Um auf einer anderen Adresse zu lauschen (`--host 0.0.0.0`), ist ein Token "
+"nötig. Für andere Computer einen Reverse Proxy mit HTTPS davorschalten."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`--allow-printer` limits the printer addresses, for example `--allow-printer "
+"'*.local'`."
+msgstr ""
+"`--allow-printer` beschränkt die Druckeradressen, zum Beispiel "
+"`--allow-printer '*.local'`."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Programs (REST API) { #api }"
+msgstr "Programme (REST API) { #api }"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"The description of all requests: `http://127.0.0.1:8790/api/v1/openapi.json`."
+msgstr ""
+"Die Beschreibung aller Anfragen: `http://127.0.0.1:8790/api/v1/openapi.json`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`GET /api/v1/labels` lists the labels, `GET /api/v1/labels/<name>` shows "
+"what can be filled in: element names, variables and columns."
+msgstr ""
+"`GET /api/v1/labels` listet die Etiketten auf, `GET /api/v1/labels/<name>` "
+"zeigt, was sich ausfüllen lässt: Elementnamen, Variablen und Spalten."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "`POST /api/v1/preview` returns the label as a PNG image."
+msgstr "`POST /api/v1/preview` gibt das Etikett als PNG-Bild zurück."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`POST /api/v1/print` queues a print job; `GET /api/v1/jobs/<id>` shows its "
+"state, `DELETE` cancels it between two labels."
+msgstr ""
+"`POST /api/v1/print` stellt einen Druckauftrag in die Warteschlange; `GET "
+"/api/v1/jobs/<id>` zeigt seinen Stand, `DELETE` bricht ihn zwischen zwei "
+"Etiketten ab."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Each printer prints one job after the other."
+msgstr "Jeder Drucker druckt einen Auftrag nach dem anderen."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Messages come in the language of the `Accept-Language` header."
+msgstr "Meldungen kommen in der Sprache des Headers `Accept-Language`."
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+"curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     http://127.0.0.1:8790/api/v1/print\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`set` fills in elements by their name and variables such as `{=lot}`, as on "
+"the command line."
+msgstr ""
+"`set` füllt Elemente über ihren Namen und Variablen wie `{=lot}` aus, wie "
+"auf der Kommandozeile."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Serial labels: `\"data_rows\": [{\"Name\": \"Tea\"}, {\"Name\": \"Rice\"}]`, "
+"or `\"data_file\"` with a table in the labels folder."
+msgstr ""
+"Serienetiketten: `\"data_rows\": [{\"Name\": \"Tea\"}, {\"Name\": "
+"\"Rice\"}]` oder `\"data_file\"` mit einer Tabelle im Etikettenordner."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "AI assistants (MCP) { #mcp }"
+msgstr "KI-Assistenten (MCP) { #mcp }"
+
+#. type: Plain text
+#: docs/server.md
+msgid ""
+"The assistant can list the labels and printers, show a preview, print and "
+"follow or cancel print jobs. It asks before it uses a tool, depending on its "
+"settings."
+msgstr ""
+"Der Assistent kann die Etiketten und Drucker auflisten, eine Vorschau "
+"zeigen, drucken und Druckaufträge verfolgen oder abbrechen. Je nach seinen "
+"Einstellungen fragt er, bevor er ein Werkzeug verwendet."
+
+#. type: Plain text
+#: docs/server.md
+msgid "Claude Code:"
+msgstr "Claude Code:"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels\n"
+msgstr "claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels\n"
+
+#. type: Plain text
+#: docs/server.md
+msgid "Claude Desktop, in `claude_desktop_config.json`:"
+msgstr "Claude Desktop, in `claude_desktop_config.json`:"
+
+#. type: Fenced code block (json)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"{\n"
+"  \"mcpServers\": {\n"
+"    \"etiketto\": {\n"
+"      \"command\": \"etiketto\",\n"
+"      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
+"    }\n"
+"  }\n"
+"}\n"
+msgstr ""
+"{\n"
+"  \"mcpServers\": {\n"
+"    \"etiketto\": {\n"
+"      \"command\": \"etiketto\",\n"
+"      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
+"    }\n"
+"  }\n"
+"}\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Over the network: `etiketto serve --mcp` and the address `http://"
+"127.0.0.1:8790/mcp` with the access token as `Authorization: Bearer` header."
+msgstr ""
+"Über das Netzwerk: `etiketto serve --mcp` und die Adresse "
+"`http://127.0.0.1:8790/mcp` mit dem Zugangstoken als Header `Authorization: "
+"Bearer`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Printing uses real labels: ask for a preview first."
+msgstr "Drucken verbraucht echte Etiketten: zuerst nach einer Vorschau fragen."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Server and container { #service }"
+msgstr "Server und Container { #service }"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"As a service of your user: `packaging/systemd/etiketto.service` "
+"(instructions in the file)."
+msgstr ""
+"Als Dienst Ihres Benutzers: `packaging/systemd/etiketto.service` (Anleitung "
+"in der Datei)."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"As a container: `packaging/docker/Dockerfile` and `compose.yaml`. To find "
+"printers on the network, the container needs the network of the computer "
+"(`network_mode: host`)."
+msgstr ""
+"Als Container: `packaging/docker/Dockerfile` und `compose.yaml`. Um Drucker "
+"im Netzwerk zu finden, braucht der Container das Netzwerk des Computers "
+"(`network_mode: host`)."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Technical details and security: [docs/server.md](https://"
+"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md)."
+msgstr ""
+"Technische Details und Sicherheit: "
+"[docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md)."
+
+#. type: Title #
 #: docs/use.md
 #, no-wrap
 msgid "Design and print"

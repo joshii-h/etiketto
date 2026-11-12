@@ -61,6 +61,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   across copies), copy number, random ID and UUID
 - Command line: `etiketto print` prints a label file without a window or
   display, with copies, counter start and texts set per job
+- Print server: `etiketto serve` offers a REST API (OpenAPI 3.1) and MCP
+  for AI assistants (`etiketto mcp` for Claude Desktop and Claude Code),
+  with print jobs queued per printer; a Dockerfile and a systemd unit
 - Serial labels: placeholders such as `{Name}` in texts and codes, filled
   from each row of a CSV, ODS or XLSX file; step through the rows in the
   preview and print all of them, or a range, on any printer
@@ -150,6 +153,8 @@ etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
+etiketto serve [--host ADDR] [--port N] [--token-file FILE] [--labels-dir DIR] [--mcp]
+etiketto mcp [--labels-dir DIR]
 etiketto --version | --help
 ```
 
@@ -179,6 +184,28 @@ In the Flatpak, hand the file over with `--file-forwarding`:
 ```sh
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
 ```
+
+## Print server and MCP
+
+`etiketto serve` prints for other programs, without a window or display:
+a REST API under `/api/v1` (JSON; the OpenAPI description at
+`/api/v1/openapi.json`) to list printers and labels, ask a printer for its
+state, render a preview, and print with values, data rows and copies. Jobs
+are queued, one per printer at a time, and can be canceled between two
+labels; counters are saved as on the command line. `--mcp` serves the same
+as MCP tools at `/mcp`; `etiketto mcp` speaks MCP on standard input and
+output for Claude Desktop and Claude Code:
+
+```sh
+etiketto serve --labels-dir ~/Labels --token-file ~/.config/etiketto/token --mcp
+claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
+```
+
+Only label and data files inside the labels folder are used. The server
+listens on 127.0.0.1 and refuses other addresses without an access token
+(`Authorization: Bearer`). A Dockerfile, a Compose file and a systemd user
+unit are in `packaging/`. Details, API reference and security notes:
+[docs/server.md](docs/server.md).
 
 ## How labels are laid out
 
