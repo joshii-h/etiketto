@@ -2223,6 +2223,7 @@ def test_ptouch_printer(make_window, ptouch_env):
     ]
     assert box.get_row_at_index(5) is None  # a single mode, no colour correction
     assert _items(rows[1]) == ["Full cut", "No cut"]  # no half cut on this model
+    assert rows[4].get_adjustment().get_lower() == 2  # Brother: 2 mm on 128-pin models
     rows[2].set_active(True)
     rows[4].set_value(5)
     win.last_dialog.emit("response", "print")

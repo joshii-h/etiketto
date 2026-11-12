@@ -35,13 +35,26 @@ untested, from one of the projects, or contradicting between the sources,
 - TCP port 9100 on the network models PT-E550W, PT-P750W, PT-P900W and
   PT-P950NW, the same byte stream. Brother's references describe the
   commands, not the network: whether the printer answers `ESC i S` and
-  reports pages over TCP is [open]. Etiketto asks for the status; if none
-  comes, it prints for the label's tape without waiting for the printer
-  (the status row says that the printer does not answer).
-- Sending: the printer stops reading while it prints a page, so a job is
-  sent in pieces; it fails only when the printer takes no data for as long
-  as a page may take (see Status). [spec for the page by page reading:
-  Brother's examples send page after page]
+  reports pages over TCP is [open]; Brother's network flow (5.6) only
+  sends the data, the printer reads while it prints. Etiketto asks for the
+  status:
+  - none comes: it prints for the label's tape without waiting for the
+    printer (the status row says that the printer does not answer). The
+    model, and with it the head, comes from the last answer, the host name
+    (`PT-P900W.local`) or the DNS-SD name of that address; only without
+    any of these from the tape width (36 mm: PT-P900 series). [assumed]
+  - it comes, but no page is reported: after the page's time the rest of
+    the job is sent without waiting, and the job counts as sent. [assumed]
+- Sending: the printer stops reading while it prints a page (5.6: "printer
+  buffer is full, BUSY"), so a job is sent in pieces; it fails only when
+  the printer takes no data for as long as a page may take (see Status).
+  [spec]
+- On USB the PT-P900 series prints while the data arrives ("concurrent
+  printing", 5.1): it starts a page without waiting for the print command,
+  and without compression a long page is 70 bytes per line, so the
+  printer may wait for data in the middle of a page. [spec] Etiketto sends
+  each page in one piece and reads the "printing completed" status before
+  the next page, as in Brother's flow, so the buffers never back up.
 - Search: USB through sysfs; on the network the DNS-SD service
   `_pdl-datastream._tcp` whose name contains one of these models
   ("Brother PT-P750W"). [assumed]
@@ -99,7 +112,7 @@ cut, chain printing, margin, high resolution, heat-shrink tube).
   the others from ptouch-print [assumed].
 - Compression on the documented models: on for the PT-E550W, P750W and
   P710BT, off for the PT-P900 series, as ptouch sets it; Brother allows both
-  (`M 00`, `M 02`). [spec]
+  (`M 00`, `M 02`). [spec for both; assumed for the choice]
 - Model byte (status offset 4), used on TCP where no device ID names the
   model [spec]: PT-E550W 0x66 ("f"), PT-P750W 0x68 ("h"), PT-P900W 0x69
   ("o"), PT-P950NW 0x70 ("p"), PT-P900 0x71 ("q"), PT-P910BT 0x78 ("x").
@@ -137,8 +150,9 @@ the outer edges of the tape stay blank.
 - Heads of 112 and 384 pins (older models): Brother's printable width at
   the head's resolution, centred, at most the head. [assumed]
 - Heat-shrink tube (media type 0x11 for 2:1, 0x17 for 3:1): Brother's print
-  area [spec]; the position from ptouch, which moves Brother's numbers by 1
-  or 2 pins after tests on printers [assumed]:
+  area [spec]; the position from ptouch, 1 or 2 pins off Brother's
+  numbers; for 560 pins ptouch took it from an analysis of Brother's own
+  software, for 128 pins the source is not stated [assumed]:
   - 128 pins (Brother left / print / right, Etiketto's first pin): 2:1
     5.8 mm (status 6) 50/28/50, 52; 8.8 mm (9) 40/48/40, 42; 11.7 mm (12)
     31/66/31, 33; 17.7 mm (18) 11/106/11, 13; 23.6 mm (24) 0/128/0, 0; 3:1
@@ -150,6 +164,11 @@ the outer edges of the tape stay blank.
   - Not on the PT-P710BT and PT-P910BT. Tube up to 500 mm long (2.3.4).
 - In Etiketto a tube is designed on the nearest tape width (11.2 mm on
   12 mm); the job uses the tube's own print area.
+- FLe labels (media 0x13, 21 x 45 mm die-cut, PT-P900/P900W/P950NW): the
+  status says width 21 and length 45 (2Dh) [spec]. Brother gives no print
+  area for them; Etiketto uses that of the 21 mm tube (left 152, print 240,
+  right 168 pins) [assumed]. They show as 21 mm, so a label designed on
+  another width is scaled to them after the usual warning.
 
 ## Raster lines
 
@@ -176,7 +195,9 @@ the outer edges of the tape stay blank.
 Documented models [spec, sections 2.1 and 4]:
 
 ```
-00 x 100                       invalidate, once per job
+00 x 100 | 00 x 200            invalidate, once per job: 100 bytes on the
+                               PT-E550W/P750W/P710BT, 200 on the PT-P900
+                               series (2.1 of each reference)
 1B 40                          ESC @ initialise, once per job
 per page:
   1B 69 61 01                  ESC i a 1: raster mode
@@ -210,7 +231,7 @@ per page:
   print starts). [spec] The cutter sits behind the print head: at least
   24.5 mm (PT-E550W/P750W/P710BT) or 27 mm (PT-P900 series) of tape come
   out per print (2.3.4). [spec]
-- Margin (2.3.3): 14 to 900 dots at 180 dpi (2 to 127 mm) on the 128-pin
+- Margin (2.3.3), also in the print dialog per model: 14 to 900 dots at 180 dpi (2 to 127 mm) on the 128-pin
   models, 14 to 1800 dots at 360 dpi (1 to 127 mm) on the PT-P900 series,
   doubled at high resolution. Default 2 mm. [spec]
 - Several copies: one job, a page per copy.
@@ -248,7 +269,8 @@ per page:
 
 ## Status
 
-`1B 69 53` (ESC i S) after invalidate and initialise; the printer answers
+`1B 69 53` (ESC i S) after invalidate (200 bytes, as the model is not
+known yet) and initialise; the printer answers
 32 bytes [spec, 4.2]:
 
 | Offset | Content |
@@ -287,17 +309,23 @@ per page:
   short, the 16-byte answers some models give) are skipped, more than
   4 kB without a status is an error. [assumed for the 16-byte answers,
   from ptouch-print]
-- After a job, the documented models report each printed page (status type
-  0x01) or an error (0x02) [spec]; the PT-P910BT and PT-P710BT only after
-  `ESC i !` [spec]. Etiketto waits for them; a page may take 30 s plus its
+- While printing, the documented models report each printed page (status
+  type 0x01, sent before the page is really out, 5.1) or an error (0x02)
+  [spec]; the PT-P910BT and PT-P710BT only after `ESC i !` [spec]. Brother
+  says not to send `ESC i S` while printing. Etiketto reads the report
+  after each page before it sends the next; a page may take 30 s plus its
   length at 10 mm/s (twice that at high resolution) [assumed]. An error
-  then says how many labels came out. The older models are not waited for.
+  then says how many labels came out. On USB no report is an error, on the
+  network see Transport. The older models are not waited for.
+- The extended error byte (7) is read only on the PT-P900 series; the
+  other reference marks it reserved. [spec]
 
 ## In Etiketto
 
 - Backend id `ptouch`, "Brother P-touch". Tape widths 3.5, 6, 9, 12, 18,
   24 and 36 mm, 12 mm for a new label; the label's height is the tape, its
-  length is free (up to 1000 mm, tube 500 mm, 2.3.4). The inserted tape is
+  length is free (4.4 to 1000 mm, tube up to 500 mm, 2.3.4; shorter
+  labels are extended). The inserted tape is
   taken over for a new label.
 - The backend keeps no printer state: the print dialog hands the printer as
   last asked (`PrintOptions.info`) to `prepare()`, which renders for its

@@ -108,6 +108,7 @@ class FakePTouch:
         self.settings: dict = {}
         self.lines: list[bytes] = []
         self.inits = 0
+        self.unread_at_page: list[int] = []  # answer bytes nobody had read at ESC i a
 
     def status(self, kind=0) -> bytes:
         err1, err2 = self.errors
@@ -157,7 +158,9 @@ class FakePTouch:
             return 0
         if code == "S":
             self.out += self.status()
-        elif code == "a" and self.answers_raster:
+        elif code == "a":
+            self.unread_at_page.append(len(self.out))
+        if code == "a" and self.answers_raster:
             self.out += self.status(kind=0x06)
         self.settings[code] = b[3:size]
         return size
@@ -497,7 +500,7 @@ def test_golden_documented_560_uncompressed():
     marked = bytearray(70)
     marked[16] = 0x80  # pin 128, Brother's right margin on 24 mm
     assert job(model("PT-P900W"), two_lines(128, 70), settings, 1) == (
-        bytes(100)
+        bytes(200)  # the PT-P900 series: 200 bytes invalidate (2.1)
         + ESC
         + b"@"
         + ESC
@@ -752,11 +755,16 @@ def test_status_errors(err1, err2, code):
     ],
 )
 def test_extended_errors(extended, code):
-    """PT-P900 series: status byte 7."""
+    """PT-P900 series: status byte 7; reserved (ignored) on the others."""
     frame = bytearray(status_frame())
     frame[7] = extended
-    error = status_error(parse_status(bytes(frame)))
+    error = status_error(parse_status(bytes(frame)), extended=True)
     assert error is not None and error.code == code
+    assert status_error(parse_status(bytes(frame))) is None
+    p900, p750w = model("PT-P900W"), model("PT-P750W")
+    status = parse_status(bytes(frame))
+    assert PTouch().info(p900, status).error == code
+    assert PTouch().info(p750w, status).error == ""
 
 
 def test_status_without_error_bits():
@@ -979,15 +987,40 @@ def test_error_while_printing_says_how_many_came_out(fake):
     assert raised.value.params == {"printed": 1, "copies": 3}
 
 
-def test_silent_printer_times_out(fake):
+def test_silent_printer_on_usb_times_out(fake, monkeypatch):
+    """On USB Brother's flow reports every page: none is a problem."""
+    monkeypatch.setattr(ptouch, "_usb_model", lambda address: model("PT-P750W"))
     fake.printer.completes = False
     backend = PTouch()
     image = backend.prepare(label(12), PrintOptions())
     with pytest.raises(PrinterError) as raised:
-        backend.print_label(image, "ptouch.local", PrintOptions())
-    assert raised.value.code == "timeout"
+        backend.print_label(image, "usb://Brother/PT-P750W", PrintOptions(copies=2))
+    assert raised.value.code == "timeout" and len(fake.printer.pages) == 1
     length = image.width / 180 * 25.4
     assert ptouch.print_timeout(length, False) in fake.links[-1].timeouts
+
+
+def test_silent_printer_on_the_network_gets_the_job(fake):
+    """Status over TCP is not documented: a printer that answers ESC i S
+    but reports no pages gets every page, and the job counts as sent."""
+    fake.printer.completes = False
+    backend = PTouch()
+    image = backend.prepare(label(12), PrintOptions())
+    events = []
+    backend.print_label(image, "ptouch.local", PrintOptions(copies=3), events.append)
+    assert len(fake.printer.pages) == 3 and [e.copy for e in events] == [1, 2, 3]
+
+
+def test_status_is_read_between_pages(fake, monkeypatch):
+    """Brother's flow 5.1: each page's "printing completed" is read before
+    the next page is sent, so no answer piles up."""
+    monkeypatch.setattr(ptouch, "_usb_model", lambda address: model("PT-P750W"))
+    backend = PTouch()
+    image = backend.prepare(label(12), PrintOptions())
+    events = []
+    backend.print_label(image, "usb://Brother/PT-P750W", PrintOptions(copies=3), events.append)
+    assert fake.printer.unread_at_page == [0, 0, 0] and not fake.printer.out
+    assert [e.copy for e in events] == [1, 2, 3]
 
 
 def test_print_timeout_grows_with_the_label():
@@ -1022,6 +1055,61 @@ def test_usb_printer_without_status_is_an_error(fake, monkeypatch):
     with pytest.raises(PrinterError) as raised:
         PTouch().print_label(image, "usb://Brother/PT-P750W", PrintOptions())
     assert raised.value.code == "timeout" and not fake.printer.pages
+
+
+def test_network_printer_without_status_is_named_by_its_host(fake, monkeypatch):
+    """No status, so no model byte: the model reported before, the host
+    name or its DNS-SD name choose the head, not the tape width."""
+    fake.printer.status = lambda kind=0: b""
+    image = Image.new("RGB", (100, 70), "white")
+    image.info.update(lpi=180, tape_mm=12)
+    backend = PTouch()
+    backend.print_label(image, "ptouch.local", PrintOptions())  # nothing known: 128 pins
+    assert len(fake.printer.pages[-1]["lines"][0]) == 16
+    fake.printer.line_bytes = 70
+    backend.print_label(image, "PT-P950NW.local", PrintOptions())
+    assert len(fake.printer.pages[-1]["lines"][0]) == 70
+    found = [FoundPrinter("Brother PT-P900W", "BRW0001.local", "192.0.2.9")]
+    monkeypatch.setattr(ptouch, "_browse", lambda service_type, match, timeout: found)
+    backend.print_label(image, "192.0.2.9", PrintOptions())
+    assert len(fake.printer.pages[-1]["lines"][0]) == 70
+    assert fake.printer.pages[-1]["z"][8] == 2  # PT-P900 series: last page
+    monkeypatch.setattr(ptouch, "_browse", lambda service_type, match, timeout: [])
+    backend.print_label(image, "printer.lan", PrintOptions(info=info_for("PT-P900")))
+    assert len(fake.printer.pages[-1]["lines"][0]) == 70
+
+
+def test_fle_labels(fake):
+    """FLe labels (21 x 45 mm, PT-P900 series): shown as 21 mm, printed in
+    the print area of the 21 mm tube [assumed]."""
+    fake.printer.code, fake.printer.line_bytes = 0x69, 70
+    fake.printer.width, fake.printer.media = 21, 0x13
+    backend = PTouch()
+    info = backend.query("ptouch.local")
+    assert info.tape_mm == 21 and isinstance(info.tape_mm, int)
+    assert info.cassette.media == "fle" and info.error == ""
+    assert info.cassette.printable_mm == 16.9  # 240 pins
+    image = backend.prepare(label(24), PrintOptions(info=info))
+    backend.print_label(image, "ptouch.local", PrintOptions())
+    ink = b"".join(fake.printer.pages[0]["lines"])
+    pins = {i % 560 for i in range(len(ink) * 8) if ink[i // 8] & (0x80 >> i % 8)}
+    assert min(pins) >= 168 and max(pins) < 168 + 240
+    assert print_area(model("PT-P910BT"), 21, 0x13) is None
+    assert print_area(model("PT-P750W"), 21, 0x13) is None
+
+
+def test_shortest_label():
+    """Brother: at least 4.4 mm of print data; shorter labels are extended."""
+    lab = Label(tape_mm=12, printer="ptouch", elements=[], margin_mm=0)
+    image = PTouch().prepare(lab, PrintOptions())
+    assert image.width / 180 * 25.4 >= 4.4 - 0.15
+
+
+def test_feed_range_per_model():
+    backend = PTouch()
+    assert backend.feed_mm(None) == (1.0, 127.0, 2.0)
+    assert backend.feed_mm(info_for("PT-P750W")) == (2.0, 127.0, 2.0)
+    assert backend.feed_mm(info_for("PT-P900")) == (1.0, 127.0, 2.0)
 
 
 def test_tube_is_at_most_500_mm(fake):

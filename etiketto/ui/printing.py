@@ -127,7 +127,7 @@ class PrintFlow:
             if name in extras:
                 choices[name] = settings.get(name) is True
         if "feed" in extras:
-            low, high, default = self.window.backend.capabilities.feed_mm
+            low, high, default = self.window.backend.feed_mm(self.window.printer.info)
             feed = settings.get("feed_mm", default)
             ok = isinstance(feed, (int, float)) and not isinstance(feed, bool)
             choices["feed_mm"] = min(high, max(low, float(feed))) if ok else default
@@ -167,7 +167,7 @@ class PrintFlow:
                 )
                 rows.append(row)
         if "feed_mm" in choices:
-            low, high, _default = self.window.backend.capabilities.feed_mm
+            low, high, _default = self.window.backend.feed_mm(self.window.printer.info)
             rows.append(
                 length_row(
                     self.window.unit,

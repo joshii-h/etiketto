@@ -465,6 +465,10 @@ class Backend(ABC):
         """Capabilities.extras the connected printer has, else all of them."""
         return self.capabilities.extras
 
+    def feed_mm(self, info: PrinterInfo | None) -> tuple[float, float, float]:
+        """The "feed" extra of the connected printer: smallest, largest, default."""
+        return self.capabilities.feed_mm
+
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)
 

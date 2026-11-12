@@ -72,6 +72,7 @@ GARBAGE_LIMIT = 4096  # bytes without a status in them: not a P-touch
 THRESHOLD = 128  # grey levels below this print; no dithering, codes stay sharp
 MAX_LENGTH_MM = 1000.0  # Brother: TZe tape up to 1000 mm
 MAX_TUBE_MM = 500.0  # Brother: heat-shrink tube up to 500 mm
+MIN_LENGTH_MM = 4.4  # Brother: the shortest print data (4 to 4.4 mm by model and media)
 DEFAULT_TAPE_MM = 12  # the most common TZe width, for a new label
 # blank tape before and after a label: min, max, default; Brother's minimum
 # is 2 mm on the 128-pin models and 1 mm on the PT-P900 series (Model.min_feed_mm)
@@ -122,8 +123,9 @@ TZE_560: dict[float, tuple[int, int]] = {
 HEAT_SHRINK_2, HEAT_SHRINK_3 = 0x11, 0x17  # media types in the status
 TUBES = (HEAT_SHRINK_2, HEAT_SHRINK_3)
 # heat-shrink tube by (media type, width in the status). Print areas as
-# Brother's tables; the position from ptouch, which shifts Brother's numbers
-# by 1 or 2 pins after tests on printers (Brother, from the first byte:
+# Brother's tables; the position from ptouch, 1 or 2 pins off Brother's
+# numbers: on 560 pins taken from an analysis of Brother's own software,
+# on 128 pins [assumed] (Brother, from the first byte:
 # 50/28, 40/48, 31/66, 11/106, 0/128, 54/20, 42/44, 39/50, 4/120 on 128
 # pins; 260/56, 240/96, 222/132, 182/212, 160/256, 268/40, 244/88,
 # 238/100, 168/240, 108/360 on 560 pins)
@@ -150,6 +152,10 @@ HSE_560: dict[tuple[int, int], tuple[int, int]] = {
     (HEAT_SHRINK_3, 21): (169, 240),
     (HEAT_SHRINK_3, 31): (109, 360),
 }
+FLE = 0x13  # FLe die-cut labels, 21 x 45 mm, PT-P900/P900W/P950NW only
+# Brother lists no print area for FLe labels: that of the 21 mm tube of the
+# same width, from Brother's table (left 152, print 240, right 168) [assumed]
+FLE_560 = {21: (168, 240)}
 TZE_BY_PINS = {128: TZE_128, 560: TZE_560}
 HSE_BY_PINS = {128: HSE_128, 560: HSE_560}
 
@@ -159,7 +165,7 @@ MEDIA = {
     0x03: "non_laminated",
     0x04: "fabric",
     HEAT_SHRINK_2: "heat_shrink_2",
-    0x13: "fle",
+    FLE: "fle",
     0x14: "flexible",
     0x15: "satin",
     HEAT_SHRINK_3: "heat_shrink_3",
@@ -222,6 +228,7 @@ class Model:
     notify: bool = False  # ESC i ! 00 needed for status while printing
     last_page: bool = False  # ESC i z n9 = 2 on the last page (PT-P900 series)
     min_feed_mm: float = 2.0
+    invalidate: int = 100  # NUL bytes that clear the buffer (2.1); 200 on the PT-P900 series
     status_code: int | None = None  # model byte of the status
     unsupported: str = ""  # "editor_lite" or "raster": refused with a clear error
     lead_px: int = 0  # blank columns the model needs before the content
@@ -229,6 +236,11 @@ class Model:
     @property
     def line_bytes(self) -> int:
         return self.pins // 8
+
+    @property
+    def p900_series(self) -> bool:
+        """PT-P900/P900W/P950NW/P910BT: extended error byte, FLe labels."""
+        return self.documented and self.pins == 560
 
 
 def _documented(name: str, usb_id: int | None, code: int | None, **flags) -> Model:
@@ -255,6 +267,7 @@ def _p900(name: str, usb_id: int | None, code: int | None, **flags) -> Model:
         "high_res_laminated_only": True,
         "last_page": True,
         "min_feed_mm": 1.0,
+        "invalidate": 200,
     }
     return _documented(name, usb_id, code, **(p900 | flags))
 
@@ -368,6 +381,8 @@ def print_area(model: Model, width_mm: float, media: int = 0) -> tuple[int, int]
     if media in TUBES:
         table = HSE_BY_PINS.get(model.pins) if model.heat_shrink else None
         return table.get((media, round(width_mm))) if table else None
+    if media == FLE:
+        return FLE_560.get(round(width_mm)) if model.p900_series and model.heat_shrink else None
     known = TZE_BY_PINS.get(model.pins)
     if known is not None:
         return known.get(width_mm)
@@ -450,15 +465,16 @@ def parse_status(frame: bytes) -> Status:
     )
 
 
-def status_error(status: Status) -> PrinterError | None:
-    """What keeps the printer from printing, or None."""
+def status_error(status: Status, extended: bool = False) -> PrinterError | None:
+    """What keeps the printer from printing, or None. `extended`: the
+    model has the extended error byte (PT-P900 series)."""
     detail = "status %s" % status.raw.hex(" ")
     for offset, bit, cls, text in ERRORS:
         if status.raw[offset] & bit:
             return cls("%s: %s" % (text, detail))
-    extended = status.raw[7]
-    if extended:
-        cls, text = EXTENDED_ERRORS.get(extended, (PrinterError, "extended error"))
+    code = status.raw[7] if extended else 0
+    if code:
+        cls, text = EXTENDED_ERRORS.get(code, (PrinterError, "extended error"))
         return cls("%s: %s" % (text, detail))
     if status.media == INCOMPATIBLE:
         return BadCassette("incompatible media: " + detail)
@@ -545,9 +561,9 @@ class JobSettings:
 
 
 def start(model: Model) -> bytes:
-    """Once per job: clear the buffer (100 bytes, as Brother says),
-    initialise; older models switch to raster here."""
-    begin = bytes(100) + INIT
+    """Once per job: clear the buffer (100 bytes, 200 on the PT-P900
+    series, as Brother says), initialise; older models switch to raster here."""
+    begin = bytes(model.invalidate) + INIT
     if model.documented:
         return begin
     begin += b"M\x02" if model.packbits else b""
@@ -726,7 +742,9 @@ class _Session:
         self.buffer = b""  # read beyond the last status (two came at once)
 
     def status(self) -> Status:
-        self.link.sendall(bytes(100) + INIT + STATUS_REQUEST)
+        # the model is not known yet: the longer invalidate of the PT-P900
+        # series (only NUL bytes, as many as the printer takes)
+        self.link.sendall(bytes(200) + INIT + STATUS_REQUEST)
         return self.read_status()
 
     def read_status(self) -> Status:
@@ -761,9 +779,13 @@ class _Session:
         pieces: list[bytes],
         timeout: float,
         progress: ProgressCallback | None,
+        waits: bool,
+        network: bool,
     ) -> None:
         """The job, page by page; the printer may stop reading for as long
-        as a page takes to print."""
+        as a page takes to print. `waits`: after each page, read the
+        status until it is printed (Brother's flow 5.1); on the network a
+        printer that does not report pages gets the rest without waiting."""
         copies = len(pieces) - 1
         self.link.settimeout(timeout)
         try:
@@ -773,28 +795,35 @@ class _Session:
             for n, page in enumerate(pieces[1:], 1):
                 report_progress(progress, n, copies)
                 self.link.sendall(page)
+                if waits:
+                    waits = self._printed(model, n - 1, copies, network)
         finally:
             self.link.settimeout(SOCKET_TIMEOUT)
 
-    def wait_pages(self, copies: int, timeout: float) -> None:
-        """Until the printer reports every page printed; its errors at once."""
-        self.link.settimeout(timeout)
-        done = 0
+    def _printed(self, model: Model, done: int, copies: int, network: bool) -> bool:
+        """Until the printer reports the page printed; its errors at once.
+        False if a network printer stays silent (keep sending, stop waiting)."""
         try:
-            while done < copies:
+            while True:
                 status = self.read_status()
                 if status.status_type == COMPLETED:
-                    done += 1
-                    continue
-                error = status_error(status) if status.status_type == ERROR else None
-                if error:
-                    raise error
+                    return True
+                if status.status_type == ERROR:
+                    raise status_error(status, model.p900_series) or PrinterError(
+                        "error status %s" % status.raw.hex(" ")
+                    )
+        except PrinterTimeout:
+            if network:  # status over TCP is not documented [open]
+                return False
+            raise _printed_before(PrinterTimeout("no status for the page"), done, copies) from None
         except PrinterError as e:
-            if done:
-                e.params.update(printed=done, copies=copies)
-            raise
-        finally:
-            self.link.settimeout(SOCKET_TIMEOUT)
+            raise _printed_before(e, done, copies) from None
+
+
+def _printed_before(error: PrinterError, done: int, copies: int) -> PrinterError:
+    if done:
+        error.params.update(printed=done, copies=copies)
+    return error
 
 
 def session(
@@ -826,15 +855,32 @@ def _is_network_ptouch(name: str) -> bool:
     return any(m.network and _key(m.name) in key for m in MODELS)
 
 
-def identify(host: str, status: Status | None, tape_mm: float = 0) -> Model:
+def _network_model(host: str, info: PrinterInfo | None) -> Model | None:
+    """A network printer that gives no status: the model it reported
+    before, its host name ("PT-P900W.local"), or its DNS-SD name."""
+    known = model_of(info)
+    if known and known.name != GENERIC:
+        return known
+    model = model_by_name(host.split(".")[0])
+    if model:
+        return model
+    for found in _browse("_pdl-datastream._tcp", _is_network_ptouch, 1.0):
+        if host in (found.host, found.address):
+            return model_by_name(found.name.removeprefix("Brother").strip())
+    return None
+
+
+def identify(
+    host: str, status: Status | None, tape_mm: float = 0, info: PrinterInfo | None = None
+) -> Model:
     """The model at host: on USB by its name or ID, on TCP by the model
-    byte of the status (a generic model if there is none)."""
+    byte of the status; without one by its name (else a generic model)."""
     if usb.is_usb(host):
         model = _usb_model(host)
         if model is None:
             raise UnknownModel("unknown P-touch model at %s" % host)
     elif status is None:
-        model = generic_model(tape_mm)
+        model = _network_model(host, info) or generic_model(tape_mm)
     else:
         model = _BY_CODE.get(status.model_code) or generic_model(status.tape_mm or 0)
     if model.unsupported == "editor_lite":
@@ -863,6 +909,7 @@ class PTouch(Backend):
         cut_modes=("full", "half", "none"),
         data_formats=("raster",),
         max_length_mm=MAX_LENGTH_MM,
+        min_length_mm=MIN_LENGTH_MM,
         extras=("chain", "high_res", "feed"),
         feed_mm=FEED_MM,
         default_tape_mm=DEFAULT_TAPE_MM,
@@ -883,6 +930,13 @@ class PTouch(Backend):
     def extras(self, info: PrinterInfo | None) -> tuple[str, ...]:
         model = model_of(info)
         return _extras(model) if model else self.capabilities.extras
+
+    def feed_mm(self, info: PrinterInfo | None) -> tuple[float, float, float]:
+        """Brother's margins: from 2 mm on the 128-pin models, 1 mm on the
+        PT-P900 series."""
+        model = model_of(info)
+        low, high, default = self.capabilities.feed_mm
+        return (model.min_feed_mm, high, default) if model else (low, high, default)
 
     # --- finding and asking ------------------------------------------------------------
 
@@ -911,7 +965,7 @@ class PTouch(Backend):
         return self.info(identify(host, status), status)
 
     def info(self, model: Model, status: Status) -> PrinterInfo:
-        error = status_error(status)
+        error = status_error(status, model.p900_series)
         tape = status.tape_mm
         cassette = None
         if tape and status.media != INCOMPATIBLE:
@@ -924,7 +978,8 @@ class PTouch(Backend):
         state = "ERROR" if error else "BUSY" if busy else "IDLE"
         return PrinterInfo(
             model=model.name,
-            tape_mm=nearest_tape(tape) if tape else None,
+            # FLe labels are 21 mm, no tape width of their own
+            tape_mm=(round(tape) if status.media == FLE else nearest_tape(tape)) if tape else None,
             remaining_mm=None,
             total_mm=None,
             state=state,
@@ -1000,7 +1055,7 @@ class PTouch(Backend):
             status = _first_status(s, host)
             if status is None:  # TCP without status: print without waiting [open]
                 status = _blind_status(float(image.info.get("tape_mm", DEFAULT_TAPE_MM)))
-                model = identify(host, None, status.tape_mm or 0)
+                model = identify(host, None, status.tape_mm or 0, options.info)
                 waits = False
             else:
                 model = identify(host, status)
@@ -1010,9 +1065,8 @@ class PTouch(Backend):
             lpi = model.dpi * (2 if settings.high_res else 1)
             lines = columns(_fit(image, area[1], rendered_lpi, lpi), model, area[0])
             timeout = print_timeout(length_mm, settings.high_res)
-            s.send_job(model, build_job(model, lines, settings, copies), timeout, progress)
-            if waits:
-                s.wait_pages(copies, timeout)
+            pieces = build_job(model, lines, settings, copies)
+            s.send_job(model, pieces, timeout, progress, waits, not usb.is_usb(host))
         return None
 
 
@@ -1029,7 +1083,7 @@ def _first_status(s: _Session, host: str) -> Status | None:
 
 def _check_media(model: Model, status: Status, length_mm: float) -> tuple[int, int]:
     """The print area for the loaded media; its problems as PrinterErrors."""
-    error = status_error(status)
+    error = status_error(status, model.p900_series)
     if error:
         raise error
     tape = status.tape_mm or 0
