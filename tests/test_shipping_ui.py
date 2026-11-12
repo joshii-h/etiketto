@@ -99,6 +99,7 @@ def test_detection_hints():
     certain = detection_hint(Detection(detect.FULL, "frame"))
     assert certain == detection_hint(None)
     assert "Several areas" in detection_hint(Detection(detect.FULL, "block", certain=False))
+    assert "Several areas" in detection_hint(Detection(detect.FULL, "frame", certain=False))
     assert "Everything printed" in detection_hint(Detection(detect.FULL, "content"))
     assert "Nothing" in detection_hint(Detection(detect.FULL, "none", certain=False))
 
@@ -109,8 +110,8 @@ def test_source_error_texts():
 
 
 def test_page_element_texts():
-    element = PageElement(name="dhl.pdf")
-    assert texts.element_title(element) == "dhl.pdf"
+    element = PageElement(name="parcel.pdf")
+    assert texts.element_title(element) == "parcel.pdf"
     assert texts.element_title(PageElement()) == "Shipping label"
     assert texts.element_icon(element) == "x-office-document-symbolic"
     from etiketto.render import RenderWarning
@@ -199,6 +200,8 @@ def test_create_label_from_pdf(cab_window, sample_pdf):
     assert label.media_size() == (101.6, 152.4)
     element = label.elements[0]
     assert isinstance(element, PageElement) and element.name == "parcel.pdf"
+    # only the chosen page is in the label (and so in the saved file)
+    assert source.page_info(element.data).pages == 1 and element.page == 0
     x, y, w, h = element.crop
     assert x <= 30 / A4[0] and x + w >= (30 + LABEL[0]) / A4[0]
     assert cab_window.dirty and cab_window.path is None
@@ -409,3 +412,40 @@ def test_new_label_size_matches(window, sample_png):
     dialog = open_dialog(window, sample_png)
     assert dialog.target.key == "a6"
     dialog.close()
+
+
+@needs_poppler
+def test_page_that_cannot_be_drawn(cab_window, sample_pdf, monkeypatch):
+    dialog = open_dialog(cab_window, sample_pdf)
+    crop = list(dialog.element.crop)
+
+    def too_large(*_args):
+        raise SourceError("too_large")
+
+    monkeypatch.setattr(shipping, "preview", too_large)
+    dialog.set_page(1)
+    assert dialog.element.page == 0 and dialog.element.crop == crop
+    assert toast_titles(cab_window)[-1] == "Cannot open parcel.pdf"
+    dialog.close()
+
+
+def test_shipping_file_types():
+    from etiketto.ui import files
+
+    assert "application/pdf" in files.SHIPPING_TYPES
+    assert "svg" not in files.SHIPPING_SUFFIXES  # Pillow cannot read it
+    assert {"png", "jpg", "tif", "webp"} <= set(files.SHIPPING_SUFFIXES)
+
+
+@needs_poppler
+def test_edit_keeps_only_the_page(cab_window, tmp_path):
+    path = tmp_path / "parcel.pdf"
+    path.write_bytes(a4_pdf("top-left", pages=2))
+    element = PageElement.from_file(path)
+    cab_window.label.elements = [element]
+    cab_window.files.edit_area(element)
+    dialog = cab_window.last_dialog
+    dialog.set_page(1)
+    dialog.done_button.emit("clicked")
+    pump()
+    assert element.page == 0 and source.page_info(element.data).pages == 1

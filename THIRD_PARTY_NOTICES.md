@@ -41,5 +41,17 @@ SOFTWARE.
 ## Poppler (Flatpak only)
 
 The Flatpak bundles Poppler's GLib library to draw PDF pages:
-<https://poppler.freedesktop.org>, GPL-2.0-or-later. Outside the Flatpak,
-Poppler comes from the distribution.
+<https://poppler.freedesktop.org>. Poppler is a fork of Xpdf, which is
+licensed under the GNU General Public License version 2 or version 3, not
+any later version (GPL-2.0-only OR GPL-3.0-only); Poppler's own additions
+are GPL-2.0-or-later. Both licence texts are in its source (`COPYING`,
+`COPYING3`).
+
+It also bundles poppler-data (encoding files for Chinese, Japanese, Korean
+and Cyrillic text in PDF files): <https://poppler.freedesktop.org>. Its
+CMap files are under the Adobe licence in `COPYING.adobe` of its source
+(BSD-3-Clause style, Copyright 1990-2019 Adobe); the cidToUnicode,
+nameToUnicode and unicodeMap files are Copyright Glyph & Cog, LLC, under
+GPL-2.0-only OR GPL-3.0-only; its Makefile is under the MIT licence.
+
+Outside the Flatpak, Poppler comes from the distribution.

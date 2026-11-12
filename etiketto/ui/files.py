@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -9,7 +10,7 @@ from typing import TYPE_CHECKING
 from gi.repository import Gio, GLib, Gtk
 
 from etiketto.model import Label, LabelError, PageElement, TextElement
-from etiketto.shipping.source import SourceError, page_info
+from etiketto.shipping.source import SourceError, only_page, page_info
 from etiketto.shipping.targets import Target, make_label
 from etiketto.ui import settings as config
 from etiketto.ui.i18n import _
@@ -24,6 +25,26 @@ from etiketto.ui.texts import (
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
+
+
+# shipping labels: PDF and the image formats Pillow reads
+SHIPPING_TYPES = (
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/bmp",
+    "image/tiff",
+    "image/webp",
+)
+SHIPPING_SUFFIXES = ("pdf", "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp")
+
+
+def _only_page(element: PageElement) -> None:
+    """Keep only the chosen page of the file in the label (privacy: the
+    other pages of a carrier's document); the whole file if that fails."""
+    with suppress(SourceError):
+        element.data, element.page = only_page(element.data, element.page)
 
 
 def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
@@ -100,9 +121,10 @@ class Files:
 
     def open_shipping(self, *_args) -> None:
         flt = Gtk.FileFilter(name=_("PDF documents and images"))
-        flt.add_mime_type("application/pdf")
-        flt.add_suffix("pdf")
-        flt.add_pixbuf_formats()
+        for mime in SHIPPING_TYPES:
+            flt.add_mime_type(mime)
+        for suffix in SHIPPING_SUFFIXES:
+            flt.add_suffix(suffix)
         dialog = Gtk.FileDialog(title=_("Open shipping label"), filters=_filters(flt))
 
         def done(d, result):
@@ -139,6 +161,7 @@ class Files:
         return make_label(window.backend, element, target, window.printer_settings.safe_mm)
 
     def _use_shipping_label(self, element: PageElement, target: Target | None) -> None:
+        _only_page(element)
         self.window.set_label(self._new_shipping_label(element, target), None)
         self.window.dirty = True  # nothing saved yet
         self.window.update_title()
@@ -152,7 +175,8 @@ class Files:
             return replace(window.label, elements=elements)
 
         def apply(new: PageElement, _target) -> None:
-            element.page, element.crop = new.page, new.crop
+            _only_page(new)
+            element.data, element.page, element.crop = new.data, new.page, new.crop
             element.rotation, element.fit = new.rotation, new.fit
             window.rebuild_sidebar()
             window.mark_changed()

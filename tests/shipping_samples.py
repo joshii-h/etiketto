@@ -126,3 +126,53 @@ def encode(image: Image.Image, fmt: str = "PNG") -> bytes:
     buf = io.BytesIO()
     image.save(buf, format=fmt)
     return buf.getvalue()
+
+
+def gappy_label(ctx, x: float, y: float) -> None:
+    """A label of LABEL size without a frame and with wide blank space
+    between its sections: a black header band, sender, receiver, two
+    barcodes and a footer."""
+    w = LABEL[0]
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.rectangle(x, y, w, 28)
+    ctx.fill()
+    _text(ctx, x + 8, y + 60, 3, 9, 40)
+    _text(ctx, x + 8, y + 130, 5, 12, 30)
+    _bars(ctx, x + 12, y + 240, w - 24, 60)
+    _bars(ctx, x + 12, y + 340, w - 24, 70, seed=3)
+    _text(ctx, x + 8, y + 425, 1, 8, 40)
+
+
+def instructions(ctx, y: float = 560) -> None:
+    """Lines of text across the lower half of an A4 page."""
+    _text(ctx, 40, y, 12, 9, 80)
+
+
+def drawn_page(draw, size=A4, dpi: float = 120) -> Image.Image:
+    """A page drawn by draw(ctx) in points, as an image at dpi."""
+    scale = dpi / 72
+    pixels = (round(size[0] * scale), round(size[1] * scale))
+    surface = cairo.ImageSurface(cairo.FORMAT_RGB24, *pixels)
+    ctx = cairo.Context(surface)
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.paint()
+    ctx.scale(scale, scale)
+    ctx.set_source_rgb(0, 0, 0)
+    draw(ctx)
+    surface.flush()
+    return Image.frombuffer(
+        "RGB", pixels, bytes(surface.get_data()), "raw", "BGRX", surface.get_stride(), 1
+    ).copy()
+
+
+def page_pdf(draw, size=A4, pages: int = 1) -> bytes:
+    """A PDF of pages drawn by draw(ctx, page index) in points."""
+    buf = io.BytesIO()
+    surface = cairo.PDFSurface(buf, *size)
+    ctx = cairo.Context(surface)
+    for index in range(pages):
+        ctx.set_source_rgb(0, 0, 0)
+        draw(ctx, index)
+        ctx.show_page()
+    surface.finish()
+    return buf.getvalue()

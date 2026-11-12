@@ -105,9 +105,20 @@ modules:
         url: https://github.com/joshii-h/labelprinter-vc500w.git
         commit: a6f2957de323f71f364b3acd6624da8b9885587a
 
+  # encoding files Poppler reads for CJK and Cyrillic text in PDF files
+  - name: poppler-data
+    buildsystem: cmake-ninja
+    cleanup:
+      - /share/pkgconfig
+    sources:
+      - type: archive
+        url: https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
+        sha256: c835b640a40ce357e1b83666aabd95edffa24ddddd49b8daff63adb851cdab74
+
   # PDF pages for shipping labels (poppler-glib through GObject introspection);
   # the GNOME runtime has no Poppler. Only the GLib library and its typelib:
   # no command line tools, no Qt or C++ wrappers, no signatures or network.
+  # JPEG 2000 images (JPX) through the runtime's OpenJPEG.
   - name: poppler
     buildsystem: cmake-ninja
     config-opts:
@@ -120,7 +131,7 @@ modules:
       - -DENABLE_QT5=OFF
       - -DENABLE_QT6=OFF
       - -DENABLE_BOOST=OFF
-      - -DENABLE_LIBOPENJPEG=OFF
+      - -DENABLE_LIBOPENJPEG=ON
       - -DENABLE_LIBTIFF=OFF
       - -DENABLE_LCMS=OFF
       - -DENABLE_BROTLI=OFF

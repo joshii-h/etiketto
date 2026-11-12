@@ -21,10 +21,15 @@ from etiketto.model import Label, PageElement  # noqa: E402
 from etiketto.render import render  # noqa: E402
 from etiketto.shipping import crop as cropping  # noqa: E402
 from etiketto.shipping import detect  # noqa: E402
-from etiketto.shipping.source import page_info, preview  # noqa: E402
+from etiketto.shipping.source import SourceError, page_info, preview  # noqa: E402
 from etiketto.shipping.targets import Target, matching, targets_for, upright  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
-from etiketto.ui.texts import FITS, detection_hint, target_name  # noqa: E402
+from etiketto.ui.texts import (  # noqa: E402
+    FITS,
+    detection_hint,
+    source_error_text,
+    target_name,
+)
 from etiketto.ui.widgets import combo_row, flat_button  # noqa: E402
 
 if TYPE_CHECKING:
@@ -303,8 +308,15 @@ class ShippingDialog(Adw.Dialog):
         self.update_result()
 
     def set_page(self, page: int) -> None:
+        """Show another page; a page that cannot be drawn (damaged, too
+        large) is reported and the current one stays."""
+        previous = self.element.page
         self.element.page = page
-        self._load_page(find=True)
+        try:
+            self._load_page(find=True)
+        except SourceError as e:
+            self.element.page = previous
+            self.window.toast(source_error_text(e, self.element.name))
 
     def set_target(self, key: str) -> None:
         self.target = next(t for t in self.targets if t.key == key)
@@ -321,7 +333,12 @@ class ShippingDialog(Adw.Dialog):
         """The small preview of the label as it will be printed."""
         label = self.make_label(self.element, self.target)
         backend = self.window.backend
-        rendered = render(label, dpi=RESULT_DPI, safe_mm=self.window.printer_settings.safe_mm)
+        rendered = render(
+            label,
+            dpi=RESULT_DPI,
+            safe_mm=self.window.printer_settings.safe_mm,
+            mono=backend.capabilities.color_model == "mono",
+        )
         image = backend.preview(rendered.image)
         texture = Gdk.MemoryTexture.new(
             image.width,

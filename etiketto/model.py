@@ -81,8 +81,11 @@ FITS = ("fit", "fill")
 @dataclass
 class PageElement:
     """A page of a PDF or an image file, cropped to one area and printed at
-    the label's size: a shipping label. The original file is kept, so the
-    area is drawn at the printer's resolution, never scaled up blurrily."""
+    the label's size: a shipping label. The file is kept (of a PDF with
+    several pages only the chosen page where it can be copied unchanged,
+    see shipping.source.only_page()), so the area is drawn at the printer's
+    resolution, never scaled up blurrily. All of the page is kept, also
+    outside the area."""
 
     data: str = ""  # base64 encoded PDF or image file
     name: str = ""  # original file name, for display only
@@ -429,7 +432,7 @@ def _validate_page(element: PageElement) -> None:
     element.page = max(0, element.page)
     if isinstance(element.rotation, bool):
         raise _damaged("invalid rotation")
-    element.rotation = _choice(element.rotation, ROTATIONS, "rotation")
+    element.rotation = int(_choice(element.rotation, ROTATIONS, "rotation"))  # 90, not 90.0
     element.fit = _choice(element.fit, FITS, "fit")
     crop = element.crop
     if not isinstance(crop, list) or len(crop) != 4:

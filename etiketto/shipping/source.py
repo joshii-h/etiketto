@@ -4,27 +4,45 @@ PDF pages are drawn by Poppler (through GObject introspection) straight at
 the size they are printed: lines and barcodes stay sharp at any printer
 resolution and nothing is scaled after drawing. Vector content is drawn
 without anti-aliasing, so bars come out as whole black dots instead of grey
-edges a thermal printer would have to dither. Images are scaled with whole
-pixels when enlarged (nearest neighbour), never smoothed.
+edges a thermal printer would have to dither; lines thinner than a dot,
+which would vanish that way, get one dot. Images are enlarged by repeating
+whole pixels (nearest neighbour), never smoothed; reduced, the pixels that
+fall together are averaged.
 """
 
 from __future__ import annotations
 
 import base64
+import binascii
 import io
 import math
 import threading
+from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Any
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageChops, ImageFilter, ImageOps
 
 POINTS_PER_MM = 72 / 25.4
 # a drawn area may not exceed this; a label of 1 m × 1 m at 600 dpi would
 MAX_PIXELS = 80_000_000
-# Poppler documents are not safe to use from two threads (preview and print)
-_lock = threading.RLock()
+# nor a decoded image: an A4 scan at 600 dpi has 35 million pixels. Checked
+# before decoding, independent of Pillow's own limit for decompression bombs.
+MAX_SOURCE_PIXELS = 50_000_000
+# the resolution an image file states is believed in this range; below it,
+# it is mostly a program's default (72 or 96), not the scanner's
+TRUSTED_DPI = (100.0, 2400.0)
+# a pixel the smooth drawing darkens to this, with nothing at all in the
+# sharp drawing around it, is part of a line thinner than a dot
+THIN_INK = 240
+# drawn areas are kept for the preview, which draws again on every change;
+# large print renders are not kept
+CACHE_BYTES = 64 * 2**20
+CACHE_ITEM_BYTES = 24 * 2**20
+# file signatures of images: such a file is never a PDF, whatever follows
+IMAGE_MAGIC = (b"\x89PNG", b"\xff\xd8\xff", b"GIF8", b"BM", b"II*\x00", b"MM\x00*", b"RIFF")
+GREY_MODES = ("1", "L")
 
 
 class SourceError(ValueError):
@@ -41,16 +59,25 @@ class SourceError(ValueError):
 class PageInfo:
     width: float  # points for PDF pages, pixels for images
     height: float
-    pages: int  # pages in the file
+    pages: int  # pages in the file (frames of a TIFF)
     pdf: bool
+    dpi: float | None = None  # an image's resolution, if the file states a believable one
 
     def width_mm(self) -> float | None:
-        """The page width in mm; None for images, which have no reliable size."""
-        return self.width / POINTS_PER_MM if self.pdf else None
+        """The page width in mm; None for an image without a stated resolution."""
+        if self.pdf:
+            return self.width / POINTS_PER_MM
+        return self.width / self.dpi * 25.4 if self.dpi else None
 
 
 def is_pdf(raw: bytes) -> bool:
-    # the header may follow other bytes within the first kilobyte
+    """A PDF starts with its header; some programs put a few bytes before it,
+    so it is also looked for in the first kilobyte, unless the file starts
+    like an image (whose comments or metadata may hold anything)."""
+    if raw.startswith(b"%PDF-"):
+        return True
+    if raw.startswith(IMAGE_MAGIC):
+        return False
     return b"%PDF-" in raw[:1024]
 
 
@@ -65,50 +92,207 @@ def _poppler() -> Any:
     return Poppler
 
 
-@lru_cache(maxsize=4)
-def _document(data: str) -> Any:
-    """A Poppler document or a decoded image, by the file's content."""
+def _decoded(data: str) -> bytes:
     try:
-        raw = base64.b64decode(data)
-    except ValueError as e:
+        return base64.b64decode(data)
+    except (binascii.Error, ValueError) as e:
         raise SourceError("unreadable", str(e)) from e
-    if is_pdf(raw):
-        poppler = _poppler()
-        from gi.repository import GLib
 
-        try:
-            with _lock:
-                return poppler.Document.new_from_bytes(GLib.Bytes.new(raw), None)
-        except Exception as e:  # noqa: BLE001 - GLib.Error: damaged or encrypted
-            raise SourceError("unreadable", str(e)) from e
+
+def _starts_as_pdf(data: str) -> bool:
+    """Whether the file is a PDF, from its first kilobyte only."""
+    head = data[:1368]  # 1026 bytes; base64 comes in groups of four characters
     try:
-        with Image.open(io.BytesIO(raw)) as src:
-            image = ImageOps.exif_transpose(src)
-            if image.mode in ("RGBA", "LA", "P"):  # transparency becomes white paper
-                image = image.convert("RGBA")
-                paper = Image.new("RGBA", image.size, "white")
-                image = Image.alpha_composite(paper, image)
-            return image.convert("RGB")
-    except Exception as e:  # noqa: BLE001 - PIL raises many kinds
+        return is_pdf(base64.b64decode(head[: len(head) // 4 * 4]))
+    except (binascii.Error, ValueError):
+        return False
+
+
+# --- caches ---------------------------------------------------------------------
+
+
+class _Cache:
+    """The most recently used values, at most items of them and at most
+    max_bytes together; safe to use from several threads."""
+
+    def __init__(self, items: int, max_bytes: int = 0, size: Callable[[Any], int] = len):
+        self.items, self.max_bytes, self.size = items, max_bytes, size
+        self._values: OrderedDict[Any, Any] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def get(self, key: Any) -> Any:
+        with self._lock:
+            value = self._values.get(key)
+            if value is not None:
+                self._values.move_to_end(key)
+            return value
+
+    def put(self, key: Any, value: Any) -> None:
+        with self._lock:
+            self._values[key] = value
+            self._values.move_to_end(key)
+            while len(self._values) > self.items or (
+                self.max_bytes and sum(map(self.size, self._values.values())) > self.max_bytes
+            ):
+                self._values.popitem(last=False)
+
+    def clear(self) -> None:
+        with self._lock:
+            self._values.clear()
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+
+def _image_bytes(image: Image.Image) -> int:
+    return image.width * image.height * len(image.getbands())
+
+
+# one decoded image (the frame in use): the preview and a print share it
+_pictures = _Cache(1)
+# drawn areas, bounded by their memory
+_drawings = _Cache(16, CACHE_BYTES, _image_bytes)
+# Poppler documents are not safe to use from two threads: the preview (main
+# thread) and a print in the background each open their own document
+_threads = threading.local()
+
+
+def clear_caches() -> None:
+    """Forget decoded files and drawings (tests; the memory after a label)."""
+    _pictures.clear()
+    _drawings.clear()
+    _threads.__dict__.clear()
+
+
+# --- PDF documents --------------------------------------------------------------
+
+
+def _open_pdf(raw: bytes) -> Any:
+    poppler = _poppler()
+    from gi.repository import GLib
+
+    try:
+        return poppler.Document.new_from_bytes(GLib.Bytes.new(raw), None)
+    except Exception as e:  # noqa: BLE001 - GLib.Error: damaged or encrypted
         raise SourceError("unreadable", str(e)) from e
+
+
+def _pdf(data: str) -> Any:
+    """This thread's Poppler document of the file (the last one it used)."""
+    cached = getattr(_threads, "pdf", None)
+    if cached is not None and cached[0] == data:
+        return cached[1]
+    _threads.pdf = None  # the old document goes before the new one is opened
+    doc = _open_pdf(_decoded(data))
+    _threads.pdf = (data, doc)
+    return doc
 
 
 def _pdf_page(doc, index: int):
-    with _lock:
-        count = doc.get_n_pages()
-        if count < 1:
-            raise SourceError("unreadable", "the PDF has no pages")
-        return doc.get_page(min(max(0, index), count - 1)), count
+    count = doc.get_n_pages()
+    if count < 1:
+        raise SourceError("unreadable", "the PDF has no pages")
+    return doc.get_page(min(max(0, index), count - 1)), count
+
+
+# --- images ---------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _Picture:
+    image: Image.Image  # mode 1, L or RGB
+    frames: int
+    dpi: float | None
+
+
+def _dpi(info: dict) -> float | None:
+    dpi = info.get("dpi")
+    try:
+        value = float(dpi[0])  # type: ignore[index]
+    except (TypeError, ValueError, IndexError):
+        return None
+    low, high = TRUSTED_DPI
+    return value if low <= value <= high else None
+
+
+def _grey_palette(image: Image.Image) -> bool:
+    palette = image.getpalette() or []
+    return all(palette[i] == palette[i + 1] == palette[i + 2] for i in range(0, len(palette), 3))
+
+
+def _to_8_bit(image: Image.Image) -> Image.Image:
+    """16 and 32 bit grey and float images as 8 bit grey, by their range."""
+    if image.mode.startswith("I;16"):
+        return image.convert("I").point(lambda v: v * (1 / 257)).convert("L")
+    high = float(image.getextrema()[1])  # type: ignore[arg-type]  # one band
+    if image.mode == "F" and 0 < high <= 1.0:  # 0 to 1: black to white
+        return image.point(lambda v: v * 255).convert("L")
+    if high > 255:
+        return image.point(lambda v: v * (255 / high)).convert("L")
+    return image.convert("L")
+
+
+def _on_paper(image: Image.Image) -> Image.Image:
+    """The image on white paper (transparency becomes paper) in the fewest
+    channels that hold it: black and white and grey images stay 1 or L,
+    which takes a third (an eighth) of the memory of RGB."""
+    if image.mode == "P":
+        if "transparency" in image.info:
+            image = image.convert("RGBA")
+        else:
+            return image.convert("L" if _grey_palette(image) else "RGB")
+    if image.mode in ("PA", "RGBa", "La"):
+        image = image.convert("RGBA" if image.mode != "La" else "LA")
+    if image.mode.startswith("I") or image.mode == "F":
+        return _to_8_bit(image)
+    if image.mode in ("LA", "RGBA"):
+        base = image.mode[0] if image.mode == "LA" else "RGB"
+        paper = Image.new(base, image.size, 255 if base == "L" else (255, 255, 255))
+        paper.paste(image.convert(base), mask=image.getchannel("A"))
+        return paper
+    if image.mode in GREY_MODES:
+        return image
+    return image.convert("RGB")
+
+
+def _picture(data: str, frame: int) -> _Picture:
+    """The decoded frame of an image file (cached: the last one used)."""
+    key = (data, frame)
+    cached = _pictures.get(key)
+    if cached is not None:
+        return cached
+    _pictures.clear()  # the old image goes before the new one is decoded
+    raw = _decoded(data)
+    try:
+        with Image.open(io.BytesIO(raw)) as src:
+            frames = max(1, getattr(src, "n_frames", 1))
+            if frame:
+                src.seek(min(max(0, frame), frames - 1))
+            if src.width * src.height > MAX_SOURCE_PIXELS:
+                raise SourceError("too_large", "%d × %d pixels" % src.size)
+            dpi = _dpi(src.info)
+            image = _on_paper(ImageOps.exif_transpose(src))
+            image.load()
+    except SourceError:
+        raise
+    except Image.DecompressionBombError as e:
+        raise SourceError("too_large", str(e)) from e
+    except Exception as e:  # noqa: BLE001 - PIL raises many kinds
+        raise SourceError("unreadable", str(e)) from e
+    picture = _Picture(image, frames, dpi)
+    _pictures.put(key, picture)
+    return picture
 
 
 def page_info(data: str, page: int = 0) -> PageInfo:
-    """Size of a page and the number of pages; SourceError if unusable."""
-    doc = _document(data)
-    if isinstance(doc, Image.Image):
-        return PageInfo(doc.width, doc.height, 1, False)
-    pdf_page, count = _pdf_page(doc, page)
-    with _lock:
-        width, height = pdf_page.get_size()
+    """Size of a page and the number of pages; SourceError if unusable. A
+    page after the last is the last."""
+    if not _starts_as_pdf(data):
+        picture = _picture(data, page)
+        image = picture.image
+        return PageInfo(image.width, image.height, picture.frames, False, picture.dpi)
+    pdf_page, count = _pdf_page(_pdf(data), page)
+    width, height = pdf_page.get_size()
     if width <= 0 or height <= 0:
         raise SourceError("unreadable", "page without a size")
     return PageInfo(width, height, count, True)
@@ -153,7 +337,7 @@ def _surface_image(surface) -> Image.Image:
     return Image.frombuffer(
         "RGB",
         (surface.get_width(), surface.get_height()),
-        bytes(surface.get_data()),
+        surface.get_data(),
         "raw",
         "BGRX",
         surface.get_stride(),
@@ -161,7 +345,7 @@ def _surface_image(surface) -> Image.Image:
     ).copy()
 
 
-def _draw_pdf(pdf_page, region, rotation: int, size, scale: float, sharp: bool) -> Image.Image:
+def _render(pdf_page, region, rotation: int, size, scale: float, smooth: bool) -> Image.Image:
     """Draw region (x, y, w, h in points) turned by rotation into size pixels."""
     import cairo
 
@@ -169,7 +353,7 @@ def _draw_pdf(pdf_page, region, rotation: int, size, scale: float, sharp: bool) 
     ctx = cairo.Context(surface)
     ctx.set_source_rgb(1, 1, 1)
     ctx.paint()
-    if sharp:
+    if not smooth:
         ctx.set_antialias(cairo.ANTIALIAS_NONE)
         options = cairo.FontOptions()
         options.set_antialias(cairo.ANTIALIAS_NONE)
@@ -181,9 +365,35 @@ def _draw_pdf(pdf_page, region, rotation: int, size, scale: float, sharp: bool) 
     ctx.translate(-(x + w / 2), -(y + h / 2))
     ctx.rectangle(x, y, w, h)
     ctx.clip()
-    with _lock:
-        pdf_page.render_for_printing(ctx)
+    pdf_page.render_for_printing(ctx)
     return _surface_image(surface)
+
+
+def ink(smooth: Image.Image) -> Image.Image:
+    """Where the smooth drawing has ink (255), for thin_lines()."""
+    return smooth.convert("L").point(lambda v: 255 if v <= THIN_INK else 0)
+
+
+def thin_lines(sharp: Image.Image, smooth_ink: Image.Image) -> Image.Image:
+    """The sharp drawing with one black dot where only the smooth one has
+    ink: without anti-aliasing a line thinner than a dot falls between the
+    dots and vanishes. Next to anything drawn sharp nothing is added, so
+    bars and letters keep their width."""
+    drawn = sharp.convert("L").point(lambda v: 255 if v < 255 else 0)
+    missing = ImageChops.subtract(smooth_ink, drawn.filter(ImageFilter.MaxFilter(3)))
+    del drawn
+    if missing.getbbox() is not None:
+        sharp.paste((0, 0, 0), mask=missing)
+    return sharp
+
+
+def _draw_pdf(pdf_page, region, rotation: int, size, scale: float, sharp: bool) -> Image.Image:
+    smooth = _render(pdf_page, region, rotation, size, scale, smooth=True)
+    if not sharp:
+        return smooth
+    smooth_ink = ink(smooth)
+    del smooth  # a page at 600 dpi takes 100 MB
+    return thin_lines(_render(pdf_page, region, rotation, size, scale, smooth=False), smooth_ink)
 
 
 TRANSPOSE = {
@@ -204,8 +414,11 @@ def _draw_image(image: Image.Image, region, rotation: int, size, scale: float) -
     scaled = (max(size[0], round(part.width * scale)), max(size[1], round(part.height * scale)))
     # enlarging: whole pixels, bars stay sharp; reducing: the average of the
     # pixels that fall together (no ringing around bars as with Lanczos)
-    resample = Image.Resampling.NEAREST if scale >= 1 else Image.Resampling.BOX
-    part = part.resize(scaled, resample)
+    if scale >= 1:
+        part = part.resize(scaled, Image.Resampling.NEAREST)
+    else:
+        part = part.convert("L" if part.mode == "1" else part.mode)
+        part = part.resize(scaled, Image.Resampling.BOX)
     left, top = (part.width - size[0]) // 2, (part.height - size[1]) // 2
     return part.crop((left, top, left + size[0], top + size[1]))
 
@@ -215,7 +428,6 @@ def _check_size(size: tuple[int, int]) -> None:
         raise SourceError("too_large", "%d × %d pixels" % size)
 
 
-@lru_cache(maxsize=8)
 def draw(
     data: str,
     page: int,
@@ -225,17 +437,25 @@ def draw(
     fit: str = "fit",
     sharp: bool = True,
 ) -> Image.Image:
-    """The area of the page, turned and drawn into box (see fitted()), RGB.
-    Cached: the preview draws the label again on every change."""
-    doc = _document(data)
+    """The area of the page, turned and drawn into box (see fitted()): RGB
+    for PDF pages, an image's own mode (1, L or RGB) for images. Cached
+    while small: the preview draws the label again on every change."""
+    key = (data, page, tuple(crop), rotation, box, fit, sharp)
+    cached = _drawings.get(key)
+    if cached is not None:
+        return cached
     info = page_info(data, page)
     region = area(crop, info.width, info.height)
     width, height, scale = fitted(turned(region[2], region[3], rotation), box, fit)
     _check_size((width, height))
-    if isinstance(doc, Image.Image):
-        return _draw_image(doc, region, rotation, (width, height), scale)
-    pdf_page, _count = _pdf_page(doc, page)
-    return _draw_pdf(pdf_page, region, rotation, (width, height), scale, sharp)
+    if info.pdf:
+        pdf_page, _count = _pdf_page(_pdf(data), page)
+        image = _draw_pdf(pdf_page, region, rotation, (width, height), scale, sharp)
+    else:
+        image = _draw_image(_picture(data, page).image, region, rotation, (width, height), scale)
+    if _image_bytes(image) <= CACHE_ITEM_BYTES:
+        _drawings.put(key, image)
+    return image
 
 
 def preview(data: str, page: int, longest_px: int) -> Image.Image:
@@ -245,3 +465,63 @@ def preview(data: str, page: int, longest_px: int) -> Image.Image:
     scale = longest_px / max(info.width, info.height)
     box = (max(1, round(info.width * scale)), max(1, round(info.height * scale)))
     return draw(data, page, (0.0, 0.0, 1.0, 1.0), 0, box, "fit", sharp=False)
+
+
+# --- keeping one page -----------------------------------------------------------
+
+# the copy of a PDF page is compared with the original at these sizes (longer
+# side, in pixels): smooth as in the preview, and sharp as printed
+CHECK_PX = ((1000, True), (1800, False))
+
+
+def _pdf_copy(pdf_page) -> bytes:
+    """The page as a PDF of its own, drawn by Poppler into a cairo PDF."""
+    import cairo
+
+    width, height = pdf_page.get_size()
+    buf = io.BytesIO()
+    surface = cairo.PDFSurface(buf, width, height)
+    pdf_page.render_for_printing(cairo.Context(surface))
+    surface.show_page()
+    surface.finish()
+    return buf.getvalue()
+
+
+def _same_drawing(page_a, page_b) -> bool:
+    width, height = page_a.get_size()
+    if (width, height) != page_b.get_size():
+        return False
+    region = (0.0, 0.0, width, height)
+    for longest, smooth in CHECK_PX:
+        scale = longest / max(width, height)
+        size = (max(1, round(width * scale)), max(1, round(height * scale)))
+        a = _render(page_a, region, 0, size, scale, smooth)
+        b = _render(page_b, region, 0, size, scale, smooth)
+        if ImageChops.difference(a, b).getbbox() is not None:
+            return False
+    return True
+
+
+def only_page(data: str, page: int) -> tuple[str, int]:
+    """The file with only this page, as (data, page): the other pages of a
+    carrier's document (receipts, customs forms, other labels) stay out of
+    the label file. A PDF page is copied only if the copy draws exactly
+    like the original, else the whole file is kept; a frame of a TIFF
+    becomes a PNG. Files of one page stay as they are."""
+    info = page_info(data, page)
+    if info.pages < 2:
+        return data, page
+    if not info.pdf:
+        picture = _picture(data, page)
+        buf = io.BytesIO()
+        extra = {"dpi": (picture.dpi, picture.dpi)} if picture.dpi else {}
+        picture.image.save(buf, format="PNG", **extra)
+        return base64.b64encode(buf.getvalue()).decode(), 0
+    original, _count = _pdf_page(_pdf(data), page)
+    try:
+        raw = _pdf_copy(original)
+        copy, _count = _pdf_page(_open_pdf(raw), 0)
+        same = _same_drawing(original, copy)
+    except (SourceError, MemoryError):
+        return data, page
+    return (base64.b64encode(raw).decode(), 0) if same else (data, page)

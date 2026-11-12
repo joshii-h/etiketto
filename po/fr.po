@@ -35,7 +35,7 @@ msgstr "Pas encore de contenu"
 msgid "Add text, an image or a code"
 msgstr "Ajoutez du texte, une image ou un code"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:481
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
 msgid "Text"
 msgstr "Texte"
 
@@ -95,7 +95,7 @@ msgstr "Choisir…"
 msgid "Area"
 msgstr "Zone"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:252
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
 msgid "Scale"
 msgstr "Mise à l’échelle"
 
@@ -111,92 +111,92 @@ msgstr "Contenu (lien, texte, numéro)"
 msgid "Colour"
 msgstr "Couleur"
 
-#: etiketto/ui/files.py:43
+#: etiketto/ui/files.py:64
 msgid "Etiketto labels"
 msgstr "Étiquettes Etiketto"
 
-#: etiketto/ui/files.py:48
+#: etiketto/ui/files.py:69
 msgid "Images"
 msgstr "Images"
 
-#: etiketto/ui/files.py:51 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "Choisir une image"
 
-#: etiketto/ui/files.py:71
+#: etiketto/ui/files.py:92
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Impossible d’ouvrir le modèle %(name)s"
 
-#: etiketto/ui/files.py:75 etiketto/ui/files.py:127 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "Impossible d’ouvrir %s"
 
-#: etiketto/ui/files.py:85
+#: etiketto/ui/files.py:106
 msgid "Open label"
 msgstr "Ouvrir une étiquette"
 
-#: etiketto/ui/files.py:95 etiketto/ui/files.py:116 etiketto/ui/files.py:197
+#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "Seuls les fichiers locaux sont possibles"
 
-#: etiketto/ui/files.py:102
+#: etiketto/ui/files.py:123
 msgid "PDF documents and images"
 msgstr "Documents PDF et images"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:128
 msgid "Open shipping label"
 msgstr "Ouvrir une étiquette d’expédition"
 
-#: etiketto/ui/files.py:171
+#: etiketto/ui/files.py:195
 msgid "label"
 msgstr "etiquette"
 
-#: etiketto/ui/files.py:215
+#: etiketto/ui/files.py:239
 msgid "Save label"
 msgstr "Enregistrer l’étiquette"
 
-#: etiketto/ui/files.py:220 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
 msgid "Save as template…"
 msgstr "Enregistrer comme modèle…"
 
-#: etiketto/ui/files.py:238
+#: etiketto/ui/files.py:262
 #, python-format
 msgid "Saved %s"
 msgstr "%s enregistré"
 
-#: etiketto/ui/files.py:248
+#: etiketto/ui/files.py:272
 msgid "Export PNG"
 msgstr "Exporter en PNG"
 
-#: etiketto/ui/files.py:256 etiketto/ui/window.py:398
+#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
 msgid "The preview cannot be drawn"
 msgstr "Impossible de dessiner l’aperçu"
 
-#: etiketto/ui/files.py:258
+#: etiketto/ui/files.py:282
 msgid "Exported"
 msgstr "Exporté"
 
-#: etiketto/ui/files.py:268
+#: etiketto/ui/files.py:292
 msgid "No templates yet – use “Save as template…”"
 msgstr "Pas encore de modèles – utilisez « Enregistrer comme modèle… »"
 
-#: etiketto/ui/files.py:295 etiketto/ui/label_group.py:50
+#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
 #: etiketto/ui/window.py:41
 msgid "Label"
 msgstr "Étiquette"
 
-#: etiketto/ui/files.py:305
+#: etiketto/ui/files.py:329
 msgid "Discard changes?"
 msgstr "Abandonner les modifications ?"
 
-#: etiketto/ui/files.py:306
+#: etiketto/ui/files.py:330
 msgid "The current label has unsaved changes."
 msgstr "L’étiquette actuelle contient des modifications non enregistrées."
 
-#: etiketto/ui/files.py:308
+#: etiketto/ui/files.py:332
 msgid "Discard"
 msgstr "Abandonner"
 
@@ -329,7 +329,7 @@ msgstr "Imprimer sur"
 msgid "Custom size"
 msgstr "Taille personnalisée"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:251
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
 msgid "Label size"
 msgstr "Taille de l’étiquette"
 
@@ -473,7 +473,7 @@ msgstr "Choisir une imprimante"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:414
+#: etiketto/ui/window.py:415
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -701,7 +701,7 @@ msgstr "Échec de l’impression"
 msgid "Details"
 msgstr "Détails"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:434
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
 msgid "Report"
 msgstr "Signaler"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "Cliquez sur une étiquette pour l’omettre ou pour imprimer à nouveau dessus. Seule la première planche est concernée : les planches suivantes sont remplies entièrement."
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:201
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
 msgid "Apply"
 msgstr "Appliquer"
 
@@ -782,35 +782,35 @@ msgstr "Appliquer"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Les étiquettes %s empiètent sur la marge où l’imprimante ne peut pas imprimer"
 
-#: etiketto/ui/shipping.py:176 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "Étiquette d’expédition"
 
-#: etiketto/ui/shipping.py:201
+#: etiketto/ui/shipping.py:206
 msgid "Create label"
 msgstr "Créer l’étiquette"
 
-#: etiketto/ui/shipping.py:230
+#: etiketto/ui/shipping.py:235
 msgid "Rotate left"
 msgstr "Tourner à gauche"
 
-#: etiketto/ui/shipping.py:231
+#: etiketto/ui/shipping.py:236
 msgid "Rotate right"
 msgstr "Tourner à droite"
 
-#: etiketto/ui/shipping.py:232
+#: etiketto/ui/shipping.py:237
 msgid "Find the label"
 msgstr "Trouver l’étiquette"
 
-#: etiketto/ui/shipping.py:233
+#: etiketto/ui/shipping.py:238
 msgid "Whole page"
 msgstr "Page entière"
 
-#: etiketto/ui/shipping.py:234
+#: etiketto/ui/shipping.py:239
 msgid "Next suggestion"
 msgstr "Suggestion suivante"
 
-#: etiketto/ui/shipping.py:244
+#: etiketto/ui/shipping.py:249
 msgid "Page"
 msgstr "Page"
 
@@ -1235,37 +1235,37 @@ msgstr "À propos d’Etiketto"
 msgid "Unsaved label"
 msgstr "Étiquette non enregistrée"
 
-#: etiketto/ui/window.py:374
+#: etiketto/ui/window.py:375
 msgid "content scaled down to fit"
 msgstr "contenu réduit pour tenir"
 
-#: etiketto/ui/window.py:376
+#: etiketto/ui/window.py:377
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Trop longue pour cette imprimante : %s au maximum"
 
-#: etiketto/ui/window.py:381
+#: etiketto/ui/window.py:382
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Trop large pour cette imprimante : %s au maximum"
 
-#: etiketto/ui/window.py:386
+#: etiketto/ui/window.py:387
 #, python-format
 msgid "Problem: %s"
 msgstr "Problème : %s"
 
-#: etiketto/ui/window.py:461
+#: etiketto/ui/window.py:462
 msgid "The browser cannot be opened"
 msgstr "Impossible d’ouvrir le navigateur"
 
-#: etiketto/ui/window.py:463
+#: etiketto/ui/window.py:464
 msgid "Copy link"
 msgstr "Copier le lien"
 
-#: etiketto/ui/window.py:508
+#: etiketto/ui/window.py:509
 msgid "Only local files can be dropped"
 msgstr "Seuls les fichiers locaux peuvent être déposés"
 
-#: etiketto/ui/window.py:526
+#: etiketto/ui/window.py:527
 msgid "Please wait until printing has finished"
 msgstr "Veuillez attendre la fin de l’impression"

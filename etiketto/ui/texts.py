@@ -99,7 +99,7 @@ def detection_hint(detection: Detection | None) -> str:
             "Check that all of the label is inside the selection. Drag to move it or its "
             "edges, or draw a new one."
         )
-    if detection.how == "block":
+    if detection.how in ("frame", "block"):
         return _("Several areas could be the label. Check the selection or try the next one.")
     if detection.how == "content":
         return _("Everything printed on the page is selected. Drag to choose the label.")

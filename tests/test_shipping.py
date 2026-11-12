@@ -13,10 +13,22 @@ import io
 
 import pytest
 from PIL import Image, ImageDraw
-from shipping_samples import A4, LABEL, a4_pdf, encode, page_image
+from shipping_samples import (
+    A4,
+    LABEL,
+    a4_pdf,
+    draw_label,
+    drawn_page,
+    encode,
+    gappy_label,
+    instructions,
+    page_image,
+    page_pdf,
+)
 
 from etiketto.backends import get_backend
-from etiketto.model import Label, LabelError, PageElement
+from etiketto.backends.base import PrintOptions
+from etiketto.model import Label, LabelError, PageElement, TextElement
 from etiketto.render import mm_to_px, render
 from etiketto.shipping import crop as cropping
 from etiketto.shipping import detect, source, targets
@@ -33,17 +45,11 @@ def values(image: Image.Image) -> set[int]:
     return set(image.convert("L").tobytes())
 
 
-def _clear_caches():
-    for cached in (source._document, source.draw):
-        if hasattr(cached, "cache_clear"):  # not while a test replaces it
-            cached.cache_clear()
-
-
 @pytest.fixture(autouse=True)
 def _fresh_caches():
-    _clear_caches()
+    source.clear_caches()
     yield
-    _clear_caches()
+    source.clear_caches()
 
 
 @pytest.fixture(scope="module")
@@ -66,12 +72,13 @@ TOP_LEFT = (30 / A4[0], 30 / A4[1], LABEL[0] / A4[0], LABEL[1] / A4[1])
 TOP = (40 / A4[0], 50 / A4[1], LABEL[1] / A4[0], LABEL[0] / A4[1])
 
 
-def covers(crop, label, slack=0.03) -> bool:
-    """The crop holds all of the label and not much more."""
+def covers(crop, label, slack=0.03, inset=0.002) -> bool:
+    """The crop holds all of the label (up to inset on each edge: content
+    without a frame may end a little inside the label) and not much more."""
     x, y, w, h = crop
     lx, ly, lw, lh = label
-    inside = x <= lx + 0.002 and y <= ly + 0.002 and x + w >= lx + lw - 0.002
-    inside = inside and y + h >= ly + lh - 0.002
+    inside = x <= lx + inset and y <= ly + inset and x + w >= lx + lw - inset
+    inside = inside and y + h >= ly + lh - inset
     return inside and w <= lw + slack and h <= lh + slack
 
 
@@ -89,6 +96,16 @@ def test_is_pdf():
     assert source.is_pdf(b"%PDF-1.7\n")
     assert source.is_pdf(b"junk before\n%PDF-1.4")
     assert not source.is_pdf(b"\x89PNG")
+    # an image whose comment holds the PDF header stays an image
+    assert not source.is_pdf(b"\xff\xd8\xff\xfe\x00\x10%PDF-1.4 hello")
+    assert not source.is_pdf(b"x" * 1024 + b"%PDF-1.4")
+
+
+def test_image_with_pdf_header_in_its_comment():
+    jpeg = encode(square_image(), "JPEG")
+    raw = jpeg[:2] + b"\xff\xfe\x00\x10%PDF-1.4 hello" + jpeg[2:]
+    info = source.page_info(b64(raw))
+    assert (info.width, info.pdf) == (40, False)
 
 
 @needs_poppler
@@ -262,6 +279,193 @@ def test_too_large():
     assert error.value.code == "too_large"
 
 
+# --- memory, image modes, pages ---------------------------------------------------------
+
+
+@pytest.mark.parametrize("mode", ["1", "L"])
+def test_black_and_white_and_grey_images_stay_small(mode):
+    data = b64(encode(square_image(mode)))
+    drawn = source.draw(data, 0, detect.FULL, 0, (40, 60))
+    assert drawn.mode == mode  # not three times (24 times) the memory as RGB
+    reduced = source.draw(data, 0, detect.FULL, 0, (20, 30))
+    assert reduced.mode == "L"
+    assert source.draw(b64(encode(square_image())), 0, detect.FULL, 0, (40, 60)).mode == "RGB"
+
+
+def test_grey_palette_and_transparent_grey_images():
+    palette = square_image("L").convert("P")
+    assert source.draw(b64(encode(palette)), 0, detect.FULL, 0, (40, 60)).mode == "L"
+    clear = Image.new("LA", (10, 10), (0, 0))
+    drawn = source.draw(b64(encode(clear)), 0, detect.FULL, 0, (10, 10))
+    assert drawn.mode == "L" and values(drawn) == {255}
+
+
+def test_16_bit_and_float_images_keep_their_greys():
+    grey = Image.new("I;16", (4, 1))
+    for x, value in enumerate((0, 1000, 30000, 65535)):
+        grey.putpixel((x, 0), value)
+    drawn = source.draw(b64(encode(grey)), 0, detect.FULL, 0, (4, 1))
+    assert list(drawn.tobytes()) == [0, 3, 116, 255]  # not all white above 255
+    floats = Image.new("F", (3, 1))
+    for x, value in enumerate((0.0, 0.5, 1.0)):
+        floats.putpixel((x, 0), value)
+    drawn = source.draw(b64(encode(floats, "TIFF")), 0, detect.FULL, 0, (3, 1))
+    assert list(drawn.tobytes()) == [0, 127, 255]
+    wide = Image.new("I", (2, 1))
+    wide.putpixel((1, 0), 1000)
+    assert list(source.draw(b64(encode(wide, "TIFF")), 0, detect.FULL, 0, (2, 1)).tobytes()) == [
+        0,
+        255,
+    ]
+
+
+def test_too_many_pixels_to_decode(monkeypatch):
+    data = b64(encode(square_image(size=(100, 100))))
+    monkeypatch.setattr(source, "MAX_SOURCE_PIXELS", 9_999)
+    with pytest.raises(SourceError) as error:
+        source.page_info(data)
+    assert error.value.code == "too_large"
+
+
+def test_decompression_bomb(monkeypatch):
+    data = b64(encode(square_image(size=(100, 100))))
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 100)
+    with pytest.raises(SourceError) as error:
+        source.page_info(data)
+    assert error.value.code == "too_large"
+
+
+def test_only_small_drawings_are_kept(monkeypatch):
+    data = b64(encode(square_image()))
+    monkeypatch.setattr(source, "CACHE_ITEM_BYTES", 40 * 60 * 3)
+    small = source.draw(data, 0, detect.FULL, 0, (40, 60))
+    assert source.draw(data, 0, detect.FULL, 0, (40, 60)) is small
+    large = source.draw(data, 0, detect.FULL, 0, (80, 120))
+    assert source.draw(data, 0, detect.FULL, 0, (80, 120)) is not large
+
+
+def test_cache_is_bounded_by_bytes():
+    cache = source._Cache(10, max_bytes=10)
+    for key in "abc":
+        cache.put(key, b"xxxx")
+    assert len(cache) == 2 and cache.get("a") is None and cache.get("c") == b"xxxx"
+    cache.clear()
+    assert len(cache) == 0
+
+
+def tiff_pages() -> bytes:
+    first = square_image("L", (40, 60))
+    second = Image.new("L", (30, 20), 0)
+    buf = io.BytesIO()
+    first.save(buf, format="TIFF", save_all=True, append_images=[second])
+    return buf.getvalue()
+
+
+def test_tiff_pages():
+    data = b64(tiff_pages())
+    first, second = source.page_info(data, 0), source.page_info(data, 1)
+    assert (first.pages, first.width, second.width, second.height) == (2, 40, 30, 20)
+    assert values(source.draw(data, 1, detect.FULL, 0, (30, 20))) == {0}
+    assert source.page_info(data, 9) == second  # a page after the last is the last
+
+
+def test_only_the_page_of_a_tiff():
+    data, page = source.only_page(b64(tiff_pages()), 1)
+    assert page == 0
+    info = source.page_info(data)
+    assert (info.pages, info.width, info.height) == (1, 30, 20)
+    single = b64(encode(square_image()))
+    assert source.only_page(single, 0) == (single, 0)
+
+
+@needs_poppler
+def test_only_the_page_of_a_pdf(pdf):
+    data, page = source.only_page(pdf, 1)
+    assert page == 0 and len(data) < len(pdf)
+    info = source.page_info(data)
+    assert info.pages == 1 and (info.width, info.height) == pytest.approx(A4)
+    original = source.draw(pdf, 1, TOP_LEFT, 0, (600, 900))
+    assert source.draw(data, 0, TOP_LEFT, 0, (600, 900)).tobytes() == original.tobytes()
+
+
+@needs_poppler
+def test_whole_pdf_kept_if_the_copy_differs(pdf, monkeypatch):
+    monkeypatch.setattr(source, "_same_drawing", lambda a, b: False)
+    assert source.only_page(pdf, 1) == (pdf, 1)
+
+    def broken(_page):
+        raise SourceError("unreadable")
+
+    monkeypatch.setattr(source, "_pdf_copy", broken)
+    assert source.only_page(pdf, 1) == (pdf, 1)
+
+
+@needs_poppler
+def test_copy_check_compares_the_drawing(pdf):
+    doc = source._open_pdf(base64.b64decode(pdf))
+    page, _count = source._pdf_page(doc, 0)
+    other = source._open_pdf(a4_pdf("top"))
+    assert source._same_drawing(page, page)
+    assert not source._same_drawing(page, source._pdf_page(other, 0)[0])
+    label = source._open_pdf(page_pdf(lambda c, i: None, LABEL))
+    assert not source._same_drawing(page, source._pdf_page(label, 0)[0])
+
+
+@needs_poppler
+def test_lines_thinner_than_a_dot_stay():
+    def hairlines(ctx, _index):
+        for i, width in enumerate((0.05, 0.1, 0.3)):
+            ctx.set_line_width(width)
+            ctx.move_to(10, 20 + i * 10)
+            ctx.line_to(250, 20 + i * 10)
+            ctx.stroke()
+        for i in range(40):  # 0.25 mm bars and gaps
+            ctx.rectangle(20 + i * 0.5 * 72 / 25.4, 100, 0.25 * 72 / 25.4, 40)
+        ctx.fill()
+
+    data = b64(page_pdf(hairlines, LABEL))
+    dpi = 203.2
+    image = source.draw(data, 0, detect.FULL, 0, (mm_to_px(101.6, dpi), mm_to_px(152.4, dpi)))
+    assert values(image) == {0, 255}
+    grey = image.convert("L")
+    for i in range(3):
+        y = round((20 + i * 10) * dpi / 72)
+        rows = grey.crop((100, y - 3, 400, y + 4))
+        assert rows.getextrema()[0] == 0  # every line is drawn, at least one dot
+    # bars keep their width: one bar and one gap every 4 (or 3 or 5) dots
+    row = grey.crop((60, round(120 * dpi / 72), 300, round(120 * dpi / 72) + 1)).tobytes()
+    bars = [len(run) for run in row.split(b"\xff") if run]
+    assert set(bars) <= {1, 2, 3}
+
+
+def test_thin_lines_are_added_only_away_from_drawn_ink():
+    sharp = Image.new("RGB", (10, 3), "white")
+    sharp.putpixel((2, 1), (0, 0, 0))
+    smooth = Image.new("L", (10, 3), 255)
+    for x in (3, 7):  # an edge next to the bar, and a lost thin line
+        smooth.putpixel((x, 1), 200)
+    result = source.thin_lines(sharp, source.ink(smooth)).convert("L")
+    assert result.getpixel((3, 1)) == 255 and result.getpixel((7, 1)) == 0
+
+
+@needs_poppler
+def test_each_thread_has_its_own_document(pdf):
+    import threading
+
+    documents = []
+
+    def use():
+        source.page_info(pdf)
+        documents.append(source._pdf(pdf))
+
+    use()
+    thread = threading.Thread(target=use)
+    thread.start()
+    thread.join()
+    assert documents[0] is not documents[1]
+    assert source._pdf(pdf) is documents[0]
+
+
 @needs_poppler
 def test_preview(pdf):
     image = source.preview(pdf, 0, 700)
@@ -295,11 +499,9 @@ def test_label_without_frame(layout, noise):
 
 def test_sideways_label_without_frame():
     found = detect.detect(page_image("top", 120, frame=False))
-    assert found.how == "block"
-    x, y, w, h = found.crop
-    lx, ly, lw, lh = TOP
-    assert x <= lx + 0.01 and y <= ly + 0.01 and x + w >= lx + lw - 0.03
-    assert w <= lw + 0.03 and h <= lh + 0.03
+    assert found.how == "block" and found.certain
+    # all four edges: the label's content reaches about its frameless edges
+    assert covers(found.crop, TOP, slack=0.03, inset=0.012)
 
 
 def test_blank_page():
@@ -340,6 +542,169 @@ def test_two_alike_labels_need_a_check():
     found = detect.detect(page)
     assert found.how == "block" and not found.certain
     assert len(found.candidates) >= 3
+
+
+# --- detection: harder pages ------------------------------------------------------------
+
+LW, LH = LABEL
+
+
+def frac(x, y, w, h, size=A4):
+    """A rectangle in points as fractions of the page."""
+    return (x / size[0], y / size[1], w / size[0], h / size[1])
+
+
+def printed(draw, size=A4):
+    """Where draw(ctx) puts ink on the page, as fractions: the area a
+    label without a frame should get (its print may end before its edges)."""
+    mask = detect.ink_mask(drawn_page(draw, size))
+    box = detect.tight(mask, detect.Box(0, 0, *mask.size))
+    assert box
+    return box.fractions(mask.size)
+
+
+def gappy(x=30, y=30):
+    return printed(lambda c: gappy_label(c, x, y))
+
+
+def plain(x, y, w, h):
+    """Where a label without a frame has print."""
+    return printed(lambda c: draw_label(c, x, y, w, h, False))
+
+
+@pytest.mark.parametrize(
+    "draw, label",
+    [
+        (lambda c: gappy_label(c, 30, 30), gappy()),
+        (lambda c: (gappy_label(c, 30, 30), instructions(c)), gappy()),
+        (lambda c: (gappy_label(c, 150, 30), instructions(c)), gappy(150)),
+    ],
+    ids=["alone", "instructions below", "centred"],
+)
+def test_label_with_blank_space_inside_is_found_whole(draw, label):
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "block" and found.certain
+    assert covers(found.crop, label, slack=0.03, inset=0.012)
+
+
+def two_best(found):
+    return found.candidates[:2]
+
+
+def test_two_alike_labels_without_frame_side_by_side():
+    left, right = plain(20, 20, LW - 20, LH), plain(A4[0] - LW, 20, LW - 20, LH)
+
+    def draw(c):
+        draw_label(c, 20, 20, LW - 20, LH, False)
+        draw_label(c, A4[0] - LW, 20, LW - 20, LH, False)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "block" and not found.certain
+    best = two_best(found)
+    for label in (left, right):
+        assert any(covers(crop, label, slack=0.03, inset=0.012) for crop in best)
+
+
+def test_two_different_labels_without_frame_side_by_side():
+    left, right = plain(20, 20, LW - 20, LH), gappy(A4[0] - LW, 20)
+
+    def draw(c):
+        draw_label(c, 20, 20, LW - 20, LH, False)
+        gappy_label(c, A4[0] - LW, 20)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "block" and not found.certain
+    best = two_best(found)
+    for label in (left, right):
+        assert any(covers(crop, label, slack=0.03, inset=0.012) for crop in best)
+
+
+def test_alike_framed_labels_need_a_check():
+    def draw(c):
+        for x in (10, 307):
+            for y in (10, 430):
+                draw_label(c, x, y, 278, 400)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "frame" and not found.certain
+    labels = [frac(x, y, 278, 400) for x in (10, 307) for y in (10, 430)]
+    assert sum(any(covers(c, label, 0.02) for c in found.candidates) for label in labels) >= 3
+
+
+def test_border_around_the_page_is_not_the_label():
+    def draw(c):
+        c.set_line_width(1)
+        c.rectangle(10, 10, A4[0] - 20, A4[1] - 20)
+        c.stroke()
+        draw_label(c, 30, 30, LW, LH)
+        instructions(c)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "frame" and found.certain
+    assert covers(found.crop, TOP_LEFT, slack=0.02)
+
+
+def test_frame_of_a_table_does_not_hide_the_label():
+    def draw(c):
+        draw_label(c, 30, 30, LW, LH, False)
+        c.set_line_width(1)
+        c.rectangle(30, 500, 535, 300)
+        c.stroke()
+        for i in range(1, 6):
+            c.move_to(30, 500 + i * 50)
+            c.line_to(565, 500 + i * 50)
+            c.stroke()
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "block"
+    assert covers(found.crop, plain(30, 30, LW, LH), slack=0.03)
+
+
+@pytest.mark.parametrize("frame, how", [(True, "frame"), (False, "content")])
+def test_label_filling_the_page(frame, how):
+    def draw(c):
+        draw_label(c, 30, 30, 535, 780, frame)
+
+    found = detect.detect(drawn_page(draw), 210)
+    assert found.how == how
+    assert covers(found.crop, printed(draw), slack=0.03)
+
+
+A6 = (105 * 72 / 25.4, 148 * 72 / 25.4)
+
+
+def a6_label(frame: bool, dpi: float = 200) -> Image.Image:
+    """An image of only an A6 label: the shape of an A4 page."""
+    return drawn_page(lambda c: draw_label(c, 8, 8, A6[0] - 16, A6[1] - 16, frame), A6, dpi)
+
+
+@pytest.mark.parametrize("frame", [True, False])
+def test_image_of_an_a6_label_is_the_label(frame):
+    image = a6_label(frame)
+    assert detect.is_sheet(image.size)  # by its shape it could be A4
+    found = detect.detect(image)
+    assert found.how in ("frame", "content")
+    label = printed(lambda c: draw_label(c, 8, 8, A6[0] - 16, A6[1] - 16, frame), A6)
+    assert covers(found.crop, label, slack=0.04)
+
+
+def test_image_resolution_gives_the_page_size():
+    buf = io.BytesIO()
+    a6_label(False).save(buf, format="PNG", dpi=(200, 200))
+    info = source.page_info(b64(buf.getvalue()))
+    assert info.dpi == pytest.approx(200, abs=0.1)
+    assert info.width_mm() == pytest.approx(105, abs=0.2)
+    found = detect.detect(source.preview(b64(buf.getvalue()), 0, 1400), info.width_mm())
+    assert found.how == "content" and found.crop[2] > 0.9
+    # a program's default resolution says nothing about the page
+    buf = io.BytesIO()
+    a6_label(False).save(buf, format="PNG", dpi=(72, 72))
+    assert source.page_info(b64(buf.getvalue())).width_mm() is None
+
+
+def test_parts_of_the_label_do_not_make_it_uncertain():
+    found = detect.detect(drawn_page(lambda c: gappy_label(c, 30, 30)), width_mm=210)
+    assert found.certain and len(found.candidates) > 2
 
 
 def test_only_small_blocks_fall_back_to_the_content():
@@ -467,7 +832,9 @@ def test_matching_target(make_label):
 
 def page_element(crop=TOP, rotation=0) -> PageElement:
     image = page_image("top", 60)
-    return PageElement(data=b64(encode(image)), name="dhl.png", crop=list(crop), rotation=rotation)
+    return PageElement(
+        data=b64(encode(image)), name="parcel.png", crop=list(crop), rotation=rotation
+    )
 
 
 def test_upright():
@@ -540,6 +907,12 @@ def test_page_element_validation(change):
         Label.from_dict({"elements": [item]})
 
 
+def test_rotation_is_a_whole_number():
+    item = {"kind": "page", "rotation": 90.0}
+    element = Label.from_dict({"elements": [item]}).elements[0]
+    assert element.rotation == 90 and isinstance(element.rotation, int)
+
+
 def test_page_element_is_repaired():
     item = {"kind": "page", "page": -3, "crop": [0.5, 1.5, 0.9, 0.0]}
     element = Label.from_dict({"elements": [item]}).elements[0]
@@ -606,3 +979,51 @@ def test_render_on_tape_grows_with_the_area():
     inner = mm_to_px(25, 100) - 2 * mm_to_px(1.5, 100)
     w, h = targets.area_size(element)
     assert rendered.image.width == pytest.approx(inner * w / h + 2 * mm_to_px(1.5, 100), abs=2)
+
+
+def test_reduced_image_is_black_and_white_on_a_mono_printer():
+    """An image reduced to the label has grey edges; a black and white
+    printer gets a threshold, not a dot pattern of dithered grey."""
+    image = Image.new("L", (1000, 1500), 255)
+    draw = ImageDraw.Draw(image)
+    for x in range(100, 900, 7):
+        draw.rectangle((x, 400, x + 2, 900), fill=0)
+    element = PageElement(data=b64(encode(image)), name="label.png")
+    label = targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 1.5)
+    assert len(values(render(label, dpi=100, safe_mm=1.5).image)) > 2  # grey edges
+    assert values(render(label, dpi=100, safe_mm=1.5, mono=True).image) == {0, 255}
+    printed = get_backend("cab").prepare(label, PrintOptions(), 1.5)
+    assert values(printed) == {0, 255}
+
+
+@needs_poppler
+def test_page_area_stays_sharp_next_to_another_element(pdf):
+    """A label of fixed length too short for all its elements: the page
+    area is drawn again at the smaller size, not reduced with smoothing."""
+    element = PageElement(data=pdf, name="a.pdf", crop=list(TOP_LEFT))
+    label = targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 1.5)
+    label.elements.append(TextElement(text="Fragile"))
+    import etiketto.render as rendering
+
+    dpi = 203.2
+    assert render(label, dpi=dpi, safe_mm=1.5).overflow
+    frame = rendering._frame(label, dpi, 1.5, None, 0, [])
+    room = rendering._room(label, frame, dpi, 0)
+    parts = rendering._parts(label, frame, dpi, [], room, False)
+    _length, scaled, _gap, overflow = rendering._fit_length(label, parts, frame, dpi, [], 0, False)
+    assert overflow and scaled[0].width < parts[0].width
+    assert values(scaled[0]) == {0, 255}
+
+
+def test_scaled_part_falls_back_to_reducing(monkeypatch):
+    import etiketto.render as rendering
+
+    part = Image.new("RGBA", (100, 50), (0, 0, 0, 255))
+
+    def broken(*_args, **_kwargs):
+        raise SourceError("unreadable")
+
+    monkeypatch.setattr(rendering, "render_page", broken)
+    scaled = rendering._scaled_part(PageElement(data="x"), part, 0.5, False)
+    assert scaled.size == (50, 25)
+    assert rendering._scaled_part(TextElement(), part, 0.5, False).size == (50, 25)

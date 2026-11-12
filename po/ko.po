@@ -35,7 +35,7 @@ msgstr "아직 내용이 없습니다"
 msgid "Add text, an image or a code"
 msgstr "텍스트, 이미지 또는 코드를 추가하십시오"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:481
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
 msgid "Text"
 msgstr "텍스트"
 
@@ -95,7 +95,7 @@ msgstr "선택…"
 msgid "Area"
 msgstr "영역"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:252
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
 msgid "Scale"
 msgstr "크기 조정"
 
@@ -111,92 +111,92 @@ msgstr "내용(링크, 텍스트, 번호)"
 msgid "Colour"
 msgstr "색"
 
-#: etiketto/ui/files.py:43
+#: etiketto/ui/files.py:64
 msgid "Etiketto labels"
 msgstr "Etiketto 라벨"
 
-#: etiketto/ui/files.py:48
+#: etiketto/ui/files.py:69
 msgid "Images"
 msgstr "이미지"
 
-#: etiketto/ui/files.py:51 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "이미지 선택"
 
-#: etiketto/ui/files.py:71
+#: etiketto/ui/files.py:92
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "서식을 열 수 없음: %(name)s"
 
-#: etiketto/ui/files.py:75 etiketto/ui/files.py:127 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "열 수 없음: %s"
 
-#: etiketto/ui/files.py:85
+#: etiketto/ui/files.py:106
 msgid "Open label"
 msgstr "라벨 열기"
 
-#: etiketto/ui/files.py:95 etiketto/ui/files.py:116 etiketto/ui/files.py:197
+#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "로컬 파일만 사용할 수 있습니다"
 
-#: etiketto/ui/files.py:102
+#: etiketto/ui/files.py:123
 msgid "PDF documents and images"
 msgstr "PDF 문서 및 이미지"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:128
 msgid "Open shipping label"
 msgstr "배송 라벨 열기"
 
-#: etiketto/ui/files.py:171
+#: etiketto/ui/files.py:195
 msgid "label"
 msgstr "라벨"
 
-#: etiketto/ui/files.py:215
+#: etiketto/ui/files.py:239
 msgid "Save label"
 msgstr "라벨 저장"
 
-#: etiketto/ui/files.py:220 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
 msgid "Save as template…"
 msgstr "서식으로 저장…"
 
-#: etiketto/ui/files.py:238
+#: etiketto/ui/files.py:262
 #, python-format
 msgid "Saved %s"
 msgstr "저장함: %s"
 
-#: etiketto/ui/files.py:248
+#: etiketto/ui/files.py:272
 msgid "Export PNG"
 msgstr "PNG로 내보내기"
 
-#: etiketto/ui/files.py:256 etiketto/ui/window.py:398
+#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
 msgid "The preview cannot be drawn"
 msgstr "미리 보기를 그릴 수 없습니다"
 
-#: etiketto/ui/files.py:258
+#: etiketto/ui/files.py:282
 msgid "Exported"
 msgstr "내보냄"
 
-#: etiketto/ui/files.py:268
+#: etiketto/ui/files.py:292
 msgid "No templates yet – use “Save as template…”"
 msgstr "아직 서식이 없습니다 – “서식으로 저장…”을 사용하십시오"
 
-#: etiketto/ui/files.py:295 etiketto/ui/label_group.py:50
+#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
 #: etiketto/ui/window.py:41
 msgid "Label"
 msgstr "라벨"
 
-#: etiketto/ui/files.py:305
+#: etiketto/ui/files.py:329
 msgid "Discard changes?"
 msgstr "바뀐 내용을 버리시겠습니까?"
 
-#: etiketto/ui/files.py:306
+#: etiketto/ui/files.py:330
 msgid "The current label has unsaved changes."
 msgstr "현재 라벨에 저장하지 않은 바뀐 내용이 있습니다."
 
-#: etiketto/ui/files.py:308
+#: etiketto/ui/files.py:332
 msgid "Discard"
 msgstr "버리기"
 
@@ -329,7 +329,7 @@ msgstr "인쇄 매체"
 msgid "Custom size"
 msgstr "사용자 지정 크기"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:251
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
 msgid "Label size"
 msgstr "라벨 크기"
 
@@ -473,7 +473,7 @@ msgstr "프린터 선택"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:414
+#: etiketto/ui/window.py:415
 msgid "Cancel"
 msgstr "취소"
 
@@ -701,7 +701,7 @@ msgstr "인쇄 실패"
 msgid "Details"
 msgstr "자세히"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:434
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
 msgid "Report"
 msgstr "보고"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "라벨을 클릭하면 제외하거나 다시 인쇄하도록 할 수 있습니다. 첫 번째 시트에만 적용됩니다. 이후 시트는 모두 채워집니다."
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:201
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
 msgid "Apply"
 msgstr "적용"
 
@@ -782,35 +782,35 @@ msgstr "적용"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "라벨 %s이(가) 프린터가 인쇄할 수 없는 여백에 걸칩니다"
 
-#: etiketto/ui/shipping.py:176 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "배송 라벨"
 
-#: etiketto/ui/shipping.py:201
+#: etiketto/ui/shipping.py:206
 msgid "Create label"
 msgstr "라벨 만들기"
 
-#: etiketto/ui/shipping.py:230
+#: etiketto/ui/shipping.py:235
 msgid "Rotate left"
 msgstr "왼쪽으로 회전"
 
-#: etiketto/ui/shipping.py:231
+#: etiketto/ui/shipping.py:236
 msgid "Rotate right"
 msgstr "오른쪽으로 회전"
 
-#: etiketto/ui/shipping.py:232
+#: etiketto/ui/shipping.py:237
 msgid "Find the label"
 msgstr "라벨 찾기"
 
-#: etiketto/ui/shipping.py:233
+#: etiketto/ui/shipping.py:238
 msgid "Whole page"
 msgstr "전체 페이지"
 
-#: etiketto/ui/shipping.py:234
+#: etiketto/ui/shipping.py:239
 msgid "Next suggestion"
 msgstr "다음 제안"
 
-#: etiketto/ui/shipping.py:244
+#: etiketto/ui/shipping.py:249
 msgid "Page"
 msgstr "페이지"
 
@@ -1235,37 +1235,37 @@ msgstr "Etiketto 정보"
 msgid "Unsaved label"
 msgstr "저장하지 않은 라벨"
 
-#: etiketto/ui/window.py:374
+#: etiketto/ui/window.py:375
 msgid "content scaled down to fit"
 msgstr "맞도록 내용을 축소함"
 
-#: etiketto/ui/window.py:376
+#: etiketto/ui/window.py:377
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "이 프린터에는 너무 김: 최대 %s"
 
-#: etiketto/ui/window.py:381
+#: etiketto/ui/window.py:382
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "이 프린터에는 너무 넓음: 최대 %s"
 
-#: etiketto/ui/window.py:386
+#: etiketto/ui/window.py:387
 #, python-format
 msgid "Problem: %s"
 msgstr "문제: %s"
 
-#: etiketto/ui/window.py:461
+#: etiketto/ui/window.py:462
 msgid "The browser cannot be opened"
 msgstr "브라우저를 열 수 없습니다"
 
-#: etiketto/ui/window.py:463
+#: etiketto/ui/window.py:464
 msgid "Copy link"
 msgstr "링크 복사"
 
-#: etiketto/ui/window.py:508
+#: etiketto/ui/window.py:509
 msgid "Only local files can be dropped"
 msgstr "로컬 파일만 끌어다 놓을 수 있습니다"
 
-#: etiketto/ui/window.py:526
+#: etiketto/ui/window.py:527
 msgid "Please wait until printing has finished"
 msgstr "인쇄가 끝날 때까지 기다리십시오"

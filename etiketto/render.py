@@ -11,7 +11,7 @@ import base64
 import io
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from types import MappingProxyType
 from typing import NamedTuple
@@ -226,29 +226,40 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.NEAREST)
 
 
-def render_page(element: PageElement, width: int | None, height: int) -> Image.Image:
+# on black and white printers a page area is printed at this threshold
+# instead of dithered: grey edges of a reduced barcode become clean bars
+# instead of a dot pattern
+MONO_THRESHOLD = 128
+
+
+def render_page(
+    element: PageElement, width: int | None, height: int, mono: bool = False
+) -> Image.Image:
     """The area of the page drawn right at its size on the label: no scaling
     afterwards, so barcodes keep whole printer dots. width None: as wide as
-    the area needs at the height (endless tape)."""
+    the area needs at the height (endless tape). mono: for a black and
+    white printer, only black and white."""
     from etiketto.shipping.source import draw
 
     crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
     box = (width, height)
-    return draw(element.data, element.page, crop, element.rotation, box, element.fit).convert(
-        "RGBA"
-    )
+    image = draw(element.data, element.page, crop, element.rotation, box, element.fit)
+    if mono:
+        image = image.convert("L").point(lambda v: 255 if v >= MONO_THRESHOLD else 0)
+    return image.convert("RGBA")
 
 
 def render_element(
-    element: Element, height: int, dpi: float, width: int | None = None
+    element: Element, height: int, dpi: float, width: int | None = None, mono: bool = False
 ) -> Image.Image:
-    """width: the room along the label (fixed length), None if it grows."""
+    """width: the room along the label (fixed length), None if it grows;
+    mono: the printer prints only black and white (see render_page())."""
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
         return render_image(element, height)
     if isinstance(element, PageElement):
-        return render_page(element, width, height)
+        return render_page(element, width, height, mono)
     return render_code(element, height)
 
 
@@ -314,11 +325,13 @@ def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | No
     return max(1, length - 2 * (f.margin + f.frame))
 
 
-def _parts(label: Label, f: _Frame, dpi: float, warnings, room: int | None) -> list[Image.Image]:
+def _parts(
+    label: Label, f: _Frame, dpi: float, warnings, room: int | None, mono: bool
+) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi, room)
+            part = render_element(element, f.inner, dpi, room, mono)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
@@ -335,7 +348,23 @@ def _content_width(parts: list[Image.Image], gap: int) -> int:
     return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
 
 
-def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float):
+def _scaled_part(element: Element, part: Image.Image, scale: float, mono: bool) -> Image.Image:
+    """A part reduced to fit a label of fixed length. A page area is drawn
+    again at the smaller size (not reduced: that would blur its bars)."""
+    size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
+    if isinstance(element, PageElement):
+        try:
+            drawn = render_page(replace(element, fit="fill"), size[0], size[1], mono)
+            if drawn.size == size:
+                return drawn
+        except Exception:  # noqa: BLE001 - it was drawn before: reduce that instead
+            pass
+    return part.resize(size, Image.Resampling.LANCZOS)
+
+
+def _fit_length(
+    label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float, mono: bool
+):
     """Label length, the (possibly scaled) parts and the gap between them."""
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     content_w = _content_width(parts, f.margin)
@@ -348,11 +377,8 @@ def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length
     elif parts and content_w > room:
         scale = room / content_w
         parts = [
-            p.resize(
-                (max(1, round(p.width * scale)), max(1, round(p.height * scale))),
-                Image.Resampling.LANCZOS,
-            )
-            for p in parts
+            _scaled_part(element, p, scale, mono)
+            for element, p in zip(label.elements, parts, strict=True)
         ]
         return length, parts, round(f.margin * scale), True
     return length, parts, f.margin, False
@@ -403,14 +429,16 @@ def render(
     tape_px: int | None = None,
     bleed_px: int = 0,
     min_length_mm: float = 0.0,
+    mono: bool = False,
 ) -> Rendered:
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
-    min_length_mm is the printer's shortest label (Capabilities.min_length_mm)."""
+    min_length_mm is the printer's shortest label (Capabilities.min_length_mm);
+    mono: the printer prints only black and white (Capabilities.color_model)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm))
-    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
+    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono)
+    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm, mono)
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

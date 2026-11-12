@@ -398,7 +398,8 @@ def check_width(width_mm: float, capabilities: Capabilities) -> None:
 
 def apply_color_model(image: Image.Image, model: ColorModel) -> Image.Image:
     """What the printer can reproduce: mono printers get Floyd-Steinberg
-    dithered black and white, so the preview shows the real result."""
+    dithered black and white, so the preview shows the real result (page
+    areas are black and white already, see render(mono=True))."""
     if model == "mono":
         return image.convert("1", dither=Image.Dither.FLOYDSTEINBERG).convert("RGB")
     return image
@@ -440,6 +441,7 @@ class Backend(ABC):
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
+            mono=self.capabilities.color_model == "mono",
         ).image
         if raster.width_px and image.height > raster.width_px:
             image = image.crop((0, 0, image.width, raster.width_px))

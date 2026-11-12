@@ -2,14 +2,22 @@
 
 Carriers send labels as an A4 or Letter page with the label in one half or
 quarter, next to receipts and instructions. The detection only proposes an
-area; the user always checks and adjusts it. In this order:
+area; the user always checks and adjusts it.
 
-1. A frame: most labels have a printed border. The largest rectangle made
-   of long horizontal and vertical lines is taken.
-2. Blocks: the content is cut at wide blank rows and columns (an XY cut);
-   the block that looks most like a label wins: large, about 2:3 like the
-   common label sizes, with a barcode.
-3. Otherwise everything printed on the page.
+- Frames: rectangles of long horizontal and vertical lines (most labels
+  have a printed border).
+- Blocks: the content is cut at wide blank rows and at wide blank columns,
+  again and again (an XY cut); runs of neighbouring parts that stand closer
+  together than to the rest are blocks too, so a label with blank space
+  inside is found whole.
+- Frames and blocks are scored alike: large, but not more of the sheet
+  than a label takes, about 2:3 like the common label sizes, with a
+  barcode; a frame counts a little more. If the next area that is not a
+  part of the best one scores about as much, the user is asked to check.
+- If nothing on the page scores near all of its content (or a frame around
+  all of it), the page is one label: everything printed is proposed.
+- A page of label size (by its size in mm: a PDF, or an image that states
+  its resolution) is the label itself.
 
 Every area keeps a margin of blank paper, so no bar and no quiet zone of a
 barcode is cut off. The block search and the barcode test follow ThermalPrint
@@ -21,6 +29,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from itertools import pairwise
 
 from PIL import Image, ImageChops, ImageFilter
 
@@ -37,7 +46,7 @@ MIN_LINE_INK, LINE_INK_SHARE = 3, 0.005
 MAX_AREA = 0.35  # a label takes at most about a quarter of a sheet, 100 × 200 mm a third
 BARCODE_RUNS = 12  # a row through a linear barcode crosses at least this many bars
 BARCODE_HEIGHT = 0.025  # ... over at least this part of the page's height
-DOMINANT = 1.5  # the best block must score this much more than the next one
+DOMINANT = 1.5  # the best area must score this much more than the next one
 
 
 @dataclass(frozen=True)
@@ -253,15 +262,18 @@ def tight(mask: Image.Image, box: Box) -> Box | None:
     return Box(box.x0 + columns[0], box.y0 + rows[0], box.x0 + columns[1], box.y0 + rows[1])
 
 
-def _cut(mask: Image.Image, box: Box, gaps: tuple[int, int]) -> tuple[list[Box], bool]:
-    """Split the box at blank rows; if there are none, at blank columns
-    (then True: the parts stand side by side)."""
+def _cuts(mask: Image.Image, box: Box, gaps: tuple[int, int]) -> list[tuple[list[Box], bool]]:
+    """The box split at blank rows and split at blank columns (True: the
+    parts stand side by side); a direction without a gap is left out."""
     region = mask.crop((box.x0, box.y0, box.x1, box.y1))
-    parts = _segments(_rows(region), gaps[1])
-    if len(parts) > 1:
-        return [Box(box.x0, box.y0 + a, box.x1, box.y0 + b) for a, b in parts], False
-    parts = _segments(_columns(region), gaps[0])
-    return [Box(box.x0 + a, box.y0, box.x0 + b, box.y1) for a, b in parts], True
+    found = []
+    rows = _segments(_rows(region), gaps[1])
+    if len(rows) > 1:
+        found.append(([Box(box.x0, box.y0 + a, box.x1, box.y0 + b) for a, b in rows], False))
+    columns = _segments(_columns(region), gaps[0])
+    if len(columns) > 1:
+        found.append(([Box(box.x0 + a, box.y0, box.x0 + b, box.y1) for a, b in columns], True))
+    return found
 
 
 @dataclass(frozen=True)
@@ -272,20 +284,66 @@ class Block:
     beside: bool = False
 
 
-def blocks(mask: Image.Image, box: Box, depth: int = 4) -> list[Block]:
-    """The content cut at wide blank rows and columns, again and again
-    (an XY cut): every block on the way, the box itself first."""
+def _union(boxes: list[Box]) -> Box:
+    return Box(
+        min(b.x0 for b in boxes),
+        min(b.y0 for b in boxes),
+        max(b.x1 for b in boxes),
+        max(b.y1 for b in boxes),
+    )
+
+
+def blocks(mask: Image.Image, box: Box, depth: int = 5) -> list[Block]:
+    """The content cut at wide blank rows and at wide blank columns, again
+    and again (an XY cut): every block on the way, the box itself first,
+    and every run of neighbouring parts of a cut. A label with wide blank
+    space inside is cut into parts too; one of the runs is the whole label."""
     own = tight(mask, box)
     if not own:
         return []
-    gaps = (max(3, round(mask.width * GAP)), max(3, round(mask.height * GAP)))
-    parts, beside = _cut(mask, own, gaps) if depth else ([], False)
-    large = sum(1 for part in parts if part.area >= MIN_AREA * mask.width * mask.height)
-    found = [Block(own, beside and large > 1)]
-    if len(parts) > 1:
-        for part in parts:
-            found.extend(blocks(mask, part, depth - 1))
+    found: dict[Block, None] = {}
+    _blocks(mask, own, depth, found, set())
+    return list(found)
+
+
+def _groups(parts: list[Box], beside: bool) -> list[tuple[int, int]]:
+    """Runs of neighbouring parts (first, last + 1) that stand closer to each
+    other than to the parts around them: the sections of one label, not a
+    label and half of the instructions below it."""
+    if beside:
+        gaps = [b.x0 - a.x1 for a, b in pairwise(parts)]
+    else:
+        gaps = [b.y0 - a.y1 for a, b in pairwise(parts)]
+    found = []
+    for first in range(len(parts)):
+        for last in range(first + 2, len(parts) + 1):
+            if last - first == len(parts):
+                continue  # all of them: the box that was cut
+            inside = max(gaps[first : last - 1])
+            around = gaps[first - 1 : first] + gaps[last - 1 : last]
+            if inside < min(around):
+                found.append((first, last))
     return found
+
+
+def _blocks(mask: Image.Image, own: Box, depth: int, found: dict, seen: set) -> None:
+    if own in seen:
+        return
+    seen.add(own)
+    gaps = (max(3, round(mask.width * GAP)), max(3, round(mask.height * GAP)))
+    large_area = MIN_AREA * mask.width * mask.height
+    cuts = []
+    for cut, beside in _cuts(mask, own, gaps) if depth else []:
+        cuts.append(([p for part in cut if (p := tight(mask, part))], beside))
+    side_by_side = any(b and sum(p.area >= large_area for p in parts) > 1 for parts, b in cuts)
+    found[Block(own, side_by_side)] = None
+    for parts, beside in cuts:
+        for first, last in _groups(parts, beside):
+            run = parts[first:last]
+            large = sum(p.area >= large_area for p in run)
+            found.setdefault(Block(_union(run), beside and large > 1))
+        for part in parts:
+            _blocks(mask, part, depth - 1, found, seen)
 
 
 def has_barcode(mask: Image.Image, box: Box) -> bool:
@@ -303,7 +361,7 @@ def has_barcode(mask: Image.Image, box: Box) -> bool:
 def _aspect_weight(box: Box) -> float:
     """Shipping labels are 2:3 (4 × 6 in, 100 × 150 mm); the further a
     block is from that, the less it looks like one."""
-    return max(0.1, 1 - abs(box.ratio() - 1.5) / 0.5)
+    return max(0.1, 1 - abs(box.ratio() - 1.5) / 0.75)
 
 
 def score(mask: Image.Image, block: Block) -> float:
@@ -340,13 +398,85 @@ def detect(page: Image.Image, width_mm: float | None = None) -> Detection:
     whole = content.grown(pad, size).fractions(size)
     if not is_sheet(size, width_mm):  # the page is the label
         return Detection(whole, "content", [whole])
-    framed = [b for b in frames(mask) if b.ratio() <= 2.6]
-    if framed:
-        # a little more than the frame: the whole line stays on the label
-        crop = framed[0].grown(max(1, pad // 2), size).fractions(size)
-        others = [b.grown(pad, size).fractions(size) for b in framed[1:4]]
-        return Detection(crop, "frame", [crop, *others, whole])
-    return _from_blocks(mask, content, pad, whole)
+    lines = frames(mask)
+    ranked = _ranked(mask, content, lines)
+    one = _one_label(mask, content, lines)
+    # an image printed all over is likely the label itself (an A6 label has
+    # the shape of A4); a PDF page of sheet size rarely is
+    share = ONE_IMAGE if width_mm is None and _fills(content, size) else ONE_LABEL
+    if one and (not ranked or ranked[0].score < share * one.score):
+        # all of the page is one label: in a frame around everything, or
+        # nothing on it looks like a label of its own
+        crop = one.crop(pad, size) if one.how == "frame" else whole
+        others = [c.crop(pad, size) for c in ranked[:3]]
+        return Detection(crop, one.how, [crop, *others], one.how == "frame")
+    if not ranked:
+        return Detection(whole, "content", [whole])
+    candidates = [c.crop(pad, size) for c in ranked[:4]]
+    return Detection(candidates[0], ranked[0].how, [*candidates, whole], _certain(ranked))
+
+
+FILLS = 0.8  # content over this part of the page's width and height fills it
+SAME = 0.9  # areas overlapping this much are the same area
+FRAME_BONUS = 1.2  # a printed frame around an area is evidence of a label
+# the page is one label if the best area on it scores less than this part
+# of the page's content (or a frame around all of it), scored alike
+ONE_LABEL, ONE_IMAGE = 0.15, 0.4
+
+
+@dataclass(frozen=True)
+class Candidate:
+    box: Box
+    how: str  # "frame" or "block"
+    score: float
+
+    def crop(self, pad: int, size: tuple[int, int]) -> tuple[float, float, float, float]:
+        # a frame: a little more than the frame, the whole line stays on the label
+        grown = self.box.grown(max(1, pad // 2) if self.how == "frame" else pad, size)
+        return grown.fractions(size)
+
+
+def _fills(content: Box, size: tuple[int, int]) -> bool:
+    return content.width >= FILLS * size[0] and content.height >= FILLS * size[1]
+
+
+def _common(a: Box, b: Box) -> int:
+    w = min(a.x1, b.x1) - max(a.x0, b.x0)
+    h = min(a.y1, b.y1) - max(a.y0, b.y0)
+    return max(0, w) * max(0, h)
+
+
+def _overlap_share(a: Box, b: Box) -> float:
+    """Common area by the area of both together."""
+    common = _common(a, b)
+    return common / max(1, a.area + b.area - common)
+
+
+def _inside_share(a: Box, b: Box) -> float:
+    """How much of a lies in b."""
+    return _common(a, b) / max(1, a.area)
+
+
+def _certain(ranked: list[Candidate]) -> bool:
+    """The best area scores clearly more than the next one that is not a
+    part of it (a part of the label is no other label)."""
+    best = ranked[0]
+    others = [c for c in ranked[1:] if _inside_share(c.box, best.box) < SAME]
+    return not others or best.score >= DOMINANT * others[0].score
+
+
+def _one_label(mask: Image.Image, content: Box, lines: list[Box]) -> Candidate | None:
+    """All of the content as one label, if it is more of the page than a
+    label on a sheet takes: the frame around all of it, else the content."""
+    if _label_like(content, mask.size):
+        return None  # a part of the page, among the candidates already
+    tol = max(2, round(min(mask.size) * PAD))
+    around = [f for f in lines if _inside_share(content, f.grown(tol, mask.size)) >= SAME]
+    if around:
+        return Candidate(around[0], "frame", score(mask, Block(around[0])) * FRAME_BONUS)
+    if content.area < MIN_AREA * mask.width * mask.height:
+        return None
+    return Candidate(content, "content", score(mask, Block(content)))
 
 
 def _label_like(box: Box, size: tuple[int, int]) -> bool:
@@ -355,13 +485,23 @@ def _label_like(box: Box, size: tuple[int, int]) -> bool:
     return MIN_AREA * page <= box.area <= MAX_AREA * page
 
 
-def _from_blocks(mask: Image.Image, content: Box, pad: int, whole) -> Detection:
+def _ranked(mask: Image.Image, content: Box, lines: list[Box]) -> list[Candidate]:
+    """Frames and blocks that could be the label, scored alike, best first;
+    of areas that are about the same only the best is kept."""
     size = mask.size
-    found = [b for b in blocks(mask, content) if _label_like(b.box, size)]
-    if not found:
-        return Detection(whole, "content", [whole])
-    ranked = sorted(set(found), key=lambda b: score(mask, b), reverse=True)
-    scores = [score(mask, b) for b in ranked[:2]]
-    certain = len(scores) < 2 or scores[0] >= DOMINANT * scores[1]
-    candidates = [b.box.grown(pad, size).fractions(size) for b in ranked[:4]]
-    return Detection(candidates[0], "block", [*candidates, whole], certain)
+    found = [
+        Candidate(b, "frame", score(mask, Block(b)) * FRAME_BONUS)
+        for b in lines
+        if b.ratio() <= 2.6 and _label_like(b, size)
+    ]
+    found += [
+        Candidate(b.box, "block", score(mask, b))
+        for b in set(blocks(mask, content))
+        if _label_like(b.box, size)
+    ]
+    found.sort(key=lambda c: (c.score, c.how == "frame"), reverse=True)
+    kept: list[Candidate] = []
+    for candidate in found:
+        if all(_overlap_share(candidate.box, k.box) < SAME for k in kept):
+            kept.append(candidate)
+    return kept

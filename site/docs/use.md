@@ -54,8 +54,9 @@ often an A4 page with the label in one half or quarter and a receipt or
 instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF
 dropped onto the window) opens such a file and makes a new label of it.
 
-- Etiketto looks for the label on the page: a printed frame first, then
-  the largest block that has the shape of a label. Check the selection:
+- Etiketto looks for the label on the page: a large area with the shape
+  of a label, best with a printed frame and a barcode; a page with one
+  label filling it is taken whole. Check the selection:
   drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows
   other areas that could be the label, [[ui:Whole page]] selects all of it.
 - [[ui:Page]]: the page of a PDF with several pages.
@@ -70,10 +71,24 @@ dropped onto the window) opens such a file and makes a new label of it.
 - [[ui:Create label]] replaces the open label. The area stays an element
   of the label: [[ui:Area]] in its row opens the selection again.
 
-A PDF page is drawn right at the printer's resolution, without smoothing:
-bars and text come out as whole printer dots, so barcodes stay readable.
-Images are enlarged by whole pixels; a scan or photo of a label should
-have at least the printer's resolution (200 to 300 dpi).
+On label printers a PDF page is drawn right at the printer's resolution,
+without smoothing: bars and text come out as whole printer dots, so
+barcodes stay readable; lines thinner than a dot are printed one dot wide.
+The system printer gets the label compressed (JPEG in a PDF) or scaled to
+its resolution, which can soften the edges of bars: print one label and
+check that the barcode scans.
+
+Images are enlarged by repeating pixels, evenly only by whole multiples
+(otherwise some pixels come out one dot wider than others); reduced, the
+pixels that fall together are averaged into grey. A scan or photo of a
+label should have at least the printer's resolution (200 to 300 dpi). On
+black-and-white printers the area is printed in pure black and white,
+without the dot pattern of grey.
+
+The label file keeps the whole page the area was taken from, also outside
+the area (addresses, tracking numbers). Of a PDF with several pages only
+the chosen page is kept if it can be copied unchanged, otherwise the whole
+document; of a TIFF with several pages only the chosen page.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
 along, otherwise install it from your distribution (see the README).

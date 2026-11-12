@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 23:03+0100\n"
+"POT-Creation-Date: 2026-11-12 02:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -860,7 +860,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Etiketto looks for the label on the page: a printed frame first, then the largest block that has the shape of a label. Check the selection: drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows other areas that could be the label, [[ui:Whole page]] selects all of it."
+msgid "Etiketto looks for the label on the page: a large area with the shape of a label, best with a printed frame and a barcode; a page with one label filling it is taken whole. Check the selection: drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows other areas that could be the label, [[ui:Whole page]] selects all of it."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -896,7 +896,19 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "A PDF page is drawn right at the printer's resolution, without smoothing: bars and text come out as whole printer dots, so barcodes stay readable.  Images are enlarged by whole pixels; a scan or photo of a label should have at least the printer's resolution (200 to 300 dpi)."
+msgid "On label printers a PDF page is drawn right at the printer's resolution, without smoothing: bars and text come out as whole printer dots, so barcodes stay readable; lines thinner than a dot are printed one dot wide.  The system printer gets the label compressed (JPEG in a PDF) or scaled to its resolution, which can soften the edges of bars: print one label and check that the barcode scans."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Images are enlarged by repeating pixels, evenly only by whole multiples (otherwise some pixels come out one dot wider than others); reduced, the pixels that fall together are averaged into grey. A scan or photo of a label should have at least the printer's resolution (200 to 300 dpi). On black-and-white printers the area is printed in pure black and white, without the dot pattern of grey."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The label file keeps the whole page the area was taken from, also outside the area (addresses, tracking numbers). Of a PDF with several pages only the chosen page is kept if it can be copied unchanged, otherwise the whole document; of a TIFF with several pages only the chosen page."
 msgstr ""
 
 #. type: Plain text

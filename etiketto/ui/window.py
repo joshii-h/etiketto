@@ -342,6 +342,7 @@ class Window(Adw.ApplicationWindow):
             dpi=backend.capabilities.dpi,
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
+            mono=backend.capabilities.color_model == "mono",
         )
         image = backend.preview(rendered.image, self.print_flow.mode)
         sheet = self.sheet
