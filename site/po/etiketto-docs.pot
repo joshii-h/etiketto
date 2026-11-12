@@ -710,7 +710,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/serial.md
 #, markdown-text
-msgid "`{{` and `}}` print a single brace in a text with placeholders; in a text without any they stay as they are. So `{{Name}}` alone prints `{{Name}}`, and `{{Name}} {Name}` prints `{Name} Anna`."
+msgid "With a data file `{{` and `}}` print a single brace, in every text and code: `{{Name}}` prints `{Name}`. Other braces need doubling too, for example JSON in a QR code: `{{\"id\":{Number}}}`. Without a data file texts print as typed."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1021,7 +1021,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without variables (and without the placeholders of [serial labels](serial.md))  print exactly as typed."
+msgid "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without variables print exactly as typed, unless the label has a data file for [serial labels](serial.md): then `{{` and `}}` always print one brace."
 msgstr ""
 
 #. type: Plain text

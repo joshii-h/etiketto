@@ -433,10 +433,10 @@ def test_columns_and_variables_are_filled_in_one_pass():
     text, unknown = expand("{Name}/{=counter}/{City}/{Price}/{{x}}", values, row)
     assert text == "{=counter} {{/7/Bern/{Price}/{x}"  # a value is never filled in again
     assert unknown == ["{Price}"]
-    # braces are escapes only in a text with something to fill
-    assert expand("a {{b}}", values, row) == ("a {{b}}", [])
-    assert expand("a {{b}} {}", values, row) == ("a {{b}} {}", [])
-    assert expand("{{b}} {City}", values, row) == ("{b} Bern", [])
+    # with a data file braces are always escapes; without one, only with "{="
+    assert expand("a {{b}}", values, row) == ("a {b}", [])
+    assert expand("a {{b}} {}", values, row) == ("a {b} {}", [])
+    assert expand("a {{b}} {City}", values, None) == ("a {{b}} {City}", [])
     # "{ =x}" is neither a variable nor a column; without values variables stay
     assert expand("{ =x} {City}", values, {"=x": "no", "City": "Bern"}) == ("{ =x} Bern", [])
     assert expand("{=counter} {City}", None, row) == ("{=counter} Bern", [])

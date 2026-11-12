@@ -97,8 +97,8 @@ text and in the QR code is the same number. The preview shows the values
 the next print uses.
 
 To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without
-variables (and without the placeholders of [serial labels](serial.md))
-print exactly as typed.
+variables print exactly as typed, unless the label has a data file for
+[serial labels](serial.md): then `{{` and `}}` always print one brace.
 
 Dates and times are in the computer's time zone. `+1d` keeps the time of
 day, also when summer time starts or ends; `+2h` counts real hours. `%z`

@@ -288,7 +288,9 @@ def _set_date(overrides: Overrides, value: str) -> None:
         ) from None
 
 
-def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
+def apply_assignments(
+    label: Label, assignments: list[Assignment], serial: bool = False
+) -> Overrides:
     """--set NAME=VALUE: the text of elements with that name, else the
     variable {=NAME}; "date" sets the moment {=date} and {=time} start from.
     The element texts are set first: a variable used only in a new text
@@ -298,9 +300,10 @@ def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
     for assignment in assignments:
         name, value, literal = assignment
         # "{=" as it is, in a text (a variable's value is never filled in).
-        # Only a text with "{=" is expanded at all: other braces ('{"a":1}'
-        # in a QR code) stay as they are and must not be doubled.
-        if literal and "{=" in value:
+        # Only a text with "{=" is expanded at all, or every text of a
+        # serial label (`serial`): other braces ('{"a":1}' in a QR code)
+        # stay as they are and must not be doubled.
+        if literal and ("{=" in value or (serial and ("{" in value or "}" in value))):
             value = value.replace("{", "{{").replace("}", "}}")
         if not _set_element(label, name, value):
             rest.append(assignment)
@@ -666,7 +669,7 @@ def _job(args, settings: Settings | None, now: datetime | None):
     printer = settings.printer(backend)
     if args.counter_start is not None:
         label.counter_next = args.counter_start
-    overrides = apply_assignments(label, args.assignments)
+    overrides = apply_assignments(label, args.assignments, bool(args.data or label.data_file))
     options = _options(backend, printer, args.copies, label.gap_mm)
     values = Values.for_label(
         label, overrides.now or now or datetime.now(), args.copies, custom=overrides.custom

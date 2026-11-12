@@ -47,9 +47,10 @@ data file instead of printing the placeholders.
   `{Column}` at the cursor; typing it works as well.
 - Placeholders work in texts and in QR codes and barcodes, for example
   `https://example.org/item/{Number}`.
-- `{{` and `}}` print a single brace in a text with placeholders; in a
-  text without any they stay as they are. So `{{Name}}` alone prints
-  `{{Name}}`, and `{{Name}} {Name}` prints `{Name} Anna`.
+- With a data file `{{` and `}}` print a single brace, in every text and
+  code: `{{Name}}` prints `{Name}`. Other braces need doubling too, for
+  example JSON in a QR code: `{{"id":{Number}}}`. Without a data file
+  texts print as typed.
 - Values are printed as they are, even if they contain braces.
 - A placeholder without a column of that name is printed as it is; the
   line under the preview names it.

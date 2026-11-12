@@ -35,11 +35,12 @@ columns)), never one after the other: a column pass first would turn
 value is inserted as it is and never looked at again: a cell holding
 "{=date}" or "{{" prints exactly that.
 
-"{{" and "}}" are literal braces only in a text with something to fill: a
-variable ("{=" anywhere) or, with a data file, a column placeholder. A text
-with neither stays exactly as it is, "{{" included, with or without a data
-file: labels saved before variables existed print as before. "{ =x}" (a
-space before the "=") is neither a variable nor a column.
+"{{" and "}}" are literal braces in a text with a variable ("{=" anywhere)
+and in every text of a serial label (a data file is chosen on purpose, so
+its texts follow the placeholder syntax: JSON in a QR code is written
+{{"a":1}}). A text without "{=" and without a data file stays exactly as
+it is, "{{" included: labels saved before variables existed print as
+before. "{ =x}" (a space before the "=") is neither a variable nor a column.
 
 Deliberately not str.format(): texts come from label files, and format()
 would evaluate "{0.__class__}" or pad to "{:>99999999}". A format here is
@@ -317,7 +318,7 @@ def expand(
     of serial labels) filled in, and the placeholders that could not be:
     they stay in the text as they are, so the label shows them. Without
     `values` the variables stay as they are and are not reported."""
-    if "{=" not in text and (columns is None or not column_names(text)):
+    if columns is None and "{=" not in text:
         return text, []
     unknown: list[str] = []
 

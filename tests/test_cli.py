@@ -935,3 +935,13 @@ def test_serial_sheets(mono, label_file, tmp_path, capsys):
     path = label_file(TextElement(text="{Name}"), data_file=str(book), data_sheet="August")
     assert run("print", path, "--dry-run") == cli.EXIT_USAGE
     assert err(capsys) == "etiketto: book.ods has no sheet named August\n"
+
+
+def test_set_literal_with_a_data_file(mono, label_file, rows_csv, capsys):
+    """Every text of a serial label follows the placeholder syntax: a
+    literal value is escaped whatever braces it has."""
+    rows_csv.write_text("Name\nA\n")
+    path = label_file(TextElement(text="x", name="t"), TextElement(text="{Name}"))
+    argv = ["print", path, "--dry-run", "--data", rows_csv, "--set-literal", 't={"a":1} {Name}']
+    assert run(*argv) == 0
+    assert capsys.readouterr().out == '1\t1\t{"a":1} {Name}\tA\n'

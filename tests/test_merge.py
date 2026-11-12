@@ -1446,8 +1446,8 @@ def test_fill_replaces_known_names():
     assert fill("{Name} from {City}", row_) == "Anna from Bern"
     assert fill("{ Name }", row_) == "Anna"
     assert fill("{Unknown} {Name}", row_) == "{Unknown} Anna"
-    # braces are escaped only in a text with something to fill
-    assert fill("{{Name}} {{ and }}", row_) == "{{Name}} {{ and }}"
+    # with a data file "{{" and "}}" are always escapes
+    assert fill("{{Name}} {{ and }}", row_) == "{Name} { and }"
     assert fill("{{Name}} {{ and }} {City}", row_) == "{Name} { and } Bern"
     assert fill("{{{Name}}}", row_) == "{Anna}"
     assert fill("{Name", row_) == "{Name"
@@ -1472,13 +1472,13 @@ def test_fill_is_one_pass():
     assert fill("{{{Name}}}", row_) == "{{=date} {Other} {{ }}}"
 
 
-def test_braces_are_escapes_only_with_something_to_fill():
-    """The same text prints the same with and without a data file: "{{"
-    stays as it is in a text without placeholders and variables."""
-    assert fill("a {{b}}", {}) == "a {{b}}"
-    assert fill("a {{b}}", {"b": "x"}) == "a {{b}}"
-    assert fill("a {{b}} {}", {"b": "x"}) == "a {{b}} {}"
-    # a variable counts, as in variables.expand(): "{{=date}}" is the escape
+def test_braces_are_always_escapes_with_a_data_file():
+    """A data file is chosen on purpose: its texts follow the placeholder
+    syntax, "{{" is a brace whether or not the text has a placeholder.
+    Without a data file nothing is filled (see variables.expand)."""
+    assert fill("a {{b}}", {}) == "a {b}"
+    assert fill("a {{b}} {}", {"b": "x"}) == "a {b} {}"
+    assert fill('{{"id":{b}}}', {"b": "7"}) == '{"id":7}'
     assert fill("{{=date}}", {}) == "{=date}"
     assert fill("{=date} {{x}}", {}) == "{=date} {x}"
 

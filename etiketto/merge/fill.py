@@ -17,8 +17,8 @@ VARIABLE = "="
 
 
 def fill(text: str, row: Mapping[str, str]) -> str:
-    """`text` with each "{column}" replaced by the row's value; variables
-    and unknown names stay as they are."""
+    """`text` with each "{column}" replaced by the row's value and "{{",
+    "}}" as single braces; variables and unknown names stay as they are."""
     return expand(text, None, row)[0]
 
 
