@@ -120,10 +120,14 @@ class App(Adw.Application):
             return
         state = GLib.getenv("TAVLETTA_SCREENSHOT_STATE") or ""
         delay = int(GLib.getenv("TAVLETTA_SCREENSHOT_DELAY") or "3000")
+        # the size of the README screenshots, also where nothing resizes the
+        # window from outside (a headless Broadway session)
+        window.set_default_size(1000, 700)
         # GNOME defaults, whatever the developer's desktop uses
         settings = Gtk.Settings.get_default()
         settings.set_property("gtk-decoration-layout", ":close")
         settings.set_property("gtk-font-name", "Sans 11")
+        settings.set_property("gtk-icon-theme-name", "Adwaita")
 
         def prepare():
             # a believable printer instead of the network

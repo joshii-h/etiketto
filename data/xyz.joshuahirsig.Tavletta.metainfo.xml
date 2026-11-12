@@ -91,35 +91,35 @@
   <screenshots>
     <screenshot type="default" environment="gnome">
       <caption>A label with a QR code and text</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/main.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/main.png</image>
     </screenshot>
     <screenshot environment="gnome:dark">
       <caption>A label with a QR code and text</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/main-dark.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/main-dark.png</image>
     </screenshot>
     <screenshot environment="gnome">
       <caption>Full colour background printed edge to edge</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/colour.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/colour.png</image>
     </screenshot>
     <screenshot environment="gnome:dark">
       <caption>Full colour background printed edge to edge</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/colour-dark.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/colour-dark.png</image>
     </screenshot>
     <screenshot environment="gnome">
       <caption>A square sticker with an image and a border</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/sticker.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/sticker.png</image>
     </screenshot>
     <screenshot environment="gnome:dark">
       <caption>A square sticker with an image and a border</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/sticker-dark.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/sticker-dark.png</image>
     </screenshot>
     <screenshot environment="gnome">
       <caption>Print options: copies, cut mode and colour mode</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/print.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/print.png</image>
     </screenshot>
     <screenshot environment="gnome:dark">
       <caption>Print options: copies, cut mode and colour mode</caption>
-      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/print-dark.png</image>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/docs/screenshots/print-dark.png</image>
     </screenshot>
   </screenshots>
 
