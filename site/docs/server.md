@@ -4,6 +4,12 @@ Other programs and AI assistants can print labels through Tavletta without
 opening the window: `tavletta serve` offers a web interface for programs
 (REST API), `tavletta mcp` connects AI assistants such as Claude.
 
+- Setting up the server for a company, with Docker or systemd, HTTPS and
+  fonts: [Server installation](server-install.md).
+- Every request and error code: [API reference](api.md).
+- A walkthrough for programs, with code in Python and C#:
+  [Connecting an inventory tool](api-guide.md).
+
 ## Start { #start }
 
 ```sh
@@ -43,7 +49,7 @@ tavletta serve --labels-dir ~/Labels
   ```toml
   [printers.inventory]
   backend = "cab"
-  host = "printer04.example.com"
+  host = "cab-it.example.com"
 
   [printers.inventory.settings]
   method = "transfer"
@@ -96,7 +102,9 @@ tavletta serve --labels-dir ~/Labels
 
 ## Programs (REST API) { #api }
 
-- The description of all requests: `http://127.0.0.1:8790/api/v1/openapi.json`.
+- The description of all requests: the [API reference](api.md), and for
+  programs `http://127.0.0.1:8790/api/v1/openapi.json` (OpenAPI 3.1, with
+  any valid token).
 - `GET /api/v1/labels` lists the labels, `GET /api/v1/labels/<name>`
   shows what can be filled in: element names, variables and columns.
 - `POST /api/v1/preview` returns the label as a PNG image.
@@ -110,13 +118,14 @@ tavletta serve --labels-dir ~/Labels
 ```sh
 curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
      -H 'Content-Type: application/json' \
-     -d '{"label": "shelf", "set": {"title": "Flour"}, "copies": 2}' \
+     -d '{"label": "serial", "data_rows": [{"Code": "B-07-1", "Name": "Tea", "Shelf": "B-07", "Box": "1"}], "copies": 2}' \
      http://127.0.0.1:8790/api/v1/print
 ```
 
 - `set` fills in elements by their name and variables such as `{=lot}`,
   as on the command line.
-- Serial labels: `"data_rows": [{"Name": "Tea"}, {"Name": "Rice"}]`, or
+- Serial labels: `"data_rows"`, one object per label with every column
+  the label uses (`[{"Name": "Tea", …}, {"Name": "Rice", …}]`), or
   `"data_file"` with a table in the labels folder.
 - One label from another program, for example an inventory: the fields
   as one data row, the printer by its name.
@@ -124,10 +133,13 @@ curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
   ```sh
   curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
        -H 'Content-Type: application/json' \
-       -d '{"label": "inventory", "printer": "inventory", "copies": 1,
-            "data_rows": [{"Inventarnummer": "100001"}]}' \
+       -d '{"label": "asset-tag", "printer": "it-cab", "copies": 1,
+            "data_rows": [{"AssetNumber": "100001"}]}' \
        http://127.0.0.1:8790/api/v1/print
   ```
+
+- The whole walkthrough, with series, retries and code in Python and C#:
+  [Connecting an inventory tool](api-guide.md).
 
 - `{=counter}`: the server saves the next number in the label file. A
   program that keeps its own numbers sends the number in the data row or
@@ -165,11 +177,10 @@ Claude Desktop, in `claude_desktop_config.json`:
 
 ## Server and container { #service }
 
-- As a service of your user: `packaging/systemd/tavletta.service`
-  (instructions in the file).
-- As a container: `packaging/docker/compose.yaml`, for printers in the
-  network, with `printers.toml` and `tokens.toml` in the folder `config`.
-- To find printers on the network, or for USB, add `compose.host.yaml`:
-  `docker compose -f compose.yaml -f compose.host.yaml up -d`.
+- On a server for a company: [Server installation](server-install.md),
+  with Docker Compose (`packaging/docker/compose.yaml`) or as a system
+  service (`packaging/systemd/tavletta-server.service`).
+- As a service of your user on a desktop:
+  `packaging/systemd/tavletta.service` (instructions in the file).
 - Technical details and security:
   [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md).

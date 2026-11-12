@@ -29,6 +29,9 @@ services:
     # tokens.toml (mode 600) and saves counters into the label files as that
     # user (export TAVLETTA_UID=$(id -u) TAVLETTA_GID=$(id -g) if not 1000)
     user: "${TAVLETTA_UID:-1000}:${TAVLETTA_GID:-1000}"
+    environment:
+      # the time zone of {=date} and {=time} on labels, e.g. Europe/Zurich
+      TZ: "${TAVLETTA_TZ:-UTC}"
     mem_limit: 1g
     pids_limit: 128
     ports:

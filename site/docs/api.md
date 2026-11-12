@@ -138,18 +138,18 @@ general errors of the table above: 401, 403, 405, 408, 421, 429
 
 | Request | Role | What |
 |---|---|---|
-| [GET /api/v1/health](#get-health) | none | Is the server running; no token needed (for health checks) |
-| [GET /api/v1/openapi.json](#get-openapi-json) | `preview` | This description (OpenAPI 3.1); a token of any role |
-| [GET /api/v1/printers](#get-printers) | `preview` | The printers of `printers.toml` the token may use, with their state; without it the printer models, the address set for each and the printers found (`--discover`) |
-| [GET /api/v1/printers/{id}/status](#get-printers-id-status) | `preview` | Ask a printer for its state: media, problems, resolution |
-| [GET /api/v1/labels](#get-labels) | `preview` | The label files in the labels folder and its subfolders |
-| [GET /api/v1/labels/{name}](#get-labels-name) | `preview` | What a label can be filled in with: elements, variables, data columns, size, counter |
-| [POST /api/v1/preview](#post-preview) | `preview` | The label filled in, as an image; nothing is printed |
-| [POST /api/v1/print](#post-print) | `print` | Print: the request is checked, then queued; each printer prints one job at a time |
-| [GET /api/v1/jobs/{id}](#get-jobs-id) | `print` | State of a print job (a print token: its own jobs; admin: all). Kept 24 hours after it finished |
-| [DELETE /api/v1/jobs/{id}](#delete-jobs-id) | `print` | Cancel a job: at once while it waits, after the current label while it prints |
+| [`GET /api/v1/health`](#get-health) | none | Is the server running; no token needed (for health checks) |
+| [`GET /api/v1/openapi.json`](#get-openapi-json) | `preview` | This description (OpenAPI 3.1); a token of any role |
+| [`GET /api/v1/printers`](#get-printers) | `preview` | The printers of `printers.toml` the token may use, with their state; without it the printer models, the address set for each and the printers found (`--discover`) |
+| [`GET /api/v1/printers/{id}/status`](#get-printers-id-status) | `preview` | Ask a printer for its state: media, problems, resolution |
+| [`GET /api/v1/labels`](#get-labels) | `preview` | The label files in the labels folder and its subfolders |
+| [`GET /api/v1/labels/{name}`](#get-labels-name) | `preview` | What a label can be filled in with: elements, variables, data columns, size, counter |
+| [`POST /api/v1/preview`](#post-preview) | `preview` | The label filled in, as an image; nothing is printed |
+| [`POST /api/v1/print`](#post-print) | `print` | Print: the request is checked, then queued; each printer prints one job at a time |
+| [`GET /api/v1/jobs/{id}`](#get-jobs-id) | `print` | State of a print job (a print token: its own jobs; admin: all). Kept 24 hours after it finished |
+| [`DELETE /api/v1/jobs/{id}`](#delete-jobs-id) | `print` | Cancel a job: at once while it waits, after the current label while it prints |
 
-### GET /api/v1/health { #get-health }
+### `GET /api/v1/health` { #get-health }
 
 Is the server running; no token needed (for health checks).
 
@@ -163,7 +163,7 @@ Is the server running; no token needed (for health checks).
 curl "$TAVLETTA/health"
 ```
 
-### GET /api/v1/openapi.json { #get-openapi-json }
+### `GET /api/v1/openapi.json` { #get-openapi-json }
 
 This description (OpenAPI 3.1); a token of any role.
 
@@ -178,7 +178,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/openapi.json"
 ```
 
-### GET /api/v1/printers { #get-printers }
+### `GET /api/v1/printers` { #get-printers }
 
 The printers of `printers.toml` the token may use, with their state; without it the printer models, the address set for each and the printers found (`--discover`).
 
@@ -199,7 +199,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/printers"
 ```
 
-### GET /api/v1/printers/{id}/status { #get-printers-id-status }
+### `GET /api/v1/printers/{id}/status` { #get-printers-id-status }
 
 Ask a printer for its state: media, problems, resolution.
 
@@ -223,7 +223,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/printers/it-cab/status"
 ```
 
-### GET /api/v1/labels { #get-labels }
+### `GET /api/v1/labels` { #get-labels }
 
 The label files in the labels folder and its subfolders.
 
@@ -238,7 +238,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/labels"
 ```
 
-### GET /api/v1/labels/{name} { #get-labels-name }
+### `GET /api/v1/labels/{name}` { #get-labels-name }
 
 What a label can be filled in with: elements, variables, data columns, size, counter.
 
@@ -260,7 +260,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/labels/asset-tag"
 ```
 
-### POST /api/v1/preview { #post-preview }
+### `POST /api/v1/preview` { #post-preview }
 
 The label filled in, as an image; nothing is printed.
 
@@ -299,7 +299,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/preview"
 ```
 
-### POST /api/v1/print { #post-print }
+### `POST /api/v1/print` { #post-print }
 
 Print: the request is checked, then queued; each printer prints one job at a time.
 
@@ -342,7 +342,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/print"
 ```
 
-### GET /api/v1/jobs/{id} { #get-jobs-id }
+### `GET /api/v1/jobs/{id}` { #get-jobs-id }
 
 State of a print job (a print token: its own jobs; admin: all). Kept 24 hours after it finished.
 
@@ -362,7 +362,7 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$TAVLETTA/jobs/$JOB"
 ```
 
-### DELETE /api/v1/jobs/{id} { #delete-jobs-id }
+### `DELETE /api/v1/jobs/{id}` { #delete-jobs-id }
 
 Cancel a job: at once while it waits, after the current label while it prints.
 

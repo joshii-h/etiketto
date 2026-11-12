@@ -239,7 +239,7 @@ def _curl(method: str, path: str, operation: dict) -> list[str]:
 def _operation(document: dict, method: str, path: str, operation: dict) -> list[str]:
     role = operation[ROLE]
     lines = [
-        "### %s /api/v1%s { #%s }" % (method.upper(), path, _anchor(method, path)),
+        "### `%s /api/v1%s` { #%s }" % (method.upper(), path, _anchor(method, path)),
         "",
         _md(operation["summary"]) + ".",
         "",
@@ -300,7 +300,7 @@ def page(document: dict) -> str:
     for method, path, operation in operations:
         role = operation[ROLE]
         lines.append(
-            "| [%s /api/v1%s](#%s) | %s | %s |"
+            "| [`%s /api/v1%s`](#%s) | %s | %s |"
             % (
                 method.upper(),
                 path,

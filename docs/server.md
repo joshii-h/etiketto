@@ -42,7 +42,7 @@ Without `printers.toml`, printer settings (address, safety margin, cut,
 mode, colour) come from the app's `settings.json`, as for `tavletta print`,
 and a request may name any address (limited by `--allow-printer`).
 
-## Printers (printers.toml) { #printers }
+## Printers (printers.toml)
 
 ```toml
 [printers.shipping]
@@ -59,13 +59,13 @@ safe_mm = 1.5                        # settings as in the app, for this printer
 backend = "vc500w"
 host = "192.0.2.50"
 cut = "full"                         # as the model offers: full, half, none
-mode = "vivid"                       # vivid, color, bw
+mode = "vivid"                       # vivid, color
 data_format = "jpeg"
 color = { brightness = 0, red = 0, green = 0, blue = 0 }
 
 [printers.inventory]
 backend = "cab"
-host = "printer04.example.com"
+host = "cab-it.example.com"
 media = "57 x 32 mm, ribbon"
 
 [printers.inventory.settings]         # the printer settings of the app
@@ -85,8 +85,8 @@ upside_down = true                   # print turned by 180 degrees (cab: O R)
 - `[printers.<name>.settings]`: the printer settings the app keeps for the
   model, with the same keys and values as in `settings.json`, and used the
   same way (`PrinterSettings`): the model's own settings (cab: `method`,
-  `upside_down`; ZPL, EPL2, TSPL: `dpi`, `media`, `finish`, `darkness`,
-  `speed`, `upside_down`; ESC/POS: `dpi`, `upside_down`; DYMO: `darkness`,
+  `upside_down`; ZPL and TSPL: `dpi`, `media`, `finish`, `darkness`,
+  `speed`, `upside_down`; EPL2: `dpi`, `media`, `darkness`, `upside_down`; ESC/POS: `dpi`, `upside_down`; DYMO: `darkness`,
   `upside_down`; NIIMBOT: `media`, `density`), `quality` (Brother QL:
   `standard`, `high`), the extras (P-touch: `chain`, `high_res`,
   `feed_mm`) and `outlines` on a label sheet (system printer). Only what
@@ -108,7 +108,7 @@ upside_down = true                   # print turned by 180 degrees (cab: O R)
   printer; messages are made for each request in its language.
 - `packaging/docker/printers.example.toml` is a starting point.
 
-## Access tokens and roles (tokens.toml) { #tokens }
+## Access tokens and roles (tokens.toml)
 
 ```toml
 [tokens.shipping-pc]
@@ -127,7 +127,7 @@ description = "PC at gate 2"
 | `admin` | as `print`, and see and cancel every job |
 
 - `tavletta token new shipping-pc --role print --tokens tokens.toml`
-  makes a random token, `etk_<id>_<secret>` (12 hex digits, 43 random
+  makes a random token, `tav_<id>_<secret>` (12 hex digits, 43 random
   characters), adds its SHA-256 hash and the id to the file and prints
   the token once. The file is made with mode 600 if new and locked while
   the entry is added (two at once lose none); the result is checked as
@@ -138,7 +138,7 @@ description = "PC at gate 2"
   (asked for without echo on a terminal; printable ASCII, at least 16
   characters; not printed again, a line says it was added; refused if it
   is in the file already under another name, or if it looks like a
-  made one, `etk_` with an id: it would be looked for by that id, which
+  made one, `tav_` with an id: it would be looked for by that id, which
   no entry has) and keeps it as an scrypt
   hash, which slows down guessing a chosen token;
   `--scrypt` does that for a made one too (random tokens need no slow
@@ -185,7 +185,11 @@ description = "PC at gate 2"
 ## REST API
 
 JSON in and out under `/api/v1`. The full description is served at
-`/api/v1/openapi.json` (OpenAPI 3.1, `tavletta/server/openapi.py`).
+`/api/v1/openapi.json` (OpenAPI 3.1, `tavletta/server/openapi.py`), to a
+token of any role, like the list of labels (it shows nothing a `preview`
+token cannot see otherwise, but the version). `docs/openapi.yaml` and the
+reference page `site/docs/api.md` are written from it by
+`tools/openapi_docs.py`; a test fails when they are out of date.
 
 | Request | Answer |
 |---|---|
@@ -226,41 +230,50 @@ variables, dates out of range, elements or images that cannot be drawn,
 placeholders without a column and codes a row cannot make are refused
 (422) before anything is queued; other warnings are returned with the job.
 
-Example:
+Example, with the example labels of `docs/examples` as the labels folder
+(`serial.tavletta` has the placeholders `{Code}`, `{Name}`, `{Shelf}` and
+`{Box}`):
 
 ```sh
 TOKEN=$(cat ~/.config/tavletta/token)
-curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8790/api/v1/labels/shelf
+curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8790/api/v1/labels/serial
 curl -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-     -d '{"label": "shelf", "set": {"title": "Flour"}}' \
+     -d '{"label": "serial", "data_rows": [{"Code": "B-07-1", "Name": "Tea", "Shelf": "B-07", "Box": "1"}]}' \
      -o preview.png http://127.0.0.1:8790/api/v1/preview
 curl -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-     -d '{"label": "shelf", "data_rows": [{"Name": "Tea"}, {"Name": "Rice"}], "wait": 60}' \
+     -d '{"label": "serial", "wait": 60, "data_rows": [
+          {"Code": "B-07-1", "Name": "Tea", "Shelf": "B-07", "Box": "1"},
+          {"Code": "B-07-2", "Name": "Rice", "Shelf": "B-07", "Box": "2"}]}' \
      http://127.0.0.1:8790/api/v1/print
 ```
 
+`set` fills in elements by their name (an element named in the app) and
+variables of your own (`{=lot}`); `GET /labels/{name}` lists both.
+
 An inventory tool printing one asset label: the label as a file in the
-labels folder (`"label": "inventory"`) or sent along (`label_content`, the
+labels folder (`"label": "asset-tag"`) or sent along (`label_content`, the
 JSON of a label file), the asset's fields as one data row, the printer by
 its name in `printers.toml`, and the number for `{=counter}` if the label
 has one:
 
 ```sh
 curl -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-     -d '{"label": "inventory", "printer": "inventory", "copies": 1,
-          "data_rows": [{"Inventarnummer": "100001", "Standort": "Lager 2"}],
+     -d '{"label": "asset-tag", "printer": "it-cab", "copies": 1,
+          "data_rows": [{"AssetNumber": "100001", "Location": "Store 2"}],
           "wait": 30}' \
      http://127.0.0.1:8790/api/v1/print
 ```
 
 The answer is the job (`state` `done` once printed within `wait`, else
-look it up with `GET /jobs/{id}`). `{Inventarnummer}` in the label takes the
-row's value, in either layout.
+look it up with `GET /jobs/{id}`). `{AssetNumber}` in the label takes the
+row's value, in either layout. The walkthrough for such a tool, with
+series, retries and code in Python and C#: `site/docs/api-guide.md`; every
+request and error code: `site/docs/api.md` and `docs/openapi.yaml`.
 
 `{=counter}`: the label file keeps the number of the next label and the
 server saves it after printing (not for `label_content`, nor with
 `no_save_counter`). For a tool that keeps its own numbers, put the number
-into the data row (`{Nummer}` in the label) or send `counter_start`
+into the data row (`{AssetNumber}` in the label) or send `counter_start`
 (with `no_save_counter`): one source of truth, and two servers or a
 restored backup cannot hand out a number twice.
 
@@ -420,32 +433,31 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
 - **Image files**: only PNG, JPEG, GIF, BMP, WebP and TIFF are read (EPS
   would run Ghostscript, ICO and ICNS are decoded before their size is
-  known). A file that would unpack to more than 80 megapixels is refused
-  by a check of its size when it is opened; Pillow's own check (which
-  only warns from 80 megapixels) is turned off, as a warning filter is not
-  safe in threads. Images are measured from their header: the EXIF
-  orientation of JPEG and WebP, and of a PNG whose eXIf chunk comes
-  before the image data; a PNG with the chunk after its image data is
-  drawn as stored, not turned (finding it would decode the image), both
-  when measured and when drawn. TIFF is turned by Pillow when it is
-  opened. Header sizes are remembered by the image's hash and length, 64
-  at most. Nothing large is drawn while measuring.
-- **Codes**: a QR code is made once per render as a small image (one
-  pixel per module); a barcode is kept as its string of modules with the
-  quiet zones the standards ask for (10 modules for Code 128, 11 and 7
-  for EAN-13). A barcode takes the width it had before 1.1 for its
-  height (the proportions python-barcode drew it in: 1 mm quiet zones,
-  0.3 mm modules, 10 mm bars and the digits), so a label keeps its
-  length; only where that would be less than one pixel per module (a
-  narrow tape at a low resolution) is it made wider, one pixel per
-  module, and the label a little longer. Bars are drawn whole pixels per
-  module within that width: every module the same number of pixels, the
-  barcode centred in its place. A barcode whose modules are thinner than
-  0.17 mm or 2 printer dots (squeezed, or simply small) is drawn anyway
-  and warned about (`barcode_narrow`): it may not scan. The digits are drawn as
-  text at their final size. A Code 128 holds at most 200 characters; a
-  longer one is refused for printing in the window, on the command line
-  and by the server, as for serial labels.
+  known). A file whose header says it unpacks to more than 80 megapixels
+  is refused when it is opened, before it is decoded; Pillow's own check
+  is turned off (a warning filter is not safe in threads). The EXIF
+  orientation is applied when the image is decoded, and the size is
+  checked again afterwards.
+- **Codes**: QR codes and every other symbology come from Zint
+  (`zint-bindings`; QR from segno if Zint is missing) as a matrix of
+  modules, which the renderer draws with every module the same number of
+  whole printer dots, centred in its place; barcodes are therefore a
+  little wider than the 1.0 renderer drew them. A linear barcode whose
+  modules are thinner than 0.17 mm is drawn and warned about
+  (`barcode_narrow`), one of a single printer dot is `code_thin`: it may
+  not scan. A Code 128 holds at most 200 characters; a longer one is
+  refused for printing in the window, on the command line and by the
+  server.
+- **Shipping-label PDF pages**: the Docker image has no Poppler, so a
+  label with a PDF page element cannot be rendered there (natively, only
+  with `gir1.2-poppler-0.18` / `poppler-glib` installed). A switch for
+  pages in `label_content` is planned (`--allow-pdf-pages`, off by
+  default; 422 `pages_not_allowed`).
+- **Fonts**: a text whose font fontconfig does not have is drawn in another
+  one and warned about (`font_missing`, in the preview and in the job);
+  generic names (`Sans`, `Serif`, `Monospace`) always count. See the
+  installation guide (`site/docs/server-install.md`) for the fonts of the
+  image and how to add more.
 - **Rendering**: a label of a request has at most 200 elements, 5000
   characters and 100 lines in each text or code (filled in, and in the
   cells of the columns it uses), then at most 50 images and codes (each
@@ -458,8 +470,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
     they are drawn;
   - the image files of a label (each counted once) may unpack to at most
     20 megapixels together, checked from their headers before any is
-    decoded; separately, the small images of its QR codes (each
-    different one once) at most 20 megapixels together;
+    decoded;
   - each image file is decoded once per render, nothing is kept between
     renders (the window keeps a few in caches).
 
@@ -483,7 +494,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   window renders in the main thread, where GTK has done it). Labels
   scaled down to a fixed length or page are drawn at their final size and
   look a little sharper than before; others render exactly as before.
-- **Roles**: see [tokens.toml](#tokens). The token's name, never the token,
+- **Roles**: see [tokens.toml](#access-tokens-and-roles-tokenstoml). The token's name, never the token,
   is logged and kept with each job.
 - **Printers**: with `printers.toml` clients choose by name and cannot
   make the server connect anywhere else; per token the printers can be
