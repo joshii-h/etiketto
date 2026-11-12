@@ -838,8 +838,28 @@ def test_the_image_goes_through_net_send_all(monkeypatch):
     connection = REAL_CONNECT("VC.local", server.getsockname()[1])
     image = bytes(range(256)) * 2000
     connection.send_file(io.BytesIO(image))
+    timeouts = [connection._socket.gettimeout()]
     connection.close()
     thread.join(5)
     server.close()
     assert calls == [(len(image), vc500w.SEND_TIMEOUT, vc500w.MIN_RATE)]
     assert bytes(got) == image
+    assert timeouts == [5]  # labelprinter's own timeout is back for the answers
+
+
+def test_a_labelprinter_without_its_socket_says_so(monkeypatch):
+    """labelprinter keeps its socket private (_socket): if a newer version
+    renamed it, a clear error instead of an AttributeError somewhere."""
+    made = {}
+
+    class Connection:
+        def __init__(self, host, port, timeout):
+            made["args"] = (host, port, timeout)
+
+    monkeypatch.setitem(
+        sys.modules, "labelprinter.connection", types.SimpleNamespace(Connection=Connection)
+    )
+    monkeypatch.setattr(mdns, "resolve_host", lambda host, family: "192.0.2.1")
+    connection = REAL_CONNECT("VC.local", 9100)
+    with pytest.raises(PrinterError, match="no socket"):
+        connection.send_file(io.BytesIO(b"x"))

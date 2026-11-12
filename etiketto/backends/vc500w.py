@@ -364,7 +364,17 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
         then covers the whole image instead of the time without progress."""
 
         def send_file(self, handle) -> None:
-            net.send_all(self._socket, handle.read(), SEND_TIMEOUT, MIN_RATE)
+            # labelprinter keeps its socket private; the pinned version has
+            # it as _socket: should that change, say so instead of failing
+            # somewhere else
+            sock = getattr(self, "_socket", None)
+            if not isinstance(sock, socket.socket):
+                raise PrinterError("labelprinter's connection has no socket (_socket) to send on")
+            timeout = sock.gettimeout()
+            try:
+                net.send_all(sock, handle.read(), SEND_TIMEOUT, MIN_RATE)
+            finally:  # labelprinter's own timeout for the answers that follow
+                sock.settimeout(timeout)
 
     # labelprinter opens an IPv4 socket
     return Sending(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
