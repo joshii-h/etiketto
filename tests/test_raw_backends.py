@@ -37,6 +37,7 @@ from etiketto.backends.base import (
     PrinterInfo,
     PrinterPaused,
     PrintOptions,
+    RenderAgain,
     ResolutionUnknown,
     RibbonError,
 )
@@ -545,10 +546,15 @@ def test_dymo_4xl_on_the_network(monkeypatch):
 
     monkeypatch.setattr(raw, "_browse", browse)
     backend = dymo.Dymo()
+    assert backend.query("none.invalid").model == "" and searches == [1.0]
+    backend.query("none.invalid")  # looked once, not announced: not again
+    assert searches == [1.0]
+    # that search saw lw.local: known without another one
     info = backend.query("lw.local")  # the model from its announcement
     assert info.model == "DYMO LabelWriter 4XL" and searches == [1.0]
-    backend.query("lw.local")
-    assert searches == [1.0]  # known now
+    fresh = dymo.Dymo()
+    assert fresh.query("lw.local").model == "DYMO LabelWriter 4XL"
+    assert searches == [1.0, 1.0]
     backend.print_label(Image.new("RGB", (1200, 40), "white"), "lw.local", PrintOptions())
 
 
@@ -601,7 +607,8 @@ def test_zpl_query_reads_resolution_and_model(monkeypatch):
     assert backend.display_name(None) == "Zebra ZPL"
     assert fake.calls == [("zebra.invalid", 9100, raw.usb.BUSY_WAIT)]
     # "auto": the reported 12 dots per mm
-    assert backend.raster(25, PrintOptions()).dpi == raw.DPI["300"]
+    assert backend.raster(25, PrintOptions(host="zebra.invalid")).dpi == raw.DPI["300"]
+    assert backend.raster(25, PrintOptions(host="other.invalid")).dpi == raw.DPI["203"]
     assert backend.raster(25, PrintOptions(settings={"dpi": "600"})).dpi == raw.DPI["600"]
 
 
@@ -644,17 +651,45 @@ def test_zpl_auto_resolution_per_printer(monkeypatch):
     install(monkeypatch, printer)
     backend.query("a.invalid")  # 300 dpi
     assert backend.reported == {"a.invalid": raw.DPI["300"]}
-    # rendered at 203 dpi for another printer, this one answers 300 dpi now
+    # rendered at 600 dpi: every second dot goes
     image = Image.new("RGB", (16, 8), "white")
-    image.info[raw.DPI_INFO] = raw.DPI["203"]
+    image.info[raw.DPI_INFO] = raw.DPI["600"]
     backend.print_label(image, "a.invalid", PrintOptions())
-    assert b"^PW24\n" in printer.jobs[-1]  # scaled: 16 dots at 8 per mm = 24 at 12
+    assert b"^PW8\n" in printer.jobs[-1]
     # no answer now: what it reported before
     del printer.answers[b"~HI\n"]
     backend.print_label(image, "a.invalid", PrintOptions())
-    assert b"^PW24\n" in printer.jobs[-1]
-    with pytest.raises(ResolutionUnknown):
+    assert b"^PW8\n" in printer.jobs[-1]
+    # rendered at 203 dpi: 1.5 times would spoil lines, render anew
+    image.info[raw.DPI_INFO] = raw.DPI["203"]
+    with pytest.raises(RenderAgain):
+        backend.print_label(image, "a.invalid", PrintOptions())
+    assert backend.dpi(PrintOptions(host="a.invalid")) == raw.DPI["300"]
+    # a printer never heard of: asked with a longer timeout, then refused
+    asked = []
+    real_ask = raw.Session.ask
+    monkeypatch.setattr(
+        raw.Session,
+        "ask",
+        lambda self, request, done, timeout=None: (
+            asked.append(timeout) or real_ask(self, request, done, timeout)
+        ),
+    )
+    with pytest.raises(ResolutionUnknown, match="in time"):
         backend.print_label(image, "b.invalid", PrintOptions())
+    assert asked[-1] == zpl.FIRST_ANSWER_TIMEOUT
+    backend.print_label(image, "a.invalid", PrintOptions(settings={"dpi": "203"}))
+    assert None in asked  # status questions: the usual timeout
+
+
+def test_whole_ratios():
+    assert [raw.whole_ratio(f) for f in (2.0, 0.5, 3.0, 1.5, 304.8 / 203.2)] == [
+        True,
+        True,
+        True,
+        False,
+        False,
+    ]
 
 
 def test_zpl_print_uses_settings(monkeypatch):

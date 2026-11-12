@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d inç/sn",
     "Receipt printer (ESC/POS)": "Fiş yazıcısı (ESC/POS)",
     "Print upside down": "Ters yazdır",
-    "The printer does not report its resolution. Choose it under “%s”.": "Yazıcı çözünürlüğünü bildirmiyor. “%s” altında seçin.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Yazıcı çözünürlüğünü zamanında bildirmedi. “%s” altında seçin.",
 }

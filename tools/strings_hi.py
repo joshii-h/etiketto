@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d इंच/से",
     "Receipt printer (ESC/POS)": "रसीद प्रिंटर (ESC/POS)",
     "Print upside down": "उल्टा प्रिंट करें",
-    "The printer does not report its resolution. Choose it under “%s”.": "प्रिंटर अपना रिज़ॉल्यूशन नहीं बताता। इसे “%s” में चुनें।",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "प्रिंटर ने समय पर अपना रिज़ॉल्यूशन नहीं बताया। इसे “%s” में चुनें।",
 }

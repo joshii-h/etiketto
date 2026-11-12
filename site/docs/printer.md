@@ -206,7 +206,7 @@ if you have one, a report of what works and what does not helps a lot
   but answers no questions, which many of these printers do (EPL2 printers
   never answer). Problems such as an open cover then show on the printer
   only.
-- The printer does not report its resolution: choose it under
+- The printer did not report its resolution in time: choose it under
   [[ui:Resolution]] instead of [[ui:As reported by the printer]].
 - The label comes out upside down: switch on [[ui:Print upside down]], and
   please report it with the printer model; the orientation could not be

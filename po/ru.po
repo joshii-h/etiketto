@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 07:20+0100\n"
+"PO-Revision-Date: 2026-11-12 07:37+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -434,7 +434,7 @@ msgstr "Найден %s"
 msgid "Choose a printer"
 msgstr "Выберите принтер"
 
-#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:184
+#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:185
 #: etiketto/ui/window.py:316
 msgid "Cancel"
 msgstr "Отменить"
@@ -522,34 +522,34 @@ msgstr "Серийный номер"
 msgid "Probably made"
 msgstr "Вероятная дата выпуска"
 
-#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:293
+#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:305
 msgid "Close"
 msgstr "Закрыть"
 
-#: etiketto/ui/printing.py:63
+#: etiketto/ui/printing.py:64
 msgid "The label is empty"
 msgstr "Этикетка пуста"
 
-#: etiketto/ui/printing.py:73
+#: etiketto/ui/printing.py:74
 msgid "Print anyway"
 msgstr "Всё равно печатать"
 
-#: etiketto/ui/printing.py:78
+#: etiketto/ui/printing.py:79
 msgid "Wrong cassette"
 msgstr "Неподходящая кассета"
 
-#: etiketto/ui/printing.py:80
+#: etiketto/ui/printing.py:81
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Этикетка рассчитана на ленту %(label)s, но вставлена кассета %(tape)s. Принтер масштабирует её под ленту."
 
-#: etiketto/ui/printing.py:92
+#: etiketto/ui/printing.py:93
 msgid "Different labels loaded"
 msgstr "Загружены другие этикетки"
 
-#: etiketto/ui/printing.py:94
+#: etiketto/ui/printing.py:95
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -557,84 +557,84 @@ msgid ""
 "size and the gap."
 msgstr "Размер этикетки — %(size)s с зазором %(gap)s, поэтому новая начинается каждые %(pitch)s. Принтер измерил одну этикетку каждые %(measured)s. Проверьте размер этикетки и зазор."
 
-#: etiketto/ui/printing.py:122
+#: etiketto/ui/printing.py:123
 msgid "Copies"
 msgstr "Копии"
 
-#: etiketto/ui/printing.py:126
+#: etiketto/ui/printing.py:127
 msgid "Cut"
 msgstr "Обрезка"
 
-#: etiketto/ui/printing.py:131
+#: etiketto/ui/printing.py:132
 msgid "Colours"
 msgstr "Цвета"
 
-#: etiketto/ui/printing.py:140
+#: etiketto/ui/printing.py:141
 msgid "Colour adjustment"
 msgstr "Коррекция цвета"
 
-#: etiketto/ui/printing.py:143
+#: etiketto/ui/printing.py:144
 msgid "Reset"
 msgstr "Сбросить"
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Not adjusted"
 msgstr "Без коррекции"
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Adjusted"
 msgstr "Скорректировано"
 
-#: etiketto/ui/printing.py:183
+#: etiketto/ui/printing.py:184
 msgid "Print label"
 msgstr "Печать этикетки"
 
-#: etiketto/ui/printing.py:185 etiketto/ui/printing.py:263
+#: etiketto/ui/printing.py:186 etiketto/ui/printing.py:275
 #: etiketto/ui/window.py:103
 msgid "Print"
 msgstr "Печать"
 
-#: etiketto/ui/printing.py:215
+#: etiketto/ui/printing.py:216
 msgid "No printer yet – search for one or enter its address"
 msgstr "Принтера пока нет – найдите его или введите адрес"
 
-#: etiketto/ui/printing.py:221
+#: etiketto/ui/printing.py:223
 msgid "Printing…"
 msgstr "Печать…"
 
-#: etiketto/ui/printing.py:231
+#: etiketto/ui/printing.py:233
 msgid "The label cannot be prepared for printing."
 msgstr "Не удалось подготовить этикетку к печати."
 
-#: etiketto/ui/printing.py:246
+#: etiketto/ui/printing.py:258
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Печать %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:275
+#: etiketto/ui/printing.py:287
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Отправлено на принтер – будет напечатано, когда подойдёт очередь"
 
-#: etiketto/ui/printing.py:277
+#: etiketto/ui/printing.py:289
 msgid "Printed"
 msgstr "Напечатано"
 
-#: etiketto/ui/printing.py:279
+#: etiketto/ui/printing.py:291
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Цветовой режим «%(wanted)s» недоступен на этом принтере, напечатано в режиме «%(used)s»"
 
-#: etiketto/ui/printing.py:288
+#: etiketto/ui/printing.py:300
 msgid "Printing failed"
 msgstr "Ошибка печати"
 
-#: etiketto/ui/printing.py:289
+#: etiketto/ui/printing.py:301
 msgid "Details"
 msgstr "Подробности"
 
-#: etiketto/ui/printing.py:292 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:304 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "Сообщить"
 
@@ -970,8 +970,9 @@ msgstr "Задание печати было отменено на принте�
 
 #: etiketto/ui/texts.py:220
 #, python-format
-msgid "The printer does not report its resolution. Choose it under “%s”."
-msgstr "Принтер не сообщает своё разрешение. Выберите его в разделе «%s»."
+msgid ""
+"The printer did not report its resolution in time. Choose it under “%s”."
+msgstr "Принтер не сообщил своё разрешение вовремя. Выберите его в разделе «%s»."
 
 #: etiketto/ui/texts.py:223
 msgid ""

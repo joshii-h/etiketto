@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d インチ/秒",
     "Receipt printer (ESC/POS)": "レシートプリンター (ESC/POS)",
     "Print upside down": "上下逆に印刷",
-    "The printer does not report its resolution. Choose it under “%s”.": "プリンターが解像度を報告しません。「%s」で選択してください。",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "プリンターが時間内に解像度を報告しませんでした。「%s」で選択してください。",
 }

@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d นิ้ว/วินาที",
     "Receipt printer (ESC/POS)": "เครื่องพิมพ์ใบเสร็จ (ESC/POS)",
     "Print upside down": "พิมพ์กลับหัว",
-    "The printer does not report its resolution. Choose it under “%s”.": "เครื่องพิมพ์ไม่รายงานความละเอียด เลือกได้ที่ “%s”",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "เครื่องพิมพ์ไม่ได้รายงานความละเอียดทันเวลา เลือกได้ที่ “%s”",
 }

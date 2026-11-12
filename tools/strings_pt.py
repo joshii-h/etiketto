@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d pol./s",
     "Receipt printer (ESC/POS)": "Impressora de talões (ESC/POS)",
     "Print upside down": "Imprimir de cabeça para baixo",
-    "The printer does not report its resolution. Choose it under “%s”.": "A impressora não indica a resolução. Escolha-a em “%s”.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "A impressora não indicou a resolução a tempo. Escolha-a em “%s”.",
 }

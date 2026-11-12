@@ -41,7 +41,8 @@ from etiketto.backends.raw import (
     state,
 )
 
-GRAPHIC = "R:ETIKETTO.GRF"  # RAM drive; each job replaces and then deletes it
+GRAPHIC = "R:ETIKETTO.GRF"
+FIRST_ANSWER_TIMEOUT = 3.0  # seconds for ~HI of a printer that never told its resolution  # RAM drive; each job replaces and then deletes it
 STX, ETX = b"\x02", b"\x03"
 # dots per mm in the ~HI answer -> the dpi setting
 DOTS_PER_MM = {8: "203", 12: "300", 24: "600"}
@@ -340,7 +341,9 @@ class Zpl(RawBackend):
         return identity
 
     def printer_dpi(self, s: Session) -> float | None:
-        identity = self._identity(s, s.ask(b"~HI\n", frames_done(1)))
+        # a printer not heard of yet gets longer: else the print is refused
+        timeout = None if s.host in self.reported else FIRST_ANSWER_TIMEOUT
+        identity = self._identity(s, s.ask(b"~HI\n", frames_done(1), timeout))
         return DPI[identity.dpi] if identity.dpi else None
 
     def ask_status(self, s: Session) -> PrinterInfo:

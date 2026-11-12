@@ -5,6 +5,7 @@ cannot hide a slow printer."""
 
 from __future__ import annotations
 
+import contextlib
 import socket
 import threading
 import time
@@ -165,13 +166,13 @@ def test_finishing_a_closed_connection():
     a, b = socket.socketpair()
     b.close()
     a.close()
-    net.finish(a, timeout=0.1)  # nothing to protect: no error
+    with pytest.raises(PrinterStalled, match="connection lost"):
+        net.finish(a, timeout=0.1)  # gone before the job was surely taken
 
     a, b = socket.socketpair()
     b.close()
-
     a.settimeout(0.1)
-    net.finish(a, timeout=0.1)  # the other side is gone: EOF
+    net.finish(a, timeout=0.1)  # nothing outstanding, the other side closed
     a.close()
 
 
@@ -197,4 +198,94 @@ def test_finishing_after_the_printer_reset_the_connection():
         def fileno(self):
             return -1
 
-    net.finish(Reset(), timeout=1)  # type: ignore[arg-type]
+    with pytest.raises(PrinterStalled, match="connection lost"):
+        net.finish(Reset(), timeout=1)  # type: ignore[arg-type]
+
+
+def _serve(handler):
+    listener = socket.create_server(("127.0.0.1", 0))
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFFER)
+    port = listener.getsockname()[1]
+
+    def run():
+        connection, _address = listener.accept()
+        with contextlib.suppress(OSError):
+            handler(connection)
+        connection.close()
+        listener.close()
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    return port, thread
+
+
+def test_a_printer_that_keeps_talking(monkeypatch):
+    # takes everything, says something every 0.1 s and never closes: done
+    # after the quiet time and the grace period, not never
+    monkeypatch.setattr(net, "FINISH_QUIET", 0.2)
+    monkeypatch.setattr(net, "FINISH_GRACE", 0.3)
+    stop = threading.Event()
+
+    def chatty(connection):
+        connection.settimeout(0.1)
+        while not stop.is_set():
+            with contextlib.suppress(TimeoutError):
+                connection.recv(65536)
+            connection.sendall(b"\x12")
+
+    port, thread = _serve(chatty)
+    sock = _connect(port)
+    sock.sendall(b"x" * 10_000)
+    started = time.monotonic()
+    net.finish(sock, timeout=5)
+    assert 0.4 < time.monotonic() - started < 2
+    stop.set()
+    sock.close()
+    thread.join(5)
+
+
+def test_a_printer_that_closes_after_part_of_the_job():
+    def partly(connection):
+        taken = 0
+        while taken < 8192:
+            taken += len(connection.recv(4096))
+        time.sleep(0.2)  # closes with data unread: the kernel resets
+
+    port, thread = _serve(partly)
+    sock = _connect(port)
+    with pytest.raises(PrinterStalled):
+        net.send_all(sock, b"x" * 200_000, timeout=2, min_rate=1000)
+        net.finish(sock, timeout=2)
+    sock.close()
+    thread.join(5)
+
+
+def test_a_reset_while_sending_is_no_missing_printer():
+    class Reset:
+        def settimeout(self, timeout):
+            pass
+
+        def send(self, data):
+            raise BrokenPipeError("broken pipe")
+
+    with pytest.raises(PrinterStalled, match="connection lost after 0 of 3 bytes"):
+        net.send_all(Reset(), b"abc", timeout=1, min_rate=1000)  # type: ignore[arg-type]
+
+
+def test_a_printer_that_closes_its_side_first_and_reads_on():
+    def reads_on(connection):
+        connection.shutdown(socket.SHUT_WR)
+        while data := connection.recv(1024):
+            assert data
+            time.sleep(0.01)
+
+    port, thread = _serve(reads_on)
+    sock = _connect(port)
+    sock.setblocking(False)
+    with contextlib.suppress(BlockingIOError):
+        while True:  # more than the buffers take: still on its way at EOF
+            sock.send(b"x" * 4096)
+    sock.setblocking(True)
+    net.finish(sock, timeout=5)
+    sock.close()
+    thread.join(5)

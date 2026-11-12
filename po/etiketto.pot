@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 07:20+0100\n"
+"POT-Creation-Date: 2026-11-12 07:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -441,7 +441,7 @@ msgstr ""
 msgid "Choose a printer"
 msgstr ""
 
-#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:184
+#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:185
 #: etiketto/ui/window.py:316
 msgid "Cancel"
 msgstr ""
@@ -529,34 +529,34 @@ msgstr ""
 msgid "Probably made"
 msgstr ""
 
-#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:293
+#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:305
 msgid "Close"
 msgstr ""
 
-#: etiketto/ui/printing.py:63
+#: etiketto/ui/printing.py:64
 msgid "The label is empty"
 msgstr ""
 
-#: etiketto/ui/printing.py:73
+#: etiketto/ui/printing.py:74
 msgid "Print anyway"
 msgstr ""
 
-#: etiketto/ui/printing.py:78
+#: etiketto/ui/printing.py:79
 msgid "Wrong cassette"
 msgstr ""
 
-#: etiketto/ui/printing.py:80
+#: etiketto/ui/printing.py:81
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr ""
 
-#: etiketto/ui/printing.py:92
+#: etiketto/ui/printing.py:93
 msgid "Different labels loaded"
 msgstr ""
 
-#: etiketto/ui/printing.py:94
+#: etiketto/ui/printing.py:95
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -564,84 +564,84 @@ msgid ""
 "size and the gap."
 msgstr ""
 
-#: etiketto/ui/printing.py:122
+#: etiketto/ui/printing.py:123
 msgid "Copies"
 msgstr ""
 
-#: etiketto/ui/printing.py:126
+#: etiketto/ui/printing.py:127
 msgid "Cut"
 msgstr ""
 
-#: etiketto/ui/printing.py:131
+#: etiketto/ui/printing.py:132
 msgid "Colours"
 msgstr ""
 
-#: etiketto/ui/printing.py:140
+#: etiketto/ui/printing.py:141
 msgid "Colour adjustment"
 msgstr ""
 
-#: etiketto/ui/printing.py:143
+#: etiketto/ui/printing.py:144
 msgid "Reset"
 msgstr ""
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Not adjusted"
 msgstr ""
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Adjusted"
 msgstr ""
 
-#: etiketto/ui/printing.py:183
+#: etiketto/ui/printing.py:184
 msgid "Print label"
 msgstr ""
 
-#: etiketto/ui/printing.py:185 etiketto/ui/printing.py:263
+#: etiketto/ui/printing.py:186 etiketto/ui/printing.py:275
 #: etiketto/ui/window.py:103
 msgid "Print"
 msgstr ""
 
-#: etiketto/ui/printing.py:215
+#: etiketto/ui/printing.py:216
 msgid "No printer yet – search for one or enter its address"
 msgstr ""
 
-#: etiketto/ui/printing.py:221
+#: etiketto/ui/printing.py:223
 msgid "Printing…"
 msgstr ""
 
-#: etiketto/ui/printing.py:231
+#: etiketto/ui/printing.py:233
 msgid "The label cannot be prepared for printing."
 msgstr ""
 
-#: etiketto/ui/printing.py:246
+#: etiketto/ui/printing.py:258
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr ""
 
-#: etiketto/ui/printing.py:275
+#: etiketto/ui/printing.py:287
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr ""
 
-#: etiketto/ui/printing.py:277
+#: etiketto/ui/printing.py:289
 msgid "Printed"
 msgstr ""
 
-#: etiketto/ui/printing.py:279
+#: etiketto/ui/printing.py:291
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr ""
 
-#: etiketto/ui/printing.py:288
+#: etiketto/ui/printing.py:300
 msgid "Printing failed"
 msgstr ""
 
-#: etiketto/ui/printing.py:289
+#: etiketto/ui/printing.py:301
 msgid "Details"
 msgstr ""
 
-#: etiketto/ui/printing.py:292 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:304 etiketto/ui/window.py:336
 msgid "Report"
 msgstr ""
 
@@ -977,7 +977,8 @@ msgstr ""
 
 #: etiketto/ui/texts.py:220
 #, python-format
-msgid "The printer does not report its resolution. Choose it under “%s”."
+msgid ""
+"The printer did not report its resolution in time. Choose it under “%s”."
 msgstr ""
 
 #: etiketto/ui/texts.py:223

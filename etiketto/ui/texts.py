@@ -217,7 +217,7 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
-        "resolution": _("The printer does not report its resolution. Choose it under “%s”.")
+        "resolution": _("The printer did not report its resolution in time. Choose it under “%s”.")
         % SETTING_TITLES["dpi"],
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "

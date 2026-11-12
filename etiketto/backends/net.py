@@ -21,14 +21,19 @@ import socket
 import struct
 import termios
 import time
+from dataclasses import dataclass
 
 from etiketto.backends.base import PrinterStalled
 
 CHUNK = 65536
 FINISH_QUIET = 1.0  # all data taken and nothing heard for this long: done
+# all data taken, but the printer keeps talking and never closes: done
+# after FINISH_QUIET + this
+FINISH_GRACE = 3.0
 POLL = 0.2  # seconds per read while finishing
 
 _clock = time.monotonic  # replaced in tests
+_sleep = time.sleep
 
 
 def unsent(sock: socket.socket) -> int:
@@ -39,6 +44,19 @@ def unsent(sock: socket.socket) -> int:
     except (OSError, ValueError):
         return 0
     return struct.unpack("i", buf)[0]
+
+
+def _send_some(sock: socket.socket, data: memoryview, total: int) -> int:
+    """One send: the bytes taken, 0 after a timeout. A reset or broken pipe
+    means the printer was there and stopped: PrinterStalled."""
+    try:
+        return sock.send(data[:CHUNK])
+    except TimeoutError:
+        return 0
+    except ConnectionError as e:
+        raise PrinterStalled(
+            "connection lost after %d of %d bytes: %s" % (total - len(data), total, e)
+        ) from e
 
 
 def send_all(sock: socket.socket, data: bytes, timeout: float, min_rate: float) -> None:
@@ -57,10 +75,7 @@ def send_all(sock: socket.socket, data: bytes, timeout: float, min_rate: float) 
                     "printer took %d of %d bytes" % (len(data) - len(view), len(data))
                 )
             sock.settimeout(remaining)
-            try:
-                sent = sock.send(view[:CHUNK])
-            except TimeoutError:
-                continue
+            sent = _send_some(sock, view, len(data))
             if sent:
                 idle = _clock() + timeout
             view = view[sent:]
@@ -70,36 +85,74 @@ def send_all(sock: socket.socket, data: bytes, timeout: float, min_rate: float) 
 
 def _listen(sock: socket.socket) -> bool | None:
     """One read while finishing: True if the printer said something, False
-    if not, None once it closed its side (or the connection is gone)."""
+    if not, None once it closed its side. A reset is an error: the printer
+    dropped what it had not taken yet."""
     try:
         return bool(sock.recv(4096)) or None
     except TimeoutError:
         return False
-    except OSError:
-        return None
+    except OSError as e:
+        raise PrinterStalled("connection lost before the printer took the job: %s" % e) from e
+
+
+@dataclass
+class _Finishing:
+    """How far finish() got: when the printer last took data or spoke."""
+
+    timeout: float
+    left: int
+    progress: float
+    quiet: float
+    closed: bool = False  # the printer closed its side
+    taken: float | None = None  # since when everything was taken
+
+    def heard(self, said: bool | None, now: float) -> None:
+        """What _listen() found out."""
+        if said:
+            self.quiet = now
+        elif said is None:
+            if self.closed:
+                _sleep(POLL)  # recv returns at once now
+            self.closed = True
+
+    def done(self, outstanding: int, now: float) -> bool:
+        """True once the printer has everything and closed, stayed quiet or
+        talked on for the grace period."""
+        if outstanding:
+            self._taking(outstanding, now)
+            return False
+        self.taken = now if self.taken is None else self.taken
+        return (
+            self.closed
+            or now - self.quiet >= FINISH_QUIET
+            or now - self.taken >= FINISH_QUIET + FINISH_GRACE
+        )
+
+    def _taking(self, outstanding: int, now: float) -> None:
+        """PrinterStalled if the printer took nothing for the timeout."""
+        self.taken = None
+        if outstanding < self.left:
+            self.left, self.progress = outstanding, now
+        elif now - self.progress >= self.timeout:
+            raise PrinterStalled("printer stopped taking data, %d bytes not taken" % outstanding)
 
 
 def finish(sock: socket.socket, timeout: float) -> None:
-    """Half-close after a job and wait until the printer has it: it closes
-    its side, or it acknowledged everything and stayed quiet for
-    FINISH_QUIET. What it says meanwhile is read and dropped, so that
-    closing does not reset the connection. PrinterStalled if the printer
-    takes nothing more for `timeout` seconds."""
+    """Half-close after a job and wait until the printer has it all: every
+    byte acknowledged, and it closed its side, stayed quiet for
+    FINISH_QUIET, or kept talking for FINISH_QUIET + FINISH_GRACE. What it
+    says meanwhile is read and dropped, so that closing does not reset the
+    connection. PrinterStalled if it takes nothing more for `timeout`
+    seconds or resets the connection before it has everything (a printer
+    that closes after part of the job also leaves bytes unacknowledged)."""
     try:
         sock.shutdown(socket.SHUT_WR)
-    except OSError:
-        return  # already gone: nothing left to protect
+    except OSError as e:
+        raise PrinterStalled("connection lost before the printer took the job: %s" % e) from e
     sock.settimeout(POLL)
-    left = unsent(sock)
-    progress = quiet = _clock()
-    while (heard := _listen(sock)) is not None:
-        now = _clock()
-        if heard:
-            quiet = now
-        outstanding = unsent(sock)
-        if outstanding < left:
-            left, progress = outstanding, now
-        if not outstanding and now - quiet >= FINISH_QUIET:
+    now = _clock()
+    state = _Finishing(timeout, unsent(sock), now, now)
+    while True:
+        state.heard(_listen(sock), _clock())
+        if state.done(unsent(sock), _clock()):
             return
-        if outstanding and now - progress >= timeout:
-            raise PrinterStalled("printer stopped taking data, %d bytes not taken" % outstanding)

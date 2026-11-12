@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d inch/giây",
     "Receipt printer (ESC/POS)": "Máy in hóa đơn (ESC/POS)",
     "Print upside down": "In lộn ngược",
-    "The printer does not report its resolution. Choose it under “%s”.": "Máy in không báo độ phân giải. Hãy chọn trong “%s”.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Máy in không báo độ phân giải kịp thời. Hãy chọn trong “%s”.",
 }

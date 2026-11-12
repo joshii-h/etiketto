@@ -24,7 +24,8 @@ reference, **[assumed]** likely but untested, **[open]** unknown.
   dialect and are not supported. [LPrint]
 - On the network the model comes from the mDNS announcement (the service
   name or `usb_MDL`), looked up once per address when the printer was not
-  found by a search: a 4XL has the wider head. [assumed]
+  found by a search (also when nothing answers: not again on each
+  refresh): a 4XL has the wider head. [assumed]
 
 ## Status
 

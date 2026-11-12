@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d inci/s",
     "Receipt printer (ESC/POS)": "Pencetak resit (ESC/POS)",
     "Print upside down": "Cetak terbalik",
-    "The printer does not report its resolution. Choose it under “%s”.": "Pencetak tidak melaporkan resolusinya. Pilih di bawah “%s”.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Pencetak tidak melaporkan resolusinya tepat pada masanya. Pilih di bawah “%s”.",
 }

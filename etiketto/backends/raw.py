@@ -36,6 +36,7 @@ from etiketto.backends.base import (
     PrintResult,
     ProgressCallback,
     Raster,
+    RenderAgain,
     ResolutionUnknown,
     check_length,
     check_width,
@@ -247,9 +248,16 @@ def state(answered: bool, error: PrinterError | None, busy: bool = False) -> str
     return "BUSY" if busy else "IDLE"
 
 
+def whole_ratio(factor: float) -> bool:
+    """2, 3, 1/2: scaling by it keeps every dot (each becomes a block of
+    dots, or every second goes); 1.5 would make lines uneven."""
+    big = max(factor, 1 / factor)
+    return math.isclose(big, round(big), abs_tol=0.01)
+
+
 def rescale(image: Image.Image, factor: float) -> Image.Image:
-    """Made for another resolution: scale the black and white image
-    instead of failing; the next prepare() renders right."""
+    """Made for another resolution by a whole ratio: scale the black and
+    white image dot by dot (see whole_ratio)."""
     size = (max(1, round(image.width * factor)), max(1, round(image.height * factor)))
     resized = image.resize(size, Image.Resampling.NEAREST)
     resized.info.update(image.info)
@@ -285,13 +293,12 @@ class RawBackend(Backend):
     def __init__(self, port: int | None = None):
         if port is not None:
             self.port = port
-        # resolutions the printers reported (where they can), by address,
-        # and the last one: prepare() renders for it with "auto"
+        # resolutions the printers reported (where they can), by address:
+        # prepare() renders for the job's printer with "auto"
         self.reported: dict[str, float] = {}
-        self.reported_dpi: float | None = None
 
     def report_dpi(self, host: str, dpi: float) -> None:
-        self.reported[host] = self.reported_dpi = dpi
+        self.reported[host] = dpi
 
     # --- finding the printer
 
@@ -346,7 +353,7 @@ class RawBackend(Backend):
             return self.capabilities.dpi
         choice = self.setting(options, "dpi")
         if choice == "auto":
-            return self.reported_dpi or DPI[self.default_dpi]
+            return self.reported.get(options.host) or DPI[self.default_dpi]
         return DPI.get(str(choice), DPI[self.default_dpi])
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
@@ -397,7 +404,7 @@ class RawBackend(Backend):
             return rendered
         dpi = self.printer_dpi(s) or self.reported.get(s.host)
         if dpi is None:
-            raise ResolutionUnknown("the printer does not report its resolution")
+            raise ResolutionUnknown("the printer did not report its resolution in time")
         return dpi
 
     def check(self, image: Image.Image, dpi: float, host: str) -> None:
@@ -431,6 +438,10 @@ class RawBackend(Backend):
                 raise problem
             dpi = self.job_dpi(s, options, rendered)
             if not math.isclose(dpi, rendered):
+                if not whole_ratio(dpi / rendered):
+                    raise RenderAgain(
+                        "rendered at %g dpi, the printer has %g dpi" % (rendered, dpi)
+                    )
                 image = rescale(image, dpi / rendered)
             s.send(self.build_job(image, dpi, options, host))
             s.finish()

@@ -834,7 +834,9 @@ def test_print_flow(ready, gui_env):
     assert len(gui_env.prints) == 1
     image, host, options = gui_env.prints[0]
     assert host == "VC.local"
-    assert options == PrintOptions(copies=3, cut="half", mode="color", data_format="rawrgb")
+    assert options == PrintOptions(
+        copies=3, cut="half", mode="color", data_format="rawrgb", host="VC.local"
+    )
     # rendered in the worker for the printer: rawrgb, 25 mm at 320 dpi with bleed
     assert image.height == 333
     assert ready.print_button.get_sensitive()
@@ -2282,3 +2284,36 @@ def test_setting_names():
     assert texts.setting_title("odd") == "odd"
     assert texts.level_name("odd", 3) == "3"
     assert texts.level_name("darkness", None) == "As set on the printer"
+
+
+def test_a_print_is_rendered_again_for_another_resolution(make_window, raw_env, monkeypatch):
+    from etiketto.backends import get_backend
+    from etiketto.backends.base import RenderAgain
+
+    backend = get_backend("zpl")
+    win = _raw_window(make_window, "zpl")
+    calls = []
+    prepares = []
+    real_prepare = backend.prepare
+
+    def print_label(image, host, options, progress=None):
+        calls.append((image.size, options.host))
+        if len(calls) == 1:
+            backend.reported[host] = 12 * 25.4  # what the printer said now
+            raise RenderAgain("rendered at 203.2 dpi, the printer has 304.8 dpi")
+        progress(Progress(1, options.copies))
+
+    def prepare(label, options, safe_mm=1.0):
+        prepares.append(options.host)
+        return real_prepare(label, options, safe_mm)
+
+    monkeypatch.setattr(backend, "print_label", print_label)
+    monkeypatch.setattr(backend, "prepare", prepare)
+    monkeypatch.setattr(backend, "reported", {})
+    win.print_flow.on_print()
+    win.last_dialog.emit("response", "print")
+    assert pump(lambda: not win.print_flow.busy)
+    assert prepares == ["zebra.local", "zebra.local"]
+    (first, host), (second, _host) = calls
+    assert host == "zebra.local" and second[0] == first[0] * 3 // 2  # 8 -> 12 dots per mm
+    assert toast_titles(win)[-1] == "Printed"

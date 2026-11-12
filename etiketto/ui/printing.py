@@ -15,6 +15,7 @@ from etiketto.backends.base import (
     PrintOptions,
     PrintResult,
     Progress,
+    RenderAgain,
 )
 from etiketto.ui.i18n import _, isolate
 from etiketto.ui.texts import (
@@ -214,6 +215,7 @@ class PrintFlow:
         if not host:
             window.toast(_("No printer yet – search for one or enter its address"))
             return
+        options = replace(options, host=host)  # prepare() renders for this printer
         backend = window.backend
         label, safe_mm = copy.deepcopy(window.label), window.printer_settings.safe_mm
         self.busy = True
@@ -231,13 +233,23 @@ class PrintFlow:
                 GLib.idle_add(self.done, e, _("The label cannot be prepared for printing."))
                 return
             try:
-                result = backend.print_label(image, host, options, progress)
+                result = self._print(backend, image, host, options, progress, label, safe_mm)
             except Exception as e:  # noqa: BLE001
                 GLib.idle_add(self.done, e)
                 return
             GLib.idle_add(self.done, None, None, options, result)
 
         threading.Thread(target=work, name="etiketto-print", daemon=True).start()
+
+    @staticmethod
+    def _print(backend, image, host, options, progress, label, safe_mm) -> PrintResult | None:
+        """Print; once more, rendered anew, if the printer reported another
+        resolution than the image was made for (RenderAgain)."""
+        try:
+            return backend.print_label(image, host, options, progress)
+        except RenderAgain:
+            image = backend.prepare(label, options, safe_mm)
+            return backend.print_label(image, host, options, progress)
 
     def progress(self, event: Progress) -> bool:
         if self.busy:

@@ -32,11 +32,14 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   11 and 2), not by their place.
 - Sending: the timeout of 10 s counts from the last bytes the printer took,
   so a large job on a slow printer goes through; a job may take 10 s plus
-  its size at 8 kB/s at most. After the job Etiketto closes its sending
-  side and waits until the printer closes the connection or has taken
-  everything (then 1 s of quiet), reading and dropping what it still says:
-  closing with an unread answer would reset the connection and cut the job
-  off.
+  its size at 8 kB/s at most. A connection reset while sending is a
+  printer that stopped taking data, not a missing printer.
+- After the job Etiketto closes its sending side and reads and drops what
+  the printer still says (closing with an unread answer would reset the
+  connection and cut the job off). It is done once the printer has
+  acknowledged every byte and then closed its side, stayed quiet for 1 s,
+  or kept talking for 4 s more. A printer that takes nothing for 10 s, or
+  resets or closes the connection before it has everything, is an error.
 
 ## Status and identification
 
@@ -60,10 +63,14 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   reports a problem; a printer that does not answer gets the job anyway.
 - Answers that do not have this shape (garbage, half an answer) count as no
   answer. The resolution "As reported by the printer" uses `~HI`; without an
-  answer: with "As reported by the printer" each print asks `~HI` again
-  (resolutions are kept per printer address) and scales the label if it
-  was rendered for another resolution; a printer that never answered `~HI`
-  gets no job, Etiketto asks to choose the resolution instead of guessing.
+  answer: with "As reported by the printer" each print asks `~HI` again;
+  resolutions are kept per printer address, and the label is rendered for
+  the one of the printer it is printed on. If the printer now reports
+  another resolution, a whole ratio (300 and 600 dpi) is scaled dot by dot,
+  any other (203 and 300 dpi) renders the label again. A printer not heard
+  of before gets 3 s for `~HI` instead of 1 s; one that never answered it
+  gets no job, and Etiketto asks to choose the resolution instead of
+  guessing.
 
 ## A print job
 

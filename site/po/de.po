@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 07:27+0100\n"
+"POT-Creation-Date: 2026-11-12 07:41+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1002,11 +1002,11 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"The printer does not report its resolution: choose it under "
+"The printer did not report its resolution in time: choose it under "
 "[[ui:Resolution]] instead of [[ui:As reported by the printer]]."
 msgstr ""
-"Der Drucker meldet seine Auflösung nicht: sie unter [[ui:Resolution]] wählen "
-"statt [[ui:As reported by the printer]]."
+"Der Drucker hat seine Auflösung nicht rechtzeitig gemeldet: sie unter "
+"[[ui:Resolution]] wählen statt [[ui:As reported by the printer]]."
 
 #. type: Bullet: '- '
 #: docs/printer.md

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 07:20+0100\n"
+"PO-Revision-Date: 2026-11-12 07:37+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: et\n"
 "Language: et\n"
@@ -434,7 +434,7 @@ msgstr "Leitud: %s"
 msgid "Choose a printer"
 msgstr "Vali printer"
 
-#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:184
+#: etiketto/ui/printer.py:228 etiketto/ui/printing.py:185
 #: etiketto/ui/window.py:316
 msgid "Cancel"
 msgstr "Loobu"
@@ -522,34 +522,34 @@ msgstr "Seerianumber"
 msgid "Probably made"
 msgstr "Arvatav valmistusaeg"
 
-#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:293
+#: etiketto/ui/printer.py:414 etiketto/ui/printing.py:305
 msgid "Close"
 msgstr "Sulge"
 
-#: etiketto/ui/printing.py:63
+#: etiketto/ui/printing.py:64
 msgid "The label is empty"
 msgstr "Silt on tühi"
 
-#: etiketto/ui/printing.py:73
+#: etiketto/ui/printing.py:74
 msgid "Print anyway"
 msgstr "Prindi ikkagi"
 
-#: etiketto/ui/printing.py:78
+#: etiketto/ui/printing.py:79
 msgid "Wrong cassette"
 msgstr "Vale kassett"
 
-#: etiketto/ui/printing.py:80
+#: etiketto/ui/printing.py:81
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Silt on kujundatud lindile laiusega %(label)s, kuid sisestatud on kassett laiusega %(tape)s. Printer skaleeriks selle lindile."
 
-#: etiketto/ui/printing.py:92
+#: etiketto/ui/printing.py:93
 msgid "Different labels loaded"
 msgstr "Sisestatud on teised sildid"
 
-#: etiketto/ui/printing.py:94
+#: etiketto/ui/printing.py:95
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -557,84 +557,84 @@ msgid ""
 "size and the gap."
 msgstr "Silt on %(size)s ja vahe %(gap)s, seega algab uus silt iga %(pitch)s järel. Printer mõõtis sildi iga %(measured)s järel. Kontrolli sildi suurust ja vahet."
 
-#: etiketto/ui/printing.py:122
+#: etiketto/ui/printing.py:123
 msgid "Copies"
 msgstr "Koopiad"
 
-#: etiketto/ui/printing.py:126
+#: etiketto/ui/printing.py:127
 msgid "Cut"
 msgstr "Lõige"
 
-#: etiketto/ui/printing.py:131
+#: etiketto/ui/printing.py:132
 msgid "Colours"
 msgstr "Värvid"
 
-#: etiketto/ui/printing.py:140
+#: etiketto/ui/printing.py:141
 msgid "Colour adjustment"
 msgstr "Värvide kohandamine"
 
-#: etiketto/ui/printing.py:143
+#: etiketto/ui/printing.py:144
 msgid "Reset"
 msgstr "Lähtesta"
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Not adjusted"
 msgstr "Kohandamata"
 
-#: etiketto/ui/printing.py:169
+#: etiketto/ui/printing.py:170
 msgid "Adjusted"
 msgstr "Kohandatud"
 
-#: etiketto/ui/printing.py:183
+#: etiketto/ui/printing.py:184
 msgid "Print label"
 msgstr "Prindi silt"
 
-#: etiketto/ui/printing.py:185 etiketto/ui/printing.py:263
+#: etiketto/ui/printing.py:186 etiketto/ui/printing.py:275
 #: etiketto/ui/window.py:103
 msgid "Print"
 msgstr "Prindi"
 
-#: etiketto/ui/printing.py:215
+#: etiketto/ui/printing.py:216
 msgid "No printer yet – search for one or enter its address"
 msgstr "Printerit pole veel – otsi seda või sisesta selle aadress"
 
-#: etiketto/ui/printing.py:221
+#: etiketto/ui/printing.py:223
 msgid "Printing…"
 msgstr "Printimine…"
 
-#: etiketto/ui/printing.py:231
+#: etiketto/ui/printing.py:233
 msgid "The label cannot be prepared for printing."
 msgstr "Silti ei saa printimiseks ette valmistada."
 
-#: etiketto/ui/printing.py:246
+#: etiketto/ui/printing.py:258
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Printimine %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:275
+#: etiketto/ui/printing.py:287
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Saadetud printerile – prinditakse, kui selle järg kätte jõuab"
 
-#: etiketto/ui/printing.py:277
+#: etiketto/ui/printing.py:289
 msgid "Printed"
 msgstr "Prinditud"
 
-#: etiketto/ui/printing.py:279
+#: etiketto/ui/printing.py:291
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Värvirežiim „%(wanted)s“ pole selles printeris saadaval, prinditi režiimiga „%(used)s“"
 
-#: etiketto/ui/printing.py:288
+#: etiketto/ui/printing.py:300
 msgid "Printing failed"
 msgstr "Printimine nurjus"
 
-#: etiketto/ui/printing.py:289
+#: etiketto/ui/printing.py:301
 msgid "Details"
 msgstr "Üksikasjad"
 
-#: etiketto/ui/printing.py:292 etiketto/ui/window.py:336
+#: etiketto/ui/printing.py:304 etiketto/ui/window.py:336
 msgid "Report"
 msgstr "Teata"
 
@@ -970,8 +970,9 @@ msgstr "Prinditöö tühistati printeris või järjekorras."
 
 #: etiketto/ui/texts.py:220
 #, python-format
-msgid "The printer does not report its resolution. Choose it under “%s”."
-msgstr "Printer ei teata oma eraldusvõimet. Vali see jaotises „%s“."
+msgid ""
+"The printer did not report its resolution in time. Choose it under “%s”."
+msgstr "Printer ei teatanud oma eraldusvõimet õigel ajal. Vali see jaotises „%s“."
 
 #: etiketto/ui/texts.py:223
 msgid ""

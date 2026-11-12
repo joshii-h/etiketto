@@ -416,8 +416,9 @@ def test_choice_values():
 def test_level_values():
     level = Level("darkness", 0, 100, 10)
     assert list(level.steps()) == list(range(0, 101, 10))
-    values = [None, True, "50", float("nan"), 55, 55.6, -3, 1000]
-    assert [level.value(v) for v in values] == [None, None, None, None, 55, 56, 0, 100]
+    values = [None, True, "50", float("nan"), float("inf"), 10**400, 55, 55.6, -3, 1000]
+    expected = [None, None, None, None, None, None, 55, 56, 0, 100]
+    assert [level.value(v) for v in values] == expected
 
 
 def test_backend_settings_from_options():

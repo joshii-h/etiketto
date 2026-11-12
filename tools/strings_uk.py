@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d дюйм/с",
     "Receipt printer (ESC/POS)": "Чековий принтер (ESC/POS)",
     "Print upside down": "Друкувати догори дриґом",
-    "The printer does not report its resolution. Choose it under “%s”.": "Принтер не повідомляє свою роздільну здатність. Виберіть її в розділі «%s».",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Принтер не повідомив свою роздільну здатність вчасно. Виберіть її в розділі «%s».",
 }

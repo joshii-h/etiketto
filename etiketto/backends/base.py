@@ -73,9 +73,15 @@ class Level:
 
     def value(self, raw: object) -> int | None:
         """A stored value, clamped to the range; junk is None."""
-        if isinstance(raw, bool) or not isinstance(raw, (int, float)) or not math.isfinite(raw):
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
             return None
-        return int(max(self.lower, min(self.upper, round(raw))))
+        try:  # an int too large for a float, inf, nan
+            number = float(raw)
+        except OverflowError:
+            return None
+        if not math.isfinite(number):
+            return None
+        return int(max(self.lower, min(self.upper, round(number))))
 
     def steps(self) -> range:
         return range(self.lower, self.upper + 1, self.step)
@@ -222,6 +228,9 @@ class PrintOptions:
     gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
     # values of Capabilities.settings by key; read them with Backend.setting()
     settings: Mapping[str, object] = field(default_factory=dict)
+    # the printer the job is for, so that prepare() can render for what this
+    # printer reported (its resolution); "" = not known
+    host: str = ""
 
 
 @dataclass(frozen=True)
@@ -372,6 +381,12 @@ class ResolutionUnknown(PrinterError):
     """The resolution is to be taken from the printer, which does not tell it."""
 
     code = "resolution"
+
+
+class RenderAgain(PrinterError):
+    """The printer reported another resolution than the image was made
+    for, by a ratio that scaling would spoil: prepare() the label again
+    (it now renders for the reported resolution) and print once more."""
 
 
 class UsbNotFound(PrinterNotFound):

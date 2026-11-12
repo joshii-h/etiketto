@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d tolli/s",
     "Receipt printer (ESC/POS)": "Tšekiprinter (ESC/POS)",
     "Print upside down": "Prindi tagurpidi",
-    "The printer does not report its resolution. Choose it under “%s”.": "Printer ei teata oma eraldusvõimet. Vali see jaotises „%s“.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Printer ei teatanud oma eraldusvõimet õigel ajal. Vali see jaotises „%s“.",
 }

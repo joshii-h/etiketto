@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d cali/s",
     "Receipt printer (ESC/POS)": "Drukarka paragonów (ESC/POS)",
     "Print upside down": "Drukuj do góry nogami",
-    "The printer does not report its resolution. Choose it under “%s”.": "Drukarka nie zgłasza swojej rozdzielczości. Wybierz ją w „%s”.",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Drukarka nie zgłosiła na czas swojej rozdzielczości. Wybierz ją w „%s”.",
 }

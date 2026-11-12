@@ -255,5 +255,5 @@ TRANSLATIONS = {
     "%d in/s": "%d дюйм/с",
     "Receipt printer (ESC/POS)": "Чековый принтер (ESC/POS)",
     "Print upside down": "Печатать вверх ногами",
-    "The printer does not report its resolution. Choose it under “%s”.": "Принтер не сообщает своё разрешение. Выберите его в разделе «%s».",
+    "The printer did not report its resolution in time. Choose it under “%s”.": "Принтер не сообщил своё разрешение вовремя. Выберите его в разделе «%s».",
 }

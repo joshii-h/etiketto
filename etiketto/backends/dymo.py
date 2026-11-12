@@ -148,8 +148,8 @@ class Dymo(RawBackend):
 
     def __init__(self, port: int | None = None):
         super().__init__(port)
-        # models of network printers as they announce themselves, by host:
-        # the 4XL has a wider head
+        # models of network printers as they announce themselves, by host
+        # ("" = looked for, not announced): the 4XL has a wider head
         self.models: dict[str, str] = {}
 
     def model(self, host: str) -> str:
@@ -165,6 +165,7 @@ class Dymo(RawBackend):
     def query(self, host: str) -> PrinterInfo:
         if not usb.is_usb(host) and host not in self.models:
             self.discover(timeout=1.0)  # the model, for the width of the head
+            self.models.setdefault(host, "")  # not again on every refresh
         info = super().query(host)
         info.model = info.model or self.models.get(host, "")
         return info
