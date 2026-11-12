@@ -404,7 +404,7 @@ class Printer:
             if info.pitch_mm:
                 return _("Ready · a label every %s") % unit.format(info.pitch_mm)
             return _("Ready")
-        roll = self.window.backend.capabilities.media == "roll"
+        roll = caps.media == "roll"
         if not info.tape_mm:
             return _("No roll loaded") if roll else _("No cassette inserted")
         name = isolate(unit.tape_name(info.tape_mm))
@@ -482,8 +482,8 @@ class Printer:
         caps = self.window.backend.capabilities
         if caps.continuous and caps.media == "paper":
             media = "%g mm paper" % self.window.label.tape_mm
-        elif caps.continuous:
-            media = "%s cassette" % ("%g mm" % info.tape_mm if info.tape_mm else "no")
+        elif caps.continuous:  # "cassette" or "roll", as the printer's media is called
+            media = "%s %s" % ("%g mm" % info.tape_mm if info.tape_mm else "no", caps.media)
         else:
             media = "label every %s mm" % ("%g" % info.pitch_mm if info.pitch_mm else "?")
         parts = [self.window.backend.display_name(info), media, info.state]

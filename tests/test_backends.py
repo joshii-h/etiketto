@@ -293,3 +293,11 @@ def test_one_map_error_and_one_connect_for_the_tcp_and_usb_printers(monkeypatch)
     )
     link = net.connect("usb://Brother/QL-820NWB", 9100, 10.0, 5.0, brother_ql.MIN_RATE)
     assert made and link.min_rate == brother_ql.MIN_RATE
+
+
+def test_backends_offer_only_known_extras_and_cut_modes():
+    from etiketto.backends import base
+
+    for backend in backends():
+        assert set(backend.capabilities.extras) <= set(base._EXTRAS), backend.id
+        assert set(backend.capabilities.cut_modes) <= set(base.CUT_MODES), backend.id

@@ -216,7 +216,6 @@ EAN_LAYOUTS = {
     ),
     "upce": (((0, 3), (45, 51)), ((0, 1, "left"), (1, 7, (3, 45)), (7, 8, "right"))),
 }
-EAN_GUARDS = EAN_LAYOUTS["ean13"][0]
 THIN_MODULE = 2  # pixels: a code with narrower modules may not scan (warning code_thin)
 PROBLEMS = ("code_too_big", "code_quiet", "code_thin")  # in this order, each once
 

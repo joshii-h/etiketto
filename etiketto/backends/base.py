@@ -28,12 +28,12 @@ LIMIT_SLACK_MM = 0.01
 # every cut mode a backend may offer; "end": one cut after the last label of
 # a job, the copies stay together
 CUT_MODES = ("full", "half", "end", "none")
-DEFAULT_CUT_MODES = ("full", "half", "none")
+_DEFAULT_CUT_MODES = ("full", "half", "none")
 # settings a backend may offer beyond copies, cut and mode (Capabilities.extras):
 # "chain": no feed after the last label, so the next job starts without a
 # blank piece; "high_res": twice the resolution along the tape; "feed": the
 # blank tape before and after each label (PrintOptions.feed_mm)
-EXTRAS = ("chain", "high_res", "feed")
+_EXTRAS = ("chain", "high_res", "feed")
 
 
 # --- what a printer can do --------------------------------------------------
@@ -114,7 +114,7 @@ class Capabilities:
     dpi: float  # resolution across the tape the preview is rendered at
     modes: tuple[PrintMode, ...]  # fallback when the printer does not report its modes
     color_model: ColorModel = "color"
-    cut_modes: tuple[str, ...] = DEFAULT_CUT_MODES  # empty: the printer does not cut
+    cut_modes: tuple[str, ...] = _DEFAULT_CUT_MODES  # empty: the printer does not cut
     reports_remaining: bool = False  # remaining tape in the status
     supports_color_adjust: bool = False  # brightness / colour balance per job
     # endless tape: the label grows with its content. False: die-cut labels
@@ -137,7 +137,7 @@ class Capabilities:
     # is the user's choice, nothing "inserted" (receipt printers); the
     # interface words and checks follow it
     media: Literal["cassette", "roll", "paper"] = "cassette"
-    extras: tuple[str, ...] = ()  # of EXTRAS: what the interface offers on top
+    extras: tuple[str, ...] = ()  # of _EXTRAS: what the interface offers on top
     # endless tape: the width of a new label when no tape is known; None:
     # 50 mm if the printer takes it, else the widest
     default_tape_mm: float | None = None

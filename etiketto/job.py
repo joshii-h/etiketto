@@ -189,8 +189,11 @@ class Job:
     def _run_sheets(
         self, sheet: SheetJob, host: str, progress: ProgressCallback | None
     ) -> PrintResult | None:
-        """The labels on sheets. A backend's error counts printed sheets
-        (params "pages"): the labels on them count as printed."""
+        """The labels on sheets, each position one label: the same image, or
+        one render per position (variables per copy, or `positions`: serial
+        labels). A backend's error counts the sheets printed (params
+        "printed", "pages"): the labels on them count as printed; on Ctrl+C
+        every label of the job does (see run())."""
         each = self.per_copy or self.positions is not None
         first = None if each else self.image(self.expanded(1)[0])
         source: LabelSource = _EachCopy(self) if first is None else Copies(first)

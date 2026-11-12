@@ -3795,3 +3795,8 @@ def test_the_preview_is_rendered_at_the_quality_last_printed(ql_window, ql_env):
     win.printer_settings.update(quality="high")
     render_now(win)
     assert win.print_dpi() == 600 and win.rendered_dpi == 600
+
+
+def test_the_report_names_a_ql_roll_as_a_roll(ql_window, ql_env):
+    line = ql_window.printer.description()
+    assert "62 mm roll" in line and "cassette" not in line
