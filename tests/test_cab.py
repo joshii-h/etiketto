@@ -304,6 +304,7 @@ def test_query_learns_the_resolution(backend, printer):
     assert info.pitch_mm is None
     assert backend.dots_per_mm == 8.0
     assert backend.raster(25, PrintOptions()).dpi == pytest.approx(203.2)
+    assert info.dpi == pytest.approx(203.2)  # the preview and its warnings at it
 
 
 def test_prepare_across_the_roll(backend):

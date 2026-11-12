@@ -533,3 +533,9 @@ def test_a_code_the_printer_cannot_fit_says_so(office, system_env, monkeypatch):
     assert pump(lambda: not office.print_flow.busy)
     dialog = office.get_visible_dialog()
     assert dialog.get_body().startswith("A code does not fit on the label")
+
+
+def test_the_preview_is_never_finer_than_600_dpi(make_window, system_env):
+    win = _code_window(make_window, system_env, 1200)
+    assert win.print_dpi() == 600
+    assert win.rendered.image.width == round(60 / 25.4 * 600)

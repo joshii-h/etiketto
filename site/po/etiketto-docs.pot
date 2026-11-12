@@ -768,6 +768,15 @@ msgid ""
 "larger. A code that does not fit at all is not printed."
 msgstr ""
 
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid ""
+"Labels made with earlier versions: QR codes come out up to about a third "
+"smaller (their blank margin is now inside the element), barcodes slightly "
+"wider."
+msgstr ""
+
 #. type: Title ##
 #: docs/use.md
 #, markdown-text, no-wrap

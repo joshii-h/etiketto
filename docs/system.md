@@ -131,7 +131,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   code shrunk to fit a fixed length is drawn again at the smaller size.
   Warnings, at the resolution the label is printed at (the preview is
   rendered at the printer's `printer-resolution-default` when it differs
-  from 300 dpi): modules one dot wide (may not scan); a quiet zone that
+  from 300 dpi, at most 600 dpi): modules one dot wide (may not scan); a quiet zone that
   does not fit even at one dot (may not scan); a code that does not fit
   its box even at one dot per module (taller than the label, or squeezed
   by a fixed length). Such a code would be cut off: Etiketto does not

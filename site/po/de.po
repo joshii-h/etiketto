@@ -1069,6 +1069,16 @@ msgstr ""
 "vor dem Drucken, dann den Code grösser machen. Ein Code, der gar nicht "
 "passt, wird nicht gedruckt."
 
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Labels made with earlier versions: QR codes come out up to about a third "
+"smaller (their blank margin is now inside the element), barcodes slightly "
+"wider."
+msgstr ""
+"Etiketten aus früheren Versionen: QR-Codes werden bis zu etwa einem Drittel "
+"kleiner (ihr leerer Rand liegt jetzt im Element), Strichcodes etwas breiter."
+
 #. type: Title ##
 #: docs/use.md
 #, no-wrap

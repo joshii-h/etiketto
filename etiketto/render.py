@@ -222,14 +222,15 @@ class _Fit:
 
 
 def _module(designed: float, modules: int, quiet: tuple[int, int], box: int) -> _Fit:
-    """The module in whole pixels for modules of them plus their quiet zone
-    (modules left and right) in box pixels: the designed width (pixels)
-    rounded to the nearest, rounded down where that would leave too little
-    quiet zone in the box; at least 1. The code and its quiet zone are
-    centred in the box; where the quiet zone does not fit, the code alone
-    (from the box's start if not even that fits). Problems: code_too_big
-    (not even 1-pixel modules fit), code_quiet (they fit, their quiet zone
-    does not), code_thin (1-pixel modules)."""
+    """How modules of a code plus their quiet zone (modules left and right)
+    fit in box pixels. The module: the designed width (pixels) rounded to
+    the nearest if the code and its quiet zone fit in the box with it, else
+    the widest whole module with which they fit (box // all modules), at
+    least 1. The start (the first module, in pixels): the code and its
+    quiet zone centred in the box; if the quiet zone does not fit, the code
+    alone centred; if not even that fits, 0 (the rest is cut off).
+    Problems: code_too_big (not even 1-pixel modules fit), code_quiet (they
+    fit, their quiet zone does not), code_thin (1-pixel modules)."""
     total = modules + sum(quiet)
     module = max(1, round(designed))
     if module * total > box:
@@ -339,15 +340,25 @@ def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Imag
 def _ean_text(mask: Image.Image, digits: str, size: float, left: int, module: int, y: int):
     """EAN-13's digits as the standard places them: the first left of the
     bars, then six under each half, between the guard bars."""
-    first = _text_in(digits[0], size, max(1, (QUIET["ean13"][0] - 1) * module))
-    if first is not None:
-        _paste_text(mask, first, left - module - first.width, y)
-    for digits_, (start, end) in ((digits[1:7], (3, 45)), (digits[7:], (50, 92))):
-        room = (end - start - 2) * module
-        text = _text_in(digits_, size, room)
-        if text is not None:
-            middle = left + (start + end) * module // 2
-            _paste_text(mask, text, middle - text.width // 2, y)
+    places = (
+        (digits[0], None, (QUIET["ean13"][0] - 1) * module),
+        (digits[1:7], (3, 45), 40 * module),
+        (digits[7:], (50, 92), 40 * module),
+    )
+    # one size for all three: as designed, or smaller if one would not fit
+    for text_, _place, room in places:
+        ink = _ink(text_, size)
+        if ink is not None and ink.width > room:
+            size *= max(1, room) / ink.width
+    for text_, place, _room in places:
+        ink = _ink(text_, size)
+        if ink is None:
+            continue
+        if place is None:  # the first digit: left of the bars
+            _paste_text(mask, ink, left - module - ink.width, y)
+        else:
+            middle = left + (place[0] + place[1]) * module // 2
+            _paste_text(mask, ink, middle - ink.width // 2, y)
 
 
 def _paste_text(mask: Image.Image, text: Image.Image, x: int, y: int) -> None:

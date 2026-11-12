@@ -710,3 +710,18 @@ def test_bleed_zero_is_the_default(make_label, wide_image):
     plain = render(label).image
     assert ImageChops.difference(plain, render(label, bleed_px=0).image).getbbox() is None
     assert render(label, bleed_px=-3).image.size == plain.size
+
+
+def test_tiny_ean13_digits_all_one_size():
+    part = render_module.render_code(CodeElement("4006381333931", symbology="ean13"), 60)
+    page = _on_white(part)
+    assert part.code_module == 1
+    scale = 60 / render_module.BAR_TOTAL_MM
+    top = round(render_module.BAR_TOP_MM * scale) + round(render_module.BAR_HEIGHT_MM * scale)
+    text = page.crop((0, top + 1, page.width, page.height))
+    _r, first, _l = _bars(page, round(6 * scale))
+    heights = [
+        ink_bbox(text.crop(box), 255)[3] - ink_bbox(text.crop(box), 255)[1]
+        for box in ((0, 0, first, text.height), (first + 3, 0, first + 45, text.height))
+    ]
+    assert heights[0] == heights[1]  # the first digit no smaller than the others
