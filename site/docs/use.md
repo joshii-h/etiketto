@@ -12,6 +12,27 @@ Elements are placed one after another along the label. Order them with
   the label height, otherwise fixed in pt.
 - **Image**: photos and graphics; drag and drop works too.
 - **Code**: QR code, Code 128 or EAN-13.
+- **Symbol**: a pictogram from the symbol library, see below.
+
+## Symbols
+
+[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as
+arrows, warnings, recycling, tools, food or weather, from Material Design
+Icons. Search by name, for example "arrow" or "recycle". The names and
+categories come from the icon set and are English, so the search is in
+English too. The list next to the search shows one category;
+[[ui:Recently used]] shows the symbols chosen last. Brand logos of the icon
+set are left out.
+
+- [[ui:Size]] 0 fills the label height, otherwise the symbol has this
+  height.
+- [[ui:Rotation]]: a quarter turn at a time, clockwise.
+- The colour is printed on colour printers. Black-and-white printers print
+  symbols in black, with sharp edges.
+
+The label file keeps the outline of each symbol, so a label looks the same
+in later versions. Older versions of Etiketto cannot open labels with
+symbols and say that the label needs a newer version.
 
 ## Label
 

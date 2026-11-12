@@ -215,6 +215,47 @@ A sheet that is missing or wrong belongs in gLabels, so that both projects
 profit; fixes to the converter belong here. Sheet ids (`"Avery L7160"`, brand
 and part number) are stored in `.etiketto` files: do not rename them.
 
+## Symbols
+
+The symbols (`etiketto/symbols/mdi.json.gz`) are converted from a release of
+[Material Design Icons](https://github.com/Templarian/MaterialDesign-SVG)
+(Apache-2.0, Pictogrammers). To update them, download the release from npm
+and run the converter on it:
+
+```sh
+mkdir /tmp/mdi && cd /tmp/mdi
+curl -LO https://registry.npmjs.org/@mdi/svg/-/svg-7.4.47.tgz  # the new version
+tar -xzf svg-7.4.47.tgz
+cd - && python3 -I tools/mdi_symbols.py /tmp/mdi/package
+```
+
+It keeps name, path data, categories and aliases of every icon, without the
+deprecated ones and without the category "Brand / Logo" (trademarks of
+third parties), and stops if the release's license text is no longer the
+one in `etiketto/symbols/LICENSE.mdi`: then check the new license and update
+that file by hand. Update the version in the README credits and
+`LICENSE.mdi`, check the number of icons it reports and run the tests
+(`tests/test_symbols.py` counts the icons and checks that every path
+parses). The output depends only on the release (sorted, no timestamp).
+
+A label stores a symbol by its name and a copy of its path data
+(`name`, `path`, `size_mm`, `rotation`, `color`); the copy is what is
+drawn, so a label looks the same with an icon set where the symbol was
+changed, renamed or removed, and the name is what the chooser shows.
+Icon names are therefore not renamed by Etiketto, but upstream may; a label
+with a symbol that is no longer in the set still prints.
+
+Older Etiketto versions refuse a label with a symbol as "needs a newer
+version": they do not know the element kind `symbol` (see
+`model.ELEMENT_TYPES`), so the file stays at format version 1.
+
+TODO (integration with the `variables-cli` and `mail-merge` branches, which
+introduce format version 2 with `"features"` and `model.FEATURES`): add
+`"symbols"` to `model.FEATURES` and list it in `Label.features()` for a
+label with a symbol element, so that a file with symbols is written as
+version 2 with `"features": ["symbols"]` like the other features; versions
+before the symbol library still refuse it by the unknown kind as well.
+
 ## Code style
 
 - Formatting and linting with ruff, configuration in `pyproject.toml`.
@@ -252,6 +293,9 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 (`ko`), Japanese (`ja`) and Chinese (Traditional: `zh_TW`, also built as
 `zh_HK` from the same strings; Simplified: `zh_CN`).
 
+- Symbol names, aliases and categories stay English, as Material Design
+  Icons names them, and the symbol search is in English: do not translate
+  them (there are over 7000, and a label file stores the name).
 - Wrap every user-facing string in `_()`. Use named placeholders
   (`%(width)d`) so translators can reorder them.
 - After changing strings:
@@ -259,7 +303,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
       --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
-      etiketto/backends/*.py etiketto/sheets/*.py
+      etiketto/backends/*.py etiketto/sheets/*.py etiketto/symbols/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run
