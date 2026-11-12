@@ -148,7 +148,7 @@ documented it. Reports of what works and what does not are very welcome.
 
 ### Problems { #brother-ql-problems }
 
-- [[ui:Connected, the printer does not report its state]]: some models
+- [[ui:Reachable · the printer reports no status]]: some models
   do not answer status requests over the network. Printing works, but
   Etiketto cannot check the roll first.
 - "The loaded roll does not match the label": a die-cut roll is loaded

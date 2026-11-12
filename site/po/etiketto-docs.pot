@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:32+0100\n"
+"POT-Creation-Date: 2026-11-12 10:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -542,7 +542,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Connected, the printer does not report its state]]: some models do not answer status requests over the network. Printing works, but Etiketto cannot check the roll first."
+msgid "[[ui:Reachable · the printer reports no status]]: some models do not answer status requests over the network. Printing works, but Etiketto cannot check the roll first."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1885,4 +1885,10 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "A file handed over this way is reached through the document portal. The next counter value is written there like any save, but the portal may not support locking the file: two prints of the same file at the same moment are then not kept apart. If the portal refuses to write, nothing is printed (exit code 5)."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Writing the counter back through the document portal has not been tried yet. After the first print from the Flatpak, open the label and check that [[ui:Next number]] went on; if not, give the start with `--counter-start` on every print."
 msgstr ""

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:32+0100\n"
+"POT-Creation-Date: 2026-11-12 10:53+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -786,13 +786,13 @@ msgstr "Probleme { #brother-ql-problems }"
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:Connected, the printer does not report its state]]: some models do not "
-"answer status requests over the network. Printing works, but Etiketto cannot "
-"check the roll first."
+"[[ui:Reachable · the printer reports no status]]: some models do not answer "
+"status requests over the network. Printing works, but Etiketto cannot check "
+"the roll first."
 msgstr ""
-"[[ui:Connected, the printer does not report its state]]: Manche Modelle "
-"beantworten über das Netzwerk keine Statusabfragen. Drucken geht, aber "
-"Etiketto kann die Rolle vorher nicht prüfen."
+"[[ui:Reachable · the printer reports no status]]: Manche Modelle beantworten "
+"über das Netzwerk keine Statusabfragen. Drucken geht, aber Etiketto kann die "
+"Rolle vorher nicht prüfen."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -2919,3 +2919,16 @@ msgstr ""
 "Portal unterstützt das Sperren der Datei womöglich nicht: Zwei gleichzeitige "
 "Drucke derselben Datei werden dann nicht auseinandergehalten. Verweigert das "
 "Portal das Schreiben, wird nichts gedruckt (Exit-Code 5)."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Writing the counter back through the document portal has not been tried yet. "
+"After the first print from the Flatpak, open the label and check that "
+"[[ui:Next number]] went on; if not, give the start with `--counter-start` on "
+"every print."
+msgstr ""
+"Das Zurückschreiben des Zählers über das Dokumentenportal wurde noch nicht "
+"ausprobiert. Nach dem ersten Druck aus dem Flatpak das Etikett öffnen und "
+"prüfen, ob [[ui:Next number]] weitergezählt hat; wenn nicht, den Start bei "
+"jedem Druck mit `--counter-start` angeben."

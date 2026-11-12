@@ -296,3 +296,8 @@ next counter value is written there like any save, but the portal may not
 support locking the file: two prints of the same file at the same moment
 are then not kept apart. If the portal refuses to write, nothing is
 printed (exit code 5).
+
+Writing the counter back through the document portal has not been tried
+yet. After the first print from the Flatpak, open the label and check
+that [[ui:Next number]] went on; if not, give the start with
+`--counter-start` on every print.
