@@ -75,6 +75,12 @@ def element_icon(element) -> str:
 # Lower layers report codes; the texts are made (and translated) here.
 
 
+def backend_name(backend) -> str:
+    """The name of a printer model in the list; brand names stay as they are."""
+    names = {"system": _("System printer (CUPS, IPP)")}
+    return names.get(backend.id, backend.name)
+
+
 def warning_text(warning: RenderWarning) -> str:
     texts = {
         "code_empty": _("Element %(n)d: the code is empty"),
@@ -96,7 +102,16 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
     """What went wrong and what to do, for any error from a backend."""
     if not isinstance(error, PrinterError):
         return code_text("generic", unit)
-    return code_text(error.code, unit, float(error.params.get("max_mm", 0)))
+    text = code_text(error.code, unit, float(error.params.get("max_mm", 0)))
+    printed = error.params.get("printed")
+    if printed:  # some of the copies came out before the problem
+        text += " " + _("Labels already printed: %(n)d of %(total)d.") % {
+            "n": printed,
+            "total": error.params.get("copies", printed),
+        }
+    if error.params.get("queue_canceled"):  # sent behind other jobs, not printed yet
+        text += " " + _("The labels still waiting in the queue were canceled.")
+    return text
 
 
 def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
@@ -130,6 +145,25 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "matches the print method set on the printer."
         ),
         "paused": _("The printer is paused. Resume it on its display and try again."),
+        "out_of_paper": _("The printer is out of paper. Load paper and try again."),
+        "media_jam": _(
+            "The paper is jammed. Remove it as the printer's display shows and try again."
+        ),
+        "supplies": _("The printer is out of toner or ink. Replace it and try again."),
+        "paper_size": _("The printer cannot print this size. Choose a paper size it offers."),
+        "format": _(
+            "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, JPEG)."
+        ),
+        "queue_paused": _(
+            "The printer's queue is paused. Resume it in the system's printer settings and "
+            "try again."
+        ),
+        "job_held": _(
+            "The print job was held in the queue, for example until it is released or a "
+            "password is entered. Check the queue in the system's printer settings and try "
+            "again."
+        ),
+        "job_canceled": _("The print job was canceled at the printer or in the queue."),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),
@@ -147,6 +181,10 @@ def stage_text(stage: str) -> str | None:
         "COOLDOWN": _("Cooling down…"),
         "CLEANING": _("Cleaning…"),
         "READY_FOR_CUT": _("Swipe the printer's panel to cut the label"),
+        # the system printer waits until the user fixes it
+        "OUT_OF_PAPER": _("Out of paper – load paper to continue"),
+        "COVER_OPEN": _("Cover open – close it to continue"),
+        "MEDIA_JAM": _("Paper jammed – remove it to continue"),
     }.get(stage)
 
 

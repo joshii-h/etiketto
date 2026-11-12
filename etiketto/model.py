@@ -169,6 +169,13 @@ class Label:
             self.tape_mm = caps.nearest_tape(self.tape_mm)  # 50, not 50.0
         elif was_continuous:
             self.use_default_size(caps)
+        self._page_upright(caps)
+
+    def _page_upright(self, caps) -> None:
+        """A page has no roll the content could run along, and the interface
+        offers no direction: the content runs across, the size stays."""
+        if caps.pages and self.orientation != "across":
+            self.set_orientation("across")
 
     # --- persistence -------------------------------------------------------
 
@@ -227,6 +234,7 @@ class Label:
             # untrusted file small
             width, height = self.media_size()
             self.set_media_size(min(width, caps.max_width_mm), height)
+        self._page_upright(caps)  # a file saved that way by hand or an older version
         self.margin_mm = _clamp(self.margin_mm, 0, 20, "margin_mm")
         self.edge_mm = _clamp(self.edge_mm, 0, 10, "edge_mm")
         self.border_mm = _clamp(self.border_mm, 0, 5, "border_mm")

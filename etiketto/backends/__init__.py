@@ -37,10 +37,12 @@ def _load() -> None:
         return
     _loaded = True
     from etiketto.backends.cab import Cab
+    from etiketto.backends.system import SystemPrinter
     from etiketto.backends.vc500w import VC500W
 
     register(VC500W())
     register(Cab())
+    register(SystemPrinter())
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:
             obj = entry.load()
@@ -52,7 +54,7 @@ def _load() -> None:
 def backends() -> list[Backend]:
     """All registered backends, the default first."""
     _load()
-    return sorted(_registry.values(), key=lambda b: (b.id != DEFAULT_PRINTER, b.name))
+    return sorted(_registry.values(), key=lambda b: (b.id != DEFAULT_PRINTER, b.name.casefold()))
 
 
 def get_backend(backend_id: str = DEFAULT_PRINTER) -> Backend:

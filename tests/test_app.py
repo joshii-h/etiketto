@@ -672,7 +672,7 @@ def found(*names):
 
 
 def test_discover_none(window, gui_env):
-    window.printer.discover(choose=True)
+    window.printer.discover()
     assert window.printer.row.get_title() == "Searching for printers…"
     assert pump(lambda: window.printer.row.get_title() == "No printer found")
     assert window.printer.row.get_subtitle().startswith("Make sure the printer is switched on")
@@ -690,17 +690,18 @@ def test_discover_one_is_used(window, gui_env):
     assert entry.get_text() == "VC-A.local"
 
 
-def test_discover_several_without_choice_takes_first(window, gui_env):
+def test_discover_several_never_guesses(window, gui_env):
+    # also the search on its own at the start: in an office, the first one
+    # found is not necessarily the right one
     gui_env.found = found("A", "B")
-    window.printer.discover(choose=False)
-    assert pump(lambda: window.printer.info is not None)
-    assert window.printer.host == "VC-A.local"
-    assert window.get_visible_dialog() is None
+    window.printer.discover()
+    assert pump(lambda: window.get_visible_dialog() is not None)
+    assert window.printer.host is None
 
 
 def test_discover_several_lets_the_user_choose(window, gui_env):
     gui_env.found = found("A", "B")
-    window.printer.discover(choose=True)
+    window.printer.discover()
     assert pump(lambda: window.get_visible_dialog() is not None)
     dialog = window.get_visible_dialog()
     assert dialog.get_heading() == "Choose a printer"
@@ -720,18 +721,18 @@ def test_discover_several_lets_the_user_choose(window, gui_env):
 
 
 def test_discover_outdated_results_are_dropped(window, gui_env):
-    window.printer.discover(choose=True)
+    window.printer.discover()
     first = window.printer.generation
-    window.printer.discover(choose=True)  # searched again before the answer came
+    window.printer.discover()  # searched again before the answer came
     assert pump(lambda: window.printer.row.get_title() == "No printer found")
-    assert window.printer.discovered(found("A", "B"), True, first) is False
+    assert window.printer.discovered(found("A", "B"), first) is False
     assert window.get_visible_dialog() is None and window.printer.host is None
 
 
 def test_discover_never_opens_two_choosers(window, gui_env):
-    window.printer.discovered(found("A", "B"), True, window.printer.generation)
+    window.printer.discovered(found("A", "B"), window.printer.generation)
     first = window.get_visible_dialog()
-    window.printer.discovered(found("A", "B", "C"), True, window.printer.generation)
+    window.printer.discovered(found("A", "B", "C"), window.printer.generation)
     second = window.get_visible_dialog()
     assert second is not first and window.printer.chooser is second
     assert len(find(second.get_extra_child(), Adw.ActionRow)) == 3
@@ -745,7 +746,7 @@ def test_discover_several_with_host_refreshes_current(make_window, gui_env):
     gui_env.configured = "VC-A.local"
     win = make_window()
     gui_env.found = found("A", "B")
-    win.printer.discover(choose=True)
+    win.printer.discover()
     assert pump(lambda: win.get_visible_dialog() is not None and len(gui_env.queries) == 2)
     assert gui_env.queries == ["VC-A.local", "VC-A.local"]
     win.get_visible_dialog().force_close()
@@ -1317,6 +1318,10 @@ def test_stage_texts():
     assert texts.stage_text("CLEANING") == "Cleaning…"
     assert texts.stage_text("READY_FOR_CUT") == "Swipe the printer's panel to cut the label"
     assert texts.stage_text("PRINTING") is None and texts.stage_text("") is None
+    # the system printer waits for these to be fixed
+    assert texts.stage_text("OUT_OF_PAPER") == "Out of paper – load paper to continue"
+    assert texts.stage_text("COVER_OPEN") == "Cover open – close it to continue"
+    assert texts.stage_text("MEDIA_JAM") == "Paper jammed – remove it to continue"
 
 
 def test_label_and_save_error_texts():
@@ -1546,6 +1551,13 @@ def test_print_result_with_the_requested_mode_is_just_printed(ready, gui_env):
     assert toast_titles(ready) == ["Printed"]
 
 
+def test_a_queued_job_is_reported_as_sent(ready, gui_env):
+    gui_env.print_result = PrintResult(queued=True)
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert toast_titles(ready) == ["Sent to the printer – it prints when its turn comes"]
+
+
 def test_bw_mode_shows_a_grey_preview(make_window, gui_env):
     from PIL import Image
 
@@ -1677,11 +1689,9 @@ def test_mono_printer(make_window, mono, gui_env):
 
     win = make_window()
     model = one(win.sidebar, Adw.ComboRow, title="Printer model")
-    assert [model.get_model().get_string(i) for i in range(2)] == [
-        "Brother VC-500W",
-        "Fake Mono 200",
-    ]
-    model.set_selected(1)
+    names = _items(model)
+    assert names[0] == "Brother VC-500W" and "Fake Mono 200" in names
+    model.set_selected(names.index("Fake Mono 200"))
     assert win.label.printer == "fake-mono" and win.backend is mono
     assert win.label.tape_mm == 24 and win.dirty  # nearest width the printer has
     tape = win.label_group.tape_row.get_model()
@@ -2067,3 +2077,56 @@ def test_too_long_fixed_length_from_a_file_is_clamped_consistently(make_window):
     win.set_label(Label(auto_length=False, length_mm=1000), None)
     # the row shows the printer's maximum, and the label really uses it
     assert win.label.length_mm == pytest.approx(431, abs=1)
+
+
+def test_system_printer_has_a_translated_name_and_paper_texts():
+    from etiketto.backends import get_backend
+
+    assert texts.backend_name(get_backend("system")) == "System printer (CUPS, IPP)"
+    assert texts.backend_name(get_backend("cab")) == get_backend("cab").name
+    for code, start in (
+        ("out_of_paper", "The printer is out of paper."),
+        ("media_jam", "The paper is jammed."),
+        ("supplies", "The printer is out of toner or ink."),
+        ("job_held", "The print job was held in the queue"),
+        ("job_canceled", "The print job was canceled at the printer or in the queue."),
+    ):
+        assert texts.code_text(code, MILLIMETRES).startswith(start)
+
+
+def test_a_partly_printed_job_says_how_many_labels_came_out():
+    error = PrinterError("aborted", printed=2, copies=5)
+    assert texts.printer_error_text(error, MILLIMETRES) == (
+        "The printer reported a problem. Switch it off and on again, then try once more. "
+        "Labels already printed: 2 of 5."
+    )
+    assert "already printed" not in texts.printer_error_text(PrinterError("x"), MILLIMETRES)
+
+
+def test_a_busy_printer_with_canceled_queued_labels():
+    error = PrinterBusy("0x0507", printed=1, copies=4, queue_canceled=True)
+    assert texts.printer_error_text(error, MILLIMETRES) == (
+        "The printer is busy. Wait a moment and try again. Labels already printed: 1 of 4. "
+        "The labels still waiting in the queue were canceled."
+    )
+
+
+def test_switching_to_a_page_printer_turns_the_content_across(window):
+    window.set_backend("cab")
+    window.label.set_orientation("along")  # chosen on the cab: content along the roll
+    size = window.label.media_size()
+    window.set_backend("system")
+    assert window.label.orientation == "across" and window.label.media_size() == size
+
+
+def test_page_printers_have_no_roll(window):
+    window.set_backend("system")
+    assert not find(window.sidebar, Adw.SpinRow, title="Gap")
+    assert not find(window.sidebar, Adw.ComboRow, title="Content direction")
+    width = one(window.sidebar, Adw.SpinRow, title="Width")
+    assert width.get_subtitle() == "mm"  # not "across the roll"
+    assert width.get_adjustment().get_upper() == 330  # A3+
+    margin = one(window.sidebar, Adw.SpinRow, title="Safety margin")
+    assert margin.get_adjustment().get_upper() == 10  # office printers leave 4 to 5 mm
+    window.set_backend("cab")
+    assert one(window.sidebar, Adw.SpinRow, title="Gap")

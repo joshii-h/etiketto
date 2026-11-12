@@ -17,6 +17,7 @@ from etiketto.backends.base import PrinterInfo  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
+    backend_name,
     cassette_age_hint,
     code_text,
     printer_error_text,
@@ -76,7 +77,7 @@ class Printer:
                 _("Safety margin"),
                 window.printer_settings.safe_mm,
                 0,
-                3,
+                10,  # office printers leave 4 to 5 mm of a page blank
                 0.1,
                 self._on_safe_margin,
                 _(
@@ -101,7 +102,7 @@ class Printer:
         return group
 
     def _backend_row(self) -> Adw.ComboRow:
-        items = [(b.id, b.name) for b in backends()]
+        items = [(b.id, backend_name(b)) for b in backends()]
         return combo_row(
             _("Printer model"), items, self.window.backend.id, self.window.set_backend
         )
@@ -118,7 +119,7 @@ class Printer:
             flat_button(
                 "system-search-symbolic",
                 _("Search for printers"),
-                lambda: self.discover(choose=True),
+                self.discover,
             )
         )
         group.add(self.row)
@@ -140,7 +141,7 @@ class Printer:
 
     # --- search and connection ---------------------------------------------------------
 
-    def discover(self, choose: bool = False) -> None:
+    def discover(self) -> None:
         """Look for printers of the current model on the network."""
         generation = self._next_generation()
         self.update_row(_("Searching for printers…"), "")
@@ -148,11 +149,11 @@ class Printer:
 
         def work():
             found = backend.discover()
-            GLib.idle_add(self.discovered, found, choose, generation)
+            GLib.idle_add(self.discovered, found, generation)
 
         threading.Thread(target=work, name="etiketto-discover", daemon=True).start()
 
-    def discovered(self, found, choose: bool, generation: int | None = None) -> bool:
+    def discovered(self, found, generation: int | None = None) -> bool:
         if self._outdated(generation):
             return False
         if not found:
@@ -163,7 +164,7 @@ class Printer:
                 ),
             )
             return False
-        if len(found) == 1 or not choose:
+        if len(found) == 1:  # several: let the user choose, never guess
             self._use(found[0].host)
             self.window.toast(_("Found %s") % found[0].name)
             return False

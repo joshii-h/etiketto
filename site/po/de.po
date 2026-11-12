@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 21:33+0100\n"
+"POT-Creation-Date: 2026-11-11 22:47+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -698,6 +698,116 @@ msgid ""
 "Print too pale or too dark: change the heat level in the printer's setup."
 msgstr ""
 "Druck zu blass oder zu dunkel: Heizstufe im Setup des Druckers ändern."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "System printer (CUPS, IPP) { #system }"
+msgstr "Systemdrucker (CUPS, IPP) { #system }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Prints on the printers your computer knows: printers set up in the system "
+"settings (also over USB) and printers in the network that support IPP "
+"Everywhere, as most office printers do. A network printer that only offers "
+"AirPrint can be printed on once it is set up in the system settings. The "
+"label is printed as one page of exactly its size, unscaled."
+msgstr ""
+"Druckt auf den Druckern, die der Computer kennt: in den Systemeinstellungen "
+"eingerichtete Drucker (auch über USB) und Drucker im Netzwerk, die IPP "
+"Everywhere unterstützen, wie die meisten Bürodrucker. Ein Netzwerkdrucker, "
+"der nur AirPrint anbietet, lässt sich nutzen, sobald er in den "
+"Systemeinstellungen eingerichtet ist. Das Etikett wird als eine Seite in "
+"genau seiner Grösse gedruckt, ohne Skalierung."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Search for printers]] lists both. Otherwise enter the printer's address"
+" or the name of its CUPS queue under [[ui:Host name or IP address]]."
+msgstr ""
+"[[ui:Search for printers]] listet beide. Sonst die Adresse des Druckers oder"
+" den Namen seiner CUPS-Warteschlange unter [[ui:Host name or IP address]] "
+"eintragen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid "[[ui:Label size]]: the paper size, or [[ui:Custom size]]."
+msgstr "[[ui:Label size]]: das Papierformat oder [[ui:Custom size]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Most office printers cannot print the outer 4 to 5 mm of a page: set the "
+"[[ui:Safety margin]] to 5 mm."
+msgstr ""
+"Die meisten Bürodrucker können die äussersten 4 bis 5 mm einer Seite nicht "
+"bedrucken: den [[ui:Safety margin]] auf 5 mm stellen."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #system-problems }"
+msgstr "Probleme { #system-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Out of paper, paper jam or cover open while printing: Etiketto shows it and "
+"waits. Fix it at the printer within 5 minutes and printing goes on."
+msgstr ""
+"Kein Papier, Papierstau oder Abdeckung offen während des Druckens: Etiketto "
+"zeigt es an und wartet. Innerhalb von 5 Minuten am Drucker beheben, dann "
+"geht der Druck weiter."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Out of toner or ink, or a problem before printing: fix it as the printer's "
+"display shows, then [[ui:Refresh]]."
+msgstr ""
+"Toner oder Tinte leer, oder ein Problem vor dem Drucken: so beheben, wie es "
+"das Display des Druckers zeigt, dann [[ui:Refresh]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Printing fails after some copies: the message says how many labels were "
+"already printed. The rest is canceled, nothing prints later on its own."
+msgstr ""
+"Der Druck scheitert nach einigen Exemplaren: Die Meldung sagt, wie viele "
+"Etiketten schon gedruckt wurden. Der Rest wird abgebrochen, nichts druckt "
+"später von selbst."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The label is printed smaller or moved: the printer or its driver scales the "
+"page. Turn off \"fit to page\" in the printer's setup."
+msgstr ""
+"Das Etikett wird kleiner oder verschoben gedruckt: Der Drucker oder sein "
+"Treiber skaliert die Seite. In der Druckereinrichtung \"An Seite anpassen\" "
+"ausschalten."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Other jobs are printing first: Etiketto says the label was sent, and the "
+"printer prints it when its turn comes."
+msgstr ""
+"Zuerst werden andere Aufträge gedruckt: Etiketto meldet, dass das Etikett "
+"gesendet wurde, und der Drucker druckt es, sobald es an der Reihe ist."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The job is held in the queue (until it is released, or until a password is "
+"entered): Etiketto cancels it. Check the queue in the system settings."
+msgstr ""
+"Der Auftrag wird in der Warteschlange zurückgehalten (bis er freigegeben "
+"oder ein Passwort eingegeben wird): Etiketto bricht ihn ab. Die "
+"Warteschlange in den Systemeinstellungen prüfen."
 
 #. type: Title ##
 #: docs/printer.md
