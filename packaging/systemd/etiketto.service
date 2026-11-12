@@ -1,0 +1,37 @@
+# Etiketto print server as a systemd user service (docs/server.md).
+#
+#   mkdir -p ~/.config/systemd/user ~/.config/etiketto
+#   cp packaging/systemd/etiketto.service ~/.config/systemd/user/
+#   openssl rand -hex 32 > ~/.config/etiketto/token && chmod 600 ~/.config/etiketto/token
+#   systemctl --user daemon-reload && systemctl --user enable --now etiketto
+#   journalctl --user -u etiketto -f
+#
+# Labels are read from ~/.local/share/etiketto/labels. Without lingering
+# (loginctl enable-linger) the service runs only while you are logged in.
+
+[Unit]
+Description=Etiketto print server (REST API and MCP)
+Documentation=https://etiketto.joshuahirsig.xyz/en/server/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/etiketto/token --labels-dir %h/.local/share/etiketto/labels
+Restart=on-failure
+RestartSec=5
+# SIGTERM: waiting jobs are canceled, a printing one finishes its label and
+# saves the counter
+TimeoutStopSec=60
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=%h/.local/share/etiketto %h/.config/etiketto
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=default.target
