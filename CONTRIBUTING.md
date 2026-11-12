@@ -180,11 +180,13 @@ extension of the interface first; please open an issue before you start.
      `prepare()` that depends on the model; `capabilities.default_tape_mm`
      sets the tape of a new label.
    - Override `preview(image, mode)` if a mode changes the result (the
-     VC-500W shows black and white as grey), and `renders_mono(mode)` if a
-     mono printer has a mode in colour (the Brother QL's red and black):
-     labels for mono printers are rendered black and white part by part
-     (`render(mono=True)`: text without anti-aliasing, images by their
-     mode), so the backend's own conversion changes nothing.
+     VC-500W shows black and white as grey), and `renders_red(mode)` if a
+     mono printer prints red too in a mode (the Brother QL's red and
+     black): labels for mono printers are rendered black and white part by
+     part (`render(mono=True)`: text without anti-aliasing, colours black
+     or white against the background, images by their method; with
+     `red=True` red parts stay red), so the backend's own conversion
+     changes nothing.
    - `settings`: printer settings of the backend's own (resolution, label
      sensor, darkness, ...) as `Choice` (protocol values, the first is the
      default) or `Level` (steps; None keeps the printer's own setting). The

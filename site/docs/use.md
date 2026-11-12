@@ -54,7 +54,9 @@ Elements are placed one after another along the label. Order them with
 ![Text in a box and a frame, lines and a rounded border](media/design.png#only-light)
 ![Text in a box and a frame, lines and a rounded border](media/design-dark.png#only-dark)
 
-The rows of a text element:
+The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]]
+and [[ui:Outline and shadow]] open a page of their own in the sidebar, its
+header names the element:
 
 - [[ui:Font]]: family, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]],
   [[ui:Strikethrough]].
@@ -62,7 +64,10 @@ The rows of a text element:
   [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the
   label height and, with a fixed length, the length, never below
   [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several;
-  [[ui:Rotation]] 90° or 270° prints the text vertically.
+  [[ui:Rotation]] 90° or 270° turns the whole text, the letters lie on
+  their side (not upright columns of Chinese or Japanese).
+- Letter spacing leaves out scripts whose letters join, such as Arabic or
+  Devanagari.
 - [[ui:Box and frame]]: [[ui:White on black]] cuts the text out of a box
   in the text colour; [[ui:Background box]] puts a box of another colour
   behind it; [[ui:Padding]], [[ui:Corner radius]] and [[ui:Frame]] shape
@@ -110,13 +115,20 @@ Each element has [[ui:Position]]:
 - Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]]
   uses a threshold for drawings and logos and dithering for photos;
   [[ui:Threshold]] sets which grey still prints black.
-- Colours print black, or white if they are light. A shadow prints solid
-  black. Outlines and shadows are at least one printer dot.
+- Colours print black, or white if they are lighter than what lies behind
+  them (the background colour or image, or a text's box). An element that
+  would print in the colour of the background gets a warning.
+- The background colour or image is dithered on its own.
+- A shadow prints solid in the other colour, one dot apart from the
+  letters. Outlines and shadows are at least one printer dot.
+- Earlier versions dithered every image; now [[ui:Automatic]] keeps
+  drawings and logos sharp.
 
 ## Undo and keyboard shortcuts { #shortcuts }
 
 - [[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field
-  counts as one step. In a text field Ctrl+Z undoes the typing there.
+  counts as one step, also when the field has the focus. Undoing back to
+  the saved label makes it unchanged again.
 - The open element (its row expanded): Ctrl+D duplicates it, Delete
   removes it, Alt+Up and Alt+Down move it.
 - Ctrl+Shift+T, G, Y, B and L add text, an image, a symbol, a code or a

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:47+0100\n"
+"POT-Creation-Date: 2026-11-12 12:29+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -765,6 +765,17 @@ msgstr ""
 "schwarze Etiketten einen rot-schwarzen Druckauftrag: Passt die Wahl nicht "
 "zur eingelegten Rolle, lehnt der Drucker den Auftrag ab, Etiketto druckt ihn "
 "auf die andere Art und sagt das. Danach folgt die Wahl der Rolle."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Red and black: red parts stay red; images, the background and everything "
+"else are converted as for black-and-white printers, see [Black-and-white "
+"printers](use.md#black-and-white)."
+msgstr ""
+"Rot und Schwarz: Rote Teile bleiben rot; Bilder, der Hintergrund und alles "
+"andere werden wie für Schwarzweissdrucker umgewandelt, siehe "
+"[Schwarzweissdrucker](use.md#black-and-white)."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -2250,8 +2261,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/use.md
-msgid "The rows of a text element:"
-msgstr "Die Zeilen eines Textelements:"
+msgid ""
+"The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]] "
+"and [[ui:Outline and shadow]] open a page of their own in the sidebar, its "
+"header names the element:"
+msgstr ""
+"Die Zeilen eines Textelements; [[ui:Spacing and fitting]], [[ui:Box and "
+"frame]] und [[ui:Outline and shadow]] öffnen eine eigene Seite in der "
+"Seitenleiste, ihr Kopf nennt das Element:"
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -2269,13 +2286,24 @@ msgid ""
 "[[ui:Shrink to fit]] makes the text smaller until it fits the label height "
 "and, with a fixed length, the length, never below [[ui:Smallest size]]; "
 "[[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or "
-"270° prints the text vertically."
+"270° turns the whole text, the letters lie on their side (not upright "
+"columns of Chinese or Japanese)."
 msgstr ""
 "[[ui:Spacing and fitting]]: [[ui:Letter spacing]] und [[ui:Line spacing]]; "
 "[[ui:Shrink to fit]] verkleinert den Text, bis er in die Etikettenhöhe und "
 "bei fester Länge in die Länge passt, nie unter [[ui:Smallest size]]; "
 "[[ui:Wrap width]] bricht lange Zeilen in mehrere um; [[ui:Rotation]] 90° "
-"oder 270° druckt den Text senkrecht."
+"oder 270° dreht den ganzen Text, die Buchstaben liegen auf der Seite (keine "
+"aufrechten Spalten wie im Chinesischen oder Japanischen)."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Letter spacing leaves out scripts whose letters join, such as Arabic or "
+"Devanagari."
+msgstr ""
+"Der Zeichenabstand lässt Schriften aus, deren Buchstaben verbunden sind, "
+"etwa Arabisch oder Devanagari."
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -2448,11 +2476,38 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"Colours print black, or white if they are light. A shadow prints solid "
-"black. Outlines and shadows are at least one printer dot."
+"Colours print black, or white if they are lighter than what lies behind them "
+"(the background colour or image, or a text's box). An element that would "
+"print in the colour of the background gets a warning."
 msgstr ""
-"Farben werden schwarz gedruckt, helle weiss. Ein Schatten wird voll schwarz "
-"gedruckt. Konturen und Schatten sind mindestens einen Druckpunkt breit."
+"Farben werden schwarz gedruckt, oder weiss, wenn sie heller sind als das, "
+"was dahinter liegt (Hintergrundfarbe oder -bild oder der Kasten eines "
+"Texts). Ein Element, das in der Farbe des Hintergrunds gedruckt würde, "
+"erhält eine Warnung."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "The background colour or image is dithered on its own."
+msgstr "Hintergrundfarbe oder -bild werden für sich gerastert."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A shadow prints solid in the other colour, one dot apart from the letters. "
+"Outlines and shadows are at least one printer dot."
+msgstr ""
+"Ein Schatten wird voll in der anderen Farbe gedruckt, einen Punkt von den "
+"Buchstaben entfernt. Konturen und Schatten sind mindestens einen Druckpunkt "
+"breit."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Earlier versions dithered every image; now [[ui:Automatic]] keeps drawings "
+"and logos sharp."
+msgstr ""
+"Frühere Versionen rasterten jedes Bild; jetzt hält [[ui:Automatic]] "
+"Zeichnungen und Logos scharf."
 
 #. type: Title ##
 #: docs/use.md
@@ -2464,11 +2519,12 @@ msgstr "Rückgängig und Tastenkürzel { #shortcuts }"
 #: docs/use.md
 msgid ""
 "[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field "
-"counts as one step. In a text field Ctrl+Z undoes the typing there."
+"counts as one step, also when the field has the focus. Undoing back to the "
+"saved label makes it unchanged again."
 msgstr ""
 "[[ui:Undo]] (Strg+Z) und [[ui:Redo]] (Strg+Umschalt+Z); Tippen in ein Feld "
-"zählt als ein Schritt. In einem Textfeld macht Strg+Z das Tippen dort "
-"rückgängig."
+"zählt als ein Schritt, auch wenn das Feld den Fokus hat. Wird bis zum "
+"gespeicherten Etikett rückgängig gemacht, gilt es wieder als unverändert."
 
 #. type: Bullet: '- '
 #: docs/use.md

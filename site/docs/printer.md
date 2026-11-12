@@ -142,6 +142,9 @@ documented it. Reports of what works and what does not are very welcome.
   for black labels: if the choice does not fit the loaded roll, the
   printer refuses the job, Etiketto prints it the other way and says so.
   From then on the choice follows the roll.
+- Red and black: red parts stay red; images, the background and
+  everything else are converted as for black-and-white printers, see
+  [Black-and-white printers](use.md#black-and-white).
 - [[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution
   along the roll; printing takes longer. Offered on the QL-570, QL-580N,
   QL-700, QL-710W, QL-720NW, the QL-800 series and the QL-1100 series.

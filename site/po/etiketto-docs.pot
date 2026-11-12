@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:47+0100\n"
+"POT-Creation-Date: 2026-11-12 12:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -525,6 +525,12 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "[[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a 62 mm continuous roll is loaded; red parts of the label print red on the red and black roll DK-22251. That roll needs a red and black job even for black labels: if the choice does not fit the loaded roll, the printer refuses the job, Etiketto prints it the other way and says so.  From then on the choice follows the roll."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Red and black: red parts stay red; images, the background and everything else are converted as for black-and-white printers, see [Black-and-white printers](use.md#black-and-white)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1509,7 +1515,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "The rows of a text element:"
+msgid "The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]] and [[ui:Outline and shadow]] open a page of their own in the sidebar, its header names the element:"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1521,7 +1527,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Spacing and fitting]]: [[ui:Letter spacing]] and [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the label height and, with a fixed length, the length, never below [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or 270° prints the text vertically."
+msgid "[[ui:Spacing and fitting]]: [[ui:Letter spacing]] and [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the label height and, with a fixed length, the length, never below [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or 270° turns the whole text, the letters lie on their side (not upright columns of Chinese or Japanese)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Letter spacing leaves out scripts whose letters join, such as Arabic or Devanagari."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1653,7 +1665,25 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Colours print black, or white if they are light. A shadow prints solid black. Outlines and shadows are at least one printer dot."
+msgid "Colours print black, or white if they are lighter than what lies behind them (the background colour or image, or a text's box). An element that would print in the colour of the background gets a warning."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The background colour or image is dithered on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A shadow prints solid in the other colour, one dot apart from the letters. Outlines and shadows are at least one printer dot."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Earlier versions dithered every image; now [[ui:Automatic]] keeps drawings and logos sharp."
 msgstr ""
 
 #. type: Title ##
@@ -1665,7 +1695,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field counts as one step. In a text field Ctrl+Z undoes the typing there."
+msgid "[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field counts as one step, also when the field has the focus. Undoing back to the saved label makes it unchanged again."
 msgstr ""
 
 #. type: Bullet: '- '
