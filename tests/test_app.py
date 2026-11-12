@@ -2311,3 +2311,52 @@ def test_the_preview_counts_the_copies_of_the_print_dialog(ready):
     assert ready.planned_copies == 4 and ready.preview_values().copies == 4
     respond(ready.last_dialog, "cancel")
     assert ready.planned_copies == 1
+
+
+def test_a_next_number_typed_in_wins_over_the_file(ready, gui_env, tmp_path, monkeypatch):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 5
+    ready.files.write(path)
+    one(ready.counter_group, Adw.SpinRow, title="Next number").set_value(3)
+    assert ready.counter_edited
+    Label.store_counter(path, 20)  # the command line printed meanwhile
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 4  # printed 3, as typed in
+    ready.files.write(path)
+    assert not ready.counter_edited and Label.load(path).counter_next == 4
+
+
+def test_the_file_is_read_only_when_it_changed(window, tmp_path, monkeypatch):
+    path = tmp_path / "serial.etiketto"
+    window.label.elements[0].text = "{=counter}"
+    window.files.write(path)
+    reads = []
+    real = Label.saved_counter
+    monkeypatch.setattr(Label, "saved_counter", staticmethod(lambda p: reads.append(p) or real(p)))
+    window.sync_counter()
+    assert reads == []  # unchanged: not read
+    Label.store_counter(path, 12)
+    window.sync_counter()
+    window.sync_counter()
+    assert len(reads) == 1 and window.label.counter_next == 12
+    path.unlink()
+    window.sync_counter()  # gone: nothing to go on from
+    assert window.label.counter_next == 12
+
+
+def test_a_read_only_label_is_not_saved_over(window, tmp_path):
+    path = tmp_path / "locked.etiketto"
+    window.files.write(path)
+    path.chmod(0o444)
+    try:
+        window.change(margin_mm=3.0)
+        window.files.write(path)
+        assert window.dirty
+        assert toast_titles(window)[-1].startswith("Cannot save locked.etiketto")
+        assert Label.load(path).margin_mm == 2.0
+        window.files.write(tmp_path / "copy.etiketto")  # Save as: works
+        assert not window.dirty and window.path == tmp_path / "copy.etiketto"
+    finally:
+        path.chmod(0o644)

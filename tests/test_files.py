@@ -109,11 +109,32 @@ def test_variables_and_counters_need_format_2(label):
     assert Label.from_dict(label.to_dict()) == label
 
 
-def test_reading_stops_at_the_size_limit(monkeypatch):
+def test_reading_stops_at_the_size_limit(tmp_path, monkeypatch):
     monkeypatch.setattr(model, "MAX_FILE_BYTES", 10)
+    path = tmp_path / "big.etiketto"
+    path.write_text("x" * 11)
     with pytest.raises(LabelError) as e:
-        Label.load("/dev/zero")  # its size says 0, it never ends
+        Label.load(path)
     assert e.value.code == "damaged"
+
+
+@pytest.mark.parametrize("special", ["/dev/zero", "fifo", "dir"])
+def test_only_regular_files_are_read(tmp_path, special):
+    if special == "fifo":
+        special = tmp_path / "fifo"
+        os.mkfifo(special)  # nobody writes: an open that waits would hang
+    elif special == "dir":
+        special = tmp_path
+    try:
+        Label.load(special)
+    except LabelError as e:
+        assert e.code == "not_label"
+    except IsADirectoryError:
+        assert special == tmp_path
+    else:
+        raise AssertionError("read %s" % special)
+    with model.locked(special):  # nothing to lock
+        pass
 
 
 def test_a_lock_on_the_label_file(tmp_path):
@@ -188,3 +209,83 @@ def test_a_lock_on_a_file_removed_meanwhile(tmp_path, monkeypatch):
     monkeypatch.setattr(model.fcntl, "flock", flock)
     with model.locked(path):
         pass
+
+
+def test_the_file_lists_the_features_it_needs(tmp_path):
+    label = Label(elements=[TextElement(text="{=date}")])
+    data = label.to_dict()
+    assert (data["version"], data["features"]) == (2, ["variables"])
+    assert "features" not in Label().to_dict()
+    assert Label.from_dict(dict(data, features=[])).elements == label.elements
+    with pytest.raises(LabelError) as e:
+        Label.from_dict(dict(data, features=["variables", "teleport"]))
+    assert e.value.code == "newer"
+    with pytest.raises(LabelError) as e:
+        Label.from_dict(dict(data, features="variables"))
+    assert e.value.code == "damaged"
+    path = tmp_path / "a.etiketto"
+    path.write_text('{"version": 1, "features": ["other"]}')
+    with pytest.raises(LabelError):  # an unknown feature is refused in any version
+        Label.load(path)
+    path.write_text('{"version": 1, "tape_mm": 12, "printer": "vc500w"}')
+    Label.store_counter(path, 7)
+    data = json.loads(path.read_text())
+    assert (data["version"], data["features"], data["counter_next"]) == (2, ["variables"], 7)
+    Label.store_counter(path, 8)
+    assert json.loads(path.read_text())["features"] == ["variables"]
+
+
+def test_mode_and_fsync_are_best_effort(tmp_path, monkeypatch):
+    """vfat or NTFS: fixed owner and mode, fsync maybe refused; saving works."""
+    path = tmp_path / "a.etiketto"
+    Label().save(path)
+
+    def refuse(*_args):
+        raise PermissionError("operation not permitted")
+
+    def unsupported(*_args):
+        raise OSError(22, "invalid argument")
+
+    monkeypatch.setattr(model.os, "fchmod", refuse)
+    monkeypatch.setattr(model.os, "fsync", unsupported)
+    Label(tape_mm=12).save(path)
+    Label.store_counter(path, 4)
+    assert Label.load(path).counter_next == 4
+
+
+def test_the_lock_opens_for_writing_where_it_can(tmp_path, monkeypatch):
+    path = tmp_path / "a.etiketto"
+    Label().save(path)
+    opened = []
+    real_open = os.open
+
+    def record(target, flags, *args):
+        opened.append(flags & (os.O_RDWR | os.O_WRONLY))
+        return real_open(target, flags, *args)
+
+    monkeypatch.setattr(model.os, "open", record)
+    with model.locked(path):
+        pass
+    assert opened == [os.O_RDWR]
+    path.chmod(0o444)
+    try:
+        opened.clear()
+        with model.locked(path):
+            pass
+    finally:
+        path.chmod(0o644)
+    assert opened == [os.O_RDWR, os.O_RDONLY] or opened == [os.O_RDWR]  # root may write
+
+
+def test_the_lock_gives_up_after_the_timeout(tmp_path, monkeypatch):
+    path = tmp_path / "a.etiketto"
+    Label().save(path)
+    waited = []
+    monkeypatch.setattr(model.time, "sleep", lambda _s: None)
+    with (
+        model.locked(path),
+        pytest.raises(model.LockTimeout),
+        model.locked(path, lambda: waited.append(1), timeout=0),
+    ):
+        pass
+    assert waited == [1]

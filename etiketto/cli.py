@@ -38,12 +38,20 @@ from etiketto import __version__
 from etiketto.backends import backends, get_backend
 from etiketto.backends.base import Backend, PrintOptions
 from etiketto.job import Job, PrepareFailed
-from etiketto.model import CodeElement, Label, LabelError, TextElement, locked, writable
+from etiketto.model import (
+    CodeElement,
+    Label,
+    LabelError,
+    LockTimeout,
+    TextElement,
+    locked,
+    writable,
+)
 from etiketto.ui.i18n import _
 from etiketto.ui.settings import PrinterSettings, Settings
 from etiketto.ui.texts import (
     label_error_text,
-    printed_text,
+    printed_remark,
     printer_error_text,
     save_error_text,
     warning_text,
@@ -59,7 +67,7 @@ EXIT_USAGE = 2  # wrong arguments (argparse uses 2 as well)
 EXIT_FILE = 3  # the label file cannot be read, or the output not written
 EXIT_LABEL = 4  # the label cannot be printed as it is (empty, unknown variable)
 EXIT_COUNTER = 5  # the next counter value cannot be saved (checked before printing)
-EXIT_INTERRUPTED = 130  # Ctrl+C or SIGTERM (128 + SIGINT, as shells report it)
+EXIT_INTERRUPTED = 130  # Ctrl+C, SIGTERM or SIGHUP (128 + SIGINT, as shells report it)
 
 
 class CliError(Exception):
@@ -155,6 +163,14 @@ def parser() -> argparse.ArgumentParser:
         help=_("counter of the first label, instead of the one saved in the label"),
     )
     print_.add_argument(
+        "--no-save-counter",
+        action="store_true",
+        help=_(
+            "do not save the next counter value in the label (a read-only file);"
+            " the next print starts from the same number"
+        ),
+    )
+    print_.add_argument(
         "--dry-run", action="store_true", help=_("check and render only, do not print")
     )
     print_.add_argument(
@@ -232,7 +248,10 @@ def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
     rest = []
     for assignment in assignments:
         name, value, literal = assignment
-        if literal:  # "{" and "}" as they are (in a text, not in a variable's value)
+        # "{=" as it is, in a text (a variable's value is never filled in).
+        # Only a text with "{=" is expanded at all: other braces ('{"a":1}'
+        # in a QR code) stay as they are and must not be doubled.
+        if literal and "{=" in value:
             value = value.replace("{", "{{").replace("}", "}}")
         if not _set_element(label, name, value):
             rest.append(assignment)
@@ -257,7 +276,7 @@ def _check(job: Job) -> None:
     if not label.elements and not label.background_image:
         raise CliError(_("The label is empty"), EXIT_LABEL)
     for warning in job.check():
-        if warning.key in ("unknown_variable", "unclosed_variable"):
+        if warning.key in ("unknown_variable", "unclosed_variable", "date_out_of_range"):
             raise CliError(warning_text(warning), EXIT_LABEL)
         _say(warning_text(warning))
 
@@ -289,7 +308,14 @@ def _out(line: str) -> None:
     try:
         sys.stdout.write(line + "\n")
         sys.stdout.flush()
-    except OSError:
+    except (OSError, ValueError, AttributeError):  # gone, full, closed; None if never open
+        raise _output_failed() from None
+
+
+def _stdout_bytes() -> IO[bytes]:
+    try:
+        return sys.stdout.buffer
+    except AttributeError:  # no stdout at all (started with ">&-")
         raise _output_failed() from None
 
 
@@ -309,12 +335,13 @@ def _check_output(output: str) -> None:
         raise CliError(_("--output writes PNG images: give a name ending in .png"), EXIT_USAGE)
 
 
-def _write_png(image, target: str, stdout: IO[bytes]) -> None:
+def _write_png(image, target: str) -> None:
     if target == "-":
+        stdout = _stdout_bytes()
         try:
             image.save(stdout, format="PNG")
             stdout.flush()
-        except OSError:
+        except (OSError, ValueError):
             raise _output_failed() from None
         return
     try:
@@ -331,12 +358,12 @@ def _dry_run(job: Job, output: str | None) -> int:
     try:
         if output == "-":
             _copy, label = next(job.labels())
-            _write_png(job.image(label), "-", sys.stdout.buffer)
+            _write_png(job.image(label), "-")
             return EXIT_OK
         targets = _output_paths(output, job.renders) if output else None
         for copy, label in job.labels():
             if targets:
-                _write_png(job.image(label), next(targets), sys.stdout.buffer)
+                _write_png(job.image(label), next(targets))
             elif copy == 1:
                 job.image(label)
             _out("\t".join([str(copy)] + [_one_line(t) for t in _contents(label)]))
@@ -406,26 +433,31 @@ def _check_writable(path: Path, job: Job) -> None:
 
 @contextlib.contextmanager
 def _interruptible() -> Iterator[None]:
-    """SIGTERM (kill, systemd stop) ends the job like Ctrl+C does: as an
-    exception, so the counter of the labels printed so far is saved."""
+    """SIGTERM (kill, systemd stop) and SIGHUP (the terminal closed) end
+    the job like Ctrl+C does: as an exception, so the counter of the labels
+    printed so far is saved."""
 
     def interrupt(_signum, _frame):
         raise KeyboardInterrupt
 
     try:
-        previous = signal.signal(signal.SIGTERM, interrupt)
+        previous = {s: signal.signal(s, interrupt) for s in _ENDING}
     except ValueError:  # pragma: no cover - not the main thread
         yield
         return
     try:
         yield
     finally:
-        signal.signal(signal.SIGTERM, previous)
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
+_ENDING = (signal.SIGTERM, signal.SIGHUP)
 
 
 @contextlib.contextmanager
 def _uninterrupted() -> Iterator[None]:
-    """Ctrl+C and SIGTERM wait until the counter is saved: noted while it is
+    """Ctrl+C, SIGTERM and SIGHUP wait until the counter is saved: noted while it is
     written, then raised. (Not a signal mask: that holds for one thread
     only, and a signal to the process may reach another one.)"""
     caught: list[int] = []
@@ -434,7 +466,7 @@ def _uninterrupted() -> Iterator[None]:
         caught.append(signum)
 
     try:
-        previous = {s: signal.signal(s, remember) for s in (signal.SIGINT, signal.SIGTERM)}
+        previous = {s: signal.signal(s, remember) for s in (signal.SIGINT, *_ENDING)}
     except ValueError:  # pragma: no cover - not the main thread
         yield
         return
@@ -461,10 +493,10 @@ def _send(args, job: Job, host: str, unit) -> int:
             raise CliError(printer_error_text(e, unit), EXIT_PRINTER) from None
         finally:
             with _uninterrupted():
-                saved = _save_counter(args.file, job)
-    text = printed_text(job.options, result)
-    if text != _("Printed"):  # queued, or printed in another mode: say so
-        _say(text)
+                saved = EXIT_OK if args.no_save_counter else _save_counter(args.file, job)
+    remark = printed_remark(job.options, result)
+    if remark:  # queued, or printed in another mode: say so
+        _say(remark)
     return saved
 
 
@@ -509,8 +541,13 @@ def _locked(path: Path) -> Iterator[None]:
     def waiting():
         _say(_("Waiting for another print of %s to finish…") % _name(path))
 
-    with locked(path, waiting):
-        yield
+    try:
+        with locked(path, waiting):
+            yield
+    except LockTimeout:
+        raise CliError(
+            _("%s is still locked by another print – try again later") % _name(path), EXIT_FILE
+        ) from None
 
 
 def print_command(args, settings: Settings | None = None, now: datetime | None = None) -> int:
@@ -521,6 +558,11 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
     if args.dry_run:  # writes nothing back: no lock
         job, _printer, _settings = _job(args, settings, now)
         return _dry_run(job, args.output)
+    if args.no_save_counter:  # nothing written back: no lock, no write check
+        job, printer, settings = _job(args, settings, now)
+        if job.next_counter() is not None:
+            _say(_("The next counter value is not saved: the next print repeats the numbers"))
+        return _send(args, job, _host(args, job.backend, printer), unit_for(settings.units))
     with _locked(args.file):  # from reading the counter until the next one is saved
         job, printer, settings = _job(args, settings, now)
         _check_writable(args.file, job)

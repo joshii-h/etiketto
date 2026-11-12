@@ -708,3 +708,71 @@ def test_list_printers_keeps_its_columns(mono, capsys, monkeypatch):
     mono.found = [FoundPrinter("Tab\tName", "a.local", "192.0.2.1")]
     assert run("list-printers") == 0
     assert capsys.readouterr().out == "fake-mono\ta.local\tTab Name\n"
+
+
+def test_set_literal_keeps_other_braces(mono, label_file):
+    path = label_file(CodeElement(data="x", name="payload"))
+    assert run("print", path, "--host", "h", "--set-literal", 'payload={"a":1,"b":{}}') == 0
+    assert contents(mono) == [['{"a":1,"b":{}}']]
+
+
+def test_no_save_counter_for_read_only_labels(mono, label_file, capsys):
+    path = label_file(TextElement(text="{=counter}"), counter_next=7)
+    path.chmod(0o444)
+    try:
+        argv = ["print", path, "--host", "h", "--copies", "2", "--no-save-counter"]
+        assert run(*argv) == 0
+        assert err(capsys) == (
+            "etiketto: The next counter value is not saved: the next print repeats the numbers\n"
+        )
+        assert run(*argv, "--counter-start", "20") == 0
+        err(capsys)
+    finally:
+        path.chmod(0o644)
+    assert contents(mono) == [["7"], ["8"], ["20"], ["21"]]
+    assert Label.load(path).counter_next == 7
+    plain = label_file(TextElement(text="x"))
+    assert run("print", plain, "--host", "h", "--no-save-counter") == 0
+    assert err(capsys) == ""  # no counter: nothing to warn about
+
+
+def test_sighup_while_printing_saves_the_counter(mono, label_file, monkeypatch, capsys):
+    import os
+    import signal
+
+    path = label_file(TextElement(text="{=counter}"), counter_next=1)
+    interrupt_at(mono, monkeypatch, 2, lambda: os.kill(os.getpid(), signal.SIGHUP))
+    assert run("print", path, "--host", "h", "--copies", "3") == cli.EXIT_INTERRUPTED
+    assert Label.load(path).counter_next == 3
+
+
+def test_no_stdout_at_all(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="x"))
+    monkeypatch.setattr(sys, "stdout", None)
+    assert run("print", path, "--dry-run") == cli.EXIT_FILE
+    assert run("print", path, "--dry-run", "--output", "-") == cli.EXIT_FILE
+    assert err(capsys) == "etiketto: Cannot write the output\n" * 2
+
+
+def test_a_lock_held_too_long(mono, label_file, monkeypatch, capsys):
+    from etiketto import model
+
+    path = label_file(TextElement(text="{=counter}"))
+
+    def held(*_args, **_kwargs):
+        raise model.LockTimeout(11, "locked")
+
+    monkeypatch.setattr(model, "_lock", held)
+    assert run("print", path, "--host", "h") == cli.EXIT_FILE
+    assert err(capsys) == (
+        "etiketto: label.etiketto is still locked by another print – try again later\n"
+    )
+    assert mono.jobs == []
+
+
+def test_dates_out_of_range_are_refused(mono, label_file, capsys):
+    path = label_file(TextElement(text="{=date+9000y}"))
+    assert run("print", path, "--host", "h") == cli.EXIT_LABEL
+    assert err(capsys) == (
+        "etiketto: Element 1: the date of {=date+9000y} is before the year 1 or after 9999\n"
+    )

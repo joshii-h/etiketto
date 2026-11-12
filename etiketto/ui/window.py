@@ -55,9 +55,12 @@ class Window(Adw.ApplicationWindow):
         self._preview_random = os.urandom(64)
         # {=copies} in the preview: the number in the print dialog while it is open
         self.planned_copies = 1
-        # counter_next as saved in self.path when it was opened or saved: a
-        # different value there means the command line printed meanwhile
+        # counter_next as saved in self.path when it was opened or saved, and
+        # the file's stat() then: a different value there means the command
+        # line printed meanwhile (see sync_counter)
         self.saved_counter: int | None = None
+        self._saved_stamp: tuple | None = None
+        self.counter_edited = False  # the user changed the next number since
 
         # the controllers come first: the layout and the sidebar use them
         self.printer = Printer(self)
@@ -154,7 +157,7 @@ class Window(Adw.ApplicationWindow):
             self.sidebar.remove(group)
         self.label_group = LabelGroup(self)
         self.elements_group = ElementsGroup(self)
-        self.counter_group = CounterGroup(self.label, self.mark_changed)
+        self.counter_group = CounterGroup(self.label, self.mark_changed, self._counter_edited)
         self._groups = [
             self.printer.group(),
             self.label_group,
@@ -222,20 +225,34 @@ class Window(Adw.ApplicationWindow):
         self.label.counter_next = min(value, MAX_COUNTER)
         self.mark_changed()
 
+    def _counter_edited(self) -> None:
+        self.counter_edited = True
+
+    def remember_saved(self) -> None:
+        """The label in self.path is as it is here: opened or just saved."""
+        self.saved_counter = self.label.counter_next if self.path else None
+        self._saved_stamp = _stamp(self.path) if self.path else None
+        self.counter_edited = False
+
     def sync_counter(self) -> None:
-        """Before printing and saving: if the file's counter moved on since it
-        was opened or saved (`etiketto print` printed from it), go on from
-        there; numbers already printed are not printed again. The larger
-        value wins: a counter set back here on purpose stays as it is as
-        long as the file did not change. The window does not lock the file
-        (see cli.py); printing from both at the same moment is not covered."""
+        """Before printing and saving: if the file changed since it was
+        opened or saved and its counter moved on (`etiketto print` printed
+        from it), go on from there; numbers already printed are not printed
+        again. A next number typed in here since then is kept as it is. The
+        file is only read if its stat() changed: no reading on every print.
+        The window does not lock the file (see cli.py); printing from both
+        at the same moment is not covered."""
         if self.path is None:
             return
+        stamp = _stamp(self.path)
+        if stamp is None or stamp == self._saved_stamp:
+            return
+        self._saved_stamp = stamp
         saved = Label.saved_counter(self.path)
         if saved is None or saved == self.saved_counter:
             return
         self.saved_counter = saved
-        if saved > self.label.counter_next:
+        if saved > self.label.counter_next and not self.counter_edited:
             self.set_counter_next(saved)
 
     def _structure_changed(self) -> None:
@@ -270,7 +287,7 @@ class Window(Adw.ApplicationWindow):
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
         self.path = path
-        self.saved_counter = label.counter_next if path else None
+        self.remember_saved()
         self.dirty = False
         self._geometries = {}
         self.expand_index = -1
@@ -483,3 +500,12 @@ class Window(Adw.ApplicationWindow):
 
         self.files.confirm_discard(close)
         return True
+
+
+def _stamp(path: Path) -> tuple | None:
+    """What changes when the file is written: replaced (inode), size, time."""
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)

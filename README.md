@@ -140,7 +140,7 @@ changes what `{=date}` means.
 ```sh
 etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--set NAME=VALUE ...] [--set-literal NAME=VALUE ...]
-                    [--counter-start N]
+                    [--counter-start N] [--no-save-counter]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
 etiketto --version | --help
@@ -149,17 +149,20 @@ etiketto --version | --help
 `etiketto print` needs no display. `--set` replaces the text of the
 element with that name (set in the element's settings) or fills in
 `{=NAME}`; variables in a new text are filled in (`--set-literal` takes the
-value as it is). `--set date=2026-12-31` prints with another date. Without
+value as it is). `--set date=2026-12-31` prints with another date.
+`--no-save-counter` prints a read-only label without saving the counter
+(the next print repeats the numbers). Without
 `--host` the printer set in the app is used, or the only one found.
 `--dry-run` lists the texts of every label and with `--output` saves the
 PNG images the printer would get (`-`: the first on standard output).
 The label file is locked while printing, so two prints of one file never
 share a number; the window reads the saved counter again before printing
-and saving. The counter is saved also after a printer error, Ctrl+C or
-SIGTERM. Exit codes: 0 printed, 1 printer problem, 2 wrong arguments,
-3 file problem or output not written, 4 label cannot be printed (empty,
-unknown or unclosed variable), 5 the counter cannot be saved (checked
-before printing; or printed, but saving failed), 130 interrupted.
+and saving. The counter is saved also after a printer error, Ctrl+C,
+SIGTERM or SIGHUP. Exit codes: 0 printed, 1 printer problem, 2 wrong
+arguments, 3 file problem (also still locked after 60 s) or output not
+written, 4 label cannot be printed (empty, unknown or unclosed variable,
+date out of range), 5 the counter cannot be saved (checked before
+printing; or printed, but saving failed), 130 interrupted.
 
 In the Flatpak, hand the file over with `--file-forwarding`:
 

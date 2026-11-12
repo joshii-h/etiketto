@@ -49,7 +49,7 @@ import re
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timedelta, tzinfo
+from datetime import UTC, datetime, timedelta, tzinfo
 
 from etiketto.model import CodeElement, Element, Label, TextElement
 from etiketto.render import RenderWarning
@@ -142,7 +142,9 @@ def shift(moment: datetime, offsets: str) -> datetime:
         elif unit in _WALL_UNITS:
             wall += timedelta(**{_WALL_UNITS[unit]: n})
         elif unit == "h":
-            later = _aware(wall, zone) + timedelta(hours=n)
+            # real hours: in UTC, then back to the zone's wall clock (an
+            # aware datetime adds wall clock time, also with a ZoneInfo)
+            later = _aware(wall, zone).astimezone(UTC) + timedelta(hours=n)
             wall = later.astimezone(zone).replace(tzinfo=None)
         else:
             raise ValueError("unknown unit %r" % unit)
@@ -171,11 +173,37 @@ def _number(value: int, offsets: str, fmt: str | None) -> str:
     return "%0*d" % (_digits(fmt), value)
 
 
+# strftime codes of C99/POSIX and glibc; anything else is passed through or
+# dropped depending on the C library ("%Q" stays "%Q", "%Ez" gives nothing),
+# so it is refused. An allowed code may give nothing on purpose: %p (AM/PM)
+# in a language without it.
+_CODES = set("aAbBcCdDeFgGhHIjklmMnpPrRsStTuUVwWxXyYzZ%")
+_MODIFIED = {"E": set("cCxXyY"), "O": set("deHImMSuUVwWy")}
+_DIRECTIVE = re.compile(r"%([-_0^#]?)([EO]?)(.?)", re.DOTALL)
+
+
+def _check_format(fmt: str) -> None:
+    for _flag, modifier, code in _DIRECTIVE.findall(fmt):
+        allowed = _MODIFIED[modifier] if modifier else _CODES
+        if code not in allowed:
+            raise ValueError("unknown format %r" % ("%" + modifier + code))
+
+
 def _moment(values: Values, offsets: str, fmt: str | None, default: str) -> str:
-    text = shift(values.now, offsets).strftime(default if fmt is None else fmt)
-    if not text and fmt and fmt.strip():  # a format the C library does not know
-        raise ValueError("empty date for %r" % fmt)
-    return text
+    if fmt is not None:
+        _check_format(fmt)
+    try:
+        return shift(values.now, offsets).strftime(default if fmt is None else fmt)
+    except (OverflowError, OSError) as e:  # before year 1, after 9999
+        raise OutOfRange(str(e)) from e
+    except ValueError as e:
+        if "year" in str(e):  # datetime: "year must be in 1..9999, not 11026"
+            raise OutOfRange(str(e)) from e
+        raise
+
+
+class OutOfRange(ValueError):
+    """A date before the year 1 or after 9999."""
 
 
 def _short_id(values: Values, offsets: str, fmt: str | None) -> str:
@@ -217,7 +245,15 @@ def _custom(values: Values, name: str, offsets: str, fmt: str | None) -> str | N
 
 def resolve(spec: str, values: Values) -> str | None:
     """The value of one variable ("date+30d:%d.%m.%Y", without "{=" and "}");
-    None if there is no such variable or the offset or format is invalid."""
+    None if there is no such variable, the offset or format is invalid or
+    the date is out of range (see problem())."""
+    try:
+        return _resolve(spec, values)
+    except ValueError:  # also OutOfRange
+        return None
+
+
+def _resolve(spec: str, values: Values) -> str | None:
     match = _SPEC.match(spec)
     if not match:
         return None
@@ -227,8 +263,20 @@ def resolve(spec: str, values: Values) -> str | None:
         if handler is None:
             return _custom(values, name, offsets, fmt)
         return handler(values, offsets, fmt)
-    except (ValueError, OverflowError, OSError):  # bad offset, format or width; a year
-        return None  # past 9999 (OSError: a moment the C library cannot convert)
+    except OverflowError as e:  # a number that big
+        raise ValueError(str(e)) from e
+
+
+def problem(spec: str, values: Values) -> str:
+    """Why a variable could not be filled in: "date_out_of_range" for a
+    date before the year 1 or after 9999, else "unknown_variable"."""
+    try:
+        _resolve(spec, values)
+    except OutOfRange:
+        return "date_out_of_range"
+    except ValueError:
+        pass
+    return "unknown_variable"
 
 
 def variable_name(spec: str) -> str | None:
@@ -357,7 +405,7 @@ def expand_label(label: Label, values: Values) -> tuple[Label, list[RenderWarnin
             warnings += [
                 # a placeholder ends with "}", a variable not closed does not
                 RenderWarning(
-                    "unknown_variable" if u.endswith("}") else "unclosed_variable",
+                    problem(u[2:-1], values) if u.endswith("}") else "unclosed_variable",
                     {"n": index, "name": u},
                 )
                 for u in unknown

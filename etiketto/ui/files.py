@@ -165,7 +165,7 @@ class Files:
             window.sync_counter()  # the command line may have printed meanwhile
         if self._save_label(path):
             window.path = path
-            window.saved_counter = window.label.counter_next
+            window.remember_saved()
             window.dirty = False
             window.update_title()
 

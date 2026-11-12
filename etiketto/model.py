@@ -10,17 +10,22 @@ import json
 import os
 import secrets
 import stat
+import time
 from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Literal
 
-# Version 2 added variables ({=date}, {=counter}) and the counter fields. A
-# label that uses neither is written as version 1 and opens in Etiketto 0.x
-# as before; one that uses them is written as version 2, which an older
-# Etiketto refuses ("needs a newer version") instead of printing "{=date}"
-# literally and dropping the counter when it saves.
+# Version 1: every label. Version 2: the file lists "features" it needs; an
+# Etiketto that does not know one of them refuses the file ("newer") instead
+# of printing it wrongly. A file is written with version 2 only if it uses a
+# feature, so labels without one still open in every version. New features
+# add a name to FEATURES, not a version.
 FORMAT_VERSION = 2
+# "variables": {=date}, {=counter} … in texts and codes, and the counter
+# fields; older versions would print "{=date}" as it is and drop the counter
+# when they save
+FEATURES = frozenset({"variables"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -201,13 +206,11 @@ class Label:
 
     # --- persistence -------------------------------------------------------
 
-    def to_dict(self) -> dict:
-        data = asdict(self)
-        data["version"] = 2 if self.uses_version_2() else 1
-        return data
+    def features(self) -> list[str]:
+        """What a reader must understand to print this label as meant."""
+        return ["variables"] if self._uses_variables() else []
 
-    def uses_version_2(self) -> bool:
-        """Variables or a counter: what an older Etiketto would get wrong."""
+    def _uses_variables(self) -> bool:
         if (self.counter_next, self.counter_step) != (1, 1):
             return True
         return any(
@@ -215,6 +218,14 @@ class Label:
             for e in self.elements
             if isinstance(e, (TextElement, CodeElement))
         )
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        features = self.features()
+        data["version"] = FORMAT_VERSION if features else 1
+        if features:
+            data["features"] = features
+        return data
 
     @classmethod
     def from_dict(cls, data: dict) -> Label:
@@ -228,6 +239,11 @@ class Label:
             raise _damaged("invalid format version %r" % (version,))
         if version > FORMAT_VERSION:
             raise LabelError("newer", "file was written by a newer Etiketto (format %s)" % version)
+        features = data.pop("features", [])
+        if not isinstance(features, list) or not all(isinstance(f, str) for f in features):
+            raise _damaged("features must be a list of names")
+        if unknown := sorted(set(features) - FEATURES):
+            raise LabelError("newer", "file needs features of a newer Etiketto: %s" % unknown)
         items = data.pop("elements", [])
         if not isinstance(items, list):
             raise _damaged("elements must be a list")
@@ -287,9 +303,13 @@ class Label:
         if not isinstance(data, dict):
             raise LabelError("not_label", "not an Etiketto file")
         data["counter_next"] = min(max(counter_next, 0), MAX_COUNTER)
+        features = data.get("features")
+        features = list(features) if isinstance(features, list) else []
+        if "variables" not in features:  # see FEATURES
+            data["features"] = features + ["variables"]
         version = data.get("version", 1)
-        if isinstance(version, int) and not isinstance(version, bool) and version < 2:
-            data["version"] = 2  # see FORMAT_VERSION
+        if not isinstance(version, int) or isinstance(version, bool) or version < FORMAT_VERSION:
+            data["version"] = FORMAT_VERSION
         write_file(path, json.dumps(data, indent=1, ensure_ascii=False).encode())
 
     @staticmethod
@@ -319,9 +339,13 @@ class Label:
 
 
 def read_file(path: str | Path) -> bytes:
-    """The content of a label file, read only up to MAX_FILE_BYTES: also a
-    device like /dev/zero, whose size says nothing, cannot fill the memory."""
-    with open(path, "rb") as f:
+    """The content of a label file, read only up to MAX_FILE_BYTES. Only a
+    regular file: a device like /dev/zero never ends, a FIFO would block
+    (opened without blocking to find out)."""
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    with open(fd, "rb") as f:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise LabelError("not_label", "not a regular file")
         raw = f.read(MAX_FILE_BYTES + 1)
     if len(raw) > MAX_FILE_BYTES:
         raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
@@ -360,7 +384,8 @@ def write_file(path: str | Path, data: bytes) -> None:
             f.flush()
             if old:
                 _keep_owner_and_mode(f.fileno(), old)
-            os.fsync(f.fileno())
+            with contextlib.suppress(OSError):  # EINVAL/ENOTSUP: no fsync there
+                os.fsync(f.fileno())
         os.replace(tmp, target)
     except BaseException:
         with contextlib.suppress(OSError):
@@ -370,8 +395,9 @@ def write_file(path: str | Path, data: bytes) -> None:
 
 
 def writable(path: str | Path) -> bool:
-    """Whether write_file(path) is allowed: the file (if there is one) and
-    its folder, where the new file is made."""
+    """Whether write_file(path) can work: it refuses a file without write
+    permission, and makes the new file in the folder, so both have to be
+    writable. Owner, mode and fsync are best effort, not needed."""
     target = os.path.realpath(path)
     if os.path.exists(target) and not os.access(target, os.W_OK):
         return False
@@ -396,7 +422,10 @@ def _keep_owner_and_mode(fd: int, old: os.stat_result) -> None:
             os.fchown(fd, old.st_uid, old.st_gid)
         with contextlib.suppress(OSError):
             os.fchown(fd, -1, old.st_gid)
-    os.fchmod(fd, stat.S_IMODE(old.st_mode))
+    # best effort: on vfat/NTFS mounts (fixed owner and mode) changing them
+    # fails, and the file gets the mount's mode anyway, like a new file
+    with contextlib.suppress(OSError):
+        os.fchmod(fd, stat.S_IMODE(old.st_mode))
 
 
 def _sync_directory(directory: Path) -> None:
@@ -410,26 +439,36 @@ def _sync_directory(directory: Path) -> None:
 
 
 @contextlib.contextmanager
-def locked(path: str | Path, waiting: Callable[[], None] | None = None) -> Iterator[None]:
+def locked(
+    path: str | Path, waiting: Callable[[], None] | None = None, timeout: float = 60.0
+) -> Iterator[None]:
     """Hold an exclusive lock (flock) on the label file: two command line
     prints of the same label run one after the other, so no counter value
     is printed twice. write_file() replaces the file, a waiting process
     would then hold a lock on the old one: it checks that the locked file
     is still the one at `path`, else it locks the new one. Without a lock
     (no such file, a file system without flock) it goes on unlocked.
-    waiting() is called once if another process holds the lock."""
+
+    waiting() is called once if another process holds the lock; after
+    `timeout` seconds LockTimeout is raised. The file is opened for
+    writing where allowed (flock over NFS needs that), else for reading.
+    Anything but a regular file (a FIFO would block the open) is not
+    opened here: the load that follows refuses it."""
     target = os.path.realpath(path)
+    deadline = time.monotonic() + timeout
     while True:
-        try:
-            fd = os.open(target, os.O_RDONLY)
-        except OSError:
+        fd = _open_for_lock(target)
+        if fd is None:
             yield  # the load that follows says what is wrong
             return
         try:
-            _lock(fd, waiting)
+            _lock(fd, waiting, deadline)
             waiting = None
             if _same_inode(fd, target):
                 break
+        except LockTimeout:
+            os.close(fd)
+            raise
         except OSError:  # no flock on this file system
             os.close(fd)
             yield
@@ -441,13 +480,41 @@ def locked(path: str | Path, waiting: Callable[[], None] | None = None) -> Itera
         os.close(fd)  # closing releases the lock
 
 
-def _lock(fd: int, waiting: Callable[[], None] | None) -> None:
+class LockTimeout(OSError):
+    """Another process held the label file longer than the timeout."""
+
+
+def _open_for_lock(target: str) -> int | None:
+    try:
+        if not stat.S_ISREG(os.stat(target).st_mode):
+            return None
+    except OSError:
+        return None
+    for flags in (os.O_RDWR, os.O_RDONLY):
+        try:
+            return os.open(target, flags | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
+        except PermissionError:
+            continue
+        except OSError:
+            return None
+    return None
+
+
+def _lock(fd: int, waiting: Callable[[], None] | None, deadline: float) -> None:
     try:
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return
     except BlockingIOError:
         if waiting:
             waiting()
-        fcntl.flock(fd, fcntl.LOCK_EX)
+    while True:  # poll: flock itself has no timeout
+        time.sleep(0.1)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                raise LockTimeout(errno.EWOULDBLOCK, "label file locked") from None
 
 
 def _same_inode(fd: int, path: str) -> bool:

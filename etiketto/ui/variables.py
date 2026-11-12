@@ -103,12 +103,18 @@ def insert_into_entry(entry: Gtk.Editable, placeholder: str) -> None:
 class CounterGroup(Adw.PreferencesGroup):
     """Next number and step of {=counter}; shown while the label uses it."""
 
-    def __init__(self, label: Label, changed: Callable[[], None]):
+    def __init__(
+        self,
+        label: Label,
+        changed: Callable[[], None],
+        edited: Callable[[], None] = lambda: None,
+    ):
         super().__init__(
             title=_("Counter"), description=_("Goes up with every printed label, by the step")
         )
         self.label = label
         self._changed = changed
+        self._edited = edited  # the next number typed in (not printing)
         self.next_row = spin_row(
             _("Next number"), label.counter_next, 0, MAX_COUNTER, 1, 0, self._set_next
         )
@@ -122,6 +128,7 @@ class CounterGroup(Adw.PreferencesGroup):
     def _set_next(self, value: float) -> None:
         if int(value) != self.label.counter_next:
             self.label.counter_next = int(value)
+            self._edited()
             self._changed()
 
     def _set_step(self, value: float) -> None:

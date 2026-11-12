@@ -129,21 +129,24 @@ etiketto --version
   [[ui:Name for the command line]] (in the element's settings), or fills in
   a variable of your own: `{=lot}` in the label, `--set lot=A12` when
   printing; a name may use letters of any language. Variables in a new
-  text are filled in; `--set-literal NAME=VALUE` takes the value as it is.
-  `--set date=2026-12-31` prints with another date.
-- With a counter the next number is saved in the label file after printing,
-  also when the printer fails half-way or the print is stopped with Ctrl+C.
-  If the file cannot be written, nothing is printed. The label file is
-  locked while printing: a second `etiketto print` of the same file waits.
-  The window reads the saved number again before printing and saving.
+  text are filled in; `--set-literal NAME=VALUE` takes the value as it
+  is. `--set date=2026-12-31` prints with another date.
+- With a counter the next number is saved in the label file after
+  printing, also when the printer fails half-way or the print is stopped
+  with Ctrl+C. If the file cannot be written, nothing is printed;
+  `--no-save-counter` prints anyway and saves nothing, so the next print
+  repeats the numbers. The label file is locked while printing: a second
+  `etiketto print` of the same file waits. The window reads the saved
+  number again before printing and saving.
 - `--dry-run` only checks and renders: it lists the texts of each label;
   `--output file.png` saves the PNG images as the printer would get them
   (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to
   standard output).
 
 Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong
-arguments, 3 label file cannot be read or output not written, 4 the label
-cannot be printed (empty, unknown or unclosed variable), 5 the counter
+arguments, 3 label file cannot be read, still locked by another print or
+output not written, 4 the label cannot be printed (empty, unknown or
+unclosed variable, date before the year 1 or after 9999), 5 the counter
 cannot be saved (nothing printed; or printed, but saving failed),
 130 interrupted.
 

@@ -374,3 +374,39 @@ def test_invalid_uses_are_not_counted_as_names():
     assert names("{=counter+1d} {=date:%Y} {=lot:x} {=lot+1d} {=id:0}") == {"date"}
     assert not uses_counter(Label(elements=[TextElement(text="{=counter:abc}")]))
     assert names("{=copy:0000}") == {"copy"}
+
+
+def test_format_codes_are_checked():
+    assert resolve("date:%Q", values()) is None  # glibc would print "%Q"
+    assert resolve("date:%", values()) is None
+    assert resolve("date:%d.%m.%Y %%", values()) == "31.01.2026 %"
+    assert resolve("date:%-d.%Ey %Od", values()) is not None
+    assert names("{=date:%Q}") == set()
+
+
+def test_a_format_may_give_nothing_on_purpose():
+    """%p is empty in languages without AM/PM, e.g. de_CH: still a value."""
+    assert resolve("time:%p", values()) is not None
+    assert names("{=time:%p}") == {"time"}
+
+
+def test_dates_out_of_range():
+    from etiketto.variables import problem
+
+    assert resolve("date+9000y", values()) is None
+    assert problem("date+9000y", values()) == "date_out_of_range"
+    assert problem("date-2026y", values()) == "date_out_of_range"
+    assert problem("date-800000d", values()) == "date_out_of_range"
+    assert problem("nope", values()) == "unknown_variable"
+    label = Label(elements=[TextElement(text="{=date+9000y}")])
+    _label, warnings = expand_label(label, values())
+    assert [w.key for w in warnings] == ["date_out_of_range"]
+
+
+def test_hours_with_a_zone_are_real_hours():
+    from zoneinfo import ZoneInfo
+
+    night = datetime(2026, 10, 25, 1, 30, tzinfo=ZoneInfo("Europe/Zurich"))
+    assert shift(night, "+1h").strftime("%H:%M %z") == "02:30 +0200"
+    assert shift(night, "+2h").strftime("%H:%M %z") == "02:30 +0100"  # the hour again
+    assert shift(night, "+1d").strftime("%d %H:%M %z") == "26 01:30 +0100"

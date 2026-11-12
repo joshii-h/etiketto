@@ -95,6 +95,9 @@ def warning_text(warning: RenderWarning) -> str:
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
         "unknown_variable": _("Element %(n)d: %(name)s is not a known variable"),
+        "date_out_of_range": _(
+            "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
+        ),
         "unclosed_variable": _(
             "Element %(n)d: the variable %(name)s… is not closed – end it with }"
         ),
@@ -180,10 +183,15 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
 
 def printed_text(options: PrintOptions | None, result: PrintResult | None) -> str:
     """What became of a print job that did not fail."""
+    return printed_remark(options, result) or _("Printed")
+
+
+def printed_remark(options: PrintOptions | None, result: PrintResult | None) -> str | None:
+    """What to tell about a print job that did not fail; None: just printed."""
     if result and result.queued:  # other jobs first: not printed yet, nothing wrong
         return _("Sent to the printer – it prints when its turn comes")
     if not (options and result and result.mode and result.mode != options.mode):
-        return _("Printed")
+        return None
     return _(
         "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
     ) % {
