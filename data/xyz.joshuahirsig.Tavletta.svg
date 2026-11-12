@@ -1,19 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <!-- GNOME HIG: 112 px within an 8 px margin, frontal view, Adwaita palette -->
-  <!-- label strip coming out of the cassette -->
-  <rect x="52" y="64" width="68" height="42" rx="6" fill="#c0bfbc"/>
-  <rect x="52" y="58" width="68" height="42" rx="6" fill="#ffffff"/>
-  <rect x="84" y="66" width="14" height="26" rx="3" fill="#c061cb"/>
-  <rect x="102" y="66" width="14" height="26" rx="3" fill="#ff7800"/>
-  <!-- cassette body -->
-  <rect x="8" y="26" width="74" height="84" rx="12" fill="#1a5fb4"/>
-  <rect x="8" y="18" width="74" height="84" rx="12" fill="#3584e4"/>
-  <!-- window with the paper roll -->
-  <circle cx="45" cy="56" r="27" fill="#1c71d8"/>
-  <circle cx="45" cy="56" r="23" fill="#f6f5f4"/>
-  <circle cx="45" cy="56" r="16" fill="none" stroke="#deddda" stroke-width="2"/>
-  <circle cx="45" cy="56" r="9.5" fill="#c0bfbc"/>
-  <circle cx="45" cy="56" r="4" fill="#77767b"/>
-  <!-- slot where the label leaves the cassette -->
-  <rect x="74" y="60" width="8" height="38" rx="2" fill="#1a5fb4"/>
+  <!-- Tavletta: a small slate tablet in a wooden frame with a label on it.
+       GNOME HIG: 112 px wide within an 8 px margin, frontal view with a
+       darker base, Adwaita palette. Even coordinates: whole pixels at
+       128 and 64 px. Smaller sizes use the drawings in data/icons/
+       (tavletta-16 to -32, 40 and 48 px from the 20 and 24 px ones at
+       twice the size). SVG Tiny 1.2 only (QtSvg/KDE): rects, paths, solid
+       fills and linear gradients; no filters, masks, styles or text. -->
+  <defs>
+    <linearGradient id="wood" x1="0" y1="20" x2="0" y2="106" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c09068"/>
+      <stop offset="1" stop-color="#b5835a"/>
+    </linearGradient>
+    <linearGradient id="slate" x1="0" y1="30" x2="0" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1c1827"/>
+      <stop offset="1" stop-color="#2c2738"/>
+    </linearGradient>
+  </defs>
+  <!-- wooden frame: base, then face -->
+  <rect x="8" y="26" width="112" height="86" rx="12" fill="#865e3c"/>
+  <rect x="8" y="20" width="112" height="86" rx="12" fill="url(#wood)"/>
+  <!-- the slate, set into the frame: a light lip below it -->
+  <rect x="18" y="32" width="92" height="66" rx="6" fill="#cdab8f"/>
+  <rect x="18" y="30" width="92" height="66" rx="6" fill="url(#slate)"/>
+  <!-- the label: base, then face -->
+  <rect x="32" y="46" width="64" height="36" rx="4" fill="#c0bfbc"/>
+  <path d="M36 46h16v36H36c-2.209 0-4-1.791-4-4V50c0-2.209 1.791-4 4-4z" fill="#1a5fb4"/>
+  <rect x="32" y="44" width="64" height="36" rx="4" fill="#ffffff"/>
+  <!-- coloured edge with a bold T -->
+  <path d="M36 44h16v36H36c-2.209 0-4-1.791-4-4V48c0-2.209 1.791-4 4-4z" fill="#3584e4"/>
+  <path d="M36 52h12v4h-4v16h-4V56h-4z" fill="#ffffff"/>
+  <!-- two lines of writing -->
+  <rect x="58" y="52" width="30" height="6" rx="3" fill="#3d3846"/>
+  <rect x="58" y="66" width="20" height="6" rx="3" fill="#9a9996"/>
 </svg>

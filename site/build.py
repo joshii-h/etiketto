@@ -17,7 +17,8 @@ Screenshots (media/<name>.png) come from site/build/screenshots/<lang>/
 (tools/screenshots.sh --docs), falling back to English and then to the
 README screenshots in docs/screenshots.
 
-Needs: po4a, and Zensical in the Python running this script.
+Needs: po4a, Zensical in the Python running this script, and PyGObject
+with librsvg (Rsvg 2.0) and pycairo for the PNG icons (favicon, iOS).
 """
 
 from __future__ import annotations
@@ -39,6 +40,11 @@ BUILD = SITE / "build"
 PUBLIC = BUILD / "public"
 SCREENSHOTS = BUILD / "screenshots"
 BASE_URL = "https://tavletta.joshuahirsig.xyz/"
+
+ICON = REPO / "data" / "xyz.joshuahirsig.Tavletta.svg"
+SMALL_ICON = REPO / "data" / "icons" / "tavletta-32.svg"
+# iOS fills a transparent apple-touch-icon with black: an opaque light background
+TOUCH_BACKGROUND = (0xF6 / 255, 0xF5 / 255, 0xF4 / 255)
 
 UI_RE = re.compile(r"\[\[ui:([^\]]+)\]\]")
 MEDIA_RE = re.compile(r"\(media/([A-Za-z0-9_.-]+\.png)(?:#[a-z-]+)?\)")
@@ -239,7 +245,12 @@ def stage(lang: str) -> Path:
     shutil.copytree(SITE / "overrides", root / "overrides")
     (docs / "assets").mkdir(exist_ok=True)
     shutil.copy(SITE / "assets" / "extra.css", docs / "assets" / "extra.css")
-    shutil.copy(REPO / "data" / "xyz.joshuahirsig.Tavletta.svg", docs / "assets" / "logo.svg")
+    shutil.copy(ICON, docs / "assets" / "logo.svg")
+    # the favicon: the icon drawn for 32 px, sharp in a browser tab; as PNG
+    # too, and the icon for iOS home screens (overrides/main.html)
+    shutil.copy(SMALL_ICON, docs / "assets" / "favicon.svg")
+    render_png(SMALL_ICON, 32, docs / "assets" / "favicon-32.png")
+    render_png(ICON, 180, docs / "assets" / "apple-touch-icon.png", TOUCH_BACKGROUND)
 
     media = docs / "media"
     media.mkdir(exist_ok=True)
@@ -256,6 +267,28 @@ def stage(lang: str) -> Path:
 
     (root / "zensical.toml").write_text(config(lang), encoding="utf-8")
     return root
+
+
+def render_png(
+    svg: Path, size: int, out: Path, background: tuple[float, float, float] | None = None
+) -> None:
+    """Draw an SVG into a size x size PNG (librsvg and cairo via PyGObject)."""
+    import cairo
+    import gi
+
+    gi.require_version("Rsvg", "2.0")
+    from gi.repository import Rsvg
+
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size, size)
+    context = cairo.Context(surface)
+    if background:
+        context.set_source_rgb(*background)
+        context.paint()
+    viewport = Rsvg.Rectangle()
+    viewport.x = viewport.y = 0
+    viewport.width = viewport.height = size
+    Rsvg.Handle.new_from_file(str(svg)).render_document(context, viewport)
+    surface.write_to_png(str(out))
 
 
 def config(lang: str) -> str:
@@ -290,7 +323,9 @@ def landing(langs: list[str]) -> None:
 <html lang="en"><head><meta charset="utf-8">
 <title>Tavletta</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="en/assets/logo.svg">
+<link rel="icon" href="en/assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="en/assets/favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="apple-touch-icon" href="en/assets/apple-touch-icon.png" sizes="180x180">
 <noscript><meta http-equiv="refresh" content="0; url=en/"></noscript>
 <script>
 (function () {

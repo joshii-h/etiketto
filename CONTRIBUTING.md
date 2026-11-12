@@ -52,8 +52,9 @@ section that applies:
 
 ## Development setup
 
-You need Python 3.11+, PyGObject with GTK 4 and libadwaita, pycairo and
-gettext from your distribution (see README for package names).
+You need Python 3.11+, PyGObject with GTK 4 and libadwaita, pycairo,
+gettext and, for the icon tests and `tools/icons.py`, librsvg's GObject
+introspection from your distribution (see README for package names).
 
 ```sh
 git clone https://git.joshuahirsig.xyz/joshii/tavletta.git
@@ -392,6 +393,43 @@ A label with a symbol is written as format version 2 with
 newer version": those with format version 2 by the unknown feature, the
 ones before by the unknown element kind `symbol` (see
 `model.ELEMENT_TYPES`).
+
+## App icon
+
+The icon is a small slate tablet in a wooden frame with a label on it
+(Tavletta: Romansh for "small tablet"). Its sources are SVG, drawn by hand
+in the Adwaita palette:
+
+| File | What |
+| --- | --- |
+| `data/xyz.joshuahirsig.Tavletta.svg` | the icon, 128 × 128, GNOME HIG style |
+| `data/xyz.joshuahirsig.Tavletta-symbolic.svg` | symbolic, 16 × 16, one colour |
+| `data/icons/tavletta-16.svg`, `-20.svg`, `-22.svg`, `-24.svg`, `-32.svg` | redrawn on that grid: thicker frame, fewer details; installed as the hicolor icons of these sizes (22 px: KDE's panels and menus, 20 px: Windows at 125 %); 40 and 48 px are the 20 and 24 px drawings at twice the size; the site's favicon is the 32 px one |
+| `data/icons/tavletta-macos.svg` | macOS (Big Sur style): the tablet on an 824 × 824 plate in 1024 × 1024; written by `tools/macos_icon.py` from the main icon, do not edit it |
+| `data/icons/tavletta-macos-16.svg`, `-32.svg` | the same on a 16 and 32 px grid, a simplified plate |
+
+Keep them to SVG Tiny 1.2, which is what QtSvg (KDE) draws: paths, rects
+and circles, solid fills, linear and radial gradients. No filters, masks,
+clip paths, `<style>` or `style=`, patterns, images, text (letters as
+paths) or arcs in path data; shadows are layered shapes with a low
+`fill-opacity`. Colours as `#rrggbb` (`currentColor` only in the symbolic
+icon). `tests/test_icons.py` checks this (some of it is a house rule on
+top of Tiny 1.2). When the icon changes, change the small drawings with it
+and run `python3 tools/macos_icon.py`; the tests fail while the macOS file
+is out of date.
+
+PNG, Windows `.ico` and macOS `.icns` files are not in the repository;
+`tools/icons.py` renders them (needs librsvg's GObject introspection,
+`gir1.2-rsvg-2.0` on Debian; without it the icon tests are skipped
+locally and fail in the CI, which sets `CI`):
+
+```sh
+python3 tools/icons.py   # build/icons/: hicolor PNGs 16-512, tavletta.ico, tavletta.icns
+python3 tools/macos_icon.py   # data/icons/tavletta-macos.svg from the main icon
+```
+
+The Swiss cross must not appear on the icon: its use is restricted in
+Switzerland (Wappenschutzgesetz).
 
 ## Code style
 

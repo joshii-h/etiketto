@@ -1,3 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <path fill="#222222" d="M2.5 3A1.5 1.5 0 0 0 1 4.5v7A1.5 1.5 0 0 0 2.5 13h7.88a1.5 1.5 0 0 0 1.1-.48l3.24-3.5a1.5 1.5 0 0 0 0-2.04l-3.24-3.5A1.5 1.5 0 0 0 10.38 3zm8 3.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM3 6h5v1H3zm0 3h4v1H3z"/>
+  <!-- Tavletta, symbolic: a tablet in a 2 px frame with a label on it, the
+       label's edge set off by a 1 px gap. One colour, fills only. -->
+  <path fill="#2e3436" fill-rule="evenodd" d="M3 2c-1.105 0-2 .895-2 2v8c0 1.105.895 2 2 2h10c1.105 0 2-.895 2-2V4c0-1.105-.895-2-2-2zm0 2h10v8H3zm2 2v4h1V6zm2 0v4h4V6z"/>
 </svg>

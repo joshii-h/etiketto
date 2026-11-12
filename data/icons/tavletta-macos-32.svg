@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Tavletta for macOS at 32 px (icns, 1x): the 24 px tablet on a
+       simplified plate (26 px, as 824 of 1024) with a two-step shadow. On
+       the pixel grid; SVG Tiny 1.2 only. -->
+  <defs>
+    <linearGradient id="plate" x1="0" y1="3" x2="0" y2="29" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#deddda"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="3" width="28" height="28" rx="7" fill="#000000" fill-opacity="0.06"/>
+  <rect x="3" y="4" width="26" height="26" rx="6" fill="#000000" fill-opacity="0.12"/>
+  <rect x="3" y="3" width="26" height="26" rx="6" fill="url(#plate)"/>
+  <rect x="6" y="10" width="20" height="14" rx="2" fill="#865e3c"/>
+  <rect x="6" y="8" width="20" height="14" rx="2" fill="#b5835a"/>
+  <rect x="8" y="11" width="16" height="10" rx="1" fill="#cdab8f"/>
+  <rect x="8" y="10" width="16" height="10" rx="1" fill="#241f31"/>
+  <rect x="10" y="13" width="12" height="6" fill="#c0bfbc"/>
+  <rect x="10" y="13" width="3" height="6" fill="#1a5fb4"/>
+  <rect x="10" y="12" width="12" height="6" fill="#ffffff"/>
+  <rect x="10" y="12" width="3" height="6" fill="#3584e4"/>
+  <rect x="14" y="13" width="6" height="2" fill="#3d3846"/>
+  <rect x="14" y="16" width="4" height="1" fill="#9a9996"/>
+</svg>

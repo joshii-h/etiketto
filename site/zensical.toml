@@ -22,7 +22,7 @@ custom_dir = "overrides"
 # no Google Fonts: system fonts, nothing loaded from third parties
 font = false
 logo = "assets/logo.svg"
-favicon = "assets/logo.svg"
+favicon = "assets/favicon.svg"
 features = [
   "content.code.copy",
   "navigation.footer",

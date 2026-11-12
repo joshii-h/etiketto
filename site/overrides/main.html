@@ -1,0 +1,12 @@
+{#-
+  The theme's own <link rel="icon"> is the SVG favicon (zensical.toml).
+  Here: a PNG for browsers without SVG favicons, the icon for iOS home
+  screens, and the SVG once more after the PNG, so that browsers taking the
+  last usable icon take the SVG. site/build.py renders the PNGs.
+-#}
+{% extends "base.html" %}
+{% block extrahead %}
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ 'assets/favicon-32.png' | url }}">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="{{ 'assets/favicon.svg' | url }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ 'assets/apple-touch-icon.png' | url }}">
+{% endblock %}

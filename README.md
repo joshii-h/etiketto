@@ -342,6 +342,12 @@ each element has its own position instead.
 
 ## Development
 
+Besides the packages above, the tests of the app icon (`tests/test_icons.py`)
+and `tools/icons.py` need librsvg's GObject introspection: `gir1.2-rsvg-2.0`
+(Debian, Ubuntu), `librsvg2` (Fedora), `librsvg` (Arch), `gnome-base/librsvg`
+with `USE="introspection"` (Gentoo). Without it those tests are skipped
+locally; in the CI they fail.
+
 ```sh
 uv venv --system-site-packages .venv
 uv pip install --python .venv/bin/python -e . --group dev
