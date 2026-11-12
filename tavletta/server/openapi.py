@@ -37,7 +37,7 @@ LABEL_FIELDS: dict[str, Any] = {
     },
     "label_content": {
         "type": "object",
-        "description": "Or the label itself, as the JSON of an .tavletta file. Its data "
+        "description": "Or the label itself, as the JSON of a .tavletta file. Its data "
         "file is ignored: send data_rows instead.",
     },
     "printer": {

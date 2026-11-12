@@ -183,7 +183,7 @@ def test_files_of_earlier_versions_load_unchanged(tmp_path):
 
 
 def older_reader(monkeypatch):
-    """An Tavletta from before the design options: it knows neither the
+    """A Tavletta from before the design options: it knows neither the
     features nor the shape element."""
     monkeypatch.setattr(
         model, "FEATURES", frozenset({"barcodes", "symbols", "serial", "variables"})

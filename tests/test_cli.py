@@ -415,7 +415,7 @@ def test_another_printer_model(mono, label_file, tmp_path, capsys):
     "content, message",
     [
         (None, "Cannot open missing.tavletta"),
-        ("no json", "missing.tavletta is not an Tavletta label"),
+        ("no json", "missing.tavletta is not a Tavletta label"),
         ('{"version": 99}', "This label needs a newer version of Tavletta"),
     ],
 )
@@ -704,7 +704,7 @@ def test_a_full_disk_on_stdout(tmp_path):
 def test_a_folder_has_a_name_in_messages(mono, tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     assert run("print", ".", "--dry-run") == cli.EXIT_FILE
-    assert err(capsys) == "tavletta: . is not an Tavletta label\n"
+    assert err(capsys) == "tavletta: . is not a Tavletta label\n"
 
 
 def test_list_printers_keeps_its_columns(mono, capsys, monkeypatch):

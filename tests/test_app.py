@@ -986,7 +986,7 @@ def test_open_broken_file(window, tmp_path):
     window.files.open_file(tmp_path / "new.tavletta")
     window.files.open_file(tmp_path / "missing.tavletta")
     assert toast_titles(window) == [
-        "bad.tavletta is not an Tavletta label",
+        "bad.tavletta is not a Tavletta label",
         "The file is damaged: wide.tavletta",
         "This label needs a newer version of Tavletta",
         "Cannot open missing.tavletta",
@@ -1399,7 +1399,7 @@ def test_label_and_save_error_texts():
     from tavletta.model import LabelError
 
     assert texts.label_error_text(LabelError("not_label", "x"), "a.tavletta") == (
-        "a.tavletta is not an Tavletta label"
+        "a.tavletta is not a Tavletta label"
     )
     assert texts.label_error_text(LabelError("newer", "x"), "a.tavletta") == (
         "This label needs a newer version of Tavletta"

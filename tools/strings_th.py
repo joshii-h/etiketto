@@ -145,7 +145,7 @@ TRANSLATIONS = {
     "Cleaning…": "กำลังทำความสะอาด…",
     "Swipe the printer's panel to cut the label": "ปัดแผงของเครื่องพิมพ์เพื่อตัดฉลาก",
     "This label needs a newer version of Tavletta": "ฉลากนี้ต้องใช้ Tavletta รุ่นที่ใหม่กว่า",
-    "%s is not an Tavletta label": "%s ไม่ใช่ฉลาก Tavletta",
+    "%s is not a Tavletta label": "%s ไม่ใช่ฉลาก Tavletta",
     "The file is damaged: %s": "ไฟล์เสียหาย: %s",
     "Cannot save %s: no permission to write there": "บันทึก %s ไม่ได้: ไม่มีสิทธิ์เขียนที่นั่น",
     "Cannot save %s: the disk is full": "บันทึก %s ไม่ได้: ดิสก์เต็ม",

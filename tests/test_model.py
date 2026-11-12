@@ -185,7 +185,7 @@ def test_invalid_values_raise(data):
 
 @pytest.mark.parametrize("data", [[], "x", None, 5])
 def test_not_a_document(data):
-    with pytest.raises(LabelError, match="not an Tavletta file") as info:
+    with pytest.raises(LabelError, match="not a Tavletta file") as info:
         Label.from_dict(data)
     assert info.value.code == "not_label"
 

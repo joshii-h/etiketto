@@ -100,7 +100,7 @@ _LABEL_PROPERTIES = {
     },
     "label_content": {
         "type": "object",
-        "description": "Or the label itself: the JSON content of an .tavletta file.",
+        "description": "Or the label itself: the JSON content of a .tavletta file.",
     },
     "printer": {
         "type": "string",

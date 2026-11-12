@@ -171,7 +171,7 @@ TRANSLATIONS = {
     "Cleaning…": "Reinigen …",
     "Swipe the printer's panel to cut the label": "Zum Abschneiden über das Bedienfeld des Druckers streichen",
     "This label needs a newer version of Tavletta": "Dieses Etikett braucht eine neuere Version von Tavletta",
-    "%s is not an Tavletta label": "%s ist kein Tavletta-Etikett",
+    "%s is not a Tavletta label": "%s ist kein Tavletta-Etikett",
     "The file is damaged: %s": "Die Datei ist beschädigt: %s",
     "Cannot save %s: no permission to write there": "%s lässt sich nicht speichern: keine Schreibrechte",
     "Cannot save %s: the disk is full": "%s lässt sich nicht speichern: der Datenträger ist voll",

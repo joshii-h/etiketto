@@ -2992,7 +2992,7 @@ msgstr "Esta etiqueta precisa de uma versão mais recente do Tavletta"
 
 #: tavletta/ui/texts.py:630
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s não é uma etiqueta do Tavletta"
 
 #: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651

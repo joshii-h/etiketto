@@ -145,7 +145,7 @@ TRANSLATIONS = {
     "Cleaning…": "सफ़ाई हो रही है…",
     "Swipe the printer's panel to cut the label": "लेबल काटने के लिए प्रिंटर के पैनल पर स्वाइप करें",
     "This label needs a newer version of Tavletta": "इस लेबल के लिए Tavletta का नया संस्करण चाहिए",
-    "%s is not an Tavletta label": "%s कोई Tavletta लेबल नहीं है",
+    "%s is not a Tavletta label": "%s कोई Tavletta लेबल नहीं है",
     "The file is damaged: %s": "फ़ाइल खराब है: %s",
     "Cannot save %s: no permission to write there": "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है",
     "Cannot save %s: the disk is full": "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है",

@@ -2847,7 +2847,7 @@ msgstr "L’imprimante ne peut pas imprimer ce format. Choisissez un format de p
 msgid ""
 "The printer takes none of the formats Tavletta can send (PDF, PWG Raster, "
 "JPEG)."
-msgstr "L’imprimante n’accepte aucun des formats qu’Tavletta peut envoyer (PDF, PWG Raster, JPEG)."
+msgstr "L’imprimante n’accepte aucun des formats que Tavletta peut envoyer (PDF, PWG Raster, JPEG)."
 
 #: tavletta/ui/texts.py:527
 msgid ""
@@ -2891,7 +2891,7 @@ msgstr "La tête d’impression est trop chaude. Attendez qu’elle ait refroidi
 msgid ""
 "Tavletta cannot print on this printer model: it does not take the raster "
 "images Tavletta sends."
-msgstr "Tavletta ne peut pas imprimer sur ce modèle d’imprimante : il n’accepte pas les images matricielles qu’Tavletta envoie."
+msgstr "Tavletta ne peut pas imprimer sur ce modèle d’imprimante : il n’accepte pas les images matricielles que Tavletta envoie."
 
 #: tavletta/ui/texts.py:549
 msgid "Tavletta does not know this printer model and cannot print on it yet."
@@ -2988,11 +2988,11 @@ msgstr "Papier coincé – retirez-le pour continuer"
 
 #: tavletta/ui/texts.py:628
 msgid "This label needs a newer version of Tavletta"
-msgstr "Cette étiquette nécessite une version plus récente d’Tavletta"
+msgstr "Cette étiquette nécessite une version plus récente de Tavletta"
 
 #: tavletta/ui/texts.py:630
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s n’est pas une étiquette Tavletta"
 
 #: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651
@@ -3146,7 +3146,7 @@ msgstr "Signaler un problème…"
 
 #: tavletta/ui/window.py:199
 msgid "About Tavletta"
-msgstr "À propos d’Tavletta"
+msgstr "À propos de Tavletta"
 
 #: tavletta/ui/window.py:678
 msgid "Unsaved label"

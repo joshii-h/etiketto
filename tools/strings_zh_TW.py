@@ -145,7 +145,7 @@ TRANSLATIONS = {
     "Cleaning…": "正在清潔…",
     "Swipe the printer's panel to cut the label": "請滑動印表機面板以裁切標籤",
     "This label needs a newer version of Tavletta": "此標籤需要較新版本的 Tavletta",
-    "%s is not an Tavletta label": "%s 不是 Tavletta 標籤",
+    "%s is not a Tavletta label": "%s 不是 Tavletta 標籤",
     "The file is damaged: %s": "檔案已損毀：%s",
     "Cannot save %s: no permission to write there": "無法儲存 %s：沒有寫入權限",
     "Cannot save %s: the disk is full": "無法儲存 %s：磁碟已滿",

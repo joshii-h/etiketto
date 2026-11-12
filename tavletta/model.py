@@ -85,7 +85,7 @@ MAX_SHEET_POSITIONS = 10000  # far more than any sheet has
 class LabelError(ValueError):
     """A file that cannot be used as a label. code: "not_label" (not an
     Tavletta file at all), "newer" (written by a newer Tavletta) or "damaged"
-    (an Tavletta file with invalid content); the message is English detail
+    (a Tavletta file with invalid content); the message is English detail
     for bug reports, the interface shows its own translated text."""
 
     def __init__(self, code: str, detail: str):
@@ -329,7 +329,7 @@ class ShapeElement(Placed):
 
 
 Element = TextElement | ImageElement | CodeElement | SymbolElement | PageElement | ShapeElement
-# an Tavletta that does not know a kind refuses the file as "newer"
+# a Tavletta that does not know a kind refuses the file as "newer"
 ELEMENT_TYPES = {
     "text": TextElement,
     "image": ImageElement,
@@ -692,7 +692,7 @@ class Label:
         """Build a label from untrusted JSON: unknown fields are ignored,
         wrong types raise LabelError, numbers are clamped to sane ranges."""
         if not isinstance(data, dict):
-            raise LabelError("not_label", "not an Tavletta file")
+            raise LabelError("not_label", "not a Tavletta file")
         data = dict(data)
         _check_version(data.pop("version", FORMAT_VERSION))
         _check_features(data.pop("features", []))
@@ -765,7 +765,7 @@ class Label:
         (the command line prints with overrides that must not be saved)."""
         data = json.loads(read_file(path).decode("utf-8"))
         if not isinstance(data, dict):
-            raise LabelError("not_label", "not an Tavletta file")
+            raise LabelError("not_label", "not a Tavletta file")
         data["counter_next"] = min(max(counter_next, 0), MAX_COUNTER)
         features = data.get("features")
         features = list(features) if isinstance(features, list) else []

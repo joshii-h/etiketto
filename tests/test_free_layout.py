@@ -119,7 +119,7 @@ def test_options_of_the_free_layout_are_a_feature_in_the_flow_too():
 
 
 def test_older_versions_refuse_the_free_layout():
-    """What an Tavletta without the feature does with such a file: refuse it
+    """What a Tavletta without the feature does with such a file: refuse it
     as one of a newer version, never print it one element after another."""
     data = cab_label(TextElement()).to_dict()
     data["features"].append("free_layout_2")

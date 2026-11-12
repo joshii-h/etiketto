@@ -2992,7 +2992,7 @@ msgstr "Nhãn này cần phiên bản Tavletta mới hơn"
 
 #: tavletta/ui/texts.py:630
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s không phải là nhãn Tavletta"
 
 #: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651

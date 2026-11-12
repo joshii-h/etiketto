@@ -22,7 +22,7 @@ msgstr "Etiket tasarla ve yazdır"
 msgid ""
 "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
 "tav-LET-ta."
-msgstr "Tavletta, Romanşça'da küçük bir tablet anlamına gelir (tavla, yani tahta/levha sözcüğünden). Okunuşu: tav-LET-ta."
+msgstr "Tavletta, Romanşçada küçük bir tablet anlamına gelir (tavla, yani tahta/levha sözcüğünden). Okunuşu: tav-LET-ta."
 
 #. translators: replace with your name to be credited in the About dialog
 #: tavletta/app.py:226
@@ -2891,7 +2891,7 @@ msgstr "Yazdırma kafası çok sıcak. Soğuyana kadar bekleyin, ardından yenid
 msgid ""
 "Tavletta cannot print on this printer model: it does not take the raster "
 "images Tavletta sends."
-msgstr "Tavletta bu yazıcı modelinde yazdıramaz: Tavletta’nın gönderdiği raster görüntüleri kabul etmez."
+msgstr "Tavletta bu yazıcı modelinde yazdıramaz: Tavletta'nın gönderdiği raster görüntüleri kabul etmez."
 
 #: tavletta/ui/texts.py:549
 msgid "Tavletta does not know this printer model and cannot print on it yet."
@@ -2901,7 +2901,7 @@ msgstr "Tavletta bu yazıcı modelini tanımıyor ve henüz bu modelde yazdıram
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
-msgstr "Yazıcı Editor Lite modunda ve USB sürücüsü olarak görünüyor. Yazıcıda Editor Lite’ı kapatın (ışığı söner), ardından yeniden arayın."
+msgstr "Yazıcı Editor Lite modunda ve USB sürücüsü olarak görünüyor. Yazıcıda Editor Lite'ı kapatın (ışığı söner), ardından yeniden arayın."
 
 #: tavletta/ui/texts.py:556
 msgid ""
@@ -2992,7 +2992,7 @@ msgstr "Bu etiket için Tavletta'nın daha yeni bir sürümü gerekiyor"
 
 #: tavletta/ui/texts.py:630
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s bir Tavletta etiketi değil"
 
 #: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651
