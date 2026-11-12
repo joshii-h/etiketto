@@ -49,7 +49,11 @@
     <ul>
       <li>Finds the printer on the network and on USB by itself and shows its state</li>
       <li>Endless tape as long as the content or with a fixed length; die-cut labels in common or custom sizes</li>
-      <li>Text in any installed font, images and photos, over 7000 symbols</li>
+      <li>Text in any installed font, images and photos, over 7000 symbols, lines and shapes</li>
+      <li>Elements one after another or each at its own position (free layout)</li>
+      <li>Design options: font weights, underline, letter and line spacing, shrink to fit, wrapping, vertical text, white on black, boxes, frames, outlines and shadows; image crop and adjustments; dashed or rounded borders</li>
+      <li>Black-and-white printers: every element converted on its own, with a warning where it does not stand out from the background</li>
+      <li>Undo and redo, keyboard shortcuts</li>
       <li>QR code, Data Matrix, PDF417, Aztec, Code 128, Code 39, Code 93, EAN, UPC, ITF-14 and GS1 codes, sharp at the printer's resolution</li>
       <li>Variables in texts and codes: date, time, counter, copy number, random ID</li>
       <li>Label sheets such as Avery or Zweckform on office printers: over 1700 sheets</li>
@@ -58,6 +62,7 @@
       <li>Shipping labels from a carrier's PDF or image: the label is found on the page and printed at 4 × 6 in, 100 × 150 mm or on a sheet</li>
       <li>Live preview at print resolution, millimetres or inches, templates, PNG export</li>
       <li>A command line that prints label files without a window</li>
+      <li>A print server for other programs (REST API) and AI assistants (MCP), with named printers and access tokens</li>
       <li>Printer problems explained in plain words, with a way to report a problem</li>
       <li>User documentation in English and German</li>
     </ul>
@@ -170,6 +175,27 @@
   </provides>
 
   <releases>
+    <release version="1.1.0" date="2026-11-12">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/tavletta/releases/tag/v1.1.0</url>
+      <description>
+        <p>Many more printers, and much more to design.</p>
+        <ul>
+          <li>Office printers through CUPS or IPP (PDF, PWG Raster, Apple Raster): one label per page or on over 1700 label sheets</li>
+          <li>Printers on USB as well as on the network</li>
+          <li>New printers: Brother QL, Brother P-touch, cab EOS, SQUIX and MACH, NIIMBOT, and printers with ZPL, EPL2, TSPL, ESC/POS or DYMO LabelWriter</li>
+          <li>Serial labels from CSV, ODS or XLSX files; variables for date, time, counter, copy number and random IDs</li>
+          <li>Shipping labels from a carrier's PDF or image</li>
+          <li>Data Matrix, PDF417, Aztec, Code 39, Code 93, EAN-8, UPC, ITF-14 and GS1 codes (Zint); QR codes with a chosen error correction; every module a whole number of printer dots, with a warning for bars thinner than 0.17 mm or 2 printer dots</li>
+          <li>Over 7000 symbols from Material Design Icons; lines and shapes</li>
+          <li>Free layout: each element at its own position</li>
+          <li>Design options for text, images and borders, font weights, undo and redo</li>
+          <li>Black-and-white printers: sharp text and codes, a warning when an element does not stand out from the background</li>
+          <li>cab: print method per printer (thermal transfer or direct), print upside down, a hint when the loaded labels have another spacing</li>
+          <li>Command line: data files, variables, --print-method, and with --dry-run --output a PNG of each label</li>
+          <li>Print server: REST API and MCP, named printers with their settings in printers.toml, named tokens with roles, a systemd unit and a Docker Compose example</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.2" date="2026-11-05">
       <url type="details">https://git.joshuahirsig.xyz/joshii/tavletta/releases/tag/v1.0.2</url>
       <description>
