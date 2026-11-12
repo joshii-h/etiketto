@@ -281,4 +281,8 @@ TRANSLATIONS = {
     "Interrupted": "Abgebrochen",
     "Waiting for another print of %s to finish…": "Warten, bis ein anderer Druck von %s fertig ist …",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Element %(n)d: die Variable %(name)s… ist nicht geschlossen – mit } beenden",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "den nächsten Zählerstand nicht im Etikett speichern (eine schreibgeschützte Datei); der nächste Druck beginnt mit derselben Nummer",
+    "%s is still locked by another print – try again later": "%s ist noch von einem anderen Druck gesperrt – später erneut versuchen",
+    "The next counter value is not saved: the next print repeats the numbers": "Der nächste Zählerstand wird nicht gespeichert: Der nächste Druck wiederholt die Nummern",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Element %(n)d: Das Datum von %(name)s liegt vor dem Jahr 1 oder nach 9999",
 }

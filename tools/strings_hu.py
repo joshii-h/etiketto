@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Megszakítva",
     "Waiting for another print of %s to finish…": "Várakozás a(z) %s egy másik nyomtatásának befejezésére…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "%(n)d. elem: a(z) %(name)s… változó nincs lezárva – zárja le ezzel: }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "ne mentse a számláló következő értékét a címkébe (csak olvasható fájl); a következő nyomtatás ugyanattól a számtól indul",
+    "%s is still locked by another print – try again later": "%s még zárolva van egy másik nyomtatás miatt – próbálja újra később",
+    "The next counter value is not saved: the next print repeats the numbers": "A számláló következő értéke nem lesz mentve: a következő nyomtatás megismétli a számokat",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "%(n)d. elem: a(z) %(name)s dátuma az 1. év előtti vagy 9999 utáni",
 }

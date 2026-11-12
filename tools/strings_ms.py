@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Diganggu",
     "Waiting for another print of %s to finish…": "Menunggu cetakan lain bagi %s selesai…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Elemen %(n)d: pemboleh ubah %(name)s… tidak ditutup – akhirinya dengan }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "jangan simpan nilai pembilang seterusnya dalam label (fail baca sahaja); cetakan seterusnya bermula dari nombor yang sama",
+    "%s is still locked by another print – try again later": "%s masih dikunci oleh cetakan lain – cuba lagi kemudian",
+    "The next counter value is not saved: the next print repeats the numbers": "Nilai pembilang seterusnya tidak disimpan: cetakan seterusnya mengulang nombor-nombor itu",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Elemen %(n)d: tarikh %(name)s sebelum tahun 1 atau selepas 9999",
 }

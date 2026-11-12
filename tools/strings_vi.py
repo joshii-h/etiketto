@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Đã ngắt",
     "Waiting for another print of %s to finish…": "Đang chờ một lần in khác của %s hoàn tất…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Phần tử %(n)d: biến %(name)s… chưa được đóng – hãy kết thúc bằng }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "không lưu giá trị bộ đếm tiếp theo vào nhãn (tệp chỉ đọc); lần in tiếp theo bắt đầu từ cùng số đó",
+    "%s is still locked by another print – try again later": "%s vẫn đang bị khóa bởi một lần in khác – hãy thử lại sau",
+    "The next counter value is not saved: the next print repeats the numbers": "Giá trị bộ đếm tiếp theo không được lưu: lần in tiếp theo sẽ lặp lại các số",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Phần tử %(n)d: ngày của %(name)s trước năm 1 hoặc sau năm 9999",
 }

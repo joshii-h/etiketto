@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "中断しました",
     "Waiting for another print of %s to finish…": "%s の別の印刷が終わるのを待っています…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "要素 %(n)d: 変数 %(name)s… が閉じられていません – } で終えてください",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "次のカウンター値をラベルに保存しない (読み取り専用ファイル)。次の印刷は同じ番号から始まります",
+    "%s is still locked by another print – try again later": "%s は別の印刷によってまだロックされています – 後でもう一度お試しください",
+    "The next counter value is not saved: the next print repeats the numbers": "次のカウンター値は保存されません: 次の印刷では同じ番号が繰り返されます",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "要素 %(n)d: %(name)s の日付が 1 年より前か 9999 年より後です",
 }

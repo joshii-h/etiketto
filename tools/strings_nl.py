@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Onderbroken",
     "Waiting for another print of %s to finish…": "Wachten tot een andere afdruk van %s klaar is…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Element %(n)d: de variabele %(name)s… is niet gesloten – sluit hem af met }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "de volgende tellerwaarde niet in het etiket opslaan (een alleen-lezen bestand); de volgende afdruk begint bij hetzelfde nummer",
+    "%s is still locked by another print – try again later": "%s is nog vergrendeld door een andere afdruk – probeer het later opnieuw",
+    "The next counter value is not saved: the next print repeats the numbers": "De volgende tellerwaarde wordt niet opgeslagen: de volgende afdruk herhaalt de nummers",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Element %(n)d: de datum van %(name)s ligt vóór het jaar 1 of na 9999",
 }

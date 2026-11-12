@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Прервано",
     "Waiting for another print of %s to finish…": "Ожидание завершения другой печати %s…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Элемент %(n)d: переменная %(name)s… не закрыта – завершите её символом }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "не сохранять следующее значение счётчика в этикетке (файл только для чтения); следующая печать начнётся с того же номера",
+    "%s is still locked by another print – try again later": "%s всё ещё заблокирован другой печатью – попробуйте позже",
+    "The next counter value is not saved: the next print repeats the numbers": "Следующее значение счётчика не сохраняется: следующая печать повторит номера",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Элемент %(n)d: дата %(name)s раньше 1 года или позже 9999",
 }

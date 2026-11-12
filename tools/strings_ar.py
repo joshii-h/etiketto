@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "تمت المقاطعة",
     "Waiting for another print of %s to finish…": "في انتظار انتهاء طباعة أخرى لـ %s…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "العنصر %(n)d: المتغير %(name)s… غير مغلق – أنهِه بـ }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "عدم حفظ قيمة العدّاد التالية في الملصق (ملف للقراءة فقط)؛ تبدأ الطباعة التالية من الرقم نفسه",
+    "%s is still locked by another print – try again later": "لا يزال %s مقفلًا بطباعة أخرى – حاول لاحقًا",
+    "The next counter value is not saved: the next print repeats the numbers": "لا تُحفظ قيمة العدّاد التالية: ستكرر الطباعة التالية الأرقام",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "العنصر %(n)d: تاريخ %(name)s قبل السنة 1 أو بعد 9999",
 }

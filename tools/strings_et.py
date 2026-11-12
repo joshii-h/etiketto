@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Katkestatud",
     "Waiting for another print of %s to finish…": "Ootan, kuni faili %s teine printimine lõpeb…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Element %(n)d: muutuja %(name)s… ei ole suletud – lõpeta see märgiga }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "ära salvesta järgmist loenduri väärtust sildile (kirjutuskaitstud fail); järgmine printimine algab samast numbrist",
+    "%s is still locked by another print – try again later": "%s on endiselt teise printimise poolt lukus – proovi hiljem uuesti",
+    "The next counter value is not saved: the next print repeats the numbers": "Järgmist loenduri väärtust ei salvestata: järgmine printimine kordab numbreid",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Element %(n)d: %(name)s kuupäev on enne aastat 1 või pärast aastat 9999",
 }

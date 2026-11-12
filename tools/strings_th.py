@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "ถูกขัดจังหวะ",
     "Waiting for another print of %s to finish…": "กำลังรอให้การพิมพ์อื่นของ %s เสร็จ…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "องค์ประกอบ %(n)d: ตัวแปร %(name)s… ไม่ได้ปิด – ปิดด้วย }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "ไม่บันทึกค่าตัวนับถัดไปลงในฉลาก (ไฟล์อ่านอย่างเดียว) การพิมพ์ครั้งถัดไปจะเริ่มจากหมายเลขเดิม",
+    "%s is still locked by another print – try again later": "%s ยังถูกล็อกโดยการพิมพ์อื่น – ลองใหม่ภายหลัง",
+    "The next counter value is not saved: the next print repeats the numbers": "ไม่ได้บันทึกค่าตัวนับถัดไป: การพิมพ์ครั้งถัดไปจะใช้หมายเลขซ้ำ",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "องค์ประกอบ %(n)d: วันที่ของ %(name)s อยู่ก่อนปี 1 หรือหลังปี 9999",
 }

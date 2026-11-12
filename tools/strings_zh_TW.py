@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "已中斷",
     "Waiting for another print of %s to finish…": "正在等待 %s 的另一個列印工作完成…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "元素 %(n)d：變數 %(name)s… 未關閉 – 請以 } 結束",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "不在標籤中儲存下一個計數器值（唯讀檔案）；下次列印從相同編號開始",
+    "%s is still locked by another print – try again later": "%s 仍被另一個列印工作鎖定 – 請稍後再試",
+    "The next counter value is not saved: the next print repeats the numbers": "下一個計數器值不會儲存：下次列印會重複這些編號",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "元素 %(n)d：%(name)s 的日期早於西元 1 年或晚於 9999 年",
 }

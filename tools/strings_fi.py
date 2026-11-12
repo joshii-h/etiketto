@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Keskeytetty",
     "Waiting for another print of %s to finish…": "Odotetaan, että toinen tiedoston %s tulostus päättyy…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Elementti %(n)d: muuttujaa %(name)s… ei ole suljettu – lopeta se merkillä }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "älä tallenna laskurin seuraavaa arvoa tarraan (vain luku -tiedosto); seuraava tulostus alkaa samasta numerosta",
+    "%s is still locked by another print – try again later": "%s on yhä toisen tulostuksen lukitsema – yritä myöhemmin uudelleen",
+    "The next counter value is not saved: the next print repeats the numbers": "Laskurin seuraavaa arvoa ei tallenneta: seuraava tulostus toistaa numerot",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Elementti %(n)d: muuttujan %(name)s päivämäärä on ennen vuotta 1 tai vuoden 9999 jälkeen",
 }

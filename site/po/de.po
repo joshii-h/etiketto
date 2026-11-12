@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:23+0100\n"
+"POT-Creation-Date: 2026-11-11 22:53+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -880,9 +880,7 @@ msgstr "**Code**: QR-Code, Code 128 oder EAN-13."
 msgid ""
 "Texts and codes can contain [variables](#variables), e.g. a date or a "
 "running number."
-msgstr ""
-"Texte und Codes können [Variablen](#variables) enthalten, z. B. ein Datum "
-"oder eine fortlaufende Nummer."
+msgstr "Texte und Codes können [Variablen](#variables) enthalten, z. B. ein Datum oder eine fortlaufende Nummer."
 
 #. type: Title ##
 #: docs/use.md
@@ -1051,10 +1049,7 @@ msgid ""
 "Variables are filled in when printing, in texts and in the content of codes. "
 "[[ui:Insert variable]] next to the text or the content offers the common "
 "ones; type the others."
-msgstr ""
-"Variablen werden beim Drucken eingesetzt, in Texten und im Inhalt von Codes. "
-"[[ui:Insert variable]] neben dem Text oder dem Inhalt bietet die gängigen "
-"an; die übrigen tippen Sie ein."
+msgstr "Variablen werden beim Drucken eingesetzt, in Texten und im Inhalt von Codes. [[ui:Insert variable]] neben dem Text oder dem Inhalt bietet die gängigen an; die übrigen tippen Sie ein."
 
 #. type: Plain text
 #: docs/use.md
@@ -1090,10 +1085,7 @@ msgid ""
 "Formats use the letters of [strftime](https://docs.python.org/3/library/"
 "datetime.html#format-codes): `%d` day, `%m` month, `%Y` year, `%H:%M` hours "
 "and minutes, `%B` the name of the month."
-msgstr ""
-"Formate verwenden die Buchstaben von [strftime](https://docs.python.org/3/"
-"library/datetime.html#format-codes): `%d` Tag, `%m` Monat, `%Y` Jahr, `%H:"
-"%M` Stunden und Minuten, `%B` der Name des Monats."
+msgstr "Formate verwenden die Buchstaben von [strftime](https://docs.python.org/3/library/datetime.html#format-codes): `%d` Tag, `%m` Monat, `%Y` Jahr, `%H:%M` Stunden und Minuten, `%B` der Name des Monats."
 
 #. type: Plain text
 #: docs/use.md
@@ -1103,12 +1095,7 @@ msgid ""
 "[[ui:Counter]] group below the content; it appears once a text uses the "
 "counter. After printing the label remembers the next number: save it to keep "
 "it."
-msgstr ""
-"Der Zähler steigt mit jedem gedruckten Etikett, auch von Exemplar zu "
-"Exemplar: 5 Exemplare erhalten 5 Nummern. [[ui:Next number]] und [[ui:Step]] "
-"stellen Sie in der Gruppe [[ui:Counter]] unter dem Inhalt ein; sie "
-"erscheint, sobald ein Text den Zähler verwendet. Nach dem Drucken merkt sich "
-"das Etikett die nächste Nummer: Speichern Sie es, damit sie erhalten bleibt."
+msgstr "Der Zähler steigt mit jedem gedruckten Etikett, auch von Exemplar zu Exemplar: 5 Exemplare erhalten 5 Nummern. [[ui:Next number]] und [[ui:Step]] stellen Sie in der Gruppe [[ui:Counter]] unter dem Inhalt ein; sie erscheint, sobald ein Text den Zähler verwendet. Nach dem Drucken merkt sich das Etikett die nächste Nummer: Speichern Sie es, damit sie erhalten bleibt."
 
 #. type: Plain text
 #: docs/use.md
@@ -1116,20 +1103,14 @@ msgid ""
 "On one label every variable has one value: a counter or an ID used in the "
 "text and in the QR code is the same number. The preview shows the values the "
 "next print uses."
-msgstr ""
-"Auf einem Etikett hat jede Variable einen Wert: Ein Zähler oder eine ID im "
-"Text und im QR-Code ist dieselbe Nummer. Die Vorschau zeigt die Werte, die "
-"der nächste Druck verwendet."
+msgstr "Auf einem Etikett hat jede Variable einen Wert: Ein Zähler oder eine ID im Text und im QR-Code ist dieselbe Nummer. Die Vorschau zeigt die Werte, die der nächste Druck verwendet."
 
 #. type: Plain text
 #: docs/use.md
 msgid ""
 "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without "
 "variables print exactly as typed."
-msgstr ""
-"Um eine geschweifte Klammer zu drucken, verdoppeln Sie sie: `{{=date}}` "
-"druckt `{=date}`. Texte ohne Variablen werden genau so gedruckt, wie sie "
-"eingegeben wurden."
+msgstr "Um eine geschweifte Klammer zu drucken, verdoppeln Sie sie: `{{=date}}` druckt `{=date}`. Texte ohne Variablen werden genau so gedruckt, wie sie eingegeben wurden."
 
 #. type: Plain text
 #: docs/use.md
@@ -1137,11 +1118,7 @@ msgid ""
 "Dates and times are in the computer's time zone. `+1d` keeps the time of "
 "day, also when summer time starts or ends; `+2h` counts real hours. `%z` and "
 "`%Z` give the offset and the name of the time zone."
-msgstr ""
-"Datum und Uhrzeit gelten in der Zeitzone des Computers. `+1d` behält "
-"die Uhrzeit, auch wenn die Sommerzeit beginnt oder endet; `+2h` zählt "
-"echte Stunden. `%z` und `%Z` ergeben die Abweichung und den Namen der "
-"Zeitzone."
+msgstr "Datum und Uhrzeit gelten in der Zeitzone des Computers. `+1d` behält die Uhrzeit, auch wenn die Sommerzeit beginnt oder endet; `+2h` zählt echte Stunden. `%z` und `%Z` ergeben die Abweichung und den Namen der Zeitzone."
 
 #. type: Plain text
 #: docs/use.md
@@ -1149,10 +1126,7 @@ msgid ""
 "A label with variables or a counter needs this version of Etiketto or a "
 "newer one: older versions refuse to open it instead of printing `{=date}` as "
 "it is."
-msgstr ""
-"Ein Etikett mit Variablen oder Zähler braucht diese oder eine neuere "
-"Version von Etiketto: Ältere Versionen öffnen es nicht, statt "
-"`{=date}` unverändert zu drucken."
+msgstr "Ein Etikett mit Variablen oder Zähler braucht diese oder eine neuere Version von Etiketto: Ältere Versionen öffnen es nicht, statt `{=date}` unverändert zu drucken."
 
 #. type: Title ##
 #: docs/use.md
@@ -1165,9 +1139,7 @@ msgstr "Befehlszeile { #command-line }"
 msgid ""
 "`etiketto print` prints a saved label without opening a window, also on a "
 "computer without a screen:"
-msgstr ""
-"`etiketto print` druckt ein gespeichertes Etikett, ohne ein Fenster zu "
-"öffnen, auch auf einem Computer ohne Bildschirm:"
+msgstr "`etiketto print` druckt ein gespeichertes Etikett, ohne ein Fenster zu öffnen, auch auf einem Computer ohne Bildschirm:"
 
 #. type: Fenced code block (sh)
 #: docs/use.md
@@ -1195,10 +1167,7 @@ msgid ""
 "Without `--host` Etiketto uses the printer set in the app, or the only one "
 "it finds on the network. `etiketto list-printers` shows model, address and "
 "name of each printer found."
-msgstr ""
-"Ohne `--host` verwendet Etiketto den in der App eingestellten Drucker oder "
-"den einzigen, den es im Netzwerk findet. `etiketto list-printers` zeigt "
-"Modell, Adresse und Name jedes gefundenen Druckers."
+msgstr "Ohne `--host` verwendet Etiketto den in der App eingestellten Drucker oder den einzigen, den es im Netzwerk findet. `etiketto list-printers` zeigt Modell, Adresse und Name jedes gefundenen Druckers."
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -1207,33 +1176,20 @@ msgid ""
 "the command line]] (in the element's settings), or fills in a variable of "
 "your own: `{=lot}` in the label, `--set lot=A12` when printing; a name may "
 "use letters of any language. Variables in a new text are filled in; `--set-"
-"literal NAME=VALUE` takes the value as it is.  `--set date=2026-12-31` "
-"prints with another date."
-msgstr ""
-"`--set NAME=VALUE` ersetzt den Text des Elements mit diesem [[ui:Name "
-"for the command line]] (in den Einstellungen des Elements) oder setzt "
-"eine eigene Variable ein: `{=lot}` im Etikett, `--set lot=A12` beim "
-"Drucken; ein Name darf Buchstaben jeder Sprache enthalten. Variablen "
-"in einem neuen Text werden eingesetzt; `--set-literal NAME=VALUE` "
-"übernimmt den Wert unverändert. `--set date=2026-12-31` druckt mit "
-"einem anderen Datum."
+"literal NAME=VALUE` takes the value as it is. `--set date=2026-12-31` prints "
+"with another date."
+msgstr "`--set NAME=VALUE` ersetzt den Text des Elements mit diesem [[ui:Name for the command line]] (in den Einstellungen des Elements) oder setzt eine eigene Variable ein: `{=lot}` im Etikett, `--set lot=A12` beim Drucken; ein Name darf Buchstaben jeder Sprache enthalten. Variablen in einem neuen Text werden eingesetzt; `--set-literal NAME=VALUE` übernimmt den Wert unverändert. `--set date=2026-12-31` druckt mit einem anderen Datum."
 
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
 "With a counter the next number is saved in the label file after printing, "
-"also when the printer fails half-way or the print is stopped with Ctrl+C.  "
-"If the file cannot be written, nothing is printed. The label file is locked "
-"while printing: a second `etiketto print` of the same file waits.  The "
-"window reads the saved number again before printing and saving."
-msgstr ""
-"Mit einem Zähler wird die nächste Nummer nach dem Drucken in der "
-"Etikettendatei gespeichert, auch wenn der Drucker mittendrin scheitert "
-"oder der Druck mit Ctrl+C abgebrochen wird. Lässt sich die Datei nicht "
-"schreiben, wird nichts gedruckt. Während des Druckens ist die "
-"Etikettendatei gesperrt: Ein zweites `etiketto print` derselben Datei "
-"wartet. Das Fenster liest die gespeicherte Nummer vor dem Drucken und "
-"Speichern neu."
+"also when the printer fails half-way or the print is stopped with Ctrl+C. If "
+"the file cannot be written, nothing is printed; `--no-save-counter` prints "
+"anyway and saves nothing, so the next print repeats the numbers. The label "
+"file is locked while printing: a second `etiketto print` of the same file "
+"waits. The window reads the saved number again before printing and saving."
+msgstr "Mit einem Zähler wird die nächste Nummer nach dem Drucken in der Etikettendatei gespeichert, auch wenn der Drucker mittendrin scheitert oder der Druck mit Ctrl+C abgebrochen wird. Lässt sich die Datei nicht schreiben, wird nichts gedruckt; `--no-save-counter` druckt trotzdem und speichert nichts, der nächste Druck wiederholt also die Nummern. Während des Druckens ist die Etikettendatei gesperrt: Ein zweites `etiketto print` derselben Datei wartet. Das Fenster liest die gespeicherte Nummer vor dem Drucken und Speichern neu."
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -1242,36 +1198,25 @@ msgid ""
 "output file.png` saves the PNG images as the printer would get them "
 "(`file-1.png`, `file-2.png` … if they differ; `-` writes the first to "
 "standard output)."
-msgstr ""
-"`--dry-run` prüft und zeichnet nur: Es listet die Texte jedes Etiketts "
-"auf; `--output datei.png` speichert die PNG-Bilder so, wie der Drucker "
-"sie bekäme (`datei-1.png`, `datei-2.png` …, wenn sie sich "
-"unterscheiden; `-` schreibt das erste in die Standardausgabe)."
+msgstr "`--dry-run` prüft und zeichnet nur: Es listet die Texte jedes Etiketts auf; `--output datei.png` speichert die PNG-Bilder so, wie der Drucker sie bekäme (`datei-1.png`, `datei-2.png` …, wenn sie sich unterscheiden; `-` schreibt das erste in die Standardausgabe)."
 
 #. type: Plain text
 #: docs/use.md
 msgid ""
 "Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong "
-"arguments, 3 label file cannot be read or output not written, 4 the label "
-"cannot be printed (empty, unknown or unclosed variable), 5 the counter "
+"arguments, 3 label file cannot be read, still locked by another print or "
+"output not written, 4 the label cannot be printed (empty, unknown or "
+"unclosed variable, date before the year 1 or after 9999), 5 the counter "
 "cannot be saved (nothing printed; or printed, but saving failed), 130 "
 "interrupted."
-msgstr ""
-"Exit-Codes: 0 gedruckt, 1 Problem mit dem Drucker oder kein Drucker "
-"gefunden, 2 falsche Argumente, 3 Etikettendatei nicht lesbar oder "
-"Ausgabe nicht geschrieben, 4 das Etikett lässt sich nicht drucken "
-"(leer, unbekannte oder nicht geschlossene Variable), 5 der Zähler "
-"lässt sich nicht speichern (nichts gedruckt; oder gedruckt, aber das "
-"Speichern scheiterte), 130 abgebrochen."
+msgstr "Exit-Codes: 0 gedruckt, 1 Problem mit dem Drucker oder kein Drucker gefunden, 2 falsche Argumente, 3 Etikettendatei nicht lesbar, noch von einem anderen Druck gesperrt oder Ausgabe nicht geschrieben, 4 das Etikett lässt sich nicht drucken (leer, unbekannte oder nicht geschlossene Variable, Datum vor dem Jahr 1 oder nach 9999), 5 der Zähler lässt sich nicht speichern (nichts gedruckt; oder gedruckt, aber das Speichern scheiterte), 130 abgebrochen."
 
 #. type: Plain text
 #: docs/use.md
 msgid ""
 "In the Flatpak the label file has to be handed over with `--file-"
 "forwarding`; write images to standard output:"
-msgstr ""
-"Im Flatpak muss die Etikettendatei mit `--file-forwarding` übergeben werden; "
-"Bilder schreiben Sie in die Standardausgabe:"
+msgstr "Im Flatpak muss die Etikettendatei mit `--file-forwarding` übergeben werden; Bilder schreiben Sie in die Standardausgabe:"
 
 #. type: Fenced code block (sh)
 #: docs/use.md
@@ -1291,10 +1236,4 @@ msgid ""
 "locking the file: two prints of the same file at the same moment are then "
 "not kept apart. If the portal refuses to write, nothing is printed (exit "
 "code 5)."
-msgstr ""
-"Eine so übergebene Datei wird über das Dokumentenportal erreicht. Der "
-"nächste Zählerstand wird dort wie jedes Speichern geschrieben, aber "
-"das Portal unterstützt das Sperren der Datei womöglich nicht: Zwei "
-"gleichzeitige Drucke derselben Datei werden dann nicht "
-"auseinandergehalten. Verweigert das Portal das Schreiben, wird nichts "
-"gedruckt (Exit-Code 5)."
+msgstr "Eine so übergebene Datei wird über das Dokumentenportal erreicht. Der nächste Zählerstand wird dort wie jedes Speichern geschrieben, aber das Portal unterstützt das Sperren der Datei womöglich nicht: Zwei gleichzeitige Drucke derselben Datei werden dann nicht auseinandergehalten. Verweigert das Portal das Schreiben, wird nichts gedruckt (Exit-Code 5)."

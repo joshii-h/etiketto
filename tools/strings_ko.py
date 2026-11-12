@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "중단됨",
     "Waiting for another print of %s to finish…": "%s의 다른 인쇄가 끝나기를 기다리는 중…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "요소 %(n)d: 변수 %(name)s…이(가) 닫히지 않았습니다 – }로 끝내세요",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "다음 카운터 값을 라벨에 저장하지 않음 (읽기 전용 파일), 다음 인쇄는 같은 번호부터 시작",
+    "%s is still locked by another print – try again later": "%s이(가) 아직 다른 인쇄에 의해 잠겨 있습니다 – 나중에 다시 시도하세요",
+    "The next counter value is not saved: the next print repeats the numbers": "다음 카운터 값이 저장되지 않습니다: 다음 인쇄에서 번호가 반복됩니다",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "요소 %(n)d: %(name)s의 날짜가 1년 이전이거나 9999년 이후입니다",
 }

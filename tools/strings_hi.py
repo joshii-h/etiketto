@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "बाधित",
     "Waiting for another print of %s to finish…": "%s के दूसरे प्रिंट के पूरा होने की प्रतीक्षा…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "तत्व %(n)d: चर %(name)s… बंद नहीं है – इसे } से समाप्त करें",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "अगला काउंटर मान लेबल में न सहेजें (केवल-पढ़ने वाली फ़ाइल); अगला प्रिंट उसी संख्या से शुरू होगा",
+    "%s is still locked by another print – try again later": "%s अभी भी किसी दूसरे प्रिंट द्वारा लॉक है – बाद में फिर कोशिश करें",
+    "The next counter value is not saved: the next print repeats the numbers": "अगला काउंटर मान सहेजा नहीं जाता: अगला प्रिंट संख्याएँ दोहराएगा",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "तत्व %(n)d: %(name)s की तारीख वर्ष 1 से पहले या 9999 के बाद है",
 }

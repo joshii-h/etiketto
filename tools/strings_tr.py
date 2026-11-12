@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Kesildi",
     "Waiting for another print of %s to finish…": "%s dosyasının başka bir yazdırmasının bitmesi bekleniyor…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Öge %(n)d: %(name)s… değişkeni kapatılmamış – } ile bitirin",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "sonraki sayaç değerini etikete kaydetme (salt okunur bir dosya); sonraki yazdırma aynı numaradan başlar",
+    "%s is still locked by another print – try again later": "%s hâlâ başka bir yazdırma tarafından kilitli – daha sonra yeniden deneyin",
+    "The next counter value is not saved: the next print repeats the numbers": "Sonraki sayaç değeri kaydedilmiyor: sonraki yazdırma numaraları tekrarlar",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Öge %(n)d: %(name)s tarihi 1. yıldan önce veya 9999'dan sonra",
 }

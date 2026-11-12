@@ -280,4 +280,8 @@ TRANSLATIONS = {
     "Interrupted": "Avbruten",
     "Waiting for another print of %s to finish…": "Väntar på att en annan utskrift av %s ska bli klar…",
     "Element %(n)d: the variable %(name)s… is not closed – end it with }": "Element %(n)d: variabeln %(name)s… är inte stängd – avsluta den med }",
+    "do not save the next counter value in the label (a read-only file); the next print starts from the same number": "spara inte nästa räknarvärde i etiketten (en skrivskyddad fil); nästa utskrift börjar på samma nummer",
+    "%s is still locked by another print – try again later": "%s är fortfarande låst av en annan utskrift – försök igen senare",
+    "The next counter value is not saved: the next print repeats the numbers": "Nästa räknarvärde sparas inte: nästa utskrift upprepar numren",
+    "Element %(n)d: the date of %(name)s is before the year 1 or after 9999": "Element %(n)d: datumet för %(name)s ligger före år 1 eller efter 9999",
 }
