@@ -454,18 +454,20 @@ class PrintFlow:
             def series(sheet: SheetJob | None = None) -> None:
                 self.start_series(options, indexes, sheet)
 
-            self._codes_first(lambda: self._margins_first(job, series))
+            self._codes_first(options, lambda: self._margins_first(job, series))
             return
         self._codes_first(
-            lambda: self._margins_first(job, lambda sheet=None: self.start(options, sheet))
+            options,
+            lambda: self._margins_first(job, lambda sheet=None: self.start(options, sheet)),
         )
 
-    def _codes_first(self, then) -> None:
-        """Codes that may not scan at the printer's resolution (the preview
-        is rendered at it): ask first; a code that does not fit: say so,
-        nothing is printed."""
-        rendered = self.window.rendered
-        warnings = [w for w in rendered.warnings if w.key in CODE_WARNINGS] if rendered else []
+    def _codes_first(self, options: PrintOptions, then) -> None:
+        """Codes that may not scan at the resolution of this print (the
+        dialog's quality or high resolution may differ from the preview's:
+        rendered anew for its options): ask first; a code that does not fit:
+        say so, nothing is printed."""
+        rendered = self.window.render_for(options)
+        warnings = [w for w in rendered.warnings if w.key in CODE_WARNINGS]
         too_big = [w for w in warnings if w.key == "code_too_big"]
         if too_big:
             error = CodeTooLarge("element %s" % too_big[0].params.get("n"), **too_big[0].params)

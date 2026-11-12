@@ -3840,3 +3840,27 @@ def test_preview_and_export_show_the_whole_tape(ptouch_window_12mm, tmp_path):
 
     with Image.open(tmp_path / "x.png") as png:
         assert png.height == image.height
+
+
+def test_the_code_check_renders_with_the_dialogs_high_resolution(ptouch_window_12mm, ptouch_env):
+    """A Code 128 that does not fit at 180 dpi along the tape fits at the
+    P-touch's high resolution (360 along): with high resolution chosen in
+    the print dialog the check renders anew, so it only warns (thin
+    modules) instead of refusing."""
+    win = ptouch_window_12mm
+    win.label.elements = [CodeElement(data="ABCDEFGH-1234", symbology="code128")]
+    win.label.auto_length = False
+    win.label.length_mm = 30
+    render_now(win)
+    assert "does not fit" in win.preview.status.get_text()
+    win.print_flow.on_print()
+    respond(win.last_dialog, "print")
+    assert win.get_visible_dialog().get_heading() == "Printing failed"
+    respond(win.get_visible_dialog(), "close")
+    win.print_flow.on_print()
+    one(win.last_dialog, Adw.SwitchRow, title="High resolution").set_active(True)
+    respond(win.last_dialog, "print")
+    assert win.get_visible_dialog().get_heading() == "Codes may not scan"
+    respond(win.get_visible_dialog(), "print")
+    assert pump(lambda: not win.print_flow.busy)
+    assert len(ptouch_env.prints) == 1 and ptouch_env.prints[0][2].high_res

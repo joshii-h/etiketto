@@ -480,6 +480,17 @@ class Window(Adw.ApplicationWindow):
             image = clip_preview(image, sheet, self.label.sheet.rotated)
         return rendered, image
 
+    def render_for(self, options: PrintOptions) -> Rendered:
+        """The label (the next print's values) rendered for these options:
+        the print dialog's choices of quality or high resolution change the
+        resolution, so its code check renders anew."""
+        label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
+        rendered = self.backend.render_label(
+            label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
+        )
+        rendered.warnings[:0] = warnings
+        return rendered
+
     def _on_tape(self, image: Image.Image, label: Label) -> Image.Image:
         """Endless tape: the render covers only what the head prints (a
         P-touch's or QL's printable width); preview and export show the
