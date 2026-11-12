@@ -40,9 +40,14 @@ services:
       - "--tokens"
       - "/config/tokens.toml"
       # behind a reverse proxy in a Docker network: its X-Forwarded-For
-      # names the clients (the rate limit and the log use them)
+      # names the clients (the rate limit and the log use them). Give the
+      # proxy's own address (a fixed one in the network, /32), never a whole
+      # range: connections through the published port come from the Docker
+      # gateway, which is in that range too, and could name any client.
+      # With a proxy, publish no port at all (remove "ports:"), so the
+      # server is reached only through the proxy.
       # - "--trusted-proxy"
-      # - "172.16.0.0/12"
+      # - "172.30.0.10/32"
     volumes:
       # printers.toml, tokens.toml (hashes only), etiketto/settings.json if wanted
       - ./config:/config:ro
