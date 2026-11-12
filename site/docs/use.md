@@ -299,7 +299,8 @@ example) keep the whole document. Of a TIFF with several pages only the
 chosen page is kept.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
-along, otherwise install it from your distribution (see the README).
+along, otherwise install it from your distribution (package names:
+[docs/install.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/install.md)).
 Older versions of Tavletta refuse to open labels with a shipping label and
 say that the label needs a newer version.
 

@@ -4,11 +4,12 @@ Tavletta is licensed under the AGPL-3.0-or-later. This is the complete list
 of what it ships or derives from, with the licenses and notices. Section 1
 is code and data that are part of Tavletta or its Flatpak; section 2 the
 sources of protocol knowledge, used as facts only: no code of theirs is
-included, the protocols were written anew.
+included, the protocols were written anew. [CREDITS.md](CREDITS.md) says
+in short who did what; it is shipped next to this file.
 
 In the Flatpak each component's licence is in
-`share/licenses/xyz.joshuahirsig.Tavletta/<module>/` (this file in
-`tavletta/`).
+`share/licenses/xyz.joshuahirsig.Tavletta/<module>/` (this file and
+`CREDITS.md` in `tavletta/`).
 
 ## Licence expressions
 

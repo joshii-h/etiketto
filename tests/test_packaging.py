@@ -52,8 +52,8 @@ def test_check_sh_runs_what_the_ci_runs():
         assert loop in check and loop in ci, loop  # the documentation's catalogs too
     assert ci.count("pip install -q -e . --group dev") == 2  # both jobs: the same tools
     assert ci.count('pip install -q --upgrade "pip>=25.1"') == 2  # --group needs it
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "-e . --group dev" in readme
+    contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    assert "-e . --group dev" in contributing  # the development setup, as the CI installs
 
 
 def test_the_flatpak_ships_every_licence_once():
@@ -86,6 +86,7 @@ def test_the_flatpak_ships_every_licence_once():
         "tavletta",
     }
     assert "THIRD_PARTY_NOTICES.md" in by_hand["tavletta"]
+    assert "CREDITS.md" in by_hand["tavletta"]  # the credits, no longer in a README it ships
     assert "LICENSE.glabels" in by_hand["tavletta"] and "LICENSE.mdi" in by_hand["tavletta"]
     assert "LICENSE.zint" not in "".join(by_hand.values())  # a source: copied by itself
     zint = next(m for m in manifest["modules"] if m["name"] == "python3-zint-bindings")
@@ -214,8 +215,9 @@ def test_the_container_image_and_compose_files():
     dockerfile = (docker / "Dockerfile").read_text(encoding="utf-8")
     assert re.search(r"^USER tavletta$", dockerfile, re.M)
     assert "HEALTHCHECK" in dockerfile and "/api/v1/health" in dockerfile
-    assert re.search(r"^COPY .*THIRD_PARTY_NOTICES\.md \./$", dockerfile, re.M)  # setuptools
-    assert "/src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavletta/" in dockerfile
+    copy = r"^COPY .*THIRD_PARTY_NOTICES\.md CREDITS\.md \./$"
+    assert re.search(copy, dockerfile, re.M)  # setuptools: license-files
+    assert "/src/THIRD_PARTY_NOTICES.md /src/CREDITS.md /usr/share/doc/tavletta/" in dockerfile
     assert "gir1.2-poppler-0.18" in dockerfile  # PDF pages of shipping labels
     assert "apt-get upgrade -y" in dockerfile  # fixes newer than the base image
     compose = yaml.safe_load((docker / "compose.yaml").read_text(encoding="utf-8"))
@@ -223,7 +225,68 @@ def test_the_container_image_and_compose_files():
     assert "build" not in service
     minor = ".".join(__version__.split(".")[:2])
     assert service["image"] == "ghcr.io/joshii-h/tavletta:" + minor  # bumped with the version
+    for doc in ("README.md", "docs/install.md"):  # the install instructions too
+        assert service["image"] in (ROOT / doc).read_text(encoding="utf-8"), doc
     build = yaml.safe_load((docker / "compose.build.yaml").read_text(encoding="utf-8"))
     built = build["services"]["tavletta"]
     assert (docker / built["build"]["context"] / built["build"]["dockerfile"]).is_file()
     assert built["pull_policy"] == "build"
+
+
+def _markdown_anchors(text: str) -> set[str]:
+    """The anchors of a Markdown file's headings: GitHub's slugs and
+    explicit `{ #id }` attributes."""
+    anchors = set()
+    for heading in re.findall(r"^#+ (.+)$", re.sub(r"```.*?```", "", text, flags=re.S), re.M):
+        explicit = re.search(r"\{ #([\w-]+) \}$", heading)
+        if explicit:
+            anchors.add(explicit.group(1))
+            heading = heading[: explicit.start()].strip()
+        slug = re.sub(r"[^\w\- ]", "", heading.lower()).replace(" ", "-")
+        anchors.add(slug)
+    return anchors
+
+
+def test_the_readme_is_short_and_every_markdown_link_resolves():
+    """The README is a landing page; the details live in docs/, CONTRIBUTING.md
+    and CREDITS.md. Every relative link in these files points at a file,
+    and at a heading of it, that are there; docs/README.md lists every document."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert len(readme.splitlines()) <= 100
+    for doc in ("docs/README.md", "docs/features.md", "docs/install.md", "docs/cli.md"):
+        assert "](%s)" % doc in readme, doc
+    for doc in ("CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "ACCESSIBILITY.md"):
+        assert "](%s)" % doc in readme, doc
+    assert "](CREDITS.md)" in readme and "](THIRD_PARTY_NOTICES.md)" in readme
+    files = [
+        ROOT / name
+        for name in (
+            "README.md",
+            "CONTRIBUTING.md",
+            "CREDITS.md",
+            "THIRD_PARTY_NOTICES.md",
+            "ACCESSIBILITY.md",
+            "SECURITY.md",
+            "CODE_OF_CONDUCT.md",
+        )
+    ]
+    files += sorted((ROOT / "docs").glob("*.md"))
+    index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
+    for doc in sorted((ROOT / "docs").glob("*.md")) + [ROOT / "docs" / "openapi.yaml"]:
+        assert doc.name == "README.md" or "](%s)" % doc.name in index, doc.name
+    for path in files:
+        text = re.sub(r"```.*?```", "", path.read_text(encoding="utf-8"), flags=re.S)
+        links = re.findall(r"\]\(([^)\s]+)\)", text) + re.findall(
+            r'(?:src|srcset)="([^"]+)"', text
+        )
+        for link in links:
+            if re.match(r"[a-z]+:", link):
+                continue  # https:, mailto:
+            target, _, anchor = link.partition("#")
+            dest = (path.parent / target).resolve() if target else path
+            assert dest.exists(), (path.name, link)
+            if anchor and dest.suffix == ".md":
+                assert anchor in _markdown_anchors(dest.read_text(encoding="utf-8")), (
+                    path.name,
+                    link,
+                )

@@ -6883,13 +6883,14 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, "
-"otherwise install it from your distribution (see the README).  Older "
+"otherwise install it from your distribution (package names: "
+"[docs/install.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/install.md)).  Older "
 "versions of Tavletta refuse to open labels with a shipping label and say "
 "that the label needs a newer version."
 msgstr ""
 "Zum Öffnen von PDF-Dateien braucht es Poppler (poppler-glib); das Flatpak "
-"bringt es mit, sonst aus der eigenen Distribution installieren (siehe "
-"README). Ältere Versionen von Tavletta öffnen Etiketten mit einem "
+"bringt es mit, sonst aus der eigenen Distribution installieren "
+"(Paketnamen: [docs/install.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/install.md)). Ältere Versionen von Tavletta öffnen Etiketten mit einem "
 "Versandetikett nicht und sagen, dass das Etikett eine neuere Version braucht."
 
 #. type: Plain text

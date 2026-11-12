@@ -3892,6 +3892,10 @@ def test_third_party_notices_and_the_about_dialog_name_the_same():
     bold = set(re.findall(r"\*\*(.+?)\*\*", sources))
     documents = {name for name in bold if re.search(r"manual|Manual|References|app ", name)}
     assert bold - documents == set(app.PROTOCOL_SOURCES) | {"labelburg"}
+    # CREDITS.md (once the README's credits) names them all as well
+    credits = (Path(__file__).parent.parent / "CREDITS.md").read_text(encoding="utf-8")
+    for name in credited | set(app.PROTOCOL_SOURCES) | {"labelburg"}:
+        assert re.split(r" templates| and ", name)[0] in credits, name  # Poppler (and its data)
 
 
 def test_poppler_is_credited_where_it_is_shipped(monkeypatch, tmp_path):

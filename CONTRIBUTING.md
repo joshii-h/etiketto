@@ -52,17 +52,30 @@ section that applies:
 
 ## Development setup
 
-You need Python 3.11+, PyGObject with GTK 4 and libadwaita, pycairo,
-gettext and, for the icon tests and `tools/icons.py`, librsvg's GObject
-introspection from your distribution (see README for package names).
+You need Python 3.11+, PyGObject with GTK 4 and libadwaita, pycairo and
+gettext from your distribution (package names:
+[docs/install.md](docs/install.md)).
+
+Besides these, the tests of the app icon (`tests/test_icons.py`)
+and `tools/icons.py` need librsvg's GObject introspection: `gir1.2-rsvg-2.0`
+(Debian, Ubuntu), `librsvg2` (Fedora), `librsvg` (Arch), `gnome-base/librsvg`
+with `USE="introspection"` (Gentoo). Without it those tests are skipped
+locally; in the CI they fail.
 
 ```sh
 git clone https://git.joshuahirsig.xyz/joshii/tavletta.git
 cd tavletta
 uv venv --system-site-packages .venv
 uv pip install --python .venv/bin/python -e . --group dev
+.venv/bin/python -m pytest
+.venv/bin/ruff check . && .venv/bin/ruff format --check .
 .venv/bin/python -m tavletta.app
+LANGUAGE=de .venv/bin/python -m tavletta.app
 ```
+
+Translations: `xgettext` (see [Translations](#translations)) → `po/tavletta.pot`, strings in
+`tools/strings_<lang>.py`, `python3 tools/fill_po.py` writes the
+`.po` files; `install.sh` compiles them.
 
 ## Before you open a pull request
 
@@ -240,10 +253,12 @@ extension of the interface first; please open an issue before you start.
    without one. Test the protocol details (requests, bytes, error mapping)
    on top of that.
 
-4. Texts: a row in the "Supported printers" table of the README, an entry
+4. Texts: a row in the table of [docs/printers.md](docs/printers.md) and,
+   in short, in the "Supported printers" list of the README, an entry
    under "Supported printers" in the metainfo description, a section in
    `site/docs/printer.md` (setup and problems), protocol notes in
-   `docs/<name>.md`, and the trademark in the README and the metainfo;
+   `docs/<name>.md` (listed in [docs/README.md](docs/README.md)), and the
+   trademark in the README's License section and the metainfo;
    the printer's names among the `Keywords` of the desktop file and the
    `<keywords>` of the metainfo, so a search finds it. Protocol knowledge
    from other projects goes into `THIRD_PARTY_NOTICES.md` (section 2) and
@@ -340,8 +355,9 @@ python3 tools/glabels_templates.py /tmp/glabels-qt/templates
 
 It rewrites `templates.json` and copies the license to
 `tavletta/sheets/LICENSE.glabels`; check the number of sheets it reports
-(and the number "over 1700 sheets" in the README and `site/docs/sheets.md`),
-keep the copyright years in the README credits, `THIRD_PARTY_NOTICES.md`
+(and the number "over 1700 sheets" in the README, `docs/features.md` and
+`site/docs/sheets.md`),
+keep the copyright years in [CREDITS.md](CREDITS.md), `THIRD_PARTY_NOTICES.md`
 and `LEGAL` in `tavletta/app.py` current, and
 run the tests (`tests/test_sheets.py` checks that every sheet is usable).
 A sheet that is missing or wrong belongs in gLabels, so that both projects
@@ -374,7 +390,7 @@ feature (bluetooth, usb, nfc, hdmi, cast, contactless payment), as a label
 on a device needs them, and the key symbols apple-keyboard-* (command,
 option, shift are standard key symbols in Unicode, not a logo). It stops if the release's license text is no longer the
 one in `tavletta/symbols/LICENSE.mdi`: then check the new license and update
-that file by hand. Update the version in the README credits,
+that file by hand. Update the version in [CREDITS.md](CREDITS.md),
 `THIRD_PARTY_NOTICES.md` and `LICENSE.mdi` (and the holders in `LEGAL` in
 `tavletta/app.py` if they change), check the number of icons it reports
 and run the tests
@@ -473,7 +489,8 @@ text), never a raw `KeyError`, `zipfile` or XML error.
 - No emoji in the interface. Use symbolic icons from the icon theme.
 - The app follows the system's light/dark mode and accent colour; do not
   hard-code colours in the interface.
-- Screenshots for the README and Flathub use the default GNOME style:
+- Screenshots for the README, [docs/screenshots.md](docs/screenshots.md)
+  and Flathub use the default GNOME style:
   `TAVLETTA_SCREENSHOT=out.png ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME=prefer-dark`
   with an empty `XDG_CONFIG_HOME`.
 

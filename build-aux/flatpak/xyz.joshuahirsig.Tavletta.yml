@@ -243,7 +243,7 @@ modules:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         .
       # (LICENSE flatpak-builder copies itself)
-      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/tavletta THIRD_PARTY_NOTICES.md
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/tavletta THIRD_PARTY_NOTICES.md CREDITS.md
         tavletta/sheets/LICENSE.glabels tavletta/symbols/LICENSE.mdi
     sources:
       # local checkout, for development builds

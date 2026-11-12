@@ -39,4 +39,4 @@
 - [ ] New behaviour has tests that check the actual result
 - [ ] New user-facing strings use `_()` and are translated (or listed as missing)
 - [ ] No emoji in the interface; follows the GNOME HIG
-- [ ] README / metainfo updated if behaviour or screenshots changed
+- [ ] README, docs/ and metainfo updated if behaviour or screenshots changed

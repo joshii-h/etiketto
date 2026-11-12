@@ -15,7 +15,7 @@ RUN apt-get update \
         python3 python3-venv python3-gi python3-gi-cairo gir1.2-pango-1.0 gettext git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
-COPY pyproject.toml setup.py MANIFEST.in README.md LICENSE THIRD_PARTY_NOTICES.md ./
+COPY pyproject.toml setup.py MANIFEST.in README.md LICENSE THIRD_PARTY_NOTICES.md CREDITS.md ./
 COPY tavletta ./tavletta
 COPY data ./data
 COPY po ./po
@@ -46,8 +46,8 @@ RUN apt-get update \
     && useradd --system --uid 10001 --home-dir /data --create-home tavletta \
     && install -d -o tavletta -g tavletta -m 0755 /labels /config /usr/local/share/fonts
 COPY --from=build /opt/tavletta /opt/tavletta
-# the licence and the notices of what Tavletta bundles
-COPY --from=build /src/LICENSE /src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavletta/
+# the licence, the notices of what Tavletta bundles and the credits
+COPY --from=build /src/LICENSE /src/THIRD_PARTY_NOTICES.md /src/CREDITS.md /usr/share/doc/tavletta/
 # Mount the labels at /labels and printers.toml, tokens.toml (and, if
 # wanted, tavletta/settings.json of the app) at /config. Both are plain
 # folders, no volumes: Compose (or docker run -v) says what goes there, and

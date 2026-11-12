@@ -10,6 +10,45 @@ The server is built for network printers first: a printer list
 access tokens with roles (`tokens.toml`) say who may do what. Finding
 printers on the network (mDNS) and USB are optional.
 
+## Quick start
+
+`tavletta serve` prints for other programs, without a window or display:
+a REST API under `/api/v1` (JSON; the OpenAPI description at
+`/api/v1/openapi.json`) to list printers and labels, ask a printer for its
+state, render a preview, and print with values, data rows and copies,
+with each named printer's settings (print method, print upside down,
+quality …) from `printers.toml`. Jobs
+are queued, one per printer at a time, and can be canceled between two
+labels; counters are saved as on the command line. `--mcp` serves the same
+as MCP tools at `/mcp`; `tavletta mcp` speaks MCP on standard input and
+output for Claude Desktop and Claude Code:
+
+```sh
+tavletta serve --labels-dir ~/Labels --token-file ~/.config/tavletta/token --mcp
+claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels
+```
+
+Only label and data files inside the labels folder are used. Network
+printers come first: `--printers printers.toml` names the printers clients
+may use, by name (searching the network only with `--discover`), and
+`--tokens tokens.toml` gives each device or person its own access token
+with a role (preview, print, admin), made with `tavletta token new`; the
+file keeps only hashes, and deleting an entry revokes it. The server
+listens on 127.0.0.1 and refuses other addresses without an access token
+(`Authorization: Bearer`). A Dockerfile, Compose files (network printers;
+an override for the host's network, mDNS and USB) and a systemd user unit
+are in `packaging/`. Details, API reference and security notes: the sections below.
+
+The server is published as a container image for amd64 and arm64, with
+build provenance and a signature
+([how to check them](#container)):
+
+```sh
+docker pull ghcr.io/joshii-h/tavletta:1.1.0
+```
+
+## Options
+
 ```sh
 tavletta serve [--host 127.0.0.1] [--port 8790] [--labels-dir DIR] [--mcp]
                [--printers printers.toml | --allow-printer ADDR] [--discover]

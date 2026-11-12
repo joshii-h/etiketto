@@ -51,9 +51,9 @@ command -v msgfmt >/dev/null || { echo "error: msgfmt (gettext) not found" >&2; 
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 # the build compiles the translations into the venv (setup.py)
-# (THIRD_PARTY_NOTICES.md is one of pyproject's license-files: needed too)
+# (THIRD_PARTY_NOTICES.md and CREDITS.md are among pyproject's license-files: needed too)
 cp -r "$SRC/pyproject.toml" "$SRC/setup.py" "$SRC/MANIFEST.in" "$SRC/README.md" "$SRC/LICENSE" \
-    "$SRC/THIRD_PARTY_NOTICES.md" "$SRC/tavletta" "$SRC/data" "$SRC/po" "$BUILD/"
+    "$SRC/THIRD_PARTY_NOTICES.md" "$SRC/CREDITS.md" "$SRC/tavletta" "$SRC/data" "$SRC/po" "$BUILD/"
 rm -rf "$BUILD/tavletta/locale"  # left over from older install.sh versions
 if command -v uv >/dev/null; then
     # the system python3, which has the GTK bindings
