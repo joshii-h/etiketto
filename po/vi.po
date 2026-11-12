@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 14:11+0100\n"
+"PO-Revision-Date: 2026-11-12 14:44+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: vi\n"
 "Language: vi\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: etiketto/app.py:125 etiketto/ui/styles.py:177
+#: etiketto/app.py:125 etiketto/ui/styles.py:183
 msgid "Box and frame"
 msgstr "Hộp và khung"
 
@@ -146,7 +146,7 @@ msgid "Unknown printer model: %s"
 msgstr "Kiểu máy in không xác định: %s"
 
 #: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:290 etiketto/ui/texts.py:587
+#: etiketto/ui/texts.py:290 etiketto/ui/texts.py:589
 #, python-format
 msgid "Cannot open %s"
 msgstr "Không thể mở %s"
@@ -192,7 +192,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Tìm thấy nhiều máy in – hãy chọn một máy bằng --host (etiketto list-printers)"
 
-#: etiketto/cli.py:535 etiketto/ui/texts.py:621
+#: etiketto/cli.py:535 etiketto/ui/texts.py:623
 #, python-format
 msgid "Cannot save %s"
 msgstr "Không thể lưu %s"
@@ -221,7 +221,7 @@ msgstr "--sheet và --rows cần một tệp dữ liệu (--data)"
 msgid "No rows to print"
 msgstr "Không có hàng nào để in"
 
-#: etiketto/cli.py:756 etiketto/ui/window.py:716
+#: etiketto/cli.py:756 etiketto/ui/window.py:739
 #, python-format
 msgid "No such column: %s"
 msgstr "Không có cột này: %s"
@@ -330,8 +330,8 @@ msgstr "Chưa có tệp dữ liệu"
 msgid "CSV, ODS or XLSX"
 msgstr "CSV, ODS hoặc XLSX"
 
-#: etiketto/ui/data.py:291 etiketto/ui/elements.py:301
-#: etiketto/ui/elements.py:319 etiketto/ui/elements.py:332
+#: etiketto/ui/data.py:291 etiketto/ui/elements.py:302
+#: etiketto/ui/elements.py:320 etiketto/ui/elements.py:333
 msgid "Choose…"
 msgstr "Chọn…"
 
@@ -359,144 +359,144 @@ msgstr "Trang tính"
 msgid "Insert column"
 msgstr "Chèn cột"
 
-#: etiketto/ui/elements.py:83 etiketto/ui/shortcuts.py:57
+#: etiketto/ui/elements.py:84 etiketto/ui/shortcuts.py:57
 msgid "Content"
 msgstr "Nội dung"
 
-#: etiketto/ui/elements.py:84
+#: etiketto/ui/elements.py:85
 msgid "Elements are placed one after another along the tape"
 msgstr "Các phần tử được xếp nối tiếp nhau dọc theo băng"
 
-#: etiketto/ui/elements.py:94
+#: etiketto/ui/elements.py:95
 msgid "No content yet"
 msgstr "Chưa có nội dung"
 
-#: etiketto/ui/elements.py:94
+#: etiketto/ui/elements.py:95
 msgid "Add text, an image, a symbol or a code"
 msgstr "Thêm văn bản, ảnh, biểu tượng hoặc mã"
 
-#: etiketto/ui/elements.py:105 etiketto/ui/texts.py:230
-#: etiketto/ui/window.py:828
+#: etiketto/ui/elements.py:106 etiketto/ui/texts.py:230
+#: etiketto/ui/window.py:851
 msgid "Text"
 msgstr "Văn bản"
 
-#: etiketto/ui/elements.py:106
+#: etiketto/ui/elements.py:107
 msgid "Image…"
 msgstr "Ảnh…"
 
-#: etiketto/ui/elements.py:107
+#: etiketto/ui/elements.py:108
 msgid "Symbol…"
 msgstr "Biểu tượng…"
 
-#: etiketto/ui/elements.py:108
+#: etiketto/ui/elements.py:109
 msgid "QR code / barcode"
 msgstr "Mã QR / mã vạch"
 
-#: etiketto/ui/elements.py:109
+#: etiketto/ui/elements.py:110
 msgid "Line or shape"
 msgstr "Đường kẻ hoặc hình"
 
-#: etiketto/ui/elements.py:111
+#: etiketto/ui/elements.py:112
 msgid "Add"
 msgstr "Thêm"
 
-#: etiketto/ui/elements.py:205 etiketto/ui/label_group.py:145
+#: etiketto/ui/elements.py:206 etiketto/ui/label_group.py:145
 msgid "Remove"
 msgstr "Gỡ bỏ"
 
-#: etiketto/ui/elements.py:208
+#: etiketto/ui/elements.py:209
 msgid "Move down"
 msgstr "Chuyển ra sau"
 
-#: etiketto/ui/elements.py:209
+#: etiketto/ui/elements.py:210
 msgid "Move up"
 msgstr "Chuyển lên trước"
 
-#: etiketto/ui/elements.py:222 etiketto/ui/elements.py:348
+#: etiketto/ui/elements.py:223 etiketto/ui/elements.py:349
 msgid "Size"
 msgstr "Cỡ"
 
-#: etiketto/ui/elements.py:229
+#: etiketto/ui/elements.py:230
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = lấp đầy chiều cao băng"
 
-#: etiketto/ui/elements.py:234
+#: etiketto/ui/elements.py:235
 msgid "Line alignment"
 msgstr "Căn dòng"
 
-#: etiketto/ui/elements.py:242
+#: etiketto/ui/elements.py:243
 msgid "Name for the command line"
 msgstr "Tên cho dòng lệnh"
 
-#: etiketto/ui/elements.py:278
+#: etiketto/ui/elements.py:279
 msgid "Font"
 msgstr "Phông chữ"
 
-#: etiketto/ui/elements.py:288
+#: etiketto/ui/elements.py:289
 msgid "Bold"
 msgstr "Đậm"
 
-#: etiketto/ui/elements.py:289
+#: etiketto/ui/elements.py:290
 msgid "Italic"
 msgstr "Nghiêng"
 
-#: etiketto/ui/elements.py:290
+#: etiketto/ui/elements.py:291
 msgid "Underline"
 msgstr "Gạch chân"
 
-#: etiketto/ui/elements.py:291
+#: etiketto/ui/elements.py:292
 msgid "Strikethrough"
 msgstr "Gạch ngang"
 
-#: etiketto/ui/elements.py:299
+#: etiketto/ui/elements.py:300
 msgid "Image file"
 msgstr "Tập tin ảnh"
 
-#: etiketto/ui/elements.py:300 etiketto/ui/elements.py:331
+#: etiketto/ui/elements.py:301 etiketto/ui/elements.py:332
 #: etiketto/ui/label_group.py:133
 msgid "None"
 msgstr "Không có"
 
-#: etiketto/ui/elements.py:309
+#: etiketto/ui/elements.py:310
 msgid "Crop, turn and adjustments reset for the new image"
 msgstr "Đã đặt lại cắt, xoay và điều chỉnh cho ảnh mới"
 
-#: etiketto/ui/elements.py:317
+#: etiketto/ui/elements.py:318
 msgid "Area"
 msgstr "Vùng"
 
-#: etiketto/ui/elements.py:323 etiketto/ui/shipping.py:295
+#: etiketto/ui/elements.py:324 etiketto/ui/shipping.py:295
 msgid "Scale"
 msgstr "Tỉ lệ"
 
-#: etiketto/ui/elements.py:329 etiketto/ui/texts.py:234
+#: etiketto/ui/elements.py:330 etiketto/ui/texts.py:234
 msgid "Symbol"
 msgstr "Biểu tượng"
 
-#: etiketto/ui/elements.py:354 etiketto/ui/styles.py:497
+#: etiketto/ui/elements.py:355 etiketto/ui/styles.py:513
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = lấp đầy chiều cao băng"
 
-#: etiketto/ui/elements.py:359
+#: etiketto/ui/elements.py:360
 msgid ""
 "Black-and-white printers print symbols in black, or in white if the colour "
 "is light"
 msgstr "Máy in đen trắng in biểu tượng màu đen, hoặc màu trắng nếu màu sáng"
 
-#: etiketto/ui/elements.py:366 etiketto/ui/styles.py:109
+#: etiketto/ui/elements.py:367 etiketto/ui/styles.py:113
 msgid "Rotation"
 msgstr "Xoay"
 
-#: etiketto/ui/elements.py:378
+#: etiketto/ui/elements.py:379
 msgid "Type"
 msgstr "Loại"
 
-#: etiketto/ui/elements.py:381
+#: etiketto/ui/elements.py:382
 msgid "Content (link, text, number)"
 msgstr "Nội dung (liên kết, văn bản, số)"
 
-#: etiketto/ui/elements.py:390 etiketto/ui/styles.py:532
+#: etiketto/ui/elements.py:391 etiketto/ui/styles.py:548
 msgid "Colour"
 msgstr "Màu"
 
@@ -550,7 +550,7 @@ msgstr "Đã lưu %s"
 msgid "Export PNG"
 msgstr "Xuất ra PNG"
 
-#: etiketto/ui/files.py:281 etiketto/ui/window.py:741
+#: etiketto/ui/files.py:281 etiketto/ui/window.py:764
 msgid "The preview cannot be drawn"
 msgstr "Không vẽ được bản xem trước"
 
@@ -646,7 +646,7 @@ msgctxt "month name"
 msgid "December"
 msgstr "tháng 12"
 
-#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:380
+#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:396
 msgid "Whole image"
 msgstr "Toàn bộ ảnh"
 
@@ -666,7 +666,7 @@ msgstr "Kéo để chọn phần ảnh cần giữ lại"
 #: etiketto/ui/image_crop.py:64 etiketto/ui/printer.py:235
 #: etiketto/ui/printing.py:434 etiketto/ui/printing.py:657
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:757
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:780
 msgid "Cancel"
 msgstr "Hủy"
 
@@ -688,7 +688,7 @@ msgid "Width"
 msgstr "Chiều rộng"
 
 #: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:335
-#: etiketto/ui/styles.py:491
+#: etiketto/ui/styles.py:507
 msgid "Height"
 msgstr "Chiều cao"
 
@@ -722,12 +722,12 @@ msgstr "Màu nền"
 msgid "Background image"
 msgstr "Ảnh nền"
 
-#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:439
+#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:455
 msgid "Border"
 msgstr "Viền"
 
-#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:304
-#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:445
+#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:310
+#: etiketto/ui/styles.py:340 etiketto/ui/styles.py:461
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = không có"
@@ -740,12 +740,12 @@ msgstr "Kiểu viền"
 msgid "Corners, line and distance from the edge"
 msgstr "Góc, đường kẻ và khoảng cách từ mép"
 
-#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:282
-#: etiketto/ui/styles.py:429 etiketto/ui/styles.py:505
+#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:288
+#: etiketto/ui/styles.py:445 etiketto/ui/styles.py:521
 msgid "Corner radius"
 msgstr "Bán kính góc"
 
-#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:500
+#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:516
 msgid "Line style"
 msgstr "Kiểu đường kẻ"
 
@@ -770,7 +770,7 @@ msgstr "Độ dài tự động"
 msgid "As long as the content"
 msgstr "Dài bằng nội dung"
 
-#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:487
+#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:503
 msgid "Length"
 msgstr "Độ dài"
 
@@ -1263,7 +1263,7 @@ msgstr "In thất bại"
 msgid "Details"
 msgstr "Chi tiết"
 
-#: etiketto/ui/printing.py:752 etiketto/ui/window.py:781
+#: etiketto/ui/printing.py:752 etiketto/ui/window.py:804
 msgid "Report"
 msgstr "Báo cáo"
 
@@ -1448,254 +1448,258 @@ msgstr "Phím tắt"
 msgid "Help"
 msgstr "Trợ giúp"
 
-#: etiketto/ui/styles.py:130
+#: etiketto/ui/styles.py:134
 msgid "Position"
 msgstr "Vị trí"
 
-#: etiketto/ui/styles.py:131
+#: etiketto/ui/styles.py:135
 msgid "Across the tape and the space after it"
 msgstr "Theo bề rộng băng và khoảng cách phía sau"
 
-#: etiketto/ui/styles.py:139
+#: etiketto/ui/styles.py:143
 msgid "Vertical alignment"
 msgstr "Căn dọc"
 
-#: etiketto/ui/styles.py:143
+#: etiketto/ui/styles.py:147
 msgid "Space after it"
 msgstr "Khoảng cách phía sau"
 
-#: etiketto/ui/styles.py:158
+#: etiketto/ui/styles.py:164
 msgid "Own spacing"
 msgstr "Khoảng cách riêng"
 
-#: etiketto/ui/styles.py:161
+#: etiketto/ui/styles.py:167
 msgid "Instead of the label's spacing between elements"
 msgstr "Thay cho khoảng cách giữa các phần tử của nhãn"
 
-#: etiketto/ui/styles.py:173
+#: etiketto/ui/styles.py:179
 msgid "Spacing and fitting"
 msgstr "Khoảng cách và vừa khít"
 
-#: etiketto/ui/styles.py:174
+#: etiketto/ui/styles.py:180
 msgid "Letter and line spacing, shrinking, wrapping, rotation"
 msgstr "Khoảng cách chữ và giãn dòng, thu nhỏ, ngắt dòng, xoay"
 
-#: etiketto/ui/styles.py:177
+#: etiketto/ui/styles.py:183
 msgid "White on black, a box behind the text, a frame"
 msgstr "Trắng trên đen, hộp phía sau chữ, khung"
 
-#: etiketto/ui/styles.py:179
+#: etiketto/ui/styles.py:185
 msgid "Outline and shadow"
 msgstr "Viền chữ và bóng"
 
-#: etiketto/ui/styles.py:180
+#: etiketto/ui/styles.py:186
 msgid ""
 "At least one printer dot; black-and-white printers print the shadow solid"
 msgstr "Ít nhất một điểm in; máy in đen trắng in bóng thành màu đặc"
 
-#: etiketto/ui/styles.py:198
+#: etiketto/ui/styles.py:204
 msgid "Letter spacing"
 msgstr "Khoảng cách chữ"
 
-#: etiketto/ui/styles.py:205
+#: etiketto/ui/styles.py:211
 msgid "percent of the font size"
 msgstr "phần trăm cỡ phông chữ"
 
-#: etiketto/ui/styles.py:210
+#: etiketto/ui/styles.py:216
 msgid "Line spacing"
 msgstr "Giãn dòng"
 
-#: etiketto/ui/styles.py:217
+#: etiketto/ui/styles.py:223
 msgid "times the normal line height"
 msgstr "lần chiều cao dòng bình thường"
 
-#: etiketto/ui/styles.py:222
+#: etiketto/ui/styles.py:228
 msgid "Shrink to fit"
 msgstr "Thu nhỏ cho vừa"
 
-#: etiketto/ui/styles.py:225
+#: etiketto/ui/styles.py:231
 msgid "Smaller until it fits the tape height and the label length"
 msgstr "Thu nhỏ đến khi vừa chiều cao băng và độ dài nhãn"
 
-#: etiketto/ui/styles.py:229
+#: etiketto/ui/styles.py:235
 msgid "Smallest size"
 msgstr "Cỡ nhỏ nhất"
 
-#: etiketto/ui/styles.py:236
+#: etiketto/ui/styles.py:242
 msgid "pt, when shrinking"
 msgstr "pt, khi thu nhỏ"
 
-#: etiketto/ui/styles.py:242
+#: etiketto/ui/styles.py:248
 msgid "Wrap width"
 msgstr "Độ rộng ngắt dòng"
 
-#: etiketto/ui/styles.py:248
+#: etiketto/ui/styles.py:254
 #, python-format
 msgid "%(unit)s, 0 = only at line breaks"
 msgstr "%(unit)s, 0 = chỉ tại chỗ xuống dòng"
 
-#: etiketto/ui/styles.py:258
+#: etiketto/ui/styles.py:264
 msgid "White on black"
 msgstr "Trắng trên đen"
 
-#: etiketto/ui/styles.py:261
+#: etiketto/ui/styles.py:267
 msgid "The text cut out of a box in the text colour"
 msgstr "Chữ được khoét ra khỏi một hộp có màu chữ"
 
-#: etiketto/ui/styles.py:264 etiketto/ui/styles.py:269
+#: etiketto/ui/styles.py:270 etiketto/ui/styles.py:275
 msgid "Background box"
 msgstr "Hộp nền"
 
-#: etiketto/ui/styles.py:264
+#: etiketto/ui/styles.py:270
 msgid "A box behind the text"
 msgstr "Một hộp phía sau chữ"
 
-#: etiketto/ui/styles.py:266
+#: etiketto/ui/styles.py:272
 msgid "Colour of the background box"
 msgstr "Màu của hộp nền"
 
-#: etiketto/ui/styles.py:281
+#: etiketto/ui/styles.py:287
 msgid "Padding"
 msgstr "Đệm"
 
-#: etiketto/ui/styles.py:292
+#: etiketto/ui/styles.py:298
 #, python-format
 msgid "%(unit)s, with a box or frame"
 msgstr "%(unit)s, khi có hộp hoặc khung"
 
-#: etiketto/ui/styles.py:298
+#: etiketto/ui/styles.py:304
 msgid "Frame"
 msgstr "Khung"
 
-#: etiketto/ui/styles.py:311
+#: etiketto/ui/styles.py:318
 msgid "Outline"
 msgstr "Viền chữ"
 
-#: etiketto/ui/styles.py:311
+#: etiketto/ui/styles.py:321
 msgid "Colour of the outline"
 msgstr "Màu của viền chữ"
 
-#: etiketto/ui/styles.py:312
-msgid "Shadow"
-msgstr "Bóng"
-
-#: etiketto/ui/styles.py:312
-msgid "Colour of the shadow"
-msgstr "Màu của bóng"
-
-#: etiketto/ui/styles.py:328 etiketto/ui/styles.py:450
+#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:466
 msgid "Choose a width first"
 msgstr "Hãy đặt độ rộng trước"
 
-#: etiketto/ui/styles.py:339
+#: etiketto/ui/styles.py:325
+msgid "Shadow"
+msgstr "Bóng"
+
+#: etiketto/ui/styles.py:328
+msgid "Colour of the shadow"
+msgstr "Màu của bóng"
+
+#: etiketto/ui/styles.py:329
+msgid "Choose an offset first"
+msgstr "Hãy đặt độ lệch trước"
+
+#: etiketto/ui/styles.py:355
 msgid "Adjust"
 msgstr "Điều chỉnh"
 
-#: etiketto/ui/styles.py:339
+#: etiketto/ui/styles.py:355
 msgid "Brightness, contrast, turning and mirroring"
 msgstr "Độ sáng, độ tương phản, xoay và lật gương"
 
-#: etiketto/ui/styles.py:340
+#: etiketto/ui/styles.py:356
 msgid "Black and white"
 msgstr "Đen trắng"
 
-#: etiketto/ui/styles.py:340
+#: etiketto/ui/styles.py:356
 msgid "How black-and-white printers print the image"
 msgstr "Cách máy in đen trắng in ảnh"
 
-#: etiketto/ui/styles.py:342
+#: etiketto/ui/styles.py:358
 msgid "Corners and border"
 msgstr "Góc và viền"
 
-#: etiketto/ui/styles.py:343
+#: etiketto/ui/styles.py:359
 msgid "Rounded corners and a border around the image"
 msgstr "Góc bo tròn và viền quanh ảnh"
 
-#: etiketto/ui/styles.py:361
+#: etiketto/ui/styles.py:377
 msgid "Crop"
 msgstr "Cắt"
 
-#: etiketto/ui/styles.py:371
+#: etiketto/ui/styles.py:387
 msgid "The image cannot be read"
 msgstr "Không đọc được ảnh"
 
-#: etiketto/ui/styles.py:375
+#: etiketto/ui/styles.py:391
 msgid "Crop…"
 msgstr "Cắt…"
 
-#: etiketto/ui/styles.py:387 etiketto/ui/texts.py:67
+#: etiketto/ui/styles.py:403 etiketto/ui/texts.py:67
 msgid "Brightness"
 msgstr "Độ sáng"
 
-#: etiketto/ui/styles.py:388
+#: etiketto/ui/styles.py:404
 msgid "Contrast"
 msgstr "Độ tương phản"
 
-#: etiketto/ui/styles.py:389
+#: etiketto/ui/styles.py:405
 msgid "Gamma"
 msgstr "Gamma"
 
-#: etiketto/ui/styles.py:402
+#: etiketto/ui/styles.py:418
 msgid "Invert"
 msgstr "Đảo màu"
 
-#: etiketto/ui/styles.py:405
+#: etiketto/ui/styles.py:421
 msgid "Mirror"
 msgstr "Lật gương"
 
-#: etiketto/ui/styles.py:405
+#: etiketto/ui/styles.py:421
 msgid "Left and right"
 msgstr "Trái và phải"
 
-#: etiketto/ui/styles.py:407
+#: etiketto/ui/styles.py:423
 msgid "Flip"
 msgstr "Lật ngược"
 
-#: etiketto/ui/styles.py:407
+#: etiketto/ui/styles.py:423
 msgid "Top and bottom"
 msgstr "Trên và dưới"
 
-#: etiketto/ui/styles.py:412
+#: etiketto/ui/styles.py:428
 msgid "Threshold"
 msgstr "Ngưỡng"
 
-#: etiketto/ui/styles.py:419
+#: etiketto/ui/styles.py:435
 msgid "Lighter pixels print white"
 msgstr "Điểm ảnh sáng hơn được in màu trắng"
 
-#: etiketto/ui/styles.py:421
+#: etiketto/ui/styles.py:437
 msgid "Method"
 msgstr "Phương pháp"
 
-#: etiketto/ui/styles.py:422
+#: etiketto/ui/styles.py:438
 msgid "Only for the method Threshold"
 msgstr "Chỉ dành cho phương pháp Ngưỡng"
 
-#: etiketto/ui/styles.py:450
+#: etiketto/ui/styles.py:466
 msgid "Colour of the border"
 msgstr "Màu của viền"
 
-#: etiketto/ui/styles.py:484
+#: etiketto/ui/styles.py:500
 msgid "Direction"
 msgstr "Hướng"
 
-#: etiketto/ui/styles.py:502
+#: etiketto/ui/styles.py:518
 msgid "Arrows"
 msgstr "Mũi tên"
 
-#: etiketto/ui/styles.py:512
+#: etiketto/ui/styles.py:528
 msgid "Fill"
 msgstr "Tô"
 
-#: etiketto/ui/styles.py:521
+#: etiketto/ui/styles.py:537
 msgid "Shape"
 msgstr "Hình"
 
-#: etiketto/ui/styles.py:524
+#: etiketto/ui/styles.py:540
 msgid "Line width"
 msgstr "Độ dày đường kẻ"
 
-#: etiketto/ui/styles.py:530
+#: etiketto/ui/styles.py:546
 #, python-format
 msgid "%(unit)s, at least one printer dot"
 msgstr "%(unit)s, ít nhất một điểm in"
@@ -2332,396 +2336,397 @@ msgstr "Phần tử %(n)d: tệp PDF cần Poppler (poppler-glib), nhưng chưa 
 msgid "Element %(n)d cannot be drawn"
 msgstr "Không vẽ được phần tử %(n)d"
 
-#: etiketto/ui/texts.py:370
-msgid "Safety margin, border and edge spacing leave no room – reduce them"
-msgstr "Lề an toàn, viền và khoảng cách mép không còn chỗ trống – hãy giảm bớt"
-
 #: etiketto/ui/texts.py:371
+msgid ""
+"Safety margin, border, its inset and edge spacing leave no room – reduce them"
+msgstr "Lề an toàn, viền, phần thụt vào của viền và khoảng cách mép không còn chỗ trống – hãy giảm bớt"
+
+#: etiketto/ui/texts.py:373
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Chiều dài cố định ngắn hơn khoảng cách – hãy tăng chiều dài"
 
-#: etiketto/ui/texts.py:372
+#: etiketto/ui/texts.py:374
 msgid "The background image cannot be read"
 msgstr "Không đọc được ảnh nền"
 
-#: etiketto/ui/texts.py:374
+#: etiketto/ui/texts.py:376
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Phần tử %(n)d: mô-đun của mã chỉ rộng một điểm in và có thể không quét được – hãy phóng to mã"
 
-#: etiketto/ui/texts.py:378
+#: etiketto/ui/texts.py:380
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Phần tử %(n)d: khoảng trống mã cần xung quanh không đủ chỗ – hãy phóng to mã"
 
-#: etiketto/ui/texts.py:382
+#: etiketto/ui/texts.py:384
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Phần tử %(n)d: mã không vừa chỗ của nó, kể cả với một điểm in mỗi mô-đun – hãy phóng to nhãn hoặc rút ngắn nội dung"
 
-#: etiketto/ui/texts.py:385
+#: etiketto/ui/texts.py:387
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "Phần tử %(n)d: %(name)s không phải biến đã biết"
 
-#: etiketto/ui/texts.py:387
+#: etiketto/ui/texts.py:389
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "Phần tử %(n)d: ngày của %(name)s trước năm 1 hoặc sau năm 9999"
 
-#: etiketto/ui/texts.py:390
+#: etiketto/ui/texts.py:392
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "Phần tử %(n)d: biến %(name)s… chưa được đóng – hãy kết thúc bằng }"
 
-#: etiketto/ui/texts.py:393
+#: etiketto/ui/texts.py:395
 #, python-format
 msgid ""
-"Element %(n)d: a black-and-white printer prints it in the colour of the "
-"background – choose a darker or lighter colour"
-msgstr "Phần tử %(n)d: máy in đen trắng in nó bằng màu nền – hãy chọn màu tối hơn hoặc sáng hơn"
+"Element %(n)d: on a black-and-white printer it hardly stands out from what "
+"lies behind it, as a whole or in part – choose another colour or move it"
+msgstr "Phần tử %(n)d: trên máy in đen trắng, nó hầu như không nổi bật so với những gì phía sau, toàn bộ hoặc một phần – hãy chọn màu khác hoặc di chuyển nó"
 
-#: etiketto/ui/texts.py:396
+#: etiketto/ui/texts.py:398
 #, python-format
 msgid "Element %(n)d: the shape has neither a line nor a fill"
 msgstr "Phần tử %(n)d: hình không có cả đường kẻ lẫn phần tô"
 
-#: etiketto/ui/texts.py:398
+#: etiketto/ui/texts.py:400
 #, python-format
 msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "Phần tử %(n)d: đệm, khung, viền chữ hoặc bóng không còn chỗ cho chữ – hãy giảm bớt"
 
-#: etiketto/ui/texts.py:413
+#: etiketto/ui/texts.py:415
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Số tờ đã in: %(n)d trên %(total)d."
 
-#: etiketto/ui/texts.py:415
+#: etiketto/ui/texts.py:417
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Số nhãn đã in: %(n)d trên %(total)d."
 
-#: etiketto/ui/texts.py:419
+#: etiketto/ui/texts.py:421
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Các tờ còn chờ trong hàng đợi đã bị hủy."
 
-#: etiketto/ui/texts.py:421
+#: etiketto/ui/texts.py:423
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Các nhãn còn chờ trong hàng đợi đã bị hủy."
 
-#: etiketto/ui/texts.py:430
+#: etiketto/ui/texts.py:432
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Không tìm thấy máy in. Hãy kiểm tra máy in đã bật và ở cùng mạng, hoặc nhập địa chỉ IP của máy in."
 
-#: etiketto/ui/texts.py:434
+#: etiketto/ui/texts.py:436
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "Không tìm thấy máy in qua USB. Hãy kiểm tra cáp và máy in đã bật, không ở chế độ ngủ, rồi tìm lại."
 
-#: etiketto/ui/texts.py:437
+#: etiketto/ui/texts.py:439
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Máy in không phản hồi. Hãy kiểm tra máy in đã bật và không ở chế độ ngủ."
 
-#: etiketto/ui/texts.py:439
+#: etiketto/ui/texts.py:441
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "Máy in đã ngừng nhận dữ liệu. Hãy kiểm tra xem máy có báo lỗi không, chẳng hạn hết nhãn hoặc nắp đang mở, rồi thử lại."
 
-#: etiketto/ui/texts.py:443
+#: etiketto/ui/texts.py:445
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Máy in từ chối kết nối. Hãy tắt rồi bật lại máy in. Nếu giao diện web của máy in có tùy chọn “Port 9100”, hãy bật tùy chọn đó."
 
-#: etiketto/ui/texts.py:446
+#: etiketto/ui/texts.py:448
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Chưa lắp hộp băng. Hãy lắp hộp băng rồi thử lại."
 
-#: etiketto/ui/texts.py:447
+#: etiketto/ui/texts.py:449
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Nắp máy in đang mở. Hãy đóng nắp rồi thử lại."
 
-#: etiketto/ui/texts.py:448
+#: etiketto/ui/texts.py:450
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Nhãn bị kẹt. Hãy mở nắp, lấy nhãn ra rồi thử lại."
 
-#: etiketto/ui/texts.py:449
+#: etiketto/ui/texts.py:451
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Không nhận ra hộp băng. Hãy lắp lại hoặc thử hộp băng khác."
 
-#: etiketto/ui/texts.py:450
+#: etiketto/ui/texts.py:452
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Máy in đang bận. Hãy chờ một chút rồi thử lại."
 
-#: etiketto/ui/texts.py:451
+#: etiketto/ui/texts.py:453
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Nhãn quá dài cho máy in này: tối đa %(max)s."
 
-#: etiketto/ui/texts.py:452
+#: etiketto/ui/texts.py:454
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Nhãn quá rộng cho máy in này: tối đa %(max)s."
 
-#: etiketto/ui/texts.py:453
+#: etiketto/ui/texts.py:455
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Máy in đã hết nhãn. Hãy lắp cuộn mới và thử lại."
 
-#: etiketto/ui/texts.py:454
+#: etiketto/ui/texts.py:456
 msgid "The print head is open. Close it and try again."
 msgstr "Đầu in đang mở. Hãy đóng lại và thử lại."
 
-#: etiketto/ui/texts.py:456
+#: etiketto/ui/texts.py:458
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Máy in không tìm thấy nhãn tiếp theo. Hãy kiểm tra nhãn đã được lắp đúng chưa và có đi qua cảm biến nhãn không."
 
-#: etiketto/ui/texts.py:460
+#: etiketto/ui/texts.py:462
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Ruy băng có vấn đề. Hãy kiểm tra ruy băng đã được lắp đúng chưa và có khớp với phương thức in đã đặt trên máy in không."
 
-#: etiketto/ui/texts.py:463
+#: etiketto/ui/texts.py:465
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Máy in đang tạm dừng. Hãy tiếp tục trên màn hình của máy rồi thử lại."
 
-#: etiketto/ui/texts.py:464
+#: etiketto/ui/texts.py:466
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Máy in đã hết giấy. Hãy nạp giấy rồi thử lại."
 
-#: etiketto/ui/texts.py:466
+#: etiketto/ui/texts.py:468
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Giấy bị kẹt. Hãy lấy giấy ra theo hướng dẫn trên màn hình của máy in rồi thử lại."
 
-#: etiketto/ui/texts.py:468
+#: etiketto/ui/texts.py:470
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Máy in đã hết mực hoặc toner. Hãy thay rồi thử lại."
 
-#: etiketto/ui/texts.py:469
+#: etiketto/ui/texts.py:471
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Máy in không thể in cỡ này. Hãy chọn cỡ giấy mà máy in hỗ trợ."
 
-#: etiketto/ui/texts.py:471
+#: etiketto/ui/texts.py:473
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Máy in không nhận định dạng nào mà Etiketto có thể gửi (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:474
+#: etiketto/ui/texts.py:476
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Hàng đợi của máy in đang tạm dừng. Hãy tiếp tục trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: etiketto/ui/texts.py:478
+#: etiketto/ui/texts.py:480
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Lệnh in đã bị giữ lại trong hàng đợi, ví dụ cho đến khi được giải phóng hoặc nhập mật khẩu. Hãy kiểm tra hàng đợi trong phần cài đặt máy in của hệ thống rồi thử lại."
 
-#: etiketto/ui/texts.py:482
+#: etiketto/ui/texts.py:484
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Lệnh in đã bị hủy trên máy in hoặc trong hàng đợi."
 
-#: etiketto/ui/texts.py:483
+#: etiketto/ui/texts.py:485
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "Máy in không báo độ phân giải kịp thời. Hãy chọn trong “%s”."
 
-#: etiketto/ui/texts.py:486
+#: etiketto/ui/texts.py:488
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "Cuộn đang lắp không khớp với nhãn. Hãy lắp cuộn phù hợp, hoặc chọn kích thước nhãn hay kiểu máy in theo cuộn đang lắp."
 
-#: etiketto/ui/texts.py:489
+#: etiketto/ui/texts.py:491
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "Pin máy in yếu – hãy sạc hoặc cắm bộ đổi nguồn."
 
-#: etiketto/ui/texts.py:490
+#: etiketto/ui/texts.py:492
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "Đầu in quá nóng. Hãy đợi đến khi nguội, rồi thử lại."
 
-#: etiketto/ui/texts.py:492
+#: etiketto/ui/texts.py:494
 msgid ""
 "Etiketto cannot print on this printer model: it does not take the raster "
 "images Etiketto sends."
 msgstr "Etiketto không thể in trên mẫu máy in này: máy không nhận ảnh raster mà Etiketto gửi."
 
-#: etiketto/ui/texts.py:496
+#: etiketto/ui/texts.py:498
 msgid "Etiketto does not know this printer model and cannot print on it yet."
 msgstr "Etiketto chưa biết mẫu máy in này và chưa thể in trên nó."
 
-#: etiketto/ui/texts.py:499
+#: etiketto/ui/texts.py:501
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "Máy in đang ở chế độ Editor Lite và hiện ra như một ổ USB. Hãy tắt Editor Lite trên máy in (đèn của nó tắt), rồi tìm lại."
 
-#: etiketto/ui/texts.py:503
+#: etiketto/ui/texts.py:505
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Etiketto không được phép dùng cổng USB của máy in. Hãy thêm người dùng của bạn vào nhóm “lp” (sudo usermod -aG lp $USER), rồi đăng xuất và đăng nhập lại."
 
-#: etiketto/ui/texts.py:507
+#: etiketto/ui/texts.py:509
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "Trang quá lớn để tạo ở độ phân giải mà máy in nhận. Hãy chọn khổ giấy nhỏ hơn hoặc in trên máy in nhận PDF."
 
-#: etiketto/ui/texts.py:511
+#: etiketto/ui/texts.py:513
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Ở độ phân giải của máy in này, mã không vừa nhãn và sẽ bị cắt. Hãy phóng to nhãn hoặc rút ngắn nội dung của mã."
 
-#: etiketto/ui/texts.py:515
+#: etiketto/ui/texts.py:517
 msgid ""
 "Etiketto is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Etiketto không được phép dùng cổng nối tiếp của máy in. Hãy thêm người dùng của bạn vào nhóm “dialout” (sudo usermod -aG dialout $USER; trên Arch Linux nhóm tên là “uucp”), rồi đăng xuất và đăng nhập lại."
 
-#: etiketto/ui/texts.py:520
+#: etiketto/ui/texts.py:522
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Máy in báo có sự cố. Hãy tắt rồi bật lại máy in, sau đó thử lại lần nữa."
 
-#: etiketto/ui/texts.py:531
+#: etiketto/ui/texts.py:533
 msgid "Printed"
 msgstr "Đã in"
 
-#: etiketto/ui/texts.py:537
+#: etiketto/ui/texts.py:539
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Đã gửi đến máy in – sẽ được in khi đến lượt"
 
-#: etiketto/ui/texts.py:539
+#: etiketto/ui/texts.py:541
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "Đã gửi đến máy in – máy in không xác nhận đã in"
 
-#: etiketto/ui/texts.py:543
+#: etiketto/ui/texts.py:545
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Đã in bằng “%(used)s” vì cuộn đang lắp cần như vậy"
 
-#: etiketto/ui/texts.py:547
+#: etiketto/ui/texts.py:549
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Chế độ màu “%(wanted)s” không có trên máy in này, đã in bằng “%(used)s”"
 
-#: etiketto/ui/texts.py:557
+#: etiketto/ui/texts.py:559
 msgid "Warming up…"
 msgstr "Đang làm nóng…"
 
-#: etiketto/ui/texts.py:558
+#: etiketto/ui/texts.py:560
 msgid "Cooling down…"
 msgstr "Đang làm nguội…"
 
-#: etiketto/ui/texts.py:559
+#: etiketto/ui/texts.py:561
 msgid "Cleaning…"
 msgstr "Đang làm sạch…"
 
-#: etiketto/ui/texts.py:560
+#: etiketto/ui/texts.py:562
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Vuốt trên bảng điều khiển của máy in để cắt nhãn"
 
-#: etiketto/ui/texts.py:562
+#: etiketto/ui/texts.py:564
 msgid "Out of paper – load paper to continue"
 msgstr "Hết giấy – hãy nạp giấy để tiếp tục"
 
-#: etiketto/ui/texts.py:563
+#: etiketto/ui/texts.py:565
 msgid "Cover open – close it to continue"
 msgstr "Nắp đang mở – hãy đóng nắp để tiếp tục"
 
-#: etiketto/ui/texts.py:564
+#: etiketto/ui/texts.py:566
 msgid "Paper jammed – remove it to continue"
 msgstr "Kẹt giấy – hãy lấy giấy ra để tiếp tục"
 
-#: etiketto/ui/texts.py:575
+#: etiketto/ui/texts.py:577
 msgid "This label needs a newer version of Etiketto"
 msgstr "Nhãn này cần phiên bản Etiketto mới hơn"
 
-#: etiketto/ui/texts.py:577
+#: etiketto/ui/texts.py:579
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s không phải là nhãn Etiketto"
 
-#: etiketto/ui/texts.py:578 etiketto/ui/texts.py:598
+#: etiketto/ui/texts.py:580 etiketto/ui/texts.py:600
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tệp bị hỏng: %s"
 
-#: etiketto/ui/texts.py:585
+#: etiketto/ui/texts.py:587
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Tệp dữ liệu %s không còn nữa. Hãy chọn lại hoặc gỡ bỏ."
 
-#: etiketto/ui/texts.py:589
+#: etiketto/ui/texts.py:591
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s không có trang tính nào tên %(sheet)s"
 
-#: etiketto/ui/texts.py:591
+#: etiketto/ui/texts.py:593
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s không phải là bảng. Hãy dùng tệp CSV, ODS hoặc XLSX."
 
-#: etiketto/ui/texts.py:593
+#: etiketto/ui/texts.py:595
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s quá lớn cho nhãn hàng loạt. Hãy chia thành các tệp nhỏ hơn hoặc xóa các hàng và cột không cần thiết."
 
-#: etiketto/ui/texts.py:596
+#: etiketto/ui/texts.py:598
 #, python-format
 msgid "%s contains no data."
 msgstr "%s không có dữ liệu."
 
-#: etiketto/ui/texts.py:604
+#: etiketto/ui/texts.py:606
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Việc in đã dừng ở hàng %(row)d. Để tiếp tục, hãy in lại từ hàng %(row)d."
 
-#: etiketto/ui/texts.py:608
+#: etiketto/ui/texts.py:610
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Số bản của hàng %(row)d đã in: %(copies)d."
 
-#: etiketto/ui/texts.py:618
+#: etiketto/ui/texts.py:620
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Không thể lưu %s: không có quyền ghi vào đó"
 
-#: etiketto/ui/texts.py:620
+#: etiketto/ui/texts.py:622
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Không thể lưu %s: đĩa đã đầy"
 
-#: etiketto/ui/texts.py:630
+#: etiketto/ui/texts.py:632
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
@@ -2815,41 +2820,41 @@ msgstr "Báo cáo sự cố…"
 msgid "About Etiketto"
 msgstr "Giới thiệu Etiketto"
 
-#: etiketto/ui/window.py:635
+#: etiketto/ui/window.py:658
 msgid "Unsaved label"
 msgstr "Nhãn chưa lưu"
 
-#: etiketto/ui/window.py:709
+#: etiketto/ui/window.py:732
 msgid "content scaled down to fit"
 msgstr "đã thu nhỏ nội dung cho vừa"
 
-#: etiketto/ui/window.py:713
+#: etiketto/ui/window.py:736
 #, python-format
 msgid "Problem: %s"
 msgstr "Sự cố: %s"
 
-#: etiketto/ui/window.py:732
+#: etiketto/ui/window.py:755
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Quá dài cho máy in này: tối đa %s"
 
-#: etiketto/ui/window.py:736
+#: etiketto/ui/window.py:759
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Quá rộng cho máy in này: tối đa %s"
 
-#: etiketto/ui/window.py:808
+#: etiketto/ui/window.py:831
 msgid "The browser cannot be opened"
 msgstr "Không thể mở trình duyệt"
 
-#: etiketto/ui/window.py:810
+#: etiketto/ui/window.py:833
 msgid "Copy link"
 msgstr "Sao chép liên kết"
 
-#: etiketto/ui/window.py:881
+#: etiketto/ui/window.py:904
 msgid "Only local files can be dropped"
 msgstr "Chỉ thả được tập tin cục bộ"
 
-#: etiketto/ui/window.py:902
+#: etiketto/ui/window.py:925
 msgid "Please wait until printing has finished"
 msgstr "Vui lòng chờ in xong"
