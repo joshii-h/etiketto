@@ -290,6 +290,7 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     # white background -> transparent so the label background shows
     img.putalpha(img.convert("L").point(lambda v: 0 if v == 255 else 255))
     width = max(1, round(img.width * height / img.height))
+    _check_size(width, height)
     return img.resize((width, height), Image.Resampling.NEAREST)
 
 
@@ -384,6 +385,21 @@ def _text_part(element: TextElement, inner: int, dpi: float) -> _Part:
     return _Part(width, height, draw)
 
 
+def _picture_part(element: ImageElement, inner: int) -> _Part:
+    """An image file: measured from its size; drawn at the final size
+    straight from the file (no full-height copy of a very wide image)."""
+    source = _decoded(element.data)
+    width = max(1, round(source.width * inner / source.height))
+
+    def draw(w: int, h: int) -> Image.Image:
+        if (w, h) == (width, inner):
+            return render_image(element, inner)
+        _check_size(w, h)
+        return _resized(_decoded(element.data), w, h)
+
+    return _Part(width, inner, draw)
+
+
 def _image_part(image: Image.Image, inner: int) -> _Part:
     if image.height > inner:
         image = _resized(image, max(1, round(image.width * inner / image.height)), inner)
@@ -396,6 +412,8 @@ def _measure(label: Label, f: _Frame, dpi: float, warnings) -> list[_Part]:
         try:
             if isinstance(element, TextElement):
                 part = _text_part(element, f.inner, dpi)
+            elif isinstance(element, ImageElement):
+                part = _picture_part(element, f.inner)
             else:
                 part = _image_part(render_element(element, f.inner, dpi), f.inner)
         except RenderTooLarge:
