@@ -37,7 +37,15 @@ A data file is read without asking only if it is a table (`.csv`, `.tsv`,
 `.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a
 hidden folder. Any other data file is read only after asking, once for
 each label file: a label from someone else could name any file.
-[[ui:Forget allowed data files]] in the main menu makes Etiketto ask again. Templates
+[[ui:Forget allowed data files]] in the main menu makes Etiketto ask again.
+
+In the Flatpak, Etiketto sees only the files it is given: a label opened
+from the file manager or the file chooser, but not the folder around it.
+A data file beside the label is then not found: choose it with
+[[ui:Data for serial labels…]] (the file chooser gives Etiketto access to
+it).
+
+Templates
 keep the placeholders but not the data file. Older versions of Etiketto refuse labels with a
 data file instead of printing the placeholders.
 

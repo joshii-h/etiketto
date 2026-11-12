@@ -48,3 +48,43 @@ def test_check_sh_runs_what_the_ci_runs():
     dev = " ".join(project["dependency-groups"]["dev"])
     for tool in ("pytest", "ruff", "mypy", "bandit", "radon", "xenon", "pip-audit"):
         assert tool in dev, tool
+
+
+def test_the_flatpak_ships_every_licence_once():
+    """Each bundled component's licence in share/licenses/<app id>/, Zint's
+    once; what the app does not use is cleaned up; every downloaded source
+    can be checked for updates."""
+    import pytest
+
+    yaml = pytest.importorskip("yaml")
+    path = ROOT / "build-aux" / "flatpak" / "xyz.joshuahirsig.Etiketto.yml"
+    manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
+    commands = "\n".join(
+        command
+        for module in manifest["modules"]
+        for command in module.get("build-commands", []) + module.get("post-install", [])
+    )
+    target = "${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/"
+    for name in (
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
+        "LICENSE.glabels",
+        "LICENSE.mdi",
+        "LICENSE.zint",
+        "LICENSE.zint-bindings",
+        "LICENSE.segno",
+        "LICENSE.python-barcode",
+        "LICENSE.pillow",
+        "LICENSE.labelprinter",
+        "poppler ",
+        "poppler-data ",
+    ):
+        assert target + name in commands + " ", name
+    assert commands.count("LICENSE.zint ") == 1
+    cleanup = [c for module in manifest["modules"] for c in module.get("cleanup", [])]
+    assert "/share/man/man1/segno.1" in cleanup
+    assert any(c.endswith("labelprinter/test") for c in cleanup)
+    for module in manifest["modules"]:
+        for source in module.get("sources", []):
+            if source.get("type") in ("file", "archive") and "url" in source:
+                assert "x-checker-data" in source, (module["name"], source["url"])

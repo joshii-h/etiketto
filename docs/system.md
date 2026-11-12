@@ -24,6 +24,11 @@ Markers as in [cab.md](cab.md): **[spec]** from the RFCs or PWG standards,
   printer itself. [confirmed]
 - USB printers with IPP-over-USB (`ipp-usb`) appear as IPP printers on
   `localhost`. [assumed]
+- CUPS is reached over TCP at `localhost:631`, CUPS's default; Etiketto
+  has no client for CUPS's Unix socket (`/run/cups/cups.sock`), so a CUPS
+  set up to listen only there is not found. The Flatpak therefore does not
+  ask for `--socket=cups` (it would only give access to that socket);
+  `--share=network` covers `localhost:631`. [decided]
 
 The host field takes a printer URI (`ipp://…`, `ipps://…`, also `http://`
 and `https://` as the CUPS web pages show them), a CUPS queue name
