@@ -100,6 +100,53 @@ def test_another_resolution_is_scaled_to_the_label():
     assert ink_bbox(page, "white") == (0, px(0.5, DPI), px(70, DPI), px(0.5, DPI) + px(37, DPI))
 
 
+def _renders_again(calls, exact=True):
+    """A label image of the wrong size that renders itself again at a dpi,
+    like the system printer's prepare() (info["render_at"])."""
+
+    def render_at(dpi):
+        calls.append(dpi)
+        size = (px(70, dpi), px(37, dpi))
+        if not exact:  # a pixel short in each direction
+            size = (size[0] - 1, size[1] - 1)
+        again = Image.new("RGB", size, "black")
+        again.info["render_at"] = render_at
+        return again
+
+    image = Image.new("RGB", (70, 37), "black")
+    image.info["render_at"] = render_at
+    return image
+
+
+@pytest.mark.parametrize("exact", [True, False])
+def test_another_resolution_is_rendered_again_not_blurred(exact):
+    """A label with a page area (a shipping label) or a barcode: drawn
+    again at the size of its place, no smooth resize."""
+    sheet, calls = _sheet(), []
+    label = _renders_again(calls, exact)
+    page = compose_page(sheet, [(0, label), (1, label)], DPI)
+    assert calls == [DPI]  # once for all positions of the same label
+    assert set(page.convert("L").tobytes()) == {0, 255}  # no grey of a resize
+    left, top = 0, px(0.5, DPI)
+    assert page.getpixel((left + 5, top + 5)) == (0, 0, 0)
+
+
+def test_label_of_another_size_is_rendered_at_the_size_of_its_place():
+    calls = []
+
+    def render_at(dpi):  # a label 10 % smaller than the sheet's
+        calls.append(dpi)
+        again = Image.new("RGB", (px(63, dpi), px(33.3, dpi)), "black")
+        again.info["render_at"] = render_at
+        return again
+
+    image = Image.new("RGB", (63, 33), "black")
+    image.info["render_at"] = render_at
+    page = compose_page(_sheet(), [(0, image)], DPI)
+    assert calls[0] == DPI and calls[1] == pytest.approx(DPI / 0.9, rel=0.01)
+    assert set(page.convert("L").tobytes()) == {0, 255}
+
+
 @pytest.mark.parametrize("shape", ["round", "ellipse"])
 def test_round_labels_are_clipped_to_their_shape(shape):
     sheet = _sheet(shape=shape, width=40.0, height=40.0, layouts=((1, 1, 10.0, 10.0, 0, 0),))

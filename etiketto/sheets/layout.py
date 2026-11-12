@@ -135,11 +135,15 @@ def compose_page(
     size in mm travels with it (info["size_mm"])."""
     page = Image.new("RGB", (px(sheet.paper[0], dpi), px(sheet.paper[1], dpi)), "white")
     masks: dict[tuple[int, int], Image.Image | None] = {}
+    size = (px(sheet.width, dpi), px(sheet.height, dpi))
+    # the label as designed: turned on its side when the job is rotated
+    designed = (size[1], size[0]) if rotated else size
+    fitted: dict[int, Image.Image] = {}  # the same label at many positions
     for position, label in placed:
-        image = label.rotate(90, expand=True) if rotated else label
-        size = (px(sheet.width, dpi), px(sheet.height, dpi))
-        if abs(image.width - size[0]) > 2 or abs(image.height - size[1]) > 2:
-            image = image.resize(size, Image.Resampling.LANCZOS)  # another resolution
+        if id(label) not in fitted:
+            fitted[id(label)] = fit_label(label, designed, dpi)
+        image = fitted[id(label)]
+        image = image.rotate(90, expand=True) if rotated else image
         if image.size not in masks:
             masks[image.size] = shape_mask(sheet, image.size)
         left, top, _right, _bottom = sheet.rect(position)
@@ -148,6 +152,34 @@ def compose_page(
         draw_outlines(page, sheet, dpi)
     page.info["size_mm"] = sheet.paper
     return page
+
+
+def _close(image: Image.Image, size: tuple[int, int]) -> bool:
+    return abs(image.width - size[0]) <= 2 and abs(image.height - size[1]) <= 2
+
+
+def fit_label(label: Image.Image, size: tuple[int, int], dpi: float) -> Image.Image:
+    """The label image at size pixels. A label of another size is rendered
+    again if the image says how (info["render_at"]): at dpi (it was made at
+    another resolution), else at the resolution that makes it that size
+    (it is a little larger or smaller than the sheet's labels). Areas of a
+    PDF page and barcodes stay whole dots that a smooth resize would blur.
+    The pixel or two of rounding left is cut off or added as white at the
+    edges; without render_at the image is resized smoothly."""
+    if _close(label, size):
+        return label
+    render_at = label.info.get("render_at")
+    if not callable(render_at):
+        return label.resize(size, Image.Resampling.LANCZOS)  # another resolution
+    again = render_at(dpi)
+    if not _close(again, size):
+        again = render_at(dpi * (size[0] / again.width + size[1] / again.height) / 2)
+    if again.size == size:
+        return again
+    fitted = Image.new(again.mode, size, "white")
+    fitted.paste(again, ((size[0] - again.width) // 2, (size[1] - again.height) // 2))
+    fitted.info.update(again.info)
+    return fitted
 
 
 def shape_mask(sheet: Sheet, size: tuple[int, int]) -> Image.Image | None:

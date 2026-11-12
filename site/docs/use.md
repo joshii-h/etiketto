@@ -71,14 +71,16 @@ dropped onto the window) opens such a file and makes a new label of it.
 - [[ui:Create label]] replaces the open label. The area stays an element
   of the label: [[ui:Area]] in its row opens the selection again.
 
-On label printers a PDF page is drawn right at the printer's resolution,
-without smoothing: bars and text come out as whole printer dots, so
-barcodes stay readable. Lines thinner than a dot are printed at least one
-dot wide (sometimes two), and in black even if they are light grey or
-coloured; white lines thinner than a dot on black may vanish.
-The system printer gets the label compressed (JPEG in a PDF) or scaled to
-its resolution, which can soften the edges of bars: print one label and
-check that the barcode scans.
+A PDF page is drawn right at the resolution it is printed at, without
+smoothing: bars and text come out as whole dots, so barcodes stay
+readable. Lines thinner than a dot are printed at least one dot wide
+(sometimes two), and in black even if they are light grey or coloured;
+white lines thinner than a dot on black may vanish. Label printers get the
+label at their own resolution. The system printer gets it without loss:
+as PWG Raster drawn at the printer's resolution, or as a PDF drawn at
+300 dpi, which a printer of another resolution scales itself (on a 203 dpi
+printer the edges of bars may then soften: check that the barcode scans).
+Only printers that take nothing but JPEG get a compressed copy.
 
 Images are enlarged by repeating pixels, evenly only by whole multiples
 (otherwise some pixels come out one dot wider than others); reduced, the

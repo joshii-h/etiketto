@@ -60,10 +60,10 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Shipping labels: open a carrier's PDF or image (an A4 page with the label
   in one half or quarter, receipts around it), Etiketto finds the label,
   you check the area, and it is printed at 4 × 6 in, 100 × 150 mm,
-  100 × 200 mm, on a 62 mm roll or on A6 or A4 paper; on label printers
-  PDF pages are drawn at the printer's resolution, so barcodes stay sharp
-  (the system printer gets a compressed copy, check that barcodes scan).
-  The label file keeps the page the label was taken from
+  100 × 200 mm, on a 62 mm roll or on A6 or A4 paper; PDF pages are drawn
+  at the resolution they are printed at, so barcodes stay sharp (the system
+  printer gets them without loss, as PWG Raster at its resolution or as a
+  PDF at 300 dpi). The label file keeps the page the label was taken from
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
