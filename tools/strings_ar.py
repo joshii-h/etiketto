@@ -453,5 +453,7 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "أُضيف الرمز %(name)s إلى %(file)s.",
     "Access token: ": "رمز الوصول: ",
     "This token is in the file already, as %s": "هذا الرمز موجود في الملف بالفعل باسم %s",
-    "The label is too large: at most %d images and codes": "الملصق كبير جدًا: %d صورة ورمزًا كحد أقصى",
+    "The label is too large: at most %d images and codes": "الملصق كبير جدًا: الحد الأقصى %d من الصور والرموز",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "العنصر %(n)d: الأشرطة أرق من أن تُمسح بشكل موثوق – اجعل الملصق أطول أو المحتوى أقصر",
+    "Not a valid printer address pattern: %s": "ليس نمطًا صالحًا لعنوان الطابعة: %s",
 }

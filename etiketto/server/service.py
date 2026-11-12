@@ -100,7 +100,9 @@ MAX_PICTURES = 50  # image and code elements of a label: each takes time to draw
 MAX_ELEMENTS = 200
 MAX_TEXT = 5000  # characters of one text or code, filled in
 MAX_LINES = 100
-MAX_PIXELS = 40_000_000  # of any one image while rendering (an image file too)
+# of any one image made while rendering, and of all elements of a label
+# drawn together; image files and QR codes each get half of it (render.Limits)
+MAX_PIXELS = 40_000_000
 
 
 @dataclass
@@ -130,6 +132,17 @@ class Prepared:
             values or self.values,
             columns,
         )
+
+
+@dataclass
+class Checked:
+    """A print request filled in and checked, not queued yet."""
+
+    request: PrintRequest
+    prepared: Prepared
+    warnings: list[RenderWarning]
+    save: bool  # the next counter value goes into the label file
+    total: int  # labels
 
 
 @dataclass
@@ -188,14 +201,37 @@ def host_ok(host: str) -> bool:
 
 def _ip_pattern(pattern: str) -> bool:
     """An address pattern: an IP address or network as ipaddress reads it
-    (192.168.1.5, 192.168.1.0/24, 2001:db8::/32), or four parts of an IPv4
-    address with * for whole parts (192.168.1.*). Anything else ("*.*",
-    "123", "*.5") is a pattern for host names."""
+    (192.168.1.5, 192.168.1.0/24, 2001:db8::/32), or digits, dots and *
+    only (192.168.1.*, 10.*, *.5). Anything with a letter, a hyphen or
+    another sign is a pattern for host names (*.local, printer-?)."""
     try:
         ipaddress.ip_network(pattern, strict=False)
         return True
     except ValueError:
-        return bool(re.fullmatch(r"(\d{1,3}|\*)(\.(\d{1,3}|\*)){3}", pattern))
+        return bool(re.fullmatch(r"[0-9.*]+", pattern))
+
+
+def pattern_problem(pattern: str) -> bool:
+    """Whether an --allow-printer pattern cannot be meant: an address
+    pattern with a part over 255 or more than four parts, a network that
+    is none ("10.0.0.0/33"), an empty one."""
+    if not pattern:
+        return True
+    if "/" in pattern or ":" in pattern:
+        return not _network_ok(pattern)
+    if not re.fullmatch(r"[0-9.*]+", pattern):
+        return False  # a pattern for host names
+    parts = pattern.split(".")
+    too_big = any(int(part) > 255 for part in parts if part.isdigit())
+    return len(parts) > 4 or too_big or "" in parts
+
+
+def _network_ok(pattern: str) -> bool:
+    try:
+        ipaddress.ip_network(pattern, strict=False)
+    except ValueError:
+        return False
+    return True
 
 
 def _ip_matches(address: str, pattern: str) -> bool:
@@ -302,7 +338,8 @@ class Service:
         max_labels: int = 10_000,
     ):
         self.labels = LabelsDir(labels_dir)
-        self.allowed_hosts = allowed_hosts  # fnmatch patterns; () allows any
+        # fnmatch patterns, spaces around them dropped; () allows any
+        self.allowed_hosts = tuple(p.strip() for p in allowed_hosts)
         # printers.toml: only these printers, chosen by name
         self.named = dict(printers) if printers is not None else None
         self.discovery = discover  # search the network (off unless --discover)
@@ -777,9 +814,10 @@ class Service:
     def render_slot(self, timeout: float | None = RENDER_WAIT) -> Iterator[None]:
         """One of the RENDERS slots every render takes: previews, checks and
         print jobs alike. Held by this thread already: nothing more to take
-        (the HTTP server takes it before it parses a request). A request
-        that would be the MAX_WAITERS-th to wait, or waits `timeout`
-        seconds, gets 503; print jobs (timeout None) wait their turn."""
+        (the HTTP server takes it before it parses a request). With
+        MAX_WAITERS requests waiting already, the next one gets 503 at once,
+        as one that waits `timeout` seconds; print jobs (timeout None) wait
+        their turn."""
         if getattr(self._held, "count", 0):
             self._held.count += 1
             try:
@@ -794,6 +832,23 @@ class Service:
         finally:
             self._held.count = 0
             self._renders.release()
+
+    @contextlib.contextmanager
+    def slot_released(self) -> Iterator[None]:
+        """Give back the render slot this thread holds while it waits for
+        something else (an MCP print_label waiting for its job); taken again
+        afterwards."""
+        count = getattr(self._held, "count", 0)
+        if not count:
+            yield
+            return
+        self._held.count = 0
+        self._renders.release()
+        try:
+            yield
+        finally:
+            self._renders.acquire()
+            self._held.count = count
 
     def _take(self, timeout: float | None) -> None:
         if timeout is None:
@@ -825,6 +880,12 @@ class Service:
 
     def submit(self, request: PrintRequest, caller: Caller = LOCAL) -> PrintJob:
         """Check the request and queue the job; ApiError if it cannot print."""
+        return self.queue_print(self.check_print(request, caller), caller)
+
+    def check_print(self, request: PrintRequest, caller: Caller = LOCAL) -> Checked:
+        """Fill in the label and check it (the part that renders: in a
+        render slot); queue_print() then finds the printer and queues it,
+        outside the slot (a name lookup or a search can take seconds)."""
         _require(caller, "print")
         prepared = self.prepare(request, request.copies, request.rows, caller, printing=True)
         _check_copies(prepared, request.copies)
@@ -838,13 +899,19 @@ class Service:
         with self._rendering(prepared):
             warnings = self._check(prepared)
         save = self._saves(prepared, request.no_save_counter)
-        host = self._print_host(request, prepared)
+        return Checked(request, prepared, warnings, save, total)
+
+    def queue_print(self, checked: Checked, caller: Caller = LOCAL) -> PrintJob:
+        prepared, save = checked.prepared, checked.save
+        host = self._print_host(checked.request, prepared)
         name = self.labels.name_of(prepared.path) if prepared.path else ""
 
         def run(job: PrintJob):
             return self._print(job, prepared, save)
 
-        job = PrintJob(prepared.backend.id, host, name, total, run, warnings=warnings)
+        job = PrintJob(
+            prepared.backend.id, host, name, checked.total, run, warnings=checked.warnings
+        )
         job.owner = caller.name
         job.limited = caller.named
         job.printer_name = prepared.named.name if prepared.named else ""
@@ -863,7 +930,7 @@ class Service:
             name or "label_content",
             job.printer_name or job.printer,
             host,
-            total,
+            checked.total,
         )
         return job
 
@@ -1115,7 +1182,6 @@ def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
     ]
     columns = used_columns(label) if rows else []
     cells = (row.get(name, "") for row in rows for name in columns)
-    _check_pictures(label)
     if (
         len(label.elements) > MAX_ELEMENTS
         or any(map(_too_long, contents))
@@ -1129,6 +1195,7 @@ def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
             )
             % {"elements": MAX_ELEMENTS, "chars": MAX_TEXT},
         )
+    _check_pictures(label)  # after the general limits: those are told first
 
 
 def _default_printer(usable: list[NamedPrinter]) -> NamedPrinter | None:

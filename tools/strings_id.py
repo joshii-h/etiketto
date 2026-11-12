@@ -454,4 +454,6 @@ TRANSLATIONS = {
     "Access token: ": "Token akses: ",
     "This token is in the file already, as %s": "Token ini sudah ada di berkas, sebagai %s",
     "The label is too large: at most %d images and codes": "Label terlalu besar: maksimal %d gambar dan kode",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Elemen %(n)d: batang terlalu tipis untuk dipindai dengan andal – perpanjang label atau persingkat isi",
+    "Not a valid printer address pattern: %s": "Bukan pola alamat pencetak yang valid: %s",
 }

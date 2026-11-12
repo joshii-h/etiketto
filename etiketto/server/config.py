@@ -408,8 +408,8 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
     role = table.choice("role", ROLES)
     if role is None:
         raise table.fail("role", _("missing"))
-    ident = table.text("id")
-    if ident and not re.fullmatch(r"[0-9a-f]{12}", ident):
+    ident = table.data.pop("id", None)
+    if ident is not None and not (isinstance(ident, str) and re.fullmatch(r"[0-9a-f]{12}", ident)):
         # as before ids existed: the token works, it is only found the slow way
         log.warning(
             "%s: tokens.%s.id is not 12 hexadecimal digits (as token new writes it): ignored",
@@ -417,6 +417,7 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
             name,
         )
         ident = ""
+    ident = ident or ""
     chosen = _token_printers(table, printers)
     expires = _expiry(table)
     table.text("description")
@@ -518,6 +519,17 @@ class TokenStore:
 
 
 _DUMMY = TokenEntry(Caller("-"), "sha256:" + "0" * 64)
+_dummy_scrypt: list[TokenEntry] = []  # made once when first needed
+
+
+def _dummy(entries: list[TokenEntry]) -> TokenEntry:
+    """An entry no token matches, as slow to check as the entries with an
+    id: an id no entry has is answered as fast as one an entry has."""
+    if not any(e.id and not _fast(e) for e in entries):
+        return _DUMMY
+    if not _dummy_scrypt:
+        _dummy_scrypt.append(TokenEntry(Caller("-"), hash_token(secrets.token_hex(16), "scrypt")))
+    return _dummy_scrypt[0]
 
 
 def _candidates(token: str, entries: list[TokenEntry]) -> list[TokenEntry]:
@@ -529,7 +541,7 @@ def _candidates(token: str, entries: list[TokenEntry]) -> list[TokenEntry]:
         mine = [e for e in entries if e.id == ident.group(1)]
         if mine:
             return mine
-        return [_DUMMY] + [e for e in entries if not e.id]
+        return [_dummy(entries)] + [e for e in entries if not e.id]
     return [e for e in entries if not e.id]
 
 

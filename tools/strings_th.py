@@ -454,4 +454,6 @@ TRANSLATIONS = {
     "Access token: ": "โทเค็นการเข้าถึง: ",
     "This token is in the file already, as %s": "โทเค็นนี้มีอยู่ในไฟล์แล้วในชื่อ %s",
     "The label is too large: at most %d images and codes": "ฉลากมีขนาดใหญ่เกินไป: รูปภาพและโค้ดรวมกันไม่เกิน %d รายการ",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "องค์ประกอบ %(n)d: แท่งบางเกินไปจนสแกนได้ไม่แน่นอน – ทำให้ฉลากยาวขึ้นหรือเนื้อหาสั้นลง",
+    "Not a valid printer address pattern: %s": "ไม่ใช่รูปแบบที่อยู่เครื่องพิมพ์ที่ถูกต้อง: %s",
 }

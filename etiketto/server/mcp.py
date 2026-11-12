@@ -452,12 +452,14 @@ class Mcp:
         args.setdefault("wait", DEFAULT_WAIT)
         request = requests.print_request(args)
         job = self.service.submit(request, caller)
-        _wait(job, request.wait)
+        with self.service.slot_released():  # waiting needs no render slot
+            _wait(job, request.wait)
         return _structured(self.service.job_dict(job))
 
     def _job_status(self, args: dict, caller: Caller) -> dict:
         job = self.service.job(args.get("job_id"), caller)
-        _wait(job, requests._number(args, "wait", 0.0, requests.MAX_WAIT))
+        with self.service.slot_released():
+            _wait(job, requests._number(args, "wait", 0.0, requests.MAX_WAIT))
         return _structured(self.service.job_dict(job))
 
 

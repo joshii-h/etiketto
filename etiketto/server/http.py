@@ -57,8 +57,10 @@ PARSES = 2
 ANSWER_SECONDS = 60.0  # to send the answer, once the request is in
 MAX_CONNECTIONS = 32
 MAX_PER_CLIENT = 8  # connections from one address at once
-RESERVED = 2  # connections beyond MAX_CONNECTIONS, for /health only
-RESERVED_SECONDS = 5.0  # such a connection has this long to send its request
+RESERVED = 4  # connections beyond MAX_CONNECTIONS, for /health only
+# such a connection has this long to send its request: a health check
+# sends one line at once, a slow client cannot hold one long
+RESERVED_SECONDS = 1.0
 REQUEST_SECONDS = 30.0  # to send the whole request: line, headers and body
 # without a token a web page could make the server ask printers with an
 # <img src=...>: requests that contact printers need this header then,
@@ -156,6 +158,14 @@ def _hop(text: str) -> str | None:
         return str(_plain(ipaddress.ip_address(text)))  # ::ffff:192.0.2.1 as 192.0.2.1
     except ValueError:
         return None
+
+
+def _peer(address: str) -> str:
+    """A peer address for the log: ::ffff:192.0.2.1 as 192.0.2.1."""
+    try:
+        return str(_plain(ipaddress.ip_address(address)))
+    except ValueError:
+        return address
 
 
 def _plain(ip):
@@ -689,7 +699,8 @@ class Handler(BaseHTTPRequestHandler):
         service = self.server.service
         with service.render_slot():  # parsed only once it may render its check
             request = requests.print_request(_parse(body))
-            job = service.submit(request, self.caller)
+            checked = service.check_print(request, self.caller)
+        job = service.queue_print(checked, self.caller)  # the printer looked up outside
         finished = job.done.wait(request.wait) if request.wait else job.done.is_set()
         location = {"Location": "%s/jobs/%s" % (PREFIX, job.id)}
         self._send(200 if finished else 202, service.job_dict(job), location)
@@ -709,7 +720,12 @@ class Handler(BaseHTTPRequestHandler):
         if method == "POST":
             self._json_type()
             body = self._body()
-            with self._parsing(body):
+            # a large body is parsed in a render slot, as a preview or print
+            # request is (its tool renders in that slot); a small one within
+            # the parse limit, its tool takes a slot when it renders
+            large = len(body) > LARGE_BODY
+            slot = self.server.service.render_slot() if large else self._parsing(body)
+            with slot:
                 reply = transport.post(headers, body, self.caller)
         elif method == "DELETE":
             reply = transport.delete(headers, self.caller)
@@ -770,7 +786,7 @@ class Handler(BaseHTTPRequestHandler):
         status = code.value if isinstance(code, HTTPStatus) else code
         log.info(
             "%s %s %s %s %s",
-            self.client() if hasattr(self, "headers") else self.client_address[0],
+            self.client() if hasattr(self, "headers") else _peer(self.client_address[0]),
             getattr(self, "who", "-"),
             getattr(self, "command", None) or "-",
             self._path() or "-",
@@ -778,7 +794,8 @@ class Handler(BaseHTTPRequestHandler):
         )
 
     def log_message(self, format: str, *args) -> None:  # noqa: A002 - http.server's name
-        log.debug("%s " + format, self.client_address[0], *args)
+        client = self.client() if hasattr(self, "headers") else _peer(self.client_address[0])
+        log.debug("%s " + format, client, *args)
 
 
 def _parse(body: bytes) -> object:

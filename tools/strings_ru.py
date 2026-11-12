@@ -454,4 +454,6 @@ TRANSLATIONS = {
     "Access token: ": "Токен доступа: ",
     "This token is in the file already, as %s": "Этот токен уже есть в файле под именем %s",
     "The label is too large: at most %d images and codes": "Этикетка слишком большая: не более %d изображений и кодов",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Элемент %(n)d: штрихи слишком тонкие для надёжного сканирования – сделайте этикетку длиннее или содержимое короче",
+    "Not a valid printer address pattern: %s": "Недопустимый шаблон адреса принтера: %s",
 }

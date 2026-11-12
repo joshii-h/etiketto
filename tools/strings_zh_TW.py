@@ -453,5 +453,7 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "權杖 %(name)s 已加入 %(file)s。",
     "Access token: ": "存取權杖：",
     "This token is in the file already, as %s": "此權杖已在檔案中，名稱為 %s",
-    "The label is too large: at most %d images and codes": "標籤過大：圖片和條碼最多 %d 個",
+    "The label is too large: at most %d images and codes": "標籤過大：影像和 QR 碼／條碼最多 %d 個",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "元素 %(n)d：線條太細，無法可靠掃描，請加長標籤或縮短內容",
+    "Not a valid printer address pattern: %s": "不是有效的印表機位址模式：%s",
 }

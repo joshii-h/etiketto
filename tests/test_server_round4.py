@@ -200,11 +200,13 @@ def test_addresses_in_the_resolvers_order(monkeypatch):
         ("192.168.1.*", True),
         ("192.168.1.5", True),
         ("2001:db8::/32", True),
-        ("*.*", False),
-        ("123", False),
-        ("*.5", False),
+        ("*.*", True),
+        ("123", True),
+        ("*.5", True),
         ("*.local", False),
-        ("1.2.3", False),
+        ("10.*", True),
+        ("printer-?", False),
+        ("1.2.3", True),
     ],
 )
 def test_only_real_address_syntax_is_an_address_pattern(pattern, address):

@@ -454,4 +454,6 @@ TRANSLATIONS = {
     "Access token: ": "Jeton d’accès\xa0: ",
     "This token is in the file already, as %s": "Ce jeton figure déjà dans le fichier, sous le nom %s",
     "The label is too large: at most %d images and codes": "L’étiquette est trop grande : %d images et codes au maximum",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Élément %(n)d\xa0: les barres sont trop fines pour être lues de façon fiable – allongez l’étiquette ou raccourcissez le contenu",
+    "Not a valid printer address pattern: %s": "Motif d’adresse d’imprimante non valide\xa0: %s",
 }

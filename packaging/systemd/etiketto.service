@@ -16,7 +16,9 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=simple
+# ready once it listens (sd_notify): a reload sent before is not lost
+Type=notify
+NotifyAccess=main
 # the folders, made outside the sandbox below (it cannot create them)
 ExecStartPre=+/usr/bin/env mkdir -p %h/.local/share/etiketto/labels %h/.config/etiketto
 ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/etiketto/token --labels-dir %h/.local/share/etiketto/labels

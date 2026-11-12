@@ -210,7 +210,8 @@ def test_entries_with_an_id_are_only_tried_for_their_token(tmp_path, monkeypatch
     checked.clear()
     unknown = "etk_%s_%s" % ("0" * 12, "x" * 43)  # an id no entry has
     assert store.find(unknown) is None
-    assert checked[0] == cfg._DUMMY.hash and len(checked) == 2  # a dummy, then the id-less one
+    # a dummy as slow as the id entries (scrypt here), then the id-less one
+    assert checked[0].startswith("scrypt:") and checked[0] not in (made, "") and len(checked) == 2
     checked.clear()
     assert store.find(made).name == "made" and len(checked) == 1
 
@@ -319,23 +320,24 @@ def test_remembered_printer_errors_speak_the_language_of_each_request(
 # --- 20, 25, 26, 27: requests --------------------------------------------------------------
 
 
-def test_mcp_bodies_are_parsed_within_the_limit(make_server, monkeypatch):
+def test_large_mcp_bodies_are_parsed_in_a_render_slot(make_server, monkeypatch):
     server, base = make_server()
     monkeypatch.setattr(server_http, "LARGE_BODY", 10)
-    entered = []
-    real = server.parses
+    held = []
+    from etiketto.server import mcp as mcp_module
 
-    class Counting:
-        def __enter__(self):
-            entered.append(1)
-            return real.__enter__()
+    real = mcp_module.HttpTransport.post
 
-        def __exit__(self, *args):
-            return real.__exit__(*args)
+    def post(self, headers, body, caller):
+        held.append(getattr(server.service._held, "count", 0))
+        return real(self, headers, body, caller)
 
-    server.parses = Counting()
+    monkeypatch.setattr(mcp_module.HttpTransport, "post", post)
     call(base, "POST", "/mcp", body=request("initialize", {}), headers=ACCEPT)
-    assert entered == [1]
+    assert held == [1]
+    monkeypatch.setattr(server_http, "LARGE_BODY", 10**6)  # a small one: no slot to parse
+    call(base, "POST", "/mcp", body=request("initialize", {}), headers=ACCEPT)
+    assert held == [1, 0]
 
 
 def test_a_body_the_client_stops_sending_is_a_400(api):

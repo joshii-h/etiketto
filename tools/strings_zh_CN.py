@@ -453,5 +453,7 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "令牌 %(name)s 已添加到 %(file)s。",
     "Access token: ": "访问令牌：",
     "This token is in the file already, as %s": "此令牌已在文件中，名为 %s",
-    "The label is too large: at most %d images and codes": "标签过大：图片和条码最多 %d 个",
+    "The label is too large: at most %d images and codes": "标签过大：图像和二维码／条形码最多 %d 个",
+    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "元素 %(n)d：条太细，无法可靠扫描，请加长标签或缩短内容",
+    "Not a valid printer address pattern: %s": "不是有效的打印机地址模式：%s",
 }

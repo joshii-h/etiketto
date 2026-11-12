@@ -84,8 +84,11 @@ def _configured(args):
 
 
 def _service(args, printers):
-    from etiketto.server.service import Service
+    from etiketto.server.service import Service, pattern_problem
 
+    for pattern in args.allow_printer:
+        if pattern_problem(pattern.strip()):
+            raise CliError(_("Not a valid printer address pattern: %s") % pattern, EXIT_USAGE)
     folder = labels_dir(args.labels_dir)
     return Service(
         folder,
@@ -181,6 +184,7 @@ def _run(server, service) -> int:
         " with MCP at /mcp" if server.mcp else "",
         service.labels.root,
     )
+    notify("READY=1")  # systemd (Type=notify): started, a reload may come now
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -189,6 +193,23 @@ def _run(server, service) -> int:
         server.server_close()
         service.close()
     return EXIT_OK
+
+
+def notify(state: str) -> None:
+    """Tell systemd (Type=notify) how the service is, if it asks: a datagram
+    to $NOTIFY_SOCKET, as sd_notify() sends it, without a library."""
+    import socket
+
+    path = os.environ.get("NOTIFY_SOCKET", "")
+    if not path:
+        return
+    address = "\0" + path[1:] if path.startswith("@") else path  # an abstract socket
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as sock:
+            sock.connect(address)
+            sock.sendall(state.encode())
+    except OSError as e:
+        log.warning("cannot tell systemd %s: %s", state, e)
 
 
 def mcp(args) -> int:
