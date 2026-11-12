@@ -138,13 +138,23 @@ def _rows(text: str) -> tuple[int, int]:
     from 1, both included."""
     match = _ROWS.match(text)
     first, dash, last = match.groups() if match else ("", "", "")
-    if not match or not (first or last) or (not dash and not first):
-        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+    if not (first or last) or (not dash and not first):  # also no match at all
+        raise _rows_error(text)
     start = int(first) if first else 1
-    end = int(last) if last else (ALL_ROWS if dash else start)
+    end = _row_end(last, dash, start)
     if start < 1 or end < start:
-        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+        raise _rows_error(text)
     return start, end
+
+
+def _row_end(last: str, dash: str, start: int) -> int:
+    if last:
+        return int(last)
+    return ALL_ROWS if dash else start
+
+
+def _rows_error(text: str) -> argparse.ArgumentTypeError:
+    return argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -456,30 +466,35 @@ def apply_assignments(
     The element texts are set first: a variable used only in a new text
     (--set title="Lot {=lot}" --set lot=7) can be given too."""
     overrides = Overrides()
-    rest = []
-    for assignment in assignments:
-        name, value, literal = assignment
-        # "{=" as it is, in a text (a variable's value is never filled in).
-        # Only a text with "{=" is expanded at all, or every text of a
-        # serial label (`serial`): other braces ('{"a":1}' in a QR code)
-        # stay as they are and must not be doubled.
-        if literal and ("{=" in value or (serial and ("{" in value or "}" in value))):
-            value = value.replace("{", "{{").replace("}", "}}")
-        if not _set_element(label, name, value):
-            rest.append(assignment)
+    rest = [a for a in assignments if not _set_element(label, a.name, _escaped(a, serial))]
     used = label_names(label)
     for name, value, _literal in rest:
-        if name == "date":
-            _set_date(overrides, value)
-        elif name in BUILTIN:
-            raise CliError(
-                _("{=%s} is filled in when printing and cannot be set") % name, EXIT_USAGE
-            )
-        elif name in used:
-            overrides.custom[name] = value  # a value is never filled in itself
-        else:
-            raise CliError(_("The label has no element or variable named %s") % name, EXIT_USAGE)
+        _set_variable(overrides, used, name, value)
     return overrides
+
+
+def _escaped(assignment: Assignment, serial: bool) -> str:
+    """The value of --set-literal with its braces doubled where they would
+    be read: "{=" as it is, in a text (a variable's value is never filled
+    in). Only a text with "{=" is expanded at all, or every text of a
+    serial label (`serial`): other braces ('{"a":1}' in a QR code) stay as
+    they are and must not be doubled."""
+    value = assignment.value
+    braces = "{" in value or "}" in value
+    if assignment.literal and ("{=" in value or (serial and braces)):
+        return value.replace("{", "{{").replace("}", "}}")
+    return value
+
+
+def _set_variable(overrides: Overrides, used: set[str], name: str, value: str) -> None:
+    if name == "date":
+        _set_date(overrides, value)
+    elif name in BUILTIN:
+        raise CliError(_("{=%s} is filled in when printing and cannot be set") % name, EXIT_USAGE)
+    elif name in used:
+        overrides.custom[name] = value  # a value is never filled in itself
+    else:
+        raise CliError(_("The label has no element or variable named %s") % name, EXIT_USAGE)
 
 
 # what would print a label other than meant: a variable as text, or without
@@ -853,14 +868,7 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
     [] for a label without one. A data file the label names is read only
     if it lies in the label's folder (as the window does without asking):
     a label from elsewhere could name any file."""
-    path = args.data
-    if path is None and label.data_file:
-        if not data_inside(label.data_file, args.file):
-            raise CliError(
-                _("The label uses a data file outside its folder: give it with --data"),
-                EXIT_USAGE,
-            )
-        path = Path(label.data_file)
+    path = _data_path(args, label)
     if path is None:
         if args.sheet or args.rows:
             raise CliError(_("--sheet and --rows need a data file (--data)"), EXIT_USAGE)
@@ -868,18 +876,34 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
     own = label.data_file and Path(label.data_file).resolve() == path.resolve()
     # the label's sheet goes with its own data file, also given with --data
     sheet = args.sheet or (label.data_sheet if own else "")
+    rows = _read_rows(path, sheet)
+    first, last = args.rows or (1, ALL_ROWS)
+    indexes = list(row_span(first, last, len(rows)))
+    if not indexes:
+        raise CliError(_("No rows to print"), EXIT_USAGE)
+    return rows, indexes
+
+
+def _data_path(args, label: Label) -> Path | None:
+    """--data, else the label's own data file if it lies in its folder."""
+    if args.data is not None or not label.data_file:
+        return args.data
+    if not data_inside(label.data_file, args.file):
+        raise CliError(
+            _("The label uses a data file outside its folder: give it with --data"),
+            EXIT_USAGE,
+        )
+    return Path(label.data_file)
+
+
+def _read_rows(path: Path, sheet: str) -> list[dict[str, str]]:
     try:
         book = read_book(path, sheet)
     except (OSError, MergeError) as e:
         raise CliError(data_error_text(e, _name(path)), EXIT_FILE) from None
     if sheet and book.sheet != sheet:  # never another sheet than the one asked for
         raise CliError(data_error_text(MergeError("no_sheet", sheet), _name(path)), EXIT_USAGE)
-    rows = book.table.rows
-    first, last = args.rows or (1, ALL_ROWS)
-    indexes = list(row_span(first, last, len(rows)))
-    if not indexes:
-        raise CliError(_("No rows to print"), EXIT_USAGE)
-    return rows, indexes
+    return book.table.rows
 
 
 def _check_rows(series: Series) -> None:

@@ -242,16 +242,8 @@ class Label:
         if not isinstance(data, dict):
             raise LabelError("not_label", "not an Etiketto file")
         data = dict(data)
-        version = data.pop("version", FORMAT_VERSION)
-        if isinstance(version, bool) or not isinstance(version, int):
-            raise _damaged("invalid format version %r" % (version,))
-        if version > FORMAT_VERSION:
-            raise LabelError("newer", "file was written by a newer Etiketto (format %s)" % version)
-        features = data.pop("features", [])
-        if not isinstance(features, list) or not all(isinstance(f, str) for f in features):
-            raise _damaged("features must be a list of names")
-        if unknown := sorted(set(features) - FEATURES):
-            raise LabelError("newer", "file needs features of a newer Etiketto: %s" % unknown)
+        _check_version(data.pop("version", FORMAT_VERSION))
+        _check_features(data.pop("features", []))
         items = data.pop("elements", [])
         if not isinstance(items, list):
             raise _damaged("elements must be a list")
@@ -260,11 +252,7 @@ class Label:
         label = cls(**_known_fields(cls, data, frozenset({"elements", "background_image"})))
         label.elements = elements
         if background_image:
-            if not isinstance(background_image, dict):
-                raise _damaged("background_image must be an object")
-            image = _element_from_dict(dict(background_image, kind="image"))
-            assert isinstance(image, ImageElement)
-            label.background_image = image
+            label.background_image = _background_from_dict(background_image)
         label._validate()
         return label
 
@@ -602,6 +590,28 @@ def _capabilities(printer: str):
         return get_backend(printer).capabilities
     except KeyError:
         raise LabelError("newer", "unknown printer %r" % printer) from None
+
+
+def _check_version(version) -> None:
+    if isinstance(version, bool) or not isinstance(version, int):
+        raise _damaged("invalid format version %r" % (version,))
+    if version > FORMAT_VERSION:
+        raise LabelError("newer", "file was written by a newer Etiketto (format %s)" % version)
+
+
+def _check_features(features) -> None:
+    if not isinstance(features, list) or not all(isinstance(f, str) for f in features):
+        raise _damaged("features must be a list of names")
+    if unknown := sorted(set(features) - FEATURES):
+        raise LabelError("newer", "file needs features of a newer Etiketto: %s" % unknown)
+
+
+def _background_from_dict(background_image) -> ImageElement:
+    if not isinstance(background_image, dict):
+        raise _damaged("background_image must be an object")
+    image = _element_from_dict(dict(background_image, kind="image"))
+    assert isinstance(image, ImageElement)
+    return image
 
 
 def _known_fields(cls, data: dict, skip: frozenset[str] = frozenset()) -> dict:

@@ -90,22 +90,29 @@ def read(zf: zipfile.ZipFile, wanted: str | int | None) -> Table:
     merged: list[str] = []  # <mergeCells> follows <sheetData>
     number = tags = 0
     for event, elem in events(zf, part, _SHEET_RECORDS):
-        if event != "end":
-            continue
-        name = local(elem.tag)
+        name = local(elem.tag) if event == "end" else ""
         if name == "row":
-            tags += 1
-            if tags > limits.MAX_ROW_TAGS:
-                raise too_large("more than %d rows in the sheet" % limits.MAX_ROW_TAGS)
+            tags = _row_tag(tags)
             number = _row_number(elem.get("r"), number + 1)
             builder.add(cells.row(elem), key=number)
         elif name == "mergeCell":
-            if len(merged) >= limits.MAX_CELLS:
-                raise too_large("more than %d merged ranges" % limits.MAX_CELLS)
-            merged.append(elem.get("ref", ""))
+            _add_merged(merged, elem.get("ref", ""))
     for reference in merged:
         builder.blank(*_range(reference))
     return builder.table()
+
+
+def _row_tag(tags: int) -> int:
+    tags += 1
+    if tags > limits.MAX_ROW_TAGS:
+        raise too_large("more than %d rows in the sheet" % limits.MAX_ROW_TAGS)
+    return tags
+
+
+def _add_merged(merged: list[str], reference: str) -> None:
+    if len(merged) >= limits.MAX_CELLS:
+        raise too_large("more than %d merged ranges" % limits.MAX_CELLS)
+    merged.append(reference)
 
 
 def _row_number(value: str | None, default: int) -> int:

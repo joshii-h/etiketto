@@ -57,7 +57,7 @@ check_untyped_defs = true  # also the bodies of functions without annotations
 
 [[tool.mypy.overrides]]
 # no type information available (PyGObject, the VC-500W fork, python-barcode)
-module = ["gi", "gi.*", "labelprinter.*", "barcode", "barcode.*", "segno", "segno.*"]
+module = ["gi", "gi.*", "labelprinter.*", "barcode", "segno", "segno.*"]
 ignore_missing_imports = true
 
 [tool.bandit]
