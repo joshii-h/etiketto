@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:22+0100\n"
+"PO-Revision-Date: 2026-11-12 10:36+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hu\n"
 "Language: hu\n"
@@ -229,18 +229,18 @@ msgid "store the hash with scrypt instead of SHA-256"
 msgstr "a hash tárolása scrypt használatával SHA-256 helyett"
 
 #: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:346
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Ismeretlen nyomtatómodell: %s"
 
 #: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:443
+#: etiketto/server/service.py:495
 #, python-format
 msgid "Cannot open %s"
 msgstr "Nem nyitható meg: %s"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:168
+#: etiketto/cli.py:403 etiketto/server/main.py:174
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "A(z) %s nem dátum, várható pl. 2026-12-31 vagy 2026-12-31T08:30"
@@ -256,7 +256,7 @@ msgid "The label has no element or variable named %s"
 msgstr "A címkén nincs %s nevű elem vagy változó"
 
 #: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:641
+#: etiketto/server/service.py:708
 msgid "The label is empty"
 msgstr "A címke üres"
 
@@ -270,8 +270,8 @@ msgstr "a --output PNG-képeket ír: .png végű nevet adjon meg"
 
 #: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
 #: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:591 etiketto/server/service.py:775
-#: etiketto/server/service.py:846
+#: etiketto/server/service.py:656 etiketto/server/service.py:854
+#: etiketto/server/service.py:970
 msgid "The label cannot be prepared for printing."
 msgstr "A címke nem készíthető elő nyomtatásra."
 
@@ -284,16 +284,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Több nyomtató található – válasszon egyet a --host kapcsolóval (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
 #, python-format
 msgid "Cannot save %s"
 msgstr "Nem menthető: %s"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:839
+#: etiketto/cli.py:638 etiketto/server/service.py:963
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "a címkék kinyomtatva, de a számláló következő értéke nem lett mentve"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:665
+#: etiketto/cli.py:653 etiketto/server/service.py:732
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "semmi sem lett kinyomtatva: a számláló következő értéke nem lenne menthető"
 
@@ -310,11 +310,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "A --sheet és a --rows adatfájlt igényel (--data)"
 
 #: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:529
+#: etiketto/server/service.py:582
 msgid "No rows to print"
 msgstr "Nincs nyomtatandó sor"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
 #, python-format
 msgid "No such column: %s"
 msgstr "Ismeretlen oszlop: %s"
@@ -336,7 +336,7 @@ msgstr "Sorok: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "Várakozás a(z) %s egy másik nyomtatásának befejezésére…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:769
+#: etiketto/cli.py:871 etiketto/server/service.py:848
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s még zárolva van egy másik nyomtatás miatt – próbálja újra később"
@@ -1427,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s nem Etiketto-címke"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:454
+#: etiketto/server/service.py:506
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "A fájl sérült: %s"
@@ -1702,7 +1702,7 @@ msgstr "nyomtatónevek listája várható"
 msgid "printers can only be limited with --printers"
 msgstr "a nyomtatók csak a --printers kapcsolóval korlátozhatók"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#: etiketto/server/config.py:368 etiketto/server/service.py:279
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Ismeretlen nyomtató: %s"
@@ -1712,49 +1712,58 @@ msgstr "Ismeretlen nyomtató: %s"
 msgid "Invalid value for %s"
 msgstr "Érvénytelen érték ehhez: %s"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:271
+msgid "The request took too long"
+msgstr "A kérés túl sokáig tartott"
+
+#: etiketto/server/http.py:274
 msgid "Internal error"
 msgstr "Belső hiba"
 
-#: etiketto/server/http.py:198
+#: etiketto/server/http.py:279
 msgid "This server only answers on its local address"
 msgstr "Ez a kiszolgáló csak a helyi címén válaszol"
 
-#: etiketto/server/http.py:202
+#: etiketto/server/http.py:283
 msgid "Requests from this web page are not allowed"
 msgstr "Erről a weboldalról nem engedélyezettek a kérések"
 
-#: etiketto/server/http.py:212
+#: etiketto/server/http.py:301
 msgid "Too many requests – try again later"
 msgstr "Túl sok kérés – próbálja újra később"
 
-#: etiketto/server/http.py:217
+#: etiketto/server/http.py:302
 msgid "Access token missing or wrong"
 msgstr "A hozzáférési token hiányzik vagy hibás"
 
-#: etiketto/server/http.py:241 etiketto/server/http.py:246
+#: etiketto/server/http.py:342 etiketto/server/http.py:347
 msgid "The request needs a Content-Length"
 msgstr "A kéréshez Content-Length szükséges"
 
-#: etiketto/server/http.py:249
+#: etiketto/server/http.py:350
 msgid "The request is too large"
 msgstr "A kérés túl nagy"
 
-#: etiketto/server/http.py:255
+#: etiketto/server/http.py:356
 msgid "Send the request as application/json"
 msgstr "A kérést application/json formátumban küldje"
 
-#: etiketto/server/http.py:260
+#: etiketto/server/http.py:364
 msgid "The request is not valid JSON"
 msgstr "A kérés nem érvényes JSON"
 
-#: etiketto/server/http.py:270 etiketto/server/http.py:280
+#: etiketto/server/http.py:374 etiketto/server/http.py:384
 msgid "Not found"
 msgstr "Nem található"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:383
 msgid "Method not allowed"
 msgstr "A metódus nem engedélyezett"
+
+#: etiketto/server/http.py:400
+#, python-format
+msgid "Send the header %s with this request"
+msgstr "Küldje el a(z) %s fejlécet ezzel a kéréssel"
 
 #: etiketto/server/main.py:35
 #, python-format
@@ -1766,41 +1775,46 @@ msgstr "A(z) %s címkemappa nem létezik"
 msgid "Cannot read the token file %s"
 msgstr "A(z) %s tokenfájl nem olvasható"
 
-#: etiketto/server/main.py:53
+#: etiketto/server/main.py:54
+msgid ""
+"The access token may only contain printable ASCII characters without spaces"
+msgstr "A hozzáférési token csak nyomtatható ASCII-karaktereket tartalmazhat, szóközök nélkül"
+
+#: etiketto/server/main.py:59
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "A hozzáférési tokennek legalább %d karakter hosszúnak kell lennie"
 
-#: etiketto/server/main.py:69
+#: etiketto/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "Vagy a --printers, vagy az --allow-printer kapcsolót használja"
 
-#: etiketto/server/main.py:71
+#: etiketto/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "Vagy a --tokens, vagy a --token-file kapcsolót használja"
 
-#: etiketto/server/main.py:96
+#: etiketto/server/main.py:102
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "Hozzáférési token nélkül nem figyelek a(z) %s címen: állítsa be az ETIKETTO_TOKEN változót, vagy használja a --token-file kapcsolót"
 
-#: etiketto/server/main.py:109
+#: etiketto/server/main.py:115
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "Nem lehet figyelni a(z) %(address)s címen: %(reason)s"
 
-#: etiketto/server/main.py:178
+#: etiketto/server/main.py:184
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Érvénytelen név: betűk, számjegyek, . _ - (legfeljebb 64)"
 
-#: etiketto/server/main.py:192
+#: etiketto/server/main.py:198
 #, python-format
 msgid "A token named %s exists already"
 msgstr "Már létezik %s nevű token"
 
-#: etiketto/server/main.py:202
+#: etiketto/server/main.py:208
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "A token csak most, egyetlen alkalommal jelenik meg; a(z) %s csak a hash-ét tárolja."
@@ -1847,55 +1861,66 @@ msgstr "Túl sok oszlop: legfeljebb %d"
 msgid "Too many cells: at most %d"
 msgstr "Túl sok cella: legfeljebb %d"
 
-#: etiketto/server/service.py:242
+#: etiketto/server/service.py:282
 #, python-format
 msgid "This access token may not use the printer %s"
 msgstr "Ez a hozzáférési token nem használhatja a(z) %s nyomtatót"
 
-#: etiketto/server/service.py:257
+#: etiketto/server/service.py:297
 msgid "Choose a printer by its name"
 msgstr "Válasszon nyomtatót a neve alapján"
 
-#: etiketto/server/service.py:360
+#: etiketto/server/service.py:409
 msgid "No printer address: give it as host"
 msgstr "Nincs nyomtatócím: adja meg a host mezőben"
 
-#: etiketto/server/service.py:367
+#: etiketto/server/service.py:419
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Ez a nyomtatócím nem engedélyezett: %s"
 
-#: etiketto/server/service.py:537
+#: etiketto/server/service.py:590
 msgid "A sheet needs a data file"
 msgstr "A munkalaphoz adatfájl szükséges"
 
-#: etiketto/server/service.py:543
+#: etiketto/server/service.py:596
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "A címke a címkemappán kívüli adatfájlt használ: küldje el vele a sorait is"
 
-#: etiketto/server/service.py:617
+#: etiketto/server/service.py:684
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Túl sok nyomtatási feladat várakozik – próbálja újra később"
 
-#: etiketto/server/service.py:791
+#: etiketto/server/service.py:870
 #, python-format
 msgid "No such print job: %s"
 msgstr "Nincs ilyen nyomtatási feladat: %s"
 
-#: etiketto/server/service.py:803
+#: etiketto/server/service.py:882
 msgid "The print job has already finished"
 msgstr "A nyomtatási feladat már befejeződött"
 
-#: etiketto/server/service.py:810
+#: etiketto/server/service.py:889
 msgid "This access token may not do this"
 msgstr "Ez a hozzáférési token ezt nem teheti meg"
 
-#: etiketto/server/service.py:817
+#: etiketto/server/service.py:905
+msgid "The label is too large to render"
+msgstr "A címke túl nagy a megjelenítéshez"
+
+#: etiketto/server/service.py:931
+#, python-format
+msgid ""
+"The label is too large: at most %(elements)d elements and %(chars)d "
+"characters in a text"
+msgstr "A címke túl nagy: legfeljebb %(elements)d elem és szövegenként %(chars)d karakter"
+
+#: etiketto/server/service.py:941
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Ezen a nyomtatón legfeljebb %d példány"
 
-#: etiketto/server/service.py:822
+#: etiketto/server/service.py:946
 msgid "Printers are chosen by name: leave out host"
 msgstr "A nyomtatókat név szerint kell választani: hagyja el a host mezőt"

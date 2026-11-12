@@ -10,8 +10,9 @@ Both eras of the protocol are served ("dual-era" in the specification):
   version and the client's capabilities in params._meta; server/discover
   tells the versions; on HTTP the headers MCP-Protocol-Version, Mcp-Method
   and Mcp-Name must match the body.
-- 2025-11-25, 2025-06-18 and 2025-03-26 ("legacy"): an initialize request
-  negotiates the version, on HTTP it opens a session (Mcp-Session-Id).
+- 2025-11-25 and 2025-06-18 ("legacy"): an initialize request negotiates
+  the version, on HTTP it opens a session (Mcp-Session-Id). 2025-03-26 is
+  not offered: it needs JSON-RPC batches.
 
 A small implementation of the standard library instead of the official
 `mcp` package: it would bring pydantic, starlette, uvicorn, anyio and more
@@ -30,6 +31,7 @@ import threading
 import time
 from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import IO, Any
 
@@ -42,7 +44,8 @@ from etiketto.server.service import Service
 log = logging.getLogger(__name__)
 
 MODERN = ("2026-07-28",)
-LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26")
+# 2025-03-26 is left out: it needs JSON-RPC batches, which later versions dropped
+LEGACY = ("2025-11-25", "2025-06-18")
 SUPPORTED = MODERN + LEGACY
 VERSION_KEY = "io.modelcontextprotocol/protocolVersion"
 CAPABILITIES_KEY = "io.modelcontextprotocol/clientCapabilities"
@@ -65,6 +68,11 @@ MAX_LINE = 64 * 1024 * 1024  # one message on stdio
 MAX_SESSIONS = 100
 SESSION_SECONDS = 3600.0  # an HTTP session unused this long ends
 DEFAULT_WAIT = 10.0  # seconds print_label waits for its job, unless told
+
+
+# set while a tools/call runs: notifications/cancelled for it sets the event,
+# and print_label and job_status stop waiting (the job itself goes on)
+_CANCEL: ContextVar[threading.Event | None] = ContextVar("mcp_cancel", default=None)
 
 
 class RpcError(Exception):
@@ -293,6 +301,8 @@ class Mcp:
 
     def __init__(self, service: Service):
         self.service = service
+        self._calls: dict[tuple[str, object], threading.Event] = {}
+        self._calls_lock = threading.Lock()
         self._tools: dict[str, Callable[[dict, Caller], dict]] = {
             "list_printers": self._list_printers,
             "printer_status": self._printer_status,
@@ -320,15 +330,34 @@ class Mcp:
         if "method" not in message:
             return None  # a response
         ident = message.get("id")
+        scope = session.id if session else caller.name
         if "id" not in message:
-            return None  # notifications/initialized, notifications/cancelled
+            self._notified(message, scope)  # notifications/initialized, .../cancelled
+            return None
         if isinstance(ident, bool) or not isinstance(ident, (str, int)):
             return _error(None, RpcError(INVALID_REQUEST, "Invalid Request"))
+        cancel = threading.Event()
+        with self._calls_lock:
+            self._calls[(scope, ident)] = cancel
+        token = _CANCEL.set(cancel)
         try:
             result = self.result(message, session, caller)
             return {"jsonrpc": "2.0", "id": ident, "result": result}
         except RpcError as e:
             return _error(ident, e)
+        finally:
+            _CANCEL.reset(token)
+            with self._calls_lock:
+                self._calls.pop((scope, ident), None)
+
+    def _notified(self, message: dict, scope: str) -> None:
+        params = message.get("params")
+        if message.get("method") != "notifications/cancelled" or not isinstance(params, dict):
+            return
+        with self._calls_lock:
+            cancel = self._calls.get((scope, params.get("requestId")))
+        if cancel is not None:
+            cancel.set()
 
     def result(self, message: dict, session: Session | None, caller: Caller = LOCAL) -> dict:
         method, params = message.get("method"), message.get("params", {})
@@ -419,14 +448,25 @@ class Mcp:
         args.setdefault("wait", DEFAULT_WAIT)
         request = requests.print_request(args)
         job = self.service.submit(request, caller)
-        job.done.wait(request.wait)
+        _wait(job, request.wait)
         return _structured(self.service.job_dict(job))
 
     def _job_status(self, args: dict, caller: Caller) -> dict:
         job = self.service.job(args.get("job_id"), caller)
-        wait = requests._number(args, "wait", 0.0, requests.MAX_WAIT)
-        job.done.wait(wait)
+        _wait(job, requests._number(args, "wait", 0.0, requests.MAX_WAIT))
         return _structured(self.service.job_dict(job))
+
+
+def _wait(job, seconds: float) -> None:
+    """Wait for a job to finish, at most `seconds`, or until the client
+    cancels the request."""
+    cancel = _CANCEL.get()
+    deadline = time.monotonic() + seconds
+    while not job.done.is_set() and not (cancel and cancel.is_set()):
+        left = deadline - time.monotonic()
+        if left <= 0:
+            return
+        job.done.wait(min(left, 0.1))
 
 
 def _error(ident: object, error: RpcError) -> dict:

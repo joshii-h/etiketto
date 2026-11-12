@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Dit toegangstoken mag dit niet",
     "At most %d copies on this printer": "Maximaal %d exemplaren op deze printer",
     "Printers are chosen by name: leave out host": "Printers worden op naam gekozen: laat host weg",
+    "The request took too long": "Het verzoek duurde te lang",
+    "Send the header %s with this request": "Stuur de header %s mee met dit verzoek",
+    "The access token may only contain printable ASCII characters without spaces": "Het toegangstoken mag alleen afdrukbare ASCII-tekens zonder spaties bevatten",
+    "The label is too large to render": "Het etiket is te groot om te renderen",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Het etiket is te groot: maximaal %(elements)d elementen en %(chars)d tekens per tekst",
 }

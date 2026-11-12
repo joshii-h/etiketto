@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Bu erişim belirtecinin buna izni yok",
     "At most %d copies on this printer": "Bu yazıcıda en fazla %d kopya",
     "Printers are chosen by name: leave out host": "Yazıcılar adla seçilir: host alanını belirtmeyin",
+    "The request took too long": "İstek çok uzun sürdü",
+    "Send the header %s with this request": "Bu istekle birlikte %s başlığını gönderin",
+    "The access token may only contain printable ASCII characters without spaces": "Erişim belirteci yalnızca boşluksuz, yazdırılabilir ASCII karakterleri içerebilir",
+    "The label is too large to render": "Etiket işlenemeyecek kadar büyük",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Etiket çok büyük: en fazla %(elements)d öge ve bir metinde en fazla %(chars)d karakter",
 }

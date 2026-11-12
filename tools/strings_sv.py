@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Denna åtkomsttoken får inte göra detta",
     "At most %d copies on this printer": "Högst %d kopior på denna skrivare",
     "Printers are chosen by name: leave out host": "Skrivare väljs efter namn: utelämna host",
+    "The request took too long": "Förfrågan tog för lång tid",
+    "Send the header %s with this request": "Skicka huvudet %s med denna förfrågan",
+    "The access token may only contain printable ASCII characters without spaces": "Åtkomsttoken får bara innehålla utskrivbara ASCII-tecken utan blanksteg",
+    "The label is too large to render": "Etiketten är för stor för att renderas",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Etiketten är för stor: högst %(elements)d element och %(chars)d tecken per text",
 }

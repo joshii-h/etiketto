@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:22+0100\n"
+"PO-Revision-Date: 2026-11-12 10:36+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: th\n"
 "Language: th\n"
@@ -229,18 +229,18 @@ msgid "store the hash with scrypt instead of SHA-256"
 msgstr "จัดเก็บแฮชด้วย scrypt แทน SHA-256"
 
 #: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:346
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "ไม่รู้จักรุ่นเครื่องพิมพ์: %s"
 
 #: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:443
+#: etiketto/server/service.py:495
 #, python-format
 msgid "Cannot open %s"
 msgstr "เปิด %s ไม่ได้"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:168
+#: etiketto/cli.py:403 etiketto/server/main.py:174
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s ไม่ใช่วันที่ ต้องการเช่น 2026-12-31 หรือ 2026-12-31T08:30"
@@ -256,7 +256,7 @@ msgid "The label has no element or variable named %s"
 msgstr "ฉลากไม่มีองค์ประกอบหรือตัวแปรชื่อ %s"
 
 #: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:641
+#: etiketto/server/service.py:708
 msgid "The label is empty"
 msgstr "ฉลากว่างเปล่า"
 
@@ -270,8 +270,8 @@ msgstr "--output เขียนภาพ PNG: ระบุชื่อที่
 
 #: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
 #: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:591 etiketto/server/service.py:775
-#: etiketto/server/service.py:846
+#: etiketto/server/service.py:656 etiketto/server/service.py:854
+#: etiketto/server/service.py:970
 msgid "The label cannot be prepared for printing."
 msgstr "เตรียมฉลากสำหรับพิมพ์ไม่ได้"
 
@@ -284,16 +284,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "พบเครื่องพิมพ์หลายเครื่อง – เลือกหนึ่งเครื่องด้วย --host (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
 #, python-format
 msgid "Cannot save %s"
 msgstr "บันทึก %s ไม่ได้"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:839
+#: etiketto/cli.py:638 etiketto/server/service.py:963
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "พิมพ์ฉลากแล้ว แต่ไม่ได้บันทึกค่าตัวนับถัดไป"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:665
+#: etiketto/cli.py:653 etiketto/server/service.py:732
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "ไม่ได้พิมพ์อะไรเลย: บันทึกค่าตัวนับถัดไปไม่ได้"
 
@@ -310,11 +310,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet และ --rows ต้องใช้ไฟล์ข้อมูล (--data)"
 
 #: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:529
+#: etiketto/server/service.py:582
 msgid "No rows to print"
 msgstr "ไม่มีแถวที่จะพิมพ์"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
 #, python-format
 msgid "No such column: %s"
 msgstr "ไม่มีคอลัมน์นี้: %s"
@@ -336,7 +336,7 @@ msgstr "แถว: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "กำลังรอให้การพิมพ์อื่นของ %s เสร็จ…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:769
+#: etiketto/cli.py:871 etiketto/server/service.py:848
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s ยังถูกล็อกโดยการพิมพ์อื่น – ลองใหม่ภายหลัง"
@@ -1427,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s ไม่ใช่ฉลาก Etiketto"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:454
+#: etiketto/server/service.py:506
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "ไฟล์เสียหาย: %s"
@@ -1702,7 +1702,7 @@ msgstr "ต้องเป็นรายการชื่อเครื่อ
 msgid "printers can only be limited with --printers"
 msgstr "จำกัดเครื่องพิมพ์ได้เฉพาะเมื่อใช้ --printers"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#: etiketto/server/config.py:368 etiketto/server/service.py:279
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "เครื่องพิมพ์ที่ไม่รู้จัก: %s"
@@ -1712,49 +1712,58 @@ msgstr "เครื่องพิมพ์ที่ไม่รู้จัก
 msgid "Invalid value for %s"
 msgstr "ค่าไม่ถูกต้องสำหรับ %s"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:271
+msgid "The request took too long"
+msgstr "คำขอใช้เวลานานเกินไป"
+
+#: etiketto/server/http.py:274
 msgid "Internal error"
 msgstr "ข้อผิดพลาดภายใน"
 
-#: etiketto/server/http.py:198
+#: etiketto/server/http.py:279
 msgid "This server only answers on its local address"
 msgstr "เซิร์ฟเวอร์นี้ตอบเฉพาะที่ที่อยู่ภายในเครื่องเท่านั้น"
 
-#: etiketto/server/http.py:202
+#: etiketto/server/http.py:283
 msgid "Requests from this web page are not allowed"
 msgstr "ไม่อนุญาตคำขอจากหน้าเว็บนี้"
 
-#: etiketto/server/http.py:212
+#: etiketto/server/http.py:301
 msgid "Too many requests – try again later"
 msgstr "คำขอมากเกินไป – โปรดลองอีกครั้งในภายหลัง"
 
-#: etiketto/server/http.py:217
+#: etiketto/server/http.py:302
 msgid "Access token missing or wrong"
 msgstr "ไม่มีโทเค็นการเข้าถึงหรือโทเค็นไม่ถูกต้อง"
 
-#: etiketto/server/http.py:241 etiketto/server/http.py:246
+#: etiketto/server/http.py:342 etiketto/server/http.py:347
 msgid "The request needs a Content-Length"
 msgstr "คำขอต้องมี Content-Length"
 
-#: etiketto/server/http.py:249
+#: etiketto/server/http.py:350
 msgid "The request is too large"
 msgstr "คำขอมีขนาดใหญ่เกินไป"
 
-#: etiketto/server/http.py:255
+#: etiketto/server/http.py:356
 msgid "Send the request as application/json"
 msgstr "ส่งคำขอเป็น application/json"
 
-#: etiketto/server/http.py:260
+#: etiketto/server/http.py:364
 msgid "The request is not valid JSON"
 msgstr "คำขอไม่ใช่ JSON ที่ถูกต้อง"
 
-#: etiketto/server/http.py:270 etiketto/server/http.py:280
+#: etiketto/server/http.py:374 etiketto/server/http.py:384
 msgid "Not found"
 msgstr "ไม่พบ"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:383
 msgid "Method not allowed"
 msgstr "ไม่อนุญาตเมธอดนี้"
+
+#: etiketto/server/http.py:400
+#, python-format
+msgid "Send the header %s with this request"
+msgstr "ส่งส่วนหัว %s มากับคำขอนี้"
 
 #: etiketto/server/main.py:35
 #, python-format
@@ -1766,41 +1775,46 @@ msgstr "ไม่มีโฟลเดอร์ฉลาก %s"
 msgid "Cannot read the token file %s"
 msgstr "ไม่สามารถอ่านไฟล์โทเค็น %s"
 
-#: etiketto/server/main.py:53
+#: etiketto/server/main.py:54
+msgid ""
+"The access token may only contain printable ASCII characters without spaces"
+msgstr "โทเค็นการเข้าถึงต้องมีเฉพาะอักขระ ASCII ที่พิมพ์ได้และไม่มีช่องว่าง"
+
+#: etiketto/server/main.py:59
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "โทเค็นการเข้าถึงต้องยาวอย่างน้อย %d อักขระ"
 
-#: etiketto/server/main.py:69
+#: etiketto/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "ใช้ --printers หรือ --allow-printer อย่างใดอย่างหนึ่ง"
 
-#: etiketto/server/main.py:71
+#: etiketto/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "ใช้ --tokens หรือ --token-file อย่างใดอย่างหนึ่ง"
 
-#: etiketto/server/main.py:96
+#: etiketto/server/main.py:102
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "ปฏิเสธการรับฟังที่ %s โดยไม่มีโทเค็นการเข้าถึง: ตั้งค่า ETIKETTO_TOKEN หรือใช้ --token-file"
 
-#: etiketto/server/main.py:109
+#: etiketto/server/main.py:115
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "ไม่สามารถรับฟังที่ %(address)s: %(reason)s"
 
-#: etiketto/server/main.py:178
+#: etiketto/server/main.py:184
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "ชื่อไม่ถูกต้อง: ใช้ตัวอักษร ตัวเลข . _ - (ไม่เกิน 64)"
 
-#: etiketto/server/main.py:192
+#: etiketto/server/main.py:198
 #, python-format
 msgid "A token named %s exists already"
 msgstr "มีโทเค็นชื่อ %s อยู่แล้ว"
 
-#: etiketto/server/main.py:202
+#: etiketto/server/main.py:208
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "โทเค็นจะแสดงเพียงครั้งนี้ครั้งเดียว %s จะเก็บเฉพาะแฮชของโทเค็น"
@@ -1847,55 +1861,66 @@ msgstr "คอลัมน์มากเกินไป: ไม่เกิน 
 msgid "Too many cells: at most %d"
 msgstr "เซลล์มากเกินไป: ไม่เกิน %d"
 
-#: etiketto/server/service.py:242
+#: etiketto/server/service.py:282
 #, python-format
 msgid "This access token may not use the printer %s"
 msgstr "โทเค็นการเข้าถึงนี้ไม่ได้รับอนุญาตให้ใช้เครื่องพิมพ์ %s"
 
-#: etiketto/server/service.py:257
+#: etiketto/server/service.py:297
 msgid "Choose a printer by its name"
 msgstr "เลือกเครื่องพิมพ์ตามชื่อ"
 
-#: etiketto/server/service.py:360
+#: etiketto/server/service.py:409
 msgid "No printer address: give it as host"
 msgstr "ไม่มีที่อยู่เครื่องพิมพ์: ระบุเป็น host"
 
-#: etiketto/server/service.py:367
+#: etiketto/server/service.py:419
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "ไม่อนุญาตที่อยู่เครื่องพิมพ์นี้: %s"
 
-#: etiketto/server/service.py:537
+#: etiketto/server/service.py:590
 msgid "A sheet needs a data file"
 msgstr "ชีตต้องใช้ไฟล์ข้อมูล"
 
-#: etiketto/server/service.py:543
+#: etiketto/server/service.py:596
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "ฉลากใช้ไฟล์ข้อมูลที่อยู่นอกโฟลเดอร์ฉลาก: ส่งแถวข้อมูลมาด้วย"
 
-#: etiketto/server/service.py:617
+#: etiketto/server/service.py:684
 msgid "Too many print jobs are waiting – try again later"
 msgstr "งานพิมพ์รออยู่มากเกินไป – โปรดลองอีกครั้งในภายหลัง"
 
-#: etiketto/server/service.py:791
+#: etiketto/server/service.py:870
 #, python-format
 msgid "No such print job: %s"
 msgstr "ไม่มีงานพิมพ์นี้: %s"
 
-#: etiketto/server/service.py:803
+#: etiketto/server/service.py:882
 msgid "The print job has already finished"
 msgstr "งานพิมพ์เสร็จสิ้นแล้ว"
 
-#: etiketto/server/service.py:810
+#: etiketto/server/service.py:889
 msgid "This access token may not do this"
 msgstr "โทเค็นการเข้าถึงนี้ไม่ได้รับอนุญาตให้ทำสิ่งนี้"
 
-#: etiketto/server/service.py:817
+#: etiketto/server/service.py:905
+msgid "The label is too large to render"
+msgstr "ฉลากมีขนาดใหญ่เกินกว่าจะเรนเดอร์ได้"
+
+#: etiketto/server/service.py:931
+#, python-format
+msgid ""
+"The label is too large: at most %(elements)d elements and %(chars)d "
+"characters in a text"
+msgstr "ฉลากมีขนาดใหญ่เกินไป: ไม่เกิน %(elements)d องค์ประกอบ และไม่เกิน %(chars)d อักขระต่อข้อความ"
+
+#: etiketto/server/service.py:941
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "ไม่เกิน %d สำเนาบนเครื่องพิมพ์นี้"
 
-#: etiketto/server/service.py:822
+#: etiketto/server/service.py:946
 msgid "Printers are chosen by name: leave out host"
 msgstr "เลือกเครื่องพิมพ์ตามชื่อ: ไม่ต้องระบุ host"

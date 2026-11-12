@@ -26,6 +26,7 @@ import hmac
 import ipaddress
 import json
 import logging
+import re
 import socket
 import threading
 import time
@@ -49,6 +50,17 @@ log = logging.getLogger(__name__)
 PREFIX = "/api/v1"
 MAX_BODY = 32 * 1024 * 1024  # a label with large images, or many data rows
 MAX_CONNECTIONS = 32
+MAX_PER_CLIENT = 8  # connections from one address at once
+REQUEST_SECONDS = 30.0  # to send the whole request: line, headers and body
+# without a token a web page could make the server ask printers with an
+# <img src=...>: requests that contact printers need this header then,
+# which a page cannot send to another site without CORS permission
+CLIENT_HEADER = "X-Etiketto-Request"
+CORS_HEADERS = (
+    "Authorization, Content-Type, Accept, Accept-Language, Mcp-Session-Id, "
+    "MCP-Protocol-Version, Mcp-Method, Mcp-Name, " + CLIENT_HEADER
+)
+CORS_EXPOSED = "Location, X-Etiketto-Warnings, Mcp-Session-Id"
 AUTH_FAILURES = 10  # wrong tokens per address and minute before it is blocked
 LOOPBACK_NAMES = frozenset({"localhost", "localhost.localdomain", "ip6-localhost"})
 
@@ -64,22 +76,35 @@ def is_loopback(host: str) -> bool:
         return False
 
 
+def resolve(host: str) -> str:
+    """The address to listen on: a name is resolved once, here, and the
+    server binds that address (a name looked up again could change)."""
+    try:
+        return str(ipaddress.ip_address(host.strip("[]")))
+    except ValueError:
+        pass
+    try:
+        infos = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+    except OSError:
+        return host
+    return str(infos[0][4][0]) if infos else host
+
+
 def binds_loopback(host: str) -> bool:
     """Whether listening on `host` (a name is resolved) is loopback only."""
-    if is_loopback(host):
-        return True
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except OSError:
-        return False
-    return bool(infos) and all(is_loopback(str(info[4][0])) for info in infos)
+    return is_loopback(resolve(host))
+
+
+_HOST_HEADER = re.compile(r"(?:\[([0-9A-Fa-f:.]+)\]|([A-Za-z0-9.-]+))(?::(\d{1,5}))?\Z")
 
 
 def _host_name(header: str) -> str:
-    """The name of a Host header, without the port: "[::1]:8790" -> "::1"."""
-    if header.startswith("["):
-        return header[1 : header.find("]")] if "]" in header else header
-    return header.rsplit(":", 1)[0] if header.count(":") == 1 else header
+    """The name of a Host header, without the port: "[::1]:8790" -> "::1";
+    "" for anything else ("[::1]evil.com", "user@host", spaces)."""
+    match = _HOST_HEADER.match(header)
+    if not match:
+        return ""
+    return match.group(1) or match.group(2)
 
 
 @dataclass(frozen=True)
@@ -125,29 +150,76 @@ class Server(ThreadingHTTPServer):
     def __init__(self, config: Config, service: Service):
         self.config = config
         self.service = service
-        self.loopback = binds_loopback(config.host)
+        address = resolve(config.host)
+        self.loopback = is_loopback(address)
         self.mcp = HttpTransport(Mcp(service)) if config.mcp else None
         self.rate_limit = RateLimit()
         self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
-        family = socket.AF_INET6 if ":" in config.host else socket.AF_INET
-        self.address_family = family
-        super().__init__((config.host, config.port), Handler)
+        self._clients: dict[str, int] = defaultdict(int)
+        self._clients_lock = threading.Lock()
+        self.address_family = socket.AF_INET6 if ":" in address else socket.AF_INET
+        super().__init__((address, config.port), Handler)
+
+    def _admit(self, client: str) -> bool:
+        """A slot for one more connection, at most MAX_PER_CLIENT per address."""
+        with self._clients_lock:
+            if self._clients[client] >= MAX_PER_CLIENT:
+                return False
+            if not self._slots.acquire(blocking=False):
+                return False
+            self._clients[client] += 1
+            return True
+
+    def _leave(self, client: str) -> None:
+        with self._clients_lock:
+            self._clients[client] -= 1
+            if self._clients[client] <= 0:
+                del self._clients[client]
+            self._slots.release()
 
     def process_request(self, request, client_address) -> None:
-        if not self._slots.acquire(blocking=False):  # too many at once: hang up
+        client = client_address[0]
+        if not self._admit(client):  # too many at once: hang up
             self.shutdown_request(request)
             return
         try:
             super().process_request(request, client_address)
         except BaseException:
-            self._slots.release()
+            self._leave(client)
             raise
 
     def process_request_thread(self, request, client_address) -> None:
         try:
             super().process_request_thread(request, client_address)
         finally:
-            self._slots.release()
+            self._leave(client_address[0])
+
+
+class _Deadline:
+    """The request stream with one deadline for the whole request: a client
+    sending a byte now and then (slowloris) is cut off after REQUEST_SECONDS
+    however slowly it sends."""
+
+    def __init__(self, stream, connection, seconds: float):
+        self._stream, self._connection = stream, connection
+        self._deadline = time.monotonic() + seconds
+
+    def _arm(self) -> None:
+        left = self._deadline - time.monotonic()
+        if left <= 0:
+            raise TimeoutError("request deadline")
+        self._connection.settimeout(left)
+
+    def readline(self, *args):
+        self._arm()
+        return self._stream.readline(*args)
+
+    def read(self, *args):
+        self._arm()
+        return self._stream.read(*args)
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
 
 
 Route = Callable[["Handler", list[str]], None]
@@ -156,7 +228,11 @@ Route = Callable[["Handler", list[str]], None]
 class Handler(BaseHTTPRequestHandler):
     server: Server
     server_version = "Etiketto"
-    timeout = 60  # seconds a client may take to send its request
+    timeout = REQUEST_SECONDS  # see _Deadline for the whole request
+
+    def setup(self) -> None:
+        super().setup()
+        self.rfile = _Deadline(self.rfile, self.connection, REQUEST_SECONDS)  # type: ignore[assignment]
 
     # --- the checks -------------------------------------------------------------
 
@@ -184,10 +260,15 @@ class Handler(BaseHTTPRequestHandler):
         self.caller = LOCAL
         with language(self.headers.get("Accept-Language")):
             try:
+                if method == "OPTIONS" and self._preflight():
+                    return
                 self._check()
                 self._route(method)
             except ApiError as e:
                 self._error(e)
+            except TimeoutError:  # the body came too slowly
+                self.close_connection = True
+                self._error(ApiError(408, "timeout", _("The request took too long")))
             except Exception:  # noqa: BLE001 - one broken request must not end the server
                 log.exception("request failed")
                 self._error(ApiError(500, "internal", _("Internal error")))
@@ -206,25 +287,45 @@ class Handler(BaseHTTPRequestHandler):
             self.caller = self._authorize()
 
     def _authorize(self) -> Caller:
-        """Who the token belongs to; 401 for a wrong, expired or revoked one."""
+        """Who the token belongs to; 401 for a wrong, expired or revoked one.
+        Wrong tokens block the address for a while, valid ones never: a
+        blocked address only skips the slow hash of tokens not seen before."""
         client = self.client_address[0]
-        if self.server.rate_limit.blocked(client):
-            raise ApiError(429, "too_many_requests", _("Too many requests – try again later"))
+        blocked = self.server.rate_limit.blocked(client)
         scheme, _sep, value = self.headers.get("Authorization", "").partition(" ")
-        caller = self._caller(value.strip()) if scheme.lower() == "bearer" else None
-        if caller is None:
-            self.server.rate_limit.failed(client)
-            raise ApiError(401, "unauthorized", _("Access token missing or wrong"))
-        return caller
+        caller = self._caller(value.strip(), blocked) if scheme.lower() == "bearer" else None
+        if caller is not None:
+            return caller
+        self.server.rate_limit.failed(client)
+        if blocked or self.server.rate_limit.blocked(client):
+            raise ApiError(429, "too_many_requests", _("Too many requests – try again later"))
+        raise ApiError(401, "unauthorized", _("Access token missing or wrong"))
 
-    def _caller(self, given: str) -> Caller | None:
+    def _caller(self, given: str, known_only: bool = False) -> Caller | None:
         config = self.server.config
         if config.tokens is not None:
-            return config.tokens.find(given) if given else None
+            return config.tokens.find(given, known_only=known_only) if given else None
         assert config.token is not None
         return (
             Caller("token") if hmac.compare_digest(given.encode(), config.token.encode()) else None
         )
+
+    def _preflight(self) -> bool:
+        """A CORS preflight from an origin allowed with --allow-origin: 204
+        with what it may send; False for any other OPTIONS request."""
+        origin = self.headers.get("Origin")
+        if origin is None or origin not in self.server.config.origins:
+            return False
+        self._send(
+            204,
+            None,
+            {
+                "Access-Control-Allow-Methods": "GET, POST, DELETE",
+                "Access-Control-Allow-Headers": CORS_HEADERS,
+                "Access-Control-Max-Age": "600",
+            },
+        )
+        return True
 
     def _origin_ok(self, origin: str) -> bool:
         own = {"http://" + self.headers.get("Host", ""), "https://" + self.headers.get("Host", "")}
@@ -249,10 +350,13 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError(413, "too_large", _("The request is too large"))
         return self.rfile.read(length)
 
-    def _json(self) -> object:
+    def _json_type(self) -> None:
         kind = self.headers.get("Content-Type", "").split(";")[0].strip().lower()
         if kind != "application/json":
             raise ApiError(415, "not_json", _("Send the request as application/json"))
+
+    def _json(self) -> object:
+        self._json_type()
         body = self._body()
         try:
             return json.loads(body)
@@ -285,7 +389,19 @@ class Handler(BaseHTTPRequestHandler):
     def openapi(self, _parts: list[str]) -> None:
         self._send(200, spec(mcp=self.server.mcp is not None))
 
+    def _asks_printers(self) -> None:
+        """Without a token, requests that make the server contact printers
+        need CLIENT_HEADER: an <img> on a web page cannot send it."""
+        config = self.server.config
+        if not (config.token or config.tokens) and self.headers.get(CLIENT_HEADER) is None:
+            raise ApiError(
+                403,
+                "header_required",
+                _("Send the header %s with this request") % CLIENT_HEADER,
+            )
+
     def printers(self, _parts: list[str]) -> None:
+        self._asks_printers()
         query = self._query()
         discover, status = (
             query.get(key, ["true"])[-1].lower() not in ("false", "0", "no")
@@ -295,6 +411,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, {"printers": printers})
 
     def status(self, parts: list[str]) -> None:
+        self._asks_printers()
         host = self._query().get("host", [None])[-1]
         self._send(200, self.server.service.status(parts[1], host, self.caller))
 
@@ -335,6 +452,7 @@ class Handler(BaseHTTPRequestHandler):
         assert transport is not None
         headers = {key.lower(): value for key, value in self.headers.items()}
         if method == "POST":
+            self._json_type()
             reply = transport.post(headers, self._body(), self.caller)
         elif method == "DELETE":
             reply = transport.delete(headers, self.caller)
@@ -344,6 +462,18 @@ class Handler(BaseHTTPRequestHandler):
         self._send(reply.status, reply.body, reply.headers)
 
     # --- answers ------------------------------------------------------------------
+
+    def _cors(self) -> dict[str, str]:
+        """For a page of an origin allowed with --allow-origin: it may read
+        the answer."""
+        origin = self.headers.get("Origin") if hasattr(self, "headers") else None
+        if origin is None or origin not in self.server.config.origins:
+            return {}
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Expose-Headers": CORS_EXPOSED,
+            "Vary": "Origin",
+        }
 
     def _error(self, error: ApiError) -> None:
         extra = {"WWW-Authenticate": "Bearer"} if error.status == 401 else {}
@@ -367,7 +497,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        for key, value in (headers or {}).items():
+        for key, value in dict(self._cors(), **(headers or {})).items():
             self.send_header(key, value)
         self.end_headers()
         if data and self.command != "HEAD":

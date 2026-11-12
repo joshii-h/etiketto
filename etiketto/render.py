@@ -8,9 +8,11 @@ image width matches the tape width, which is what the printer expects.
 from __future__ import annotations
 
 import base64
+import contextlib
 import io
 import math
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from functools import lru_cache
 from types import MappingProxyType
@@ -39,6 +41,39 @@ class RenderWarning(NamedTuple):
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
     params: Mapping[str, object] = MappingProxyType({})
+
+
+class RenderTooLarge(ValueError):
+    """An image would exceed the limits set with limited()."""
+
+
+@dataclass(frozen=True)
+class Limits:
+    pixels: int  # of any one image made while rendering
+    max_length_mm: float | None = None  # of the label, if the printer has a limit
+
+
+# Untrusted labels (the print server) are rendered within limits: a text of
+# thousands of lines or a tiny PNG that unpacks to gigapixels must fail,
+# not fill the memory. The window and the command line render without.
+_LIMITS: ContextVar[Limits | None] = ContextVar("render_limits", default=None)
+
+
+@contextlib.contextmanager
+def limited(pixels: int, max_length_mm: float | None = None) -> Iterator[None]:
+    """Render within limits in this thread while the block runs; images
+    are then decoded without the caches (they would keep large ones)."""
+    token = _LIMITS.set(Limits(pixels, max_length_mm))
+    try:
+        yield
+    finally:
+        _LIMITS.reset(token)
+
+
+def _check_size(width: int, height: int) -> None:
+    limits = _LIMITS.get()
+    if limits is not None and width * height > limits.pixels:
+        raise RenderTooLarge("%d x %d pixels" % (width, height))
 
 
 class CodeError(ValueError):
@@ -103,6 +138,7 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
     _ink, logical = layout.get_pixel_extents()
     width = max(1, logical.width)
     height = max(1, logical.height)
+    _check_size(width, height)
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
@@ -142,17 +178,29 @@ def render_text(element: TextElement, height: int, dpi: float) -> Image.Image:
 Image.MAX_IMAGE_PIXELS = 80_000_000  # refuse decompression bombs early
 
 
-@lru_cache(maxsize=8)
-def _decoded(data: str) -> Image.Image:
+def _decode(data: str) -> Image.Image:
     with Image.open(io.BytesIO(base64.b64decode(data))) as src:
+        _check_size(*src.size)  # before anything is unpacked
         return ImageOps.exif_transpose(src).convert("RGBA")
 
 
-@lru_cache(maxsize=16)
-def _scaled(data: str, height: int) -> Image.Image:
+def _scale(data: str, height: int) -> Image.Image:
     img = _decoded(data)
     width = max(1, round(img.width * height / img.height))
+    _check_size(width, height)
     return img.resize((width, height), Image.Resampling.LANCZOS)
+
+
+_decoded_cached = lru_cache(maxsize=8)(_decode)
+_scaled_cached = lru_cache(maxsize=16)(_scale)
+
+
+def _decoded(data: str) -> Image.Image:
+    return _decode(data) if _LIMITS.get() else _decoded_cached(data)
+
+
+def _scaled(data: str, height: int) -> Image.Image:
+    return _scale(data, height) if _LIMITS.get() else _scaled_cached(data, height)
 
 
 def render_image(element: ImageElement, height: int) -> Image.Image:
@@ -219,6 +267,7 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     )
     buf.seek(0)
     with Image.open(buf) as src:
+        _check_size(*src.size)
         img = src.convert("RGBA")
     # white background -> transparent so the label background shows
     img.putalpha(img.convert("L").point(lambda v: 0 if v == 255 else 255))
@@ -367,6 +416,16 @@ def _draw_border(img: Image.Image, label: Label, f: _Frame) -> None:
     )
 
 
+def _check_label(length: int, height: int, dpi: float) -> None:
+    """Within the limits, before the label's image is made."""
+    limits = _LIMITS.get()
+    if limits is None:
+        return
+    if limits.max_length_mm is not None and px_to_mm(length, dpi) > limits.max_length_mm + 1:
+        raise RenderTooLarge("%.0f mm" % px_to_mm(length, dpi))
+    _check_size(length, height)
+
+
 def render(
     label: Label,
     dpi: float = PRINT_DPI,
@@ -382,6 +441,7 @@ def render(
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings)
     length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
+    _check_label(length, f.tape + 2 * f.bleed, dpi)
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

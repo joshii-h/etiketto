@@ -401,7 +401,11 @@ class TokenStore:
                 return
             log.info("read %s: %d tokens", self.path, len(self._entries))
 
-    def find(self, token: str, now: dt.datetime | None = None) -> Caller | None:
+    def find(
+        self, token: str, now: dt.datetime | None = None, known_only: bool = False
+    ) -> Caller | None:
+        """The caller of a token; `known_only`: only tokens found before
+        (no slow hash for an address that keeps sending wrong ones)."""
         if self._mtime() != self._stamp:
             self.reload()
         now = now or dt.datetime.now().astimezone()
@@ -412,6 +416,8 @@ class TokenStore:
         valid = {e.caller.name: e for e in entries if e.valid(now)}
         if known is not None:
             return known if known.name in valid else None
+        if known_only:
+            return None
         for entry in valid.values():
             if token_matches(token, entry.hash):
                 with self._lock:

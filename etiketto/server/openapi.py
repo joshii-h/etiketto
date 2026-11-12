@@ -259,7 +259,7 @@ SCHEMAS: dict[str, Any] = {
         "required": ["id", "state", "printed", "total"],
         "properties": {
             "id": {"type": "string"},
-            "state": {"enum": ["queued", "printing", "done", "failed", "canceled"]},
+            "state": {"enum": ["queued", "waiting", "printing", "done", "failed", "canceled"]},
             "printer": {"type": "string"},
             "printer_name": {"type": ["string", "null"]},
             "host": {"type": "string"},
@@ -286,12 +286,36 @@ _LANGUAGE = {
     "schema": {"type": "string"},
     "description": "Language of the messages, e.g. de-CH.",
 }
+_ASK = {
+    "name": "X-Etiketto-Request",
+    "in": "header",
+    "required": False,
+    "schema": {"type": "string"},
+    "description": "Needed (any value) when the server has no token: a web page cannot "
+    "send it, so it cannot make the server contact printers.",
+}
 _JOB_ID = {"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}
 
 
 def _operation(summary: str, responses: dict, **extra) -> dict:
-    responses.setdefault("401", _error("Access token missing or wrong"))
-    responses.setdefault("403", _error("Not allowed for this token, or a printer it may not use"))
+    """An operation with the answers every request can get."""
+    if extra.get("security") != []:
+        responses.setdefault("401", _error("Access token missing, wrong, expired or revoked"))
+        responses.setdefault("429", _error("Too many wrong tokens from this address"))
+    responses.setdefault(
+        "403",
+        _error(
+            "Not allowed for this token, a printer it may not use, a web page "
+            "(Origin) not allowed, or X-Etiketto-Request missing (no token, a request "
+            "that contacts printers)"
+        ),
+    )
+    responses.setdefault("408", _error("The request took longer than 30 s to send"))
+    responses.setdefault("421", _error("Not a loopback Host on a loopback server"))
+    if "requestBody" in extra:
+        responses.setdefault("411", _error("No Content-Length"))
+        responses.setdefault("413", _error("Too large"))
+        responses.setdefault("415", _error("Not application/json"))
     operation: dict[str, Any] = {
         "summary": summary,
         "parameters": [_LANGUAGE],
@@ -333,6 +357,7 @@ def _paths() -> dict:
                 },
                 parameters=[
                     _LANGUAGE,
+                    _ASK,
                     {
                         "name": "discover",
                         "in": "query",
@@ -359,6 +384,7 @@ def _paths() -> dict:
                 },
                 parameters=[
                     _LANGUAGE,
+                    _ASK,
                     {
                         "name": "id",
                         "in": "path",

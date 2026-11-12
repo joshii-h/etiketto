@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:22+0100\n"
+"PO-Revision-Date: 2026-11-12 10:36+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -229,18 +229,18 @@ msgid "store the hash with scrypt instead of SHA-256"
 msgstr "हैश को SHA-256 के बजाय scrypt से सहेजें"
 
 #: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:346
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "अज्ञात प्रिंटर मॉडल: %s"
 
 #: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:443
+#: etiketto/server/service.py:495
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s खोला नहीं जा सकता"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:168
+#: etiketto/cli.py:403 etiketto/server/main.py:174
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s तारीख़ नहीं है, अपेक्षित जैसे 2026-12-31 या 2026-12-31T08:30"
@@ -256,7 +256,7 @@ msgid "The label has no element or variable named %s"
 msgstr "लेबल में %s नाम का कोई तत्व या चर नहीं है"
 
 #: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:641
+#: etiketto/server/service.py:708
 msgid "The label is empty"
 msgstr "लेबल खाली है"
 
@@ -270,8 +270,8 @@ msgstr "--output PNG चित्र लिखता है: .png पर सम�
 
 #: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
 #: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:591 etiketto/server/service.py:775
-#: etiketto/server/service.py:846
+#: etiketto/server/service.py:656 etiketto/server/service.py:854
+#: etiketto/server/service.py:970
 msgid "The label cannot be prepared for printing."
 msgstr "लेबल को प्रिंट के लिए तैयार नहीं किया जा सकता।"
 
@@ -284,16 +284,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "कई प्रिंटर मिले – --host से एक चुनें (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:839
+#: etiketto/cli.py:638 etiketto/server/service.py:963
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "लेबल प्रिंट हो गए, लेकिन अगला काउंटर मान सहेजा नहीं गया"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:665
+#: etiketto/cli.py:653 etiketto/server/service.py:732
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "कुछ भी प्रिंट नहीं हुआ: अगला काउंटर मान सहेजा नहीं जा सकता"
 
@@ -310,11 +310,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet और --rows के लिए डेटा फ़ाइल (--data) चाहिए"
 
 #: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:529
+#: etiketto/server/service.py:582
 msgid "No rows to print"
 msgstr "प्रिंट करने के लिए कोई पंक्ति नहीं"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
 #, python-format
 msgid "No such column: %s"
 msgstr "ऐसा कोई स्तंभ नहीं: %s"
@@ -336,7 +336,7 @@ msgstr "पंक्तियाँ: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "%s के दूसरे प्रिंट के पूरा होने की प्रतीक्षा…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:769
+#: etiketto/cli.py:871 etiketto/server/service.py:848
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s अभी भी किसी दूसरे प्रिंट द्वारा लॉक है – बाद में फिर कोशिश करें"
@@ -1427,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s कोई Etiketto लेबल नहीं है"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:454
+#: etiketto/server/service.py:506
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
@@ -1702,7 +1702,7 @@ msgstr "प्रिंटर नामों की सूची अपेक�
 msgid "printers can only be limited with --printers"
 msgstr "प्रिंटर केवल --printers से सीमित किए जा सकते हैं"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#: etiketto/server/config.py:368 etiketto/server/service.py:279
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "अज्ञात प्रिंटर: %s"
@@ -1712,49 +1712,58 @@ msgstr "अज्ञात प्रिंटर: %s"
 msgid "Invalid value for %s"
 msgstr "%s के लिए अमान्य मान"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:271
+msgid "The request took too long"
+msgstr "अनुरोध में बहुत अधिक समय लगा"
+
+#: etiketto/server/http.py:274
 msgid "Internal error"
 msgstr "आंतरिक त्रुटि"
 
-#: etiketto/server/http.py:198
+#: etiketto/server/http.py:279
 msgid "This server only answers on its local address"
 msgstr "यह सर्वर केवल अपने स्थानीय पते पर उत्तर देता है"
 
-#: etiketto/server/http.py:202
+#: etiketto/server/http.py:283
 msgid "Requests from this web page are not allowed"
 msgstr "इस वेब पेज से अनुरोधों की अनुमति नहीं है"
 
-#: etiketto/server/http.py:212
+#: etiketto/server/http.py:301
 msgid "Too many requests – try again later"
 msgstr "बहुत अधिक अनुरोध – बाद में फिर से प्रयास करें"
 
-#: etiketto/server/http.py:217
+#: etiketto/server/http.py:302
 msgid "Access token missing or wrong"
 msgstr "एक्सेस टोकन अनुपस्थित या गलत है"
 
-#: etiketto/server/http.py:241 etiketto/server/http.py:246
+#: etiketto/server/http.py:342 etiketto/server/http.py:347
 msgid "The request needs a Content-Length"
 msgstr "अनुरोध में Content-Length होना चाहिए"
 
-#: etiketto/server/http.py:249
+#: etiketto/server/http.py:350
 msgid "The request is too large"
 msgstr "अनुरोध बहुत बड़ा है"
 
-#: etiketto/server/http.py:255
+#: etiketto/server/http.py:356
 msgid "Send the request as application/json"
 msgstr "अनुरोध application/json के रूप में भेजें"
 
-#: etiketto/server/http.py:260
+#: etiketto/server/http.py:364
 msgid "The request is not valid JSON"
 msgstr "अनुरोध मान्य JSON नहीं है"
 
-#: etiketto/server/http.py:270 etiketto/server/http.py:280
+#: etiketto/server/http.py:374 etiketto/server/http.py:384
 msgid "Not found"
 msgstr "नहीं मिला"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:383
 msgid "Method not allowed"
 msgstr "मेथड की अनुमति नहीं है"
+
+#: etiketto/server/http.py:400
+#, python-format
+msgid "Send the header %s with this request"
+msgstr "इस अनुरोध के साथ हेडर %s भेजें"
 
 #: etiketto/server/main.py:35
 #, python-format
@@ -1766,41 +1775,46 @@ msgstr "लेबल फ़ोल्डर %s मौजूद नहीं ह�
 msgid "Cannot read the token file %s"
 msgstr "टोकन फ़ाइल %s पढ़ी नहीं जा सकती"
 
-#: etiketto/server/main.py:53
+#: etiketto/server/main.py:54
+msgid ""
+"The access token may only contain printable ASCII characters without spaces"
+msgstr "एक्सेस टोकन में केवल प्रिंट करने योग्य ASCII वर्ण हो सकते हैं, रिक्त स्थान नहीं"
+
+#: etiketto/server/main.py:59
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "एक्सेस टोकन कम से कम %d वर्णों का होना चाहिए"
 
-#: etiketto/server/main.py:69
+#: etiketto/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "या तो --printers या --allow-printer का उपयोग करें"
 
-#: etiketto/server/main.py:71
+#: etiketto/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "या तो --tokens या --token-file का उपयोग करें"
 
-#: etiketto/server/main.py:96
+#: etiketto/server/main.py:102
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "एक्सेस टोकन के बिना %s पर सुनने से इनकार: ETIKETTO_TOKEN सेट करें या --token-file का उपयोग करें"
 
-#: etiketto/server/main.py:109
+#: etiketto/server/main.py:115
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "%(address)s पर सुना नहीं जा सकता: %(reason)s"
 
-#: etiketto/server/main.py:178
+#: etiketto/server/main.py:184
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "मान्य नाम नहीं: अक्षर, अंक, . _ - (अधिकतम 64)"
 
-#: etiketto/server/main.py:192
+#: etiketto/server/main.py:198
 #, python-format
 msgid "A token named %s exists already"
 msgstr "%s नाम का टोकन पहले से मौजूद है"
 
-#: etiketto/server/main.py:202
+#: etiketto/server/main.py:208
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "टोकन केवल इसी एक बार दिखाया जाता है; %s केवल उसका हैश रखता है।"
@@ -1847,55 +1861,66 @@ msgstr "बहुत अधिक स्तंभ: अधिकतम %d"
 msgid "Too many cells: at most %d"
 msgstr "बहुत अधिक सेल: अधिकतम %d"
 
-#: etiketto/server/service.py:242
+#: etiketto/server/service.py:282
 #, python-format
 msgid "This access token may not use the printer %s"
 msgstr "यह एक्सेस टोकन प्रिंटर %s का उपयोग नहीं कर सकता"
 
-#: etiketto/server/service.py:257
+#: etiketto/server/service.py:297
 msgid "Choose a printer by its name"
 msgstr "प्रिंटर को उसके नाम से चुनें"
 
-#: etiketto/server/service.py:360
+#: etiketto/server/service.py:409
 msgid "No printer address: give it as host"
 msgstr "कोई प्रिंटर पता नहीं: इसे host के रूप में दें"
 
-#: etiketto/server/service.py:367
+#: etiketto/server/service.py:419
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "इस प्रिंटर पते की अनुमति नहीं है: %s"
 
-#: etiketto/server/service.py:537
+#: etiketto/server/service.py:590
 msgid "A sheet needs a data file"
 msgstr "शीट के लिए डेटा फ़ाइल चाहिए"
 
-#: etiketto/server/service.py:543
+#: etiketto/server/service.py:596
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "लेबल, लेबल फ़ोल्डर के बाहर की डेटा फ़ाइल का उपयोग करता है: उसकी पंक्तियाँ साथ भेजें"
 
-#: etiketto/server/service.py:617
+#: etiketto/server/service.py:684
 msgid "Too many print jobs are waiting – try again later"
 msgstr "बहुत अधिक प्रिंट जॉब प्रतीक्षा में हैं – बाद में फिर से प्रयास करें"
 
-#: etiketto/server/service.py:791
+#: etiketto/server/service.py:870
 #, python-format
 msgid "No such print job: %s"
 msgstr "ऐसा कोई प्रिंट जॉब नहीं: %s"
 
-#: etiketto/server/service.py:803
+#: etiketto/server/service.py:882
 msgid "The print job has already finished"
 msgstr "प्रिंट जॉब पहले ही पूरा हो चुका है"
 
-#: etiketto/server/service.py:810
+#: etiketto/server/service.py:889
 msgid "This access token may not do this"
 msgstr "यह एक्सेस टोकन ऐसा नहीं कर सकता"
 
-#: etiketto/server/service.py:817
+#: etiketto/server/service.py:905
+msgid "The label is too large to render"
+msgstr "लेबल रेंडर करने के लिए बहुत बड़ा है"
+
+#: etiketto/server/service.py:931
+#, python-format
+msgid ""
+"The label is too large: at most %(elements)d elements and %(chars)d "
+"characters in a text"
+msgstr "लेबल बहुत बड़ा है: अधिकतम %(elements)d तत्व और एक टेक्स्ट में %(chars)d वर्ण"
+
+#: etiketto/server/service.py:941
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "इस प्रिंटर पर अधिकतम %d प्रतियाँ"
 
-#: etiketto/server/service.py:822
+#: etiketto/server/service.py:946
 msgid "Printers are chosen by name: leave out host"
 msgstr "प्रिंटर नाम से चुने जाते हैं: host छोड़ दें"

@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "لا يُسمح لرمز الوصول هذا بفعل ذلك",
     "At most %d copies on this printer": "%d نسخ كحد أقصى على هذه الطابعة",
     "Printers are chosen by name: leave out host": "تُختار الطابعات بالاسم: احذف host",
+    "The request took too long": "استغرق الطلب وقتًا طويلًا جدًا",
+    "Send the header %s with this request": "أرسل الترويسة %s مع هذا الطلب",
+    "The access token may only contain printable ASCII characters without spaces": "لا يجوز أن يحتوي رمز الوصول إلا على أحرف ASCII قابلة للطباعة دون مسافات",
+    "The label is too large to render": "الملصق كبير جدًا بحيث يتعذر عرضه",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "الملصق كبير جدًا: %(elements)d عنصرًا كحد أقصى و%(chars)d حرفًا في النص الواحد",
 }

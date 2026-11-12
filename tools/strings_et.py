@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "See pääsuluba ei tohi seda teha",
     "At most %d copies on this printer": "Sellel printeril kuni %d eksemplari",
     "Printers are chosen by name: leave out host": "Printerid valitakse nime järgi: jäta host välja",
+    "The request took too long": "Päring võttis liiga kaua aega",
+    "Send the header %s with this request": "Saada selle päringuga päis %s",
+    "The access token may only contain printable ASCII characters without spaces": "Pääsuluba tohib sisaldada ainult prinditavaid ASCII-märke ilma tühikuteta",
+    "The label is too large to render": "Silt on renderdamiseks liiga suur",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Silt on liiga suur: kuni %(elements)d elementi ja tekstis kuni %(chars)d märki",
 }

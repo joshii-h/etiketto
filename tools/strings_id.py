@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Token akses ini tidak boleh melakukan ini",
     "At most %d copies on this printer": "Maksimal %d salinan pada pencetak ini",
     "Printers are chosen by name: leave out host": "Pencetak dipilih berdasarkan nama: hilangkan host",
+    "The request took too long": "Permintaan memakan waktu terlalu lama",
+    "Send the header %s with this request": "Kirim header %s bersama permintaan ini",
+    "The access token may only contain printable ASCII characters without spaces": "Token akses hanya boleh berisi karakter ASCII yang dapat dicetak tanpa spasi",
+    "The label is too large to render": "Label terlalu besar untuk dirender",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Label terlalu besar: maksimal %(elements)d elemen dan %(chars)d karakter dalam satu teks",
 }

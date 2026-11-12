@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Tämä pääsytunnus ei saa tehdä tätä",
     "At most %d copies on this printer": "Tällä tulostimella enintään %d kopiota",
     "Printers are chosen by name: leave out host": "Tulostimet valitaan nimen mukaan: jätä host pois",
+    "The request took too long": "Pyyntö kesti liian kauan",
+    "Send the header %s with this request": "Lähetä otsake %s tämän pyynnön mukana",
+    "The access token may only contain printable ASCII characters without spaces": "Pääsytunnus saa sisältää vain tulostettavia ASCII-merkkejä ilman välilyöntejä",
+    "The label is too large to render": "Tarra on liian suuri hahmonnettavaksi",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Tarra on liian suuri: enintään %(elements)d elementtiä ja %(chars)d merkkiä tekstissä",
 }

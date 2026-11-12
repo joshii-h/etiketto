@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "此访问令牌无权执行此操作",
     "At most %d copies on this printer": "此打印机最多 %d 份",
     "Printers are chosen by name: leave out host": "打印机按名称选择：请省略 host",
+    "The request took too long": "请求耗时过长",
+    "Send the header %s with this request": "请随此请求发送标头 %s",
+    "The access token may only contain printable ASCII characters without spaces": "访问令牌只能包含不含空格的可打印 ASCII 字符",
+    "The label is too large to render": "标签过大，无法渲染",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "标签过大：最多 %(elements)d 个元素，每段文本最多 %(chars)d 个字符",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:22+0100\n"
+"PO-Revision-Date: 2026-11-12 10:36+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: tr\n"
 "Language: tr\n"
@@ -229,18 +229,18 @@ msgid "store the hash with scrypt instead of SHA-256"
 msgstr "karmayı SHA-256 yerine scrypt ile sakla"
 
 #: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:346
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Bilinmeyen yazıcı modeli: %s"
 
 #: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:443
+#: etiketto/server/service.py:495
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s açılamıyor"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:168
+#: etiketto/cli.py:403 etiketto/server/main.py:174
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s bir tarih değil, örneğin 2026-12-31 veya 2026-12-31T08:30 bekleniyordu"
@@ -256,7 +256,7 @@ msgid "The label has no element or variable named %s"
 msgstr "Etikette %s adında bir öğe veya değişken yok"
 
 #: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:641
+#: etiketto/server/service.py:708
 msgid "The label is empty"
 msgstr "Etiket boş"
 
@@ -270,8 +270,8 @@ msgstr "--output PNG görüntüleri yazar: .png ile biten bir ad verin"
 
 #: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
 #: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:591 etiketto/server/service.py:775
-#: etiketto/server/service.py:846
+#: etiketto/server/service.py:656 etiketto/server/service.py:854
+#: etiketto/server/service.py:970
 msgid "The label cannot be prepared for printing."
 msgstr "Etiket yazdırmaya hazırlanamıyor."
 
@@ -284,16 +284,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Birden çok yazıcı bulundu – --host ile birini seçin (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s kaydedilemiyor"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:839
+#: etiketto/cli.py:638 etiketto/server/service.py:963
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "etiketler yazdırıldı ancak sonraki sayaç değeri kaydedilmedi"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:665
+#: etiketto/cli.py:653 etiketto/server/service.py:732
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "hiçbir şey yazdırılmadı: sonraki sayaç değeri kaydedilemeyecekti"
 
@@ -310,11 +310,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet ve --rows bir veri dosyası gerektirir (--data)"
 
 #: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:529
+#: etiketto/server/service.py:582
 msgid "No rows to print"
 msgstr "Yazdırılacak satır yok"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
 #, python-format
 msgid "No such column: %s"
 msgstr "Böyle bir sütun yok: %s"
@@ -336,7 +336,7 @@ msgstr "Satırlar: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "%s dosyasının başka bir yazdırmasının bitmesi bekleniyor…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:769
+#: etiketto/cli.py:871 etiketto/server/service.py:848
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s hâlâ başka bir yazdırma tarafından kilitli – daha sonra yeniden deneyin"
@@ -1427,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s bir Etiketto etiketi değil"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:454
+#: etiketto/server/service.py:506
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Dosya bozuk: %s"
@@ -1702,7 +1702,7 @@ msgstr "yazıcı adlarından oluşan bir liste bekleniyordu"
 msgid "printers can only be limited with --printers"
 msgstr "yazıcılar yalnızca --printers ile sınırlandırılabilir"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#: etiketto/server/config.py:368 etiketto/server/service.py:279
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Bilinmeyen yazıcı: %s"
@@ -1712,49 +1712,58 @@ msgstr "Bilinmeyen yazıcı: %s"
 msgid "Invalid value for %s"
 msgstr "%s için geçersiz değer"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:271
+msgid "The request took too long"
+msgstr "İstek çok uzun sürdü"
+
+#: etiketto/server/http.py:274
 msgid "Internal error"
 msgstr "İç hata"
 
-#: etiketto/server/http.py:198
+#: etiketto/server/http.py:279
 msgid "This server only answers on its local address"
 msgstr "Bu sunucu yalnızca yerel adresinde yanıt verir"
 
-#: etiketto/server/http.py:202
+#: etiketto/server/http.py:283
 msgid "Requests from this web page are not allowed"
 msgstr "Bu web sayfasından gelen isteklere izin verilmiyor"
 
-#: etiketto/server/http.py:212
+#: etiketto/server/http.py:301
 msgid "Too many requests – try again later"
 msgstr "Çok fazla istek – daha sonra yeniden deneyin"
 
-#: etiketto/server/http.py:217
+#: etiketto/server/http.py:302
 msgid "Access token missing or wrong"
 msgstr "Erişim belirteci eksik veya yanlış"
 
-#: etiketto/server/http.py:241 etiketto/server/http.py:246
+#: etiketto/server/http.py:342 etiketto/server/http.py:347
 msgid "The request needs a Content-Length"
 msgstr "İstek bir Content-Length gerektiriyor"
 
-#: etiketto/server/http.py:249
+#: etiketto/server/http.py:350
 msgid "The request is too large"
 msgstr "İstek çok büyük"
 
-#: etiketto/server/http.py:255
+#: etiketto/server/http.py:356
 msgid "Send the request as application/json"
 msgstr "İsteği application/json olarak gönderin"
 
-#: etiketto/server/http.py:260
+#: etiketto/server/http.py:364
 msgid "The request is not valid JSON"
 msgstr "İstek geçerli bir JSON değil"
 
-#: etiketto/server/http.py:270 etiketto/server/http.py:280
+#: etiketto/server/http.py:374 etiketto/server/http.py:384
 msgid "Not found"
 msgstr "Bulunamadı"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:383
 msgid "Method not allowed"
 msgstr "Yönteme izin verilmiyor"
+
+#: etiketto/server/http.py:400
+#, python-format
+msgid "Send the header %s with this request"
+msgstr "Bu istekle birlikte %s başlığını gönderin"
 
 #: etiketto/server/main.py:35
 #, python-format
@@ -1766,41 +1775,46 @@ msgstr "%s etiket klasörü mevcut değil"
 msgid "Cannot read the token file %s"
 msgstr "%s belirteç dosyası okunamıyor"
 
-#: etiketto/server/main.py:53
+#: etiketto/server/main.py:54
+msgid ""
+"The access token may only contain printable ASCII characters without spaces"
+msgstr "Erişim belirteci yalnızca boşluksuz, yazdırılabilir ASCII karakterleri içerebilir"
+
+#: etiketto/server/main.py:59
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "Erişim belirteci en az %d karakter uzunluğunda olmalıdır"
 
-#: etiketto/server/main.py:69
+#: etiketto/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "Ya --printers ya da --allow-printer kullanın"
 
-#: etiketto/server/main.py:71
+#: etiketto/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "Ya --tokens ya da --token-file kullanın"
 
-#: etiketto/server/main.py:96
+#: etiketto/server/main.py:102
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "Erişim belirteci olmadan %s üzerinde dinleme reddediliyor: ETIKETTO_TOKEN ayarlayın veya --token-file kullanın"
 
-#: etiketto/server/main.py:109
+#: etiketto/server/main.py:115
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "%(address)s üzerinde dinlenemiyor: %(reason)s"
 
-#: etiketto/server/main.py:178
+#: etiketto/server/main.py:184
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Geçerli bir ad değil: harfler, rakamlar, . _ - (en fazla 64)"
 
-#: etiketto/server/main.py:192
+#: etiketto/server/main.py:198
 #, python-format
 msgid "A token named %s exists already"
 msgstr "%s adlı bir belirteç zaten var"
 
-#: etiketto/server/main.py:202
+#: etiketto/server/main.py:208
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "Belirteç yalnızca bu kez gösterilir; %s yalnızca karmasını saklar."
@@ -1847,55 +1861,66 @@ msgstr "Çok fazla sütun: en fazla %d"
 msgid "Too many cells: at most %d"
 msgstr "Çok fazla hücre: en fazla %d"
 
-#: etiketto/server/service.py:242
+#: etiketto/server/service.py:282
 #, python-format
 msgid "This access token may not use the printer %s"
 msgstr "Bu erişim belirteci %s yazıcısını kullanamaz"
 
-#: etiketto/server/service.py:257
+#: etiketto/server/service.py:297
 msgid "Choose a printer by its name"
 msgstr "Bir yazıcıyı adıyla seçin"
 
-#: etiketto/server/service.py:360
+#: etiketto/server/service.py:409
 msgid "No printer address: give it as host"
 msgstr "Yazıcı adresi yok: host olarak verin"
 
-#: etiketto/server/service.py:367
+#: etiketto/server/service.py:419
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Bu yazıcı adresine izin verilmiyor: %s"
 
-#: etiketto/server/service.py:537
+#: etiketto/server/service.py:590
 msgid "A sheet needs a data file"
 msgstr "Sayfa için bir veri dosyası gerekir"
 
-#: etiketto/server/service.py:543
+#: etiketto/server/service.py:596
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "Etiket, etiket klasörünün dışındaki bir veri dosyasını kullanıyor: satırlarını da gönderin"
 
-#: etiketto/server/service.py:617
+#: etiketto/server/service.py:684
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Çok fazla yazdırma işi bekliyor – daha sonra yeniden deneyin"
 
-#: etiketto/server/service.py:791
+#: etiketto/server/service.py:870
 #, python-format
 msgid "No such print job: %s"
 msgstr "Böyle bir yazdırma işi yok: %s"
 
-#: etiketto/server/service.py:803
+#: etiketto/server/service.py:882
 msgid "The print job has already finished"
 msgstr "Yazdırma işi zaten tamamlandı"
 
-#: etiketto/server/service.py:810
+#: etiketto/server/service.py:889
 msgid "This access token may not do this"
 msgstr "Bu erişim belirtecinin buna izni yok"
 
-#: etiketto/server/service.py:817
+#: etiketto/server/service.py:905
+msgid "The label is too large to render"
+msgstr "Etiket işlenemeyecek kadar büyük"
+
+#: etiketto/server/service.py:931
+#, python-format
+msgid ""
+"The label is too large: at most %(elements)d elements and %(chars)d "
+"characters in a text"
+msgstr "Etiket çok büyük: en fazla %(elements)d öge ve bir metinde en fazla %(chars)d karakter"
+
+#: etiketto/server/service.py:941
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Bu yazıcıda en fazla %d kopya"
 
-#: etiketto/server/service.py:822
+#: etiketto/server/service.py:946
 msgid "Printers are chosen by name: leave out host"
 msgstr "Yazıcılar adla seçilir: host alanını belirtmeyin"

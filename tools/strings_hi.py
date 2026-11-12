@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "यह एक्सेस टोकन ऐसा नहीं कर सकता",
     "At most %d copies on this printer": "इस प्रिंटर पर अधिकतम %d प्रतियाँ",
     "Printers are chosen by name: leave out host": "प्रिंटर नाम से चुने जाते हैं: host छोड़ दें",
+    "The request took too long": "अनुरोध में बहुत अधिक समय लगा",
+    "Send the header %s with this request": "इस अनुरोध के साथ हेडर %s भेजें",
+    "The access token may only contain printable ASCII characters without spaces": "एक्सेस टोकन में केवल प्रिंट करने योग्य ASCII वर्ण हो सकते हैं, रिक्त स्थान नहीं",
+    "The label is too large to render": "लेबल रेंडर करने के लिए बहुत बड़ा है",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "लेबल बहुत बड़ा है: अधिकतम %(elements)d तत्व और एक टेक्स्ट में %(chars)d वर्ण",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:22+0100\n"
+"PO-Revision-Date: 2026-11-12 10:36+0100\n"
 "Last-Translator: joshii-h\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -229,18 +229,18 @@ msgid "store the hash with scrypt instead of SHA-256"
 msgstr "den Hash mit scrypt statt SHA-256 speichern"
 
 #: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:346
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Unbekanntes Druckermodell: %s"
 
 #: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:443
+#: etiketto/server/service.py:495
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s lässt sich nicht öffnen"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:168
+#: etiketto/cli.py:403 etiketto/server/main.py:174
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s ist kein Datum, erwartet z. B. 2026-12-31 oder 2026-12-31T08:30"
@@ -256,7 +256,7 @@ msgid "The label has no element or variable named %s"
 msgstr "Das Etikett hat kein Element und keine Variable namens %s"
 
 #: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:641
+#: etiketto/server/service.py:708
 msgid "The label is empty"
 msgstr "Das Etikett ist leer"
 
@@ -270,8 +270,8 @@ msgstr "--output schreibt PNG-Bilder: einen Namen mit der Endung .png angeben"
 
 #: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
 #: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:591 etiketto/server/service.py:775
-#: etiketto/server/service.py:846
+#: etiketto/server/service.py:656 etiketto/server/service.py:854
+#: etiketto/server/service.py:970
 msgid "The label cannot be prepared for printing."
 msgstr "Das Etikett lässt sich nicht für den Druck vorbereiten."
 
@@ -284,16 +284,16 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Mehrere Drucker gefunden – einen mit --host wählen (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s lässt sich nicht speichern"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:839
+#: etiketto/cli.py:638 etiketto/server/service.py:963
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "die Etiketten wurden gedruckt, aber der nächste Zählerstand wurde nicht gespeichert"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:665
+#: etiketto/cli.py:653 etiketto/server/service.py:732
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "nichts gedruckt: der nächste Zählerstand liesse sich nicht speichern"
 
@@ -310,11 +310,11 @@ msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet und --rows gehen nur mit einer Datendatei (--data)"
 
 #: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:529
+#: etiketto/server/service.py:582
 msgid "No rows to print"
 msgstr "Keine Zeilen zum Drucken"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
 #, python-format
 msgid "No such column: %s"
 msgstr "Unbekannte Spalte: %s"
@@ -336,7 +336,7 @@ msgstr "Zeilen: %s"
 msgid "Waiting for another print of %s to finish…"
 msgstr "Warten, bis ein anderer Druck von %s fertig ist …"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:769
+#: etiketto/cli.py:871 etiketto/server/service.py:848
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s ist noch von einem anderen Druck gesperrt – später erneut versuchen"
@@ -1427,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s ist kein Etiketto-Etikett"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:454
+#: etiketto/server/service.py:506
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Die Datei ist beschädigt: %s"
@@ -1702,7 +1702,7 @@ msgstr "Liste von Druckernamen erwartet"
 msgid "printers can only be limited with --printers"
 msgstr "Drucker lassen sich nur mit --printers beschränken"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#: etiketto/server/config.py:368 etiketto/server/service.py:279
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Unbekannter Drucker: %s"
@@ -1712,49 +1712,58 @@ msgstr "Unbekannter Drucker: %s"
 msgid "Invalid value for %s"
 msgstr "Ungültiger Wert für %s"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:271
+msgid "The request took too long"
+msgstr "Die Anfrage hat zu lange gedauert"
+
+#: etiketto/server/http.py:274
 msgid "Internal error"
 msgstr "Interner Fehler"
 
-#: etiketto/server/http.py:198
+#: etiketto/server/http.py:279
 msgid "This server only answers on its local address"
 msgstr "Dieser Server antwortet nur auf seiner lokalen Adresse"
 
-#: etiketto/server/http.py:202
+#: etiketto/server/http.py:283
 msgid "Requests from this web page are not allowed"
 msgstr "Anfragen von dieser Webseite sind nicht erlaubt"
 
-#: etiketto/server/http.py:212
+#: etiketto/server/http.py:301
 msgid "Too many requests – try again later"
 msgstr "Zu viele Anfragen – später erneut versuchen"
 
-#: etiketto/server/http.py:217
+#: etiketto/server/http.py:302
 msgid "Access token missing or wrong"
 msgstr "Zugangstoken fehlt oder ist falsch"
 
-#: etiketto/server/http.py:241 etiketto/server/http.py:246
+#: etiketto/server/http.py:342 etiketto/server/http.py:347
 msgid "The request needs a Content-Length"
 msgstr "Die Anfrage braucht eine Content-Length"
 
-#: etiketto/server/http.py:249
+#: etiketto/server/http.py:350
 msgid "The request is too large"
 msgstr "Die Anfrage ist zu gross"
 
-#: etiketto/server/http.py:255
+#: etiketto/server/http.py:356
 msgid "Send the request as application/json"
 msgstr "Die Anfrage als application/json senden"
 
-#: etiketto/server/http.py:260
+#: etiketto/server/http.py:364
 msgid "The request is not valid JSON"
 msgstr "Die Anfrage ist kein gültiges JSON"
 
-#: etiketto/server/http.py:270 etiketto/server/http.py:280
+#: etiketto/server/http.py:374 etiketto/server/http.py:384
 msgid "Not found"
 msgstr "Nicht gefunden"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:383
 msgid "Method not allowed"
 msgstr "Methode nicht erlaubt"
+
+#: etiketto/server/http.py:400
+#, python-format
+msgid "Send the header %s with this request"
+msgstr "Den Header %s mit dieser Anfrage senden"
 
 #: etiketto/server/main.py:35
 #, python-format
@@ -1766,41 +1775,46 @@ msgstr "Der Etikettenordner %s existiert nicht"
 msgid "Cannot read the token file %s"
 msgstr "Die Token-Datei %s lässt sich nicht lesen"
 
-#: etiketto/server/main.py:53
+#: etiketto/server/main.py:54
+msgid ""
+"The access token may only contain printable ASCII characters without spaces"
+msgstr "Das Zugangstoken darf nur druckbare ASCII-Zeichen ohne Leerzeichen enthalten"
+
+#: etiketto/server/main.py:59
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "Das Zugangstoken muss mindestens %d Zeichen lang sein"
 
-#: etiketto/server/main.py:69
+#: etiketto/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "Entweder --printers oder --allow-printer verwenden"
 
-#: etiketto/server/main.py:71
+#: etiketto/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "Entweder --tokens oder --token-file verwenden"
 
-#: etiketto/server/main.py:96
+#: etiketto/server/main.py:102
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "Ohne Zugangstoken wird nicht auf %s gelauscht: ETIKETTO_TOKEN setzen oder --token-file verwenden"
 
-#: etiketto/server/main.py:109
+#: etiketto/server/main.py:115
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "Auf %(address)s lässt sich nicht lauschen: %(reason)s"
 
-#: etiketto/server/main.py:178
+#: etiketto/server/main.py:184
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Kein gültiger Name: Buchstaben, Ziffern, . _ - (bis 64)"
 
-#: etiketto/server/main.py:192
+#: etiketto/server/main.py:198
 #, python-format
 msgid "A token named %s exists already"
 msgstr "Ein Token namens %s gibt es schon"
 
-#: etiketto/server/main.py:202
+#: etiketto/server/main.py:208
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "Das Token wird nur dieses eine Mal gezeigt; %s speichert nur seinen Hash."
@@ -1847,55 +1861,66 @@ msgstr "Zu viele Spalten: höchstens %d"
 msgid "Too many cells: at most %d"
 msgstr "Zu viele Zellen: höchstens %d"
 
-#: etiketto/server/service.py:242
+#: etiketto/server/service.py:282
 #, python-format
 msgid "This access token may not use the printer %s"
 msgstr "Dieses Zugangstoken darf den Drucker %s nicht verwenden"
 
-#: etiketto/server/service.py:257
+#: etiketto/server/service.py:297
 msgid "Choose a printer by its name"
 msgstr "Einen Drucker mit seinem Namen wählen"
 
-#: etiketto/server/service.py:360
+#: etiketto/server/service.py:409
 msgid "No printer address: give it as host"
 msgstr "Keine Druckeradresse: als host angeben"
 
-#: etiketto/server/service.py:367
+#: etiketto/server/service.py:419
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Diese Druckeradresse ist nicht erlaubt: %s"
 
-#: etiketto/server/service.py:537
+#: etiketto/server/service.py:590
 msgid "A sheet needs a data file"
 msgstr "Ein Blatt braucht eine Datendatei"
 
-#: etiketto/server/service.py:543
+#: etiketto/server/service.py:596
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "Das Etikett verwendet eine Datendatei ausserhalb des Etikettenordners: ihre Zeilen mitsenden"
 
-#: etiketto/server/service.py:617
+#: etiketto/server/service.py:684
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Zu viele Druckaufträge warten – später erneut versuchen"
 
-#: etiketto/server/service.py:791
+#: etiketto/server/service.py:870
 #, python-format
 msgid "No such print job: %s"
 msgstr "Kein solcher Druckauftrag: %s"
 
-#: etiketto/server/service.py:803
+#: etiketto/server/service.py:882
 msgid "The print job has already finished"
 msgstr "Der Druckauftrag ist schon beendet"
 
-#: etiketto/server/service.py:810
+#: etiketto/server/service.py:889
 msgid "This access token may not do this"
 msgstr "Dieses Zugangstoken darf das nicht"
 
-#: etiketto/server/service.py:817
+#: etiketto/server/service.py:905
+msgid "The label is too large to render"
+msgstr "Das Etikett ist zu gross zum Zeichnen"
+
+#: etiketto/server/service.py:931
+#, python-format
+msgid ""
+"The label is too large: at most %(elements)d elements and %(chars)d "
+"characters in a text"
+msgstr "Das Etikett ist zu gross: höchstens %(elements)d Elemente und %(chars)d Zeichen in einem Text"
+
+#: etiketto/server/service.py:941
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Höchstens %d Exemplare auf diesem Drucker"
 
-#: etiketto/server/service.py:822
+#: etiketto/server/service.py:946
 msgid "Printers are chosen by name: leave out host"
 msgstr "Drucker werden mit Namen gewählt: host weglassen"

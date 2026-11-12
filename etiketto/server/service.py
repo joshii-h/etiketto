@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from etiketto import __version__
 from etiketto.backends import backends, get_backend
@@ -50,7 +51,7 @@ from etiketto.model import (
     locked,
     writable,
 )
-from etiketto.render import RenderWarning, render
+from etiketto.render import RenderTooLarge, RenderWarning, limited, render
 from etiketto.serial import (
     Series,
     SeriesError,
@@ -63,7 +64,7 @@ from etiketto.serial import (
 )
 from etiketto.server.config import LOCAL, Caller, NamedPrinter
 from etiketto.server.errors import ApiError, bad_request, invalid_field, not_found
-from etiketto.server.jobs import Failure, JobQueue, PrintJob, QueueFull
+from etiketto.server.jobs import PRINTING, WAITING, Failure, JobQueue, PrintJob, QueueFull
 from etiketto.server.paths import LabelsDir
 from etiketto.server.requests import LabelRequest, PreviewRequest, PrintRequest
 from etiketto.ui.i18n import _
@@ -85,7 +86,13 @@ from etiketto.variables import BUILTIN, Values, label_names, uses_counter
 log = logging.getLogger(__name__)
 DISCOVERY_SECONDS = 30.0  # printers found are remembered this long
 MAX_HOST = 512
-RENDERS = 2  # previews rendered at once: a large label takes much memory
+RENDERS = 2  # renders for previews and checks at once: a large label takes much memory
+# what one label of a request may be: a text of thousands of lines, or
+# thousands of elements, would take gigabytes and minutes to render
+MAX_ELEMENTS = 200
+MAX_TEXT = 5000  # characters of one text or code, filled in
+MAX_LINES = 100
+MAX_PIXELS = 40_000_000  # of any one image while rendering (an image file too)
 
 
 @dataclass
@@ -147,10 +154,42 @@ def _cli_error(error: CliError) -> ApiError:
     return ApiError(status, code, str(error))
 
 
+def host_name(host: str) -> str | None:
+    """The host a printer address names, lower case: of "ipp://Cab.local:631/
+    ipp/print" "cab.local", of "192.0.2.5" itself, of a CUPS queue name the
+    name. None for no address: not printable ASCII, spaces, a user name or
+    password ("user@host", which would also hide the real host from a
+    pattern), or no host at all."""
+    if not 0 < len(host) <= MAX_HOST or not all(33 <= ord(c) < 127 for c in host):
+        return None
+    if "@" in host or "\\" in host:
+        return None
+    try:
+        parts = urlsplit(host if "://" in host else "//" + host)
+        parts.port  # noqa: B018 - raises for a port that is no number
+    except ValueError:
+        return None
+    return parts.hostname or None
+
+
 def host_ok(host: str) -> bool:
     """An address as a printer has one: host name, IP address, printer URI
-    or CUPS queue name; printable, no spaces, not absurdly long."""
-    return 0 < len(host) <= MAX_HOST and all(33 <= ord(c) < 127 for c in host)
+    or CUPS queue name."""
+    return host_name(host) is not None
+
+
+def queue_key(host: str) -> str:
+    """The same printer however its address is written (case of the name)."""
+    parts = urlsplit(host if "://" in host else "//" + host)
+    return "%s:%s%s" % (parts.hostname, parts.port or "", parts.path)
+
+
+def redacted(host: str | None) -> str | None:
+    """An address without a user name and password, for answers."""
+    if not host or "@" not in host:
+        return host
+    scheme, sep, rest = host.rpartition("://")
+    return scheme + sep + rest.rpartition("@")[2]
 
 
 class Service:
@@ -174,6 +213,7 @@ class Service:
         self._found: dict[str, tuple[float, list[dict[str, str]]]] = {}
         self._found_lock = threading.Lock()
         self._label_locks: dict[str, threading.Lock] = {}
+        self._searches: dict[str, threading.Lock] = {}
         self._renders = threading.BoundedSemaphore(RENDERS)
 
     def close(self, timeout: float = 30.0) -> None:
@@ -268,18 +308,27 @@ class Service:
             "color_model": caps.color_model,
             "tape_widths_mm": list(caps.tape_widths_mm),
             "label_sizes_mm": [[s.width_mm, s.height_mm] for s in caps.label_sizes],
-            "configured_host": settings.printer(backend).host,
+            "configured_host": redacted(settings.printer(backend).host),
             "found": found,
         }
 
     def _discover(self, backend: Backend) -> list[dict[str, str]]:
+        """The printers found, remembered for a while; one search at a time
+        per model, the others wait for its result."""
         with self._found_lock:
-            cached = self._found.get(backend.id)
-        if cached and time.monotonic() - cached[0] < DISCOVERY_SECONDS:
-            return cached[1]
+            searching = self._searches.setdefault(backend.id, threading.Lock())
+        with searching:
+            with self._found_lock:
+                cached = self._found.get(backend.id)
+            if cached and time.monotonic() - cached[0] < DISCOVERY_SECONDS:
+                return cached[1]
+            return self._search(backend)
+
+    def _search(self, backend: Backend) -> list[dict[str, str]]:
         try:
             found = [
-                {"name": p.name, "host": p.host, "address": p.address} for p in backend.discover()
+                {"name": p.name, "host": redacted(p.host) or "", "address": p.address}
+                for p in backend.discover()
             ]
         except Exception:  # noqa: BLE001 - a broken plugin must not break the list
             found = []
@@ -358,10 +407,13 @@ class Service:
     def _host(self, host: str | None) -> str:
         if not host:
             raise bad_request(_("No printer address: give it as host"), "no_host")
-        if not host_ok(host):
+        name = host_name(host)
+        if name is None:
             raise invalid_field("host")
+        # patterns match the host itself, not the whole address: a path or a
+        # user name cannot make "evil/x.printers.lan" pass "*.printers.lan"
         if self.allowed_hosts and not any(
-            fnmatch.fnmatchcase(host, p) for p in self.allowed_hosts
+            fnmatch.fnmatchcase(name, p.lower()) for p in self.allowed_hosts
         ):
             raise ApiError(
                 403, "host_not_allowed", _("This printer address is not allowed: %s") % host
@@ -485,6 +537,7 @@ class Service:
             overrides = apply_assignments(label, request.assignments, bool(table))
         except CliError as e:
             raise _cli_error(e) from None
+        _check_limits(label, table)
         options = _options(backend, printer, copies, label.gap_mm)
         values = Values.for_label(
             label, overrides.now or self._clock(), copies, custom=overrides.custom
@@ -563,7 +616,7 @@ class Service:
         if prepared.rows and index >= len(prepared.rows):
             raise invalid_field("row")
         job = prepared.job(index=index if prepared.rows else None)
-        with self._renders:
+        with self._rendering(prepared):
             label, warnings = job.expanded(1)
             if request.view == "printer":
                 image = self._printer_image(job, label)
@@ -582,11 +635,23 @@ class Service:
             texts.append(_warning("unknown_column", _("No such column: %s") % names))
         return Preview(buffer.getvalue(), image.width, image.height, texts)
 
+    @contextlib.contextmanager
+    def _rendering(self, prepared: Prepared) -> Iterator[None]:
+        """Render for a request: two at a time, within the limits."""
+        caps = prepared.backend.capabilities
+        with self._renders, limited(MAX_PIXELS, caps.max_length_mm):
+            try:
+                yield
+            except RenderTooLarge:
+                raise _too_large() from None
+
     @staticmethod
     def _printer_image(job: Job, label: Label):
         try:
             return job.image(label)
-        except PrepareFailed:
+        except PrepareFailed as e:
+            if isinstance(e.__cause__, RenderTooLarge):
+                raise _too_large() from None
             raise ApiError(
                 422, "prepare_failed", _("The label cannot be prepared for printing.")
             ) from None
@@ -598,7 +663,8 @@ class Service:
         _require(caller, "print")
         prepared = self.prepare(request, request.copies, request.rows, caller, printing=True)
         _check_copies(prepared, request.copies)
-        warnings = self._check(prepared)
+        with self._rendering(prepared):
+            warnings = self._check(prepared)
         save = self._saves(prepared, request.no_save_counter)
         host = self._print_host(request, prepared)
         total = request.copies * (len(prepared.indexes) if prepared.rows else 1)
@@ -610,6 +676,7 @@ class Service:
         job = PrintJob(prepared.backend.id, host, name, total, run, warnings=warnings)
         job.owner = caller.name
         job.printer_name = prepared.named.name if prepared.named else ""
+        job.key = queue_key(host)
         try:
             self.jobs.submit(job)
         except QueueFull:
@@ -680,7 +747,16 @@ class Service:
             yield
 
     def _print(self, job: PrintJob, prepared: Prepared, save: bool):
-        with self._exclusive(prepared.path if save else None):
+        caps = prepared.backend.capabilities
+        if save:
+            job.state = WAITING  # until the label file is free
+        with (
+            limited(MAX_PIXELS, caps.max_length_mm),
+            self._exclusive(prepared.path if save else None),
+        ):
+            job.state = PRINTING
+            if job.stop.is_set():  # canceled while it waited for the file
+                return None
             values = self._fresh_values(prepared, save)
             if prepared.rows:
                 return self._print_series(job, prepared, values, save)
@@ -713,7 +789,8 @@ class Service:
             if save:
                 counter = print_job.next_counter()
                 self._save_counter(prepared, counter, print_job.printed, printed)
-        return lambda: printed_remark(prepared.options, result)
+        options = prepared.options  # not `prepared`: the finished job keeps this
+        return lambda: printed_remark(options, result)
 
     def _print_series(self, job: PrintJob, prepared: Prepared, values: Values, save: bool):
         outcome = SeriesResult()
@@ -741,7 +818,8 @@ class Service:
             job.rows_printed = len(outcome.printed)
             if save:
                 self._save_counter(prepared, outcome.counter, outcome.labels, printed)
-        return lambda: printed_remark(prepared.options, outcome.result)
+        options, result = prepared.options, outcome.result
+        return lambda: printed_remark(options, result)
 
     @staticmethod
     def _save_counter(prepared: Prepared, counter: int | None, labels: int, fail: bool) -> None:
@@ -761,6 +839,7 @@ class Service:
         """What a failed job tells: kept as a function, translated when the
         job is asked for."""
         units = self._settings().units
+        _detach(error)
         if isinstance(error, CounterNotSaved):
             job.failure = Failure("counter_not_saved", error.text)
         elif isinstance(error, LockTimeout):
@@ -808,6 +887,51 @@ class Service:
 def _require(caller: Caller, role: str) -> None:
     if not caller.may(role):
         raise ApiError(403, "forbidden", _("This access token may not do this"))
+
+
+def _detach(error: BaseException | None) -> None:
+    """Drop the traceback (and what it holds: the request, the label, the
+    rows) from an error a finished job keeps."""
+    seen = set()
+    while error is not None and id(error) not in seen:
+        seen.add(id(error))
+        inner = getattr(error, "error", None)
+        error.__traceback__ = None
+        error.__context__ = error.__cause__ = None
+        error = inner if isinstance(inner, BaseException) else None
+
+
+def _too_large() -> ApiError:
+    return ApiError(413, "label_too_large", _("The label is too large to render"))
+
+
+def _too_long(text: str) -> bool:
+    return len(text) > MAX_TEXT or text.count("\n") > MAX_LINES
+
+
+def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
+    """Refuse what would take too long or too much memory to render: many
+    elements, long texts, long cells of the columns the label uses."""
+    contents = [
+        e.text if isinstance(e, TextElement) else e.data
+        for e in label.elements
+        if isinstance(e, (TextElement, CodeElement))
+    ]
+    columns = used_columns(label) if rows else []
+    cells = (row.get(name, "") for row in rows for name in columns)
+    if (
+        len(label.elements) > MAX_ELEMENTS
+        or any(map(_too_long, contents))
+        or any(map(_too_long, cells))
+    ):
+        raise ApiError(
+            413,
+            "label_too_large",
+            _(
+                "The label is too large: at most %(elements)d elements and %(chars)d characters in a text"
+            )
+            % {"elements": MAX_ELEMENTS, "chars": MAX_TEXT},
+        )
 
 
 def _check_copies(prepared: Prepared, copies: int) -> None:

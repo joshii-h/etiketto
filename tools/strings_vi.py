@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Mã truy cập này không được phép làm việc này",
     "At most %d copies on this printer": "Tối đa %d bản trên máy in này",
     "Printers are chosen by name: leave out host": "Máy in được chọn theo tên: hãy bỏ host",
+    "The request took too long": "Yêu cầu mất quá nhiều thời gian",
+    "Send the header %s with this request": "Hãy gửi tiêu đề %s cùng yêu cầu này",
+    "The access token may only contain printable ASCII characters without spaces": "Mã truy cập chỉ được chứa các ký tự ASCII in được, không có khoảng trắng",
+    "The label is too large to render": "Nhãn quá lớn để kết xuất",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Nhãn quá lớn: tối đa %(elements)d phần tử và %(chars)d ký tự trong một văn bản",
 }

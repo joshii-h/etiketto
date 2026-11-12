@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "このアクセストークンではこの操作はできません",
     "At most %d copies on this printer": "このプリンターでは最大 %d 部です",
     "Printers are chosen by name: leave out host": "プリンターは名前で選択します: host は指定しないでください",
+    "The request took too long": "リクエストに時間がかかりすぎました",
+    "Send the header %s with this request": "このリクエストでヘッダー %s を送信してください",
+    "The access token may only contain printable ASCII characters without spaces": "アクセストークンには空白を含まない印字可能な ASCII 文字のみ使用できます",
+    "The label is too large to render": "ラベルが大きすぎて描画できません",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "ラベルが大きすぎます: 要素は最大 %(elements)d 個、テキスト 1 つあたり最大 %(chars)d 文字です",
 }

@@ -24,6 +24,7 @@ from datetime import UTC, datetime
 log = logging.getLogger(__name__)
 
 QUEUED, PRINTING, DONE, FAILED, CANCELED = "queued", "printing", "done", "failed", "canceled"
+WAITING = "waiting"  # its turn came, but another print holds the label file
 FINISHED = frozenset({DONE, FAILED, CANCELED})
 MAX_PENDING = 100  # jobs waiting or printing, on all printers together
 MAX_KEPT = 1000  # finished jobs kept to be asked for
@@ -50,7 +51,8 @@ class PrintJob:
     host: str
     label: str  # name in the labels folder, or "" for a label sent as content
     total: int  # labels to print
-    run: Callable[[PrintJob], Callable[[], str | None] | None]
+    # dropped when the job finishes: it holds the request (label, rows)
+    run: Callable[[PrintJob], Callable[[], str | None] | None] | None
     id: str = field(default_factory=lambda: secrets.token_urlsafe(12))
     state: str = QUEUED
     printed: int = 0
@@ -59,6 +61,7 @@ class PrintJob:
     remark: Callable[[], str | None] | None = None
     warnings: list = field(default_factory=list)  # the check's warnings (RenderWarning)
     owner: str = ""  # the name of the token that asked for it
+    key: str = ""  # the printer's address, normalised: one queue per printer
     printer_name: str = ""  # its name in printers.toml, if any
     created: str = field(default_factory=_now)
     started: str = ""
@@ -95,6 +98,7 @@ class PrintJob:
         self.state = state
         self.finished = _now()
         self.finished_at = time.monotonic()
+        self.run = None
         self.done.set()
         code = self.failure.code if self.failure else ""
         log.info(
@@ -130,7 +134,7 @@ class JobQueue:
                 raise QueueFull
             self._forget_old()
             self._jobs[job.id] = job
-            key = (job.printer, job.host)
+            key = (job.printer, job.key or job.host)
             if key not in self._queues:
                 self._queues[key] = queue.Queue()
                 worker = threading.Thread(
@@ -193,6 +197,7 @@ class JobQueue:
 
     def _run(self, job: PrintJob) -> None:
         try:
+            assert job.run is not None
             job.remark = job.run(job)
         except Exception as e:  # noqa: BLE001 - every problem fails the job, not the worker
             self._fail(job, e)

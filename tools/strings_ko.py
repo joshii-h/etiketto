@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "이 액세스 토큰으로는 이 작업을 할 수 없습니다",
     "At most %d copies on this printer": "이 프린터에서는 최대 %d매까지 가능합니다",
     "Printers are chosen by name: leave out host": "프린터는 이름으로 선택합니다: host를 지정하지 마십시오",
+    "The request took too long": "요청 시간이 너무 오래 걸렸습니다",
+    "Send the header %s with this request": "이 요청과 함께 %s 헤더를 보내십시오",
+    "The access token may only contain printable ASCII characters without spaces": "액세스 토큰에는 공백 없이 인쇄 가능한 ASCII 문자만 포함할 수 있습니다",
+    "The label is too large to render": "라벨이 너무 커서 렌더링할 수 없습니다",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "라벨이 너무 큽니다: 요소는 최대 %(elements)d개, 텍스트당 최대 %(chars)d자까지 가능합니다",
 }

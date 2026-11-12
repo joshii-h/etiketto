@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Цьому токену доступу це не дозволено",
     "At most %d copies on this printer": "Щонайбільше %d копій на цьому принтері",
     "Printers are chosen by name: leave out host": "Принтери вибираються за назвою: не вказуйте host",
+    "The request took too long": "Запит виконувався надто довго",
+    "Send the header %s with this request": "Надішліть із цим запитом заголовок %s",
+    "The access token may only contain printable ASCII characters without spaces": "Токен доступу може містити лише друковані символи ASCII без пробілів",
+    "The label is too large to render": "Етикетка завелика для відтворення",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "Етикетка завелика: щонайбільше %(elements)d елементів і %(chars)d символів в одному тексті",
 }

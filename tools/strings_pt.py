@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Este token de acesso não pode fazer isto",
     "At most %d copies on this printer": "No máximo %d cópias nesta impressora",
     "Printers are chosen by name: leave out host": "As impressoras são escolhidas pelo nome: omita host",
+    "The request took too long": "O pedido demorou demasiado",
+    "Send the header %s with this request": "Envie o cabeçalho %s com este pedido",
+    "The access token may only contain printable ASCII characters without spaces": "O token de acesso só pode conter caracteres ASCII imprimíveis, sem espaços",
+    "The label is too large to render": "A etiqueta é demasiado grande para ser renderizada",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "A etiqueta é demasiado grande: no máximo %(elements)d elementos e %(chars)d caracteres por texto",
 }

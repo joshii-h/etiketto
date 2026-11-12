@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "โทเค็นการเข้าถึงนี้ไม่ได้รับอนุญาตให้ทำสิ่งนี้",
     "At most %d copies on this printer": "ไม่เกิน %d สำเนาบนเครื่องพิมพ์นี้",
     "Printers are chosen by name: leave out host": "เลือกเครื่องพิมพ์ตามชื่อ: ไม่ต้องระบุ host",
+    "The request took too long": "คำขอใช้เวลานานเกินไป",
+    "Send the header %s with this request": "ส่งส่วนหัว %s มากับคำขอนี้",
+    "The access token may only contain printable ASCII characters without spaces": "โทเค็นการเข้าถึงต้องมีเฉพาะอักขระ ASCII ที่พิมพ์ได้และไม่มีช่องว่าง",
+    "The label is too large to render": "ฉลากมีขนาดใหญ่เกินกว่าจะเรนเดอร์ได้",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "ฉลากมีขนาดใหญ่เกินไป: ไม่เกิน %(elements)d องค์ประกอบ และไม่เกิน %(chars)d อักขระต่อข้อความ",
 }

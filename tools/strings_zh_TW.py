@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "此存取權杖無權執行此操作",
     "At most %d copies on this printer": "此印表機最多 %d 份",
     "Printers are chosen by name: leave out host": "印表機依名稱選擇：請省略 host",
+    "The request took too long": "要求耗時過長",
+    "Send the header %s with this request": "請隨此要求傳送標頭 %s",
+    "The access token may only contain printable ASCII characters without spaces": "存取權杖只能包含不含空格的可列印 ASCII 字元",
+    "The label is too large to render": "標籤過大，無法轉譯",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "標籤過大：最多 %(elements)d 個元素，每段文字最多 %(chars)d 個字元",
 }

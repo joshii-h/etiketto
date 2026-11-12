@@ -48,6 +48,12 @@ def read_token(path: Path | None, environ=os.environ) -> str | None:
             raise CliError(_("Cannot read the token file %s") % path, EXIT_FILE) from None
         if mode & (stat.S_IRWXG | stat.S_IRWXO):
             log.warning("the token file %s can be read by others: chmod 600 it", path)
+    if token is not None and not all(33 <= ord(c) < 127 for c in token):
+        # an HTTP header carries it: anything else would never match
+        raise CliError(
+            _("The access token may only contain printable ASCII characters without spaces"),
+            EXIT_USAGE,
+        )
     if token is not None and len(token) < MIN_TOKEN:
         raise CliError(
             _("The access token must be at least %d characters long") % MIN_TOKEN, EXIT_USAGE

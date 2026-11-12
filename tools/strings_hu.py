@@ -428,4 +428,9 @@ TRANSLATIONS = {
     "This access token may not do this": "Ez a hozzáférési token ezt nem teheti meg",
     "At most %d copies on this printer": "Ezen a nyomtatón legfeljebb %d példány",
     "Printers are chosen by name: leave out host": "A nyomtatókat név szerint kell választani: hagyja el a host mezőt",
+    "The request took too long": "A kérés túl sokáig tartott",
+    "Send the header %s with this request": "Küldje el a(z) %s fejlécet ezzel a kéréssel",
+    "The access token may only contain printable ASCII characters without spaces": "A hozzáférési token csak nyomtatható ASCII-karaktereket tartalmazhat, szóközök nélkül",
+    "The label is too large to render": "A címke túl nagy a megjelenítéshez",
+    "The label is too large: at most %(elements)d elements and %(chars)d characters in a text": "A címke túl nagy: legfeljebb %(elements)d elem és szövegenként %(chars)d karakter",
 }

@@ -26,6 +26,7 @@ from etiketto.server.openapi import spec
 from etiketto.ui import i18n
 
 TOKEN = "s3cret-token-for-tests"
+ASK = {"X-Etiketto-Request": "1"}  # without a token, asking printers needs it
 
 
 def call(base, method, path, body=None, headers=None, token=None, raw=None):
@@ -132,10 +133,13 @@ def test_token_is_required_except_for_health(make_server):
 
 def test_wrong_tokens_block_the_address(make_server):
     _server, base = make_server(token=TOKEN)
-    for _n in range(10):
+    for _n in range(9):
         assert call(base, "GET", "/api/v1/labels", token="nope")[0] == 401
-    status, _response, body = call(base, "GET", "/api/v1/labels", token=TOKEN)
+    status, _response, body = call(base, "GET", "/api/v1/labels", token="nope")
     assert status == 429 and body["error"]["code"] == "too_many_requests"
+    # the right token still works from a blocked address
+    assert call(base, "GET", "/api/v1/labels", token=TOKEN)[0] == 200
+    assert call(base, "GET", "/api/v1/labels", token="nope")[0] == 429
     assert call(base, "GET", "/api/v1/health")[0] == 200
 
 
@@ -235,8 +239,8 @@ def test_loopback_detection():
     assert not binds_loopback("no-such-host.invalid")
     assert _host_name("[::1]:8790") == "::1"
     assert _host_name("localhost:8790") == "localhost"
-    assert _host_name("[::1") == "[::1"
-    assert _host_name("::1") == "::1"
+    for bad in ("[::1", "::1", "[::1]evil.com", "user@localhost", "local host", "[::1]:x"):
+        assert _host_name(bad) == "", bad
 
 
 def test_internal_errors_are_answered(api, monkeypatch):
@@ -367,7 +371,7 @@ def test_describe_label_with_a_data_file_elsewhere(api, server_env, tmp_path, pn
 
 def test_printers(make_server, server_env):
     _server, base = make_server(discover=True)
-    status, _r, body = call(base, "GET", "/api/v1/printers")
+    status, _r, body = call(base, "GET", "/api/v1/printers", headers=ASK)
     assert status == 200
     fake = next(p for p in body["printers"] if p["id"] == "fake-mono")
     assert fake["configured_host"] == "mono.local"
@@ -375,10 +379,10 @@ def test_printers(make_server, server_env):
     assert fake["kind"] == "tape" and fake["tape_widths_mm"] == [12, 24]
     ids = [p["id"] for p in body["printers"]]
     assert {"vc500w", "cab", "system", "fake-mono"} <= set(ids)
-    status, _r, body = call(base, "GET", "/api/v1/printers?discover=false")
+    status, _r, body = call(base, "GET", "/api/v1/printers?discover=false", headers=ASK)
     assert all(p["found"] == [] for p in body["printers"])
     _server, quiet = make_server()  # the server does not search unless told
-    status, _r, body = call(quiet, "GET", "/api/v1/printers")
+    status, _r, body = call(quiet, "GET", "/api/v1/printers", headers=ASK)
     assert all(p["found"] == [] for p in body["printers"])
 
 
@@ -392,7 +396,7 @@ def test_discovery_is_remembered_and_survives_broken_plugins(make_server, server
 
     monkeypatch.setattr(server_env.printer, "discover", discover)
     for _n in range(2):
-        status, _r, body = call(base, "GET", "/api/v1/printers")
+        status, _r, body = call(base, "GET", "/api/v1/printers", headers=ASK)
         assert status == 200
     assert len(calls) == 1
     assert next(p for p in body["printers"] if p["id"] == "fake-mono")["found"] == []
@@ -402,36 +406,42 @@ def test_printer_status(api, server_env):
     server_env.printer.info = PrinterInfo(
         "Fake", 12, 900, 1000, "IDLE", error="cover_open", firmware="1.2"
     )
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status")
+    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status", headers=ASK)
     assert status == 200
     assert body["host"] == "mono.local" and body["state"] == "IDLE"
     assert body["error"]["code"] == "cover_open" and "cover" in body["error"]["message"]
     assert body["media"]["remaining_mm"] == 900 and body["dpi"] == 203
     assert body["modes"] == ["standard"] and body["firmware"] == "1.2"
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status?host=other.local")
+    status, _r, body = call(
+        api.base, "GET", "/api/v1/printers/fake-mono/status?host=other.local", headers=ASK
+    )
     assert server_env.printer.queries[-1] == "other.local"
 
 
 def test_printer_status_problems(api, server_env, make_server):
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/nope/status")
+    status, _r, body = call(api.base, "GET", "/api/v1/printers/nope/status", headers=ASK)
     assert status == 404 and body["error"]["code"] == "printer_not_found"
     server_env.printer.error = PaperJam("jam")
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status")
+    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status", headers=ASK)
     assert status == 502 and body["error"]["code"] == "printer_jam"
     server_env.printer.error = RuntimeError("odd")
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status")
+    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status", headers=ASK)
     assert status == 502 and body["error"]["code"] == "printer_generic"
-    status, _r, body = call(api.base, "GET", "/api/v1/printers/fake-mono/status?host=a%20b")
+    status, _r, body = call(
+        api.base, "GET", "/api/v1/printers/fake-mono/status?host=a%20b", headers=ASK
+    )
     assert status == 400 and body["error"]["code"] == "invalid_field"
     _server, bare = make_server(settings={})
-    status, _r, body = call(bare, "GET", "/api/v1/printers/fake-mono/status")
+    status, _r, body = call(bare, "GET", "/api/v1/printers/fake-mono/status", headers=ASK)
     assert status == 400 and body["error"]["code"] == "no_host"
 
 
 def test_allowed_printer_addresses(make_server, server_env):
     _server, base = make_server(allowed=("*.local",))
-    assert call(base, "GET", "/api/v1/printers/fake-mono/status")[0] == 200
-    status, _r, body = call(base, "GET", "/api/v1/printers/fake-mono/status?host=10.0.0.1")
+    assert call(base, "GET", "/api/v1/printers/fake-mono/status", headers=ASK)[0] == 200
+    status, _r, body = call(
+        base, "GET", "/api/v1/printers/fake-mono/status?host=10.0.0.1", headers=ASK
+    )
     assert status == 403 and body["error"]["code"] == "host_not_allowed"
     status, _r, body = call(
         base, "POST", "/api/v1/print", body={"label": "box", "host": "10.0.0.1"}
