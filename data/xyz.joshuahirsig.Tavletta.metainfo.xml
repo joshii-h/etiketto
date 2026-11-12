@@ -193,6 +193,7 @@
           <li>cab: print method per printer (thermal transfer or direct), print upside down, a hint when the loaded labels have another spacing</li>
           <li>Command line: data files, variables, --print-method, and with --dry-run --output a PNG of each label</li>
           <li>Print server: REST API and MCP, named printers with their settings in printers.toml, named tokens with roles, a systemd unit and a Docker Compose example</li>
+          <li>A new icon: a small slate tablet with a label, drawn for small sizes too</li>
         </ul>
       </description>
     </release>

@@ -393,6 +393,38 @@ newer version": those with format version 2 by the unknown feature, the
 ones before by the unknown element kind `symbol` (see
 `model.ELEMENT_TYPES`).
 
+## App icon
+
+The icon is a small slate tablet in a wooden frame with a label on it
+(Tavletta: Romansh for "small tablet"). Its sources are SVG, drawn by hand
+in the Adwaita palette:
+
+| File | What |
+| --- | --- |
+| `data/xyz.joshuahirsig.Tavletta.svg` | the icon, 128 × 128, GNOME HIG style |
+| `data/xyz.joshuahirsig.Tavletta-symbolic.svg` | symbolic, 16 × 16, one colour |
+| `data/icons/tavletta-16.svg`, `-24.svg`, `-32.svg` | redrawn on a 16, 24 and 32 px grid: thicker frame, fewer details; installed as the hicolor icons of these sizes, the site's favicon is the 32 px one |
+| `data/icons/tavletta-20.svg` | the same on a 20 px grid, for Windows at 125 % (`.ico` only) |
+| `data/icons/tavletta-macos.svg` | macOS (Big Sur style): the tablet on an 824 × 824 plate in 1024 × 1024 |
+
+Keep them to SVG Tiny 1.2, which is what QtSvg (KDE) draws: paths, rects
+and circles, solid fills, linear and radial gradients. No filters, masks,
+clip paths, `<style>` or `style=`, patterns, images, text (letters as
+paths) or arcs in path data; shadows are layered shapes with a low
+`fill-opacity`. `tests/test_icons.py` checks this. When the icon changes,
+change the small drawings and the macOS version with it.
+
+PNG, Windows `.ico` and macOS `.icns` files are not in the repository;
+`tools/icons.py` renders them (needs librsvg's GObject introspection,
+`gir1.2-rsvg-2.0` on Debian):
+
+```sh
+python3 tools/icons.py   # build/icons/: hicolor PNGs 16-512, tavletta.ico, tavletta.icns
+```
+
+The Swiss cross must not appear on the icon: its use is restricted in
+Switzerland (Wappenschutzgesetz).
+
 ## Code style
 
 - Formatting and linting with ruff, configuration in `pyproject.toml`.
