@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "افتراضي",
     "Ideas for the variables (counter, date, UUID), no code": "أفكار للمتغيرات (العدّاد والتاريخ وUUID)، دون شيفرة",
     "Waiting for the printer's answer…": "في انتظار رد الطابعة…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "اطبع بالإعدادات الافتراضية لطراز الطابعة بدلًا من القص والألوان والجودة والإضافات (الطباعة المتسلسلة والدقة العالية وتقديم الشريط) وإعدادات الطابعة المختارة آخر مرة في التطبيق؛ يبقى العنوان وهامش الأمان",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "اطبع بالإعدادات الافتراضية لطراز الطابعة بدلًا من القص والألوان والجودة والإضافات (الطباعة المتسلسلة والدقة العالية وتقديم الشريط) وإعدادات الطابعة وحدود أوراق الملصقات المختارة آخر مرة في التطبيق؛ يبقى العنوان وهامش الأمان",
 }

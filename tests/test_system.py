@@ -2209,3 +2209,31 @@ def test_the_check_refuses_a_page_too_large_before_rendering_it(monkeypatch):
     assert drawn == []
     backend.render_label(a4, PrintOptions(info=office), max_dpi=600)  # the preview's
     assert drawn == [1]
+
+
+def test_the_preview_of_a_page_too_large_is_drawn_coarser():
+    """An A3 page at the 600 dpi a printer reports would be 70 megapixels:
+    the preview (max_dpi given) is drawn as fine as it fits instead of
+    failing; the check and the print still refuse it with their message."""
+    from etiketto.backends.base import PageTooLarge, PrinterInfo
+
+    backend = get_backend("system")
+    a3 = Label(printer="system", orientation="across", auto_length=False)
+    a3.set_media_size(297, 420)
+    options = PrintOptions(info=PrinterInfo("Office A3", None, None, None, "IDLE", dpi=600))
+    fits = system.fitting_dpi(297, 420)
+    assert 450 < fits < 600
+    system.check_size(297, 420, fits)  # accepted
+    with pytest.raises(PageTooLarge):
+        system.check_size(297, 420, fits + 1)
+    assert backend.label_dpi(a3, options) == 600  # the print's
+    assert backend.label_dpi(a3, options, 600) == fits  # the preview's
+    with pytest.raises(PageTooLarge):
+        backend.render_label(a3, options)
+    rendered = backend.render_label(a3, options, max_dpi=600)
+    assert rendered.image.width == round(297 / 25.4 * fits)
+    a4 = Label(printer="system", orientation="across", auto_length=False)
+    a4.set_media_size(210, 297)
+    assert backend.label_dpi(a4, options, 600) == 600  # fits: as fine as asked
+    with pytest.raises(PageTooLarge):
+        system.check_page_size(backend.prepare(a3, options), 600)

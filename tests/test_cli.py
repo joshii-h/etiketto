@@ -1179,3 +1179,84 @@ def test_dry_run_output_is_the_windows_export(mono, label_file, tmp_path):
         assert round(png.info["dpi"][0]) == round(dpi)
         if mono.capabilities.continuous:
             assert png.height == round(label.tape_mm / 25.4 * dpi)
+
+
+def test_printer_defaults_also_reset_the_sheet_outlines(tmp_path):
+    """Outlines on a label sheet are one of the print choices of the app:
+    --printer-defaults prints without them, as the model's default."""
+    from etiketto.model import SheetChoice
+
+    label = Label(printer="system", orientation="across", elements=[TextElement(text="x")])
+    label.sheet = SheetChoice("Avery L7160", [1])
+    path = tmp_path / "sheet.etiketto"
+    label.save(path)
+    settings = Settings({"printers": {"system": {"outlines": True, "host": "office"}}})
+    args = cli.parser().parse_args(["print", str(path)])
+    job = cli._job(args, settings, NOW)[0]
+    assert job.sheet is not None and job.sheet.outlines
+    args = cli.parser().parse_args(["print", str(path), "--printer-defaults"])
+    job, printer, _settings, _series = cli._job(args, settings, NOW)
+    assert job.sheet is not None and not job.sheet.outlines
+    assert printer.host == "office"  # the address stays
+
+
+def test_a_dry_run_output_renders_each_label_once(mono, label_file, tmp_path, monkeypatch):
+    """--output: the check and the first label as the printer gets it (what
+    would fail) render once each, then every label once for its PNG; not
+    every label twice."""
+    path = label_file(TextElement(text="{=copy}"))
+    renders = []
+    real = mono.render_label
+    monkeypatch.setattr(mono, "render_label", lambda *a, **k: renders.append(1) or real(*a, **k))
+    assert run("print", path, "--copies", "4", "--dry-run", "--output", tmp_path / "o.png") == 0
+    assert len(renders) == 1 + 1 + 4
+    assert len(mono.prepared) == 1
+    assert sorted(p.name for p in tmp_path.glob("o-*.png")) == [
+        "o-%d.png" % n for n in range(1, 5)
+    ]
+
+
+def test_a_dry_run_series_output_renders_each_label_once(mono, tmp_path, monkeypatch):
+    rows = tmp_path / "rows.csv"
+    rows.write_text("name\nA\nB\nC\n", encoding="utf-8")
+    path = tmp_path / "label.etiketto"
+    Label(printer="fake-mono", tape_mm=12, elements=[TextElement(text="{name}")]).save(path)
+    renders = []
+    real = mono.render_label
+    monkeypatch.setattr(mono, "render_label", lambda *a, **k: renders.append(1) or real(*a, **k))
+    out = tmp_path / "o.png"
+    assert run("print", path, "--data", rows, "--dry-run", "--output", out) == 0
+    assert len(mono.prepared) == 1  # the first label, as the printer gets it
+    assert len(list(tmp_path.glob("o-*.png"))) == 3
+    assert len(renders) == 1 + 1 + 3  # the check, the first as printed, one per PNG
+    renders.clear()
+    buffer = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", SimpleNamespace(buffer=buffer, write=sys.stdout.write))
+    assert run("print", path, "--data", rows, "--dry-run", "--output", "-") == 0
+    assert len(mono.prepared) == 2 and len(renders) == 1 + 1 + 1  # the first row only
+    buffer.seek(0)
+    with Image.open(buffer) as image:
+        assert image.format == "PNG"
+
+
+def test_dry_run_output_of_a_page_printer_is_capped_as_the_window(tmp_path, monkeypatch):
+    """A printer reporting 1200 dpi: the window's export is drawn at most
+    at 600 dpi, and so is --output."""
+    from etiketto.backends import get_backend
+    from etiketto.backends.base import PrinterInfo
+    from etiketto.job import PREVIEW_MAX_DPI
+
+    monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "settings.json")
+    system = get_backend("system")
+    info = PrinterInfo("Office", None, None, None, "IDLE", dpi=1200)
+    monkeypatch.setattr(system, "query", lambda host: info)
+    label = Label(printer="system", orientation="across", auto_length=False)
+    label.set_media_size(100, 50)
+    label.elements = [TextElement(text="x")]
+    path = tmp_path / "page.etiketto"
+    label.save(path)
+    out = tmp_path / "o.png"
+    assert run("print", path, "--host", "office", "--dry-run", "--output", out) == 0
+    with Image.open(out) as png:
+        assert round(png.info["dpi"][0]) == PREVIEW_MAX_DPI
+        assert png.width == round(100 / 25.4 * PREVIEW_MAX_DPI)

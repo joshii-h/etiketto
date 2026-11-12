@@ -214,9 +214,10 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--host` the printer set in the app is used, or the only one found.
 It prints with the choices last made in the app for that printer model:
 cut, colours, quality, the P-touch's chain printing, high resolution and
-tape feed, and the printer settings (label sensor, darkness …);
-`--printer-defaults` takes the model's defaults for these instead (the
-printer's address and the safety margin stay as set in the app).
+tape feed, the printer settings (label sensor, darkness …) and whether a
+label sheet gets outlines; `--printer-defaults` takes the model's defaults
+for these instead (no outlines; the printer's address and the safety
+margin stay as set in the app).
 Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
 range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO and office printers: the resolution; a dry run waits
@@ -232,7 +233,8 @@ the chosen positions.
 and `--rows 3-10` choose which; the counter goes on from row to row.
 `--dry-run` lists the texts of every label and with `--output` saves
 each label as the window's export does: as printed, on the whole tape,
-with its resolution in the PNG (`-`: the first on standard output).
+at most 600 dpi like the preview, with its resolution in the PNG (`-`:
+the first on standard output).
 The label file is locked while printing, so two prints of one file never
 share a number; the window reads the saved counter again before printing
 and saving. The counter is saved also after a printer error, Ctrl+C,

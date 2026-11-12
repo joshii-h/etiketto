@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "預設",
     "Ideas for the variables (counter, date, UUID), no code": "變數（計數器、日期、UUID）的構想，不含其程式碼",
     "Waiting for the printer's answer…": "正在等候印表機的回應…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "使用印表機型號的預設值列印，而非應用程式中最後選擇的裁切、色彩、品質、附加功能（連續列印、高解析度、送帶）和印表機設定；位址和安全邊界保留",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "使用印表機型號的預設值列印，而非應用程式中最後選擇的裁切、色彩、品質、附加功能（連續列印、高解析度、送帶）、印表機設定和標籤紙輪廓；位址和安全邊界保留",
 }

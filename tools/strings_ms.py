@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Lalai",
     "Ideas for the variables (counter, date, UUID), no code": "Idea untuk pemboleh ubah (pembilang, tarikh, UUID), tanpa kod",
     "Waiting for the printer's answer…": "Menunggu jawapan pencetak…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "cetak dengan lalai model pencetak, bukan potongan, warna, kualiti, tambahan (cetakan berantai, resolusi tinggi, suapan pita) dan tetapan pencetak yang terakhir dipilih dalam aplikasi; alamat dan jidar keselamatan kekal",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "cetak dengan lalai model pencetak, bukan potongan, warna, kualiti, tambahan (cetakan berantai, resolusi tinggi, suapan pita), tetapan pencetak dan garis tepi helaian label yang terakhir dipilih dalam aplikasi; alamat dan jidar keselamatan kekal",
 }

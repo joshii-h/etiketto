@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Varsayılan",
     "Ideas for the variables (counter, date, UUID), no code": "Değişkenler için fikirler (sayaç, tarih, UUID), kod içermez",
     "Waiting for the printer's answer…": "Yazıcının yanıtı bekleniyor…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "uygulamada en son seçilen kesim, renkler, kalite, ekler (zincirleme baskı, yüksek çözünürlük, bant besleme) ve yazıcı ayarları yerine yazıcı modelinin varsayılanlarıyla yazdır; adres ve güvenlik payı kalır",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "uygulamada en son seçilen kesim, renkler, kalite, ekler (zincirleme baskı, yüksek çözünürlük, bant besleme), yazıcı ayarları ve etiket sayfası dış çizgileri yerine yazıcı modelinin varsayılanlarıyla yazdır; adres ve güvenlik payı kalır",
 }

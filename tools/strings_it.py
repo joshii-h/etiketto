@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Predefinita",
     "Ideas for the variables (counter, date, UUID), no code": "Idee per le variabili (contatore, data, UUID), nessun codice",
     "Waiting for the printer's answer…": "In attesa della risposta della stampante…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "stampa con i valori predefiniti del modello di stampante invece di taglio, colori, qualità, extra (stampa a catena, alta risoluzione, avanzamento del nastro) e impostazioni scelti per ultimi nell’app; indirizzo e margine di sicurezza restano",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "stampa con i valori predefiniti del modello di stampante invece di taglio, colori, qualità, extra (stampa a catena, alta risoluzione, avanzamento del nastro), impostazioni e contorni dei fogli di etichette scelti per ultimi nell’app; indirizzo e margine di sicurezza restano",
 }

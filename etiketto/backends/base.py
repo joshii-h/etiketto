@@ -676,6 +676,14 @@ class Backend(ABC):
             dpi = min(dpi, max_dpi) if max_dpi else dpi
         return dpi
 
+    def label_dpi(
+        self, label: Label, options: PrintOptions, max_dpi: float | None = None
+    ) -> float:
+        """The resolution this label is rendered at (render_dpi()); a backend
+        whose pages can be too large for the resolution (a page printer)
+        lowers it for the preview, when `max_dpi` is given."""
+        return self.render_dpi(label.tape_mm, options, max_dpi)
+
     def label_raster(self, label: Label, options: PrintOptions) -> Raster:
         """raster() for this label; a backend whose geometry depends on more
         than the tape (the label's orientation) overrides it."""
@@ -698,7 +706,7 @@ class Backend(ABC):
         dpi: this resolution instead (a page rendered again at the one the
         printer takes, see system.py)."""
         raster = self.label_raster(label, options)
-        dpi = dpi or self.render_dpi(label.tape_mm, options, max_dpi)
+        dpi = dpi or self.label_dpi(label, options, max_dpi)
         return render(
             label,
             dpi=dpi,

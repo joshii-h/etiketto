@@ -203,8 +203,8 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help=_(
             "print with the printer model's defaults instead of the cut, colours, quality, "
-            "extras (chain printing, high resolution, tape feed) and printer settings last "
-            "chosen in the app; the address and the safety margin stay"
+            "extras (chain printing, high resolution, tape feed), printer settings and label "
+            "sheet outlines last chosen in the app; the address and the safety margin stay"
         ),
     )
     print_.add_argument(
@@ -460,20 +460,22 @@ def _prepare_failed(error: PrepareFailed, unit) -> CliError:
 def _dry_run(job: Job, output: str | None, unit) -> int:
     """Fill in the labels of the job one at a time and list their texts.
     The first is rendered as the printer would get it, to find what would
-    fail; the others only with --output, which saves each label as the
-    window exports it (on the whole tape, with its resolution). "-"
-    writes the first image to stdout and nothing else: stdout holds one PNG."""
+    fail; with --output each label is also saved as the window exports it
+    (Job.export: rendered once, on the whole tape, with its resolution).
+    "-" writes the first image to stdout and nothing else: stdout holds
+    one PNG."""
     try:
         if output == "-":
             _copy, label = next(job.labels())
+            job.image(label)
             _write_png(*job.export(label), "-")
             return EXIT_OK
         targets = _output_paths(output, job.renders) if output else None
         for copy, label in job.labels():
+            if copy == 1:
+                job.image(label)
             if targets:
                 _write_png(*job.export(label), next(targets))
-            elif copy == 1:
-                job.image(label)
             _out("\t".join([str(copy)] + [_one_line(t) for t in _contents(label)]))
     except PrepareFailed as e:
         raise _prepare_failed(e, unit) from None
@@ -496,17 +498,19 @@ def _dry_run_series(series: Series, output: str | None, unit) -> int:
     try:
         if output == "-":
             first = job(0, series.indexes[0])
-            _write_png(*first.export(next(first.labels())[1]), "-")
+            label = next(first.labels())[1]
+            first.image(label)
+            _write_png(*first.export(label), "-")
             return EXIT_OK
         renders = job(0, series.indexes[0]).renders * len(series.indexes)  # the same for each row
         targets = _output_paths(output, renders) if output else None
         for position, index in enumerate(series.indexes):
             row_job = job(position, index)
             for copy, label in row_job.labels():
+                if copy == 1 and position == 0:
+                    row_job.image(label)
                 if targets:
                     _write_png(*row_job.export(label), next(targets))
-                elif copy == 1 and position == 0:
-                    row_job.image(label)
                 fields = [str(index + 1), str(copy)] + [_one_line(t) for t in _contents(label)]
                 _out("\t".join(fields))
     except PrepareFailed as e:
@@ -700,13 +704,14 @@ def _job(args, settings: Settings | None, now: datetime | None):
     if args.counter_start is not None:
         label.counter_next = args.counter_start
     overrides = apply_assignments(label, args.assignments, bool(args.data or label.data_file))
-    options = _options(backend, _choices(args, settings, backend), args.copies, label.gap_mm)
+    choices = _choices(args, settings, backend)
+    options = _options(backend, choices, args.copies, label.gap_mm)
     values = Values.for_label(
         label, overrides.now or now or datetime.now(), args.copies, custom=overrides.custom
     )
     rows, indexes = _data(args, label)
     columns = rows[indexes[0]] if rows else None
-    sheet = _sheet_job(label, backend, printer, args.copies * max(1, len(indexes)))
+    sheet = _sheet_job(label, backend, choices, args.copies * max(1, len(indexes)))
     job = Job(backend, label, options, printer.safe_mm, values, columns, sheet)
     series = None
     if rows:
@@ -716,8 +721,8 @@ def _job(args, settings: Settings | None, now: datetime | None):
 
 def _choices(args, settings: Settings, backend: Backend) -> PrinterSettings:
     """Whose print choices (cut, mode, quality, the extras, the printer
-    settings) a job takes: the ones last made in the app, or with
-    --printer-defaults the printer model's defaults."""
+    settings, a label sheet's outlines) a job takes: the ones last made in
+    the app, or with --printer-defaults the printer model's defaults."""
     return Settings({}).printer(backend) if args.printer_defaults else settings.printer(backend)
 
 
@@ -729,15 +734,16 @@ def _checked(job: Job, series: Series | None) -> None:
         _check_rows(series)
 
 
-def _sheet_job(label: Label, backend: Backend, printer: PrinterSettings, count: int):
+def _sheet_job(label: Label, backend: Backend, choices: PrinterSettings, count: int):
     """The label sheet the label is printed on, as in the window: each copy
-    (or each copy of each row) a position, from the chosen positions on;
-    None for a label of its own page or a sheet this version does not know."""
+    (or each copy of each row) a position, from the chosen positions on,
+    with the outlines as `choices` say (_choices()); None for a label of
+    its own page or a sheet this version does not know."""
     choice = label.sheet
     sheet = find_sheet(choice.id) if choice and backend.capabilities.pages else None
     if sheet is None or choice is None:
         return None
-    outlines = printer.get("outlines", False) is True
+    outlines = choices.get("outlines", False) is True
     return SheetJob(sheet, count, tuple(choice.positions), choice.rotated, outlines)
 
 

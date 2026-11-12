@@ -12,6 +12,7 @@ from __future__ import annotations
 import getpass
 import io
 import ipaddress
+import math
 import ssl
 import time
 from collections.abc import Callable, Iterable, Iterator, Sequence
@@ -705,10 +706,23 @@ class SystemPrinter(Backend):
     ) -> Rendered:
         """As every backend, but a page too large for the resolution is
         refused before it is rendered (PageTooLarge), as the print refuses
-        it: the command line's check would otherwise render 140 megapixels."""
-        at = dpi or self.render_dpi(label.tape_mm, options, max_dpi)
+        it: the command line's check would otherwise render 140 megapixels.
+        The preview (`max_dpi` given) is rendered finer only as far as the
+        page fits (label_dpi()): the print then says what is wrong."""
+        at = dpi or self.label_dpi(label, options, max_dpi)
         check_size(*label.media_size(), at)
-        return super().render_label(label, options, safe_mm, max_dpi, bleed, dpi)
+        return super().render_label(label, options, safe_mm, max_dpi, bleed, at)
+
+    def label_dpi(
+        self, label: Label, options: PrintOptions, max_dpi: float | None = None
+    ) -> float:
+        """The printer's resolution; for the preview and the export (`max_dpi`
+        given) at most that, and only as fine as the page fits into
+        MAX_PAGE_PIXELS (an A3 page at 600 dpi would be 70 megapixels)."""
+        dpi = self.render_dpi(label.tape_mm, options, max_dpi)
+        if max_dpi is None:
+            return dpi
+        return min(dpi, fitting_dpi(*label.media_size()))
 
     def _prepare_at(
         self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
@@ -780,6 +794,13 @@ def check_page_size(page: Image.Image, dpi: int) -> None:
         page.height / DPI * 25.4,
     )
     check_size(width_mm, height_mm, dpi)
+
+
+def fitting_dpi(width_mm: float, height_mm: float) -> int:
+    """The finest whole resolution at which a page of this size takes no
+    more than MAX_PAGE_PIXELS (check_size() accepts it)."""
+    square_inches = max(width_mm / 25.4 * height_mm / 25.4, 1e-6)
+    return max(1, math.floor(math.sqrt(MAX_PAGE_PIXELS / square_inches)))
 
 
 def check_size(width_mm: float, height_mm: float, dpi: float) -> None:

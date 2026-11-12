@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "기본값",
     "Ideas for the variables (counter, date, UUID), no code": "변수(카운터, 날짜, UUID)에 대한 아이디어, 코드는 포함되지 않음",
     "Waiting for the printer's answer…": "프린터의 응답을 기다리는 중…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "앱에서 마지막으로 선택한 절단, 색상, 품질, 추가 기능(연속 인쇄, 고해상도, 테이프 이송), 프린터 설정 대신 프린터 모델의 기본값으로 인쇄; 주소와 안전 여백은 유지",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "앱에서 마지막으로 선택한 절단, 색상, 품질, 추가 기능(연속 인쇄, 고해상도, 테이프 이송), 프린터 설정, 라벨 시트 윤곽선 대신 프린터 모델의 기본값으로 인쇄; 주소와 안전 여백은 유지",
 }

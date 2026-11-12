@@ -26,12 +26,40 @@ from etiketto.backends.base import (
     RenderAgain,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, RenderWarning, whole_tape
-from etiketto.sheets.layout import Copies, LabelSource, Pages, SheetJob
+from etiketto.render import DEFAULT_SAFE_MM, Rendered, RenderWarning, whole_tape
+from etiketto.sheets import Sheet
+from etiketto.sheets.layout import Copies, LabelSource, Pages, SheetJob, clip_preview
 from etiketto.variables import Values, expand_label, uses_counter, varies_per_copy
 
 # serial labels on sheets: position n (from 0) -> its values and data row
 PositionValues = Callable[[int], tuple[Values, Mapping[str, str] | None]]
+
+# the preview and the export at most this fine: an A4 page at 1200 dpi
+# would be 140 megapixels, rendered on every keystroke
+PREVIEW_MAX_DPI = 600.0
+
+
+def preview_image(
+    backend: Backend,
+    label: Label,
+    options: PrintOptions,
+    safe_mm: float = DEFAULT_SAFE_MM,
+    sheet: Sheet | None = None,
+    rotated: bool = False,
+) -> tuple[Rendered, Image.Image, float]:
+    """The label as the window's preview shows it and its export (and the
+    command line's --output) writes it, rendered once: at the resolution
+    it is printed at, at most PREVIEW_MAX_DPI (Backend.label_dpi()), in
+    label space on the whole tape (render.whole_tape), a round label on a
+    sheet in its shape. Returns the render (warnings, length), the image
+    and its resolution."""
+    dpi = backend.label_dpi(label, options, PREVIEW_MAX_DPI)
+    rendered = backend.render_label(label, options, safe_mm, PREVIEW_MAX_DPI, bleed=False)
+    tape = round(label.tape_mm / 25.4 * dpi) if backend.capabilities.continuous else 0
+    image = backend.preview(whole_tape(rendered.image, tape), options.mode)
+    if sheet is not None:
+        image = clip_preview(image, sheet, rotated)
+    return rendered, image, dpi
 
 
 class PrepareFailed(Exception):
@@ -135,16 +163,23 @@ class Job:
             raise PrepareFailed(str(e)) from e
 
     def export(self, label: Label) -> tuple[Image.Image, float]:
-        """One label as the window exports it, and its resolution: as
-        printed (prepare() runs first, so what would fail fails here), in
-        label space on the whole tape (render.whole_tape)."""
-        self.image(label)
-        backend, options = self.backend, self.options
-        dpi = backend.render_dpi(label.tape_mm, options)
-        rendered = backend.render_label(label, options, self.safe_mm, bleed=False)
-        continuous = backend.capabilities.continuous
-        tape = round(label.tape_mm / 25.4 * dpi) if continuous else 0
-        return backend.preview(whole_tape(rendered.image, tape), options.mode), dpi
+        """One label as the window exports it (preview_image(), rendered
+        once), and its resolution. What only the printer's image would show
+        (image()) is not looked for here: the dry run prepares its first
+        label for that."""
+        sheet = self.sheet
+        try:
+            _rendered, image, dpi = preview_image(
+                self.backend,
+                label,
+                self.options,
+                self.safe_mm,
+                sheet.sheet if sheet else None,
+                sheet.rotated if sheet else False,
+            )
+        except Exception as e:  # noqa: BLE001 - whatever went wrong while drawing
+            raise PrepareFailed(str(e)) from e
+        return image, dpi
 
     def run(self, host: str, progress: ProgressCallback | None = None) -> PrintResult | None:
         """Print; raises PrepareFailed or the backend's PrinterError.

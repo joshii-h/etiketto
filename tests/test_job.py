@@ -332,3 +332,52 @@ def test_the_check_renders_as_the_print(monkeypatch):
     job = make_job("{=date:%Y}", 1, backend)
     assert job.check() == []
     assert seen == [job.options]
+
+
+def test_an_export_renders_each_label_once(monkeypatch):
+    """Job.export (the dry run's --output) draws a label once, as the
+    window's export does, not once for the printer and once more."""
+    from etiketto.model import TextElement
+
+    backend = FakeMono()
+    renders = []
+    real = backend.render_label
+    monkeypatch.setattr(
+        backend, "render_label", lambda *a, **k: renders.append(1) or real(*a, **k)
+    )
+    label = Label(printer=backend.id, tape_mm=12, elements=[TextElement(text="{=copy}")])
+    job = Job(backend, label, PrintOptions(copies=3), values=Values.for_label(label, NOW, 3))
+    for _copy, each in job.labels():
+        job.export(each)
+    assert len(renders) == 3
+
+
+def test_an_export_is_the_windows_preview_image():
+    """The same function, the same cap: a page printer reporting 1200 dpi
+    exports at PREVIEW_MAX_DPI, as the window does."""
+    from etiketto.backends import get_backend
+    from etiketto.backends.base import PrinterInfo
+    from etiketto.job import PREVIEW_MAX_DPI, preview_image
+    from etiketto.model import TextElement
+
+    backend = get_backend("system")
+    label = Label(printer="system", orientation="across", auto_length=False)
+    label.set_media_size(100, 50)
+    label.elements = [TextElement(text="Etikett")]
+    options = PrintOptions(info=PrinterInfo("Office", None, None, None, "IDLE", dpi=1200))
+    image, dpi = Job(backend, label, options).export(label)
+    assert dpi == PREVIEW_MAX_DPI
+    _rendered, window, window_dpi = preview_image(backend, label, options)
+    assert window_dpi == dpi and image.tobytes() == window.tobytes()
+
+
+def test_an_export_that_cannot_be_drawn_fails_as_prepare_does(monkeypatch):
+    backend = FakeMono()
+
+    def broken(*_args, **_kwargs):
+        raise RuntimeError("kaputt")
+
+    monkeypatch.setattr(backend, "render_label", broken)
+    label = Label(printer=backend.id, tape_mm=12)
+    with pytest.raises(PrepareFailed, match="kaputt"):
+        Job(backend, label, PrintOptions()).export(label)

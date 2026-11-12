@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "標準",
     "Ideas for the variables (counter, date, UUID), no code": "変数（カウンター、日付、UUID）のアイデア。コードは含まれていません",
     "Waiting for the printer's answer…": "プリンターの応答を待っています…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "アプリで最後に選んだカット、色、品質、追加設定（チェーン印刷、高解像度、テープ送り）、プリンター設定ではなく、プリンター機種の既定値で印刷する。アドレスと安全マージンはそのまま",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "アプリで最後に選んだカット、色、品質、追加設定（チェーン印刷、高解像度、テープ送り）、プリンター設定、ラベルシートの輪郭ではなく、プリンター機種の既定値で印刷する。アドレスと安全マージンはそのまま",
 }
