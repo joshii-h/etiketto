@@ -311,7 +311,7 @@ def test_a_trickling_printer_still_ends(device, monkeypatch):
     data = b"x" * 300_000  # budget 0.3 + 0.3 s; at 50 kB/s it would take 6 s
     reader = Consumer(printer, len(data), rate=50_000)
     start = time.monotonic()
-    with pytest.raises(PrinterStalled):
+    with pytest.raises(PrinterStalled, match="took data too slowly"):
         connection.sendall(data)
     assert 0.5 < time.monotonic() - start < 2
     reader.stop()
@@ -628,3 +628,23 @@ def test_cab_finds_its_printers_on_usb(sysfs, monkeypatch):
     assert cab.Cab().discover(timeout=0.01) == [
         FoundPrinter("cab SQUIX 4/300 (USB)", "usb://cab/SQUIX%204%2F300?serial=9", "/dev/usb/lp0")
     ]
+
+
+def test_the_device_wait_is_applied_once(device, monkeypatch):
+    """Waiting for another session (the lock) and then for another program
+    (EBUSY) share one deadline: not twice the wait."""
+    path, _printer = device
+    deadlines = []
+    real_open = usb._open
+    monkeypatch.setattr(
+        usb,
+        "_open",
+        lambda device, deadline: deadlines.append(deadline) or real_open(device, deadline),
+    )
+    lock = usb._device_lock(path)
+    lock.acquire()
+    threading.Timer(0.3, lock.release).start()
+    start = time.monotonic()
+    connection = usb.Connection(path, timeout=0.5, wait=1.0)
+    connection.close()
+    assert deadlines and deadlines[0] <= start + 1.05  # not 0.3 + 1.0

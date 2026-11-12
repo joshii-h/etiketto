@@ -55,6 +55,7 @@ DEFAULT_PORT = 9100
 # seconds for connecting and for each answer; also without progress while
 # sending a job (net.send_all, usb.Connection.sendall)
 SOCKET_TIMEOUT = 10.0
+CANCEL_TIMEOUT = 1.0  # seconds for ESC c after a problem, and for closing then
 MIN_RATE = 8_000  # bytes a second: a job that trickles in slower counts as stalled
 PRINT_TIMEOUT = 180.0  # seconds without progress while waiting or printing
 POLL_INTERVAL = 0.5  # the manual: status requests not more often than every 0.5 s
@@ -283,8 +284,11 @@ class _Session:
     def cancel(self) -> None:
         """ESC c: drop the running job, so that "try again" does not print
         its remaining labels a second time once the problem is solved."""
-        # the connection is gone or the printer takes nothing: nothing more to do
+        # the connection is gone or the printer takes nothing: nothing more to
+        # do. A printer that stalled will not take it either: a short try,
+        # and closing (which waits for the last write on USB) is short too
         with suppress(OSError, PrinterError):
+            self.sock.settimeout(CANCEL_TIMEOUT)
             self.sock.sendall(ESC + b"c")
 
 

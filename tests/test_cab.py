@@ -80,6 +80,10 @@ class FakeSocket:
     def __init__(self, device: FakeCab):
         self.device = device
         self.out = b""
+        self.timeouts: list[float] = []
+
+    def settimeout(self, timeout: float) -> None:
+        self.timeouts.append(timeout)
 
     def sendall(self, data: bytes) -> None:
         device = self.device
@@ -116,10 +120,13 @@ def printer(monkeypatch):
     sleeps = []
     now = [1000.0]
 
+    sockets = []
+
     def connect(host, port, wait=None):
         calls.append((host, port))
         waits.append(wait)
-        return FakeSocket(device)
+        sockets.append(FakeSocket(device))
+        return sockets[-1]
 
     def sleep(seconds):
         sleeps.append(seconds)
@@ -130,7 +137,9 @@ def printer(monkeypatch):
     monkeypatch.setattr(cab, "_connect", connect)
     monkeypatch.setattr(cab, "_sleep", sleep)
     monkeypatch.setattr(cab, "_clock", lambda: now[0])
-    return SimpleNamespace(device=device, calls=calls, waits=waits, sleeps=sleeps, now=now)
+    return SimpleNamespace(
+        device=device, calls=calls, waits=waits, sleeps=sleeps, now=now, sockets=sockets
+    )
 
 
 @pytest.fixture
@@ -387,6 +396,8 @@ def test_print_cancels_a_job_cut_off_while_sending(backend, printer, monkeypatch
     with pytest.raises(cls):
         backend.print_label(Image.new("RGB", (600, 300), "white"), "h", PrintOptions())
     assert printer.device.requests[-1] == b"\x1bc" and printer.device.cancelled == 1
+    # a printer that stalled takes no ESC c either: a short try, a short close
+    assert printer.sockets[-1].timeouts == [cab.CANCEL_TIMEOUT]
 
 
 def test_print_send_failure_survives_a_cancel_that_fails_too(backend, printer, monkeypatch):

@@ -71,8 +71,10 @@ def send_all(sock: socket.socket, data: bytes, timeout: float, min_rate: float) 
         while view:
             remaining = min(idle, end) - _clock()
             if remaining <= 0:
+                how = "too slowly" if end < idle else "nothing more"
                 raise PrinterStalled(
-                    "printer took %d of %d bytes" % (len(data) - len(view), len(data))
+                    "printer took %s after %d of %d bytes"
+                    % (how, len(data) - len(view), len(data))
                 )
             sock.settimeout(remaining)
             sent = _send_some(sock, view, len(data))

@@ -289,3 +289,27 @@ def test_a_printer_that_closes_its_side_first_and_reads_on():
     net.finish(sock, timeout=5)
     sock.close()
     thread.join(5)
+
+
+def test_too_slow_and_stopped_are_told_apart(monkeypatch):
+    """The cap (timeout + size / min_rate) ends a job that keeps trickling:
+    "too slowly"; no progress for the timeout: "nothing more"."""
+    now = [0.0]
+    monkeypatch.setattr(net, "_clock", lambda: now[0])
+
+    class Trickle:
+        def __init__(self, per_call):
+            self.per_call = per_call
+
+        def settimeout(self, timeout):
+            pass
+
+        def send(self, data):
+            now[0] += 0.1
+            return min(self.per_call, len(data))
+
+    with pytest.raises(PrinterStalled, match="took too slowly"):
+        net.send_all(Trickle(1), b"x" * 10_000, timeout=1, min_rate=1000)  # type: ignore[arg-type]
+    now[0] = 0.0
+    with pytest.raises(PrinterStalled, match="took nothing more"):
+        net.send_all(Trickle(0), b"x" * 10_000, timeout=1, min_rate=1000)  # type: ignore[arg-type]

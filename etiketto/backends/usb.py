@@ -217,11 +217,14 @@ class Connection:
         self.min_rate: float = MIN_RATE
         self.fd = -1
         wait = BUSY_WAIT if wait is None else wait
+        # one wait for both: another session here (the lock), then another
+        # program (EBUSY)
+        deadline = time.monotonic() + wait
         self.lock = _device_lock(device)
         if not self.lock.acquire(timeout=wait):
             raise PrinterBusy("%s is in use by another session" % device)
         try:
-            self.fd = _open(device, time.monotonic() + wait)
+            self.fd = _open(device, deadline)
         except BaseException:
             self.lock.release()
             raise
@@ -237,7 +240,7 @@ class Connection:
         idle = start + self.timeout
         view = memoryview(data)
         while view:
-            self._wait(writing=True, deadline=min(idle, end))
+            self._wait(writing=True, deadline=min(idle, end), slow=end < idle)
             with self._errors():
                 try:
                     written = self._write(view)
@@ -307,14 +310,17 @@ class Connection:
         except OSError as e:
             raise _device_error(self.device, e) from e
 
-    def _wait(self, writing: bool, deadline: float) -> None:
+    def _wait(self, writing: bool, deadline: float, slow: bool = False) -> None:
         """Until the device can be read or written; at the deadline
         PrinterTimeout (nothing to read) or PrinterStalled (the printer
-        takes no data), UsbNotFound as soon as the device file is gone."""
+        takes no data, or with `slow` took it too slowly), UsbNotFound as
+        soon as the device file is gone."""
         fds = [self.fd]
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
+                if writing and slow:
+                    raise PrinterStalled("USB printer took data too slowly")
                 if writing:
                     raise PrinterStalled("USB printer stopped taking data")
                 raise PrinterTimeout("USB printer did not answer within %g s" % self.timeout)

@@ -109,7 +109,8 @@ A 1                       (number of labels)
   labels are not printed once the problem is solved and the user prints
   again. [manual] After a job cut off while sending, it should also drop
   the half-downloaded image, which on USB would otherwise run into the next
-  job. [assumed]
+  job. [assumed: not tried on a printer; a printer that stalled may not
+  take `ESC c` at all, so Etiketto tries it for 1 s only and then closes]
 - Peel-off and print on demand (the printer waits for a button or a removed
   label) are not supported: the job would time out after 180 s.
 
