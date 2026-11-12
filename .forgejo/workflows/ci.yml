@@ -40,8 +40,9 @@ defaults:
 
 jobs:
   test:
-    # push to main, pull requests from branches of this repository (not forks),
-    # and reviewed pull requests from GitHub or forks (not on new commits)
+    # pushes to main and next, pull requests from branches of this repository
+    # (not forks), and reviewed pull requests from GitHub or forks (not on new
+    # commits)
     if: >-
       github.event_name == 'push'
       || (github.event_name == 'pull_request'
@@ -75,7 +76,7 @@ jobs:
         working-directory: src
         run: |
           python3 -m venv --system-site-packages .venv
-          .venv/bin/pip install -q -e . pytest pytest-cov hypothesis ruff zxing-cpp
+          .venv/bin/pip install -q -e . --group dev
 
       - name: ruff format
         working-directory: src
@@ -151,7 +152,7 @@ jobs:
         working-directory: src
         run: |
           python3 -m venv --system-site-packages .venv
-          .venv/bin/pip install -q -e . mypy bandit radon xenon pip-audit
+          .venv/bin/pip install -q -e . --group dev
 
       - name: mypy (types)
         working-directory: src

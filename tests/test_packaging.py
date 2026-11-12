@@ -46,8 +46,9 @@ def test_check_sh_runs_what_the_ci_runs():
         assert command in check and command in ci, command
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dev = " ".join(project["dependency-groups"]["dev"])
-    for tool in ("pytest", "ruff", "mypy", "bandit", "radon", "xenon", "pip-audit"):
+    for tool in ("pytest", "ruff", "mypy", "bandit", "radon", "xenon", "pip-audit", "pyyaml"):
         assert tool in dev, tool
+    assert ci.count("pip install -q -e . --group dev") == 2  # both jobs: the same tools
 
 
 def test_the_flatpak_ships_every_licence_once():

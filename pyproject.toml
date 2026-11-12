@@ -59,6 +59,7 @@ dev = [
     "radon>=6",
     "xenon>=0.9",
     "pip-audit>=2.7",
+    "pyyaml>=6",  # tests/test_packaging.py reads the Flatpak manifest
 ]
 
 [tool.ruff]
