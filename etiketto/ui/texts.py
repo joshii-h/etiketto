@@ -56,6 +56,13 @@ MODE_NAMES = {
     "red": _("Red and black"),
 }
 QUALITY_NAMES = {"standard": _("Standard"), "high": _("High resolution (600 dpi)")}
+# label materials (base.MEDIA_TYPES); unknown ones are shown by their name
+MEDIA_TYPE_NAMES = {
+    "gap": _("Labels with gaps"),
+    "black_mark": _("Labels with black marks"),
+    "continuous": _("Continuous roll"),
+    "transparent": _("Transparent labels"),
+}
 COLOR_ADJUST_ROWS = [
     ("brightness", _("Brightness")),
     ("red", _("Red")),
@@ -444,6 +451,11 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
         "code_too_large": _(
             "A code does not fit on the label at this printer's resolution and would be cut "
             "off. Make the label larger or the code's content shorter."
+        ),
+        "serial_permission": _(
+            "Etiketto is not allowed to use the printer's serial port. Add your user to the "
+            "group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is "
+            "“uucp”), then log out and in again."
         ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."

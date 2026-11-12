@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "A nyomtató Editor Lite módban van, és USB-meghajtóként jelenik meg. Kapcsolja ki az Editor Lite módot a nyomtatón (a lámpája kialszik), majd keressen újra.",
     "FLe tape": "FLe szalag",
     "Etiketto does not know this printer model and cannot print on it yet.": "Az Etiketto nem ismeri ezt a nyomtatótípust, és még nem tud nyomtatni rajta.",
+    "Labels with gaps": "Címkék hézaggal",
+    "Labels with black marks": "Címkék fekete jelöléssel",
+    "Continuous roll": "Folyamatos tekercs",
+    "Transparent labels": "Átlátszó címkék",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Az Etiketto nem használhatja a nyomtató soros portját. Adja hozzá a felhasználóját a „dialout” csoporthoz (sudo usermod -aG dialout $USER; Arch Linuxon a csoport neve „uucp”), majd jelentkezzen ki, és jelentkezzen be újra.",
+    "The printer's battery is low. Charge it and try again.": "A nyomtató akkumulátora lemerülőben van. Töltse fel, és próbálja újra.",
+    "Print density": "Nyomtatási sűrűség",
+    "Higher values print darker": "A nagyobb értékek sötétebben nyomtatnak",
+    "Label type": "Címketípus",
 }

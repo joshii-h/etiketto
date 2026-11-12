@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Yazıcı Editor Lite modunda ve USB sürücüsü olarak görünüyor. Yazıcıda Editor Lite’ı kapatın (ışığı söner), ardından yeniden arayın.",
     "FLe tape": "FLe şerit",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto bu yazıcı modelini tanımıyor ve henüz bu modelde yazdıramıyor.",
+    "Labels with gaps": "Boşluklu etiketler",
+    "Labels with black marks": "Siyah işaretli etiketler",
+    "Continuous roll": "Sürekli rulo",
+    "Transparent labels": "Şeffaf etiketler",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto yazıcının seri bağlantı noktasını kullanma iznine sahip değil. Kullanıcınızı “dialout” grubuna ekleyin (sudo usermod -aG dialout $USER; Arch Linux'ta grubun adı “uucp”), ardından oturumu kapatıp yeniden açın.",
+    "The printer's battery is low. Charge it and try again.": "Yazıcının pili zayıf. Şarj edip yeniden deneyin.",
+    "Print density": "Baskı yoğunluğu",
+    "Higher values print darker": "Daha yüksek değerler daha koyu basar",
+    "Label type": "Etiket türü",
 }

@@ -22,6 +22,7 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Brother QL (QL-500 to QL-1115NWB), **untested on hardware** | Black on DK continuous rolls (12 to 104 mm, any length) or die-cut DK labels; red and black on the QL-800 series with DK-22251 | Reads the loaded roll and the printer's problems; full cut, cut after the last label or no cut; 600 dpi on the models that have it | Brother's raster commands on TCP port 9100 or USB ([docs/brother-ql.md](docs/brother-ql.md)) |
 | Brother P-touch (PT-P700, PT-P750W, PT-E550W, PT-P710BT, PT-P900 series, PT-D series, older PT models), untested on hardware | Black on TZe tape 3.5 to 36 mm wide and HSe heat-shrink tube, any length | Detects the tape, its type and printable width; full, half or no cut, chain printing, high resolution, tape feed; explains Editor Lite mode | Brother's raster commands on USB or TCP port 9100 ([docs/ptouch.md](docs/ptouch.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
+| NIIMBOT B1, B21, B3S, B4, D11, D110, D101 (untested on hardware) | Black on die-cut labels, continuous rolls or labels with black marks, 203 or 300 dpi, up to 104 mm wide depending on the model | Reads the model and offers its print density and label types; reports each label and how many came out before a problem | NIIMBOT's packet protocol on USB serial ([docs/niimbot.md](docs/niimbot.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size, or on label sheets (A4, US Letter, over 1700 sheets); explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 | Zebra and compatibles (ZPL), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203, 300 or 600 dpi | Reads model and resolution; reports paper out, head open, ribbon and pause; label sensor, tear-off, peel-off or cutter, darkness and speed | ZPL on TCP port 9100 or USB ([docs/zpl.md](docs/zpl.md)) |
 | Zebra EPL2 printers (LP/TLP 2824, 2844 and others), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203 or 300 dpi | Label sensor and darkness; no status | EPL2 on TCP port 9100 or USB ([docs/epl.md](docs/epl.md)) |
@@ -29,7 +30,7 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Receipt printers with ESC/POS (Epson TM and compatibles), **untested on hardware** | Black on 58 or 80 mm paper rolls, as long as the content | Reports cover open and paper end where the printer answers; full, partial or no cut | ESC/POS on TCP port 9100 or USB ([docs/escpos.md](docs/escpos.md)) |
 | DYMO LabelWriter 300, 400 and 450 series, 4XL, **untested on hardware** | Black on DYMO die-cut labels, 300 dpi | Reports no paper and paper jam where the printer answers; darkness | DYMO's raster commands on USB ([docs/dymo.md](docs/dymo.md)) |
 
-Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
+Connections: network (LAN or Wi-Fi) for all but NIIMBOT; USB too, through the
 kernel's printer driver: cab printers, Brother QL and P-touch printers, the
 VC-500W and the ZPL, EPL2, TSPL, ESC/POS and DYMO printers are found on USB
 by themselves, and the system printer reaches every printer CUPS has, USB
@@ -39,6 +40,9 @@ backends have not been tried on any printer at all, they follow the
 documented protocols. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.
+NIIMBOT printers are a serial port on USB (`/dev/ttyACM*`), found by
+themselves too; they need the group `dialout` (Fedora, Debian, Ubuntu) or
+`uucp` (Arch Linux) instead of `lp`. Bluetooth is not supported yet.
 
 Each printer family is a backend; adding one does not touch the rest of
 the app, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
@@ -338,6 +342,13 @@ no LPrint code is included. Where Etiketto differs from LPrint (gap sensor,
 EPL2 blank rows, cut commands) and what comes from the vendors' manuals is
 marked in the protocol notes in `docs/`.
 
+The NIIMBOT protocol is written anew from the protocol knowledge in
+[niimbluelib](https://github.com/MultiMote/niimbluelib) (MultiMote, MIT)
+and [Thermalith](https://github.com/EvilGeniusLabs-ca/Thermalith) /
+Niimbot.Net (EvilGeniusLabs, GPL-3.0-or-later); no code of either is
+included.
+
+
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
@@ -346,5 +357,5 @@ templates (`etiketto/sheets/templates.json`) are MIT licensed, the symbols
 affiliated with Brother Industries, cab Produkttechnik GmbH & Co. KG or the
 makers of the other printers; "Brother", "ColAura", "VC-500W", "P-touch",
 "TZe", "HSe", "cab", "EOS", "SQUIX", "MACH", "Zebra", "ZPL", "EPL", "TSC",
-"TSPL", "Munbyn", "iDPRT", "Xprinter", "Rollo", "Epson", "ESC/POS", "DYMO" and "LabelWriter" are trademarks of their
+"TSPL", "Munbyn", "iDPRT", "Xprinter", "Rollo", "Epson", "ESC/POS", "DYMO", "LabelWriter" and "NIIMBOT" are trademarks of their
 owners.

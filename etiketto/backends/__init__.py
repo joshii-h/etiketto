@@ -41,6 +41,7 @@ def _load() -> None:
     from etiketto.backends.dymo import Dymo
     from etiketto.backends.epl import Epl
     from etiketto.backends.escpos import EscPos
+    from etiketto.backends.niimbot import Niimbot
     from etiketto.backends.ptouch import PTouch
     from etiketto.backends.system import SystemPrinter
     from etiketto.backends.tspl import Tspl
@@ -53,6 +54,7 @@ def _load() -> None:
         PTouch(),
         BrotherQL(),
         BrotherQLDieCut(),
+        Niimbot(),
         SystemPrinter(),
         Zpl(),
         Epl(),

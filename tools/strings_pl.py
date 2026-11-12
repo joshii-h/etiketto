@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Drukarka jest w trybie Editor Lite i widnieje jako dysk USB. Wyłącz Editor Lite na drukarce (jej lampka zgaśnie), a następnie wyszukaj ponownie.",
     "FLe tape": "Taśma FLe",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto nie zna tego modelu drukarki i nie może jeszcze na nim drukować.",
+    "Labels with gaps": "Etykiety z przerwami",
+    "Labels with black marks": "Etykiety z czarnymi znacznikami",
+    "Continuous roll": "Rolka ciągła",
+    "Transparent labels": "Etykiety przezroczyste",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto nie ma dostępu do portu szeregowego drukarki. Dodaj swojego użytkownika do grupy „dialout” (sudo usermod -aG dialout $USER; w Arch Linux grupa nazywa się „uucp”), a następnie wyloguj się i zaloguj ponownie.",
+    "The printer's battery is low. Charge it and try again.": "Bateria drukarki jest prawie rozładowana. Naładuj ją i spróbuj ponownie.",
+    "Print density": "Gęstość druku",
+    "Higher values print darker": "Wyższe wartości drukują ciemniej",
+    "Label type": "Rodzaj etykiet",
 }

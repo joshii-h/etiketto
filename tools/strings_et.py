@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Printer on Editor Lite režiimis ja paistab USB-kettana. Lülita printeril Editor Lite välja (selle tuli kustub) ja otsi siis uuesti.",
     "FLe tape": "FLe-lint",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto ei tunne seda printerimudelit ega saa sellel veel printida.",
+    "Labels with gaps": "Vahedega sildid",
+    "Labels with black marks": "Mustade märkidega sildid",
+    "Continuous roll": "Pidev rull",
+    "Transparent labels": "Läbipaistvad sildid",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto ei tohi printeri jadaporti kasutada. Lisa oma kasutaja gruppi „dialout“ (sudo usermod -aG dialout $USER; Arch Linuxis on grupi nimi „uucp“) ning logi seejärel välja ja uuesti sisse.",
+    "The printer's battery is low. Charge it and try again.": "Printeri aku on tühjenemas. Laadi seda ja proovi uuesti.",
+    "Print density": "Printimise tihedus",
+    "Higher values print darker": "Suuremad väärtused prindivad tumedamalt",
+    "Label type": "Sildi tüüp",
 }

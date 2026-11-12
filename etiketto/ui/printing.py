@@ -14,6 +14,7 @@ from gi.repository import Adw, GLib, Gtk
 from etiketto.backends.base import (
     CodeTooLarge,
     ColorAdjust,
+    Density,
     PrinterError,
     PrintMode,
     PrintOptions,
@@ -39,6 +40,7 @@ from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     EXTRA_SWITCHES,
+    MEDIA_TYPE_NAMES,
     MODE_NAMES,
     QUALITY_NAMES,
     data_error_text,
@@ -208,11 +210,18 @@ class PrintFlow:
         self.window.printer_settings.update(mode=mode)
         self.window.schedule_render()  # black and white shows grey
 
+    def _density(self) -> Density | None:
+        return self.window.backend.density(self.window.printer.info)
+
+    def _media_types(self) -> tuple[str, ...]:
+        return self.window.backend.media_types(self.window.printer.info)
+
     def choices(self) -> dict:
         """Copies, cut, mode and quality for the print dialog, from the last print; on
         a label sheet the number of labels (the chosen positions) and
         whether to print the outlines; with a data file the rows to print, all
-        of them; the extra settings the printer has (Capabilities.extras) too."""
+        of them; the extra settings the printer has (Capabilities.extras),
+        density and label type too."""
         choices = {"copies": 1, "cut": self._cut(), "mode": self.mode, "quality": self._quality()}
         settings = self.window.printer_settings
         extras = self._extras()
@@ -224,6 +233,13 @@ class PrintFlow:
             feed = settings.get("feed_mm", default)
             ok = isinstance(feed, (int, float)) and not isinstance(feed, bool)
             choices["feed_mm"] = min(high, max(low, float(feed))) if ok else default
+        density = self._density()
+        if density:
+            choices["density"] = density.clamp(settings.get("density", 0))
+        media = self._media_types()
+        if media:
+            saved = settings.get("media")
+            choices["media"] = saved if saved in media else media[0]
         sheet, choice = self.window.sheet, self.window.label.sheet
         if sheet and choice:
             choices["copies"] = len(first_positions(sheet, choice.positions))
@@ -317,6 +333,7 @@ class PrintFlow:
                     _("Quality"), names, choices["quality"], lambda v: choices.update(quality=v)
                 )
             )
+        rows.extend(self._media_rows(choices))
         if caps.supports_color_adjust:
             rows.append(self._color_adjust_row())
         return rows
@@ -364,6 +381,32 @@ class PrintFlow:
                     0.5,
                     lambda v: choices.update(feed_mm=v),
                     _("%(unit)s of blank tape before and after each label"),
+                )
+            )
+        return rows
+
+    def _media_rows(self, choices: dict) -> list[Gtk.Widget]:
+        """Print density and label type, for printers that take them per job."""
+        rows: list[Gtk.Widget] = []
+        density = self._density()
+        if density and "density" in choices:
+            rows.append(
+                spin_row(
+                    _("Print density"),
+                    choices["density"],
+                    density.lowest,
+                    density.highest,
+                    1,
+                    0,
+                    lambda v: choices.update(density=int(v)),
+                    _("Higher values print darker"),
+                )
+            )
+        media = [(m, MEDIA_TYPE_NAMES.get(m, m)) for m in self._media_types()]
+        if len(media) > 1 and "media" in choices:
+            rows.append(
+                combo_row(
+                    _("Label type"), media, choices["media"], lambda v: choices.update(media=v)
                 )
             )
         return rows
@@ -430,7 +473,8 @@ class PrintFlow:
         window = self.window
         settings = window.printer_settings
         extras = {key: choices[key] for key in ("chain", "high_res", "feed_mm") if key in choices}
-        settings.update(cut=choices["cut"], mode=choices["mode"], **extras)
+        remembered = ("cut", "mode", "density", "media")
+        settings.update(**{key: choices[key] for key in remembered if key in choices}, **extras)
         if choices["quality"]:
             settings.update(quality=choices["quality"])
         options = PrintOptions(
@@ -443,6 +487,8 @@ class PrintFlow:
             settings=settings.backend_settings(),
             quality=choices["quality"],
             info=window.printer.info,
+            density=choices.get("density", 0),
+            media=choices.get("media", ""),
             **extras,
         )
         if window.data.active:

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:27+0100\n"
+"POT-Creation-Date: 2026-11-12 10:32+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -332,11 +332,13 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "No permission for the USB port: your user needs to be in the group `lp`.  "
-"Run `sudo usermod -aG lp $USER`, then log out and in again."
+"Run `sudo usermod -aG lp $USER`, then log out and in again. NIIMBOT printers "
+"use another group, see [NIIMBOT](#niimbot)."
 msgstr ""
 "Keine Berechtigung für den USB-Anschluss: Der Benutzer muss in der Gruppe "
 "`lp` sein. `sudo usermod -aG lp $USER` ausführen, dann ab- und wieder "
-"anmelden."
+"anmelden. NIIMBOT-Drucker brauchen eine andere Gruppe, siehe [NIIMBOT]"
+"(#niimbot)."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -1121,6 +1123,146 @@ msgstr "Druckkopf zu heiss: einige Minuten warten."
 #: docs/printer.md
 msgid "Model not supported: Etiketto knows the models listed above."
 msgstr "Modell nicht unterstützt: Etiketto kennt die oben genannten Modelle."
+
+#. type: Title ##
+#: docs/printer.md
+#, no-wrap
+msgid "NIIMBOT { #niimbot }"
+msgstr "NIIMBOT { #niimbot }"
+
+#. type: Plain text
+#: docs/printer.md
+msgid ""
+"Etiketto prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11, "
+"D110, D101 and related models. It has not been tried on a printer yet; "
+"please report how it works."
+msgstr ""
+"Etiketto druckt über USB auf Etikettendrucker von NIIMBOT: B1, B21, B3S, B4, "
+"D11, D110, D101 und verwandte Modelle. Mit einem Drucker ausprobiert ist das "
+"noch nicht; bitte melden, wie es klappt."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"USB: plug the printer in and switch it on; [[ui:Search for printers]] finds "
+"it. Otherwise enter its port, for example `/dev/ttyACM0`, under [[ui:Host "
+"name or IP address]]."
+msgstr ""
+"USB: Den Drucker anstecken und einschalten; [[ui:Search for printers]] "
+"findet ihn. Sonst seinen Anschluss, zum Beispiel `/dev/ttyACM0`, unter "
+"[[ui:Host name or IP address]] eintragen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The port belongs to the group `dialout` (Fedora, Debian, Ubuntu) or `uucp` "
+"(Arch Linux), not `lp`. Run `sudo usermod -aG dialout $USER` (on Arch Linux: "
+"`uucp`), then log out and in again."
+msgstr ""
+"Der Anschluss gehört der Gruppe `dialout` (Fedora, Debian, Ubuntu) oder "
+"`uucp` (Arch Linux), nicht `lp`. `sudo usermod -aG dialout $USER` ausführen "
+"(unter Arch Linux: `uucp`), dann ab- und wieder anmelden."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Bluetooth is not supported yet. Older B3S with a micro-USB port do not "
+"answer over USB; the B3S P with USB-C does."
+msgstr ""
+"Bluetooth wird noch nicht unterstützt. Ältere B3S mit Micro-USB-Anschluss "
+"antworten über USB nicht; der B3S P mit USB-C schon."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Label size]]: the labels on the roll, the width across the printer.  On "
+"the D11, D110 and D101 the roll is narrow (12 mm on a D11): choose "
+"[[ui:Along the roll]] under [[ui:Content direction]] for text along the "
+"label."
+msgstr ""
+"[[ui:Label size]]: die Etiketten auf der Rolle, die Breite quer durch den "
+"Drucker. Beim D11, D110 und D101 ist die Rolle schmal (12 mm beim D11): Für "
+"Text längs des Etiketts unter [[ui:Content direction]] [[ui:Along the roll]] "
+"wählen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"A label narrower than the print head is printed in its middle. One a little "
+"wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.  Keep 1 mm "
+"or more as [[ui:Safety margin]]."
+msgstr ""
+"Ein Etikett, das schmaler ist als der Druckkopf, wird in dessen Mitte "
+"gedruckt. Eines, das etwas breiter ist, wird auf die Mitte gekürzt: Ein B1 "
+"druckt 48 mm eines 50 mm breiten Etiketts. Als [[ui:Safety margin]] 1 mm "
+"oder mehr lassen."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"In the print dialog: [[ui:Print density]] (higher prints darker) and "
+"[[ui:Label type]] (labels with gaps, black marks, a continuous roll or "
+"transparent labels, as loaded). Etiketto offers what the connected model "
+"takes and remembers the choice."
+msgstr ""
+"Im Druckdialog: [[ui:Print density]] (höher druckt dunkler) und [[ui:Label "
+"type]] (Etiketten mit Lücken, mit schwarzen Markierungen, Endlosrolle oder "
+"transparente Etiketten, wie eingelegt). Etiketto bietet an, was das "
+"angeschlossene Modell kann, und merkt sich die Wahl."
+
+#. type: Title ###
+#: docs/printer.md
+#, no-wrap
+msgid "Problems { #niimbot-problems }"
+msgstr "Probleme { #niimbot-problems }"
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"No permission for the serial port: add your user to the group, see above."
+msgstr ""
+"Keine Berechtigung für die serielle Schnittstelle: Den Benutzer zur Gruppe "
+"hinzufügen, siehe oben."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Printer not reachable]] right after plugging in: some systems probe new "
+"serial ports for a modem first. Wait a few seconds, then [[ui:Refresh]]."
+msgstr ""
+"[[ui:Printer not reachable]] direkt nach dem Anstecken: Manche Systeme "
+"prüfen neue serielle Anschlüsse zuerst auf ein Modem. Ein paar Sekunden "
+"warten, dann [[ui:Refresh]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Cover open, out of labels or a low battery: close the cover, load a roll or "
+"charge the printer, then [[ui:Refresh]]."
+msgstr ""
+"Deckel offen, keine Etiketten mehr oder Akku fast leer: Deckel schliessen, "
+"eine Rolle einlegen oder den Drucker laden, dann [[ui:Refresh]]."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Printing fails after some copies: the message says how many labels were "
+"already printed. The job is canceled, nothing prints later on its own."
+msgstr ""
+"Der Druck scheitert nach einigen Exemplaren: Die Meldung sagt, wie viele "
+"Etiketten schon gedruckt wurden. Der Auftrag wird abgebrochen, nichts druckt "
+"später von selbst."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"The printer is found, but printing reports an unknown model: Etiketto does "
+"not know its model number yet. Please [[ui:Report a problem…]], the report "
+"contains the number."
+msgstr ""
+"Der Drucker wird gefunden, aber beim Drucken heisst es, das Modell sei "
+"unbekannt: Etiketto kennt seine Modellnummer noch nicht. Bitte [[ui:Report a "
+"problem…]], der Bericht enthält die Nummer."
 
 #. type: Title ##
 #: docs/printer.md

@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "印表機處於 Editor Lite 模式，顯示為 USB 磁碟機。請在印表機上關閉 Editor Lite（指示燈熄滅），然後重新搜尋。",
     "FLe tape": "FLe 標籤帶",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto 尚不認識此印表機型號，暫時無法在其上列印。",
+    "Labels with gaps": "有間隙的標籤",
+    "Labels with black marks": "有黑標的標籤",
+    "Continuous roll": "連續捲",
+    "Transparent labels": "透明標籤",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto 無權使用印表機的序列埠。請將您的使用者加入「dialout」群組（sudo usermod -aG dialout $USER；在 Arch Linux 上群組名稱為「uucp」），然後登出再重新登入。",
+    "The printer's battery is low. Charge it and try again.": "印表機電量不足。請充電後再試一次。",
+    "Print density": "列印濃度",
+    "Higher values print darker": "數值越高列印越深",
+    "Label type": "標籤類型",
 }

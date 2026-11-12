@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Printer dalam mode Editor Lite dan tampil sebagai drive USB. Matikan Editor Lite pada printer (lampunya padam), lalu cari lagi.",
     "FLe tape": "Pita FLe",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto belum mengenal model printer ini dan belum dapat mencetak padanya.",
+    "Labels with gaps": "Label dengan celah",
+    "Labels with black marks": "Label dengan tanda hitam",
+    "Continuous roll": "Gulungan kontinu",
+    "Transparent labels": "Label transparan",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto tidak diizinkan menggunakan port serial pencetak. Tambahkan pengguna Anda ke grup “dialout” (sudo usermod -aG dialout $USER; di Arch Linux nama grupnya “uucp”), lalu keluar dan masuk kembali.",
+    "The printer's battery is low. Charge it and try again.": "Baterai pencetak lemah. Isi daya lalu coba lagi.",
+    "Print density": "Kepekatan cetak",
+    "Higher values print darker": "Nilai lebih tinggi mencetak lebih gelap",
+    "Label type": "Jenis label",
 }

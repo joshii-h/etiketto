@@ -7,13 +7,17 @@ computer, network printers) and Avahi (the system D-Bus, raw._browse) are
 refused too, unless a test brings its own fake (or is marked real_ipp: a
 server on 127.0.0.1). A refusal is recorded and fails the test at its end,
 also when it happened in a background thread, where an exception is lost.
-The GUI tests replace query/print/discover of every backend.
+Serial ports (NIIMBOT) are never opened either: serialport finds none and
+os.open refuses /dev/ttyACM*. The GUI tests replace query/print/discover of
+every backend.
 """
 
 from __future__ import annotations
 
 import base64
 import io
+import os
+import re
 import threading
 import time
 from pathlib import Path
@@ -32,6 +36,7 @@ from etiketto.backends import (
     mdns,
     ptouch,
     raw,
+    serialport,
     usb,
     vc500w,
 )
@@ -105,8 +110,24 @@ def _no_network(request, monkeypatch):
     monkeypatch.setattr(mdns.Gio, "bus_get_sync", refusal("D-Bus"))
     if request.node.get_closest_marker("real_ipp") is None:
         monkeypatch.setattr(ipp, "send", refusal("IPP"))
+    monkeypatch.setattr(serialport, "SYSFS", Path("/nonexistent/tty"))
+    monkeypatch.setattr(serialport, "BY_ID", Path("/nonexistent/serial/by-id"))
+    monkeypatch.setattr(os, "open", _guarded_open)
     yield
     assert not violations, "network access in a test: %s" % ", ".join(violations)
+
+
+# serial ports a printer (or anything else) may sit on: never opened in a test;
+# the fake serial printers are pseudo terminals (/dev/pts/N)
+REAL_SERIAL = re.compile(r"^/dev/(tty(ACM|USB)\d*|serial/)")
+_real_open = os.open
+
+
+def _guarded_open(path, flags, *args, **kwargs):
+    name = os.fsdecode(path) if isinstance(path, (str, bytes, os.PathLike)) else ""
+    if name and (REAL_SERIAL.match(name) or REAL_SERIAL.match(os.path.realpath(name))):
+        raise AssertionError("a test opened the serial port %s" % name)
+    return _real_open(path, flags, *args, **kwargs)
 
 
 # --- fake VC-500W on the protocol level ------------------------------------

@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Máy in đang ở chế độ Editor Lite và hiện ra như một ổ USB. Hãy tắt Editor Lite trên máy in (đèn của nó tắt), rồi tìm lại.",
     "FLe tape": "Băng FLe",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto chưa biết mẫu máy in này và chưa thể in trên nó.",
+    "Labels with gaps": "Nhãn có khe hở",
+    "Labels with black marks": "Nhãn có vạch đen",
+    "Continuous roll": "Cuộn liên tục",
+    "Transparent labels": "Nhãn trong suốt",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto không được phép dùng cổng nối tiếp của máy in. Hãy thêm người dùng của bạn vào nhóm “dialout” (sudo usermod -aG dialout $USER; trên Arch Linux nhóm tên là “uucp”), rồi đăng xuất và đăng nhập lại.",
+    "The printer's battery is low. Charge it and try again.": "Pin của máy in yếu. Hãy sạc pin rồi thử lại.",
+    "Print density": "Độ đậm khi in",
+    "Higher values print darker": "Giá trị càng cao in càng đậm",
+    "Label type": "Loại nhãn",
 }

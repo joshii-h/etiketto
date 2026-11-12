@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "프린터가 Editor Lite 모드여서 USB 드라이브로 표시됩니다. 프린터에서 Editor Lite를 끈 다음(램프가 꺼짐) 다시 검색하세요.",
     "FLe tape": "FLe 테이프",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto는 이 프린터 모델을 알지 못해 아직 인쇄할 수 없습니다.",
+    "Labels with gaps": "간격이 있는 라벨",
+    "Labels with black marks": "검은 표시가 있는 라벨",
+    "Continuous roll": "연속 롤",
+    "Transparent labels": "투명 라벨",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto에 프린터의 직렬 포트를 사용할 권한이 없습니다. 사용자를 “dialout” 그룹에 추가한(sudo usermod -aG dialout $USER, Arch Linux에서는 그룹 이름이 “uucp”) 뒤 로그아웃했다가 다시 로그인하세요.",
+    "The printer's battery is low. Charge it and try again.": "프린터 배터리가 부족합니다. 충전한 뒤 다시 시도하세요.",
+    "Print density": "인쇄 농도",
+    "Higher values print darker": "값이 높을수록 진하게 인쇄됩니다",
+    "Label type": "라벨 종류",
 }

@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "الطابعة في وضع Editor Lite وتظهر كمحرك أقراص USB. أوقف Editor Lite في الطابعة (ينطفئ مصباحه)، ثم ابحث مرة أخرى.",
     "FLe tape": "شريط FLe",
     "Etiketto does not know this printer model and cannot print on it yet.": "لا يعرف Etiketto طراز الطابعة هذا ولا يستطيع الطباعة عليه بعد.",
+    "Labels with gaps": "ملصقات بفواصل",
+    "Labels with black marks": "ملصقات بعلامات سوداء",
+    "Continuous roll": "لفافة متصلة",
+    "Transparent labels": "ملصقات شفافة",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "لا يملك Etiketto إذن استخدام المنفذ التسلسلي الخاص بالطابعة. أضف المستخدم الخاص بك إلى المجموعة «dialout» (sudo usermod -aG dialout $USER؛ في Arch Linux اسم المجموعة «uucp»)، ثم سجّل الخروج وسجّل الدخول مجددًا.",
+    "The printer's battery is low. Charge it and try again.": "بطارية الطابعة منخفضة. اشحنها ثم حاول مرة أخرى.",
+    "Print density": "كثافة الطباعة",
+    "Higher values print darker": "القيم الأعلى تطبع بلون أغمق",
+    "Label type": "نوع الملصقات",
 }

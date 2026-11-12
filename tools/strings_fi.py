@@ -511,4 +511,13 @@ TRANSLATIONS = {
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Tulostin on Editor Lite -tilassa ja näkyy USB-asemana. Kytke Editor Lite pois päältä tulostimesta (sen merkkivalo sammuu) ja hae sitten uudelleen.",
     "FLe tape": "FLe-nauha",
     "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto ei tunne tätä tulostinmallia eikä voi vielä tulostaa sillä.",
+    "Labels with gaps": "Tarrat väleillä",
+    "Labels with black marks": "Tarrat mustilla merkeillä",
+    "Continuous roll": "Jatkuva rulla",
+    "Transparent labels": "Läpinäkyvät tarrat",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto ei saa käyttää tulostimen sarjaporttia. Lisää käyttäjäsi ryhmään ”dialout” (sudo usermod -aG dialout $USER; Arch Linuxissa ryhmän nimi on ”uucp”) ja kirjaudu sitten ulos ja takaisin sisään.",
+    "The printer's battery is low. Charge it and try again.": "Tulostimen akku on vähissä. Lataa se ja yritä uudelleen.",
+    "Print density": "Tulostustummuus",
+    "Higher values print darker": "Suuremmat arvot tulostavat tummemmin",
+    "Label type": "Tarratyyppi",
 }
