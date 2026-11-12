@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "O Etiketto não tem permissão para usar a porta USB da impressora. Adicione seu usuário ao grupo “lp” (sudo usermod -aG lp $USER) e depois saia da sessão e entre novamente.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "A impressora não foi encontrada via USB. Verifique o cabo e se a impressora está ligada e ativa, depois procure novamente.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "A impressora parou de receber dados. Verifique se ela indica algum problema, como falta de etiquetas ou uma tampa aberta, e tente novamente.",
+    "Labels with gaps": "Etiquetas com espaçamento",
+    "Labels with black marks": "Etiquetas com marcas pretas",
+    "Continuous roll": "Rolo contínuo",
+    "Transparent labels": "Etiquetas transparentes",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "O Etiketto não tem permissão para usar a porta serial da impressora. Adicione seu usuário ao grupo “dialout” (sudo usermod -aG dialout $USER; no Arch Linux o grupo se chama “uucp”) e depois saia da sessão e entre novamente.",
+    "The printer's battery is low. Charge it and try again.": "A bateria da impressora está fraca. Carregue-a e tente novamente.",
+    "Print density": "Densidade de impressão",
+    "Higher values print darker": "Valores mais altos imprimem mais escuro",
+    "Label type": "Tipo de etiqueta",
 }

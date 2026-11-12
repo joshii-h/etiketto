@@ -47,6 +47,28 @@ class LabelSize:
 
 
 @dataclass(frozen=True)
+class Density:
+    """The print density (darkness) a printer takes per job: lowest to
+    highest step, and the one it uses by default."""
+
+    lowest: int
+    highest: int
+    default: int
+
+    def clamp(self, value: int) -> int:
+        """value within the range; 0 (or junk) is the default."""
+        if isinstance(value, bool) or not isinstance(value, int) or not value:
+            return self.default
+        return max(self.lowest, min(self.highest, value))
+
+
+# label materials a printer's sensor can be set to, by protocol-neutral name:
+# die-cut labels with gaps, labels with black marks on the back, endless
+# (continuous) rolls, transparent labels with gaps; the interface translates them
+MEDIA_TYPES = ("gap", "black_mark", "continuous", "transparent")
+
+
+@dataclass(frozen=True)
 class Capabilities:
     tape_widths_mm: tuple[int, ...]  # endless tape; empty for die-cut printers
     dpi: float  # resolution across the tape the preview is rendered at
@@ -66,6 +88,12 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
+    # print density per job (None: the printer has none to set); the
+    # connected model may differ, see Backend.density()
+    density: Density | None = None
+    # label materials to choose from, the default first (see MEDIA_TYPES);
+    # empty: the printer finds out by itself. See Backend.media_types()
+    media_types: tuple[str, ...] = ()
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -167,6 +195,8 @@ class PrintOptions:
     color: ColorAdjust = field(default_factory=ColorAdjust)
     data_format: str = "rawrgb"  # backends fall back to their own default
     gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
+    density: int = 0  # Capabilities.density step; 0 = the printer's default
+    media: str = ""  # one of the media types; empty = the backend's first
 
 
 @dataclass(frozen=True)
@@ -326,6 +356,19 @@ class UsbPermission(PrinterError):
     code = "usb_permission"
 
 
+class SerialPermission(PrinterError):
+    """The printer's serial port (/dev/ttyACM0) exists, but this user may
+    not open it: the group differs from the printer class driver's."""
+
+    code = "serial_permission"
+
+
+class LowBattery(PrinterError):
+    """A printer that runs on its battery has too little charge to print."""
+
+    code = "low_battery"
+
+
 def error_text(error: Exception) -> str:
     return str(error) or type(error).__name__
 
@@ -411,6 +454,14 @@ class Backend(ABC):
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
+
+    def density(self, info: PrinterInfo | None) -> Density | None:
+        """The print density range of the connected printer, else the documented one."""
+        return self.capabilities.density
+
+    def media_types(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """The label materials the connected printer takes, else the documented ones."""
+        return self.capabilities.media_types
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)

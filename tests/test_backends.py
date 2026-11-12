@@ -50,11 +50,11 @@ def test_unknown_backend():
 
 def test_register_orders_default_first(mono):
     # the default first, then by name, whatever the case
-    assert [b.id for b in backends()] == ["vc500w", "cab", "system", "fake-mono"]
+    assert [b.id for b in backends()] == ["vc500w", "cab", "system", "fake-mono", "niimbot"]
     assert get_backend("fake-mono") is mono
     registry.unregister("fake-mono")
     registry.unregister("fake-mono")  # twice is fine
-    assert [b.id for b in backends()] == ["vc500w", "cab", "system"]
+    assert [b.id for b in backends()] == ["vc500w", "cab", "system", "niimbot"]
 
 
 def test_register_needs_an_id():
@@ -85,13 +85,20 @@ def test_entry_points(monkeypatch):
     monkeypatch.setattr(registry, "_registry", {})
     ids = [b.id for b in backends()]
     assert groups == ["etiketto.backends"]
-    assert ids[0] == "vc500w" and sorted(ids[1:]) == ["cab", "fake-mono", "plugin", "system"]
+    assert ids[0] == "vc500w" and sorted(ids[1:]) == [
+        "cab",
+        "fake-mono",
+        "niimbot",
+        "plugin",
+        "system",
+    ]
     backends()  # loaded once only
     assert groups == ["etiketto.backends"]
 
 
 def test_every_backend_has_a_contract_test():
     import test_cab  # noqa: F401 - define their BackendContract subclasses
+    import test_niimbot  # noqa: F401
     import test_vc500w  # noqa: F401
 
     tested = {cls.backend_id for cls in BackendContract.__subclasses__()}

@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto にはプリンターの USB ポートを使用する権限がありません。ユーザーをグループ「lp」に追加し（sudo usermod -aG lp $USER）、いったんログアウトしてからもう一度ログインしてください。",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "USB でプリンターが見つかりません。ケーブルを確認し、プリンターの電源が入っていてスリープ状態でないことを確かめてから、もう一度検索してください。",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "プリンターがデータを受け付けなくなりました。ラベル切れやカバーが開いているなど、プリンターに問題が表示されていないか確認してから、もう一度お試しください。",
+    "Labels with gaps": "ギャップ付きラベル",
+    "Labels with black marks": "黒マーク付きラベル",
+    "Continuous roll": "連続ロール",
+    "Transparent labels": "透明ラベル",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto にはプリンターのシリアルポートを使用する権限がありません。ユーザーをグループ「dialout」に追加し（sudo usermod -aG dialout $USER。Arch Linux ではグループ名は「uucp」）、いったんログアウトしてからもう一度ログインしてください。",
+    "The printer's battery is low. Charge it and try again.": "プリンターのバッテリー残量が少なくなっています。充電してからもう一度お試しください。",
+    "Print density": "印刷濃度",
+    "Higher values print darker": "値が大きいほど濃く印刷されます",
+    "Label type": "ラベルの種類",
 }

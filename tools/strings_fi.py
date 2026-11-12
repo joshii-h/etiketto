@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ei saa käyttää tulostimen USB-porttia. Lisää käyttäjäsi ryhmään ”lp” (sudo usermod -aG lp $USER) ja kirjaudu sitten ulos ja takaisin sisään.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Tulostinta ei löydy USB:n kautta. Tarkista kaapeli ja että tulostin on päällä eikä lepotilassa, ja hae sitten uudelleen.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Tulostin lakkasi vastaanottamasta tietoja. Tarkista, näyttääkö se ongelmaa, kuten tarrojen loppumista tai avointa kantta, ja yritä sitten uudelleen.",
+    "Labels with gaps": "Tarrat väleillä",
+    "Labels with black marks": "Tarrat mustilla merkeillä",
+    "Continuous roll": "Jatkuva rulla",
+    "Transparent labels": "Läpinäkyvät tarrat",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto ei saa käyttää tulostimen sarjaporttia. Lisää käyttäjäsi ryhmään ”dialout” (sudo usermod -aG dialout $USER; Arch Linuxissa ryhmän nimi on ”uucp”) ja kirjaudu sitten ulos ja takaisin sisään.",
+    "The printer's battery is low. Charge it and try again.": "Tulostimen akku on vähissä. Lataa se ja yritä uudelleen.",
+    "Print density": "Tulostustummuus",
+    "Higher values print darker": "Suuremmat arvot tulostavat tummemmin",
+    "Label type": "Tarratyyppi",
 }

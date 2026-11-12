@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import base64
 import io
+import os
+import re
 import time
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +18,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import cab, get_backend, usb, vc500w
+from etiketto.backends import cab, get_backend, serialport, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -66,6 +68,22 @@ def _no_network(monkeypatch):
     monkeypatch.setattr(cab, "_connect", refuse)
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
+    monkeypatch.setattr(serialport, "SYSFS", Path("/nonexistent/tty"))
+    monkeypatch.setattr(serialport, "BY_ID", Path("/nonexistent/serial/by-id"))
+    monkeypatch.setattr(os, "open", _guarded_open)
+
+
+# serial ports a printer (or anything else) may sit on: never opened in a test;
+# the fake serial printers are pseudo terminals (/dev/pts/N)
+REAL_SERIAL = re.compile(r"^/dev/(tty(ACM|USB)\d*|serial/)")
+_real_open = os.open
+
+
+def _guarded_open(path, flags, *args, **kwargs):
+    name = os.fsdecode(path) if isinstance(path, (str, bytes, os.PathLike)) else ""
+    if name and (REAL_SERIAL.match(name) or REAL_SERIAL.match(os.path.realpath(name))):
+        raise AssertionError("a test opened the serial port %s" % name)
+    return _real_open(path, flags, *args, **kwargs)
 
 
 # --- fake VC-500W on the protocol level ------------------------------------

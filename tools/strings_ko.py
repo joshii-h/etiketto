@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto에 프린터의 USB 포트를 사용할 권한이 없습니다. 사용자를 “lp” 그룹에 추가한(sudo usermod -aG lp $USER) 뒤 로그아웃했다가 다시 로그인하세요.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "USB에서 프린터를 찾을 수 없습니다. 케이블을 확인하고 프린터가 켜져 있으며 절전 상태가 아닌지 확인한 다음 다시 검색하십시오.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "프린터가 더 이상 데이터를 받지 않습니다. 라벨이 없거나 덮개가 열려 있는 등 프린터에 문제가 표시되는지 확인한 후 다시 시도하십시오.",
+    "Labels with gaps": "간격이 있는 라벨",
+    "Labels with black marks": "검은 표시가 있는 라벨",
+    "Continuous roll": "연속 롤",
+    "Transparent labels": "투명 라벨",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto에 프린터의 직렬 포트를 사용할 권한이 없습니다. 사용자를 “dialout” 그룹에 추가한(sudo usermod -aG dialout $USER, Arch Linux에서는 그룹 이름이 “uucp”) 뒤 로그아웃했다가 다시 로그인하세요.",
+    "The printer's battery is low. Charge it and try again.": "프린터 배터리가 부족합니다. 충전한 뒤 다시 시도하세요.",
+    "Print density": "인쇄 농도",
+    "Higher values print darker": "값이 높을수록 진하게 인쇄됩니다",
+    "Label type": "라벨 종류",
 }

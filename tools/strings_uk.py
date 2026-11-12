@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto не має доступу до USB-порту принтера. Додайте свого користувача до групи «lp» (sudo usermod -aG lp $USER), потім вийдіть із системи та увійдіть знову.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Принтер не знайдено через USB. Перевірте кабель і переконайтеся, що принтер увімкнено і він не в режимі сну, потім повторіть пошук.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Принтер перестав приймати дані. Перевірте, чи не повідомляє він про проблему, наприклад закінчені етикетки або відкриту кришку, і спробуйте ще раз.",
+    "Labels with gaps": "Етикетки з проміжками",
+    "Labels with black marks": "Етикетки з чорними мітками",
+    "Continuous roll": "Безперервний рулон",
+    "Transparent labels": "Прозорі етикетки",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto не має доступу до послідовного порту принтера. Додайте свого користувача до групи «dialout» (sudo usermod -aG dialout $USER; в Arch Linux група називається «uucp»), потім вийдіть із системи та увійдіть знову.",
+    "The printer's battery is low. Charge it and try again.": "Акумулятор принтера майже розряджений. Зарядіть його та спробуйте ще раз.",
+    "Print density": "Щільність друку",
+    "Higher values print darker": "Більші значення друкують темніше",
+    "Label type": "Тип етикеток",
 }

@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ไม่ได้รับอนุญาตให้ใช้พอร์ต USB ของเครื่องพิมพ์ ให้เพิ่มผู้ใช้ของคุณในกลุ่ม “lp” (sudo usermod -aG lp $USER) แล้วออกจากระบบและเข้าสู่ระบบอีกครั้ง",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "ไม่พบเครื่องพิมพ์ทาง USB ตรวจสอบสายเคเบิลและตรวจสอบว่าเครื่องพิมพ์เปิดอยู่และไม่ได้อยู่ในโหมดพัก แล้วค้นหาอีกครั้ง",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "เครื่องพิมพ์หยุดรับข้อมูล ตรวจสอบว่าเครื่องแสดงปัญหาหรือไม่ เช่น ฉลากหมดหรือฝาเปิดอยู่ แล้วลองอีกครั้ง",
+    "Labels with gaps": "ฉลากแบบมีช่องว่าง",
+    "Labels with black marks": "ฉลากแบบมีแถบดำ",
+    "Continuous roll": "ม้วนต่อเนื่อง",
+    "Transparent labels": "ฉลากใส",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto ไม่ได้รับอนุญาตให้ใช้พอร์ตอนุกรมของเครื่องพิมพ์ ให้เพิ่มผู้ใช้ของคุณในกลุ่ม “dialout” (sudo usermod -aG dialout $USER; บน Arch Linux กลุ่มชื่อ “uucp”) แล้วออกจากระบบและเข้าสู่ระบบอีกครั้ง",
+    "The printer's battery is low. Charge it and try again.": "แบตเตอรี่ของเครื่องพิมพ์เหลือน้อย ชาร์จแล้วลองอีกครั้ง",
+    "Print density": "ความเข้มการพิมพ์",
+    "Higher values print darker": "ค่าที่สูงขึ้นพิมพ์เข้มขึ้น",
+    "Label type": "ชนิดฉลาก",
 }

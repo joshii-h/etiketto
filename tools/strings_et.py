@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ei tohi printeri USB-porti kasutada. Lisa oma kasutaja gruppi „lp“ (sudo usermod -aG lp $USER) ning logi seejärel välja ja uuesti sisse.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Printerit ei leita USB kaudu. Kontrolli kaablit ning et printer on sisse lülitatud ja ärkvel, seejärel otsi uuesti.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Printer ei võta enam andmeid vastu. Kontrolli, kas see näitab mõnda probleemi, näiteks sildid on otsas või kaas on lahti, ja proovi siis uuesti.",
+    "Labels with gaps": "Vahedega sildid",
+    "Labels with black marks": "Mustade märkidega sildid",
+    "Continuous roll": "Pidev rull",
+    "Transparent labels": "Läbipaistvad sildid",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto ei tohi printeri jadaporti kasutada. Lisa oma kasutaja gruppi „dialout“ (sudo usermod -aG dialout $USER; Arch Linuxis on grupi nimi „uucp“) ning logi seejärel välja ja uuesti sisse.",
+    "The printer's battery is low. Charge it and try again.": "Printeri aku on tühjenemas. Laadi seda ja proovi uuesti.",
+    "Print density": "Printimise tihedus",
+    "Higher values print darker": "Suuremad väärtused prindivad tumedamalt",
+    "Label type": "Sildi tüüp",
 }

@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto yazıcının USB bağlantı noktasını kullanma iznine sahip değil. Kullanıcınızı “lp” grubuna ekleyin (sudo usermod -aG lp $USER), ardından oturumu kapatıp yeniden açın.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Yazıcı USB üzerinden bulunamıyor. Kabloyu ve yazıcının açık ve uyanık olduğunu denetleyin, ardından yeniden arayın.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Yazıcı veri almayı bıraktı. Etiketin bitmesi veya kapağın açık olması gibi bir sorun gösterip göstermediğini kontrol edin, ardından yeniden deneyin.",
+    "Labels with gaps": "Boşluklu etiketler",
+    "Labels with black marks": "Siyah işaretli etiketler",
+    "Continuous roll": "Sürekli rulo",
+    "Transparent labels": "Şeffaf etiketler",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto yazıcının seri bağlantı noktasını kullanma iznine sahip değil. Kullanıcınızı “dialout” grubuna ekleyin (sudo usermod -aG dialout $USER; Arch Linux'ta grubun adı “uucp”), ardından oturumu kapatıp yeniden açın.",
+    "The printer's battery is low. Charge it and try again.": "Yazıcının pili zayıf. Şarj edip yeniden deneyin.",
+    "Print density": "Baskı yoğunluğu",
+    "Higher values print darker": "Daha yüksek değerler daha koyu basar",
+    "Label type": "Etiket türü",
 }

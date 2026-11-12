@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Az Etiketto nem használhatja a nyomtató USB-portját. Adja hozzá a felhasználóját az „lp” csoporthoz (sudo usermod -aG lp $USER), majd jelentkezzen ki, és jelentkezzen be újra.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "A nyomtató nem található USB-n. Ellenőrizze a kábelt, és hogy a nyomtató be van-e kapcsolva és nem alszik-e, majd keressen újra.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "A nyomtató nem fogad több adatot. Ellenőrizze, hogy jelez-e hibát, például kifogyott címkéket vagy nyitott fedelet, majd próbálja újra.",
+    "Labels with gaps": "Címkék hézaggal",
+    "Labels with black marks": "Címkék fekete jelöléssel",
+    "Continuous roll": "Folyamatos tekercs",
+    "Transparent labels": "Átlátszó címkék",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Az Etiketto nem használhatja a nyomtató soros portját. Adja hozzá a felhasználóját a „dialout” csoporthoz (sudo usermod -aG dialout $USER; Arch Linuxon a csoport neve „uucp”), majd jelentkezzen ki, és jelentkezzen be újra.",
+    "The printer's battery is low. Charge it and try again.": "A nyomtató akkumulátora lemerülőben van. Töltse fel, és próbálja újra.",
+    "Print density": "Nyomtatási sűrűség",
+    "Higher values print darker": "A nagyobb értékek sötétebben nyomtatnak",
+    "Label type": "Címketípus",
 }

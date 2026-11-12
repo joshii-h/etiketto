@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto non è autorizzato a usare la porta USB della stampante. Aggiungi il tuo utente al gruppo «lp» (sudo usermod -aG lp $USER), poi esci e accedi di nuovo.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "La stampante non si trova su USB. Verifica il cavo e che la stampante sia accesa e non in standby, poi cerca di nuovo.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "La stampante non accetta più dati. Controlla se segnala un problema, ad esempio etichette esaurite o un coperchio aperto, poi riprova.",
+    "Labels with gaps": "Etichette con spazi",
+    "Labels with black marks": "Etichette con tacche nere",
+    "Continuous roll": "Rotolo continuo",
+    "Transparent labels": "Etichette trasparenti",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto non è autorizzato a usare la porta seriale della stampante. Aggiungi il tuo utente al gruppo «dialout» (sudo usermod -aG dialout $USER; su Arch Linux il gruppo si chiama «uucp»), poi esci e accedi di nuovo.",
+    "The printer's battery is low. Charge it and try again.": "La batteria della stampante è quasi scarica. Ricaricala e riprova.",
+    "Print density": "Densità di stampa",
+    "Higher values print darker": "Valori più alti stampano più scuro",
+    "Label type": "Tipo di etichetta",
 }

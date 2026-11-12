@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto को प्रिंटर का USB पोर्ट इस्तेमाल करने की अनुमति नहीं है। अपने उपयोगकर्ता को समूह “lp” में जोड़ें (sudo usermod -aG lp $USER), फिर लॉग आउट करके दोबारा लॉग इन करें।",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "USB पर प्रिंटर नहीं मिल रहा। केबल जाँचें और देखें कि प्रिंटर चालू है और स्लीप मोड में नहीं है, फिर दोबारा खोजें।",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "प्रिंटर ने डेटा लेना बंद कर दिया है। जाँचें कि क्या वह कोई समस्या दिखा रहा है, जैसे लेबल खत्म होना या कवर खुला होना, फिर दोबारा प्रयास करें।",
+    "Labels with gaps": "अंतराल वाले लेबल",
+    "Labels with black marks": "काले निशान वाले लेबल",
+    "Continuous roll": "लगातार रोल",
+    "Transparent labels": "पारदर्शी लेबल",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto को प्रिंटर का सीरियल पोर्ट इस्तेमाल करने की अनुमति नहीं है। अपने उपयोगकर्ता को समूह “dialout” में जोड़ें (sudo usermod -aG dialout $USER; Arch Linux पर समूह का नाम “uucp” है), फिर लॉग आउट करके दोबारा लॉग इन करें।",
+    "The printer's battery is low. Charge it and try again.": "प्रिंटर की बैटरी कम है। इसे चार्ज करें और फिर से कोशिश करें।",
+    "Print density": "प्रिंट घनत्व",
+    "Higher values print darker": "ऊँचे मान ज़्यादा गहरा प्रिंट करते हैं",
+    "Label type": "लेबल का प्रकार",
 }

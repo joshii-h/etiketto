@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto n’est pas autorisé à utiliser le port USB de l’imprimante. Ajoutez votre utilisateur au groupe « lp » (sudo usermod -aG lp $USER), puis fermez et rouvrez votre session.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "L’imprimante est introuvable sur USB. Vérifiez le câble et que l’imprimante est allumée et sortie de veille, puis relancez la recherche.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "L’imprimante n’accepte plus de données. Vérifiez si elle signale un problème, par exemple plus d’étiquettes ou un capot ouvert, puis réessayez.",
+    "Labels with gaps": "Étiquettes avec espaces",
+    "Labels with black marks": "Étiquettes à marques noires",
+    "Continuous roll": "Rouleau continu",
+    "Transparent labels": "Étiquettes transparentes",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto n’est pas autorisé à utiliser le port série de l’imprimante. Ajoutez votre utilisateur au groupe « dialout » (sudo usermod -aG dialout $USER ; sous Arch Linux, le groupe s’appelle « uucp »), puis fermez et rouvrez votre session.",
+    "The printer's battery is low. Charge it and try again.": "La batterie de l’imprimante est faible. Rechargez-la et réessayez.",
+    "Print density": "Densité d’impression",
+    "Higher values print darker": "Des valeurs plus élevées impriment plus foncé",
+    "Label type": "Type d’étiquette",
 }

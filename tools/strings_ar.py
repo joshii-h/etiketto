@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "لا يملك Etiketto إذن استخدام منفذ USB الخاص بالطابعة. أضف المستخدم الخاص بك إلى المجموعة «lp» (sudo usermod -aG lp $USER)، ثم سجّل الخروج وسجّل الدخول مجددًا.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "لا يمكن العثور على الطابعة عبر USB. تحقّق من الكابل ومن أن الطابعة قيد التشغيل وليست في وضع السكون، ثم ابحث مجددًا.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "توقفت الطابعة عن استقبال البيانات. تحقّق مما إذا كانت تعرض مشكلة، مثل نفاد الملصقات أو غطاء مفتوح، ثم حاول مرة أخرى.",
+    "Labels with gaps": "ملصقات بفواصل",
+    "Labels with black marks": "ملصقات بعلامات سوداء",
+    "Continuous roll": "لفافة متصلة",
+    "Transparent labels": "ملصقات شفافة",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "لا يملك Etiketto إذن استخدام المنفذ التسلسلي الخاص بالطابعة. أضف المستخدم الخاص بك إلى المجموعة «dialout» (sudo usermod -aG dialout $USER؛ في Arch Linux اسم المجموعة «uucp»)، ثم سجّل الخروج وسجّل الدخول مجددًا.",
+    "The printer's battery is low. Charge it and try again.": "بطارية الطابعة منخفضة. اشحنها ثم حاول مرة أخرى.",
+    "Print density": "كثافة الطباعة",
+    "Higher values print darker": "القيم الأعلى تطبع بلون أغمق",
+    "Label type": "نوع الملصقات",
 }

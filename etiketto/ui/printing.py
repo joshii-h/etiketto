@@ -11,6 +11,7 @@ from gi.repository import Adw, GLib, Gtk
 
 from etiketto.backends.base import (
     ColorAdjust,
+    Density,
     PrintMode,
     PrintOptions,
     PrintResult,
@@ -20,6 +21,7 @@ from etiketto.ui.i18n import _, isolate
 from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
+    MEDIA_NAMES,
     MODE_NAMES,
     error_details,
     printer_error_text,
@@ -110,9 +112,25 @@ class PrintFlow:
         self.window.printer_settings.update(mode=mode)
         self.window.schedule_render()  # black and white shows grey
 
+    def _density(self) -> Density | None:
+        return self.window.backend.density(self.window.printer.info)
+
+    def _media_types(self) -> tuple[str, ...]:
+        return self.window.backend.media_types(self.window.printer.info)
+
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print."""
-        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        """Copies, cut and mode for the print dialog, from the last print;
+        density and label type where the printer has them."""
+        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        settings = self.window.printer_settings
+        density = self._density()
+        if density:
+            choices["density"] = density.clamp(settings.get("density", 0))
+        media = self._media_types()
+        if media:
+            saved = settings.get("media")
+            choices["media"] = saved if saved in media else media[0]
+        return choices
 
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
@@ -131,8 +149,35 @@ class PrintFlow:
                     _("Colours"), modes, choices["mode"], lambda v: self._on_print_mode(choices, v)
                 )
             )
+        rows.extend(self._media_rows(choices))
         if caps.supports_color_adjust:
             rows.append(self._color_adjust_row())
+        return rows
+
+    def _media_rows(self, choices: dict) -> list[Gtk.Widget]:
+        """Print density and label type, for printers that take them per job."""
+        rows: list[Gtk.Widget] = []
+        density = self._density()
+        if density and "density" in choices:
+            rows.append(
+                spin_row(
+                    _("Print density"),
+                    choices["density"],
+                    density.lowest,
+                    density.highest,
+                    1,
+                    0,
+                    lambda v: choices.update(density=int(v)),
+                    _("Higher values print darker"),
+                )
+            )
+        media = [(m, MEDIA_NAMES.get(m, m)) for m in self._media_types()]
+        if len(media) > 1 and "media" in choices:
+            rows.append(
+                combo_row(
+                    _("Label type"), media, choices["media"], lambda v: choices.update(media=v)
+                )
+            )
         return rows
 
     def _color_adjust_row(self) -> Adw.ExpanderRow:
@@ -193,7 +238,8 @@ class PrintFlow:
             return
         window = self.window
         settings = window.printer_settings
-        settings.update(cut=choices["cut"], mode=choices["mode"])
+        remembered = ("cut", "mode", "density", "media")
+        settings.update(**{key: choices[key] for key in remembered if key in choices})
         self.start(
             PrintOptions(
                 copies=choices["copies"],
@@ -202,6 +248,8 @@ class PrintFlow:
                 color=settings.color_adjust,
                 data_format=settings.data_format,
                 gap_mm=window.label.gap_mm,
+                density=choices.get("density", 0),
+                media=choices.get("media", ""),
             )
         )
 

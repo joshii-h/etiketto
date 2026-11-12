@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto 無權使用印表機的 USB 連接埠。請將您的使用者加入「lp」群組（sudo usermod -aG lp $USER），然後登出再重新登入。",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "在 USB 上找不到印表機。請檢查連接線，並確認印表機已開啟且未進入睡眠，然後再次搜尋。",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "印表機已停止接收資料。請檢查印表機是否顯示問題，例如標籤用完或蓋子未關，然後再試一次。",
+    "Labels with gaps": "有間隙的標籤",
+    "Labels with black marks": "有黑標的標籤",
+    "Continuous roll": "連續捲",
+    "Transparent labels": "透明標籤",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto 無權使用印表機的序列埠。請將您的使用者加入「dialout」群組（sudo usermod -aG dialout $USER；在 Arch Linux 上群組名稱為「uucp」），然後登出再重新登入。",
+    "The printer's battery is low. Charge it and try again.": "印表機電量不足。請充電後再試一次。",
+    "Print density": "列印濃度",
+    "Higher values print darker": "數值越高列印越深",
+    "Label type": "標籤類型",
 }

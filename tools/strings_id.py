@@ -236,4 +236,13 @@ TRANSLATIONS = {
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto tidak diizinkan menggunakan port USB pencetak. Tambahkan pengguna Anda ke grup “lp” (sudo usermod -aG lp $USER), lalu keluar dan masuk kembali.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Pencetak tidak ditemukan melalui USB. Periksa kabel dan pastikan pencetak menyala dan tidak dalam mode tidur, lalu cari lagi.",
     "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Printer berhenti menerima data. Periksa apakah printer menampilkan masalah, misalnya label habis atau penutup terbuka, lalu coba lagi.",
+    "Labels with gaps": "Label dengan celah",
+    "Labels with black marks": "Label dengan tanda hitam",
+    "Continuous roll": "Gulungan kontinu",
+    "Transparent labels": "Label transparan",
+    "Etiketto is not allowed to use the printer's serial port. Add your user to the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is “uucp”), then log out and in again.": "Etiketto tidak diizinkan menggunakan port serial pencetak. Tambahkan pengguna Anda ke grup “dialout” (sudo usermod -aG dialout $USER; di Arch Linux nama grupnya “uucp”), lalu keluar dan masuk kembali.",
+    "The printer's battery is low. Charge it and try again.": "Baterai pencetak lemah. Isi daya lalu coba lagi.",
+    "Print density": "Kepekatan cetak",
+    "Higher values print darker": "Nilai lebih tinggi mencetak lebih gelap",
+    "Label type": "Jenis label",
 }

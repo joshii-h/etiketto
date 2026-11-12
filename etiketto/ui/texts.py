@@ -24,6 +24,13 @@ MODE_NAMES = {
     "color": _("Normal"),
     "bw": _("Black and white (sharper)"),
 }
+# label materials (base.MEDIA_TYPES); unknown ones are shown by their name
+MEDIA_NAMES = {
+    "gap": _("Labels with gaps"),
+    "black_mark": _("Labels with black marks"),
+    "continuous": _("Continuous roll"),
+    "transparent": _("Transparent labels"),
+}
 COLOR_ADJUST_ROWS = [
     ("brightness", _("Brightness")),
     ("red", _("Red")),
@@ -176,6 +183,12 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
         ),
+        "serial_permission": _(
+            "Etiketto is not allowed to use the printer's serial port. Add your user to the "
+            "group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group is "
+            "“uucp”), then log out and in again."
+        ),
+        "low_battery": _("The printer's battery is low. Charge it and try again."),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),

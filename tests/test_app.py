@@ -2151,3 +2151,88 @@ def test_a_printer_that_stopped_taking_data_needs_attention():
     assert text.startswith("The printer stopped taking data.")
     assert text != texts.code_text("timeout", MILLIMETRES)  # not "does not answer"
     assert "stalled" not in texts.CONNECTION_ERRORS  # reachable: "Printer needs attention"
+
+
+# --- NIIMBOT: density and label type per job ---------------------------------------------
+
+
+@pytest.fixture
+def niimbot_env(gui_env, monkeypatch):
+    """The NIIMBOT backend with faked query/print; a D110 on USB serial."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("niimbot")
+    env = SimpleNamespace(info=PrinterInfo("D110", None, None, None, "IDLE"), prints=[])
+
+    def print_label(image, host, options, progress=None):
+        env.prints.append((image, host, options))
+        progress(Progress(1, options.copies))
+
+    monkeypatch.setattr(backend, "query", lambda host: env.info)
+    monkeypatch.setattr(backend, "print_label", print_label)
+    monkeypatch.setattr(backend, "discover", lambda timeout=3.0: [])
+    monkeypatch.setattr(backend, "configured_host", lambda: "/dev/ttyACM0")
+    return env
+
+
+@pytest.fixture
+def niimbot_window(make_window, niimbot_env):
+    win = make_window()
+    win.set_backend("niimbot")
+    assert pump(lambda: win.printer.info is niimbot_env.info)
+    render_now(win)
+    return win
+
+
+def test_niimbot_print_dialog_has_density_and_label_type(niimbot_window, niimbot_env):
+    win = niimbot_window
+    assert win.printer.row.get_title() == "NIIMBOT D110"
+    win.print_flow.on_print()
+    box = win.last_dialog.get_extra_child()
+    assert box.get_row_at_index(0).get_title() == "Copies"
+    density = box.get_row_at_index(1)
+    assert density.get_title() == "Print density"
+    assert density.get_subtitle() == "Higher values print darker"
+    adjustment = density.get_adjustment()
+    assert (adjustment.get_lower(), adjustment.get_upper(), density.get_value()) == (1, 3, 2)
+    media = box.get_row_at_index(2)
+    assert media.get_title() == "Label type"
+    assert _items(media) == ["Labels with gaps", "Transparent labels"]
+    assert box.get_row_at_index(3) is None
+    density.set_value(3)
+    media.set_selected(1)
+    win.last_dialog.emit("response", "print")
+    assert pump(lambda: not win.print_flow.busy)
+    options = niimbot_env.prints[0][2]
+    assert (options.density, options.media) == (3, "transparent")
+    saved = Settings.load().data["printers"]["niimbot"]
+    assert (saved["density"], saved["media"]) == (3, "transparent")
+    # remembered, and kept within what the connected model takes
+    assert win.print_flow.choices()["density"] == 3
+    niimbot_env.info = PrinterInfo("B1", None, None, None, "IDLE")
+    win.printer.found(niimbot_env.info)
+    assert win.print_flow.choices()["media"] == "transparent"
+    win.printer_settings.update(density=9, media="tube")
+    assert win.print_flow.choices()["density"] == 5
+    assert win.print_flow.choices()["media"] == "gap"
+
+
+def test_printers_without_density_have_no_such_rows(ready):
+    choices = ready.print_flow.choices()
+    assert "density" not in choices and "media" not in choices
+    ready.print_flow.on_print()
+    box = ready.last_dialog.get_extra_child()
+    titles = []
+    index = 0
+    while (row := box.get_row_at_index(index)) is not None:
+        titles.append(row.get_title())
+        index += 1
+    assert "Print density" not in titles and "Label type" not in titles
+    respond(ready.last_dialog, "cancel")
+
+
+def test_serial_port_and_battery_texts():
+    text = texts.code_text("serial_permission", MILLIMETRES)
+    assert "“dialout”" in text and "usermod -aG dialout" in text and "“uucp”" in text
+    assert texts.code_text("low_battery", MILLIMETRES).startswith("The printer's battery is low.")
+    assert texts.MEDIA_NAMES["black_mark"] == "Labels with black marks"
