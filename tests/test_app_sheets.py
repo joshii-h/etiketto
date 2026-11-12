@@ -602,3 +602,15 @@ def test_a_series_the_printer_did_not_confirm_says_so(office):
     outcome = SeriesResult(printed=[1, 2], result=PrintResult(unconfirmed=True))
     win.print_flow.series_done(outcome, PrintOptions())
     assert toast_titles(win)[-1] == "Sent to the printer – it did not confirm printing"
+
+
+def test_a_stopped_series_keeps_the_printers_remark(office):
+    from etiketto.backends.base import PrintOptions, PrintResult
+    from etiketto.serial import SeriesResult
+
+    win = office
+    outcome = SeriesResult(printed=[1, 2], stopped=True, result=PrintResult(queued=True))
+    win.print_flow.series_done(outcome, PrintOptions())
+    assert toast_titles(win)[-1] == (
+        "Stopped after row 2 · Sent to the printer – it prints when its turn comes"
+    )

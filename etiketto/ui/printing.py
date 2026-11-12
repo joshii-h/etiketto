@@ -683,8 +683,9 @@ class PrintFlow:
             return False
         first, last = outcome.printed[0], outcome.printed[-1]
         remark = printed_remark(options, outcome.result)  # queued, not confirmed, other mode
-        if outcome.stopped:
+        if outcome.stopped:  # with what became of the rows printed, if anything
             text = _("Stopped after row %(row)d") % {"row": last}
+            text = " · ".join((text, remark)) if remark else text
         elif remark:
             text = remark
         elif first == last:

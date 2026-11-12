@@ -593,21 +593,27 @@ def test_a_label_with_both_features(tmp_path):
 
 
 def test_every_feature_at_once(tmp_path):
+    from etiketto.model import PageElement
     from etiketto.symbols import find as find_symbol
 
     symbol = find_symbol("printer")
     label = Label(
-        tape_mm=25,
+        printer="system",
+        orientation="across",
         elements=[
             TextElement(text="{Name} {=date}"),
             CodeElement(data="ABC", symbology="datamatrix"),
             SymbolElement(name=symbol.name, path=symbol.path),
+            PageElement(data="eA==", name="label.pdf"),
         ],
         data_file=str(tmp_path / "rows.csv"),
     )
+    label.sheet = SheetChoice("Avery L7160", [0])
     data = label.to_dict()
     assert data["version"] == 2
-    assert data["features"] == ["barcodes", "symbols", "serial", "variables"]
+    assert data["features"] == ["barcodes", "symbols", "pages", "sheets", "serial", "variables"]
+    assert set(data["features"]) == model.FEATURES  # every one there is
+    assert Label.from_dict(data).features() == data["features"]
 
 
 def test_shipping_labels_and_label_sheets_are_features_too(tmp_path):
