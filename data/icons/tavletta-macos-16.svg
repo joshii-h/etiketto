@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Tavletta for macOS at 16 px (icns, 1x): the 16 px tablet reduced
+       further on a simplified plate with a one-pixel shadow. On the pixel
+       grid; SVG Tiny 1.2 only. -->
+  <defs>
+    <linearGradient id="plate" x1="0" y1="1" x2="0" y2="15" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#deddda"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="2" width="14" height="14" rx="3" fill="#000000" fill-opacity="0.15"/>
+  <rect x="1" y="1" width="14" height="14" rx="3" fill="url(#plate)"/>
+  <rect x="3" y="5" width="10" height="8" rx="1" fill="#865e3c"/>
+  <rect x="3" y="4" width="10" height="8" rx="1" fill="#b5835a"/>
+  <rect x="4" y="5" width="8" height="6" fill="#241f31"/>
+  <rect x="5" y="6" width="6" height="4" fill="#ffffff"/>
+  <rect x="5" y="6" width="2" height="4" fill="#3584e4"/>
+  <rect x="8" y="7" width="2" height="1" fill="#3d3846"/>
+</svg>

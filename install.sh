@@ -13,17 +13,22 @@ DATA="${XDG_DATA_HOME:-$HOME/.local/share}"
 VENV="$DATA/tavletta/venv"
 BIN="$HOME/.local/bin"
 APP_ID=xyz.joshuahirsig.Tavletta
+# the icon drawn for small sizes (thicker frame, fewer details); keep in
+# step with SMALL_ICONS in setup.py
+SMALL_ICON_SIZES="16x16 20x20 22x22 24x24 32x32"
 
 if [ "${1:-}" = "--uninstall" ]; then
     rm -rf "$DATA/tavletta/venv" "$BIN/tavletta" \
         "$DATA/applications/$APP_ID.desktop" \
         "$DATA/icons/hicolor/scalable/apps/$APP_ID.svg" \
         "$DATA/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" \
-        "$DATA/icons/hicolor/16x16/apps/$APP_ID.svg" \
-        "$DATA/icons/hicolor/24x24/apps/$APP_ID.svg" \
-        "$DATA/icons/hicolor/32x32/apps/$APP_ID.svg" \
         "$DATA/metainfo/$APP_ID.metainfo.xml" \
         "$DATA/mime/packages/$APP_ID.xml"
+    for size in $SMALL_ICON_SIZES; do
+        rm -f "$DATA/icons/hicolor/$size/apps/$APP_ID.svg"
+        # the size's folders, if nothing else is in them
+        rmdir "$DATA/icons/hicolor/$size/apps" "$DATA/icons/hicolor/$size" 2>/dev/null || true
+    done
     update-mime-database "$DATA/mime" 2>/dev/null || true
     update-desktop-database "$DATA/applications" 2>/dev/null || true
     # a stale icon cache would still point at the removed icons
@@ -68,8 +73,7 @@ SHARE="$VENV/share"
 sed "s|^Exec=tavletta |Exec=$BIN/tavletta |" "$SHARE/applications/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
 cp "$SHARE/icons/hicolor/scalable/apps/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
 cp "$SHARE/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
-# the icon drawn for small sizes (thicker frame, fewer details)
-for size in 16x16 24x24 32x32; do
+for size in $SMALL_ICON_SIZES; do
     mkdir -p "$DATA/icons/hicolor/$size/apps"
     cp "$SHARE/icons/hicolor/$size/apps/$APP_ID.svg" "$DATA/icons/hicolor/$size/apps/"
 done

@@ -7,8 +7,9 @@ and a venv install under <venv>/share. They are part of the wheel, so
 installing a prebuilt wheel brings them along too.
 
 The icon: the scalable SVG for every size, and below 48 px the drawings
-made for 16, 24 and 32 px (data/icons/tavletta-<size>.svg, a thicker frame
-and fewer details), installed as the hicolor <size>x<size> icons.
+made for 16, 20, 22, 24 and 32 px (data/icons/tavletta-<size>.svg, a
+thicker frame and fewer details), installed as the hicolor <size>x<size>
+icons. 22 px is the size of KDE's panels and menus.
 
 Building needs msgfmt (gettext). A broken translation stops the build.
 """
@@ -34,21 +35,31 @@ DATA_FILES = [
 ]
 
 
-SMALL_ICONS = (16, 24, 32)
+# keep in step with SMALL_ICON_SIZES in install.sh
+SMALL_ICONS = (16, 20, 22, 24, 32)
 
 
 class InstallData(install_data):
     """Compile po/<lang>.po and install it as share/locale/<lang>/LC_MESSAGES/tavletta.mo.
 
-    Also installs the small icon drawings under the app ID's name."""
+    Also installs the small icon drawings under the app ID's name: data_files
+    cannot rename, so they are copied to the build folder first."""
+
+    def finalize_options(self):
+        super().finalize_options()
+        build_base = Path(self.get_finalized_command("build").build_base)
+        # (source, staged copy); listed here, once, not on every run
+        self.small_icons = []
+        for size in SMALL_ICONS:
+            icon = build_base / "small-icons" / f"{size}x{size}" / f"{APP_ID}.svg"
+            self.small_icons.append((Path(f"data/icons/tavletta-{size}.svg"), icon))
+            self.data_files.append((f"share/icons/hicolor/{size}x{size}/apps", [str(icon)]))
 
     def run(self):
         build_base = Path(self.get_finalized_command("build").build_base)
-        for size in SMALL_ICONS:
-            icon = build_base / "small-icons" / f"{size}x{size}" / f"{APP_ID}.svg"
+        for source, icon in self.small_icons:
             icon.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(f"data/icons/tavletta-{size}.svg", icon)
-            self.data_files.append((f"share/icons/hicolor/{size}x{size}/apps", [str(icon)]))
+            shutil.copyfile(source, icon)
         msgfmt = shutil.which("msgfmt")
         if msgfmt is None:
             raise SystemExit("error: msgfmt (gettext) is needed to build the translations")

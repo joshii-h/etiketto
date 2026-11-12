@@ -33,6 +33,9 @@ env:
   SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
   DEBIAN_FRONTEND: noninteractive
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  # tests that skip locally without an optional system library (librsvg's
+  # GObject introspection for the icon tests) fail here instead
+  CI: "true"
 
 defaults:
   run:

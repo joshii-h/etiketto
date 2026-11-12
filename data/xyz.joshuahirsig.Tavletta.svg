@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
   <!-- Tavletta: a small slate tablet in a wooden frame with a label on it.
        GNOME HIG: 112 px wide within an 8 px margin, frontal view with a
-       darker base, Adwaita palette, even coordinates (sharp at 64 px).
-       SVG Tiny 1.2 only (QtSvg/KDE): rects, paths, solid fills and
-       linear gradients; no filters, masks, styles or text. -->
+       darker base, Adwaita palette. Even coordinates: whole pixels at
+       128 and 64 px. Smaller sizes use the drawings in data/icons/
+       (tavletta-16 to -32, 40 and 48 px from the 20 and 24 px ones at
+       twice the size). SVG Tiny 1.2 only (QtSvg/KDE): rects, paths, solid
+       fills and linear gradients; no filters, masks, styles or text. -->
   <defs>
     <linearGradient id="wood" x1="0" y1="20" x2="0" y2="106" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#c09068"/>
