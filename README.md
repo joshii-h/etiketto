@@ -21,12 +21,18 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
+| Zebra and compatibles (ZPL), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203, 300 or 600 dpi | Reads model and resolution; reports paper out, head open, ribbon and pause; label sensor, tear-off, peel-off or cutter, darkness and speed | ZPL on TCP port 9100 or USB ([docs/zpl.md](docs/zpl.md)) |
+| Zebra EPL2 printers (LP/TLP 2824, 2844 and others), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203 or 300 dpi | Label sensor and darkness; no status | EPL2 on TCP port 9100 or USB ([docs/epl.md](docs/epl.md)) |
+| TSPL printers: TSC, Munbyn, iDPRT, Xprinter, Rollo and other 4 × 6 in shipping label printers, **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 108 mm wide, 203 or 300 dpi | Reports head open, paper and ribbon problems where the printer answers; label sensor, tear-off, peel-off or cutter, darkness and speed | TSPL on TCP port 9100 or USB ([docs/tspl.md](docs/tspl.md)) |
+| Receipt printers with ESC/POS (Epson TM and compatibles), **untested on hardware** | Black on 58 or 80 mm paper rolls, as long as the content | Reports cover open and paper end where the printer answers; full, partial or no cut | ESC/POS on TCP port 9100 or USB ([docs/escpos.md](docs/escpos.md)) |
+| DYMO LabelWriter 300, 400 and 450 series, 4XL, **untested on hardware** | Black on DYMO die-cut labels, 300 dpi | Darkness; no status | DYMO's raster commands on USB ([docs/dymo.md](docs/dymo.md)) |
 
 Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
-kernel's printer driver: cab printers and the VC-500W are found on USB by
-themselves, and the system printer reaches every printer CUPS has, USB
-included. On USB, the VC-500W and cab printers have not been tried on a
-printer yet. Your user needs to be in the group `lp`
+kernel's printer driver: cab printers, the VC-500W and the ZPL, EPL2, TSPL,
+ESC/POS and DYMO printers are found on USB by themselves, and the system
+printer reaches every printer CUPS has, USB included. On USB, the VC-500W
+and cab printers have not been tried on a printer yet; the ZPL, EPL2, TSPL,
+ESC/POS and DYMO backends have not been tried on any printer at all. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.
 
@@ -166,9 +172,18 @@ Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
 
+ZPL, EPL2, TSPL, ESC/POS and DYMO LabelWriter follow the byte sequences of
+[LPrint](https://github.com/michaelrsweet/lprint) by Michael R Sweet
+(Apache-2.0, Copyright 2019-2026 Michael R Sweet), reimplemented in Python;
+no LPrint code is included. Where Etiketto differs from LPrint (gap sensor,
+EPL2 blank rows, cut commands) and what comes from the vendors' manuals is
+marked in the protocol notes in `docs/`.
+
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
-Brother Industries or cab Produkttechnik GmbH & Co. KG; "Brother",
-"ColAura", "VC-500W", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
+Brother Industries, cab Produkttechnik GmbH & Co. KG or the makers of the
+other printers; "Brother", "ColAura", "VC-500W", "cab", "EOS", "SQUIX",
+"MACH", "Zebra", "ZPL", "EPL", "TSC", "TSPL", "Munbyn", "iDPRT", "Xprinter",
+"Rollo", "Epson", "ESC/POS", "DYMO" and "LabelWriter" are trademarks of their
 owners.
