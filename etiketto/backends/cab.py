@@ -5,8 +5,9 @@ JScript is cab's own, publicly documented printer language ("JScript
 Programming Manual"). A job downloads the rendered label as a PNG in base 64
 and places it on a die-cut label of the given size. The print method
 (thermal transfer with a ribbon, or thermal direct) is the printer's own
-setting unless the "method" setting chooses one for each job; heat and
-tear-off position stay as set on the printer. Status comes from the ESC
+setting unless the "method" setting chooses one for each job;
+"upside_down" turns the label by 180° (O R); heat, backfeed and tear-off
+position stay as set on the printer. Status comes from the ESC
 commands, which the printer answers on the same connection; the setup of
 the web interface, if it answers, tells the print method and speed set on
 the printer.
@@ -49,6 +50,7 @@ from etiketto.backends.base import (
     Raster,
     RibbonInDirectMode,
     RibbonOut,
+    Toggle,
     check_width,
     map_error,
     open_session,
@@ -299,13 +301,15 @@ def build_job(
     copies: int,
     method: str = "printer",
     speed: int = DEFAULT_SPEED,
+    upside_down: bool = False,
 ) -> bytes:
     """Download the image and print it on die-cut labels of its size.
 
     The image is in printer orientation: x across the print head, y along the
     feed, one pixel per dot. A print method other than "printer" is sent
     with the speed (H needs one) and heat 0, which adds nothing to the heat
-    set on the printer."""
+    set on the printer. upside_down: O R, the whole label turned by 180°
+    (O must directly follow S)."""
     width = image.width / dots_per_mm
     height = image.height / dots_per_mm
     data = base64.b64encode(encode_png(image))
@@ -322,6 +326,10 @@ def build_job(
     lines += [
         # l1: die-cut labels, the gap sensor finds each one
         ("S l1;0,0,%s,%s,%s" % (_mm(height), _mm(height + gap_mm), _mm(width))).encode(),
+    ]
+    if upside_down:
+        lines.append(b"O R")
+    lines += [
         ("I:Label;0,0,0;%s" % IMAGE_NAME).encode(),
         b"A %d" % max(1, copies),
     ]
@@ -408,7 +416,7 @@ class Cab(Backend):
         label_sizes=LABEL_SIZES,
         max_width_mm=MAX_WIDTH_MM,
         data_formats=("png",),
-        settings=(Choice("method", METHODS),),
+        settings=(Choice("method", METHODS), Toggle("upside_down")),
     )
 
     def __init__(self, port: int = DEFAULT_PORT):
@@ -497,7 +505,8 @@ class Cab(Backend):
             self.dots_per_mm = dots
             if not math.isclose(dots, rendered):
                 image = _rescale(image, dots / rendered)
-            job = build_job(image, dots, options.gap_mm, copies, method, speed)
+            upside_down = self.setting(options, "upside_down") is True
+            job = build_job(image, dots, options.gap_mm, copies, method, speed, upside_down)
             _wait_idle(s)
             try:
                 # a job cut off while sending would leave a partial image

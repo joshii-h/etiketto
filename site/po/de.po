@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:41+0100\n"
+"POT-Creation-Date: 2026-11-12 14:46+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -903,6 +903,15 @@ msgstr ""
 "Drucker druckt dann mit der an ihm eingestellten Geschwindigkeit, wenn seine "
 "Weboberfläche sie verrät, sonst mit 50 mm/s. [[ui:Printer details]] zeigen "
 "das am Drucker eingestellte Verfahren."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"[[ui:Print upside down]]: the label comes out turned by 180°, as the "
+"manufacturer's label software prints it."
+msgstr ""
+"[[ui:Print upside down]]: Das Etikett kommt um 180° gedreht heraus, so wie "
+"es die Etikettensoftware des Herstellers druckt."
 
 #. type: Bullet: '- '
 #: docs/printer.md

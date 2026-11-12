@@ -2043,6 +2043,8 @@ def test_cab_print_method(cab_window, cab_env):
     win.last_dialog.emit("response", "print")
     assert pump(lambda: not win.print_flow.busy)
     assert cab_env.prints[0][2].settings == {"method": "transfer"}
+    upside_down = one(win.sidebar, Adw.SwitchRow, title="Print upside down")
+    assert not upside_down.get_active()
     assert "Print method set on the printer" not in dict(win.printer.details())
     win.printer.info.print_method = "direct"
     assert dict(win.printer.details())["Print method set on the printer"] == "Thermal direct"

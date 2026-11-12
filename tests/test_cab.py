@@ -715,8 +715,9 @@ def _setup(**kwargs) -> bytes:
 
 
 def test_print_method_is_a_printer_setting(backend):
-    (setting,) = backend.settings(None)
+    setting, upside_down = backend.settings(None)
     assert setting.key == "method" and setting.choices == ("printer", "transfer", "direct")
+    assert upside_down.key == "upside_down" and upside_down.value(None) is False
     # the default keeps the printer's own setting, as before the setting existed
     assert backend.setting(PrintOptions(), "method") == "printer"
     assert backend.setting(PrintOptions(settings={"method": "ribbon"}), "method") == "printer"
@@ -902,3 +903,30 @@ def test_fetch_setup_not_on_usb(monkeypatch):
 
     monkeypatch.setattr(mdns, "resolve_host", resolve)
     assert REAL_FETCH_SETUP("usb://cab/EOS2%2F300?serial=1") is None
+
+
+def test_job_upside_down():
+    """O R turns the whole label by 180° (as cablabel sends it for an
+    EOS2); O directly after S, as the manual asks."""
+    image = Image.new("RGB", (480, 223), "white")
+    job = cab.build_job(image, 12.0, 4.0, 1, "transfer", 50, upside_down=True)
+    _png, commands = _job_parts(job)
+    assert commands == [
+        "m m",
+        "J",
+        "H 50,0,T",
+        "S l1;0,0,18.58,22.58,40",
+        "O R",
+        "I:Label;0,0,0;ETIKETTO",
+        "A 1",
+    ]
+
+
+@pytest.mark.parametrize("value, sent", [(True, True), (False, False), ("yes", False)])
+def test_print_upside_down(backend, printer, value, sent):
+    options = PrintOptions(settings={"upside_down": value})
+    backend.print_label(Image.new("RGB", (600, 300), "white"), "h", options)
+    _png, commands = _job_parts(printer.device.jobs[0])
+    assert ("O R" in commands) is sent
+    if sent:
+        assert commands[commands.index("O R") - 1].startswith("S l1;")

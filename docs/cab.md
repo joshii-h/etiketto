@@ -72,6 +72,10 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   sends a job. [confirmed]
 - `ESC l` reports the distance of the loaded labels (label height + gap)
   once the printer has synchronised, e.g. after Feed. [manual] [confirmed]
+  [open: printer04 answered `Y0020` with a roll that cablabel describes as
+  18.6 mm high with a 22.6 mm distance (see "What cablabel sends"); the
+  window would then warn "Different labels loaded" for the right label.
+  To check after pressing Feed whether the printer measures 22 or 23 mm.]
 - Widest label: 105.6 mm, the print width cab gives for 4 inch heads.
   `S l1;0,0,25,28,106` is refused with "Syntax error" on the display (and
   `B` in `ESC s`) although the head reports "106 mm"; 105.58 mm is
@@ -93,6 +97,7 @@ m m                       (millimetres)
 J                         (job start)
 H 50,0,T                  (only with a print method chosen in Etiketto, see below)
 S l1;0,0,25,28,50         (gap sensor; 0,0 offset; height 25, height + gap 28, width 50)
+O R                       (only with "Print upside down": the label turned by 180°)
 I:Label;0,0,0;ETIKETTO    (place the image at the top left, not rotated)
 A 1                       (number of labels)
 ```
@@ -106,9 +111,13 @@ A 1                       (number of labels)
   one pixel per dot, to be confirmed on a printout]
 - `S l1;…` selects die-cut labels with gap detection for this job; `S e`
   would be continuous media, `S l2` reflective marks. [manual]
-- `H` only if a print method is chosen (next section); no `O` (options
-  such as tear-off, backfeed): the printer's setup stays in charge of
-  those. [manual]
+- `H` only if a print method is chosen (next section). `O R` only with
+  the setting "Print upside down" (`upside_down`, off by default), directly
+  after `S` as the manual asks; no other `O` options (tear-off, backfeed):
+  the printer's setup stays in charge of those. [manual]
+- Images are not erased before the download: Etiketto always uses the one
+  name `ETIKETTO`, which each download replaces, so the RAM does not fill
+  up, and images other programs left in the printer stay. [manual]
 - `A [PREVIEW]` instead of `A 1` renders the label without printing; the
   result is shown at `http://<printer>/cgi-bin/bitmap` (behind the web
   interface's password). The job above was accepted that way without a
@@ -219,6 +228,61 @@ Setting "Print method" (`method` in settings.json, per printer model):
   relied on for this mismatch; the printer seems not to notice a ribbon it
   does not drive. [assumed] `ESC z` position E "ribbon warning" is
   hardware dependent. [manual]
+
+## What cablabel sends
+
+cablabel S3 Lite (driver 1.0.7.3, target EOS2/300) sent this for a
+40 × 18.6 mm label with a 4 mm gap on printer04 (images and job, captured
+on the way to the printer): [confirmed]
+
+```
+e IMG;*
+d IMG;63125458           (three times: text as images, cab's IMG format between ESC . … ESC .)
+l SG
+m m
+zO
+J Example Clinic
+j 3177983793822070
+S l1;0,0,18.6,22.6,40;Example Clinic
+H 50,10,T,R0,B0
+O R,P
+T:Counter1;0,0,0,3,3;[SER:100001][WINF][I]
+I:Text1;2.57,14.69,0,1,1,a;63125458
+B:Barcode1;23.49,3.75,0,qrcode+ELL+MODEL2,0.67;[Counter1]
+I:Text2;2.5,3.43,0,1,1,a;43923569
+I:Text3;2.54,8.23,0,1,1,a;13794620
+A 1
+```
+
+| Line | Meaning [manual] | Etiketto |
+|---|---|---|
+| `e IMG;*` | erase all images of type IMG from RAM (3.4; `*` is a wildcard) | not sent: one image name, replaced each time |
+| `d IMG;name` + `ESC .` … `ESC .` | download in GEM IMG format, binary between `ESC .` (3.3, 2.3) | `d PNG;ETIKETTO` in base 64 (3rd method of 3.3) |
+| `l SG` | locale Switzerland/German: date and number formats of printer-side fields (3.8) | not needed: no printer-side fields |
+| `zO` | unslashed zero, bitmap fonts only (3.17) | not needed |
+| `J Example Clinic` | job start; the comment is obsolete from X3 on (4.10) | `J` |
+| `j <id>` | job ID, read back with `ESC j` (3.7) | not sent |
+| `S …;Example Clinic` | label size; the text after `;` is shown on the display (4.15) | without name |
+| `H 50,10,T,R0,B0` | 50 mm/s, heat +10, thermal transfer, ribbon saver off, backfeed speed 0 (4.8) | `H <speed>,0,T` with a print method chosen |
+| `O R,P` | label turned by 180°; backfeed "smart", i.e. suppressed for this job (4.12) | `O R` with "Print upside down"; no `P` |
+| `T`, `B`, `I` | counter, QR code and texts as printer objects | the whole label as one image |
+
+- `O R` is why cablabel's labels come out the right way round for the
+  user; Etiketto offers it as "Print upside down" per printer, off by
+  default (a label already printed the other way stays so). The setting
+  and its translations already exist for the ZPL, TSPL, EPL2, ESC/POS and
+  DYMO printers. Accepted with `A [PREVIEW]`:
+  `H 50,0,T` / `S l1;0,0,18.58,22.58,40` / `O R` (no `B`). [confirmed]
+- Heat: cablabel adds +10 to the printer's heat level for this material;
+  Etiketto adds 0. If Etiketto's thermal transfer prints come out pale,
+  raise the heat level in the printer's setup (cablabel would then add its
+  +10 on top). [open: compare on a printout]
+- `B0`: backfeed speed 0 mm/s; together with `O P` (no backfeed) probably
+  meaningless. The manual only says 100 mm/s is used if `B` is missing.
+  [open]
+- `O P` keeps the label in place instead of pulling it back after the
+  tear-off feed; the manual warns of a thin white line where the label
+  stood under the head. Etiketto leaves this to the setup ("Backfeed").
 
 ## Label start, tear-off and backfeed
 

@@ -179,6 +179,8 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
   printer then prints at the speed set on it, if its web interface tells
   it, else at 50 mm/s. [[ui:Printer details]] show the method set on the
   printer.
+- [[ui:Print upside down]]: the label comes out turned by 180°, as
+  the manufacturer's label software prints it.
 - Heat and tear-off position stay as set on the printer.
 
 ### Problems { #cab-problems }
