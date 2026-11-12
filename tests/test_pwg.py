@@ -59,3 +59,14 @@ def test_long_runs_and_literals_are_split():
 def test_decode_refuses_other_data():
     with pytest.raises(ValueError, match="not PWG Raster"):
         pwg.decode(b"%PDF-1.4")
+
+
+def test_join_sets_the_page_count_and_keeps_the_pages():
+    red = pwg.encode(Image.new("RGB", (3, 2), "red"), 300)
+    grey = pwg.encode(Image.new("L", (2, 2), 128), 600)
+    joined = pwg.join([red, grey, red])
+    pages = pwg.decode_all(joined)
+    assert [p.mode for p in pages] == ["RGB", "L", "RGB"]
+    assert pages[1].getpixel((0, 0)) == 128
+    offsets = [4, 4 + len(red) - 4, 4 + len(red) - 4 + len(grey) - 4]
+    assert [struct.unpack_from(">I", joined, o + 452)[0] for o in offsets] == [3, 3, 3]
