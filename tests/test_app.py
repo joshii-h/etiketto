@@ -47,6 +47,7 @@ from etiketto.backends.base import (  # noqa: E402
     PrintOptions,
     PrintResult,
     Progress,
+    UsbNotFound,
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
 from etiketto.render import mm_to_px, render  # noqa: E402
@@ -2130,3 +2131,23 @@ def test_page_printers_have_no_roll(window):
     assert margin.get_adjustment().get_upper() == 10  # office printers leave 4 to 5 mm
     window.set_backend("cab")
     assert one(window.sidebar, Adw.SpinRow, title="Gap")
+
+
+def test_usb_permission_text_says_what_to_do():
+    text = texts.code_text("usb_permission", MILLIMETRES)
+    assert "“lp”" in text and "usermod -aG lp" in text
+
+
+def test_a_usb_printer_not_found_gets_usb_advice():
+    text = texts.printer_error_text(UsbNotFound("no USB printer"), MILLIMETRES)
+    assert "cable" in text and "IP address" not in text
+    assert "usb_not_found" in texts.CONNECTION_ERRORS  # "Printer not reachable"
+
+
+def test_a_printer_that_stopped_taking_data_needs_attention():
+    from etiketto.backends.base import PrinterStalled
+
+    text = texts.printer_error_text(PrinterStalled("stopped taking data"), MILLIMETRES)
+    assert text.startswith("The printer stopped taking data.")
+    assert text != texts.code_text("timeout", MILLIMETRES)  # not "does not answer"
+    assert "stalled" not in texts.CONNECTION_ERRORS  # reachable: "Printer needs attention"

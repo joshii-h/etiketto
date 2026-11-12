@@ -233,4 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Kertas habis – isi kertas untuk melanjutkan",
     "Cover open – close it to continue": "Penutup terbuka – tutup untuk melanjutkan",
     "Paper jammed – remove it to continue": "Kertas macet – keluarkan untuk melanjutkan",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto tidak diizinkan menggunakan port USB pencetak. Tambahkan pengguna Anda ke grup “lp” (sudo usermod -aG lp $USER), lalu keluar dan masuk kembali.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Pencetak tidak ditemukan melalui USB. Periksa kabel dan pastikan pencetak menyala dan tidak dalam mode tidur, lalu cari lagi.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Printer berhenti menerima data. Periksa apakah printer menampilkan masalah, misalnya label habis atau penutup terbuka, lalu coba lagi.",
 }

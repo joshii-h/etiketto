@@ -229,7 +229,25 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again."
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again. On USB: check the cable and search again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No permission for the USB port: your user needs to be in the group `lp`.  Run `sudo usermod -aG lp $USER`, then log out and in again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB printer not found: check the cable, switch the printer on and wake it up (a sleeping printer can drop off USB), then search again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "\"The printer is busy\" on USB: only one program can use a USB printer at a time. Close other label software, or wait until the running print is done."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -296,6 +314,18 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Later, the web interface is at `https://` and the printer's address: \"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it by hand), \"AirPrint Options\" sets name, location and firmware updates."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "USB { #vc500w-usb }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Plug the printer in; [[ui:Search for printers]] finds it. Printing over USB has not been tried on a printer yet and follows the observations of others: the printer may not answer over USB at all (then the query ends with [[ui:Printer not reachable]]), and it may not cut by itself, then swipe across its panel. Wi-Fi is the tried way."
 msgstr ""
 
 #. type: Title ###
@@ -441,6 +471,12 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Network: the printer needs an address in your network (DHCP or set on its display). Etiketto uses the \"RawIP\" port 9100 with the JScript interpreter, both are the printer's defaults (Setup > Interfaces > Network services and Setup > Interpreter)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
 msgstr ""
 
 #. type: Bullet: '- '

@@ -8,10 +8,13 @@ finish-args:
   - --share=ipc
   - --socket=wayland
   - --socket=fallback-x11
-  - --device=dri
-  # raw TCP 9100 to the printer
+  # GPU, and printers on USB (/dev/usb/lp*, the kernel's printer class
+  # driver; --device=usb only covers raw libusb access)
+  - --device=all
+  # printers on the network: TCP 9100, IPP to the printer or to CUPS on
+  # localhost:631
   - --share=network
-  # resolve VC-500W*.local and browse for printers via the host's Avahi daemon
+  # resolve *.local names and browse for printers via the host's Avahi daemon
   - --system-talk-name=org.freedesktop.Avahi
 
 cleanup:

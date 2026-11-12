@@ -233,4 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Kağıt bitti – devam etmek için kağıt yükleyin",
     "Cover open – close it to continue": "Kapak açık – devam etmek için kapatın",
     "Paper jammed – remove it to continue": "Kağıt sıkıştı – devam etmek için çıkarın",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto yazıcının USB bağlantı noktasını kullanma iznine sahip değil. Kullanıcınızı “lp” grubuna ekleyin (sudo usermod -aG lp $USER), ardından oturumu kapatıp yeniden açın.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Yazıcı USB üzerinden bulunamıyor. Kabloyu ve yazıcının açık ve uyanık olduğunu denetleyin, ardından yeniden arayın.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Yazıcı veri almayı bıraktı. Etiketin bitmesi veya kapağın açık olması gibi bir sorun gösterip göstermediğini kontrol edin, ardından yeniden deneyin.",
 }

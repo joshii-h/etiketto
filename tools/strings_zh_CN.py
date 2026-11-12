@@ -233,4 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "缺纸 – 装入纸张后继续",
     "Cover open – close it to continue": "盖板已打开 – 关上后继续",
     "Paper jammed – remove it to continue": "卡纸 – 取出纸张后继续",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto 无权使用打印机的 USB 端口。请将您的用户添加到“lp”组（sudo usermod -aG lp $USER），然后注销并重新登录。",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "在 USB 上找不到打印机。请检查数据线，并确认打印机已开机且未处于休眠状态，然后重新搜索。",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "打印机已停止接收数据。请检查打印机是否显示问题，例如标签用完或盖子未关，然后重试。",
 }

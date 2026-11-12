@@ -104,9 +104,8 @@ length and width limits). There are two kinds:
   measured label distance as `PrinterInfo.pitch_mm` if the printer knows it:
   the interface then warns when the loaded labels have another size.
 
-Not supported yet: printers connected by USB or Bluetooth (the interface
-asks for a host name or IP address). That needs an extension of the
-interface first; please open an issue before you start.
+Not supported yet: printers connected by Bluetooth. That needs an
+extension of the interface first; please open an issue before you start.
 
 1. Create `etiketto/backends/<name>.py` with a subclass of
    `etiketto.backends.base.Backend`:
@@ -170,6 +169,11 @@ interface first; please open an issue before you start.
 2. Register it in `etiketto/backends/__init__.py` (`_load()`), or ship it as
    a separate package with an entry point in the group `etiketto.backends`
    that names the class.
+
+   - Connections: printers are reached over the network and over USB. If
+     the printer language works on USB too, open `usb://` addresses with
+     `usb.connect()` (a socket-like object on `/dev/usb/lpN`) and list
+     `usb.printers()` of your maker in `discover`; see the cab backend.
 
 3. Tests: add `tests/test_<name>.py` with a fake of the printer's protocol
    (never the real device) and a subclass of

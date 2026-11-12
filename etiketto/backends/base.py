@@ -212,6 +212,13 @@ class PrinterTimeout(PrinterError):
     code = "timeout"
 
 
+class PrinterStalled(PrinterTimeout):
+    """The printer stopped taking the data of a job (paper out, buffer
+    full, a problem it shows on its own)."""
+
+    code = "stalled"
+
+
 class PortClosed(PrinterError):
     code = "port_closed"
 
@@ -304,6 +311,19 @@ class JobCanceled(PrinterError):
     """Someone canceled the job at the printer or in the queue."""
 
     code = "job_canceled"
+
+
+class UsbNotFound(PrinterNotFound):
+    """No such printer on USB, or it went away (unplugged, switched off,
+    asleep): the advice differs from a printer in the network."""
+
+    code = "usb_not_found"
+
+
+class UsbPermission(PrinterError):
+    """The printer's USB device file exists, but this user may not open it."""
+
+    code = "usb_permission"
 
 
 def error_text(error: Exception) -> str:

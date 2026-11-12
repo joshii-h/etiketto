@@ -14,7 +14,7 @@ import pytest
 from backend_contract import BackendContract
 from PIL import Image
 
-from etiketto.backends import cab, mdns
+from etiketto.backends import cab, mdns, usb
 from etiketto.backends.base import (
     FoundPrinter,
     HeadOpen,
@@ -26,6 +26,7 @@ from etiketto.backends.base import (
     PrinterError,
     PrinterNotFound,
     PrinterPaused,
+    PrinterStalled,
     PrinterTimeout,
     PrintOptions,
     RibbonError,
@@ -110,11 +111,13 @@ class FakeSocket:
 def printer(monkeypatch):
     device = FakeCab()
     calls = []
+    waits = []
     sleeps = []
     now = [1000.0]
 
-    def connect(host, port):
+    def connect(host, port, wait=None):
         calls.append((host, port))
+        waits.append(wait)
         return FakeSocket(device)
 
     def sleep(seconds):
@@ -126,7 +129,7 @@ def printer(monkeypatch):
     monkeypatch.setattr(cab, "_connect", connect)
     monkeypatch.setattr(cab, "_sleep", sleep)
     monkeypatch.setattr(cab, "_clock", lambda: now[0])
-    return SimpleNamespace(device=device, calls=calls, sleeps=sleeps, now=now)
+    return SimpleNamespace(device=device, calls=calls, waits=waits, sleeps=sleeps, now=now)
 
 
 @pytest.fixture
@@ -355,6 +358,45 @@ def test_print(backend, printer):
     assert [e.copy for e in events] == [1, 1, 2, 3, 3] and {e.copies for e in events} == {3}
     assert printer.device.closed == 1
     assert all(s == cab.POLL_INTERVAL for s in printer.sleeps)
+    # on USB a print waits longer than a status query for the device
+    assert printer.waits == [usb.PRINT_WAIT]
+    backend.query("printer04.local")
+    assert printer.waits[-1] == usb.BUSY_WAIT
+
+
+@pytest.mark.parametrize(
+    "error, cls",
+    [
+        (PrinterStalled("USB printer stopped taking data"), PrinterStalled),
+        (BrokenPipeError(), PrinterError),
+    ],
+)
+def test_print_cancels_a_job_cut_off_while_sending(backend, printer, monkeypatch, error, cls):
+    """Part of the image download reached the printer: ESC c, or the rest
+    of it would spoil the next job (on USB nothing closes)."""
+    real = FakeSocket.sendall
+
+    def sendall(self, data):
+        if data.startswith(b"d PNG;"):
+            raise error
+        real(self, data)
+
+    monkeypatch.setattr(FakeSocket, "sendall", sendall)
+    with pytest.raises(cls):
+        backend.print_label(Image.new("RGB", (600, 300), "white"), "h", PrintOptions())
+    assert printer.device.requests[-1] == b"\x1bc" and printer.device.cancelled == 1
+
+
+def test_print_send_failure_survives_a_cancel_that_fails_too(backend, printer, monkeypatch):
+    def sendall(self, data):
+        if data.startswith(b"d PNG;") or data == b"\x1bc":
+            raise PrinterStalled("USB printer stopped taking data")
+        FakeSocket.real(self, data)
+
+    monkeypatch.setattr(FakeSocket, "real", FakeSocket.sendall, raising=False)
+    monkeypatch.setattr(FakeSocket, "sendall", sendall)
+    with pytest.raises(PrinterStalled):  # the send's error, not the cancel's
+        backend.print_label(Image.new("RGB", (600, 300), "white"), "h", PrintOptions())
 
 
 def test_print_waits_for_a_running_job(backend, printer):
@@ -499,7 +541,7 @@ def test_print_refuses_labels_wider_than_the_head(backend, printer):
     ],
 )
 def test_connection_errors(backend, monkeypatch, error, cls):
-    def connect(host, port):
+    def connect(host, port, wait=None):
         raise error
 
     monkeypatch.setattr(cab, "_connect", connect)

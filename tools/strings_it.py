@@ -233,4 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Carta esaurita – carica la carta per continuare",
     "Cover open – close it to continue": "Coperchio aperto – chiudilo per continuare",
     "Paper jammed – remove it to continue": "Carta inceppata – rimuovila per continuare",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto non è autorizzato a usare la porta USB della stampante. Aggiungi il tuo utente al gruppo «lp» (sudo usermod -aG lp $USER), poi esci e accedi di nuovo.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "La stampante non si trova su USB. Verifica il cavo e che la stampante sia accesa e non in standby, poi cerca di nuovo.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "La stampante non accetta più dati. Controlla se segnala un problema, ad esempio etichette esaurite o un coperchio aperto, poi riprova.",
 }

@@ -233,4 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Paperi loppu – jatka lisäämällä paperia",
     "Cover open – close it to continue": "Kansi auki – jatka sulkemalla se",
     "Paper jammed – remove it to continue": "Paperi jumissa – jatka poistamalla se",
+    "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ei saa käyttää tulostimen USB-porttia. Lisää käyttäjäsi ryhmään ”lp” (sudo usermod -aG lp $USER) ja kirjaudu sitten ulos ja takaisin sisään.",
+    "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Tulostinta ei löydy USB:n kautta. Tarkista kaapeli ja että tulostin on päällä eikä lepotilassa, ja hae sitten uudelleen.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Tulostin lakkasi vastaanottamasta tietoja. Tarkista, näyttääkö se ongelmaa, kuten tarrojen loppumista tai avointa kantta, ja yritä sitten uudelleen.",
 }

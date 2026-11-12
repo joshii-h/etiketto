@@ -33,7 +33,7 @@ COLOR_ADJUST_ROWS = [
 ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
 ORIENTATIONS = [("across", _("Across the roll")), ("along", _("Along the roll"))]
 # errors that mean the printer cannot be reached at all; others need attention
-CONNECTION_ERRORS = ("not_found", "timeout", "port_closed")
+CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
 SYMBOLOGIES = [("qr", _("QR code")), ("code128", "Code 128"), ("ean13", "EAN-13")]
 
@@ -122,7 +122,15 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "The printer cannot be found. Check that it is switched on and in the same "
             "network, or enter its IP address."
         ),
+        "usb_not_found": _(
+            "The printer cannot be found on USB. Check the cable and that the printer is "
+            "switched on and awake, then search again."
+        ),
         "timeout": _("The printer does not answer. Check that it is switched on and awake."),
+        "stalled": _(
+            "The printer stopped taking data. Check whether it shows a problem, such as no "
+            "labels or an open cover, then try again."
+        ),
         "port_closed": _(
             "The printer refuses the connection. Switch it off and on again. If its web "
             "interface offers a “Port 9100” option, turn it on."
@@ -164,6 +172,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "usb_permission": _(
+            "Etiketto is not allowed to use the printer's USB port. Add your user to the "
+            "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+        ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."
         ),
