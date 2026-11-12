@@ -295,13 +295,22 @@ def check_code(element: CodeElement) -> None:
     if not data:
         raise CodeError("code_empty")
     if element.symbology == "ean13":
-        if not data.isascii() or not data.isdigit() or len(data) not in (12, 13):
-            raise CodeError("ean13_digits")
-        if len(data) == 13 and not _ean13_ok(data):
-            raise CodeError("ean13_check")
-    elif element.symbology == "code128" and not CODE128_CHARS.issuperset(data):
+        _check_ean13(data)
+    elif element.symbology == "code128":
+        _check_code128(data)
+
+
+def _check_ean13(data: str) -> None:
+    if not data.isascii() or not data.isdigit() or len(data) not in (12, 13):
+        raise CodeError("ean13_digits")
+    if len(data) == 13 and not _ean13_ok(data):
+        raise CodeError("ean13_check")
+
+
+def _check_code128(data: str) -> None:
+    if not CODE128_CHARS.issuperset(data):
         raise CodeError("code128_charset")
-    elif element.symbology == "code128" and len(data) > CODE128_MAX:
+    if len(data) > CODE128_MAX:
         raise CodeError("code128_long")
 
 
