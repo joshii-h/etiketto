@@ -760,3 +760,25 @@ def test_across_step_puts_2d_code_modules_on_whole_rows(step):
 
     top = ImageOps.invert(rendered.image.convert("L")).getbbox()[1]
     assert top % step == 0  # the first dark row starts a group
+
+
+def test_along_step_puts_linear_code_modules_on_whole_pairs():
+    """render(along_step=2): the caller halves the image along the label (a
+    QL die-cut label across the roll in high quality): a barcode's modules
+    and its first bar are on pairs of pixels; the label is a whole number
+    of pairs long."""
+    from etiketto.model import CodeElement
+    from etiketto.render import render_code
+
+    code = CodeElement(data="ALONG-123", symbology="code128")
+    part = render_code(code, 120, steps=(2, 1))
+    assert part.code_module % 2 == 0 and part.code_col0 is not None
+    label = Label(tape_mm=24, auto_length=False, length_mm=63.3, elements=[code])
+    rendered = render(label, dpi=600, along_step=2)
+    assert rendered.image.width % 2 == 0
+    halved = rendered.image.convert("L").resize(
+        (rendered.image.width // 2, rendered.image.height), Image.Resampling.BOX
+    )
+    bars = halved.crop((0, halved.height // 2, halved.width, halved.height // 2 + 1))
+    histogram = bars.histogram()
+    assert sum(histogram[1:255]) == 0  # no bar averaged with a space

@@ -854,11 +854,15 @@ def render(
     codes get modules and first modules on multiples of it."""
     warnings: list[RenderWarning] = []
     steps = (along_step, across_step)
+    if tape_px is None and across_step > 1:  # whole pixel pairs: a multiple of the step
+        tape_px = mm_to_px(label.tape_mm, dpi)
+        tape_px += -tape_px % across_step
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono, steps)
     length, parts, gap, overflow = _fit_length(
         label, parts, f, dpi, warnings, min_length_mm, mono, steps
     )
+    length += -length % along_step  # whole pixel pairs, also once the label is turned
     warnings += [
         RenderWarning(key, {"n": index})
         for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)

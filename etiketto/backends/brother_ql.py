@@ -729,9 +729,15 @@ def _scale(image: Image.Image) -> int:
 
 
 def _fit(image: Image.Image, width: int, height: int) -> Image.Image:
-    """The image scaled to fit width × height, centred on white."""
+    """The image scaled to fit width × height, centred on white. One that
+    is a pixel off (a render made a multiple of 2 for a later halving) is
+    placed at the corner instead, not scaled: its pixel pairs stay pairs."""
     if image.size == (width, height):
         return image
+    if abs(image.width - width) <= 1 and abs(image.height - height) <= 1:
+        canvas = Image.new("RGB", (width, height), "white")
+        canvas.paste(image.convert("RGB"), (0, 0))
+        return canvas
     factor = min(width / image.width, height / image.height)
     size = (max(1, round(image.width * factor)), max(1, round(image.height * factor)))
     canvas = Image.new("RGB", (width, height), "white")
@@ -758,7 +764,7 @@ def _resolution(image: Image.Image, scale: int, high_res: bool) -> Image.Image:
         return image
     # halving the render made for it (Raster.across: codes on whole pairs of
     # pixels): averaging each pair keeps them black, no ringing at the edges
-    exact = image.width % scale == 0 and height in (image.height, image.height // scale)
+    exact = image.width % scale == 0 and image.height % scale == 0
     method = Image.Resampling.BOX if exact else Image.Resampling.LANCZOS
     return image.resize((max(1, width), max(1, height)), method)
 
@@ -1104,8 +1110,10 @@ class BrotherQL(_BrotherQL):
         media = next(m for m in CONTINUOUS if m.width_mm == nearest)
         scale = 2 if options.quality == "high" else 1
         # high quality: 600 dpi along the feed, the head's 300 across; the
-        # render's 600 across is halved when printing (_resolution)
-        return Raster(DPI * scale, tape_px=media.dots[0] * scale, across=scale)
+        # render's 600 across is halved when printing (_resolution). Along
+        # too, when the job ends up at 300 (two colours, a model without
+        # 600 dpi): codes on pixel pairs both ways stay whole either way
+        return Raster(DPI * scale, tape_px=media.dots[0] * scale, across=scale, along_step=scale)
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
@@ -1172,13 +1180,11 @@ class BrotherQLDieCut(_BrotherQL):
 
     def label_raster(self, label: Label, options: PrintOptions) -> Raster:
         """High quality: rendered at 600 dpi, the head's axis halved when
-        printing; for content across the roll that is the label's length
-        (x), along the roll its height (y)."""
+        printing, the feed's too when the job ends up at 300 dpi (two
+        colours, a model without 600 dpi): codes on pixel pairs both ways."""
         raster = self.raster(label.tape_mm, options)
         scale = 2 if options.quality == "high" else 1
-        if label.orientation == "along":
-            return replace(raster, across=scale)
-        return replace(raster, along_step=scale)
+        return replace(raster, across=scale, along_step=scale)
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM

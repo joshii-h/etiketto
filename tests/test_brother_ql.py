@@ -1529,9 +1529,12 @@ def test_high_quality_keeps_2d_code_modules_whole_on_the_300_dpi_head(backend_id
         label.set_media_size(62, 29)
     options = PrintOptions(quality="high")
     raster = backend.label_raster(label, options)
-    assert raster.across_step * raster.along_step == 2
+    assert (raster.across_step, raster.along_step) == (2, 2)
     image = backend.prepare(label, options)
     media = backend.label_media(image)
-    printer = ql._resolution(backend.fit(backend.to_printer(image), media, media), 2, True)
-    histogram = printer.convert("L").histogram()
-    assert sum(histogram[1:255]) == 0
+    fitted = backend.fit(backend.to_printer(image), media, media)
+    # 300 x 600 (high quality printed), or 300 x 300 (two colours, a model
+    # without 600 dpi): whole modules both ways
+    for high_res in (True, False):
+        histogram = ql._resolution(fitted, 2, high_res).convert("L").histogram()
+        assert sum(histogram[1:255]) == 0, high_res
