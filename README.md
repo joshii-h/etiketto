@@ -164,7 +164,8 @@ The VC-500W on USB follows the observations of
 [barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
 MPL-2.0), written anew; no barnguard code is included.
 
-The Brother QL raster commands, models and media table follow
+The Brother QL raster commands, models and media table follow Brother's
+public Raster Command Reference documents and
 [brother_ql](https://github.com/pklaus/brother_ql) by Philipp Klaus and
 its fork [brother-ql-next](https://github.com/LunarEclipse363/brother_ql)
 by LunarEclipse (both GPL-3.0), written anew; no brother_ql code is

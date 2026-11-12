@@ -111,6 +111,8 @@ documented it. Reports of what works and what does not are very welcome.
   "Brother QL, continuous rolls" for continuous DK rolls (the label is as
   long as its content or has a fixed length) and
   "Brother QL, die-cut labels" for die-cut DK labels of a fixed size.
+  Both use the same printer and settings. If the printer has the other
+  kind of roll loaded, Etiketto offers to [[ui:Switch]].
 - Network: models with Wi-Fi or LAN are reached on port 9100.
   [[ui:Search for printers]] finds them, or enter the address.
 - USB: plug the printer in; [[ui:Search for printers]] finds it. On the
@@ -118,8 +120,9 @@ documented it. Reports of what works and what does not are very welcome.
   button until the green light goes out), otherwise the printer appears
   as a USB drive.
 - Before each print Etiketto reads which roll is loaded. A continuous
-  roll of another width is printed scaled to it after a warning, like a
-  cassette on the VC-500W.
+  roll of another width is printed scaled to it after a warning
+  ([[ui:Wrong roll]]); die-cut labels of another size get a warning too
+  ([[ui:Different labels loaded]]).
 - Die-cut labels: choose the [[ui:Label size]] of the roll. The printer
   finds the labels by itself; leave the [[ui:Gap]] at 3 mm. About 1.5 mm
   at the sides and 3 mm at both ends of each label cannot be printed: a
@@ -131,12 +134,16 @@ documented it. Reports of what works and what does not are very welcome.
 
 - [[ui:Cut]]: [[ui:Full cut]] after every label,
   [[ui:Cut after the last label]] keeps the copies together as one strip,
-  [[ui:No cut]]. Printers without a cutter (QL-500) ignore it.
+  [[ui:No cut]]. The QL-500 has no cutter and no cut option.
 - [[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a
   62 mm continuous roll is loaded; red parts of the label print red on the
-  red and black roll DK-22251.
+  red and black roll DK-22251. That roll needs a red and black job even
+  for black labels: if the choice does not fit the loaded roll, the
+  printer refuses the job, Etiketto prints it the other way and says so.
+  From then on the choice follows the roll.
 - [[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution
-  along the roll on the models that have it; printing takes longer.
+  along the roll; printing takes longer. Offered on the QL-570, QL-580N,
+  QL-700, QL-710W, QL-720NW, the QL-800 series and the QL-1100 series.
 
 ### Problems { #brother-ql-problems }
 

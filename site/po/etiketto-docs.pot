@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 03:01+0100\n"
+"POT-Creation-Date: 2026-11-12 07:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -470,7 +470,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Printer model]]: the QL appears twice. Choose \"Brother QL, continuous rolls\" for continuous DK rolls (the label is as long as its content or has a fixed length) and \"Brother QL, die-cut labels\" for die-cut DK labels of a fixed size."
+msgid "[[ui:Printer model]]: the QL appears twice. Choose \"Brother QL, continuous rolls\" for continuous DK rolls (the label is as long as its content or has a fixed length) and \"Brother QL, die-cut labels\" for die-cut DK labels of a fixed size.  Both use the same printer and settings. If the printer has the other kind of roll loaded, Etiketto offers to [[ui:Switch]]."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -488,7 +488,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "Before each print Etiketto reads which roll is loaded. A continuous roll of another width is printed scaled to it after a warning, like a cassette on the VC-500W."
+msgid "Before each print Etiketto reads which roll is loaded. A continuous roll of another width is printed scaled to it after a warning ([[ui:Wrong roll]]); die-cut labels of another size get a warning too ([[ui:Different labels loaded]])."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -512,19 +512,19 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Cut]]: [[ui:Full cut]] after every label, [[ui:Cut after the last label]] keeps the copies together as one strip, [[ui:No cut]]. Printers without a cutter (QL-500) ignore it."
+msgid "[[ui:Cut]]: [[ui:Full cut]] after every label, [[ui:Cut after the last label]] keeps the copies together as one strip, [[ui:No cut]]. The QL-500 has no cutter and no cut option."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a 62 mm continuous roll is loaded; red parts of the label print red on the red and black roll DK-22251."
+msgid "[[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a 62 mm continuous roll is loaded; red parts of the label print red on the red and black roll DK-22251. That roll needs a red and black job even for black labels: if the choice does not fit the loaded roll, the printer refuses the job, Etiketto prints it the other way and says so.  From then on the choice follows the roll."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution along the roll on the models that have it; printing takes longer."
+msgid "[[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution along the roll; printing takes longer. Offered on the QL-570, QL-580N, QL-700, QL-710W, QL-720NW, the QL-800 series and the QL-1100 series."
 msgstr ""
 
 #. type: Title ###
