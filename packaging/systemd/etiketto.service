@@ -32,6 +32,16 @@ TimeoutStopSec=60
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
+# the home folder read-only (but the two folders below), keys out of reach
+ProtectHome=read-only
+InaccessiblePaths=-%h/.ssh -%h/.gnupg
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
 ReadWritePaths=-%h/.local/share/etiketto -%h/.config/etiketto
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
@@ -41,6 +51,8 @@ RestrictNamespaces=yes
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 # a label that renders large is refused at 40 megapixels; this bounds the rest
 MemoryMax=1G
+# fewer malloc arenas: threads do not each keep memory a large label used
+Environment=MALLOC_ARENA_MAX=2
 TasksMax=128
 LockPersonality=yes
 RestrictRealtime=yes

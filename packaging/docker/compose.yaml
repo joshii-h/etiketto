@@ -39,8 +39,13 @@ services:
       - "/config/printers.toml"
       - "--tokens"
       - "/config/tokens.toml"
+      # behind a reverse proxy in a Docker network: its X-Forwarded-For
+      # names the clients (the rate limit and the log use them)
+      # - "--trusted-proxy"
+      # - "172.16.0.0/12"
     volumes:
-      - ./config:/config:ro  # printers.toml, tokens.toml (hashes only)
+      # printers.toml, tokens.toml (hashes only), etiketto/settings.json if wanted
+      - ./config:/config:ro
       - ./labels:/labels  # the label files (.etiketto) and their data files
     read_only: true
     tmpfs:

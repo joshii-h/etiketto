@@ -27,3 +27,7 @@ services:
       - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
     devices:
       - /dev/usb:/dev/usb
+    # the groups that may use printer devices (USB printers, serial ports)
+    group_add:
+      - lp
+      - dialout

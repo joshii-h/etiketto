@@ -30,14 +30,18 @@ RUN apt-get update \
         python3 python3-gi python3-gi-cairo gir1.2-pango-1.0 fontconfig fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --uid 10001 --home-dir /data --create-home etiketto \
-    && install -d -o etiketto -g etiketto -m 0700 /labels /data/config
+    && install -d -o etiketto -g etiketto -m 0755 /labels /config
 COPY --from=build /opt/etiketto /opt/etiketto
-# settings.json (printer addresses, safety margin) in /data/config/etiketto
+# Mount the labels at /labels and printers.toml, tokens.toml (and, if
+# wanted, etiketto/settings.json of the app) at /config. Both are plain
+# folders, no volumes: Compose (or docker run -v) says what goes there, and
+# any user id can read them (compose.yaml runs as the owner of the files).
+# MALLOC_ARENA_MAX: threads do not each keep memory a large label used.
 ENV PATH=/opt/etiketto/bin:$PATH \
-    XDG_CONFIG_HOME=/data/config \
+    XDG_CONFIG_HOME=/config \
+    MALLOC_ARENA_MAX=2 \
     PYTHONUNBUFFERED=1
 USER etiketto
-VOLUME ["/labels", "/data"]
 EXPOSE 8790
 HEALTHCHECK --interval=30s --timeout=5s \
     CMD ["python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8790/api/v1/health', timeout=4)"]
