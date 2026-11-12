@@ -1561,3 +1561,12 @@ def test_a_fixed_length_raised_to_the_shortest_label_says_so():
     rendered = backend.render_label(label, PrintOptions(quality="high"))
     assert rendered.length_mm == pytest.approx(ql.MIN_LENGTH_MM, abs=0.1)
     assert rendered.length_mm > 5
+
+
+def test_a_fixed_length_just_under_the_shortest_label_says_the_length_printed():
+    """12.69 mm on a QL (shortest 12.7 mm) comes out at 12.7 mm: compared
+    in mm, not in pixels (both are 150 px)."""
+    rendered = BrotherQL().render_label(
+        _continuous(62, auto_length=False, length_mm=12.69), PrintOptions()
+    )
+    assert rendered.length_mm == pytest.approx(ql.MIN_LENGTH_MM)

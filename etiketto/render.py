@@ -863,8 +863,9 @@ def render(
         label, parts, f, dpi, warnings, min_length_mm, mono, steps
     )
     # a fixed length is the user's, though rounded to whole pixels (pairs):
-    # 20.1 mm stays 20.1 mm in the status line and the print dialog
-    user_length = not label.auto_length and length == mm_to_px(label.length_mm, dpi)
+    # 20.1 mm stays 20.1 mm in the status line and the print dialog; one
+    # shorter than the printer's shortest label says the length printed
+    user_length = not label.auto_length and label.length_mm >= min_length_mm
     length += -length % along_step  # whole pixel pairs, also once the label is turned
     warnings += [
         RenderWarning(key, {"n": index})
