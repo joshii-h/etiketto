@@ -106,7 +106,7 @@ class CounterGroup(Adw.PreferencesGroup):
     def __init__(
         self,
         label: Label,
-        changed: Callable[[], None],
+        changed: Callable[..., None],
         edited: Callable[[], None] = lambda: None,
     ):
         super().__init__(
@@ -129,12 +129,12 @@ class CounterGroup(Adw.PreferencesGroup):
         if int(value) != self.label.counter_next:
             self.label.counter_next = int(value)
             self._edited()
-            self._changed()
+            self._changed("label:counter_next")  # spinning on: one step of undo
 
     def _set_step(self, value: float) -> None:
         if int(value) != self.label.counter_step:
             self.label.counter_step = int(value)
-            self._changed()
+            self._changed("label:counter_step")
 
     def update(self) -> None:
         """Shown while the label uses {=counter}, with the label's values

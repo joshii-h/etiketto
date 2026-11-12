@@ -367,7 +367,9 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
         ),
         "element_failed": _("Element %(n)d cannot be drawn"),
-        "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
+        "no_room": _(
+            "Safety margin, border, its inset and edge spacing leave no room – reduce them"
+        ),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
         "code_thin": _(
@@ -390,8 +392,8 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: the variable %(name)s… is not closed – end it with }"
         ),
         "no_contrast": _(
-            "Element %(n)d: a black-and-white printer prints it in the colour of the "
-            "background – choose a darker or lighter colour"
+            "Element %(n)d: on a black-and-white printer it hardly stands out from what lies "
+            "behind it, as a whole or in part – choose another colour or move it"
         ),
         "shape_invisible": _("Element %(n)d: the shape has neither a line nor a fill"),
         "padding_too_large": _(

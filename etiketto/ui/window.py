@@ -341,46 +341,69 @@ class Window(Adw.ApplicationWindow):
 
     def _focus_key(self):
         """What holds the focus, to find it again in the rebuilt sidebar: a
-        named text field, or a row by its page, kind, title and place."""
+        named text field, or a row by its element, page, kind, title and
+        place, and the button in it that had the focus."""
         widget = self.get_focus()
         field = _focused_field(widget)
         if field:
             return ("field", *field)
-        while widget is not None and not isinstance(widget, Adw.PreferencesRow):
-            widget = widget.get_parent()
-        if widget is None:
+        row, button = _row_and_button(widget)
+        if row is None:
             return None
         page = self.sidebar_nav.get_visible_page()
-        rows = [
-            r
-            for r in _rows(page)
-            if type(r) is type(widget) and r.get_title() == widget.get_title()
-        ]
-        if widget not in rows:
+        element, scope = self._scope_of(row, page)
+        rows = _same_rows(scope, row)
+        if row not in rows:
             return None
-        cursor = widget.get_position() if isinstance(widget, Gtk.Editable) else -1
+        if button is not None:
+            buttons = _descendants(row, type(button))
+            place = (type(button), buttons.index(button)) if button in buttons else None
+        else:
+            place = None
+        cursor = row.get_position() if isinstance(row, Gtk.Editable) else -1
         return (
             "row",
             page.get_title(),
-            type(widget),
-            widget.get_title(),
-            rows.index(widget),
+            element,
+            type(row),
+            row.get_title(),
+            rows.index(row),
+            place,
             cursor,
         )
+
+    def _scope_of(self, row, page) -> tuple[int, Gtk.Widget]:
+        """The element whose row holds a row of the sidebar (0: none) and
+        the widget to look in."""
+        if page is self.sidebar_root:
+            for index, element_row in enumerate(self.elements_group.rows):
+                if row is element_row or row.is_ancestor(element_row):
+                    return element_id(self.label.elements[index]), element_row
+        return 0, page
 
     def _refocus(self, key) -> None:
         if key[0] == "field":
             _refocus(self.sidebar_nav, key[1], key[2])
             return
-        _kind, page_title, cls, title, place, cursor = key
+        _kind, page_title, element, cls, title, place, button, cursor = key
+        scope = self._scope_for(page_title, element)
+        rows = (
+            [r for r in _rows(scope) if type(r) is cls and r.get_title() == title] if scope else []
+        )
+        if place >= len(rows):
+            return
+        _focus_in(rows[place], button, cursor)
+
+    def _scope_for(self, page_title: str, element: int):
+        """Where to look for a row again: the page shown (if it is the one),
+        within the row of the element of that identity."""
         page = self.sidebar_nav.get_visible_page()
         if page.get_title() != page_title:
-            return
-        rows = [r for r in _rows(page) if type(r) is cls and r.get_title() == title]
-        if place < len(rows):
-            rows[place].grab_focus()
-            if cursor >= 0 and isinstance(rows[place], Gtk.Editable):
-                rows[place].set_position(cursor)
+            return None
+        if not element:
+            return page
+        ids = [element_id(e) for e in self.label.elements]
+        return self.elements_group.rows[ids.index(element)] if element in ids else None
 
     def _restore(self, label: Label | None, focus=None) -> None:
         if label is None:
@@ -956,6 +979,55 @@ def _refocus(root, name: str, cursor: int = -1) -> bool:
             return True
         child = child.get_next_sibling()
     return False
+
+
+# buttons in a row that can hold the focus (a colour button, a switch …)
+FOCUS_BUTTONS = (
+    Gtk.ColorDialogButton,
+    Gtk.FontDialogButton,
+    Gtk.MenuButton,
+    Gtk.Switch,
+    Gtk.ToggleButton,
+    Gtk.Button,
+)
+
+
+def _row_and_button(widget):
+    """The row a focused widget lies in, and the outermost button around it
+    inside that row (None if the row itself or its field has the focus)."""
+    button = None
+    while widget is not None and not isinstance(widget, Adw.PreferencesRow):
+        if isinstance(widget, FOCUS_BUTTONS):
+            button = widget
+        widget = widget.get_parent()
+    return widget, button
+
+
+def _focus_in(row, button, cursor: int) -> None:
+    """The focus to a row, or to the button in it (its kind, its place)."""
+    if button is not None:
+        buttons = _descendants(row, button[0])
+        if button[1] < len(buttons):
+            buttons[button[1]].grab_focus()
+        return
+    row.grab_focus()
+    if cursor >= 0 and isinstance(row, Gtk.Editable):
+        row.set_position(cursor)
+
+
+def _same_rows(scope, row) -> list:
+    return [r for r in _rows(scope) if type(r) is type(row) and r.get_title() == row.get_title()]
+
+
+def _descendants(root, cls) -> list:
+    found = []
+    child = root.get_first_child()
+    while child:
+        if type(child) is cls:
+            found.append(child)
+        found += _descendants(child, cls)
+        child = child.get_next_sibling()
+    return found
 
 
 def _rows(root) -> list:

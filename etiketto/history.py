@@ -104,6 +104,10 @@ class History:
     def mark_saved(self) -> None:
         """The label as it is now was saved; the next change is a new step."""
         self._saved = self._current
+        self.end_step()
+
+    def end_step(self) -> None:
+        """The next change is a step of its own (after a switch, saving)."""
         self._last = (None, 0.0)
 
     def record(self, label: Label, key: str | None = None) -> None:

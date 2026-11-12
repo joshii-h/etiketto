@@ -19,6 +19,7 @@ from etiketto.model import (  # noqa: E402
     ShapeElement,
     SymbolElement,
     TextElement,
+    element_id,
 )
 from etiketto.ui import styles  # noqa: E402
 from etiketto.ui.data import column_button  # noqa: E402
@@ -138,8 +139,8 @@ class ElementsGroup(Adw.PreferencesGroup):
 
         self._kind_rows(row, element, set_attr, prefix)
         row.add_row(styles.position_row(self.window, element, set_attr))
-        for widget, field in self._fields(row):
-            widget.set_name("field:%d:%s" % (index, field))
+        for widget, field in self._fields(row):  # by the element, wherever it moves
+            widget.set_name("field:%d:%s" % (element_id(element), field))
         return row
 
     def _kind_rows(self, row, element, set_attr, prefix) -> None:

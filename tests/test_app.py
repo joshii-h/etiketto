@@ -1288,7 +1288,7 @@ def test_warning_texts():
     for key, text in expected.items():
         assert texts.warning_text(RenderWarning(key, {"n": 2})) == text
     assert texts.warning_text(RenderWarning("no_room")) == (
-        "Safety margin, border and edge spacing leave no room – reduce them"
+        "Safety margin, border, its inset and edge spacing leave no room – reduce them"
     )
     assert texts.warning_text(RenderWarning("fixed_too_short")) == (
         "The fixed length is shorter than the spacing – increase it"

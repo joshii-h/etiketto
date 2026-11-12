@@ -300,7 +300,7 @@ def test_contexts_for_none_and_solid():
 
 def test_new_warning_texts():
     assert texts.warning_text(RenderWarning("no_contrast", {"n": 2})).startswith(
-        "Element 2: a black-and-white printer prints it in the colour of the background"
+        "Element 2: on a black-and-white printer it hardly stands out from what lies behind it"
     )
     assert texts.warning_text(RenderWarning("shape_invisible", {"n": 1})) == (
         "Element 1: the shape has neither a line nor a fill"
@@ -721,3 +721,87 @@ def test_hints_on_rows_and_buttons_without_effect(window):
     assert colour.get_tooltip_text() == "Choose a width first"
     border.set_value(0.5)
     assert colour.get_tooltip_text() == "Colour of the border"
+
+
+# --- review 4 ---------------------------------------------------------------------------
+
+
+def test_focus_returns_to_the_row_of_the_same_element(window):
+    window.label.elements = [TextElement(text=t) for t in ("One", "Two", "Three")]
+    window.expand_index = 2
+    window.rebuild_sidebar()
+    window.history.reset(window.label)
+    window.remove_element(0)
+    size = one(element_row(window, "Three"), Adw.SpinRow, title="Size")
+    size.grab_focus()
+    activate(window, "undo")
+    focus = window.get_focus()
+    three = one(element_row(window, "Three"), Adw.SpinRow, title="Size")
+    assert focus is three or focus.is_ancestor(three)
+
+
+def test_focus_on_a_colour_button_stays_on_it(window):
+    window.change(margin_mm=4)
+    row = one(window.label_group, Adw.SpinRow, title="Border")
+    button = one(row, Gtk.ColorDialogButton)
+    button.grab_focus()
+    activate(window, "undo")
+    row = one(window.label_group, Adw.SpinRow, title="Border")
+    button = one(row, Gtk.ColorDialogButton)
+    focus = window.get_focus()
+    assert focus is button or focus.is_ancestor(button)
+
+
+def test_counter_and_label_size_spin_into_one_step(window):
+    from etiketto.ui.variables import CounterGroup
+
+    window.label.elements[0].text = "{=counter}"
+    window.rebuild_sidebar()
+    window.history.reset(window.label)
+    group = one(window.sidebar, CounterGroup)
+    for value in (2, 3, 4, 5):
+        group.next_row.set_value(value)
+    activate(window, "undo")
+    assert window.label.counter_next == 1 and not enabled(window, "undo")
+    window.set_backend("cab")
+    window.history.reset(window.label)
+    width = one(window.label_group, Adw.SpinRow, title="Width")
+    for value in (51, 52, 53):
+        width.set_value(value)
+    activate(window, "undo")
+    assert not enabled(window, "undo")
+
+
+def test_switching_own_spacing_ends_a_step(window):
+    page = open_page(window, "Label", "Position")
+    one(page, Adw.SwitchRow, title="Own spacing").set_active(True)
+    one(page, Adw.SpinRow, title="Space after it").set_value(5)
+    activate(window, "undo")
+    assert window.label.elements[0].gap_mm == 2.0  # the switch is its own step
+    activate(window, "undo")
+    assert window.label.elements[0].gap_mm is None
+
+
+def test_the_shadow_colour_asks_for_an_offset(window):
+    page = open_page(window, "Label", "Outline and shadow")
+    shadow = one(page, Adw.SpinRow, title="Shadow")
+    assert one(shadow, Gtk.ColorDialogButton).get_tooltip_text() == "Choose an offset first"
+
+
+def test_a_hint_gives_back_what_the_row_shows_now(window):
+    from etiketto.ui import styles
+
+    element = window.label.elements[0]
+    row = Adw.ActionRow(title="x", subtitle="first")
+    follow = styles._Follow(element, lambda **_kw: None)
+    follow.track("min_size_pt", row, "hint")
+    assert row.get_subtitle() == "hint"
+    element.shrink = True
+    follow.update()
+    assert row.get_subtitle() == "first"
+    row.set_subtitle("changed meanwhile")
+    element.shrink = False
+    follow.update()
+    element.shrink = True
+    follow.update()
+    assert row.get_subtitle() == "changed meanwhile"

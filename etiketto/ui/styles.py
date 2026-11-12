@@ -69,8 +69,8 @@ class _Follow:
     def __init__(self, element, set_attr: SetAttr):
         self.element, self.set_attr = element, set_attr
         self.conditions = EFFECTIVE.get(type(element).__name__, {})
-        # field: (widget, hint shown while it is off, what it shows else)
-        self.widgets: dict[str, tuple[Gtk.Widget, str, str]] = {}
+        # field: (widget, hint shown while it is off)
+        self.widgets: dict[str, tuple[Gtk.Widget, str]] = {}
 
     def __call__(self, **changes) -> None:
         self.set_attr(**changes)
@@ -79,25 +79,29 @@ class _Follow:
     def track(self, name: str, widget: Gtk.Widget, hint: str = "") -> Gtk.Widget:
         """Follow a widget; hint: why it is off (a row's subtitle or a
         button's tooltip while it is)."""
-        own = (
-            widget.get_subtitle()
-            if isinstance(widget, Adw.ActionRow)
-            else widget.get_tooltip_text()
-        )
-        self.widgets[name] = (widget, hint, own or "")
+        self.widgets[name] = (widget, hint)
         self.update()
         return widget
 
     def update(self) -> None:
-        for name, (widget, hint, own) in self.widgets.items():
+        for name, (widget, hint) in self.widgets.items():
             on = self.conditions[name](self.element)
+            if hint and on != widget.get_sensitive():
+                _swap_hint(widget, hint, on)
             widget.set_sensitive(on)
-            if hint:
-                text = own if on else hint
-                if isinstance(widget, Adw.ActionRow):
-                    widget.set_subtitle(text)
-                else:
-                    widget.set_tooltip_text(text)
+
+
+def _swap_hint(widget: Gtk.Widget, hint: str, on: bool) -> None:
+    """Show the hint while a widget is off; back on, what it showed before
+    (read when it went off, so later changes of it are kept)."""
+    row = isinstance(widget, Adw.ActionRow)
+    if not on:
+        widget.own_text = widget.get_subtitle() if row else widget.get_tooltip_text()
+    text = (getattr(widget, "own_text", "") or "") if on else hint
+    if row:
+        widget.set_subtitle(text)
+    else:
+        widget.set_tooltip_text(text)
 
 
 def _page(rows, window: Window, element, set_attr: SetAttr, group) -> None:
@@ -151,7 +155,9 @@ def _position_rows(window: Window, group, element, set_attr: SetAttr) -> None:
 
     def own(active: bool) -> None:
         gap.set_sensitive(active)
+        window.history.end_step()  # a switch: not joined with spinning before or after
         set_attr(gap_mm=round(window.unit.from_display(gap.get_value()), 3) if active else None)
+        window.history.end_step()
 
     group.add(
         switch_row(
@@ -307,9 +313,21 @@ def _text_box(window: Window, group, element: TextElement, set_attr) -> None:
 
 
 def _text_effects(window: Window, group, element: TextElement, set_attr) -> None:
-    for title, attr, colour_attr, name in (
-        (_("Outline"), "outline_mm", "outline_color", _("Colour of the outline")),
-        (_("Shadow"), "shadow_mm", "shadow_color", _("Colour of the shadow")),
+    for title, attr, colour_attr, name, hint in (
+        (
+            _("Outline"),
+            "outline_mm",
+            "outline_color",
+            _("Colour of the outline"),
+            _("Choose a width first"),
+        ),
+        (
+            _("Shadow"),
+            "shadow_mm",
+            "shadow_color",
+            _("Colour of the shadow"),
+            _("Choose an offset first"),
+        ),
     ):
         line = length_row(
             window.unit,
@@ -324,9 +342,7 @@ def _text_effects(window: Window, group, element: TextElement, set_attr) -> None
         colour = color_button(
             getattr(element, colour_attr), lambda v, a=colour_attr: set_attr(**{a: v})
         )
-        line.add_suffix(
-            set_attr.track(colour_attr, _named(colour, name), _("Choose a width first"))
-        )
+        line.add_suffix(set_attr.track(colour_attr, _named(colour, name), hint))
         group.add(line)
 
 

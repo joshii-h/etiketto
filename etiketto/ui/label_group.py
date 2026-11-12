@@ -376,7 +376,7 @@ class LabelGroup(Adw.PreferencesGroup):
         index = self._size_keys.index(self._size_key())
         if self._size_row.get_selected() != index:
             self._size_row.set_selected(index)
-        self.window.mark_changed()
+        self.window.mark_changed("label:media_size")  # spinning on: one step of undo
 
     def _show_media_size(self) -> None:
         """Width and height rows after the size was chosen from the list."""
