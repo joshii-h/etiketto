@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from gi.repository import Gio, GLib, Gtk
 
+from tavletta import imageformats
 from tavletta.model import Label, LabelError, PageElement, TextElement
 from tavletta.shipping.source import SourceError, page_info
 from tavletta.shipping.targets import Target, make_label
@@ -27,17 +28,9 @@ if TYPE_CHECKING:
     from tavletta.ui.window import Window
 
 
-# shipping labels: PDF and the image formats Pillow reads
-SHIPPING_TYPES = (
-    "application/pdf",
-    "image/png",
-    "image/jpeg",
-    "image/gif",
-    "image/bmp",
-    "image/tiff",
-    "image/webp",
-)
-SHIPPING_SUFFIXES = ("pdf", "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp")
+# shipping labels: PDF and the image formats a label may embed
+SHIPPING_TYPES = ("application/pdf", *imageformats.MIME_TYPES)
+SHIPPING_SUFFIXES = ("pdf", *imageformats.SUFFIXES)
 
 
 def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
@@ -60,8 +53,10 @@ class Files:
 
     def choose_image(self, callback) -> None:
         flt = Gtk.FileFilter(name=_("Images"))
-        flt.add_pixbuf_formats()
-        flt.add_suffix("webp")
+        for mime in imageformats.MIME_TYPES:
+            flt.add_mime_type(mime)
+        for suffix in imageformats.SUFFIXES:
+            flt.add_suffix(suffix)
         dialog = Gtk.FileDialog(title=_("Choose image"), filters=_filters(flt))
 
         def done(d, result):

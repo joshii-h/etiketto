@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 16:04+0100\n"
+"PO-Revision-Date: 2026-11-12 16:53+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: fi\n"
 "Language: fi\n"
@@ -304,8 +304,8 @@ msgstr "ota itse valitsemasi pääsytunnus vakiosyötteestä (tallennetaan algor
 msgid "Unknown printer model: %s"
 msgstr "Tuntematon tulostinmalli: %s"
 
-#: tavletta/cli.py:464 tavletta/ui/files.py:89 tavletta/ui/files.py:142
-#: tavletta/ui/texts.py:303 tavletta/ui/texts.py:640
+#: tavletta/cli.py:464 tavletta/ui/files.py:84 tavletta/ui/files.py:137
+#: tavletta/ui/texts.py:318 tavletta/ui/texts.py:655
 #: tavletta/server/service.py:675
 #, python-format
 msgid "Cannot open %s"
@@ -354,7 +354,7 @@ msgid ""
 "Several printers found – choose one with --host (tavletta list-printers)"
 msgstr "Löytyi useita tulostimia – valitse yksi valitsimella --host (tavletta list-printers)"
 
-#: tavletta/cli.py:744 tavletta/ui/texts.py:683 tavletta/server/service.py:1253
+#: tavletta/cli.py:744 tavletta/ui/texts.py:698 tavletta/server/service.py:1253
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kohdetta %s ei voi tallentaa"
@@ -389,7 +389,7 @@ msgstr "Ei tulostettavia rivejä"
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "Tarra käyttää kansionsa ulkopuolista datatiedostoa: anna se valitsimella --data"
 
-#: tavletta/cli.py:1009 tavletta/ui/window.py:844
+#: tavletta/cli.py:1009 tavletta/ui/window.py:849
 #: tavletta/server/service.py:817
 #, python-format
 msgid "No such column: %s"
@@ -441,8 +441,8 @@ msgstr "Taulukot (CSV, ODS, XLSX)"
 msgid "Choose data file"
 msgstr "Valitse tietotiedosto"
 
-#: tavletta/ui/data.py:108 tavletta/ui/files.py:109 tavletta/ui/files.py:131
-#: tavletta/ui/files.py:212 tavletta/ui/texts.py:205
+#: tavletta/ui/data.py:108 tavletta/ui/files.py:104 tavletta/ui/files.py:126
+#: tavletta/ui/files.py:207 tavletta/ui/texts.py:207
 msgid "Only local files can be used"
 msgstr "Vain paikallisia tiedostoja voi käyttää"
 
@@ -544,8 +544,8 @@ msgstr "Ei vielä sisältöä"
 msgid "Add text, an image, a symbol or a code"
 msgstr "Lisää tekstiä, kuva, symboli tai koodi"
 
-#: tavletta/ui/elements.py:104 tavletta/ui/texts.py:243
-#: tavletta/ui/window.py:956
+#: tavletta/ui/elements.py:104 tavletta/ui/texts.py:258
+#: tavletta/ui/window.py:961
 msgid "Text"
 msgstr "Teksti"
 
@@ -582,7 +582,7 @@ msgid "Move up"
 msgstr "Siirrä eteenpäin"
 
 #: tavletta/ui/elements.py:226 tavletta/ui/elements.py:363
-#: tavletta/ui/freelayout.py:183
+#: tavletta/ui/freelayout.py:190
 msgid "Size"
 msgstr "Koko"
 
@@ -602,7 +602,7 @@ msgstr "Nimi komentoriville"
 msgid "Font"
 msgstr "Fontti"
 
-#: tavletta/ui/elements.py:302 tavletta/ui/freelayout.py:207
+#: tavletta/ui/elements.py:302 tavletta/ui/freelayout.py:214
 msgid "Bold"
 msgstr "Lihavointi"
 
@@ -639,7 +639,7 @@ msgstr "Alue"
 msgid "Scale"
 msgstr "Skaalaus"
 
-#: tavletta/ui/elements.py:344 tavletta/ui/texts.py:247
+#: tavletta/ui/elements.py:344 tavletta/ui/texts.py:262
 msgid "Symbol"
 msgstr "Symboli"
 
@@ -654,7 +654,7 @@ msgid ""
 "is light"
 msgstr "Mustavalkotulostimet tulostavat symbolit mustina, tai valkoisina, jos väri on vaalea"
 
-#: tavletta/ui/elements.py:381 tavletta/ui/freelayout.py:159
+#: tavletta/ui/elements.py:381 tavletta/ui/freelayout.py:166
 #: tavletta/ui/styles.py:113
 msgid "Rotation"
 msgstr "Kierto"
@@ -671,83 +671,83 @@ msgstr "Sisältö (linkki, teksti, numero)"
 msgid "Colour"
 msgstr "Väri"
 
-#: tavletta/ui/files.py:57
+#: tavletta/ui/files.py:50
 msgid "Tavletta labels"
 msgstr "Tavletta-tarrat"
 
-#: tavletta/ui/files.py:62
+#: tavletta/ui/files.py:55
 msgid "Images"
 msgstr "Kuvat"
 
-#: tavletta/ui/files.py:65 tavletta/ui/label_group.py:138
+#: tavletta/ui/files.py:60 tavletta/ui/label_group.py:138
 msgid "Choose image"
 msgstr "Valitse kuva"
 
-#: tavletta/ui/files.py:85
+#: tavletta/ui/files.py:80
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Mallia %(name)s ei voi avata"
 
-#: tavletta/ui/files.py:99
+#: tavletta/ui/files.py:94
 msgid "Open label"
 msgstr "Avaa tarra"
 
-#: tavletta/ui/files.py:116
+#: tavletta/ui/files.py:111
 msgid "PDF documents and images"
 msgstr "PDF-asiakirjat ja kuvat"
 
-#: tavletta/ui/files.py:121
+#: tavletta/ui/files.py:116
 msgid "Open shipping label"
 msgstr "Avaa lähetystarra"
 
-#: tavletta/ui/files.py:186
+#: tavletta/ui/files.py:181
 msgid "label"
 msgstr "tarra"
 
-#: tavletta/ui/files.py:230
+#: tavletta/ui/files.py:225
 msgid "Save label"
 msgstr "Tallenna tarra"
 
-#: tavletta/ui/files.py:238 tavletta/ui/window.py:191
+#: tavletta/ui/files.py:233 tavletta/ui/window.py:196
 msgid "Save as template…"
 msgstr "Tallenna mallina…"
 
-#: tavletta/ui/files.py:247 tavletta/ui/files.py:260
+#: tavletta/ui/files.py:242 tavletta/ui/files.py:255
 #, python-format
 msgid "Saved %s"
 msgstr "Tallennettu: %s"
 
-#: tavletta/ui/files.py:273
+#: tavletta/ui/files.py:268
 msgid "Export PNG"
 msgstr "Vie PNG-kuvaksi"
 
-#: tavletta/ui/files.py:281 tavletta/ui/window.py:869
+#: tavletta/ui/files.py:276 tavletta/ui/window.py:874
 msgid "The preview cannot be drawn"
 msgstr "Esikatselua ei voi piirtää"
 
-#: tavletta/ui/files.py:283
+#: tavletta/ui/files.py:278
 msgid "Exported"
 msgstr "Viety"
 
-#: tavletta/ui/files.py:293
+#: tavletta/ui/files.py:288
 msgid "No templates yet – use “Save as template…”"
 msgstr "Ei vielä malleja – käytä ”Tallenna mallina…”"
 
-#: tavletta/ui/files.py:320 tavletta/ui/label_group.py:67
-#: tavletta/ui/shortcuts.py:45 tavletta/ui/window.py:71
-#: tavletta/ui/window.py:217
+#: tavletta/ui/files.py:315 tavletta/ui/label_group.py:67
+#: tavletta/ui/shortcuts.py:45 tavletta/ui/window.py:76
+#: tavletta/ui/window.py:222
 msgid "Label"
 msgstr "Tarra"
 
-#: tavletta/ui/files.py:330
+#: tavletta/ui/files.py:325
 msgid "Discard changes?"
 msgstr "Hylätäänkö muutokset?"
 
-#: tavletta/ui/files.py:331
+#: tavletta/ui/files.py:326
 msgid "The current label has unsaved changes."
 msgstr "Nykyisessä tarrassa on tallentamattomia muutoksia."
 
-#: tavletta/ui/files.py:333
+#: tavletta/ui/files.py:328
 msgid "Discard"
 msgstr "Hylkää"
 
@@ -771,87 +771,87 @@ msgstr "Elementit sijoitetaan peräkkäin nauhan suuntaisesti"
 msgid "Layout"
 msgstr "Asettelu"
 
-#: tavletta/ui/freelayout.py:100
+#: tavletta/ui/freelayout.py:107
 msgid "Position and size"
 msgstr "Sijainti ja koko"
 
-#: tavletta/ui/freelayout.py:101
+#: tavletta/ui/freelayout.py:108
 msgid "From the label's top left corner"
 msgstr "Tarran vasemmasta yläkulmasta"
 
-#: tavletta/ui/freelayout.py:108
+#: tavletta/ui/freelayout.py:115
 msgid "To the top left corner of the letters' ink"
 msgstr "Kirjainten musteen vasempaan yläkulmaan"
 
-#: tavletta/ui/freelayout.py:109
+#: tavletta/ui/freelayout.py:116
 msgid "To the top left corner of the first module, without the quiet zone"
 msgstr "Ensimmäisen moduulin vasempaan yläkulmaan, ilman hiljaista aluetta"
 
-#: tavletta/ui/freelayout.py:123 tavletta/ui/image_crop.py:82
+#: tavletta/ui/freelayout.py:130 tavletta/ui/image_crop.py:82
 #: tavletta/ui/label_group.py:335 tavletta/ui/styles.py:507
 msgid "Height"
 msgstr "Korkeus"
 
-#: tavletta/ui/freelayout.py:136
+#: tavletta/ui/freelayout.py:143
 msgid "Module size"
 msgstr "Moduulin koko"
 
-#: tavletta/ui/freelayout.py:142
+#: tavletta/ui/freelayout.py:149
 #, python-format
 msgid "%(unit)s, rounded to whole printer dots"
 msgstr "%(unit)s, pyöristetty kokonaisiin tulostuspisteisiin"
 
-#: tavletta/ui/freelayout.py:149
+#: tavletta/ui/freelayout.py:156
 msgid "Bar height"
 msgstr "Viivojen korkeus"
 
-#: tavletta/ui/freelayout.py:185
+#: tavletta/ui/freelayout.py:192
 #, python-format
 msgid "%(unit)s, the font's height"
 msgstr "%(unit)s, fontin korkeus (em)"
 
-#: tavletta/ui/freelayout.py:207
+#: tavletta/ui/freelayout.py:214
 msgid "Regular"
 msgstr "Normaali"
 
-#: tavletta/ui/freelayout.py:216
+#: tavletta/ui/freelayout.py:223
 msgid "Weight"
 msgstr "Paksuus"
 
-#: tavletta/ui/freelayout.py:228
+#: tavletta/ui/freelayout.py:235
 msgid "As the bold button sets it"
 msgstr "Kuten lihavointipainike sen asettaa"
 
-#: tavletta/ui/freelayout.py:251
+#: tavletta/ui/freelayout.py:258
 msgid "Standard (medium)"
 msgstr "Vakio (keskitaso)"
 
 #. translators: the share of a QR code that may be damaged and still read
-#: tavletta/ui/freelayout.py:253
+#: tavletta/ui/freelayout.py:260
 #, python-format
 msgid "Low (%d %%)"
 msgstr "Matala (%d %%)"
 
-#: tavletta/ui/freelayout.py:254
+#: tavletta/ui/freelayout.py:261
 #, python-format
 msgid "Medium (%d %%)"
 msgstr "Keskitaso (%d %%)"
 
-#: tavletta/ui/freelayout.py:255
+#: tavletta/ui/freelayout.py:262
 #, python-format
 msgid "Quartile (%d %%)"
 msgstr "Neljännes (%d %%)"
 
-#: tavletta/ui/freelayout.py:256
+#: tavletta/ui/freelayout.py:263
 #, python-format
 msgid "High (%d %%)"
 msgstr "Korkea (%d %%)"
 
-#: tavletta/ui/freelayout.py:259
+#: tavletta/ui/freelayout.py:266
 msgid "Error correction"
 msgstr "Virheenkorjaus"
 
-#: tavletta/ui/freelayout.py:264
+#: tavletta/ui/freelayout.py:271
 msgid "How much of the code may be damaged and still be read"
 msgstr "Kuinka suuri osa koodista saa olla vahingoittunut ja silti luettavissa"
 
@@ -941,7 +941,7 @@ msgstr "Valitse säilytettävä kuvan osa vetämällä"
 #: tavletta/ui/image_crop.py:64 tavletta/ui/printer.py:233
 #: tavletta/ui/printing.py:431 tavletta/ui/printing.py:673
 #: tavletta/ui/sheets.py:206 tavletta/ui/sheets.py:365
-#: tavletta/ui/symbols.py:79 tavletta/ui/window.py:885
+#: tavletta/ui/symbols.py:79 tavletta/ui/window.py:890
 msgid "Cancel"
 msgstr "Peru"
 
@@ -950,11 +950,11 @@ msgstr "Peru"
 msgid "Apply"
 msgstr "Ota käyttöön"
 
-#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:109
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:110
 msgid "Left"
 msgstr "Vasen"
 
-#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:160
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:161
 msgid "Top"
 msgstr "Yläreuna"
 
@@ -1449,7 +1449,7 @@ msgid "Print label"
 msgstr "Tulosta tarra"
 
 #: tavletta/ui/printing.py:432 tavletta/ui/printing.py:758
-#: tavletta/ui/shortcuts.py:51 tavletta/ui/window.py:179
+#: tavletta/ui/shortcuts.py:51 tavletta/ui/window.py:184
 msgid "Print"
 msgstr "Tulosta"
 
@@ -1525,7 +1525,7 @@ msgstr "Tulostus epäonnistui"
 msgid "Details"
 msgstr "Tiedot"
 
-#: tavletta/ui/printing.py:770 tavletta/ui/window.py:909
+#: tavletta/ui/printing.py:770 tavletta/ui/window.py:914
 msgid "Report"
 msgstr "Ilmoita"
 
@@ -1602,7 +1602,7 @@ msgstr "Napsauta tarraa jättääksesi sen pois tai tulostaaksesi siihen taas. V
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Tarrat %s ulottuvat marginaaliin, johon tulostin ei voi tulostaa"
 
-#: tavletta/ui/shipping.py:199 tavletta/ui/texts.py:260
+#: tavletta/ui/shipping.py:199 tavletta/ui/texts.py:275
 msgid "Shipping label"
 msgstr "Lähetystarra"
 
@@ -1638,27 +1638,27 @@ msgstr "Seuraava ehdotus"
 msgid "Page"
 msgstr "Sivu"
 
-#: tavletta/ui/shortcuts.py:47 tavletta/ui/window.py:188
+#: tavletta/ui/shortcuts.py:47 tavletta/ui/window.py:193
 msgid "New label"
 msgstr "Uusi tarra"
 
-#: tavletta/ui/shortcuts.py:48 tavletta/ui/window.py:151
+#: tavletta/ui/shortcuts.py:48 tavletta/ui/window.py:156
 msgid "Open"
 msgstr "Avaa"
 
-#: tavletta/ui/shortcuts.py:49 tavletta/ui/window.py:164
+#: tavletta/ui/shortcuts.py:49 tavletta/ui/window.py:169
 msgid "Save"
 msgstr "Tallenna"
 
-#: tavletta/ui/shortcuts.py:50 tavletta/ui/window.py:190
+#: tavletta/ui/shortcuts.py:50 tavletta/ui/window.py:195
 msgid "Save as…"
 msgstr "Tallenna nimellä…"
 
-#: tavletta/ui/shortcuts.py:52 tavletta/ui/window.py:169
+#: tavletta/ui/shortcuts.py:52 tavletta/ui/window.py:174
 msgid "Undo"
 msgstr "Kumoa"
 
-#: tavletta/ui/shortcuts.py:53 tavletta/ui/window.py:170
+#: tavletta/ui/shortcuts.py:53 tavletta/ui/window.py:175
 msgid "Redo"
 msgstr "Tee uudelleen"
 
@@ -1702,11 +1702,11 @@ msgstr "Siirrä avointa elementtiä taaksepäin"
 msgid "General"
 msgstr "Yleiset"
 
-#: tavletta/ui/shortcuts.py:82 tavletta/ui/window.py:196
+#: tavletta/ui/shortcuts.py:82 tavletta/ui/window.py:201
 msgid "Keyboard shortcuts"
 msgstr "Pikanäppäimet"
 
-#: tavletta/ui/shortcuts.py:83 tavletta/ui/window.py:197
+#: tavletta/ui/shortcuts.py:83 tavletta/ui/window.py:202
 msgid "Help"
 msgstr "Ohje"
 
@@ -1889,7 +1889,7 @@ msgstr "Kuvaa ei voi lukea"
 msgid "Crop…"
 msgstr "Rajaa…"
 
-#: tavletta/ui/styles.py:403 tavletta/ui/texts.py:67
+#: tavletta/ui/styles.py:403 tavletta/ui/texts.py:68
 msgid "Brightness"
 msgstr "Kirkkaus"
 
@@ -1990,738 +1990,745 @@ msgstr "Viimeksi käytetyt"
 msgid "No symbol found"
 msgstr "Symbolia ei löytynyt"
 
-#: tavletta/ui/texts.py:32
+#: tavletta/ui/texts.py:33
 msgid "Full cut"
 msgstr "Täysleikkaus"
 
-#: tavletta/ui/texts.py:33
+#: tavletta/ui/texts.py:34
 msgid "Half cut"
 msgstr "Puolileikkaus"
 
-#: tavletta/ui/texts.py:34
+#: tavletta/ui/texts.py:35
 msgid "Cut after the last label"
 msgstr "Leikkaus viimeisen tarran jälkeen"
 
-#: tavletta/ui/texts.py:35
+#: tavletta/ui/texts.py:36
 msgid "No cut"
 msgstr "Ei leikkausta"
 
-#: tavletta/ui/texts.py:41
+#: tavletta/ui/texts.py:42
 msgid "Chain printing"
 msgstr "Ketjutulostus"
 
-#: tavletta/ui/texts.py:42
+#: tavletta/ui/texts.py:43
 msgid "Saves tape: the last label stays in the printer until the next print"
 msgstr "Säästää nauhaa: viimeinen tarra jää tulostimeen seuraavaan tulostukseen asti"
 
-#: tavletta/ui/texts.py:44
+#: tavletta/ui/texts.py:45
 msgid "High resolution"
 msgstr "Korkea tarkkuus"
 
-#: tavletta/ui/texts.py:44
+#: tavletta/ui/texts.py:45
 msgid "Twice as fine along the tape, prints more slowly"
 msgstr "Kaksi kertaa tarkempi nauhan suunnassa, tulostaa hitaammin"
 
-#: tavletta/ui/texts.py:48
+#: tavletta/ui/texts.py:49
 msgid "Laminated tape"
 msgstr "Laminoitu nauha"
 
-#: tavletta/ui/texts.py:49
+#: tavletta/ui/texts.py:50
 msgid "Non-laminated tape"
 msgstr "Laminoimaton nauha"
 
-#: tavletta/ui/texts.py:50
+#: tavletta/ui/texts.py:51
 msgid "Fabric tape"
 msgstr "Kangasnauha"
 
-#: tavletta/ui/texts.py:51
+#: tavletta/ui/texts.py:52
 msgid "FLe tape"
 msgstr "FLe-nauha"
 
-#: tavletta/ui/texts.py:52
+#: tavletta/ui/texts.py:53
 msgid "Flexible ID tape"
 msgstr "Joustava ID-nauha"
 
-#: tavletta/ui/texts.py:53
+#: tavletta/ui/texts.py:54
 msgid "Satin tape"
 msgstr "Satiininauha"
 
-#: tavletta/ui/texts.py:54
+#: tavletta/ui/texts.py:55
 msgid "Heat-shrink tube 2:1"
 msgstr "Kutisteletku 2:1"
 
-#: tavletta/ui/texts.py:55
+#: tavletta/ui/texts.py:56
 msgid "Heat-shrink tube 3:1"
 msgstr "Kutisteletku 3:1"
 
-#: tavletta/ui/texts.py:59
+#: tavletta/ui/texts.py:60
 msgid "Vivid"
 msgstr "Eloisa"
 
-#: tavletta/ui/texts.py:60
+#: tavletta/ui/texts.py:61
 msgid "Normal"
 msgstr "Normaali"
 
-#: tavletta/ui/texts.py:61
+#: tavletta/ui/texts.py:62
 msgid "Black and white (sharper)"
 msgstr "Mustavalkoinen (terävämpi)"
 
-#: tavletta/ui/texts.py:62
+#: tavletta/ui/texts.py:63
 msgid "Black"
 msgstr "Musta"
 
-#: tavletta/ui/texts.py:63
+#: tavletta/ui/texts.py:64
 msgid "Red and black"
 msgstr "Punainen ja musta"
 
-#: tavletta/ui/texts.py:65
+#: tavletta/ui/texts.py:66
 msgid "Standard"
 msgstr "Vakio"
 
-#: tavletta/ui/texts.py:65
+#: tavletta/ui/texts.py:66
 msgid "High resolution (600 dpi)"
 msgstr "Suuri tarkkuus (600 dpi)"
 
-#: tavletta/ui/texts.py:68
+#: tavletta/ui/texts.py:69
 msgid "Red"
 msgstr "Punainen"
 
-#: tavletta/ui/texts.py:69
+#: tavletta/ui/texts.py:70
 msgid "Green"
 msgstr "Vihreä"
 
-#: tavletta/ui/texts.py:70
+#: tavletta/ui/texts.py:71
 msgid "Blue"
 msgstr "Sininen"
 
-#: tavletta/ui/texts.py:72
+#: tavletta/ui/texts.py:73
 msgid "Start"
 msgstr "Alku"
 
-#: tavletta/ui/texts.py:72 tavletta/ui/texts.py:109
+#: tavletta/ui/texts.py:73 tavletta/ui/texts.py:110
 msgid "Centre"
 msgstr "Keskellä"
 
-#: tavletta/ui/texts.py:72
+#: tavletta/ui/texts.py:73
 msgid "End"
 msgstr "Loppu"
 
-#: tavletta/ui/texts.py:73
+#: tavletta/ui/texts.py:74
 msgid "Across the roll"
 msgstr "Rullan poikki"
 
-#: tavletta/ui/texts.py:73
+#: tavletta/ui/texts.py:74
 msgid "Along the roll"
 msgstr "Rullan suunnassa"
 
-#: tavletta/ui/texts.py:75
+#: tavletta/ui/texts.py:76
 msgid "Single label"
 msgstr "Yksittäinen tarra"
 
-#: tavletta/ui/texts.py:75
+#: tavletta/ui/texts.py:76
 msgid "Label sheet"
 msgstr "Tarra-arkki"
 
-#: tavletta/ui/texts.py:78
+#: tavletta/ui/texts.py:79
 msgid "Resolution"
 msgstr "Tarkkuus"
 
-#: tavletta/ui/texts.py:79
+#: tavletta/ui/texts.py:80
 msgid "Label sensor"
 msgstr "Tarra-anturi"
 
-#: tavletta/ui/texts.py:80
+#: tavletta/ui/texts.py:81
 msgid "After printing"
 msgstr "Tulostuksen jälkeen"
 
-#: tavletta/ui/texts.py:81
+#: tavletta/ui/texts.py:82
 msgid "Darkness"
 msgstr "Tummuus"
 
-#: tavletta/ui/texts.py:82
+#: tavletta/ui/texts.py:83
 msgid "Print density"
 msgstr "Tulostustummuus"
 
-#: tavletta/ui/texts.py:83
+#: tavletta/ui/texts.py:84
 msgid "Speed"
 msgstr "Nopeus"
 
-#: tavletta/ui/texts.py:84
+#: tavletta/ui/texts.py:85
 msgid "Print upside down"
 msgstr "Tulosta ylösalaisin"
 
-#: tavletta/ui/texts.py:85
+#: tavletta/ui/texts.py:86
 msgid "Print method"
 msgstr "Tulostustapa"
 
-#: tavletta/ui/texts.py:89
+#: tavletta/ui/texts.py:90
 msgid "As reported by the printer"
 msgstr "Tulostimen ilmoittama"
 
-#: tavletta/ui/texts.py:90
+#: tavletta/ui/texts.py:91
 msgid "As set on the printer"
 msgstr "Tulostimen asetusten mukaan"
 
-#: tavletta/ui/texts.py:91
+#: tavletta/ui/texts.py:92
 msgid "Gap between labels"
 msgstr "Rako tarrojen välissä"
 
-#: tavletta/ui/texts.py:92
+#: tavletta/ui/texts.py:93
 msgid "Black mark"
 msgstr "Musta merkki"
 
-#: tavletta/ui/texts.py:93
+#: tavletta/ui/texts.py:94
 msgid "Continuous media"
 msgstr "Jatkuva materiaali"
 
-#: tavletta/ui/texts.py:94
+#: tavletta/ui/texts.py:95
 msgid "Transparent labels"
 msgstr "Läpinäkyvät tarrat"
 
-#: tavletta/ui/texts.py:95
+#: tavletta/ui/texts.py:96
 msgid "Tear off"
 msgstr "Repäisy"
 
-#: tavletta/ui/texts.py:96
+#: tavletta/ui/texts.py:97
 msgid "Peel off"
 msgstr "Irrotus"
 
-#: tavletta/ui/texts.py:97
+#: tavletta/ui/texts.py:98
 msgid "Cut off"
 msgstr "Leikkaus"
 
-#: tavletta/ui/texts.py:98
+#: tavletta/ui/texts.py:99
 msgid "Thermal transfer (ribbon)"
 msgstr "Lämpösiirto (värinauha)"
 
-#: tavletta/ui/texts.py:99
+#: tavletta/ui/texts.py:100
 msgid "Thermal direct"
 msgstr "Suoralämpö"
 
-#: tavletta/ui/texts.py:109
+#: tavletta/ui/texts.py:110
 msgid "Right"
 msgstr "Oikea"
 
-#: tavletta/ui/texts.py:114
+#: tavletta/ui/texts.py:115
 msgid "2D codes"
 msgstr "2D-koodit"
 
-#: tavletta/ui/texts.py:116
+#: tavletta/ui/texts.py:117
 msgid "QR code"
 msgstr "QR-koodi"
 
-#: tavletta/ui/texts.py:123
+#: tavletta/ui/texts.py:124
 msgid "Linear barcodes"
 msgstr "Lineaariset viivakoodit"
 
-#: tavletta/ui/texts.py:138
+#: tavletta/ui/texts.py:139
 msgid ""
 "Application identifiers in brackets, e.g. "
 "(01)09501101530003(17)261231(10)AB12"
 msgstr "Sovellustunnukset sulkeissa, esim. (01)09501101530003(17)261231(10)AB12"
 
-#: tavletta/ui/texts.py:141
+#: tavletta/ui/texts.py:142
 msgid "Links, text, Wi-Fi access; phones read it"
 msgstr "Linkit, teksti, Wi-Fi-yhteys; puhelimet lukevat sen"
 
-#: tavletta/ui/texts.py:142
+#: tavletta/ui/texts.py:143
 msgid "Text or numbers in little space, e.g. on small parts"
 msgstr "Tekstiä tai numeroita pieneen tilaan, esim. pieniin osiin"
 
-#: tavletta/ui/texts.py:143
+#: tavletta/ui/texts.py:144
 msgid "Much text, e.g. an address or a document number"
 msgstr "Paljon tekstiä, esim. osoite tai asiakirjan numero"
 
-#: tavletta/ui/texts.py:144
+#: tavletta/ui/texts.py:145
 msgid "Text or numbers; needs no blank margin, e.g. on tickets"
 msgstr "Tekstiä tai numeroita; ei tarvitse tyhjää marginaalia, esim. lipuissa"
 
-#: tavletta/ui/texts.py:145
+#: tavletta/ui/texts.py:146
 msgid "Latin letters, digits and punctuation"
 msgstr "Latinalaiset kirjaimet, numerot ja välimerkit"
 
-#: tavletta/ui/texts.py:146
+#: tavletta/ui/texts.py:147
 msgid "Capital letters, digits, spaces and - . $ / + %"
 msgstr "Isot kirjaimet, numerot, välilyönnit ja - . $ / + %"
 
-#: tavletta/ui/texts.py:147
+#: tavletta/ui/texts.py:148
 msgid "Latin letters, digits and punctuation; shorter than Code 39"
 msgstr "Latinalaiset kirjaimet, numerot ja välimerkit; lyhyempi kuin Code 39"
 
-#: tavletta/ui/texts.py:148
+#: tavletta/ui/texts.py:149
 msgid "12 digits, the check digit is added (or 13 with it)"
 msgstr "12 numeroa, tarkistusnumero lisätään (tai 13 sen kanssa)"
 
-#: tavletta/ui/texts.py:149
+#: tavletta/ui/texts.py:150
 msgid "7 digits, the check digit is added (or 8 with it)"
 msgstr "7 numeroa, tarkistusnumero lisätään (tai 8 sen kanssa)"
 
-#: tavletta/ui/texts.py:150
+#: tavletta/ui/texts.py:151
 msgid "11 digits, the check digit is added (or 12 with it)"
 msgstr "11 numeroa, tarkistusnumero lisätään (tai 12 sen kanssa)"
 
-#: tavletta/ui/texts.py:151
+#: tavletta/ui/texts.py:152
 msgid "7 digits starting with 0 or 1, the check digit is added (or 8 with it)"
 msgstr "7 numeroa, alussa 0 tai 1, tarkistusnumero lisätään (tai 8 sen kanssa)"
 
-#: tavletta/ui/texts.py:152
+#: tavletta/ui/texts.py:153
 msgid ""
 "13 digits of a shipping carton's GTIN, the check digit is added (or 14 with "
 "it)"
 msgstr "13 numeroa kuljetuslaatikon GTIN-koodista, tarkistusnumero lisätään (tai 14 sen kanssa)"
 
-#: tavletta/ui/texts.py:158
+#: tavletta/ui/texts.py:159
 msgid "Whole area, centred"
 msgstr "Koko alue, keskitetty"
 
-#: tavletta/ui/texts.py:158
+#: tavletta/ui/texts.py:159
 msgid "Fill the label, edges cut off"
 msgstr "Täytä tarra, reunat leikataan"
 
-#: tavletta/ui/texts.py:160
+#: tavletta/ui/texts.py:161
 msgid "Middle"
 msgstr "Keskellä"
 
-#: tavletta/ui/texts.py:160
+#: tavletta/ui/texts.py:161
 msgid "Bottom"
 msgstr "Alareuna"
 
-#: tavletta/ui/texts.py:162
+#: tavletta/ui/texts.py:163
 msgid "Automatic"
 msgstr "Automaattinen"
 
-#: tavletta/ui/texts.py:163
+#: tavletta/ui/texts.py:164
 msgid "Threshold (drawings, logos)"
 msgstr "Kynnys (piirrokset, logot)"
 
-#: tavletta/ui/texts.py:164
+#: tavletta/ui/texts.py:165
 msgid "Dithering (photos)"
 msgstr "Rasterointi (valokuvat)"
 
-#: tavletta/ui/texts.py:165
+#: tavletta/ui/texts.py:166
 msgid "Ordered pattern"
 msgstr "Järjestetty kuvio"
 
-#: tavletta/ui/texts.py:168
+#: tavletta/ui/texts.py:169
 msgctxt "line style"
 msgid "Solid"
 msgstr "Yhtenäinen"
 
-#: tavletta/ui/texts.py:169
+#: tavletta/ui/texts.py:170
 msgid "Dashed"
 msgstr "Katkoviiva"
 
-#: tavletta/ui/texts.py:170 tavletta/ui/texts.py:195
+#: tavletta/ui/texts.py:171 tavletta/ui/texts.py:196
 msgid "Dotted"
 msgstr "Pilkullinen"
 
-#: tavletta/ui/texts.py:172
+#: tavletta/ui/texts.py:173
 msgid "Double"
 msgstr "Kaksoisviiva"
 
-#: tavletta/ui/texts.py:174
+#: tavletta/ui/texts.py:175
 msgid "Line"
 msgstr "Viiva"
 
-#: tavletta/ui/texts.py:175
+#: tavletta/ui/texts.py:176
 msgid "Rectangle"
 msgstr "Suorakulmio"
 
-#: tavletta/ui/texts.py:176
+#: tavletta/ui/texts.py:177
 msgid "Ellipse"
 msgstr "Ellipsi"
 
-#: tavletta/ui/texts.py:177
+#: tavletta/ui/texts.py:178
 msgid "Separator"
 msgstr "Erotin"
 
-#: tavletta/ui/texts.py:180
+#: tavletta/ui/texts.py:181
 msgid "Horizontal"
 msgstr "Vaakasuora"
 
-#: tavletta/ui/texts.py:181
+#: tavletta/ui/texts.py:182
 msgid "Vertical"
 msgstr "Pystysuora"
 
-#: tavletta/ui/texts.py:182
+#: tavletta/ui/texts.py:183
 msgid "Diagonal, rising"
 msgstr "Vino, nouseva"
 
-#: tavletta/ui/texts.py:183
+#: tavletta/ui/texts.py:184
 msgid "Diagonal, falling"
 msgstr "Vino, laskeva"
 
-#: tavletta/ui/texts.py:186
+#: tavletta/ui/texts.py:187
 msgctxt "arrows"
 msgid "None"
 msgstr "Ei mitään"
 
-#: tavletta/ui/texts.py:187
+#: tavletta/ui/texts.py:188
 msgid "At the start"
 msgstr "Alussa"
 
-#: tavletta/ui/texts.py:188
+#: tavletta/ui/texts.py:189
 msgid "At the end"
 msgstr "Lopussa"
 
-#: tavletta/ui/texts.py:189
+#: tavletta/ui/texts.py:190
 msgid "At both ends"
 msgstr "Molemmissa päissä"
 
-#: tavletta/ui/texts.py:192
+#: tavletta/ui/texts.py:193
 msgctxt "fill"
 msgid "None"
 msgstr "Ei mitään"
 
-#: tavletta/ui/texts.py:193
+#: tavletta/ui/texts.py:194
 msgctxt "fill"
 msgid "Solid"
 msgstr "Täysi"
 
-#: tavletta/ui/texts.py:194
+#: tavletta/ui/texts.py:195
 msgid "Hatched"
 msgstr "Vinoviivoitettu"
 
-#: tavletta/ui/texts.py:196
+#: tavletta/ui/texts.py:197
 msgid "Grid"
 msgstr "Ruudukko"
 
-#: tavletta/ui/texts.py:211
+#. translators: %(formats)s is a list of file formats: PNG, JPEG, …
+#: tavletta/ui/texts.py:218
 #, python-format
-msgid "Not an image: %s"
-msgstr "Ei kuva: %s"
+msgid ""
+"%(name)s is not an image Tavletta can use. Images in %(formats)s can be used."
+msgstr "%(name)s ei ole kuva, jota Tavletta voi käyttää. Käytettävissä ovat kuvat muodoissa %(formats)s."
+
+#: tavletta/ui/texts.py:226
+#, python-format
+msgid "%(name)s is not a label, an image or a data file"
+msgstr "%(name)s ei ole tarra, kuva eikä tietotiedosto"
 
 #. translators: the print density a NIIMBOT model uses by default
-#: tavletta/ui/texts.py:229
+#: tavletta/ui/texts.py:244
 msgctxt "print density"
 msgid "Default"
 msgstr "Oletus"
 
-#: tavletta/ui/texts.py:233
+#: tavletta/ui/texts.py:248
 #, python-format
 msgid "%d %%"
 msgstr "%d %%"
 
 #. translators: print speed in inches per second, as label printers state it
-#: tavletta/ui/texts.py:236
+#: tavletta/ui/texts.py:251
 #, python-format
 msgid "%d in/s"
 msgstr "%d tuumaa/s"
 
-#: tavletta/ui/texts.py:245
+#: tavletta/ui/texts.py:260
 msgid "Image"
 msgstr "Kuva"
 
-#: tavletta/ui/texts.py:280
+#: tavletta/ui/texts.py:295
 #, python-format
 msgid "Endless, %(width)s wide"
 msgstr "Jatkuva, leveys %(width)s"
 
-#: tavletta/ui/texts.py:290
+#: tavletta/ui/texts.py:305
 msgid ""
 "Check that all of the label is inside the selection. Drag to move it or its "
 "edges, or draw a new one."
 msgstr "Tarkista, että koko tarra on valinnan sisällä. Siirrä valintaa tai sen reunoja vetämällä tai piirrä uusi."
 
-#: tavletta/ui/texts.py:294
+#: tavletta/ui/texts.py:309
 msgid ""
 "Several areas could be the label. Check the selection or try the next one."
 msgstr "Useampi alue voi olla tarra. Tarkista valinta tai kokeile seuraavaa."
 
-#: tavletta/ui/texts.py:296
+#: tavletta/ui/texts.py:311
 msgid "Everything printed on the page is selected. Drag to choose the label."
 msgstr "Kaikki sivulle tulostettu on valittuna. Valitse tarra vetämällä."
 
-#: tavletta/ui/texts.py:297
+#: tavletta/ui/texts.py:312
 msgid "Nothing is printed on this page."
 msgstr "Tällä sivulla ei ole mitään tulostettua."
 
-#: tavletta/ui/texts.py:302
+#: tavletta/ui/texts.py:317
 msgid "PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "PDF-tiedostot tarvitsevat Popplerin (poppler-glib), jota ei ole asennettu"
 
-#: tavletta/ui/texts.py:313
+#: tavletta/ui/texts.py:328
 msgid "System printer (CUPS, IPP)"
 msgstr "Järjestelmän tulostin (CUPS, IPP)"
 
-#: tavletta/ui/texts.py:314
+#: tavletta/ui/texts.py:329
 msgid "Receipt printer (ESC/POS)"
 msgstr "Kuittitulostin (ESC/POS)"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: tavletta/ui/texts.py:316
+#: tavletta/ui/texts.py:331
 #, python-format
 msgid "%s, continuous rolls"
 msgstr "%s, jatkuvat rullat"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: tavletta/ui/texts.py:318
+#: tavletta/ui/texts.py:333
 #, python-format
 msgid "%s, die-cut labels"
 msgstr "%s, stanssatut tarrat"
 
-#: tavletta/ui/texts.py:325
+#: tavletta/ui/texts.py:340
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "Elementti %(n)d: koodi on tyhjä"
 
-#: tavletta/ui/texts.py:326
+#: tavletta/ui/texts.py:341
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "Elementti %(n)d: EAN-13 vaatii täsmälleen 12 numeroa"
 
-#: tavletta/ui/texts.py:327
+#: tavletta/ui/texts.py:342
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Elementti %(n)d: EAN-13-tarkistusnumero on väärä"
 
-#: tavletta/ui/texts.py:328
+#: tavletta/ui/texts.py:343
 #, python-format
 msgid "Element %(n)d: Code 128 holds at most %(max)d characters"
 msgstr "Elementti %(n)d: Code 128 voi sisältää enintään %(max)d merkkiä"
 
-#: tavletta/ui/texts.py:330
+#: tavletta/ui/texts.py:345
 #, python-format
 msgid ""
 "Element %(n)d: the bars are too thin to scan reliably – use a longer or "
 "larger label, or shorter content"
 msgstr "Elementti %(n)d: viivat ovat liian ohuita luotettavaan lukemiseen – käytä pidempää tai suurempaa tarraa tai lyhyempää sisältöä"
 
-#: tavletta/ui/texts.py:334
+#: tavletta/ui/texts.py:349
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Elementti %(n)d: Code 128 hyväksyy vain latinalaiset kirjaimet, numerot ja välimerkit"
 
-#: tavletta/ui/texts.py:336
+#: tavletta/ui/texts.py:351
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "Elementti %(n)d: EAN-8 vaatii 7 numeroa tai 8 tarkistusnumeron kanssa"
 
-#: tavletta/ui/texts.py:337
+#: tavletta/ui/texts.py:352
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "Elementti %(n)d: UPC-A vaatii 11 numeroa tai 12 tarkistusnumeron kanssa"
 
-#: tavletta/ui/texts.py:339
+#: tavletta/ui/texts.py:354
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "Elementti %(n)d: UPC-E vaatii 7 numeroa, joiden alussa on 0 tai 1, tai 8 tarkistusnumeron kanssa"
 
-#: tavletta/ui/texts.py:341
+#: tavletta/ui/texts.py:356
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "Elementti %(n)d: ITF-14 vaatii 13 numeroa tai 14 tarkistusnumeron kanssa"
 
-#: tavletta/ui/texts.py:342
+#: tavletta/ui/texts.py:357
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "Elementti %(n)d: tarkistusnumero on väärä"
 
-#: tavletta/ui/texts.py:344
+#: tavletta/ui/texts.py:359
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "Elementti %(n)d: Code 39 hyväksyy vain isot kirjaimet, numerot, välilyönnit ja - . $ / + %%"
 
-#: tavletta/ui/texts.py:347
+#: tavletta/ui/texts.py:362
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "Elementti %(n)d: Code 93 hyväksyy vain latinalaiset kirjaimet, numerot ja välimerkit"
 
-#: tavletta/ui/texts.py:350
+#: tavletta/ui/texts.py:365
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "Elementti %(n)d: GS1-tiedot hyväksyvät vain latinalaiset kirjaimet, numerot ja välimerkit"
 
-#: tavletta/ui/texts.py:353
+#: tavletta/ui/texts.py:368
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "Elementti %(n)d: GS1-tietojen on oltava sulkeissa olevia sovellustunnuksia, joista kutakin seuraa sen arvo, esim. (01)09501101530003(10)AB12"
 
-#: tavletta/ui/texts.py:356
+#: tavletta/ui/texts.py:371
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "Elementti %(n)d: (%(ai)s) ei ole GS1-sovellustunnus"
 
-#: tavletta/ui/texts.py:358
+#: tavletta/ui/texts.py:373
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "Elementti %(n)d: sovellustunnuksen (%(ai)s) arvon pituus on väärä"
 
-#: tavletta/ui/texts.py:361
+#: tavletta/ui/texts.py:376
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "Elementti %(n)d: sovellustunnuksen (%(ai)s) tarkistusnumero on väärä"
 
-#: tavletta/ui/texts.py:364
+#: tavletta/ui/texts.py:379
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "Elementti %(n)d: sovellustunnuksen (%(ai)s) arvo ei kelpaa: päivämäärä, luku tai merkki, jota se ei salli"
 
-#: tavletta/ui/texts.py:368
+#: tavletta/ui/texts.py:383
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "Elementti %(n)d: mikään UPC-A-numero ei lyhene näiksi UPC-E-numeroiksi – tarkista ne tai käytä UPC-A:ta"
 
-#: tavletta/ui/texts.py:372
+#: tavletta/ui/texts.py:387
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "Elementti %(n)d: Full ASCII -tilaan asetetut lukijat lukevat isoa kirjainta edeltävän $-, /-, +- tai %%-merkin toisena merkkinä"
 
-#: tavletta/ui/texts.py:375
+#: tavletta/ui/texts.py:390
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Elementti %(n)d: sisältö on liian pitkä tälle koodityypille"
 
-#: tavletta/ui/texts.py:376
+#: tavletta/ui/texts.py:391
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Elementti %(n)d: sisältöä ei voi koodata tähän koodityyppiin"
 
-#: tavletta/ui/texts.py:378
+#: tavletta/ui/texts.py:393
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Elementti %(n)d: tämä koodityyppi vaatii Zint-kirjaston (zint-bindings), jota ei ole asennettu"
 
-#: tavletta/ui/texts.py:381
+#: tavletta/ui/texts.py:396
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Elementti %(n)d: kuvaa ei voi lukea"
 
-#: tavletta/ui/texts.py:382
+#: tavletta/ui/texts.py:397
 #, python-format
 msgid "Element %(n)d: this symbol is not in the symbol library"
 msgstr "Elementti %(n)d: tätä symbolia ei ole symbolikirjastossa"
 
-#: tavletta/ui/texts.py:383
+#: tavletta/ui/texts.py:398
 #, python-format
 msgid "Element %(n)d: the document cannot be read"
 msgstr "Elementti %(n)d: asiakirjaa ei voi lukea"
 
-#: tavletta/ui/texts.py:385
+#: tavletta/ui/texts.py:400
 #, python-format
 msgid ""
 "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "Elementti %(n)d: PDF-tiedostot tarvitsevat Popplerin (poppler-glib), jota ei ole asennettu"
 
-#: tavletta/ui/texts.py:387
+#: tavletta/ui/texts.py:402
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Elementtiä %(n)d ei voi piirtää"
 
-#: tavletta/ui/texts.py:389
+#: tavletta/ui/texts.py:404
 msgid ""
 "Safety margin, border, its inset and edge spacing leave no room – reduce them"
 msgstr "Turvamarginaali, reunus, sen sisennys ja reunaväli eivät jätä tilaa – pienennä niitä"
 
-#: tavletta/ui/texts.py:391
+#: tavletta/ui/texts.py:406
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Kiinteä pituus on lyhyempi kuin väli – kasvata sitä"
 
-#: tavletta/ui/texts.py:392
+#: tavletta/ui/texts.py:407
 msgid "The background image cannot be read"
 msgstr "Taustakuvaa ei voi lukea"
 
-#: tavletta/ui/texts.py:394
+#: tavletta/ui/texts.py:409
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Elementti %(n)d: koodin moduulit ovat vain yhden tulostuspisteen levyisiä eivätkä ehkä skannaudu – suurenna koodia"
 
-#: tavletta/ui/texts.py:398
+#: tavletta/ui/texts.py:413
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Elementti %(n)d: koodin ympärilleen tarvitsema tyhjä tila ei mahdu – suurenna koodia"
 
-#: tavletta/ui/texts.py:402
+#: tavletta/ui/texts.py:417
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Elementti %(n)d: koodi ei mahdu paikkaansa edes yhdellä tulostuspisteellä moduulia kohden – suurenna tarraa tai lyhennä sisältöä"
 
-#: tavletta/ui/texts.py:405
+#: tavletta/ui/texts.py:420
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "Elementti %(n)d: %(name)s ei ole tunnettu muuttuja"
 
-#: tavletta/ui/texts.py:407
+#: tavletta/ui/texts.py:422
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "Elementti %(n)d: muuttujan %(name)s päivämäärä on ennen vuotta 1 tai vuoden 9999 jälkeen"
 
-#: tavletta/ui/texts.py:410
+#: tavletta/ui/texts.py:425
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "Elementti %(n)d: muuttujaa %(name)s… ei ole suljettu – lopeta se merkillä }"
 
-#: tavletta/ui/texts.py:413
+#: tavletta/ui/texts.py:428
 #, python-format
 msgid ""
 "Element %(n)d: on a black-and-white printer it hardly stands out from what "
 "lies behind it, as a whole or in part – choose another colour or move it"
 msgstr "Elementti %(n)d: mustavalkotulostimella se tuskin erottuu takanaan olevasta, kokonaan tai osittain – valitse toinen väri tai siirrä sitä"
 
-#: tavletta/ui/texts.py:416
+#: tavletta/ui/texts.py:431
 #, python-format
 msgid "Element %(n)d: the shape has neither a line nor a fill"
 msgstr "Elementti %(n)d: muodolla ei ole viivaa eikä täyttöä"
 
-#: tavletta/ui/texts.py:418
+#: tavletta/ui/texts.py:433
 #, python-format
 msgid ""
 "Element %(n)d reaches beyond the edge of the label and is cut off there – "
 "move it or make it smaller"
 msgstr "Elementti %(n)d ulottuu tarran reunan yli ja leikkautuu siinä pois – siirrä sitä tai pienennä sitä"
 
-#: tavletta/ui/texts.py:422
+#: tavletta/ui/texts.py:437
 #, python-format
 msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "Elementti %(n)d: täyte, kehys, ääriviiva tai varjo eivät jätä tilaa tekstille – pienennä niitä"
 
-#: tavletta/ui/texts.py:437
+#: tavletta/ui/texts.py:452
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Jo tulostetut arkit: %(n)d/%(total)d."
 
-#: tavletta/ui/texts.py:439
+#: tavletta/ui/texts.py:454
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Jo tulostetut tarrat: %(n)d/%(total)d."
 
-#: tavletta/ui/texts.py:443
+#: tavletta/ui/texts.py:458
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Jonossa vielä odottaneet arkit peruttiin."
 
-#: tavletta/ui/texts.py:445
+#: tavletta/ui/texts.py:460
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Jonossa vielä odottaneet tarrat peruttiin."
 
-#: tavletta/ui/texts.py:452
+#: tavletta/ui/texts.py:467
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -2729,92 +2736,92 @@ msgid ""
 "size and the gap."
 msgstr "Tarran koko on %(size)s ja rako %(gap)s, joten uusi tarra alkaa %(pitch)s välein. Tulostin mittasi tarran %(measured)s välein. Tarkista tarran koko ja rako."
 
-#: tavletta/ui/texts.py:468
+#: tavletta/ui/texts.py:483
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Tulostinta ei löydy. Varmista, että se on päällä ja samassa verkossa, tai syötä sen IP-osoite."
 
-#: tavletta/ui/texts.py:472
+#: tavletta/ui/texts.py:487
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "Tulostinta ei löydy USB:n kautta. Tarkista kaapeli ja että tulostin on päällä eikä lepotilassa, ja hae sitten uudelleen."
 
-#: tavletta/ui/texts.py:475
+#: tavletta/ui/texts.py:490
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Tulostin ei vastaa. Varmista, että se on päällä eikä lepotilassa."
 
-#: tavletta/ui/texts.py:477
+#: tavletta/ui/texts.py:492
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "Tulostin lakkasi vastaanottamasta tietoja. Tarkista, näyttääkö se ongelmaa, kuten tarrojen loppumista tai avointa kantta, ja yritä sitten uudelleen."
 
-#: tavletta/ui/texts.py:481
+#: tavletta/ui/texts.py:496
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Tulostin torjuu yhteyden. Sammuta se ja käynnistä uudelleen. Jos sen verkkoliittymässä on ”Port 9100” -asetus, ota se käyttöön."
 
-#: tavletta/ui/texts.py:484
+#: tavletta/ui/texts.py:499
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Kasettia ei ole asetettu. Aseta kasetti ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:485
+#: tavletta/ui/texts.py:500
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Tulostimen kansi on auki. Sulje se ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:486
+#: tavletta/ui/texts.py:501
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Tarra on juuttunut. Avaa kansi, poista tarra ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:487
+#: tavletta/ui/texts.py:502
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Kasettia ei tunnisteta. Aseta se uudelleen tai kokeile toista."
 
-#: tavletta/ui/texts.py:488
+#: tavletta/ui/texts.py:503
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Tulostin on varattu. Odota hetki ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:489
+#: tavletta/ui/texts.py:504
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Tarra on liian pitkä tälle tulostimelle: enintään %(max)s."
 
-#: tavletta/ui/texts.py:490
+#: tavletta/ui/texts.py:505
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Tarra on liian leveä tälle tulostimelle: enintään %(max)s."
 
-#: tavletta/ui/texts.py:491
+#: tavletta/ui/texts.py:506
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Tulostimesta ovat tarrat loppu. Aseta uusi rulla ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:492
+#: tavletta/ui/texts.py:507
 msgid "The print head is open. Close it and try again."
 msgstr "Tulostuspää on auki. Sulje se ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:494
+#: tavletta/ui/texts.py:509
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Tulostin ei löydä seuraavaa tarraa. Tarkista, että tarrat on asetettu oikein ja kulkevat tarra-anturin kautta."
 
-#: tavletta/ui/texts.py:498
+#: tavletta/ui/texts.py:513
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Värinauhassa on ongelma. Tarkista, että se on asetettu oikein ja vastaa tulostimeen asetettua tulostustapaa."
 
-#: tavletta/ui/texts.py:504
+#: tavletta/ui/texts.py:519
 #, python-format
 msgid ""
 "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
 "without one need “%(direct)s” under “%(method)s”."
 msgstr "Tulostin ei löydä värinauhaa. Aseta värinauha ja yritä uudelleen. Ilman värinauhaa tulostuvat tarrat tarvitsevat asetuksen ”%(direct)s” kohdassa ”%(method)s”."
 
-#: tavletta/ui/texts.py:511
+#: tavletta/ui/texts.py:526
 #, python-format
 msgid ""
 "A ribbon is loaded, but the printer prints without it (thermal direct). For "
@@ -2822,239 +2829,239 @@ msgid ""
 "remove the ribbon."
 msgstr "Värinauha on asetettu, mutta tulostin tulostaa ilman sitä (suoralämpö). Valitse värinauhaa tarvitseville tarroille ”%(transfer)s” kohdassa ”%(method)s” tai poista värinauha."
 
-#: tavletta/ui/texts.py:516
+#: tavletta/ui/texts.py:531
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Tulostin on tauolla. Jatka sen näytöltä ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:517
+#: tavletta/ui/texts.py:532
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Tulostimesta on paperi loppu. Lisää paperia ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:519
+#: tavletta/ui/texts.py:534
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Paperi on jumissa. Poista se tulostimen näytön ohjeen mukaan ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:521
+#: tavletta/ui/texts.py:536
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Tulostimesta on väriaine tai muste loppu. Vaihda se ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:522
+#: tavletta/ui/texts.py:537
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Tulostin ei voi tulostaa tätä kokoa. Valitse paperikoko, jota se tukee."
 
-#: tavletta/ui/texts.py:524
+#: tavletta/ui/texts.py:539
 msgid ""
 "The printer takes none of the formats Tavletta can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Tulostin ei hyväksy mitään muotoa, jonka Tavletta voi lähettää (PDF, PWG Raster, JPEG)."
 
-#: tavletta/ui/texts.py:527
+#: tavletta/ui/texts.py:542
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:531
+#: tavletta/ui/texts.py:546
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Tulostustyö pidätettiin jonossa, esimerkiksi kunnes se vapautetaan tai salasana annetaan. Tarkista jono järjestelmän tulostinasetuksissa ja yritä uudelleen."
 
-#: tavletta/ui/texts.py:535
+#: tavletta/ui/texts.py:550
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Tulostustyö peruttiin tulostimessa tai jonossa."
 
-#: tavletta/ui/texts.py:536
+#: tavletta/ui/texts.py:551
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "Tulostin ei ilmoittanut tarkkuuttaan ajoissa. Valitse se kohdassa ”%s”."
 
-#: tavletta/ui/texts.py:539
+#: tavletta/ui/texts.py:554
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "Asetettu rulla ei sovi tarraan. Aseta sopiva rulla tai valitse asetetun rullan tarrakoko tai tulostimen malli."
 
-#: tavletta/ui/texts.py:542
+#: tavletta/ui/texts.py:557
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "Tulostimen akku on vähissä – lataa se tai kytke virtalähde."
 
-#: tavletta/ui/texts.py:543
+#: tavletta/ui/texts.py:558
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "Tulostuspää on liian kuuma. Odota, kunnes se on jäähtynyt, ja yritä sitten uudelleen."
 
-#: tavletta/ui/texts.py:545
+#: tavletta/ui/texts.py:560
 msgid ""
 "Tavletta cannot print on this printer model: it does not take the raster "
 "images Tavletta sends."
 msgstr "Tavletta ei voi tulostaa tällä tulostinmallilla: se ei ota vastaan Etiketon lähettämiä rasterikuvia."
 
-#: tavletta/ui/texts.py:549
+#: tavletta/ui/texts.py:564
 msgid "Tavletta does not know this printer model and cannot print on it yet."
 msgstr "Tavletta ei tunne tätä tulostinmallia eikä voi vielä tulostaa sillä."
 
-#: tavletta/ui/texts.py:552
+#: tavletta/ui/texts.py:567
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "Tulostin on Editor Lite -tilassa ja näkyy USB-asemana. Kytke Editor Lite pois päältä tulostimesta (sen merkkivalo sammuu) ja hae sitten uudelleen."
 
-#: tavletta/ui/texts.py:556
+#: tavletta/ui/texts.py:571
 msgid ""
 "Tavletta is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Tavletta ei saa käyttää tulostimen USB-porttia. Lisää käyttäjäsi ryhmään ”lp” (sudo usermod -aG lp $USER) ja kirjaudu sitten ulos ja takaisin sisään."
 
-#: tavletta/ui/texts.py:560
+#: tavletta/ui/texts.py:575
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "Sivu on liian suuri tehtäväksi tulostimen hyväksymällä tarkkuudella. Valitse pienempi paperikoko tai tulosta tulostimella, joka hyväksyy PDF:n."
 
-#: tavletta/ui/texts.py:564
+#: tavletta/ui/texts.py:579
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Koodi ei mahdu tarraan tämän tulostimen tarkkuudella ja leikkautuisi. Suurenna tarraa tai lyhennä koodin sisältöä."
 
-#: tavletta/ui/texts.py:568
+#: tavletta/ui/texts.py:583
 msgid ""
 "Tavletta is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Tavletta ei saa käyttää tulostimen sarjaporttia. Lisää käyttäjäsi ryhmään ”dialout” (sudo usermod -aG dialout $USER; Arch Linuxissa ryhmän nimi on ”uucp”) ja kirjaudu sitten ulos ja takaisin sisään."
 
-#: tavletta/ui/texts.py:573
+#: tavletta/ui/texts.py:588
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Tulostin ilmoitti ongelmasta. Sammuta se ja käynnistä uudelleen, ja yritä sitten vielä kerran."
 
-#: tavletta/ui/texts.py:584
+#: tavletta/ui/texts.py:599
 msgid "Printed"
 msgstr "Tulostettu"
 
-#: tavletta/ui/texts.py:590
+#: tavletta/ui/texts.py:605
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Lähetetty tulostimelle – tulostuu, kun on sen vuoro"
 
-#: tavletta/ui/texts.py:592
+#: tavletta/ui/texts.py:607
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "Lähetetty tulostimelle – se ei vahvistanut tulostusta"
 
-#: tavletta/ui/texts.py:596
+#: tavletta/ui/texts.py:611
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Tulostettiin tilassa ”%(used)s”, koska asetettu rulla vaatii sen"
 
-#: tavletta/ui/texts.py:600
+#: tavletta/ui/texts.py:615
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Väritila ”%(wanted)s” ei ole käytettävissä tässä tulostimessa, tulostettiin tilassa ”%(used)s”"
 
-#: tavletta/ui/texts.py:610
+#: tavletta/ui/texts.py:625
 msgid "Warming up…"
 msgstr "Lämmitetään…"
 
-#: tavletta/ui/texts.py:611
+#: tavletta/ui/texts.py:626
 msgid "Cooling down…"
 msgstr "Jäähdytetään…"
 
-#: tavletta/ui/texts.py:612
+#: tavletta/ui/texts.py:627
 msgid "Cleaning…"
 msgstr "Puhdistetaan…"
 
-#: tavletta/ui/texts.py:613
+#: tavletta/ui/texts.py:628
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Leikkaa tarra pyyhkäisemällä tulostimen paneelia"
 
-#: tavletta/ui/texts.py:615
+#: tavletta/ui/texts.py:630
 msgid "Out of paper – load paper to continue"
 msgstr "Paperi loppu – jatka lisäämällä paperia"
 
-#: tavletta/ui/texts.py:616
+#: tavletta/ui/texts.py:631
 msgid "Cover open – close it to continue"
 msgstr "Kansi auki – jatka sulkemalla se"
 
-#: tavletta/ui/texts.py:617
+#: tavletta/ui/texts.py:632
 msgid "Paper jammed – remove it to continue"
 msgstr "Paperi jumissa – jatka poistamalla se"
 
-#: tavletta/ui/texts.py:628
+#: tavletta/ui/texts.py:643
 msgid "This label needs a newer version of Tavletta"
 msgstr "Tämä tarra vaatii uudemman Tavletta-version"
 
-#: tavletta/ui/texts.py:630
+#: tavletta/ui/texts.py:645
 #, python-format
 msgid "%s is not an Tavletta label"
 msgstr "%s ei ole Tavletta-tarra"
 
-#: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651
+#: tavletta/ui/texts.py:646 tavletta/ui/texts.py:666
 #: tavletta/server/service.py:686
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tiedosto on vioittunut: %s"
 
-#: tavletta/ui/texts.py:638
+#: tavletta/ui/texts.py:653
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Tietotiedostoa %s ei ole enää olemassa. Valitse se uudelleen tai poista se."
 
-#: tavletta/ui/texts.py:642
+#: tavletta/ui/texts.py:657
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "Tiedostossa %(file)s ei ole taulukkoa nimeltä %(sheet)s"
 
-#: tavletta/ui/texts.py:644
+#: tavletta/ui/texts.py:659
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s ei ole taulukko. Käytä CSV-, ODS- tai XLSX-tiedostoa."
 
-#: tavletta/ui/texts.py:646
+#: tavletta/ui/texts.py:661
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s on liian suuri sarjatarroille. Jaa se pienempiin tiedostoihin tai poista rivit ja sarakkeet, joita ei tarvita."
 
-#: tavletta/ui/texts.py:649
+#: tavletta/ui/texts.py:664
 #, python-format
 msgid "%s contains no data."
 msgstr "%s ei sisällä tietoja."
 
-#: tavletta/ui/texts.py:660
+#: tavletta/ui/texts.py:675
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Tulostus pysähtyi riville %(row)d. Jatka tulostamalla uudelleen riviltä %(row)d alkaen."
 
-#: tavletta/ui/texts.py:664
+#: tavletta/ui/texts.py:679
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Rivin %(row)d jo tulostetut kopiot: %(copies)d."
 
-#: tavletta/ui/texts.py:669
+#: tavletta/ui/texts.py:684
 #, python-format
 msgid "Row %(row)d goes at position %(position)d of sheet %(sheet)d."
 msgstr "Rivi %(row)d tulee arkin %(sheet)d paikkaan %(position)d."
 
-#: tavletta/ui/texts.py:680
+#: tavletta/ui/texts.py:695
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kohdetta %s ei voi tallentaa: ei kirjoitusoikeutta"
 
-#: tavletta/ui/texts.py:682
+#: tavletta/ui/texts.py:697
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kohdetta %s ei voi tallentaa: levy on täynnä"
 
-#: tavletta/ui/texts.py:692
+#: tavletta/ui/texts.py:707
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
@@ -3120,70 +3127,70 @@ msgstr "Seuraava numero"
 msgid "Step"
 msgstr "Askel"
 
-#: tavletta/ui/window.py:158
+#: tavletta/ui/window.py:163
 msgid "Templates"
 msgstr "Mallit"
 
-#: tavletta/ui/window.py:189
+#: tavletta/ui/window.py:194
 msgid "Shipping label…"
 msgstr "Lähetystarra…"
 
-#: tavletta/ui/window.py:192
+#: tavletta/ui/window.py:197
 msgid "Data for serial labels…"
 msgstr "Sarjatarrojen tiedot…"
 
-#: tavletta/ui/window.py:193
+#: tavletta/ui/window.py:198
 msgid "Forget allowed data files"
 msgstr "Unohda sallitut datatiedostot"
 
-#: tavletta/ui/window.py:194
+#: tavletta/ui/window.py:199
 msgid "Export PNG…"
 msgstr "Vie PNG-kuvaksi…"
 
-#: tavletta/ui/window.py:198
+#: tavletta/ui/window.py:203
 msgid "Report a problem…"
 msgstr "Ilmoita ongelmasta…"
 
-#: tavletta/ui/window.py:199
+#: tavletta/ui/window.py:204
 msgid "About Tavletta"
 msgstr "Tietoja: Tavletta"
 
-#: tavletta/ui/window.py:678
+#: tavletta/ui/window.py:683
 msgid "Unsaved label"
 msgstr "Tallentamaton tarra"
 
-#: tavletta/ui/window.py:837
+#: tavletta/ui/window.py:842
 msgid "content scaled down to fit"
 msgstr "sisältöä pienennetty, jotta se mahtuu"
 
-#: tavletta/ui/window.py:841
+#: tavletta/ui/window.py:846
 #, python-format
 msgid "Problem: %s"
 msgstr "Ongelma: %s"
 
-#: tavletta/ui/window.py:860
+#: tavletta/ui/window.py:865
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Liian pitkä tälle tulostimelle: enintään %s"
 
-#: tavletta/ui/window.py:864
+#: tavletta/ui/window.py:869
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Liian leveä tälle tulostimelle: enintään %s"
 
-#: tavletta/ui/window.py:936
+#: tavletta/ui/window.py:941
 msgid "The browser cannot be opened"
 msgstr "Selainta ei voi avata"
 
-#: tavletta/ui/window.py:938
+#: tavletta/ui/window.py:943
 msgid "Copy link"
 msgstr "Kopioi linkki"
 
-#: tavletta/ui/window.py:1009
+#: tavletta/ui/window.py:1014
 msgid "Only local files can be dropped"
 msgstr "Vain paikallisia tiedostoja voi pudottaa"
 
-#: tavletta/ui/window.py:1047
+#: tavletta/ui/window.py:1067
 msgid "Please wait until printing has finished"
 msgstr "Odota, kunnes tulostus on valmis"
 

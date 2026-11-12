@@ -20,7 +20,7 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from tavletta import report  # noqa: E402
+from tavletta import imageformats, report  # noqa: E402
 from tavletta.backends import get_backend  # noqa: E402
 from tavletta.backends.base import Backend, PrintOptions, margins_for  # noqa: E402
 from tavletta.history import History, typing_key  # noqa: E402
@@ -57,7 +57,12 @@ from tavletta.ui.printing import PrintFlow  # noqa: E402
 from tavletta.ui.settings import PrinterSettings, Settings  # noqa: E402
 from tavletta.ui.sheets import PositionsDialog, SheetChooser, margins_note  # noqa: E402
 from tavletta.ui.symbols import SymbolChooser  # noqa: E402
-from tavletta.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
+from tavletta.ui.texts import (  # noqa: E402
+    error_details,
+    image_from_path,
+    unknown_file_text,
+    warning_text,
+)
 from tavletta.ui.variables import CounterGroup  # noqa: E402
 from tavletta.units import Unit, unit_for  # noqa: E402
 from tavletta.variables import Values, expand_label  # noqa: E402
@@ -1018,12 +1023,27 @@ class Window(Adw.ApplicationWindow):
         if path.suffix.lower() in DATA_SUFFIXES:
             self.data.attach(path)
             return True
+        if not self._image_like(path):
+            self.toast(unknown_file_text(path.name))  # not taken for an image
+            return False
         try:
             self.add_element(image_from_path(path))
         except ValueError as e:
             self.toast(str(e))
             return False
         return True
+
+    @staticmethod
+    def _image_like(path: Path) -> bool:
+        """An image by its name (also in a format a label cannot embed:
+        image_from_path() says which formats it can) or by its content."""
+        guessed, _uncertain = Gio.content_type_guess(path.name, None)
+        mime = Gio.content_type_get_mime_type(guessed) or ""
+        return (
+            mime.startswith("image/")
+            or imageformats.has_image_suffix(path)
+            or imageformats.is_image(path)
+        )
 
     def _on_destroy(self, _window) -> None:
         self._shut_down()
