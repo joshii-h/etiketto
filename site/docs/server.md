@@ -87,6 +87,8 @@ etiketto serve --labels-dir ~/Labels
   its state, `DELETE` cancels it between two labels.
 - Each printer prints one job after the other.
 - Messages come in the language of the `Accept-Language` header.
+- Without an access token, requests that ask printers need the header
+  `X-Etiketto-Request: 1`, so that no web page can send them.
 
 ```sh
 curl -H "Authorization: Bearer $(cat ~/.config/etiketto/token)" \

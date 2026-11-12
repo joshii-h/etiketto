@@ -30,8 +30,8 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--token-file` | one access token for everything (role admin); else the variable `ETIKETTO_TOKEN`; at least 16 characters |
 | `--labels-dir` | the only folder label and data files are read from; `~/.local/share/etiketto/labels` by default (made if missing) |
 | `--mcp` | MCP (Streamable HTTP) at `/mcp` as well |
-| `--allow-origin` | web origin whose pages may call the server (`https://app.example`); repeatable |
-| `--allow-printer` | without a printer list: only these printer addresses, `*` matches anything (`*.local`, `ipp://cups/*`); repeatable |
+| `--allow-origin` | web origin whose pages may call the server (`https://app.example`): CORS preflights are answered and the answers carry `Access-Control-Allow-Origin`; repeatable |
+| `--allow-printer` | without a printer list: only printers whose host name or IP address matches, `*` matches anything (`*.local`, `192.168.1.*`, `cups.example.com`); the pattern is compared with the host of the address, not the whole address; repeatable |
 
 Without `printers.toml`, printer settings (address, safety margin, cut,
 mode, colour) come from the app's `settings.json`, as for `etiketto print`,
@@ -133,7 +133,7 @@ JSON in and out under `/api/v1`. The full description is served at
 | `GET /labels/{name}` | elements with their names (what `set` fills in), `variables`, `builtin_variables`, `columns` of the placeholders, `data_file` (if usable), size, counter, features |
 | `POST /preview` | PNG of the label filled in; `"format": "json"` gives width, height, warnings and the PNG in base64; `"view": "printer"` the image as the printer gets it. Warning codes also in `X-Etiketto-Warnings` |
 | `POST /print` | 202 and the job (`Location: /api/v1/jobs/{id}`); 200 if it finished within `wait` seconds |
-| `GET /jobs/{id}` | `state` (`queued`, `printing`, `done`, `failed`, `canceled`), `printed` of `total` labels, `rows_printed`, `printer_name`, `owner`, `error` (code, message), `remark`, `warnings`, times |
+| `GET /jobs/{id}` | `state` (`queued`, `waiting` for the label file, `printing`, `done`, `failed`, `canceled`), `printed` of `total` labels, `rows_printed`, `printer_name`, `owner`, `error` (code, message), `remark`, `warnings`, times |
 | `DELETE /jobs/{id}` | cancel: a waiting job at once, a printing one after the label being printed. 409 if it has finished |
 
 Fields of `POST /preview` and `POST /print` (unknown fields are refused):
@@ -225,11 +225,13 @@ Protocol (`etiketto/server/mcp.py`, no dependency):
 - Both eras of the protocol: `2026-07-28` (stateless: `_meta` carries
   `io.modelcontextprotocol/protocolVersion` and `clientCapabilities` on
   every request, `server/discover`, results with `resultType`) and the
-  `initialize` handshake of `2025-11-25`, `2025-06-18` and `2025-03-26`
-  (the requested version if supported, else `2025-11-25`).
-- `ping`, `tools/list`, `tools/call`; `notifications/initialized` and
-  `notifications/cancelled` are accepted. No resources, prompts or
-  sampling.
+  `initialize` handshake of `2025-11-25` and `2025-06-18` (the requested
+  version if supported, else `2025-11-25`). `2025-03-26` is not offered:
+  it needs JSON-RPC batches.
+- `ping`, `tools/list`, `tools/call`; `notifications/initialized` is
+  accepted, `notifications/cancelled` ends the wait of `print_label` or
+  `job_status` (the job goes on; `cancel_job` stops it). No resources,
+  prompts or sampling.
 - **stdio** (`etiketto mcp`): one JSON message per line; logs on stderr,
   stdout carries nothing else. Tool calls run in up to four threads.
 - **Streamable HTTP** (`etiketto serve --mcp`, `/mcp`): POST answers with
@@ -278,22 +280,38 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 
 ## Security
 
-- **Listening**: `127.0.0.1` by default. Another address is refused
-  without a token; behind a reverse proxy with TLS for access from other
-  computers (the server speaks plain HTTP).
+- **Listening**: `127.0.0.1` by default. A host name is resolved once
+  and the server binds that address (no second lookup that could change).
+  Another address than loopback is refused without a token; behind a
+  reverse proxy with TLS for access from other computers (the server
+  speaks plain HTTP).
 - **Token**: `Authorization: Bearer`, compared with
   `hmac.compare_digest` (named tokens: their SHA-256 or scrypt hash; a
-  token found once is remembered by its SHA-256 until the file changes). Ten wrong tokens from one address within a minute
-  block that address for the minute (429); behind a reverse proxy all
-  clients share the proxy's address. A token file readable by others is
-  warned about. Without a token (loopback only) every local program can
-  print.
-- **DNS rebinding**: on a loopback address, requests whose `Host` is not a
-  loopback name (`localhost`, `127.0.0.1`, `[::1]`) are refused (421). A
-  request with an `Origin` (from a web page) is refused (403) unless it is
-  the server's own or allowed with `--allow-origin`; no CORS headers are
-  sent, and POST needs `Content-Type: application/json`, so a page cannot
-  send one without a preflight that fails.
+  token found once is remembered by its SHA-256 until the file changes).
+  Tokens must be printable ASCII. Ten wrong tokens from one address
+  within a minute make further wrong ones 429 for the minute; a valid
+  token always works (a blocked address only skips the slow scrypt check
+  of tokens not seen before). Behind a reverse proxy all clients share
+  the proxy's address. A token file readable by others is warned about.
+  Without a token (loopback only) every local program can print.
+- **Web pages**: on a loopback address, requests whose `Host` is not
+  exactly a loopback name with an optional port (`localhost`,
+  `127.0.0.1`, `[::1]`; no user name, nothing after it) are refused
+  (421), against DNS rebinding. A request with an `Origin` is refused
+  (403) unless it is the server's own or allowed with `--allow-origin`.
+  POST (also to `/mcp`) needs `Content-Type: application/json` (415), so
+  a page cannot send one without a CORS preflight, which is answered only
+  for allowed origins. Without a token, a page could still make the
+  browser load `GET /printers/{id}/status` as an image, so requests that
+  contact printers need the header `X-Etiketto-Request` (any value; 403
+  without), which a page cannot add.
+- **Printers on the network (SSRF)**: the server connects to printer
+  addresses, which is its job. Without `printers.toml`, a client with
+  access can make it connect to any address it names (ports 9100, 631 …
+  of other hosts in its network). Use `printers.toml` (or at least
+  `--allow-printer`) for anything but a single-user setup. Addresses with
+  a user name or password (`user@host`) are refused, and answers never
+  show them (an address set in the app is shown without them).
 - **Files**: names are relative to the labels folder; absolute paths,
   `..`, hidden files and folders, backslashes and NUL are refused, and the
   real path (links followed) must lie inside the folder, so a link to a
@@ -306,6 +324,13 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   sizes clamped); data rows and data files keep the limits of
   `etiketto/merge/limits.py` (100 000 rows, 1000 columns, 2 000 000 cells);
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
+- **Rendering**: a label of a request has at most 200 elements, 5000
+  characters and 100 lines in each text or code (filled in, and in the
+  cells of the columns it uses); more is 413 (`label_too_large`). While
+  rendering, no image may exceed 40 megapixels (a text block, a decoded
+  image file checked by its size before it is unpacked, the label) and
+  the label not the printer's longest length; image caches are not used
+  for requests. Two previews or checks render at once.
 - **Roles**: see [tokens.toml](#tokens). The token's name, never the token,
   is logged and kept with each job.
 - **Printers**: with `printers.toml` clients choose by name and cannot
@@ -315,8 +340,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   may make the server connect to (the backends talk to whatever address
   they are given, as in the app). The network is searched only with
   `--discover`.
-- **Resources**: at most 32 connections at once, 60 s to send a request,
-  two previews rendered at once, 100 jobs queued.
+- **Resources**: at most 32 connections at once and 8 from one address;
+  30 s to send the whole request (line, headers and body; 408 or the
+  connection closed after that); 100 jobs queued; a finished job keeps
+  only its outcome, not the request. The systemd unit and the Compose
+  file limit memory (1 GB) and processes.
 - **Logs** (stderr, the journal): client address, token name, method, path
   without the query, status; for each job its id, token name, label,
   printer and outcome. Never headers, tokens or label content.
@@ -329,7 +357,9 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   Pango and Cairo (no GTK), the app in a venv, user `etiketto` (uid
   10001). Labels in `/labels`, settings in `/data`. It listens on all
   interfaces of the container, so it does not start without a token.
-- `packaging/docker/compose.yaml`: network printers. `config/` with
+- `packaging/docker/compose.yaml`: network printers, running as the
+  owner of `config/` and `labels/` (`user:`, `ETIKETTO_UID` and
+  `ETIKETTO_GID`, 1000 by default), 1 GB memory, 128 processes. `config/` with
   `printers.toml` and `tokens.toml` mounted read-only as a folder (a single
   mounted file would keep showing the old file after `token new` replaced
   it), port on `127.0.0.1` only, read-only file system, no capabilities,
@@ -342,8 +372,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   too) are at `ipp://localhost:631/printers/<queue>`; name them in
   `printers.toml`.
 - `packaging/systemd/etiketto.service`: a user service on `127.0.0.1:8790`
-  with MCP and a token file, sandboxed (`ProtectSystem=strict`, write
-  access only to the labels and the config folder).
+  with MCP and a token file; it makes the labels and config folders,
+  then runs sandboxed (`ProtectSystem=strict` with write access only to
+  them, kernel and cgroup settings protected, no namespaces, only
+  Internet, Unix and netlink sockets, `MemoryMax=1G`, `TasksMax=128`);
+  `systemctl --user reload etiketto` reads tokens.toml again.
 
 ```sh
 cd packaging/docker

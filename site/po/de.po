@@ -1330,20 +1330,13 @@ msgstr "Mehrere Geräte oder Personen bekommen je ein Token mit einer Rolle:"
 
 #. type: Fenced code block (sh)
 #: docs/server.md
-#, fuzzy, no-wrap
-#| msgid ""
-#| "  mkdir -p ~/.config/etiketto\n"
-#| "  openssl rand -hex 32 > ~/.config/etiketto/token\n"
-#| "  chmod 600 ~/.config/etiketto/token\n"
-#| "  etiketto serve --token-file ~/.config/etiketto/token\n"
+#, no-wrap
 msgid ""
 "  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
 "  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
 msgstr ""
-"  mkdir -p ~/.config/etiketto\n"
-"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
-"  chmod 600 ~/.config/etiketto/token\n"
-"  etiketto serve --token-file ~/.config/etiketto/token\n"
+"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
+"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
 
 #. type: Bullet: '- '
 #: docs/server.md
@@ -1428,6 +1421,15 @@ msgstr "Jeder Drucker druckt einen Auftrag nach dem anderen."
 #: docs/server.md
 msgid "Messages come in the language of the `Accept-Language` header."
 msgstr "Meldungen kommen in der Sprache des Headers `Accept-Language`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Without an access token, requests that ask printers need the header `X-"
+"Etiketto-Request: 1`, so that no web page can send them."
+msgstr ""
+"Ohne Zugangstoken brauchen Anfragen, die Drucker abfragen, den Header "
+"`X-Etiketto-Request: 1`, damit keine Webseite sie senden kann."
 
 #. type: Fenced code block (sh)
 #: docs/server.md

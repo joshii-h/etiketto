@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:25+0100\n"
+"POT-Creation-Date: 2026-11-12 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1030,6 +1030,12 @@ msgstr ""
 #: docs/server.md
 #, markdown-text
 msgid "Messages come in the language of the `Accept-Language` header."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Without an access token, requests that ask printers need the header `X-Etiketto-Request: 1`, so that no web page can send them."
 msgstr ""
 
 #. type: Fenced code block (sh)
