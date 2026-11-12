@@ -233,7 +233,6 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Kein Papier – Papier einlegen, dann geht es weiter",
     "Cover open – close it to continue": "Abdeckung offen – schliessen, dann geht es weiter",
     "Paper jammed – remove it to continue": "Papierstau – Papier entfernen, dann geht es weiter",
-    "expected NAME=VALUE: %s": "NAME=WERT erwartet: %s",
     "expected NAME=VALUE: %s": "NAME=VALUE erwartet: %s",
     "expected a whole number from %(min)d to %(max)d: %(value)s": "ganze Zahl von %(min)d bis %(max)d erwartet: %(value)s",
     "print a label file without opening a window": "eine Etikettendatei drucken, ohne ein Fenster zu öffnen",
