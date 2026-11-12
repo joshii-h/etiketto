@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Sildid %s ulatuvad veerisesse, kuhu printer ei saa printida",
     "Sheets already printed: %(n)d of %(total)d.": "Juba prinditud lehti: %(n)d/%(total)d.",
     "The sheets still waiting in the queue were canceled.": "Järjekorras veel oodanud lehed tühistati.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: koodi ribad on ainult ühe printimispunkti laiused ega pruugi skannida – suurendage koodi",
 }

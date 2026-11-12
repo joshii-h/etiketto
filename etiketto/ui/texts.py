@@ -96,6 +96,10 @@ def warning_text(warning: RenderWarning) -> str:
         "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
+        "code_thin": _(
+            "Element %(n)d: the code's bars are only one printer dot wide and may not scan "
+            "– make the code larger"
+        ),
     }
     return texts.get(warning.key, warning.key) % warning.params
 

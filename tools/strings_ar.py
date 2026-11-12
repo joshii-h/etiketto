@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "الملصقات %s تمتد إلى الهامش الذي لا تستطيع الطابعة الطباعة عليه",
     "Sheets already printed: %(n)d of %(total)d.": "الأوراق المطبوعة بالفعل: %(n)d من %(total)d.",
     "The sheets still waiting in the queue were canceled.": "أُلغيت الأوراق التي كانت لا تزال تنتظر في قائمة الانتظار.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "العنصر %(n)d: أشرطة الرمز بعرض نقطة طباعة واحدة فقط وقد لا يمكن مسحها – كبّر الرمز",
 }

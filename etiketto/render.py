@@ -34,7 +34,7 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: code_empty, ean13_digits, ean13_check,
     code128_charset, image_unreadable, element_failed, no_room,
-    fixed_too_short, background_unreadable)."""
+    fixed_too_short, background_unreadable, code_thin)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
@@ -203,17 +203,26 @@ BAR_TEXT_PT = 8.0
 BAR_TOTAL_MM = 16.3  # the whole element: the text below the bars, then space
 
 
-def _module(space: float, modules: int) -> int:
-    """The widest whole-pixel module with which modules of them fit in
-    space pixels (at least 1). The code is then up to one pixel per module
-    smaller than its space and is centred in it."""
-    return max(1, math.floor(space / modules + 1e-9))
+THIN_MODULE = 2  # pixels: a code with narrower modules may not scan (warning code_thin)
 
 
-def _dark(element: CodeElement, mask: Image.Image) -> Image.Image:
-    """The code's colour where mask is 255, transparent elsewhere: 1 bit."""
+def _module(designed: float, modules: int, box: int) -> int:
+    """The module in whole pixels: the designed width (pixels) rounded to
+    the nearest, or rounded down where that would take the modules beyond
+    the element's box (box pixels); at least 1. The layout stays as
+    designed, the code centred in its box."""
+    nearest = max(1, round(designed))
+    if nearest * modules <= box:
+        return nearest
+    return max(1, box // modules)
+
+
+def _dark(element: CodeElement, mask: Image.Image, module: int) -> Image.Image:
+    """The code's colour where mask is 255, transparent elsewhere: 1 bit;
+    its module width (pixels) in info["module"]."""
     img = Image.new("RGBA", mask.size, (*_color(element.color), 0))
     img.putalpha(mask.point(lambda v: 255 if v >= 128 else 0))
+    img.info["module"] = module
     return img
 
 
@@ -223,14 +232,14 @@ def _qr(element: CodeElement, height: int) -> Image.Image:
 
     matrix = segno.make(element.data, error="m").matrix
     count = len(matrix)
-    module = _module(height, count)
+    module = _module(height / count, count, height)
     side = count * module
     modules = Image.frombytes("L", (count, count), b"".join(bytes(row) for row in matrix))
     code = modules.point(lambda v: 255 if v else 0).resize((side, side), Image.Resampling.NEAREST)
     box = max(height, side)
     mask = Image.new("L", (box, box), 0)
     mask.paste(code, ((box - side) // 2, (box - side) // 2))
-    return _dark(element, mask)
+    return _dark(element, mask, module)
 
 
 def _barcode_text(text: str, size_px: float) -> Image.Image | None:
@@ -252,12 +261,10 @@ def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Imag
     scale = height / BAR_TOTAL_MM  # pixels per designed mm, across
     if width is None:
         width = max(1, round((2 * BAR_QUIET_MM + len(pattern) * BAR_MODULE_MM) * scale))
-    module = _module(
-        width * len(pattern) * BAR_MODULE_MM / (2 * BAR_QUIET_MM + len(pattern) * BAR_MODULE_MM),
-        len(pattern),
-    )
+    designed = width * BAR_MODULE_MM / (2 * BAR_QUIET_MM + len(pattern) * BAR_MODULE_MM)
+    module = _module(designed, len(pattern), width)
     bars_w = module * len(pattern)
-    width = max(width, bars_w)  # 1-pixel modules wider than the space: never narrower
+    width = max(width, bars_w)  # 1-pixel modules wider than the box: never narrower
     left = (width - bars_w) // 2
     top = round(BAR_TOP_MM * scale)
     bars_h = max(1, round(BAR_HEIGHT_MM * scale))
@@ -272,7 +279,7 @@ def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Imag
         y = top + bars_h + round(BAR_TEXT_GAP_MM * scale)
         x = left + (bars_w - text.width) // 2
         mask.paste(text.crop((0, 0, text.width, max(0, height - y))), (x, y))
-    return _dark(element, mask)
+    return _dark(element, mask, module)
 
 
 def _runs(pattern: str) -> list[tuple[int, int]]:
@@ -459,6 +466,11 @@ def render(
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings)
     length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
+    warnings += [
+        RenderWarning("code_thin", {"n": index})
+        for index, part in enumerate(parts, 1)
+        if part.info.get("module", THIN_MODULE) < THIN_MODULE
+    ]
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

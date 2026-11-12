@@ -891,14 +891,20 @@ class _Jobs:
                 self._send_all()
         except Exception as e:
             canceled = self._cancel_unfinished()
-            if isinstance(e, PrinterError) and self.printed:
-                e.params.update(printed=self.printed, copies=self.total)
-            if isinstance(e, PrinterError) and canceled and self.queued:
-                e.params["queue_canceled"] = True
-            if isinstance(e, PrinterError) and self.several and e.params.keys() & _COUNTED:
-                e.params["pages"] = True  # the counts are of sheets
+            if isinstance(e, PrinterError):
+                self._explain(e, canceled)
             raise
         return PrintResult(queued=True) if self.queued else None
+
+    def _explain(self, error: PrinterError, canceled: bool) -> None:
+        """What the message adds: the labels (or sheets) printed already,
+        and whether jobs waiting in the queue were canceled."""
+        if self.printed:
+            error.params.update(printed=self.printed, copies=self.total)
+        if canceled and self.queued:
+            error.params["queue_canceled"] = True
+        if self.several and error.params.keys() & _COUNTED:
+            error.params["pages"] = True  # the counts are of sheets
 
     def _cancel_unfinished(self) -> bool:
         """Cancel-Job for the jobs sent and not over; whether there were

@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Etykiety %s sięgają w margines, na którym drukarka nie może drukować",
     "Sheets already printed: %(n)d of %(total)d.": "Już wydrukowane arkusze: %(n)d z %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Arkusze, które wciąż czekały w kolejce, zostały anulowane.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Element %(n)d: kreski kodu mają szerokość tylko jednego punktu druku i mogą się nie zeskanować – powiększ kod",
 }

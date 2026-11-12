@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Label %s masuk ke margin yang tidak dapat dicetak oleh pencetak",
     "Sheets already printed: %(n)d of %(total)d.": "Lembar yang sudah dicetak: %(n)d dari %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Lembar yang masih menunggu dalam antrean telah dibatalkan.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Elemen %(n)d: batang kode hanya selebar satu titik cetak dan mungkin tidak dapat dipindai – perbesar kodenya",
 }

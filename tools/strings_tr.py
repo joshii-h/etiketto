@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "%s numaralı etiketler yazıcının yazdıramadığı kenar boşluğuna taşıyor",
     "Sheets already printed: %(n)d of %(total)d.": "Zaten yazdırılan sayfalar: %(total)d sayfadan %(n)d.",
     "The sheets still waiting in the queue were canceled.": "Kuyrukta hâlâ bekleyen sayfalar iptal edildi.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Öge %(n)d: kodun çubukları yalnızca bir yazıcı noktası genişliğinde ve taranamayabilir – kodu büyütün",
 }

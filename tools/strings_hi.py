@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "लेबल %s उस हाशिये में जाते हैं जिस पर प्रिंटर प्रिंट नहीं कर सकता",
     "Sheets already printed: %(n)d of %(total)d.": "पहले ही प्रिंट हो चुकी शीटें: %(total)d में से %(n)d।",
     "The sheets still waiting in the queue were canceled.": "कतार में अभी भी प्रतीक्षा कर रही शीटें रद्द कर दी गईं।",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "तत्व %(n)d: कोड की पट्टियाँ केवल एक प्रिंट बिंदु चौड़ी हैं और शायद स्कैन न हों – कोड बड़ा करें",
 }

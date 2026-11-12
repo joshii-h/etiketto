@@ -493,9 +493,11 @@ def test_barcode_modules_are_whole_pixels(symbology, data, dpi):
     module = min(runs)
     assert [run / module for run in runs] == _pattern(symbology, data)
     modules = sum(runs) // module
-    # the widest whole module that fits the bars' share of the designed width
-    space = page.width * modules * 0.3 / (2 + modules * 0.3)
-    assert module == int(space / modules) and sum(runs) > space - modules
+    designed = page.width * 0.3 / (2 + modules * 0.3)  # pixels
+    # the nearest whole module, unless the bars would go beyond the element
+    nearest = max(1, round(designed))
+    assert module == (nearest if nearest * modules <= page.width else page.width // modules)
+    assert sum(runs) <= page.width
 
 
 @pytest.mark.parametrize("dpi", [203, 300, 600])
@@ -514,6 +516,28 @@ def test_qr_modules_are_whole_square_pixels(dpi):
     # finder pattern: 7 modules dark-light-dark-light-dark 1:1:3:1:1
     row = list(pixels(page.crop((x0, y0 + 3 * module, x0 + 7 * module, y0 + 3 * module + 1))))
     assert _runs(row) == [module, module, 3 * module, module, module]
+
+
+@pytest.mark.parametrize(
+    "designed, modules, box, module",
+    [
+        (2.6, 10, 30, 3),  # the nearest
+        (2.4, 10, 30, 2),
+        (2.6, 10, 29, 2),  # 3 would go beyond the box: rounded down
+        (0.4, 10, 30, 1),  # never less than one pixel
+        (0.4, 10, 5, 1),
+    ],
+)
+def test_module_width(designed, modules, box, module):
+    assert render_module._module(designed, modules, box) == module
+
+
+def test_a_code_with_one_dot_modules_warns(make_label):
+    long = CodeElement("1Z999AA10123456784" * 2, symbology="code128")
+    rendered = render(make_label(tape_mm=12, elements=[TextElement("x"), long]), dpi=203)
+    assert RenderWarning("code_thin", {"n": 2}) in rendered.warnings
+    qr = render(make_label(elements=[CodeElement("https://example.org")]), dpi=203)
+    assert qr.warnings == []  # 4 dots a module
 
 
 def test_a_barcode_without_its_text_still_has_its_bars(monkeypatch):

@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Tarrat %s ulottuvat marginaaliin, johon tulostin ei voi tulostaa",
     "Sheets already printed: %(n)d of %(total)d.": "Jo tulostetut arkit: %(n)d/%(total)d.",
     "The sheets still waiting in the queue were canceled.": "Jonossa vielä odottaneet arkit peruttiin.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Elementti %(n)d: koodin viivat ovat vain yhden tulostuspisteen levyisiä eivätkä ehkä skannaudu – suurenna koodia",
 }

@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "ラベル %s がプリンターの印刷できない余白にかかっています",
     "Sheets already printed: %(n)d of %(total)d.": "印刷済みのシート: %(total)d 枚中 %(n)d 枚。",
     "The sheets still waiting in the queue were canceled.": "キューで待機中だったシートはキャンセルされました。",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "要素 %(n)d: コードのバーの幅が印刷ドット1つ分しかないため、読み取れない可能性があります – コードを大きくしてください",
 }

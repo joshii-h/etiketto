@@ -12,6 +12,12 @@ Elements are placed one after another along the label. Order them with
   the label height, otherwise fixed in pt.
 - **Image**: photos and graphics; drag and drop works too.
 - **Code**: QR code, Code 128 or EAN-13.
+- Codes print sharp on every printer: each bar and square is a whole
+  number of printer dots, as close to the designed width as the element's
+  space allows, never wider. The code may come out slightly smaller than
+  designed, centred in its space.
+- A code whose bars are only one printer dot wide may not scan: Etiketto
+  warns, make the code larger.
 
 ## Label
 

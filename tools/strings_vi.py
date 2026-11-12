@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "Các nhãn %s lấn vào lề mà máy in không in được",
     "Sheets already printed: %(n)d of %(total)d.": "Số tờ đã in: %(n)d trên %(total)d.",
     "The sheets still waiting in the queue were canceled.": "Các tờ còn chờ trong hàng đợi đã bị hủy.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "Phần tử %(n)d: vạch của mã chỉ rộng một điểm in và có thể không quét được – hãy phóng to mã",
 }

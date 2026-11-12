@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s",
     "Sheets already printed: %(n)d of %(total)d.": "Már kinyomtatott ívek: %(n)d / %(total)d.",
     "The sheets still waiting in the queue were canceled.": "A sorban még várakozó ívek nyomtatása megszakadt.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "%(n)d. elem: a kód vonalai csak egy nyomtatási pont szélesek, ezért lehet, hogy nem olvashatók be – nagyítsa a kódot",
 }

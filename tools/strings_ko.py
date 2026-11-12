@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "라벨 %s이(가) 프린터가 인쇄할 수 없는 여백에 걸칩니다",
     "Sheets already printed: %(n)d of %(total)d.": "이미 인쇄된 시트: %(total)d장 중 %(n)d장.",
     "The sheets still waiting in the queue were canceled.": "대기열에서 기다리던 시트는 취소되었습니다.",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "요소 %(n)d: 코드의 막대 너비가 인쇄 점 하나뿐이라 스캔되지 않을 수 있습니다 – 코드를 크게 하세요",
 }

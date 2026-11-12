@@ -115,18 +115,19 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   the resolution (600 dpi), Splash still smooths the image; Ghostscript
   doubles it exactly]
 - Codes (QR, Code 128, EAN-13) are drawn at the resolution they print
-  at, never resampled: every module the widest whole number of dots that
-  fits the element's designed space (at least one), pure black and white,
-  the code centred in its space and up to one dot per module smaller than
-  designed; the human-readable text is laid out on its own, without
-  anti-aliasing. A code shrunk to fit a fixed length is drawn again at the
-  smaller size. (A 0.3 mm module at 300 dpi is 3.54 dots: it prints at 3,
-  so the bars take 85 % of the designed width; at 203 dpi a module of
-  2.4 dots prints at 2.)
-- PWG Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi
-  or the next resolution the printer lists
-  (`pwg-raster-document-resolution-supported`, the `RS` keywords of
-  `urf-supported`; only 100 to 1200 dpi are believed), and the label
+  at, never resampled, pure black and white: every module is the designed
+  width rounded to the nearest whole number of dots, or rounded down where
+  the nearest would take the code beyond the element's box (so the layout
+  never changes and nothing overflows), at least one dot; the code is
+  centred in its box. The human-readable text is laid out on its own,
+  without anti-aliasing. A code shrunk to fit a fixed length is drawn
+  again at the smaller size. A code whose modules end up one dot wide gets
+  a warning: it may not scan. (A barcode's box leaves only its quiet zones
+  for rounding up, so a barcode is usually rounded down: a 0.3 mm module
+  at 300 dpi is 3.54 dots and prints at 3; a QR code fills a square box
+  and is always rounded down.)
+- PWG Raster (8-bit sRGB or sGray) is
+  made at 300 dpi or the next resolution the printer lists, and the label
   (or the label sheet's pages) is rendered again at that resolution
   instead of resized, so a 203 dpi printer gets 812 × 1218 pixels for
   4 × 6 inches, sharp. Only a page that cannot be rendered again is

@@ -266,4 +266,5 @@ TRANSLATIONS = {
     "Labels %s reach into the margin the printer cannot print on": "標籤 %s 伸入了印表機無法列印的邊距",
     "Sheets already printed: %(n)d of %(total)d.": "已列印的紙張：%(n)d/%(total)d。",
     "The sheets still waiting in the queue were canceled.": "仍在佇列中等待的紙張已取消。",
+    "Element %(n)d: the code's bars are only one printer dot wide and may not scan – make the code larger": "元素 %(n)d：條碼線條只有一個列印點寬，可能無法掃描 – 請放大條碼",
 }
