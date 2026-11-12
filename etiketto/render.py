@@ -46,7 +46,7 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: image_unreadable, page_unreadable,
     pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
-    background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
+    outside_label (the free layout), background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
     etiketto.codes.CodeError; codes that may not scan or do not fit:
     code_thin, code_quiet, code_too_big)."""
 
@@ -146,6 +146,7 @@ def render_text(
         limits = (_width_limit(element, room, wrap), height)
         size = _fitted_size(element, measure, limits, dpi)
     block = draw(size)
+    block.info["size_px"] = size  # the size it got (freelayout.adopt)
     if inks.mono:  # reduced to a fixed length: laid out again (see _resize)
         if wrap:  # with the lines it has now: smaller, it would wrap otherwise
             lines = typeset.wrapped_lines(element, size, False, wrap)
@@ -1185,7 +1186,14 @@ def render(
     across_step: the caller reduces the image across the tape by this whole
     factor (a resolution finer along the tape than across it, like the
     P-touch's high resolution): 2D codes then get modules and rows on
-    multiples of it, so their modules stay whole pixels after the reduction."""
+    multiples of it, so their modules stay whole pixels after the reduction.
+    A label of the free layout: etiketto.freelayout."""
+    if label.layout == "free":
+        from etiketto import freelayout
+
+        return freelayout.render(
+            label, dpi, safe_mm, (tape_px, bleed_px), min_length_mm, (mono, red), across_step
+        )
     warnings: list[RenderWarning] = []
     step = across_step
     inks = Inks(mono, mono and red, background_brightness(label) if mono else 255.0)
