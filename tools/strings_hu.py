@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Hozzáférési token: ",
     "This token is in the file already, as %s": "Ez a token már szerepel a fájlban, %s néven",
     "The label is too large: at most %d images and codes": "A címke túl nagy: legfeljebb %d kép és kód",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "%(n)d. elem: a vonalak túl vékonyak a megbízható beolvasáshoz – hosszabbítsa meg a címkét, vagy rövidítse a tartalmat",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "%(n)d. elem: a vonalak túl vékonyak a megbízható beolvasáshoz – használjon hosszabb vagy nagyobb címkét, vagy rövidebb tartalmat",
     "Not a valid printer address pattern: %s": "Érvénytelen nyomtatócím-minta: %s",
+    "A chosen token must not look like a made one (etk_…)": "A választott token nem hasonlíthat egy létrehozottra (etk_…)",
 }

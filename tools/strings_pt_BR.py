@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Token de acesso: ",
     "This token is in the file already, as %s": "Este token já está no arquivo, como %s",
     "The label is too large: at most %d images and codes": "A etiqueta é grande demais: no máximo %d imagens e códigos",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Elemento %(n)d: as barras são finas demais para uma leitura confiável – aumente o comprimento da etiqueta ou encurte o conteúdo",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Elemento %(n)d: as barras são finas demais para uma leitura confiável – use uma etiqueta mais longa ou maior, ou um conteúdo mais curto",
     "Not a valid printer address pattern: %s": "Não é um padrão de endereço de impressora válido: %s",
+    "A chosen token must not look like a made one (etk_…)": "Um token escolhido não pode parecer um token gerado (etk_…)",
 }

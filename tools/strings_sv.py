@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Åtkomsttoken: ",
     "This token is in the file already, as %s": "Denna token finns redan i filen, som %s",
     "The label is too large: at most %d images and codes": "Etiketten är för stor: högst %d bilder och koder",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Element %(n)d: strecken är för tunna för att skannas tillförlitligt – gör etiketten längre eller innehållet kortare",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Element %(n)d: strecken är för tunna för att skannas tillförlitligt – använd en längre eller större etikett, eller kortare innehåll",
     "Not a valid printer address pattern: %s": "Inte ett giltigt mönster för skrivaradress: %s",
+    "A chosen token must not look like a made one (etk_…)": "En vald token får inte se ut som en skapad (etk_…)",
 }

@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "アクセストークン: ",
     "This token is in the file already, as %s": "このトークンはすでに %s としてファイルにあります",
     "The label is too large: at most %d images and codes": "ラベルが大きすぎます: 画像とコードは最大 %d 個です",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "要素 %(n)d: バーが細すぎて確実に読み取れません。ラベルを長くするか、内容を短くしてください",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "要素 %(n)d: バーが細すぎて確実に読み取れません。より長いか大きいラベルを使うか、内容を短くしてください",
     "Not a valid printer address pattern: %s": "有効なプリンターアドレスのパターンではありません: %s",
+    "A chosen token must not look like a made one (etk_…)": "自分で決めたトークンは、生成されたトークンのような形にはできません (etk_…)",
 }

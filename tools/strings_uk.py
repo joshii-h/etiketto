@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Токен доступу: ",
     "This token is in the file already, as %s": "Цей токен уже є у файлі під назвою %s",
     "The label is too large: at most %d images and codes": "Етикетка завелика: щонайбільше %d зображень і кодів",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Елемент %(n)d: штрихи надто тонкі для надійного сканування – зробіть етикетку довшою або вміст коротшим",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Елемент %(n)d: штрихи надто тонкі для надійного сканування – використайте довшу або більшу етикетку чи коротший вміст",
     "Not a valid printer address pattern: %s": "Неприпустимий шаблон адреси принтера: %s",
+    "A chosen token must not look like a made one (etk_…)": "Вибраний токен не має бути схожим на створений (etk_…)",
 }

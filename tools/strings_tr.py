@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Erişim belirteci: ",
     "This token is in the file already, as %s": "Bu belirteç dosyada zaten %s adıyla var",
     "The label is too large: at most %d images and codes": "Etiket çok büyük: en fazla %d görsel ve kod",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Öge %(n)d: çubuklar güvenilir biçimde taranamayacak kadar ince – etiketi uzatın veya içeriği kısaltın",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Öge %(n)d: çubuklar güvenilir biçimde taranamayacak kadar ince – daha uzun veya daha büyük bir etiket ya da daha kısa içerik kullanın",
     "Not a valid printer address pattern: %s": "Geçerli bir yazıcı adresi kalıbı değil: %s",
+    "A chosen token must not look like a made one (etk_…)": "Seçilen belirteç, oluşturulmuş bir belirtece benzememelidir (etk_…)",
 }

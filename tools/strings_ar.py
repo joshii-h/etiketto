@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "رمز الوصول: ",
     "This token is in the file already, as %s": "هذا الرمز موجود في الملف بالفعل باسم %s",
     "The label is too large: at most %d images and codes": "الملصق كبير جدًا: الحد الأقصى %d من الصور والرموز",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "العنصر %(n)d: الأشرطة أرق من أن تُمسح بشكل موثوق – اجعل الملصق أطول أو المحتوى أقصر",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "العنصر %(n)d: الأشرطة أرق من أن تُمسح بشكل موثوق – استخدم ملصقًا أطول أو أكبر، أو محتوى أقصر",
     "Not a valid printer address pattern: %s": "ليس نمطًا صالحًا لعنوان الطابعة: %s",
+    "A chosen token must not look like a made one (etk_…)": "يجب ألا يبدو الرمز المختار مثل رمز مُنشأ (etk_…)",
 }

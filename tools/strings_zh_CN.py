@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "访问令牌：",
     "This token is in the file already, as %s": "此令牌已在文件中，名为 %s",
     "The label is too large: at most %d images and codes": "标签过大：图像和二维码／条形码最多 %d 个",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "元素 %(n)d：条太细，无法可靠扫描，请加长标签或缩短内容",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "元素 %(n)d：条太细，无法可靠扫描，请使用更长或更大的标签，或缩短内容",
     "Not a valid printer address pattern: %s": "不是有效的打印机地址模式：%s",
+    "A chosen token must not look like a made one (etk_…)": "自选令牌不得看起来像生成的令牌（etk_…）",
 }

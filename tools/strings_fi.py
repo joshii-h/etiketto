@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Pääsytunnus: ",
     "This token is in the file already, as %s": "Tämä pääsytunnus on jo tiedostossa nimellä %s",
     "The label is too large: at most %d images and codes": "Tarra on liian suuri: enintään %d kuvaa ja koodia",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Elementti %(n)d: viivat ovat liian ohuita luotettavaan lukemiseen – pidennä tarraa tai lyhennä sisältöä",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Elementti %(n)d: viivat ovat liian ohuita luotettavaan lukemiseen – käytä pidempää tai suurempaa tarraa tai lyhyempää sisältöä",
     "Not a valid printer address pattern: %s": "Ei kelvollinen tulostimen osoitteen malli: %s",
+    "A chosen token must not look like a made one (etk_…)": "Valittu pääsytunnus ei saa näyttää luodulta (etk_…)",
 }

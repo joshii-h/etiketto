@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "액세스 토큰: ",
     "This token is in the file already, as %s": "이 토큰은 이미 파일에 %s(으)로 있습니다",
     "The label is too large: at most %d images and codes": "라벨이 너무 큽니다: 이미지와 코드는 최대 %d개까지 가능합니다",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "요소 %(n)d: 바가 너무 가늘어 안정적으로 스캔할 수 없습니다. 라벨을 길게 하거나 내용을 줄이세요",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "요소 %(n)d: 바가 너무 가늘어 안정적으로 스캔할 수 없습니다. 더 길거나 큰 라벨을 사용하거나 내용을 줄이세요",
     "Not a valid printer address pattern: %s": "유효하지 않은 프린터 주소 패턴: %s",
+    "A chosen token must not look like a made one (etk_…)": "직접 정한 토큰은 생성된 토큰처럼 보이면 안 됩니다 (etk_…)",
 }

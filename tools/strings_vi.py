@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Mã truy cập: ",
     "This token is in the file already, as %s": "Mã truy cập này đã có trong tệp, với tên %s",
     "The label is too large: at most %d images and codes": "Nhãn quá lớn: tối đa %d hình ảnh và mã",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Phần tử %(n)d: các vạch quá mảnh để quét ổn định – hãy làm nhãn dài hơn hoặc nội dung ngắn hơn",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Phần tử %(n)d: các vạch quá mảnh để quét ổn định – hãy dùng nhãn dài hơn hoặc lớn hơn, hoặc nội dung ngắn hơn",
     "Not a valid printer address pattern: %s": "Không phải mẫu địa chỉ máy in hợp lệ: %s",
+    "A chosen token must not look like a made one (etk_…)": "Mã truy cập tự chọn không được trông giống mã được tạo (etk_…)",
 }

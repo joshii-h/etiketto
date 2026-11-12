@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "एक्सेस टोकन: ",
     "This token is in the file already, as %s": "यह टोकन फ़ाइल में पहले से %s के रूप में मौजूद है",
     "The label is too large: at most %d images and codes": "लेबल बहुत बड़ा है: अधिकतम %d चित्र और कोड",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "तत्व %(n)d: बार भरोसेमंद ढंग से स्कैन होने के लिए बहुत पतले हैं – लेबल लंबा करें या सामग्री छोटी करें",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "तत्व %(n)d: बार भरोसेमंद ढंग से स्कैन होने के लिए बहुत पतले हैं – लंबा या बड़ा लेबल इस्तेमाल करें, या छोटी सामग्री",
     "Not a valid printer address pattern: %s": "मान्य प्रिंटर पता पैटर्न नहीं है: %s",
+    "A chosen token must not look like a made one (etk_…)": "चुना गया टोकन बनाए गए टोकन जैसा नहीं दिखना चाहिए (etk_…)",
 }

@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Toegangstoken: ",
     "This token is in the file already, as %s": "Dit token staat al in het bestand, als %s",
     "The label is too large: at most %d images and codes": "Het etiket is te groot: maximaal %d afbeeldingen en codes",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Element %(n)d: de streepjes zijn te dun om betrouwbaar te scannen – maak het etiket langer of de inhoud korter",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Element %(n)d: de streepjes zijn te dun om betrouwbaar te scannen – gebruik een langer of groter etiket, of kortere inhoud",
     "Not a valid printer address pattern: %s": "Geen geldig printeradrespatroon: %s",
+    "A chosen token must not look like a made one (etk_…)": "Een gekozen token mag niet op een aangemaakt token lijken (etk_…)",
 }

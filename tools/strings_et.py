@@ -454,6 +454,7 @@ TRANSLATIONS = {
     "Access token: ": "Pääsuluba: ",
     "This token is in the file already, as %s": "See pääsuluba on failis juba olemas nimega %s",
     "The label is too large: at most %d images and codes": "Silt on liiga suur: kuni %d pilti ja koodi",
-    "Element %(n)d: the bars are too thin to scan reliably – make the label longer or the content shorter": "Element %(n)d: ribad on usaldusväärseks skannimiseks liiga peenikesed – tee silt pikemaks või sisu lühemaks",
+    "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger label, or shorter content": "Element %(n)d: ribad on usaldusväärseks skannimiseks liiga peenikesed – kasuta pikemat või suuremat silti või lühemat sisu",
     "Not a valid printer address pattern: %s": "Pole kehtiv printeri aadressi muster: %s",
+    "A chosen token must not look like a made one (etk_…)": "Valitud pääsuluba ei tohi välja näha nagu loodud pääsuluba (etk_…)",
 }
