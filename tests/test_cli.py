@@ -889,6 +889,8 @@ def test_serial_problems_are_refused(mono, label_file, rows_csv, tmp_path, capsy
     assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_LABEL
     assert err(capsys).endswith("Rows: 3\n")
     assert run("print", path, "--host", "h", "--data", rows_csv, "--rows", "1-2") == 0
+    # one dot per module on 12 mm at 203 dpi: told, printed
+    assert "bars are too thin" in err(capsys)
     path = label_file(TextElement(text="{Price}"))
     assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_LABEL
     assert err(capsys) == "etiketto: No such column: {Price}\n"

@@ -292,20 +292,17 @@ def _scale(data: str, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
-# a full-height copy larger than this is not kept to scale down from
-FIT_SOURCE_PIXELS = 16_000_000
-
-
-def _fit_image(data: str, inner: int, width: int, height: int) -> Image.Image:
-    """An image at a size of its own (a label scaled down to its length):
-    scaled from the full-height copy, which is cached (typing in a label
-    that is scaled down changes the size with every key)."""
+def _fit_image(data: str, width: int, height: int) -> Image.Image:
+    """An image at a size of its own (a label scaled down to its length),
+    resampled once from the decoded file. reducing_gap makes it fast for a
+    large photo (Pillow first reduces by a whole factor): typing in such a
+    label changes the size with every key. No full-height copy is made (a
+    label of many narrow images made one of 16 megapixels for each)."""
     _check_size(width, height)
-    source_w, source_h = _image_size(data)
-    full_width = max(1, round(source_w * inner / source_h))
-    if full_width * inner <= FIT_SOURCE_PIXELS:
-        return _resized(_scaled(data, inner), width, height)
-    return _resized(_decoded(data), width, height)  # a very wide image: from the file
+    image = _decoded(data)
+    if image.size == (width, height):
+        return image
+    return image.resize((width, height), Image.Resampling.LANCZOS, reducing_gap=3.0)
 
 
 class _SizeCache:
@@ -366,11 +363,11 @@ def _scaled(data: str, height: int) -> Image.Image:
     return _scaled_cached(data, height)
 
 
-def _fitted(data: str, inner: int, width: int, height: int) -> Image.Image:
+def _fitted(data: str, width: int, height: int) -> Image.Image:
     if _LIMITS.get():
-        key = (data, inner, width, height)
-        return _per_render("fitted", key, lambda: _fit_image(data, inner, width, height))
-    return _fit_image(data, inner, width, height)
+        key = (data, width, height)
+        return _per_render("fitted", key, lambda: _fit_image(data, width, height))
+    return _fit_image(data, width, height)
 
 
 def render_image(element: ImageElement, height: int) -> Image.Image:
@@ -434,8 +431,14 @@ BAR_MM = 0.3
 BAR_HEIGHT_MM = 10.0
 DIGITS_MM = 4.5
 QUIET = {"code128": (10, 10), "ean13": (11, 7)}
-# pixels a module needs at least: below that the bars are squeezed, not scannable
-MIN_MODULE_PX = 1
+# how the barcodes of Etiketto before 1.1 were laid out (python-barcode's
+# image): a label keeps its length with the new drawing
+OLD_QUIET_MM = 1.0
+OLD_HEIGHT_MM = 10.0 + 2 * 1.0 + 8 * 25.4 / 72 / 2 + 3.0  # bars, margins, half the digits, gap
+# a module at least this wide and this many dots: thinner bars do not scan
+# reliably (most scanners want 0.17 mm or more)
+MIN_MODULE_MM = 0.17
+MIN_MODULE_DOTS = 2
 
 
 @dataclass(frozen=True)
@@ -445,15 +448,19 @@ class _Bars:
 
     modules: str
     text: str
+    core: int  # modules without the quiet zones
 
     def width_for(self, height: int) -> int:
-        """The width the barcode has at a height: about its proportions,
-        whole pixels per module and at least one (so a barcode that is not
-        scaled down always scans)."""
-        count = len(self.modules)
-        width_mm = count * BAR_MM
-        per = round(height * width_mm / (BAR_HEIGHT_MM + DIGITS_MM) / count)
-        return count * max(1, per)
+        """The width the barcode takes at a height: the proportions it had
+        when python-barcode drew it (1 mm quiet zones, 0.3 mm modules, 10 mm
+        bars and the digits below), so labels keep their length. The bars
+        are then drawn whole pixels per module within that width; only
+        where that would be less than one pixel per module is the barcode
+        made wider, one pixel per module (it would not scan otherwise), so
+        a tape at a low resolution can get a little longer."""
+        old_width_mm = 2 * OLD_QUIET_MM + self.core * BAR_MM
+        width = round(height * old_width_mm / OLD_HEIGHT_MM)
+        return max(1, width, len(self.modules))
 
 
 def _make_bars(symbology: str, data: str) -> _Bars:
@@ -463,7 +470,8 @@ def _make_bars(symbology: str, data: str) -> _Bars:
     code = barcode.get(symbology, data)
     left, right = QUIET[symbology]
     text = code.get_fullcode() if symbology == "ean13" else data
-    return _Bars("0" * left + "".join(code.build()) + "0" * right, text)
+    core = "".join(code.build())
+    return _Bars("0" * left + core + "0" * right, text, len(core))
 
 
 def _make_qr(data: str, color: str) -> Image.Image:
@@ -524,9 +532,10 @@ def _barcode_at(element: CodeElement, width: int, height: int) -> Image.Image:
     return image
 
 
-def _bar_warning(element: CodeElement, width: int) -> str | None:
-    """Bars thinner than MIN_MODULE_PX pixels a module do not scan well."""
-    if _module_px(_bars(element), width) < MIN_MODULE_PX:
+def _bar_warning(element: CodeElement, width: int, dpi: float) -> str | None:
+    """Modules narrower than MIN_MODULE_MM or MIN_MODULE_DOTS do not scan well."""
+    per = _module_px(_bars(element), width)
+    if per < MIN_MODULE_DOTS or per * 25.4 / dpi < MIN_MODULE_MM:
         return "barcode_narrow"
     return None
 
@@ -652,12 +661,12 @@ def _picture_part(element: ImageElement, inner: int) -> _Part:
     def draw(w: int, h: int) -> Image.Image:
         if (w, h) == (width, inner):
             return render_image(element, inner)
-        return _fitted(element.data, inner, w, h).copy()
+        return _fitted(element.data, w, h).copy()
 
     return _Part(width, inner, draw)
 
 
-def _code_part(element: CodeElement, inner: int) -> _Part:
+def _code_part(element: CodeElement, inner: int, dpi: float) -> _Part:
     """A code: measured from its modules, drawn at the final size (a QR
     code on a page is not drawn page-sized while measuring)."""
     if element.symbology == "qr":
@@ -668,7 +677,7 @@ def _code_part(element: CodeElement, inner: int) -> _Part:
         width,
         inner,
         lambda w, h: _barcode_at(element, w, h),
-        warning=lambda w, h: _bar_warning(element, w),
+        warning=lambda w, h: _bar_warning(element, w, dpi),
     )
 
 
@@ -719,7 +728,7 @@ def _part(element: Element, inner: int, dpi: float) -> _Part:
         return _text_part(element, inner, dpi)
     if isinstance(element, ImageElement):
         return _picture_part(element, inner)
-    return _code_part(element, inner)
+    return _code_part(element, inner, dpi)
 
 
 def _code_budget(label: Label) -> None:

@@ -900,3 +900,68 @@ def test_header_size_cache_keys_on_hash_and_length():
     cache = render_module._SizeCache()
     cache.get(data)
     assert list(cache._entries) == [(hash(data), len(data))]
+
+
+# --- the sixth review -------------------------------------------------------------------
+
+
+def test_many_narrow_images_on_a_fixed_length_make_no_full_height_copies(png_b64, monkeypatch):
+    import time
+
+    label = Label(
+        tape_mm=50,
+        auto_length=False,
+        length_mm=60,
+        elements=[ImageElement(data=png_b64((460, 10), (n, 0, 0))) for n in range(50)],
+    )
+    scaled = []
+    real = render_module._scale
+    monkeypatch.setattr(render_module, "_scale", lambda *a: scaled.append(a) or real(*a))
+    started = time.monotonic()
+    with render_module.limited(40_000_000):
+        rendered = render_module.render(label, 317)
+    assert rendered.overflow and scaled == []
+    assert time.monotonic() - started < 5
+
+
+def test_fitted_images_are_resampled_once(png_b64, monkeypatch):
+    data = png_b64((300, 30), "red")
+    resized = []
+    real = Image.Image.resize
+    monkeypatch.setattr(
+        Image.Image, "resize", lambda self, *a, **k: resized.append(a[0]) or real(self, *a, **k)
+    )
+    render_module._fit_image(data, 50, 5)
+    assert set(resized) == {(50, 5)}  # Pillow's reducing_gap resizes the reduced copy too
+
+
+@pytest.mark.parametrize("tape", [25, 50])
+@pytest.mark.parametrize("dpi", [180, 300, 317])
+def test_barcodes_keep_the_length_they_had(tape, dpi):
+    """Before 1.1 python-barcode drew the bars; a label keeps its length
+    (within the quiet zones and whole pixels)."""
+    old = {25: 76.9, 50: 156.6}
+    label = Label(tape_mm=tape, elements=[CodeElement(data="INV-2026-0042", symbology="code128")])
+    assert abs(render(label, dpi).length_mm - old[tape]) < 1.0
+
+
+def test_barcode_width_has_no_jumps():
+    bars = render_module._bars(CodeElement(data="INV-2026-0042", symbology="code128"))
+    widths = [bars.width_for(h) for h in range(60, 400)]
+    assert all(0 <= b - a <= 5 for a, b in zip(widths, widths[1:], strict=False))
+
+
+@pytest.mark.parametrize(
+    ("dpi", "per", "warned"), [(300, 2, True), (300, 3, False), (203, 1, True), (203, 2, False)]
+)
+def test_thin_bars_are_judged_by_their_width_on_paper(dpi, per, warned):
+    element = CodeElement(data="ABC", symbology="code128")
+    width = len(render_module._bars(element).modules) * per
+    assert (render_module._bar_warning(element, width, dpi) == "barcode_narrow") is warned
+
+
+def test_the_thin_bars_warning_fits_die_cut_labels_too():
+    from etiketto.ui.texts import warning_text
+
+    text = warning_text(render_module.RenderWarning("barcode_narrow", {"n": 1}))
+    assert "longer or larger label" in text

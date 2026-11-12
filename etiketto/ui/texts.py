@@ -89,8 +89,8 @@ def warning_text(warning: RenderWarning) -> str:
         "ean13_check": _("Element %(n)d: the EAN-13 check digit is wrong"),
         "code128_long": _("Element %(n)d: Code 128 holds at most %(max)d characters"),
         "barcode_narrow": _(
-            "Element %(n)d: the bars are too thin to scan reliably – make the label longer "
-            "or the content shorter"
+            "Element %(n)d: the bars are too thin to scan reliably – use a longer or larger "
+            "label, or shorter content"
         ),
         "code128_charset": _(
             "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
