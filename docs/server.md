@@ -448,11 +448,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   not scan. A Code 128 holds at most 200 characters; a longer one is
   refused for printing in the window, on the command line and by the
   server.
-- **Shipping-label PDF pages**: the Docker image has no Poppler, so a
-  label with a PDF page element cannot be rendered there (natively, only
-  with `gir1.2-poppler-0.18` / `poppler-glib` installed). A switch for
-  pages in `label_content` is planned (`--allow-pdf-pages`, off by
-  default; 422 `pages_not_allowed`).
+- **Shipping-label PDF pages**: pages in `label_content` are refused
+  (422 `pages_not_allowed`) unless the server runs with
+  `--allow-pdf-pages`; then PDFs are drawn by Poppler in a separate,
+  limited process (see "Document pages" below). The Docker image has
+  Poppler; a native install needs `gir1.2-poppler-0.18` / `poppler-glib`.
 - **Fonts**: a text whose font fontconfig does not have is drawn in another
   one and warned about (`font_missing`, in the preview and in the job);
   generic names (`Sans`, `Serif`, `Monospace`) always count. See the
