@@ -49,6 +49,97 @@ Elements are placed one after another along the label. Order them with
   third smaller (their blank margin is now inside the element), barcodes
   slightly wider.
 
+## Text style { #text-style }
+
+![Text in a box and a frame, lines and a rounded border](media/design.png#only-light)
+![Text in a box and a frame, lines and a rounded border](media/design-dark.png#only-dark)
+
+The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]]
+and [[ui:Outline and shadow]] open a page of their own in the sidebar, its
+header names the element:
+
+- [[ui:Font]]: family, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]],
+  [[ui:Strikethrough]].
+- [[ui:Spacing and fitting]]: [[ui:Letter spacing]] and
+  [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the
+  label height and, with a fixed length, the length, never below
+  [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several;
+  [[ui:Rotation]] 90° or 270° turns the whole text, the letters lie on
+  their side (not upright columns of Chinese or Japanese).
+- Letter spacing leaves out scripts whose letters join, such as Arabic or
+  Devanagari.
+- [[ui:Box and frame]]: [[ui:White on black]] cuts the text out of a box
+  in the text colour; [[ui:Background box]] puts a box of another colour
+  behind it; [[ui:Padding]], [[ui:Corner radius]] and [[ui:Frame]] shape
+  the box.
+- [[ui:Outline and shadow]]: a line around each letter, a shadow down and
+  to the right.
+
+## Images { #images }
+
+- [[ui:Crop…]]: drag on the image or type the area in percent.
+- [[ui:Adjust]]: [[ui:Brightness]], [[ui:Contrast]], [[ui:Gamma]],
+  [[ui:Invert]], [[ui:Rotation]], [[ui:Mirror]], [[ui:Flip]].
+- [[ui:Corners and border]]: rounded corners and a border around the image.
+- [[ui:Black and white]]: how black-and-white printers print the image, see
+  below.
+
+## Lines and shapes { #shapes }
+
+[[ui:Line or shape]] in the add menu:
+
+- [[ui:Line]]: horizontal, vertical or diagonal, with [[ui:Arrows]].
+- [[ui:Rectangle]] (rounded with [[ui:Corner radius]]) and [[ui:Ellipse]],
+  with a [[ui:Fill]]: solid, hatched, dotted or a grid.
+- [[ui:Separator]]: a line across the whole label height between two
+  elements.
+- [[ui:Line width]] and [[ui:Line style]] (solid, dashed, dotted). Every
+  line is at least one printer dot wide.
+- Labels with lines or shapes, or with the options on this page, do not
+  open in earlier versions of Etiketto: they say the label needs a newer
+  version. Labels without them open as before.
+
+## Position { #position }
+
+Each element has [[ui:Position]]:
+
+- [[ui:Vertical alignment]]: at the top, in the middle or at the bottom of
+  the label height.
+- [[ui:Own spacing]]: [[ui:Space after it]] instead of the label's
+  [[ui:Spacing]].
+
+## Black-and-white printers { #black-and-white }
+
+- Text, codes, symbols, lines and borders print with sharp edges: text is
+  drawn without smoothed edges, every part is converted on its own.
+- Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]]
+  keeps drawings and logos in one or two tones sharp, prints drawings in
+  several flat tones as even patterns and dithers photos;
+  [[ui:Threshold]] sets which grey still prints black.
+- Colour emoji in a text get a line around their shapes, so light parts
+  stay visible.
+- Colours print black, or white if they are lighter than what lies behind
+  them (the background colour or image, or a text's box); an element over
+  a light and a dark part takes the colour that shows on most of it.
+- A warning says when an element would hardly stand out from what lies
+  behind it; codes need more contrast than text, so that they scan.
+- The background colour or image is dithered on its own.
+- A shadow prints solid in the other colour, one dot apart from the
+  letters. Outlines and shadows are at least one printer dot.
+- Earlier versions dithered every image; now [[ui:Automatic]] keeps
+  drawings and logos sharp.
+
+## Undo and keyboard shortcuts { #shortcuts }
+
+- [[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field
+  counts as one step, also when the field has the focus. Undoing back to
+  the saved label makes it unchanged again.
+- The open element (its row expanded): Ctrl+D duplicates it, Delete
+  removes it, Alt+Up and Alt+Down move it.
+- Ctrl+Shift+T, G, Y, B and L add text, an image, a symbol, a code or a
+  line.
+- [[ui:Keyboard shortcuts]] (Ctrl+?) in the main menu lists them all.
+
 ## Symbols
 
 [[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as
@@ -86,6 +177,8 @@ For every label:
 - [[ui:Edge spacing]]: extra space along the label edges.
 - [[ui:Background colour]], [[ui:Background image]]: printed edge to edge.
 - [[ui:Border]]: width, 0 = none; always inside the safety margin.
+  [[ui:Border style]]: [[ui:Corner radius]], [[ui:Line style]] (also
+  double) and [[ui:Inset]].
 - [[ui:Units]]: millimetres or inches, by default from the system language.
 
 Die-cut labels have a fixed size instead of a length:

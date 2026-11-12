@@ -589,11 +589,20 @@ def test_a_label_with_both_features(tmp_path):
     Label.store_counter(path, 9)  # the command line keeps what it does not change
     stored = json.loads(path.read_text(encoding="utf-8"))
     assert stored["features"] == ["serial", "variables"] and stored["counter_next"] == 9
-    assert {"barcodes", "symbols", "pages", "sheets", "serial", "variables"} == model.FEATURES
+    assert {
+        "barcodes",
+        "symbols",
+        "pages",
+        "sheets",
+        "serial",
+        "variables",
+        "styles",
+        "shapes",
+    } == model.FEATURES
 
 
 def test_every_feature_at_once(tmp_path):
-    from etiketto.model import PageElement
+    from etiketto.model import PageElement, ShapeElement
     from etiketto.symbols import find as find_symbol
 
     symbol = find_symbol("printer")
@@ -601,17 +610,27 @@ def test_every_feature_at_once(tmp_path):
         printer="system",
         orientation="across",
         elements=[
-            TextElement(text="{Name} {=date}"),
+            TextElement(text="{Name} {=date}", underline=True),
             CodeElement(data="ABC", symbology="datamatrix"),
             SymbolElement(name=symbol.name, path=symbol.path),
             PageElement(data="eA==", name="label.pdf"),
+            ShapeElement(),
         ],
         data_file=str(tmp_path / "rows.csv"),
     )
     label.sheet = SheetChoice("Avery L7160", [0])
     data = label.to_dict()
     assert data["version"] == 2
-    assert data["features"] == ["barcodes", "symbols", "pages", "sheets", "serial", "variables"]
+    assert data["features"] == [
+        "barcodes",
+        "symbols",
+        "pages",
+        "sheets",
+        "serial",
+        "variables",
+        "styles",
+        "shapes",
+    ]
     assert set(data["features"]) == model.FEATURES  # every one there is
     assert Label.from_dict(data).features() == data["features"]
 

@@ -904,6 +904,9 @@ class _BrotherQL(Backend):
     def preview(self, image: Image.Image, mode: str = "") -> Image.Image:
         return preview_image(image, mode)
 
+    def renders_red(self, mode: str = "") -> bool:
+        return mode == RED.id  # red and black: red parts stay red for red_mask()
+
     # --- printing ------------------------------------------------------------
 
     @abstractmethod

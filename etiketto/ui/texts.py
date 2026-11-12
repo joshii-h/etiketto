@@ -10,7 +10,14 @@ from PIL import Image
 
 from etiketto.backends.base import PrinterError, PrinterInfo, PrintOptions, PrintResult
 from etiketto.merge import MergeError
-from etiketto.model import ImageElement, LabelError, PageElement, SymbolElement, TextElement
+from etiketto.model import (
+    ImageElement,
+    LabelError,
+    PageElement,
+    ShapeElement,
+    SymbolElement,
+    TextElement,
+)
 from etiketto.render import RenderWarning
 from etiketto.shipping.detect import Detection
 from etiketto.shipping.source import SourceError
@@ -141,6 +148,45 @@ SYMBOLOGY_HELP = {
 ROTATIONS = [(0, "0°"), (90, "90°"), (180, "180°"), (270, "270°")]
 FITS = [("fit", _("Whole area, centred")), ("fill", _("Fill the label, edges cut off"))]
 # label sizes known by name; the others are shown by their size
+VALIGNS = [("top", _("Top")), ("center", _("Middle")), ("bottom", _("Bottom"))]
+IMAGE_MODES = [
+    ("auto", _("Automatic")),
+    ("threshold", _("Threshold (drawings, logos)")),
+    ("dither", _("Dithering (photos)")),
+    ("ordered", _("Ordered pattern")),
+]
+LINE_STYLES = [
+    ("solid", pgettext("line style", "Solid")),
+    ("dashed", _("Dashed")),
+    ("dotted", _("Dotted")),
+]
+BORDER_STYLES = LINE_STYLES + [("double", _("Double"))]
+SHAPES = [
+    ("line", _("Line")),
+    ("rectangle", _("Rectangle")),
+    ("ellipse", _("Ellipse")),
+    ("separator", _("Separator")),
+]
+DIRECTIONS = [
+    ("horizontal", _("Horizontal")),
+    ("vertical", _("Vertical")),
+    ("up", _("Diagonal, rising")),
+    ("down", _("Diagonal, falling")),
+]
+ARROWS = [
+    ("none", pgettext("arrows", "None")),
+    ("start", _("At the start")),
+    ("end", _("At the end")),
+    ("both", _("At both ends")),
+]
+FILLS = [
+    ("none", pgettext("fill", "None")),
+    ("solid", pgettext("fill", "Solid")),
+    ("hatched", _("Hatched")),
+    ("dotted", _("Dotted")),
+    ("grid", _("Grid")),
+]
+
 TARGET_NAMES = {"4x6": "4 × 6″", "a6": "A6", "a4": "A4"}
 
 
@@ -190,13 +236,19 @@ def element_title(element) -> str:
         return element.name or _("Image")
     if isinstance(element, SymbolElement):  # icon names are English, as in the icon set
         return isolate(element.name) if element.name else _("Symbol")
-    if isinstance(element, PageElement):
-        return element.name or _("Shipping label")
+    if isinstance(element, (PageElement, ShapeElement)):
+        return _other_title(element)
     return (
         dict(SYMBOLOGIES).get(element.symbology, element.symbology)
         + ": "
         + isolate(element.data[:30])
     )
+
+
+def _other_title(element) -> str:
+    if isinstance(element, ShapeElement):
+        return dict(SHAPES)[element.shape]
+    return element.name or _("Shipping label")
 
 
 def element_icon(element) -> str:
@@ -208,6 +260,8 @@ def element_icon(element) -> str:
         return "starred-symbolic"
     if isinstance(element, PageElement):
         return "x-office-document-symbolic"
+    if isinstance(element, ShapeElement):
+        return "x-office-drawing-symbolic"
     return "view-grid-symbolic"
 
 
@@ -317,7 +371,9 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
         ),
         "element_failed": _("Element %(n)d cannot be drawn"),
-        "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
+        "no_room": _(
+            "Safety margin, border, its inset and edge spacing leave no room – reduce them"
+        ),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
         "code_thin": _(
@@ -338,6 +394,15 @@ def warning_text(warning: RenderWarning) -> str:
         ),
         "unclosed_variable": _(
             "Element %(n)d: the variable %(name)s… is not closed – end it with }"
+        ),
+        "no_contrast": _(
+            "Element %(n)d: on a black-and-white printer it hardly stands out from what lies "
+            "behind it, as a whole or in part – choose another colour or move it"
+        ),
+        "shape_invisible": _("Element %(n)d: the shape has neither a line nor a fill"),
+        "padding_too_large": _(
+            "Element %(n)d: the padding, frame, outline or shadow leave no room for the text "
+            "– make them smaller"
         ),
     }
     return texts.get(warning.key, warning.key) % warning.params

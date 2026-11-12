@@ -12,7 +12,16 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto.model import ImageElement, PageElement, SymbolElement, TextElement  # noqa: E402
+from etiketto.history import typing_key  # noqa: E402
+from etiketto.model import (  # noqa: E402
+    ImageElement,
+    PageElement,
+    ShapeElement,
+    SymbolElement,
+    TextElement,
+    element_id,
+)
+from etiketto.ui import styles  # noqa: E402
 from etiketto.ui.data import column_button  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.symbols import SymbolChooser, SymbolIcon  # noqa: E402
@@ -37,10 +46,34 @@ from etiketto.ui.widgets import (  # noqa: E402
     grouped_combo_row,
     length_row,
     spin_row,
+    toggle,
 )
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
+
+
+IMAGE_OPTIONS = (
+    "crop",
+    "rotation",
+    "mirror",
+    "flip",
+    "brightness",
+    "contrast",
+    "gamma",
+    "invert",
+)
+
+
+def _image_options(element: ImageElement) -> dict:
+    """The options of the image that belong to its picture, set to their
+    defaults: the changed ones (empty if none was changed)."""
+    defaults = ImageElement()
+    return {
+        name: getattr(defaults, name)
+        for name in IMAGE_OPTIONS
+        if getattr(element, name) != getattr(defaults, name)
+    }
 
 
 class ElementsGroup(Adw.PreferencesGroup):
@@ -52,6 +85,9 @@ class ElementsGroup(Adw.PreferencesGroup):
             description=_("Elements are placed one after another along the tape"),
         )
         self.window = window
+        # the rows open, the one opened last at the end: the open element
+        self._open: list[int] = []
+        self.rows: list[Adw.ExpanderRow] = []
         self._add_menu_button()
 
         if not window.label.elements:
@@ -61,7 +97,9 @@ class ElementsGroup(Adw.PreferencesGroup):
             empty.add_css_class("dim-label")
             self.add(empty)
         for index, element in enumerate(window.label.elements):
-            self.add(self._element_row(index, element))
+            row = self._element_row(index, element)
+            self.rows.append(row)
+            self.add(row)
 
     def _add_menu_button(self) -> None:
         add_menu = Gio.Menu()
@@ -69,6 +107,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         add_menu.append(_("Image…"), "win.add-image")
         add_menu.append(_("Symbol…"), "win.add-symbol")
         add_menu.append(_("QR code / barcode"), "win.add-code")
+        add_menu.append(_("Line or shape"), "win.add-shape")
         add = Gtk.MenuButton(
             icon_name="list-add-symbolic", menu_model=add_menu, tooltip_text=_("Add")
         )
@@ -80,7 +119,10 @@ class ElementsGroup(Adw.PreferencesGroup):
         # a symbol shows itself
         prefix = SymbolIcon(element.path) if isinstance(element, SymbolElement) else None
         row.add_prefix(prefix or Gtk.Image(icon_name=element_icon(element)))
-        row.set_expanded(index == self.window.expand_index)
+        if index == self.window.expand_index:
+            row.set_expanded(True)
+            self._open.append(index)
+        row.connect("notify::expanded", lambda r, _p: self._on_expanded(index, r.get_expanded()))
         self._add_header_buttons(row, index)
 
         def retitle():
@@ -92,20 +134,70 @@ class ElementsGroup(Adw.PreferencesGroup):
             for key, value in kwargs.items():
                 setattr(element, key, value)
             retitle()
-            self.window.mark_changed()
+            # typing into one field is one step of undo (History.record)
+            self.window.mark_changed(typing_key("element:%d" % index, kwargs))
 
+        self._kind_rows(row, element, set_attr, prefix)
+        row.add_row(styles.position_row(self.window, element, set_attr))
+        for widget, field in self._fields(row):  # by the element, wherever it moves
+            widget.set_name("field:%d:%s" % (element_id(element), field))
+        return row
+
+    def _kind_rows(self, row, element, set_attr, prefix) -> None:
+        """The rows of the element's own kind."""
         if isinstance(element, TextElement):
             self._text_rows(row, element, set_attr)
         elif isinstance(element, ImageElement):
             self._image_rows(row, element, set_attr)
         elif isinstance(element, SymbolElement):
-            assert prefix
             self._symbol_rows(row, element, set_attr, prefix)
         elif isinstance(element, PageElement):
             self._page_rows(row, element, set_attr)
+        elif isinstance(element, ShapeElement):
+            styles.shape_rows(self.window, row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
-        return row
+
+    @staticmethod
+    def _fields(widget) -> list:
+        """The text fields of a row: the window's undo is the one that counts
+        there too, and gives them the focus back (window._refocus)."""
+        found = []
+        child = widget.get_first_child()
+        while child:
+            if isinstance(child, Gtk.TextView):
+                child.get_buffer().set_enable_undo(False)
+                found.append((child, "text"))
+            elif isinstance(child, Adw.EntryRow):
+                child.set_enable_undo(False)
+                found.append((child, child.get_title()))
+            found += ElementsGroup._fields(child)
+            child = child.get_next_sibling()
+        return found
+
+    def open_page(self, index: int, title: str) -> bool:
+        """Open the page of options of that title of element index again
+        (after the sidebar was rebuilt); False if there is none."""
+        if not 0 <= index < len(self.rows):
+            return False
+        child = self.rows[index].get_first_child()
+        stack = [child] if child else []
+        while stack:
+            widget = stack.pop()
+            if isinstance(widget, Adw.ActionRow) and widget.get_title() == title:
+                widget.emit("activated")
+                return True
+            stack.extend(n for n in (widget.get_next_sibling(), widget.get_first_child()) if n)
+        return False
+
+    def _on_expanded(self, index: int, expanded: bool) -> None:
+        """The open element is the one the shortcuts (Ctrl+D, Delete,
+        Alt+Up/Down) act on: the row opened last of those still open."""
+        if index in self._open:
+            self._open.remove(index)
+        if expanded:
+            self._open.append(index)
+        self.window.expand_index = self._open[-1] if self._open else -1
 
     def _add_header_buttons(self, row: Adw.ExpanderRow, index: int) -> None:
         window = self.window
@@ -142,6 +234,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         row.add_row(
             combo_row(_("Line alignment"), TEXT_ALIGNS, element.align, lambda v: set_attr(align=v))
         )
+        styles.text_rows(self.window, row, element, set_attr)
         row.add_row(self._name_row(element, set_attr))
 
     @staticmethod
@@ -192,16 +285,15 @@ class ElementsGroup(Adw.PreferencesGroup):
             lambda b, _p: set_attr(font=b.get_font_desc().get_family() or "Sans"),
         )
         font_row.add_suffix(font_button)
-        for icon, attr in (
-            ("format-text-bold-symbolic", "bold"),
-            ("format-text-italic-symbolic", "italic"),
+        for icon, tip, attr in (
+            ("format-text-bold-symbolic", _("Bold"), "bold"),
+            ("format-text-italic-symbolic", _("Italic"), "italic"),
+            ("format-text-underline-symbolic", _("Underline"), "underline"),
+            ("format-text-strikethrough-symbolic", _("Strikethrough"), "strikethrough"),
         ):
-            toggle = Gtk.ToggleButton(
-                icon_name=icon, valign=Gtk.Align.CENTER, active=getattr(element, attr)
+            font_row.add_suffix(
+                toggle(icon, tip, getattr(element, attr), lambda v, a=attr: set_attr(**{a: v}))
             )
-            toggle.add_css_class("flat")
-            toggle.connect("toggled", lambda t, a=attr: set_attr(**{a: t.get_active()}))
-            font_row.add_suffix(toggle)
         return font_row
 
     def _image_rows(self, row: Adw.ExpanderRow, element: ImageElement, set_attr) -> None:
@@ -210,12 +302,17 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
 
         def picked(new: ImageElement):
-            set_attr(data=new.data, name=new.name)
+            options = _image_options(element)
+            set_attr(data=new.data, name=new.name, **options)
             image_row.set_subtitle(GLib.markup_escape_text(new.name))
+            if options:  # crop and turn were for the other picture
+                self.window.rebuild_sidebar()
+                self.window.toast(_("Crop, turn and adjustments reset for the new image"))
 
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)
         row.add_row(image_row)
+        styles.image_rows(self.window, row, element, set_attr)
 
     def _page_rows(self, row: Adw.ExpanderRow, element: PageElement, set_attr) -> None:
         area = Adw.ActionRow(title=_("Area"))

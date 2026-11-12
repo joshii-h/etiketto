@@ -136,9 +136,11 @@ class App(Adw.Application):
                     "EOS2/300", None, None, None, "IDLE", pitch_mm=pitch
                 )
             window.printer.update_row()
-            if state == "expand":
+            if state in ("expand", "styles"):
                 window.expand_index = len(window.label.elements) - 1
                 window.rebuild_sidebar()
+                if state == "styles":  # the last element's box and frame options open
+                    self._open_page(window.elements_group, _("Box and frame"))
 
                 def scroll_down():
                     child = window.sidebar.get_first_child()
@@ -169,6 +171,21 @@ class App(Adw.Application):
 
         GLib.timeout_add(max(500, delay - 1500), prepare)
         GLib.timeout_add(delay, self._screenshot, window, shot)
+
+    def _open_page(self, widget, title):  # pragma: no cover - see _maybe_screenshot
+        """Open the page of options of that title (of the last element)."""
+        rows = []
+        child_stack = [widget]
+        while child_stack:
+            node = child_stack.pop(0)
+            child = node.get_first_child()
+            while child:
+                if isinstance(child, Adw.ActionRow) and child.get_title() == title:
+                    rows.append(child)
+                child_stack.append(child)
+                child = child.get_next_sibling()
+        if rows:
+            rows[-1].emit("activated")
 
     def _screenshot(self, window, path):  # pragma: no cover - see _maybe_screenshot
         paintable = Gtk.WidgetPaintable.new(window)

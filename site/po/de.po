@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:44+0100\n"
+"POT-Creation-Date: 2026-11-12 15:03+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -781,6 +781,17 @@ msgstr ""
 "schwarze Etiketten einen rot-schwarzen Druckauftrag: Passt die Wahl nicht "
 "zur eingelegten Rolle, lehnt der Drucker den Auftrag ab, Etiketto druckt ihn "
 "auf die andere Art und sagt das. Danach folgt die Wahl der Rolle."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
+"Red and black: red parts stay red; images, the background and everything "
+"else are converted as for black-and-white printers, see [Black-and-white "
+"printers](use.md#black-and-white)."
+msgstr ""
+"Rot und Schwarz: Rote Teile bleiben rot; Bilder, der Hintergrund und alles "
+"andere werden wie für Schwarzweissdrucker umgewandelt, siehe "
+"[Schwarzweissdrucker](use.md#black-and-white)."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -2306,6 +2317,333 @@ msgstr ""
 #. type: Title ##
 #: docs/use.md
 #, no-wrap
+msgid "Text style { #text-style }"
+msgstr "Textgestaltung { #text-style }"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"![Text in a box and a frame, lines and a rounded border](media/"
+"design.png#only-light)  ![Text in a box and a frame, lines and a rounded "
+"border](media/design-dark.png#only-dark)"
+msgstr ""
+"![Text in einem Kasten und einem Rahmen, Linien und ein abgerundeter "
+"Rahmen](media/design.png#only-light)  ![Text in einem Kasten und einem "
+"Rahmen, Linien und ein abgerundeter Rahmen](media/design-dark.png#only-dark)"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]] "
+"and [[ui:Outline and shadow]] open a page of their own in the sidebar, its "
+"header names the element:"
+msgstr ""
+"Die Zeilen eines Textelements; [[ui:Spacing and fitting]], [[ui:Box and "
+"frame]] und [[ui:Outline and shadow]] öffnen eine eigene Seite in der "
+"Seitenleiste, ihr Kopf nennt das Element:"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Font]]: family, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]], "
+"[[ui:Strikethrough]]."
+msgstr ""
+"[[ui:Font]]: Schriftfamilie, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]], "
+"[[ui:Strikethrough]]."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Spacing and fitting]]: [[ui:Letter spacing]] and [[ui:Line spacing]]; "
+"[[ui:Shrink to fit]] makes the text smaller until it fits the label height "
+"and, with a fixed length, the length, never below [[ui:Smallest size]]; "
+"[[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or "
+"270° turns the whole text, the letters lie on their side (not upright "
+"columns of Chinese or Japanese)."
+msgstr ""
+"[[ui:Spacing and fitting]]: [[ui:Letter spacing]] und [[ui:Line spacing]]; "
+"[[ui:Shrink to fit]] verkleinert den Text, bis er in die Etikettenhöhe und "
+"bei fester Länge in die Länge passt, nie unter [[ui:Smallest size]]; "
+"[[ui:Wrap width]] bricht lange Zeilen in mehrere um; [[ui:Rotation]] 90° "
+"oder 270° dreht den ganzen Text, die Buchstaben liegen auf der Seite (keine "
+"aufrechten Spalten wie im Chinesischen oder Japanischen)."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Letter spacing leaves out scripts whose letters join, such as Arabic or "
+"Devanagari."
+msgstr ""
+"Der Zeichenabstand lässt Schriften aus, deren Buchstaben verbunden sind, "
+"etwa Arabisch oder Devanagari."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Box and frame]]: [[ui:White on black]] cuts the text out of a box in "
+"the text colour; [[ui:Background box]] puts a box of another colour behind "
+"it; [[ui:Padding]], [[ui:Corner radius]] and [[ui:Frame]] shape the box."
+msgstr ""
+"[[ui:Box and frame]]: [[ui:White on black]] spart den Text aus einem Kasten "
+"in der Textfarbe aus; [[ui:Background box]] legt einen Kasten in einer "
+"anderen Farbe dahinter; [[ui:Padding]], [[ui:Corner radius]] und "
+"[[ui:Frame]] formen den Kasten."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Outline and shadow]]: a line around each letter, a shadow down and to "
+"the right."
+msgstr ""
+"[[ui:Outline and shadow]]: eine Linie um jeden Buchstaben, ein Schatten nach "
+"rechts unten."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Images { #images }"
+msgstr "Bilder { #images }"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Crop…]]: drag on the image or type the area in percent."
+msgstr ""
+"[[ui:Crop…]]: auf dem Bild ziehen oder den Bereich in Prozent eingeben."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Adjust]]: [[ui:Brightness]], [[ui:Contrast]], [[ui:Gamma]], "
+"[[ui:Invert]], [[ui:Rotation]], [[ui:Mirror]], [[ui:Flip]]."
+msgstr ""
+"[[ui:Adjust]]: [[ui:Brightness]], [[ui:Contrast]], [[ui:Gamma]], "
+"[[ui:Invert]], [[ui:Rotation]], [[ui:Mirror]], [[ui:Flip]]."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Corners and border]]: rounded corners and a border around the image."
+msgstr ""
+"[[ui:Corners and border]]: abgerundete Ecken und ein Rahmen um das Bild."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Black and white]]: how black-and-white printers print the image, see "
+"below."
+msgstr ""
+"[[ui:Black and white]]: wie Schwarzweissdrucker das Bild drucken, siehe "
+"unten."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Lines and shapes { #shapes }"
+msgstr "Linien und Formen { #shapes }"
+
+#. type: Plain text
+#: docs/use.md
+msgid "[[ui:Line or shape]] in the add menu:"
+msgstr "[[ui:Line or shape]] im Menü zum Hinzufügen:"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Line]]: horizontal, vertical or diagonal, with [[ui:Arrows]]."
+msgstr "[[ui:Line]]: waagrecht, senkrecht oder diagonal, mit [[ui:Arrows]]."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Rectangle]] (rounded with [[ui:Corner radius]]) and [[ui:Ellipse]], "
+"with a [[ui:Fill]]: solid, hatched, dotted or a grid."
+msgstr ""
+"[[ui:Rectangle]] (abgerundet mit [[ui:Corner radius]]) und [[ui:Ellipse]], "
+"mit einer [[ui:Fill]]: voll, schraffiert, gepunktet oder als Gitter."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Separator]]: a line across the whole label height between two elements."
+msgstr ""
+"[[ui:Separator]]: eine Linie über die ganze Etikettenhöhe zwischen zwei "
+"Elementen."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Line width]] and [[ui:Line style]] (solid, dashed, dotted). Every line "
+"is at least one printer dot wide."
+msgstr ""
+"[[ui:Line width]] und [[ui:Line style]] (voll, gestrichelt, gepunktet). Jede "
+"Linie ist mindestens einen Druckpunkt breit."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Labels with lines or shapes, or with the options on this page, do not open "
+"in earlier versions of Etiketto: they say the label needs a newer version. "
+"Labels without them open as before."
+msgstr ""
+"Etiketten mit Linien oder Formen oder mit den Optionen auf dieser Seite "
+"lassen sich in früheren Versionen von Etiketto nicht öffnen: Sie melden, "
+"dass das Etikett eine neuere Version braucht. Etiketten ohne sie öffnen sich "
+"wie bisher."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Position { #position }"
+msgstr "Position { #position }"
+
+#. type: Plain text
+#: docs/use.md
+msgid "Each element has [[ui:Position]]:"
+msgstr "Jedes Element hat [[ui:Position]]:"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Vertical alignment]]: at the top, in the middle or at the bottom of the "
+"label height."
+msgstr ""
+"[[ui:Vertical alignment]]: oben, in der Mitte oder unten in der "
+"Etikettenhöhe."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Own spacing]]: [[ui:Space after it]] instead of the label's "
+"[[ui:Spacing]]."
+msgstr ""
+"[[ui:Own spacing]]: [[ui:Space after it]] statt des [[ui:Spacing]] des "
+"Etiketts."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Black-and-white printers { #black-and-white }"
+msgstr "Schwarzweissdrucker { #black-and-white }"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Text, codes, symbols, lines and borders print with sharp edges: text is "
+"drawn without smoothed edges, every part is converted on its own."
+msgstr ""
+"Text, Codes, Symbole, Linien und Rahmen werden mit scharfen Kanten gedruckt: "
+"Text wird ohne geglättete Kanten gezeichnet, jeder Teil wird für sich "
+"umgewandelt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]] keeps "
+"drawings and logos in one or two tones sharp, prints drawings in several "
+"flat tones as even patterns and dithers photos; [[ui:Threshold]] sets which "
+"grey still prints black."
+msgstr ""
+"Bilder: [[ui:Method]] unter [[ui:Black and white]]. [[ui:Automatic]] hält "
+"Zeichnungen und Logos in einem oder zwei Tönen scharf, druckt Zeichnungen in"
+" mehreren flachen Tönen als gleichmässige Muster und rastert Fotos; "
+"[[ui:Threshold]] legt fest, welches Grau noch schwarz gedruckt wird."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Colour emoji in a text get a line around their shapes, so light parts stay "
+"visible."
+msgstr ""
+"Farbige Emoji in einem Text erhalten eine Linie um ihre Formen, damit helle "
+"Teile sichtbar bleiben."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Colours print black, or white if they are lighter than what lies behind them "
+"(the background colour or image, or a text's box); an element over a light "
+"and a dark part takes the colour that shows on most of it."
+msgstr ""
+"Farben werden schwarz gedruckt, oder weiss, wenn sie heller sind als das, "
+"was dahinter liegt (Hintergrundfarbe oder -bild oder der Kasten eines "
+"Texts); ein Element über einem hellen und einem dunklen Teil erhält die "
+"Farbe, die auf dem grössten Teil davon sichtbar ist."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A warning says when an element would hardly stand out from what lies behind "
+"it; codes need more contrast than text, so that they scan."
+msgstr ""
+"Eine Warnung zeigt an, wenn sich ein Element kaum von dem abhebt, was "
+"dahinter liegt; Codes brauchen mehr Kontrast als Text, damit sie sich "
+"scannen lassen."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "The background colour or image is dithered on its own."
+msgstr "Hintergrundfarbe oder -bild werden für sich gerastert."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A shadow prints solid in the other colour, one dot apart from the letters. "
+"Outlines and shadows are at least one printer dot."
+msgstr ""
+"Ein Schatten wird voll in der anderen Farbe gedruckt, einen Punkt von den "
+"Buchstaben entfernt. Konturen und Schatten sind mindestens einen Druckpunkt "
+"breit."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Earlier versions dithered every image; now [[ui:Automatic]] keeps drawings "
+"and logos sharp."
+msgstr ""
+"Frühere Versionen rasterten jedes Bild; jetzt hält [[ui:Automatic]] "
+"Zeichnungen und Logos scharf."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Undo and keyboard shortcuts { #shortcuts }"
+msgstr "Rückgängig und Tastenkürzel { #shortcuts }"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field "
+"counts as one step, also when the field has the focus. Undoing back to the "
+"saved label makes it unchanged again."
+msgstr ""
+"[[ui:Undo]] (Strg+Z) und [[ui:Redo]] (Strg+Umschalt+Z); Tippen in ein Feld "
+"zählt als ein Schritt, auch wenn das Feld den Fokus hat. Wird bis zum "
+"gespeicherten Etikett rückgängig gemacht, gilt es wieder als unverändert."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"The open element (its row expanded): Ctrl+D duplicates it, Delete removes "
+"it, Alt+Up and Alt+Down move it."
+msgstr ""
+"Das geöffnete Element (seine Zeile aufgeklappt): Strg+D dupliziert es, Entf "
+"entfernt es, Alt+Pfeil hoch und Alt+Pfeil runter verschieben es."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Ctrl+Shift+T, G, Y, B and L add text, an image, a symbol, a code or a line."
+msgstr ""
+"Strg+Umschalt+T, G, Y, B und L fügen Text, ein Bild, ein Symbol, einen Code "
+"oder eine Linie hinzu."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Keyboard shortcuts]] (Ctrl+?) in the main menu lists them all."
+msgstr "[[ui:Keyboard shortcuts]] (Strg+?) im Hauptmenü zeigt alle."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
 msgid "Symbols"
 msgstr "Symbole"
 
@@ -2416,9 +2754,14 @@ msgstr "[[ui:Background colour]], [[ui:Background image]]: randlos gedruckt."
 
 #. type: Bullet: '- '
 #: docs/use.md
-msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin."
+msgid ""
+"[[ui:Border]]: width, 0 = none; always inside the safety margin.  "
+"[[ui:Border style]]: [[ui:Corner radius]], [[ui:Line style]] (also double) "
+"and [[ui:Inset]]."
 msgstr ""
-"[[ui:Border]]: Breite, 0 = keiner; immer innerhalb des Sicherheitsabstands."
+"[[ui:Border]]: Breite, 0 = keiner; immer innerhalb des Sicherheitsabstands.  "
+"[[ui:Border style]]: [[ui:Corner radius]], [[ui:Line style]] (auch doppelt) "
+"und [[ui:Inset]]."
 
 #. type: Bullet: '- '
 #: docs/use.md

@@ -62,8 +62,8 @@ media and the cutter of cab printers.
 | Text with any font, colour and size | Copies, cut mode, vivid or normal colours |
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/cable-de-dark.png"><img src="docs/screenshots/cable-de.png" alt="German interface, 12 mm cable label"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/die-cut-dark.png"><img src="docs/screenshots/die-cut.png" alt="Die-cut 57 × 32 mm label for a cab printer"></picture> |
 | German interface (27 languages in total), 12 mm cable label | Die-cut label on a cab EOS2: QR code and text on 57 × 32 mm |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/serial-dark.png"><img src="docs/screenshots/serial.png" alt="Serial labels: placeholders filled from a CSV file"></picture> | |
-| Serial labels: `{Name}` and `{Code}` filled from each row of a CSV file | |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/serial-dark.png"><img src="docs/screenshots/serial.png" alt="Serial labels: placeholders filled from a CSV file"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/design-dark.png"><img src="docs/screenshots/design.png" alt="Cable label with white-on-red text, a framed text, a separator and an arrow"></picture> |
+| Serial labels: `{Name}` and `{Code}` filled from each row of a CSV file | Text in a box or frame, a dotted separator, an arrow, a dashed border with round corners |
 
 Screenshots use the default GNOME style; Etiketto follows your desktop's light or dark mode and accent colour.
 
@@ -77,9 +77,25 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Label sheets on office printers: over 1700 sheets (Avery, Zweckform,
   Herma …) found by part number or size, start at any position on a partly
   used sheet, outlines for a test print; warns about the printer's margins
-- Text with any installed font, bold/italic, colour, multiple lines, size
-  fitted to the label or fixed in pt; emoji and font fallback via Pango
-- Images and photos, background colour, background image, border
+- Text with any installed font, bold/italic, underline, strikethrough,
+  colour, multiple lines, letter and line spacing, size fitted to the label
+  or fixed in pt, shrunk to fit or wrapped at a width, vertical; white on
+  black, a box or a frame with rounded corners, an outline and a shadow;
+  emoji and font fallback via Pango
+- Images and photos: crop (drag or numbers), turn, mirror, brightness,
+  contrast, gamma, invert, rounded corners and a border; on black-and-white
+  printers a threshold, Floyd-Steinberg or ordered dithering, or automatic
+- Lines (with arrows), rectangles, rounded rectangles, ellipses and
+  separators, solid, dashed or dotted, filled solid or with 1-bit patterns;
+  every line at least one printer dot wide
+- Background colour, background image, border with rounded corners, dashed,
+  dotted or double, moved inwards; each element aligned at the top, middle
+  or bottom and with its own spacing
+- Black-and-white printers: text without anti-aliasing, codes, symbols,
+  lines and borders converted on their own to sharp black and white, images
+  by their own method
+- Undo and redo, keyboard shortcuts to add, duplicate, remove and move
+  elements, a shortcuts window
 - Codes: QR code, Data Matrix, PDF417, Aztec; Code 128, Code 39, Code 93,
   EAN-13, EAN-8, UPC-A, UPC-E, ITF-14 (with bearer bars); GS1-128 and GS1
   DataMatrix with the application identifiers checked (check digits, dates,
@@ -259,8 +275,9 @@ flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto 
 
 ## How labels are laid out
 
-Elements (text, image, symbol, code) are placed one after another along the label,
-each filling the label's height unless a text or symbol has a fixed size.
+Elements (text, image, symbol, code, line or shape) are placed one after another along the label,
+each filling the label's height unless a text, symbol or shape has a fixed size, and
+centred across it unless aligned at the top or bottom.
 
 - **Endless tape**: the label is either exactly as long as its content plus
   the spacing (*Automatic length*) or has a fixed length; the content is

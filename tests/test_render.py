@@ -669,15 +669,15 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     measured = []
     drawn = []
 
-    def fake_height(element, size_px):
+    def fake_size(element, size_px, **_options):
         measured.append(size_px)
-        return round(size_px + 40)
+        return 10, round(size_px + 40)
 
-    def fake_block(element, size_px):
+    def fake_block(element, size_px, **_options):
         drawn.append(size_px)
         return Image.new("RGBA", (10, round(size_px + 40)))
 
-    monkeypatch.setattr(render_module, "_height_at", fake_height)
+    monkeypatch.setattr(render_module, "_size_of", fake_size)
     monkeypatch.setattr(render_module, "_text_block", fake_block)
     block = render_module.render_text(TextElement(text="x"), 100, 317)
     assert block.height <= 100
@@ -685,6 +685,25 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     assert len(measured) > 2 and measured[-1] < measured[1]
     assert block.height > 100 * 0.9  # shrinks in small steps, not more than needed
     assert drawn == [measured[-1]]  # drawn once
+
+
+def test_text_measurement_is_kept(monkeypatch):
+    """Fitting asks for the same sizes on every render: measured once."""
+    calls = []
+    real = render_module.typeset.size_of
+
+    def counting(*args, **kwargs):
+        calls.append(args[1])
+        return real(*args, **kwargs)
+
+    render_module._measured.cache_clear()
+    monkeypatch.setattr(render_module.typeset, "size_of", counting)
+    element = TextElement(text="kept")
+    first = render_module.render_text(element, 80, 317)
+    count = len(calls)
+    second = render_module.render_text(TextElement(text="kept"), 80, 317)
+    assert len(calls) == count and first.size == second.size
+    render_module._measured.cache_clear()  # nothing measured by the counter stays
 
 
 def test_text_sizes_are_measured_once():

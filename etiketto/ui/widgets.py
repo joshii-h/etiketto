@@ -120,3 +120,31 @@ def list_dialog(heading: str, rows, body: str = "") -> Adw.AlertDialog:
     dialog = Adw.AlertDialog(heading=heading, body=body)
     dialog.set_extra_child(box)
     return dialog
+
+
+def switch_row(title: str, active: bool, on_change, subtitle: str | None = None) -> Adw.SwitchRow:
+    row = Adw.SwitchRow(title=title, active=active)
+    if subtitle:
+        row.set_subtitle(subtitle)
+    row.connect("notify::active", lambda r, _p: on_change(r.get_active()))
+    return row
+
+
+def expander(title: str, subtitle: str | None = None) -> Adw.ExpanderRow:
+    """Options folded away in the sidebar (never inside another expander:
+    further options of an element open as a page, see styles.py)."""
+    row = Adw.ExpanderRow(title=title)
+    if subtitle:
+        row.set_subtitle(subtitle)
+    return row
+
+
+def toggle(icon_name: str, tooltip: str, active: bool, on_change) -> Gtk.ToggleButton:
+    """A flat icon toggle; the tooltip is its accessible name too."""
+    button = Gtk.ToggleButton(
+        icon_name=icon_name, tooltip_text=tooltip, valign=Gtk.Align.CENTER, active=active
+    )
+    button.add_css_class("flat")
+    button.update_property([Gtk.AccessibleProperty.LABEL], [tooltip])
+    button.connect("toggled", lambda b: on_change(b.get_active()))
+    return button
