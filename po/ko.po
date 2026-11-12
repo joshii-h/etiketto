@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 14:44+0100\n"
+"PO-Revision-Date: 2026-11-12 15:01+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ko\n"
 "Language: ko\n"
@@ -146,7 +146,7 @@ msgid "Unknown printer model: %s"
 msgstr "알 수 없는 프린터 모델: %s"
 
 #: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:290 etiketto/ui/texts.py:589
+#: etiketto/ui/texts.py:290 etiketto/ui/texts.py:593
 #, python-format
 msgid "Cannot open %s"
 msgstr "열 수 없음: %s"
@@ -192,7 +192,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "프린터가 여러 대 발견되었습니다 – --host로 하나를 선택하세요 (etiketto list-printers)"
 
-#: etiketto/cli.py:535 etiketto/ui/texts.py:623
+#: etiketto/cli.py:535 etiketto/ui/texts.py:627
 #, python-format
 msgid "Cannot save %s"
 msgstr "저장할 수 없음: %s"
@@ -330,8 +330,8 @@ msgstr "데이터 파일 없음"
 msgid "CSV, ODS or XLSX"
 msgstr "CSV, ODS 또는 XLSX"
 
-#: etiketto/ui/data.py:291 etiketto/ui/elements.py:302
-#: etiketto/ui/elements.py:320 etiketto/ui/elements.py:333
+#: etiketto/ui/data.py:291 etiketto/ui/elements.py:316
+#: etiketto/ui/elements.py:334 etiketto/ui/elements.py:347
 msgid "Choose…"
 msgstr "선택…"
 
@@ -359,144 +359,142 @@ msgstr "시트"
 msgid "Insert column"
 msgstr "열 넣기"
 
-#: etiketto/ui/elements.py:84 etiketto/ui/shortcuts.py:57
+#: etiketto/ui/elements.py:83 etiketto/ui/shortcuts.py:57
 msgid "Content"
 msgstr "내용"
 
-#: etiketto/ui/elements.py:85
-msgid "Elements are placed one after another along the tape"
-msgstr "요소는 테이프를 따라 차례로 배치됩니다"
-
-#: etiketto/ui/elements.py:95
+#: etiketto/ui/elements.py:93
 msgid "No content yet"
 msgstr "아직 내용이 없습니다"
 
-#: etiketto/ui/elements.py:95
+#: etiketto/ui/elements.py:93
 msgid "Add text, an image, a symbol or a code"
 msgstr "텍스트, 이미지, 기호 또는 코드를 추가하십시오"
 
-#: etiketto/ui/elements.py:106 etiketto/ui/texts.py:230
+#: etiketto/ui/elements.py:104 etiketto/ui/texts.py:230
 #: etiketto/ui/window.py:851
 msgid "Text"
 msgstr "텍스트"
 
-#: etiketto/ui/elements.py:107
+#: etiketto/ui/elements.py:105
 msgid "Image…"
 msgstr "이미지…"
 
-#: etiketto/ui/elements.py:108
+#: etiketto/ui/elements.py:106
 msgid "Symbol…"
 msgstr "기호…"
 
-#: etiketto/ui/elements.py:109
+#: etiketto/ui/elements.py:107
 msgid "QR code / barcode"
 msgstr "QR 코드 / 바코드"
 
-#: etiketto/ui/elements.py:110
+#: etiketto/ui/elements.py:108
 msgid "Line or shape"
 msgstr "선 또는 도형"
 
-#: etiketto/ui/elements.py:112
+#: etiketto/ui/elements.py:110
 msgid "Add"
 msgstr "추가"
 
-#: etiketto/ui/elements.py:206 etiketto/ui/label_group.py:145
+#: etiketto/ui/elements.py:204 etiketto/ui/label_group.py:145
 msgid "Remove"
 msgstr "제거"
 
-#: etiketto/ui/elements.py:209
+#: etiketto/ui/elements.py:207
 msgid "Move down"
 msgstr "뒤로 이동"
 
-#: etiketto/ui/elements.py:210
+#: etiketto/ui/elements.py:208
 msgid "Move up"
 msgstr "앞으로 이동"
 
-#: etiketto/ui/elements.py:223 etiketto/ui/elements.py:349
+#: etiketto/ui/elements.py:226 etiketto/ui/elements.py:363
+#: etiketto/ui/freelayout.py:183
 msgid "Size"
 msgstr "크기"
 
-#: etiketto/ui/elements.py:230
+#: etiketto/ui/elements.py:233
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = 테이프 높이에 맞춤"
 
-#: etiketto/ui/elements.py:235
+#: etiketto/ui/elements.py:238
 msgid "Line alignment"
 msgstr "줄 정렬"
 
-#: etiketto/ui/elements.py:243
+#: etiketto/ui/elements.py:246
 msgid "Name for the command line"
 msgstr "명령줄용 이름"
 
-#: etiketto/ui/elements.py:279
+#: etiketto/ui/elements.py:285
 msgid "Font"
 msgstr "글꼴"
 
-#: etiketto/ui/elements.py:289
+#: etiketto/ui/elements.py:302 etiketto/ui/freelayout.py:207
 msgid "Bold"
 msgstr "굵게"
 
-#: etiketto/ui/elements.py:290
+#: etiketto/ui/elements.py:304
 msgid "Italic"
 msgstr "기울임꼴"
 
-#: etiketto/ui/elements.py:291
+#: etiketto/ui/elements.py:305
 msgid "Underline"
 msgstr "밑줄"
 
-#: etiketto/ui/elements.py:292
+#: etiketto/ui/elements.py:306
 msgid "Strikethrough"
 msgstr "취소선"
 
-#: etiketto/ui/elements.py:300
+#: etiketto/ui/elements.py:314
 msgid "Image file"
 msgstr "이미지 파일"
 
-#: etiketto/ui/elements.py:301 etiketto/ui/elements.py:332
+#: etiketto/ui/elements.py:315 etiketto/ui/elements.py:346
 #: etiketto/ui/label_group.py:133
 msgid "None"
 msgstr "없음"
 
-#: etiketto/ui/elements.py:310
+#: etiketto/ui/elements.py:324
 msgid "Crop, turn and adjustments reset for the new image"
 msgstr "새 이미지에 맞게 자르기, 회전 및 조정이 초기화되었습니다"
 
-#: etiketto/ui/elements.py:318
+#: etiketto/ui/elements.py:332
 msgid "Area"
 msgstr "영역"
 
-#: etiketto/ui/elements.py:324 etiketto/ui/shipping.py:295
+#: etiketto/ui/elements.py:338 etiketto/ui/shipping.py:295
 msgid "Scale"
 msgstr "크기 조정"
 
-#: etiketto/ui/elements.py:330 etiketto/ui/texts.py:234
+#: etiketto/ui/elements.py:344 etiketto/ui/texts.py:234
 msgid "Symbol"
 msgstr "기호"
 
-#: etiketto/ui/elements.py:355 etiketto/ui/styles.py:513
+#: etiketto/ui/elements.py:369 etiketto/ui/styles.py:513
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = 테이프 높이에 맞춤"
 
-#: etiketto/ui/elements.py:360
+#: etiketto/ui/elements.py:374
 msgid ""
 "Black-and-white printers print symbols in black, or in white if the colour "
 "is light"
 msgstr "흑백 프린터는 기호를 검은색으로, 색이 밝으면 흰색으로 인쇄합니다"
 
-#: etiketto/ui/elements.py:367 etiketto/ui/styles.py:113
+#: etiketto/ui/elements.py:381 etiketto/ui/freelayout.py:159
+#: etiketto/ui/styles.py:113
 msgid "Rotation"
 msgstr "회전"
 
-#: etiketto/ui/elements.py:379
+#: etiketto/ui/elements.py:394
 msgid "Type"
 msgstr "종류"
 
-#: etiketto/ui/elements.py:382
+#: etiketto/ui/elements.py:398
 msgid "Content (link, text, number)"
 msgstr "내용(링크, 텍스트, 번호)"
 
-#: etiketto/ui/elements.py:391 etiketto/ui/styles.py:548
+#: etiketto/ui/elements.py:408 etiketto/ui/styles.py:548
 msgid "Colour"
 msgstr "색"
 
@@ -579,6 +577,110 @@ msgstr "현재 라벨에 저장하지 않은 바뀐 내용이 있습니다."
 #: etiketto/ui/files.py:333
 msgid "Discard"
 msgstr "버리기"
+
+#: etiketto/ui/freelayout.py:36
+msgid "One after another"
+msgstr "차례대로"
+
+#: etiketto/ui/freelayout.py:36
+msgid "Free"
+msgstr "자유"
+
+#: etiketto/ui/freelayout.py:48
+msgid "Each element at its own position, from the label's top left corner"
+msgstr "각 요소를 자기 위치에, 라벨의 왼쪽 위 모서리부터"
+
+#: etiketto/ui/freelayout.py:49
+msgid "Elements are placed one after another along the tape"
+msgstr "요소는 테이프를 따라 차례로 배치됩니다"
+
+#: etiketto/ui/freelayout.py:53
+msgid "Layout"
+msgstr "배치"
+
+#: etiketto/ui/freelayout.py:100
+msgid "Position and size"
+msgstr "위치와 크기"
+
+#: etiketto/ui/freelayout.py:101
+msgid "From the label's top left corner"
+msgstr "라벨의 왼쪽 위 모서리부터"
+
+#: etiketto/ui/freelayout.py:108
+msgid "To the top left corner of the letters' ink"
+msgstr "글자 잉크의 왼쪽 위 모서리까지"
+
+#: etiketto/ui/freelayout.py:109
+msgid "To the top left corner of the first module, without the quiet zone"
+msgstr "첫 번째 모듈의 왼쪽 위 모서리까지, 여백 영역 제외"
+
+#: etiketto/ui/freelayout.py:123 etiketto/ui/image_crop.py:82
+#: etiketto/ui/label_group.py:335 etiketto/ui/styles.py:507
+msgid "Height"
+msgstr "높이"
+
+#: etiketto/ui/freelayout.py:136
+msgid "Module size"
+msgstr "모듈 크기"
+
+#: etiketto/ui/freelayout.py:142
+#, python-format
+msgid "%(unit)s, rounded to whole printer dots"
+msgstr "%(unit)s, 인쇄 점 단위로 반올림"
+
+#: etiketto/ui/freelayout.py:149
+msgid "Bar height"
+msgstr "막대 높이"
+
+#: etiketto/ui/freelayout.py:185
+#, python-format
+msgid "%(unit)s, the font's height"
+msgstr "%(unit)s, 글꼴 높이(em)"
+
+#: etiketto/ui/freelayout.py:207
+msgid "Regular"
+msgstr "보통"
+
+#: etiketto/ui/freelayout.py:216
+msgid "Weight"
+msgstr "굵기"
+
+#: etiketto/ui/freelayout.py:228
+msgid "As the bold button sets it"
+msgstr "굵게 버튼 설정대로"
+
+#: etiketto/ui/freelayout.py:251
+msgid "Standard (medium)"
+msgstr "표준(중간)"
+
+#. translators: the share of a QR code that may be damaged and still read
+#: etiketto/ui/freelayout.py:253
+#, python-format
+msgid "Low (%d %%)"
+msgstr "낮음(%d%%)"
+
+#: etiketto/ui/freelayout.py:254
+#, python-format
+msgid "Medium (%d %%)"
+msgstr "중간(%d%%)"
+
+#: etiketto/ui/freelayout.py:255
+#, python-format
+msgid "Quartile (%d %%)"
+msgstr "4분위(%d%%)"
+
+#: etiketto/ui/freelayout.py:256
+#, python-format
+msgid "High (%d %%)"
+msgstr "높음(%d%%)"
+
+#: etiketto/ui/freelayout.py:259
+msgid "Error correction"
+msgstr "오류 정정"
+
+#: etiketto/ui/freelayout.py:264
+msgid "How much of the code may be damaged and still be read"
+msgstr "코드가 얼마나 손상되어도 읽을 수 있는지"
 
 #. translators: a month and a year, e.g. "May 2018"; reorder as your language needs
 #: etiketto/ui/i18n.py:65
@@ -686,11 +788,6 @@ msgstr "위"
 #: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:326
 msgid "Width"
 msgstr "너비"
-
-#: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:335
-#: etiketto/ui/styles.py:507
-msgid "Height"
-msgstr "높이"
 
 #: etiketto/ui/label_group.py:93
 msgid "Tape width"
@@ -2400,333 +2497,340 @@ msgstr "요소 %(n)d: 도형에 선도 채우기도 없습니다"
 #: etiketto/ui/texts.py:400
 #, python-format
 msgid ""
+"Element %(n)d reaches beyond the edge of the label and is cut off there – "
+"move it or make it smaller"
+msgstr "요소 %(n)d이(가) 라벨 가장자리를 넘어 그곳에서 잘립니다 – 옮기거나 작게 하세요"
+
+#: etiketto/ui/texts.py:404
+#, python-format
+msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "요소 %(n)d: 안쪽 여백, 틀, 윤곽선 또는 그림자 때문에 텍스트 공간이 없습니다 – 더 작게 하세요"
 
-#: etiketto/ui/texts.py:415
+#: etiketto/ui/texts.py:419
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "이미 인쇄된 시트: %(total)d장 중 %(n)d장."
 
-#: etiketto/ui/texts.py:417
+#: etiketto/ui/texts.py:421
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "이미 인쇄된 라벨: %(total)d개 중 %(n)d개."
 
-#: etiketto/ui/texts.py:421
+#: etiketto/ui/texts.py:425
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "대기열에서 기다리던 시트는 취소되었습니다."
 
-#: etiketto/ui/texts.py:423
+#: etiketto/ui/texts.py:427
 msgid "The labels still waiting in the queue were canceled."
 msgstr "대기열에서 기다리던 라벨은 취소되었습니다."
 
-#: etiketto/ui/texts.py:432
+#: etiketto/ui/texts.py:436
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "프린터를 찾을 수 없습니다. 프린터가 켜져 있고 같은 네트워크에 있는지 확인하거나 IP 주소를 입력하십시오."
 
-#: etiketto/ui/texts.py:436
+#: etiketto/ui/texts.py:440
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "USB에서 프린터를 찾을 수 없습니다. 케이블을 확인하고 프린터가 켜져 있으며 절전 상태가 아닌지 확인한 다음 다시 검색하십시오."
 
-#: etiketto/ui/texts.py:439
+#: etiketto/ui/texts.py:443
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "프린터가 응답하지 않습니다. 프린터가 켜져 있고 절전 상태가 아닌지 확인하십시오."
 
-#: etiketto/ui/texts.py:441
+#: etiketto/ui/texts.py:445
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "프린터가 더 이상 데이터를 받지 않습니다. 라벨이 없거나 덮개가 열려 있는 등 프린터에 문제가 표시되는지 확인한 후 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:445
+#: etiketto/ui/texts.py:449
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "프린터가 연결을 거부합니다. 프린터를 껐다가 다시 켜십시오. 웹 인터페이스에 “Port 9100” 옵션이 있으면 켜십시오."
 
-#: etiketto/ui/texts.py:448
+#: etiketto/ui/texts.py:452
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "카세트가 없습니다. 카세트를 넣고 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:449
+#: etiketto/ui/texts.py:453
 msgid "The printer's cover is open. Close it and try again."
 msgstr "프린터 덮개가 열려 있습니다. 덮개를 닫고 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:450
+#: etiketto/ui/texts.py:454
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "라벨이 걸렸습니다. 덮개를 열고 라벨을 빼낸 뒤 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:451
+#: etiketto/ui/texts.py:455
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "카세트를 인식할 수 없습니다. 다시 넣거나 다른 카세트를 사용하십시오."
 
-#: etiketto/ui/texts.py:452
+#: etiketto/ui/texts.py:456
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "프린터가 사용 중입니다. 잠시 후 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:453
+#: etiketto/ui/texts.py:457
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "이 프린터에는 라벨이 너무 깁니다. 최대 %(max)s입니다."
 
-#: etiketto/ui/texts.py:454
+#: etiketto/ui/texts.py:458
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "라벨이 이 프린터에는 너무 넓습니다. 최대 %(max)s입니다."
 
-#: etiketto/ui/texts.py:455
+#: etiketto/ui/texts.py:459
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "프린터에 라벨이 없습니다. 새 롤을 넣고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:456
+#: etiketto/ui/texts.py:460
 msgid "The print head is open. Close it and try again."
 msgstr "프린트 헤드가 열려 있습니다. 닫고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:458
+#: etiketto/ui/texts.py:462
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "프린터가 다음 라벨을 찾지 못합니다. 라벨이 올바르게 들어 있고 라벨 센서를 통과하는지 확인하세요."
 
-#: etiketto/ui/texts.py:462
+#: etiketto/ui/texts.py:466
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "리본에 문제가 있습니다. 올바르게 끼워졌는지, 프린터에 설정된 인쇄 방식과 맞는지 확인하세요."
 
-#: etiketto/ui/texts.py:465
+#: etiketto/ui/texts.py:469
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "프린터가 일시 정지되었습니다. 프린터 화면에서 다시 시작한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:466
+#: etiketto/ui/texts.py:470
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "프린터에 용지가 없습니다. 용지를 넣고 다시 시도하세요."
 
-#: etiketto/ui/texts.py:468
+#: etiketto/ui/texts.py:472
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "용지가 걸렸습니다. 프린터 화면의 안내에 따라 제거한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:470
+#: etiketto/ui/texts.py:474
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "프린터의 토너 또는 잉크가 떨어졌습니다. 교체한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:471
+#: etiketto/ui/texts.py:475
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "프린터가 이 크기를 인쇄할 수 없습니다. 프린터가 지원하는 용지 크기를 선택하세요."
 
-#: etiketto/ui/texts.py:473
+#: etiketto/ui/texts.py:477
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "프린터가 Etiketto에서 보낼 수 있는 형식(PDF, PWG Raster, JPEG)을 하나도 받지 않습니다."
 
-#: etiketto/ui/texts.py:476
+#: etiketto/ui/texts.py:480
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "프린터 대기열이 일시 정지되었습니다. 시스템 프린터 설정에서 다시 시작한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:480
+#: etiketto/ui/texts.py:484
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "인쇄 작업이 대기열에서 보류되었습니다. 예를 들어 해제되거나 암호가 입력될 때까지입니다. 시스템 프린터 설정에서 대기열을 확인한 뒤 다시 시도하세요."
 
-#: etiketto/ui/texts.py:484
+#: etiketto/ui/texts.py:488
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "인쇄 작업이 프린터 또는 대기열에서 취소되었습니다."
 
-#: etiketto/ui/texts.py:485
+#: etiketto/ui/texts.py:489
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "프린터가 제때 해상도를 알리지 않았습니다. “%s”에서 선택하십시오."
 
-#: etiketto/ui/texts.py:488
+#: etiketto/ui/texts.py:492
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "넣은 롤이 라벨과 맞지 않습니다. 맞는 롤을 넣거나, 넣은 롤에 맞는 라벨 크기나 프린터 모델을 선택하세요."
 
-#: etiketto/ui/texts.py:491
+#: etiketto/ui/texts.py:495
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "프린터 배터리가 부족합니다 – 충전하거나 전원 어댑터를 연결하세요."
 
-#: etiketto/ui/texts.py:492
+#: etiketto/ui/texts.py:496
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "프린트 헤드가 너무 뜨겁습니다. 식을 때까지 기다린 다음 다시 시도하세요."
 
-#: etiketto/ui/texts.py:494
+#: etiketto/ui/texts.py:498
 msgid ""
 "Etiketto cannot print on this printer model: it does not take the raster "
 "images Etiketto sends."
 msgstr "Etiketto는 이 프린터 모델에서 인쇄할 수 없습니다: Etiketto가 보내는 래스터 이미지를 받지 않습니다."
 
-#: etiketto/ui/texts.py:498
+#: etiketto/ui/texts.py:502
 msgid "Etiketto does not know this printer model and cannot print on it yet."
 msgstr "Etiketto는 이 프린터 모델을 알지 못해 아직 인쇄할 수 없습니다."
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:505
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "프린터가 Editor Lite 모드여서 USB 드라이브로 표시됩니다. 프린터에서 Editor Lite를 끈 다음(램프가 꺼짐) 다시 검색하세요."
 
-#: etiketto/ui/texts.py:505
+#: etiketto/ui/texts.py:509
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Etiketto에 프린터의 USB 포트를 사용할 권한이 없습니다. 사용자를 “lp” 그룹에 추가한(sudo usermod -aG lp $USER) 뒤 로그아웃했다가 다시 로그인하세요."
 
-#: etiketto/ui/texts.py:509
+#: etiketto/ui/texts.py:513
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "프린터가 받는 해상도로 만들기에는 페이지가 너무 큽니다. 더 작은 용지 크기를 선택하거나 PDF를 받는 프린터로 인쇄하세요."
 
-#: etiketto/ui/texts.py:513
+#: etiketto/ui/texts.py:517
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "이 프린터의 해상도에서는 코드가 라벨에 들어가지 않아 잘립니다. 라벨을 크게 하거나 코드 내용을 줄이세요."
 
-#: etiketto/ui/texts.py:517
+#: etiketto/ui/texts.py:521
 msgid ""
 "Etiketto is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Etiketto에 프린터의 직렬 포트를 사용할 권한이 없습니다. 사용자를 “dialout” 그룹에 추가한(sudo usermod -aG dialout $USER, Arch Linux에서는 그룹 이름이 “uucp”) 뒤 로그아웃했다가 다시 로그인하세요."
 
-#: etiketto/ui/texts.py:522
+#: etiketto/ui/texts.py:526
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "프린터에서 문제를 보고했습니다. 프린터를 껐다가 다시 켠 뒤 다시 시도하십시오."
 
-#: etiketto/ui/texts.py:533
+#: etiketto/ui/texts.py:537
 msgid "Printed"
 msgstr "인쇄함"
 
-#: etiketto/ui/texts.py:539
+#: etiketto/ui/texts.py:543
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "프린터로 보냄 – 차례가 되면 인쇄됩니다"
 
-#: etiketto/ui/texts.py:541
+#: etiketto/ui/texts.py:545
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "프린터로 보냈습니다 – 프린터가 인쇄를 확인하지 않았습니다"
 
-#: etiketto/ui/texts.py:545
+#: etiketto/ui/texts.py:549
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "넣은 롤에 필요하므로 “%(used)s”(으)로 인쇄했습니다"
 
-#: etiketto/ui/texts.py:549
+#: etiketto/ui/texts.py:553
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "이 프린터에서는 “%(wanted)s” 색상 모드를 쓸 수 없어 “%(used)s”(으)로 인쇄했습니다"
 
-#: etiketto/ui/texts.py:559
+#: etiketto/ui/texts.py:563
 msgid "Warming up…"
 msgstr "예열 중…"
 
-#: etiketto/ui/texts.py:560
+#: etiketto/ui/texts.py:564
 msgid "Cooling down…"
 msgstr "냉각 중…"
 
-#: etiketto/ui/texts.py:561
+#: etiketto/ui/texts.py:565
 msgid "Cleaning…"
 msgstr "청소 중…"
 
-#: etiketto/ui/texts.py:562
+#: etiketto/ui/texts.py:566
 msgid "Swipe the printer's panel to cut the label"
 msgstr "프린터 패널을 밀어 라벨을 자르십시오"
 
-#: etiketto/ui/texts.py:564
+#: etiketto/ui/texts.py:568
 msgid "Out of paper – load paper to continue"
 msgstr "용지 없음 – 계속하려면 용지를 넣으세요"
 
-#: etiketto/ui/texts.py:565
+#: etiketto/ui/texts.py:569
 msgid "Cover open – close it to continue"
 msgstr "덮개 열림 – 계속하려면 덮개를 닫으세요"
 
-#: etiketto/ui/texts.py:566
+#: etiketto/ui/texts.py:570
 msgid "Paper jammed – remove it to continue"
 msgstr "용지 걸림 – 계속하려면 용지를 제거하세요"
 
-#: etiketto/ui/texts.py:577
+#: etiketto/ui/texts.py:581
 msgid "This label needs a newer version of Etiketto"
 msgstr "이 라벨을 열려면 새 버전의 Etiketto가 필요합니다"
 
-#: etiketto/ui/texts.py:579
+#: etiketto/ui/texts.py:583
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "Etiketto 라벨이 아님: %s"
 
-#: etiketto/ui/texts.py:580 etiketto/ui/texts.py:600
+#: etiketto/ui/texts.py:584 etiketto/ui/texts.py:604
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "파일이 손상됨: %s"
 
-#: etiketto/ui/texts.py:587
+#: etiketto/ui/texts.py:591
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "데이터 파일 %s이(가) 더 이상 없습니다. 다시 선택하거나 제거하십시오."
 
-#: etiketto/ui/texts.py:591
+#: etiketto/ui/texts.py:595
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s에 %(sheet)s 시트가 없습니다"
 
-#: etiketto/ui/texts.py:593
+#: etiketto/ui/texts.py:597
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s은(는) 표가 아닙니다. CSV, ODS 또는 XLSX 파일을 사용하십시오."
 
-#: etiketto/ui/texts.py:595
+#: etiketto/ui/texts.py:599
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s은(는) 데이터 병합 라벨에 쓰기에 너무 큽니다. 더 작은 파일로 나누거나 필요 없는 행과 열을 제거하십시오."
 
-#: etiketto/ui/texts.py:598
+#: etiketto/ui/texts.py:602
 #, python-format
 msgid "%s contains no data."
 msgstr "%s에 데이터가 없습니다."
 
-#: etiketto/ui/texts.py:606
+#: etiketto/ui/texts.py:610
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "%(row)d행에서 인쇄가 멈췄습니다. 계속하려면 %(row)d행부터 다시 인쇄하십시오."
 
-#: etiketto/ui/texts.py:610
+#: etiketto/ui/texts.py:614
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "%(row)d행에서 이미 인쇄된 매수: %(copies)d."
 
-#: etiketto/ui/texts.py:620
+#: etiketto/ui/texts.py:624
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "저장할 수 없음: %s (쓰기 권한 없음)"
 
-#: etiketto/ui/texts.py:622
+#: etiketto/ui/texts.py:626
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "저장할 수 없음: %s (디스크 공간 부족)"
 
-#: etiketto/ui/texts.py:632
+#: etiketto/ui/texts.py:636
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

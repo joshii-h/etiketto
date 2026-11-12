@@ -21,7 +21,7 @@ from etiketto.model import (  # noqa: E402
     TextElement,
     element_id,
 )
-from etiketto.ui import styles  # noqa: E402
+from etiketto.ui import freelayout, styles  # noqa: E402
 from etiketto.ui.data import column_button  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.symbols import SymbolChooser, SymbolIcon  # noqa: E402
@@ -80,15 +80,13 @@ class ElementsGroup(Adw.PreferencesGroup):
     """The "Content" group: one expander row per element."""
 
     def __init__(self, window: Window):
-        super().__init__(
-            title=_("Content"),
-            description=_("Elements are placed one after another along the tape"),
-        )
+        super().__init__(title=_("Content"), description=freelayout.description(window))
         self.window = window
         # the rows open, the one opened last at the end: the open element
         self._open: list[int] = []
         self.rows: list[Adw.ExpanderRow] = []
         self._add_menu_button()
+        self.add(freelayout.layout_row(window))
 
         if not window.label.elements:
             empty = Adw.ActionRow(
@@ -138,7 +136,7 @@ class ElementsGroup(Adw.PreferencesGroup):
             self.window.mark_changed(typing_key("element:%d" % index, kwargs))
 
         self._kind_rows(row, element, set_attr, prefix)
-        row.add_row(styles.position_row(self.window, element, set_attr))
+        row.add_row(freelayout.position_row(self.window, element, set_attr))
         for widget, field in self._fields(row):  # by the element, wherever it moves
             widget.set_name("field:%d:%s" % (element_id(element), field))
         return row
@@ -218,17 +216,22 @@ class ElementsGroup(Adw.PreferencesGroup):
         row.add_row(
             self._text_view_row(element, set_attr, self.window.open_url, self.window.data.columns)
         )
-        row.add_row(self._font_row(element, set_attr))
-        size = spin_row(
-            _("Size"),
-            element.size_pt,
-            0,
-            300,
-            1,
-            0,
-            lambda v: set_attr(size_pt=v),
-            subtitle=_("pt, 0 = fill tape height"),
-        )
+        weight = freelayout.WeightRow(element, set_attr)
+        row.add_row(self._font_row(element, set_attr, weight))
+        row.add_row(weight)
+        if freelayout.is_free(self.window):
+            size = freelayout.text_size_row(self.window, element, set_attr)
+        else:
+            size = spin_row(
+                _("Size"),
+                element.size_pt,
+                0,
+                300,
+                1,
+                0,
+                lambda v: set_attr(size_pt=v),
+                subtitle=_("pt, 0 = fill tape height"),
+            )
         size.add_suffix(color_button(element.color, lambda v: set_attr(color=v)))
         row.add_row(size)
         row.add_row(
@@ -275,18 +278,29 @@ class ElementsGroup(Adw.PreferencesGroup):
         return Adw.PreferencesRow(activatable=False, child=box)
 
     @staticmethod
-    def _font_row(element: TextElement, set_attr) -> Adw.ActionRow:
+    def _font_row(element: TextElement, set_attr, weight: freelayout.WeightRow) -> Adw.ActionRow:
+        """The font, its weights in the weight row; bold, italic, underline
+        and strikethrough. The bold button sets the weight back to bold or
+        regular."""
         font_row = Adw.ActionRow(title=_("Font"))
         font_button = Gtk.FontDialogButton(dialog=Gtk.FontDialog(), valign=Gtk.Align.CENTER)
         font_button.set_level(Gtk.FontLevel.FAMILY)
-        font_button.set_font_desc(Pango.FontDescription.from_string(element.font))
-        font_button.connect(
-            "notify::font-desc",
-            lambda b, _p: set_attr(font=b.get_font_desc().get_family() or "Sans"),
-        )
+        desc = Pango.FontDescription()
+        desc.set_family(element.font or "Sans")  # "Source Sans 3": not size 3
+        font_button.set_font_desc(desc)
+
+        def font(button, _pspec) -> None:
+            set_attr(font=button.get_font_desc().get_family() or "Sans")
+            weight.set_family(element.font)
+
+        def bold(active: bool) -> None:
+            set_attr(bold=active, weight=0)
+            weight.show_default()
+
+        font_button.connect("notify::font-desc", font)
         font_row.add_suffix(font_button)
+        font_row.add_suffix(toggle("format-text-bold-symbolic", _("Bold"), element.bold, bold))
         for icon, tip, attr in (
-            ("format-text-bold-symbolic", _("Bold"), "bold"),
             ("format-text-italic-symbolic", _("Italic"), "italic"),
             ("format-text-underline-symbolic", _("Underline"), "underline"),
             ("format-text-strikethrough-symbolic", _("Strikethrough"), "strikethrough"),
@@ -374,11 +388,13 @@ class ElementsGroup(Adw.PreferencesGroup):
     def _code_rows(self, row: Adw.ExpanderRow, element, set_attr) -> None:
         def set_type(symbology: str) -> None:
             kind.set_subtitle(SYMBOLOGY_HELP.get(symbology, ""))
+            error_correction.set_visible(symbology == "qr")
             set_attr(symbology=symbology)
 
         kind = grouped_combo_row(_("Type"), SYMBOLOGY_GROUPS, element.symbology, set_type)
         kind.set_subtitle(SYMBOLOGY_HELP.get(element.symbology, ""))
         row.add_row(kind)
+        error_correction = freelayout.error_correction_row(element, set_attr)
         data = Adw.EntryRow(title=_("Content (link, text, number)"))
         data.set_text(element.data)
         data.connect("changed", lambda e: set_attr(data=e.get_text()))
@@ -388,6 +404,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         if columns := self.window.data.columns:
             data.add_suffix(column_button(columns, lambda p: insert_into_entry(data, p)))
         row.add_row(data)
+        row.add_row(error_correction)
         color = Adw.ActionRow(title=_("Colour"))
         color.add_suffix(color_button(element.color, lambda v: set_attr(color=v)))
         row.add_row(color)
