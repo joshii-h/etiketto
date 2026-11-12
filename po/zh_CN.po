@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta\n"
-"PO-Revision-Date: 2026-11-12 16:53+0100\n"
+"PO-Revision-Date: 2026-11-12 17:06+0100\n"
 "Last-Translator: Tavletta contributors\n"
 "Language-Team: zh_CN\n"
 "Language: zh_CN\n"
@@ -190,246 +190,252 @@ msgstr "一个打印作业中的最大标签数，即份数乘以行数（默认
 msgid "search the network for printers (off by default)"
 msgstr "在网络中搜索打印机（默认关闭）"
 
-#: tavletta/cli.py:336
+#: tavletta/cli.py:335
+msgid ""
+"allow document pages (PDF, images) in labels sent with the request; PDFs are "
+"then drawn in a separate process with limits (off by default)"
+msgstr "允许随请求发送的标签中包含文档页面（PDF、图片）；PDF 将在有限制的独立进程中绘制（默认关闭）"
+
+#: tavletta/cli.py:344
 msgid "run a print server with a REST API"
 msgstr "运行带 REST API 的打印服务器"
 
-#: tavletta/cli.py:337
+#: tavletta/cli.py:345
 msgid "Run a print server: a REST API and, with --mcp, MCP for AI clients."
 msgstr "运行打印服务器：提供 REST API，使用 --mcp 时还为 AI 客户端提供 MCP。"
 
-#: tavletta/cli.py:340
+#: tavletta/cli.py:348
 msgid "address to listen on (default 127.0.0.1)"
 msgstr "监听的地址（默认 127.0.0.1）"
 
-#: tavletta/cli.py:346
+#: tavletta/cli.py:354
 #, python-format
 msgid "port to listen on (default %d)"
 msgstr "监听的端口（默认 %d）"
 
-#: tavletta/cli.py:352
+#: tavletta/cli.py:360
 msgid ""
 "file with the access token; else the environment variable TAVLETTA_TOKEN"
 msgstr "包含访问令牌的文件；否则使用环境变量 TAVLETTA_TOKEN"
 
-#: tavletta/cli.py:358
+#: tavletta/cli.py:366
 msgid "tokens.toml: named access tokens with roles"
 msgstr "tokens.toml：带角色的具名访问令牌"
 
-#: tavletta/cli.py:360
+#: tavletta/cli.py:368
 msgid "also serve MCP at /mcp"
 msgstr "同时在 /mcp 提供 MCP"
 
-#: tavletta/cli.py:366
+#: tavletta/cli.py:374
 msgid "largest request body in MB (default 4)"
 msgstr "请求体的最大大小，单位 MB（默认 4）"
 
-#: tavletta/cli.py:375
+#: tavletta/cli.py:383
 msgid ""
 "a reverse proxy whose X-Forwarded-For header names the client, e.g. "
 "172.16.0.0/12; repeatable"
 msgstr "其 X-Forwarded-For 标头指明客户端的反向代理，例如 172.16.0.0/12；可重复使用"
 
-#: tavletta/cli.py:384
+#: tavletta/cli.py:392
 msgid "allow requests from web pages of this origin; repeatable"
 msgstr "允许来自此来源网页的请求；可重复使用"
 
-#: tavletta/cli.py:389
+#: tavletta/cli.py:397
 msgid "serve MCP on standard input and output"
 msgstr "通过标准输入和输出提供 MCP"
 
-#: tavletta/cli.py:391
+#: tavletta/cli.py:399
 msgid ""
 "Serve MCP on standard input and output, for AI clients such as Claude "
 "Desktop."
 msgstr "通过标准输入和输出提供 MCP，供 Claude Desktop 等 AI 客户端使用。"
 
-#: tavletta/cli.py:401
+#: tavletta/cli.py:409
 msgid "manage the access tokens of the print server"
 msgstr "管理打印服务器的访问令牌"
 
-#: tavletta/cli.py:402
+#: tavletta/cli.py:410
 msgid "Manage the access tokens of the print server."
 msgstr "管理打印服务器的访问令牌。"
 
-#: tavletta/cli.py:407
+#: tavletta/cli.py:415
 msgid "make a token and add its hash to tokens.toml"
 msgstr "生成令牌并将其哈希添加到 tokens.toml"
 
-#: tavletta/cli.py:408
+#: tavletta/cli.py:416
 msgid "Make a token, add its hash to tokens.toml and show the token once."
 msgstr "生成令牌，将其哈希添加到 tokens.toml，并仅显示一次令牌。"
 
-#: tavletta/cli.py:410
+#: tavletta/cli.py:418
 msgid "name of the token, e.g. the device"
 msgstr "令牌名称，例如设备名"
 
-#: tavletta/cli.py:415
+#: tavletta/cli.py:423
 msgid "preview: look only; print: also print; admin: also all jobs"
 msgstr "preview：仅查看；print：还可打印；admin：还可管理所有作业"
 
-#: tavletta/cli.py:417
+#: tavletta/cli.py:425
 msgid "tokens.toml to add it to"
 msgstr "要添加到的 tokens.toml"
 
-#: tavletta/cli.py:423
+#: tavletta/cli.py:431
 msgid "only this printer of printers.toml; repeatable"
 msgstr "仅限 printers.toml 中的此打印机；可重复使用"
 
-#: tavletta/cli.py:426
+#: tavletta/cli.py:434
 msgid "printers.toml, to check --printer"
 msgstr "printers.toml，用于检查 --printer"
 
-#: tavletta/cli.py:428
+#: tavletta/cli.py:436
 msgid "valid until, e.g. 2027-12-31"
 msgstr "有效期至，例如 2027-12-31"
 
-#: tavletta/cli.py:429
+#: tavletta/cli.py:437
 msgid "a note for people"
 msgstr "给人看的备注"
 
-#: tavletta/cli.py:431
+#: tavletta/cli.py:439
 msgid "store the hash with scrypt instead of SHA-256"
 msgstr "使用 scrypt 而非 SHA-256 存储哈希"
 
-#: tavletta/cli.py:437
+#: tavletta/cli.py:445
 msgid ""
 "take a token you chose from standard input (stored with scrypt) instead of "
 "making one"
 msgstr "从标准输入读取你自选的令牌（使用 scrypt 存储），而不是生成一个"
 
-#: tavletta/cli.py:457 tavletta/server/config.py:220
-#: tavletta/server/service.py:527
+#: tavletta/cli.py:465 tavletta/server/config.py:220
+#: tavletta/server/service.py:531
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "未知的打印机型号：%s"
 
-#: tavletta/cli.py:464 tavletta/ui/files.py:84 tavletta/ui/files.py:137
+#: tavletta/cli.py:472 tavletta/ui/files.py:84 tavletta/ui/files.py:137
 #: tavletta/ui/texts.py:318 tavletta/ui/texts.py:655
-#: tavletta/server/service.py:675
+#: tavletta/server/service.py:679
 #, python-format
 msgid "Cannot open %s"
 msgstr "无法打开 %s"
 
-#: tavletta/cli.py:486 tavletta/server/main.py:259
+#: tavletta/cli.py:494 tavletta/server/main.py:260
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s 不是日期，应类似 2026-12-31 或 2026-12-31T08:30"
 
-#: tavletta/cli.py:523
+#: tavletta/cli.py:531
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} 会在打印时填入，无法设置"
 
-#: tavletta/cli.py:527
+#: tavletta/cli.py:535
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "标签中没有名为 %s 的元素或变量"
 
-#: tavletta/cli.py:551 tavletta/ui/printing.py:123
-#: tavletta/server/service.py:963
+#: tavletta/cli.py:559 tavletta/ui/printing.py:123
+#: tavletta/server/service.py:973
 msgid "The label is empty"
 msgstr "标签为空"
 
-#: tavletta/cli.py:588
+#: tavletta/cli.py:596
 msgid "Cannot write the output"
 msgstr "无法写入输出"
 
-#: tavletta/cli.py:619
+#: tavletta/cli.py:627
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output 写入 PNG 图像：请给出以 .png 结尾的名称"
 
-#: tavletta/cli.py:644 tavletta/cli.py:853 tavletta/ui/printing.py:553
-#: tavletta/ui/printing.py:715 tavletta/server/service.py:891
-#: tavletta/server/service.py:1118 tavletta/server/service.py:1263
+#: tavletta/cli.py:652 tavletta/cli.py:861 tavletta/ui/printing.py:553
+#: tavletta/ui/printing.py:715 tavletta/server/service.py:901
+#: tavletta/server/service.py:1128 tavletta/server/service.py:1273
 msgid "The label cannot be prepared for printing."
 msgstr "无法准备标签以供打印。"
 
-#: tavletta/cli.py:731
+#: tavletta/cli.py:739
 msgid "No printer found – give its address with --host"
 msgstr "未找到打印机，请用 --host 指定其地址"
 
-#: tavletta/cli.py:733
+#: tavletta/cli.py:741
 msgid ""
 "Several printers found – choose one with --host (tavletta list-printers)"
 msgstr "找到多台打印机，请用 --host 选择一台（tavletta list-printers）"
 
-#: tavletta/cli.py:744 tavletta/ui/texts.py:698 tavletta/server/service.py:1253
+#: tavletta/cli.py:752 tavletta/ui/texts.py:698 tavletta/server/service.py:1263
 #, python-format
 msgid "Cannot save %s"
 msgstr "无法保存 %s"
 
-#: tavletta/cli.py:746 tavletta/server/service.py:1256
+#: tavletta/cli.py:754 tavletta/server/service.py:1266
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "标签已打印，但下一个计数器值未能保存"
 
-#: tavletta/cli.py:761 tavletta/server/service.py:992
+#: tavletta/cli.py:769 tavletta/server/service.py:1002
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "未打印任何内容：下一个计数器值无法保存"
 
-#: tavletta/cli.py:821 tavletta/cli.py:848 tavletta/cli.py:1209
+#: tavletta/cli.py:829 tavletta/cli.py:856 tavletta/cli.py:1217
 msgid "Interrupted"
 msgstr "已中断"
 
-#: tavletta/cli.py:921
+#: tavletta/cli.py:929
 #, python-format
 msgid "--print-method: this printer model has no print method setting: %s"
 msgstr "--print-method：此打印机型号没有打印方式设置：%s"
 
-#: tavletta/cli.py:963
+#: tavletta/cli.py:971
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet 和 --rows 需要数据文件（--data）"
 
-#: tavletta/cli.py:972 tavletta/ui/printing.py:585
-#: tavletta/server/service.py:764
+#: tavletta/cli.py:980 tavletta/ui/printing.py:585
+#: tavletta/server/service.py:774
 msgid "No rows to print"
 msgstr "没有要打印的行"
 
-#: tavletta/cli.py:982
+#: tavletta/cli.py:990
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "此标签使用其文件夹之外的数据文件：请用 --data 指定"
 
-#: tavletta/cli.py:1009 tavletta/ui/window.py:849
-#: tavletta/server/service.py:817
+#: tavletta/cli.py:1017 tavletta/ui/window.py:849
+#: tavletta/server/service.py:827
 #, python-format
 msgid "No such column: %s"
 msgstr "没有此列：%s"
 
-#: tavletta/cli.py:1014 tavletta/ui/printing.py:664
+#: tavletta/cli.py:1022 tavletta/ui/printing.py:664
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "无法根据这些行的值生成条形码或二维码，例如含字母的 EAN-13 或空单元格。请修正数据文件并重新读取，或不打印这些行。"
 
-#: tavletta/cli.py:1019 tavletta/ui/printing.py:669
+#: tavletta/cli.py:1027 tavletta/ui/printing.py:669
 #, python-format
 msgid "Rows: %s"
 msgstr "行：%s"
 
-#: tavletta/cli.py:1027
+#: tavletta/cli.py:1035
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "正在等待 %s 的另一个打印任务完成…"
 
-#: tavletta/cli.py:1034 tavletta/server/service.py:1112
+#: tavletta/cli.py:1042 tavletta/server/service.py:1122
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s 仍被另一个打印任务锁定 – 请稍后再试"
 
-#: tavletta/cli.py:1040
+#: tavletta/cli.py:1048
 msgid "--output needs --dry-run"
 msgstr "--output 需要 --dry-run"
 
-#: tavletta/cli.py:1057
+#: tavletta/cli.py:1065
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "下一个计数器值不会保存：下次打印会重复这些编号"
 
-#: tavletta/cli.py:1152
+#: tavletta/cli.py:1160
 msgid "Waiting for the printer's answer…"
 msgstr "正在等待打印机的回应…"
 
-#: tavletta/cli.py:1180 tavletta/ui/printer.py:199
+#: tavletta/cli.py:1188 tavletta/ui/printer.py:199
 msgid "No printer found"
 msgstr "未找到打印机"
 
@@ -3003,7 +3009,7 @@ msgid "%s is not an Tavletta label"
 msgstr "%s 不是 Tavletta 标签"
 
 #: tavletta/ui/texts.py:646 tavletta/ui/texts.py:666
-#: tavletta/server/service.py:686
+#: tavletta/server/service.py:690
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "文件已损坏：%s"
@@ -3200,7 +3206,7 @@ msgid "%(file)s: %(key)s: %(problem)s"
 msgstr "%(file)s: %(key)s: %(problem)s"
 
 #: tavletta/server/config.py:89 tavletta/server/config.py:93
-#: tavletta/server/config.py:99 tavletta/server/main.py:341
+#: tavletta/server/config.py:99 tavletta/server/main.py:342
 #, python-format
 msgid "Cannot read %(file)s: %(reason)s"
 msgstr "无法读取 %(file)s：%(reason)s"
@@ -3288,7 +3294,7 @@ msgstr "应为打印机名称列表"
 msgid "printers can only be limited with --printers"
 msgstr "只能通过 --printers 限制打印机"
 
-#: tavletta/server/config.py:473 tavletta/server/service.py:466
+#: tavletta/server/config.py:473 tavletta/server/service.py:470
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "未知打印机：%s"
@@ -3302,7 +3308,7 @@ msgstr "%s 的值无效"
 msgid "The request took too long"
 msgstr "请求耗时过长"
 
-#: tavletta/server/http.py:473 tavletta/server/service.py:1174
+#: tavletta/server/http.py:473 tavletta/server/service.py:1184
 msgid "The server is busy – try again later"
 msgstr "服务器繁忙，请稍后重试"
 
@@ -3373,12 +3379,12 @@ msgstr "标签文件夹 %s 不存在"
 msgid "Cannot read the token file %s"
 msgstr "无法读取令牌文件 %s"
 
-#: tavletta/server/main.py:54 tavletta/server/main.py:312
+#: tavletta/server/main.py:54 tavletta/server/main.py:313
 msgid ""
 "The access token may only contain printable ASCII characters without spaces"
 msgstr "访问令牌只能包含不含空格的可打印 ASCII 字符"
 
-#: tavletta/server/main.py:59 tavletta/server/main.py:317
+#: tavletta/server/main.py:59 tavletta/server/main.py:318
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "访问令牌长度至少为 %d 个字符"
@@ -3396,51 +3402,51 @@ msgstr "请使用 --tokens 或 --token-file，二者选一"
 msgid "Not a valid printer address pattern: %s"
 msgstr "不是有效的打印机地址模式：%s"
 
-#: tavletta/server/main.py:116
+#: tavletta/server/main.py:117
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set TAVLETTA_TOKEN or use "
 "--token-file"
 msgstr "拒绝在没有访问令牌的情况下监听 %s：请设置 TAVLETTA_TOKEN 或使用 --token-file"
 
-#: tavletta/server/main.py:139
+#: tavletta/server/main.py:140
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "无法监听 %(address)s：%(reason)s"
 
-#: tavletta/server/main.py:271
+#: tavletta/server/main.py:272
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "名称无效：只能使用字母、数字、. _ -（最多 64 个）"
 
-#: tavletta/server/main.py:282
+#: tavletta/server/main.py:283
 #, python-format
 msgid "%s is in use by another program – try again later"
 msgstr "%s 正被另一个程序使用，请稍后重试"
 
-#: tavletta/server/main.py:289
+#: tavletta/server/main.py:290
 #, python-format
 msgid "The token %(name)s was added to %(file)s."
 msgstr "令牌 %(name)s 已添加到 %(file)s。"
 
-#: tavletta/server/main.py:296
+#: tavletta/server/main.py:297
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "令牌仅显示这一次；%s 只保存其哈希。"
 
-#: tavletta/server/main.py:307
+#: tavletta/server/main.py:308
 msgid "Access token: "
 msgstr "访问令牌："
 
-#: tavletta/server/main.py:322
+#: tavletta/server/main.py:323
 msgid "A chosen token must not look like a made one (etk_…)"
 msgstr "自选令牌不得看起来像生成的令牌（etk_…）"
 
-#: tavletta/server/main.py:366
+#: tavletta/server/main.py:367
 #, python-format
 msgid "A token named %s exists already"
 msgstr "名为 %s 的令牌已存在"
 
-#: tavletta/server/main.py:393
+#: tavletta/server/main.py:394
 #, python-format
 msgid "This token is in the file already, as %s"
 msgstr "此令牌已在文件中，名为 %s"
@@ -3487,71 +3493,75 @@ msgstr "列过多：最多 %d 列"
 msgid "Too many cells: at most %d"
 msgstr "单元格过多：最多 %d 个"
 
-#: tavletta/server/service.py:478
+#: tavletta/server/service.py:482
 msgid "Choose a printer by its name"
 msgstr "请按名称选择打印机"
 
-#: tavletta/server/service.py:542 tavletta/server/service.py:1153
+#: tavletta/server/service.py:546 tavletta/server/service.py:1163
 msgid "This access token may not do this"
 msgstr "此访问令牌无权执行此操作"
 
-#: tavletta/server/service.py:590
+#: tavletta/server/service.py:594
 msgid "No printer address: give it as host"
 msgstr "没有打印机地址：请以 host 提供"
 
-#: tavletta/server/service.py:599
+#: tavletta/server/service.py:603
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "不允许此打印机地址：%s"
 
-#: tavletta/server/service.py:772
+#: tavletta/server/service.py:698
+msgid "Document pages in label_content are not allowed (--allow-pdf-pages)"
+msgstr "label_content 中不允许文档页面（--allow-pdf-pages）"
+
+#: tavletta/server/service.py:782
 msgid "A sheet needs a data file"
 msgstr "工作表需要数据文件"
 
-#: tavletta/server/service.py:778
+#: tavletta/server/service.py:788
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "标签使用了标签文件夹之外的数据文件：请随请求一起发送其数据行"
 
-#: tavletta/server/service.py:912
+#: tavletta/server/service.py:922
 #, python-format
 msgid "At most %d labels in one print job"
 msgstr "一个打印作业中最多 %d 个标签"
 
-#: tavletta/server/service.py:939
+#: tavletta/server/service.py:949
 msgid "Too many print jobs are waiting – try again later"
 msgstr "等待中的打印作业过多，请稍后重试"
 
-#: tavletta/server/service.py:1134
+#: tavletta/server/service.py:1144
 #, python-format
 msgid "No such print job: %s"
 msgstr "没有此打印作业：%s"
 
-#: tavletta/server/service.py:1146
+#: tavletta/server/service.py:1156
 msgid "The print job has already finished"
 msgstr "打印作业已完成"
 
-#: tavletta/server/service.py:1178
+#: tavletta/server/service.py:1188
 msgid "The label is too large to render"
 msgstr "标签过大，无法渲染"
 
-#: tavletta/server/service.py:1192
+#: tavletta/server/service.py:1202
 #, python-format
 msgid "The label is too large: at most %d images and codes"
 msgstr "标签过大：图像和二维码／条形码最多 %d 个"
 
-#: tavletta/server/service.py:1215
+#: tavletta/server/service.py:1225
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "标签过大：最多 %(elements)d 个元素，每段文本最多 %(chars)d 个字符"
 
-#: tavletta/server/service.py:1234
+#: tavletta/server/service.py:1244
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "此打印机最多 %d 份"
 
-#: tavletta/server/service.py:1239
+#: tavletta/server/service.py:1249
 msgid "Printers are chosen by name: leave out host"
 msgstr "打印机按名称选择：请省略 host"

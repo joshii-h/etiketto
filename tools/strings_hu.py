@@ -792,4 +792,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Érvénytelen nyomtatócím-minta: %s",
     "A chosen token must not look like a made one (etk_…)": "A választott token nem hasonlíthat egy létrehozottra (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "A Tavletta rétorománul kis táblát jelent (a tavla, tábla/deszka szóból). Kiejtése: tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "dokumentumoldalak (PDF, képek) engedélyezése a kéréssel küldött címkékben; a PDF-eket ekkor külön, korlátozott folyamat rajzolja (alapértelmezés szerint ki)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "A label_content nem tartalmazhat dokumentumoldalakat (--allow-pdf-pages)",
 }

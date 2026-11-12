@@ -792,4 +792,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Bukan pola alamat pencetak yang valid: %s",
     "A chosen token must not look like a made one (etk_…)": "Token yang dipilih tidak boleh terlihat seperti token yang dibuat (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta adalah bahasa Romansh untuk papan kecil (dari tavla, papan/meja). Dibaca tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "izinkan halaman dokumen (PDF, gambar) pada label yang dikirim bersama permintaan; PDF lalu digambar dalam proses terpisah dengan batasan (nonaktif secara bawaan)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "Halaman dokumen tidak diizinkan dalam label_content (--allow-pdf-pages)",
 }

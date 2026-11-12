@@ -792,4 +792,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Недопустимый шаблон адреса принтера: %s",
     "A chosen token must not look like a made one (etk_…)": "Выбранный токен не должен быть похож на созданный (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta по-ретороманиски означает «дощечка» (от tavla — доска, стол). Произносится tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "разрешить страницы документов (PDF, изображения) в этикетках, отправленных с запросом; PDF тогда рисуются в отдельном процессе с ограничениями (по умолчанию выключено)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "Страницы документов в label_content не разрешены (--allow-pdf-pages)",
 }

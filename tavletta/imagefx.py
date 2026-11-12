@@ -11,6 +11,8 @@ from functools import lru_cache
 
 from PIL import Image, ImageChops, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
+from tavletta import imageformats
+
 # the ordered dithering's threshold map (Bayer, 8 × 8): a regular pattern
 # that stays the same from label to label, unlike error diffusion
 _BAYER2 = ((0, 2), (3, 1))
@@ -19,6 +21,11 @@ _BAYER2 = ((0, 2), (3, 1))
 AUTO_GREY_SHARE = 0.12
 DARK, LIGHT = 48, 208
 HALF = [0] * 128 + [255] * 128  # a threshold at the middle, as a table
+# image files a label may embed, as an image or a page: what Pillow decodes
+# itself, quickly. Not EPS (Ghostscript would run it), not ICO/ICNS/CUR
+# (decoded when opened, before their size can be checked), not the dozens
+# of rarer formats (PCX, TGA, DDS, SGI, ...).
+IMAGE_FORMATS = imageformats.FORMATS  # the one list (tavletta.imageformats)
 
 
 def _bayer(n: int) -> list[list[int]]:
@@ -189,23 +196,18 @@ TONE_SHARE = 0.015
 TONE_WIDTH = 2
 
 
-def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
-    """A drawing, not a photo: few pixels between dark and light, or only a
-    few distinct tones."""
+def picture_kind(grey: Image.Image, mask: Image.Image | None = None) -> str:
+    """What "automatic" (black_and_white) takes the picture for: "drawing"
+    (few pixels between dark and light, or two flat tones), "tones" (a
+    drawing in a few flat tones) or "photo" (a photo or a gradient)."""
     histogram = grey.histogram(mask)
     total = sum(histogram)
-    if not total:
-        return True
-    if sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
-        return True
-    return few_tones(histogram, total)
-
-
-def few_tones(histogram: list[int], total: int) -> bool:
-    """Whether a few separate, narrow tones hold almost all pixels (see
-    DRAWING_TONES): flat colours, each with some noise around it; not a
-    gradient or a photo, whose pixels spread over neighbouring bands."""
-    return tone_count(histogram, total) is not None
+    if not total or sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
+        return "drawing"
+    tones = tone_count(histogram, total)
+    if tones is None:
+        return "photo"
+    return "drawing" if tones <= 2 else "tones"
 
 
 def tone_count(histogram: list[int], total: int) -> int | None:
@@ -272,14 +274,10 @@ def _auto(grey: Image.Image, alpha: Image.Image) -> Image.Image:
     between them (Otsu); a drawing in several flat tones as even patterns
     (ordered dithering keeps each tone apart, a threshold would merge them
     into a blob); a photo or gradient dithered (Floyd-Steinberg)."""
-    histogram = grey.histogram(alpha)
-    total = sum(histogram)
-    if not total or sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
-        return _drawing(grey, alpha)
-    tones = tone_count(histogram, total)
-    if tones is None:
+    kind = picture_kind(grey, alpha)
+    if kind == "photo":
         return floyd_steinberg(grey)
-    return _drawing(grey, alpha) if tones <= 2 else ordered(grey)
+    return ordered(grey) if kind == "tones" else _drawing(grey, alpha)
 
 
 def _converted(grey: Image.Image, alpha: Image.Image, mode: str, level: int) -> Image.Image:

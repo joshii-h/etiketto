@@ -111,6 +111,7 @@ def code_part(
     module; the quiet zone outside (a linear code's lies in its image)."""
     if inks.mono:
         element = replace(element, color=inks.color(element.color))
+    flow.check_text(element.data, lines=False)  # within limits, as it is filled in
     symbol = codes.encode(element)
     spec = codes.SPECS[element.symbology]
     module = module_px(element, dpi, steps)
@@ -126,7 +127,9 @@ def code_part(
 
 def _modules(element, symbol, row_modules: int, module: int, problems) -> Image.Image:
     rows = symbol.rows
-    mask = Image.new("L", (symbol.width * module, len(rows) * row_modules * module), 0)
+    size = (symbol.width * module, len(rows) * row_modules * module)
+    flow.check_size(*size)  # within limits: before the mask is made
+    mask = Image.new("L", size, 0)
     row_px = row_modules * module
     for index, row in enumerate(rows):
         top = index * row_px
@@ -263,13 +266,14 @@ def _drawn(label: Label, frame, how, shortest: int, warnings):
     length = max(shortest, mm_to_px(label.length_mm, dpi))
     origins = [(dots(e.x_mm, dpi), top + dots(e.y_mm, dpi)) for e in label.elements]
     rooms = [(length - x, top + nominal - y) for x, y in origins]
-    parts = [
-        _part(element, index, room, how, warnings)
-        for index, (element, room) in enumerate(zip(label.elements, rooms, strict=True), 1)
-    ]
+    parts, used = [], 0
+    for index, (element, room) in enumerate(zip(label.elements, rooms, strict=True), 1):
+        part = _part(element, index, room, how, warnings)
+        used += part.image.width * part.image.height
+        flow._check_budget(used, "elements")  # within limits: as they are drawn
+        parts.append(part)
     places = [_place(part, origin, steps) for part, origin in zip(parts, origins, strict=True)]
     images = [part.image for part in parts]
-    flow._check_budget(sum(i.width * i.height for i in images), "elements")
     if label.auto_length:
         right = max((x + i.width for i, (x, _y) in zip(images, places, strict=True)), default=0)
         length = max(shortest, right + frame.margin + frame.frame)  # as in the flow

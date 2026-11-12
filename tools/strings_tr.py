@@ -792,4 +792,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Geçerli bir yazıcı adresi kalıbı değil: %s",
     "A chosen token must not look like a made one (etk_…)": "Seçilen belirteç, oluşturulmuş bir belirtece benzememelidir (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta, Romanşça'da küçük bir tablet anlamına gelir (tavla, yani tahta/levha sözcüğünden). Okunuşu: tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "istekle gönderilen etiketlerde belge sayfalarına (PDF, görseller) izin ver; PDF'ler bu durumda sınırlı ayrı bir süreçte çizilir (varsayılan olarak kapalı)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "label_content içinde belge sayfalarına izin verilmez (--allow-pdf-pages)",
 }

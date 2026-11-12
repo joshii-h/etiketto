@@ -525,6 +525,28 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 - No shell is run and no path from a request is used outside the labels
   folder.
 
+### Document pages (`--allow-pdf-pages`)
+
+A label sent along (`label_content`) may not hold document pages
+(`page` elements: a carrier's PDF or an image) unless the server runs
+with `--allow-pdf-pages`; otherwise it is 422 (`pages_not_allowed`).
+Labels of the labels folder may hold them either way. Pages count as
+images towards the 50 images and codes; within the render limits:
+
+- an image page counts towards the 20 megapixels of image files (from
+  its header, also a TIFF frame before it is decoded) and is decoded once
+  per render, never kept; only PNG, JPEG, GIF, BMP, WebP and TIFF are
+  read, in the window too (never EPS, which would run Ghostscript);
+- a PDF of at most 10 MB is read and drawn by Poppler in a child process
+  (`tavletta/shipping/pdfchild.py`) limited to 10 s of processor time,
+  20 s in all and an address space of 512 MB plus 24 bytes per pixel of
+  the drawing; one that breaks these limits refuses the label (413), a
+  damaged one or a crash of the child is a warning (`page_unreadable`).
+  Nothing of it is kept in the server's process.
+
+Each page drawn starts a child (about 0.1 s, a black-and-white printer
+two), so the option is off by default.
+
 ## Server build
 
 - `packaging/docker/Dockerfile`: Debian slim with Python, PyGObject,

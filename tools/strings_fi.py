@@ -792,4 +792,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Ei kelvollinen tulostimen osoitteen malli: %s",
     "A chosen token must not look like a made one (etk_…)": "Valittu pääsytunnus ei saa näyttää luodulta (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta on retoromaaniaa ja tarkoittaa pientä taulua (sanasta tavla, taulu/lauta). Lausutaan tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "salli asiakirjasivut (PDF, kuvat) pyynnön mukana lähetetyissä tarroissa; PDF:t piirretään silloin erillisessä prosessissa rajoituksin (oletuksena pois)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "Asiakirjasivut eivät ole sallittuja label_content-kentässä (--allow-pdf-pages)",
 }
