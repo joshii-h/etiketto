@@ -1196,9 +1196,12 @@ def _ink_shows(element: Element, part: Image.Image, inks: Inks) -> bool:
     if isinstance(element, ImageElement):
         return _visible(part, inks)
     choice = _ink_choice(element, inks)
-    if isinstance(element, TextElement) and choice[1]:  # a box: it shows, or the text on it
-        choice = (choice[1],)
-    return any(_ink_visible(ink, inks) for ink in choice[:1] if ink)
+    if isinstance(element, TextElement):
+        text, box, outline, _shadow = choice
+        if box and (_ink_visible(box, inks) or text != box):
+            return True  # the box shows, or the letters on it (cut out: the label)
+        return any(_ink_visible(ink, inks) for ink in (text, outline) if ink)
+    return _ink_visible(choice[0], inks)
 
 
 def _ink_visible(ink: str, inks: Inks) -> bool:

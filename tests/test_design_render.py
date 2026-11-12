@@ -1075,3 +1075,19 @@ def test_texts_without_colour_glyphs_are_used_as_drawn():
     assert render_module._mono_part(TextElement(), block, render_module.Inks(True), 300) is block
     label = Label(tape_mm=12, elements=[TextElement(text="Hi \U0001f389")])
     assert greys(render(label, dpi=300, mono=True).image) == 0
+
+
+def test_a_box_or_outline_makes_a_text_show():
+    """A white box on a pale label shows its black letters; white letters
+    with a black outline show; white letters alone on a pale label warn."""
+    label = Label(
+        tape_mm=12,
+        background="#ffeb3b",
+        elements=[
+            TextElement(text="Box", box_color="#ffffff", color="#c62828", padding_mm=0.5),
+            TextElement(text="Out", color="#ffffff", outline_mm=0.3),
+            TextElement(text="White", color="#ffffff"),
+        ],
+    )
+    warnings = render(label, dpi=300, mono=True).warnings
+    assert warnings == [render_module.RenderWarning("no_contrast", {"n": 3})]
