@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "변수(카운터, 날짜, UUID)에 대한 아이디어, 코드는 포함되지 않음",
     "Waiting for the printer's answer…": "프린터의 응답을 기다리는 중…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "앱에서 마지막으로 선택한 절단, 색상, 품질, 추가 기능(연속 인쇄, 고해상도, 테이프 이송), 프린터 설정 대신 프린터 모델의 기본값으로 인쇄; 주소와 안전 여백은 유지",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "이 설정이 있는 감열 프린터의 인쇄 방식: printer(프린터에 설정된 대로), transfer(리본 사용) 또는 direct(직접 감열, 리본 없음). 기본값은 앱에서 선택한 방식이며 --printer-defaults를 써도 같습니다",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: 이 프린터 모델에는 인쇄 방식 설정이 없습니다: %s",
+    "Print method set on the printer": "프린터에 설정된 인쇄 방식",
+    "Print method": "인쇄 방식",
+    "Thermal transfer (ribbon)": "열전사(리본)",
+    "Thermal direct": "직접 감열",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "프린터가 리본을 찾지 못합니다. 리본을 끼우고 다시 시도하십시오. 리본 없이 인쇄하는 라벨은 “%(method)s”에서 “%(direct)s”을(를) 선택해야 합니다.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "리본이 끼워져 있지만 프린터가 리본 없이 인쇄합니다(직접 감열). 리본이 필요한 라벨은 “%(method)s”에서 “%(transfer)s”을(를) 선택하거나 리본을 빼십시오.",
 }

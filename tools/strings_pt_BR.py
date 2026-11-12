@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ideias para as variáveis (contador, data, UUID), sem código",
     "Waiting for the printer's answer…": "Aguardando a resposta da impressora…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "imprimir com os padrões do modelo de impressora em vez do corte, cores, qualidade, extras (impressão em cadeia, alta resolução, avanço da fita) e configurações da impressora escolhidos por último no aplicativo; o endereço e a margem de segurança permanecem",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "método de impressão de uma impressora térmica que tenha essa configuração: printer (conforme configurado na impressora), transfer (com fita) ou direct (térmica direta, sem fita); por padrão o escolhido no aplicativo, também com --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: este modelo de impressora não tem configuração de método de impressão: %s",
+    "Print method set on the printer": "Método de impressão configurado na impressora",
+    "Print method": "Método de impressão",
+    "Thermal transfer (ribbon)": "Transferência térmica (fita)",
+    "Thermal direct": "Térmica direta",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "A impressora não encontra fita. Coloque uma fita e tente de novo. Etiquetas que imprimem sem fita precisam de “%(direct)s” em “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Há uma fita colocada, mas a impressora imprime sem ela (térmica direta). Para etiquetas que precisam da fita, escolha “%(transfer)s” em “%(method)s”, ou retire a fita.",
 }

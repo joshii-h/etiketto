@@ -3,15 +3,21 @@ JScript on TCP port 9100 or USB (see docs/cab.md).
 
 JScript is cab's own, publicly documented printer language ("JScript
 Programming Manual"). A job downloads the rendered label as a PNG in base 64
-and places it on a die-cut label of the given size; the printer's own setup
-(print method, heat, speed, tear-off position) stays in charge. Status comes
-from the ESC commands, which the printer answers on the same connection.
+and places it on a die-cut label of the given size. The print method
+(thermal transfer with a ribbon, or thermal direct) is the printer's own
+setting unless the "method" setting chooses one for each job; heat and
+tear-off position stay as set on the printer. Status comes from the ESC
+commands, which the printer answers on the same connection; the setup of
+the web interface, if it answers, tells the print method and speed set on
+the printer.
 """
 
 from __future__ import annotations
 
 import base64
+import http.client
 import io
+import json
 import math
 import re
 import socket
@@ -25,6 +31,7 @@ from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     Capabilities,
+    Choice,
     FoundPrinter,
     HeadOpen,
     LabelNotFound,
@@ -40,7 +47,8 @@ from etiketto.backends.base import (
     PrintResult,
     ProgressCallback,
     Raster,
-    RibbonError,
+    RibbonInDirectMode,
+    RibbonOut,
     check_width,
     map_error,
     open_session,
@@ -70,6 +78,20 @@ DEFAULT_DOTS_PER_MM = DOTS_PER_MM[300]
 # reports "106 mm", but the printer refuses S ...,106 as a syntax error
 MAX_WIDTH_MM = 105.6
 
+# the "method" setting: as set on the printer (no H command), thermal
+# transfer with a ribbon (H ...,T) or thermal direct (H ...,D); the first is
+# the default
+METHODS = ("printer", "transfer", "direct")
+METHOD_CODES = {"transfer": "T", "direct": "D"}
+# H needs a speed. Sent as set on the printer if its web interface tells it,
+# else this one: the default of cab's setup, and the slower the cleaner the
+# print (docs/cab.md)
+DEFAULT_SPEED = 50  # mm/s
+WEB_PORT = 80
+WEB_TIMEOUT = 2.0  # seconds for the web interface's setup, an optional hint
+SETUP_PATH = "/cgi-bin/get?cmd=1"  # the setup as JSON, read without a password
+MAX_SETUP_BYTES = 1 << 20
+
 # common die-cut sizes (width × height); the first one is the default
 LABEL_SIZES = (
     LabelSize(50, 25),
@@ -86,8 +108,8 @@ STATUS_ERRORS: dict[str, tuple[type[PrinterError], str]] = {
     "P": (OutOfLabels, "out of paper"),
     "D": (HeadOpen, "printhead or pinch roller open"),
     "E": (LabelNotFound, "synchronization error (no label found)"),
-    "F": (RibbonError, "out of ribbon"),
-    "R": (RibbonError, "ribbon detected in thermal direct mode"),
+    "F": (RibbonOut, "out of ribbon"),
+    "R": (RibbonInDirectMode, "ribbon detected in thermal direct mode"),
     "B": (PrinterError, "protocol error / invalid barcode data"),
     "H": (PrinterError, "heating voltage problem"),
     "O": (PrinterError, "out of memory"),
@@ -183,6 +205,80 @@ def parse_version(raw: str) -> Version:
     return Version(firmware=match.group(1), model=match.group(2))
 
 
+@dataclass(frozen=True)
+class Setup:
+    """What the web interface's setup tells: the print method set on the
+    printer ("transfer", "direct", "" = unknown) and its print speed."""
+
+    method: str = ""
+    speed: int | None = None  # mm/s
+
+
+def parse_setup(data: bytes | None) -> Setup:
+    """The setup tree of /cgi-bin/get?cmd=1 (firmware 5.47); anything else
+    tells nothing. The shown texts depend on the printer's language: the
+    choice is read by its position in the list of values."""
+    try:
+        tree = json.loads(data or b"")
+    except ValueError:
+        return Setup()
+    editors = dict(_editors(tree))
+    method = {"true": "transfer", "false": "direct"}.get(
+        _selected(editors.get("ID_TRANSFER_PRINT"), "options") or "", ""
+    )
+    speed = None
+    match = re.fullmatch(r"(\d+) ?mm/s", str(_selected(editors.get("ID_PRINT_SPEED"), "list")))
+    if match:
+        speed = int(match.group(1))
+    return Setup(method, speed)
+
+
+def _editors(node, depth: int = 0):
+    """(id, editor) of every entry of the setup tree."""
+    if not isinstance(node, dict) or depth > 20:
+        return
+    if isinstance(node.get("editor"), dict):
+        yield node.get("id"), node["editor"]
+    for child in node.get("submenu") or ():
+        yield from _editors(child, depth + 1)
+
+
+def _selected(editor, shown: str) -> str | None:
+    """The value of a radio button or list: the one at the position of the
+    selected text."""
+    if not isinstance(editor, dict):
+        return None
+    texts, values = editor.get(shown), editor.get("values")
+    selection = editor.get("selection")
+    if not isinstance(texts, list) or not isinstance(values, list) or selection not in texts:
+        return None
+    index = texts.index(selection)
+    return str(values[index]) if index < len(values) else None
+
+
+def _fetch_setup(host: str) -> bytes | None:
+    """The setup tree from the printer's web interface; None on USB or if
+    it does not answer (switched off, behind a password). Replaced in tests."""
+    if usb.is_usb(host):
+        return None
+    try:
+        connection = http.client.HTTPConnection(
+            mdns.resolve_host(host), WEB_PORT, timeout=WEB_TIMEOUT
+        )
+        try:
+            connection.request("GET", SETUP_PATH)
+            response = connection.getresponse()
+            return response.read(MAX_SETUP_BYTES) if response.status == 200 else None
+        finally:
+            connection.close()
+    except Exception:  # noqa: BLE001 - only a hint: any failure tells nothing
+        return None
+
+
+def web_setup(host: str) -> Setup:
+    return parse_setup(_fetch_setup(host))
+
+
 # --- the job --------------------------------------------------------------------
 
 
@@ -196,11 +292,20 @@ def encode_png(image: Image.Image) -> bytes:
     return buf.getvalue()
 
 
-def build_job(image: Image.Image, dots_per_mm: float, gap_mm: float, copies: int) -> bytes:
+def build_job(
+    image: Image.Image,
+    dots_per_mm: float,
+    gap_mm: float,
+    copies: int,
+    method: str = "printer",
+    speed: int = DEFAULT_SPEED,
+) -> bytes:
     """Download the image and print it on die-cut labels of its size.
 
     The image is in printer orientation: x across the print head, y along the
-    feed, one pixel per dot."""
+    feed, one pixel per dot. A print method other than "printer" is sent
+    with the speed (H needs one) and heat 0, which adds nothing to the heat
+    set on the printer."""
     width = image.width / dots_per_mm
     height = image.height / dots_per_mm
     data = base64.b64encode(encode_png(image))
@@ -211,6 +316,10 @@ def build_job(image: Image.Image, dots_per_mm: float, gap_mm: float, copies: int
         b"</BASE64>",
         b"m m",
         b"J",
+    ]
+    if method in METHOD_CODES:
+        lines.append(("H %d,0,%s" % (speed, METHOD_CODES[method])).encode())
+    lines += [
         # l1: die-cut labels, the gap sensor finds each one
         ("S l1;0,0,%s,%s,%s" % (_mm(height), _mm(height + gap_mm), _mm(width))).encode(),
         ("I:Label;0,0,0;%s" % IMAGE_NAME).encode(),
@@ -299,6 +408,7 @@ class Cab(Backend):
         label_sizes=LABEL_SIZES,
         max_width_mm=MAX_WIDTH_MM,
         data_formats=("png",),
+        settings=(Choice("method", METHODS),),
     )
 
     def __init__(self, port: int = DEFAULT_PORT):
@@ -322,6 +432,8 @@ class Cab(Backend):
         return plugged + mdns.browse("_pdl-datastream._tcp", _is_cab, timeout)
 
     def query(self, host: str) -> PrinterInfo:
+        """The status, model and label distance; the print method set on the
+        printer if its web interface tells it."""
         with session(host, self.port) as s:
             status = s.status()
             try:
@@ -344,6 +456,7 @@ class Cab(Backend):
             firmware=version.firmware,
             pitch_mm=pitch,
             dpi=dpi_for(self.dots_per_mm),
+            print_method=web_setup(host).method,
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
@@ -373,6 +486,9 @@ class Cab(Backend):
         rendered = float(image.info.get("dots_per_mm", self.dots_per_mm))
         check_width(image.width / rendered, self.capabilities)
         copies = max(1, options.copies)
+        method = str(self.setting(options, "method"))
+        # H needs a speed: the printer's own, if its web interface tells it
+        speed = (web_setup(host).speed if method in METHOD_CODES else None) or DEFAULT_SPEED
         with session(host, self.port, usb.PRINT_WAIT) as s:
             report_progress(progress, 1, copies)
             # the printer may not have been asked yet (switched on later)
@@ -381,7 +497,7 @@ class Cab(Backend):
             self.dots_per_mm = dots
             if not math.isclose(dots, rendered):
                 image = _rescale(image, dots / rendered)
-            job = build_job(image, dots, options.gap_mm, copies)
+            job = build_job(image, dots, options.gap_mm, copies, method, speed)
             _wait_idle(s)
             try:
                 # a job cut off while sending would leave a partial image

@@ -271,6 +271,10 @@ etiketto --version
   and the printer settings. `--printer-defaults` takes the model's
   defaults for these instead; the printer's address and the
   [[ui:Safety margin]] stay as set in the app.
+- `--print-method printer|transfer|direct` sets the
+  [[ui:Print method]] of a thermal printer that has it for this print
+  (as set on the printer, with a ribbon, thermal direct), also with
+  `--printer-defaults`.
 - Some printers are asked before the label is drawn, because it depends
   on what they report (the tape, the resolution); a printer that does not
   answer within 5 s (2 s for `--dry-run`) gets the label drawn without.

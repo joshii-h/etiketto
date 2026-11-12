@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ötletek a változókhoz (számláló, dátum, UUID), kód nélkül",
     "Waiting for the printer's answer…": "Várakozás a nyomtató válaszára…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "nyomtatás a nyomtatótípus alapértékeivel az alkalmazásban legutóbb választott vágás, színek, minőség, extrák (láncnyomtatás, nagy felbontás, szalagelőtolás) és nyomtatóbeállítások helyett; a cím és a biztonsági margó marad",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "a beállítással rendelkező hőnyomtató nyomtatási módja: printer (ahogy a nyomtatón be van állítva), transfer (festékszalaggal) vagy direct (direkt termál, festékszalag nélkül); alapértelmezés szerint az alkalmazásban választott, --printer-defaults mellett is",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: ennek a nyomtatótípusnak nincs nyomtatási mód beállítása: %s",
+    "Print method set on the printer": "A nyomtatón beállított nyomtatási mód",
+    "Print method": "Nyomtatási mód",
+    "Thermal transfer (ribbon)": "Hőtranszfer (festékszalag)",
+    "Thermal direct": "Direkt termál",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "A nyomtató nem talál festékszalagot. Helyezzen be festékszalagot, és próbálja újra. A festékszalag nélkül nyomtatott címkékhez a(z) „%(method)s” beállításnál „%(direct)s” kell.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Festékszalag van behelyezve, de a nyomtató nélküle nyomtat (direkt termál). A festékszalagot igénylő címkékhez válassza a(z) „%(method)s” beállításnál ezt: „%(transfer)s”, vagy vegye ki a festékszalagot.",
 }

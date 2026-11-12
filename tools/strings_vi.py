@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ý tưởng cho các biến (bộ đếm, ngày, UUID), không dùng mã",
     "Waiting for the printer's answer…": "Đang chờ máy in trả lời…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "in với giá trị mặc định của kiểu máy in thay vì kiểu cắt, màu, chất lượng, tùy chọn thêm (in nối tiếp, độ phân giải cao, nạp băng) và cài đặt máy in đã chọn lần cuối trong ứng dụng; địa chỉ và lề an toàn được giữ nguyên",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "phương thức in của máy in nhiệt có cài đặt này: printer (theo cài đặt trên máy in), transfer (dùng ruy băng) hoặc direct (in nhiệt trực tiếp, không ruy băng); mặc định là phương thức đã chọn trong ứng dụng, kể cả với --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: mẫu máy in này không có cài đặt phương thức in: %s",
+    "Print method set on the printer": "Phương thức in đặt trên máy in",
+    "Print method": "Phương thức in",
+    "Thermal transfer (ribbon)": "In truyền nhiệt (ruy băng)",
+    "Thermal direct": "In nhiệt trực tiếp",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Máy in không tìm thấy ruy băng. Hãy lắp ruy băng rồi thử lại. Nhãn in không cần ruy băng cần chọn “%(direct)s” trong “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Đã lắp ruy băng nhưng máy in đang in không dùng ruy băng (in nhiệt trực tiếp). Với nhãn cần ruy băng, hãy chọn “%(transfer)s” trong “%(method)s”, hoặc tháo ruy băng ra.",
 }

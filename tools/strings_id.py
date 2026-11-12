@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ide untuk variabel (penghitung, tanggal, UUID), tanpa kode",
     "Waiting for the printer's answer…": "Menunggu jawaban printer…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "cetak dengan bawaan model printer, bukan potongan, warna, kualitas, tambahan (cetak berantai, resolusi tinggi, umpan pita), dan pengaturan printer yang terakhir dipilih di aplikasi; alamat dan margin aman tetap",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metode cetak printer termal yang memiliki pengaturan ini: printer (sesuai pengaturan printer), transfer (dengan pita) atau direct (termal langsung, tanpa pita); secara bawaan metode yang dipilih di aplikasi, juga dengan --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: model printer ini tidak memiliki pengaturan metode cetak: %s",
+    "Print method set on the printer": "Metode cetak yang diatur pada printer",
+    "Print method": "Metode cetak",
+    "Thermal transfer (ribbon)": "Transfer termal (pita)",
+    "Thermal direct": "Termal langsung",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Printer tidak menemukan pita. Pasang pita lalu coba lagi. Label yang dicetak tanpa pita memerlukan “%(direct)s” di “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Pita terpasang, tetapi printer mencetak tanpa pita (termal langsung). Untuk label yang memerlukan pita, pilih “%(transfer)s” di “%(method)s”, atau lepaskan pitanya.",
 }

@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Idéer till variablerna (räknare, datum, UUID), ingen kod",
     "Waiting for the printer's answer…": "Väntar på skrivarens svar…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "skriv ut med skrivarmodellens standardvärden i stället för den skärning, de färger, den kvalitet, de tillägg (kedjeutskrift, hög upplösning, tejpmatning) och de skrivarinställningar som senast valdes i appen; adressen och säkerhetsmarginalen behålls",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "utskriftsmetod för en termoskrivare som har inställningen: printer (som inställt på skrivaren), transfer (med färgband) eller direct (direkttermisk, utan färgband); som standard den som valts i appen, även med --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: den här skrivarmodellen har ingen inställning för utskriftsmetod: %s",
+    "Print method set on the printer": "Utskriftsmetod inställd på skrivaren",
+    "Print method": "Utskriftsmetod",
+    "Thermal transfer (ribbon)": "Termotransfer (färgband)",
+    "Thermal direct": "Direkttermisk",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Skrivaren hittar inget färgband. Lägg i ett färgband och försök igen. Etiketter som skrivs ut utan färgband behöver ”%(direct)s” under ”%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Ett färgband är ilagt, men skrivaren skriver ut utan det (direkttermisk). För etiketter som behöver färgbandet väljer du ”%(transfer)s” under ”%(method)s”, eller tar ut färgbandet.",
 }

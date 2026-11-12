@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ideas para las variables (contador, fecha, UUID), sin código",
     "Waiting for the printer's answer…": "Esperando la respuesta de la impresora…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "imprimir con los valores predeterminados del modelo de impresora en lugar del corte, los colores, la calidad, los extras (impresión en cadena, alta resolución, avance de cinta) y los ajustes de impresora elegidos por última vez en la aplicación; la dirección y el margen de seguridad se mantienen",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "método de impresión de una impresora térmica que tenga este ajuste: printer (según la configuración de la impresora), transfer (con cinta) o direct (térmica directa, sin cinta); por defecto el elegido en la aplicación, también con --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: este modelo de impresora no tiene ajuste de método de impresión: %s",
+    "Print method set on the printer": "Método de impresión configurado en la impresora",
+    "Print method": "Método de impresión",
+    "Thermal transfer (ribbon)": "Transferencia térmica (cinta)",
+    "Thermal direct": "Térmica directa",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "La impresora no encuentra la cinta. Coloque una cinta y vuelva a intentarlo. Las etiquetas que se imprimen sin cinta necesitan «%(direct)s» en «%(method)s».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Hay una cinta colocada, pero la impresora imprime sin ella (térmica directa). Para etiquetas que necesitan la cinta, elija «%(transfer)s» en «%(method)s», o quite la cinta.",
 }

@@ -22,6 +22,7 @@ from etiketto.backends import register, unregister
 from etiketto.backends.base import (
     FoundPrinter,
     PaperJam,
+    PrinterInfo,
     PrinterTimeout,
     PrintOptions,
     PrintResult,
@@ -1179,3 +1180,60 @@ def test_dry_run_output_is_the_windows_export(mono, label_file, tmp_path):
         assert round(png.info["dpi"][0]) == round(dpi)
         if mono.capabilities.continuous:
             assert png.height == round(label.tape_mm / 25.4 * dpi)
+
+
+# --- print method (thermal printers) ---------------------------------------------------
+
+
+@pytest.fixture
+def cab_cli(monkeypatch, mono, tmp_path):
+    """The cab backend with faked query and print; a 50 × 25 mm label for it,
+    the app's choice "thermal direct" in settings.json."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("cab")
+    printed: list = []
+    info = PrinterInfo("EOS2/300", None, None, None, "IDLE", dpi=304.8)
+    monkeypatch.setattr(backend, "query", lambda host: info)
+    monkeypatch.setattr(
+        backend,
+        "print_label",
+        lambda image, host, options, progress=None: printed.append(options),
+    )
+    Settings({"printers": {"cab": {"host": "h", "method": "direct"}}}).save()
+    label = Label(printer="cab", auto_length=False, orientation="across")
+    label.set_media_size(50, 25)
+    label.elements = [TextElement(text="x")]
+    path = tmp_path / "cab.etiketto"
+    label.save(path)
+    return SimpleNamespace(path=path, printed=printed)
+
+
+@pytest.mark.parametrize(
+    "flags, settings",
+    [
+        ([], {"method": "direct"}),  # as chosen in the app
+        (["--print-method", "transfer"], {"method": "transfer"}),
+        (["--print-method", "printer"], {"method": "printer"}),
+        (["--printer-defaults"], {}),  # the default: as set on the printer
+        (["--printer-defaults", "--print-method", "transfer"], {"method": "transfer"}),
+        (["--no-query", "--print-method", "transfer"], {"method": "transfer"}),
+        (["--no-query", "--printer-defaults"], {}),
+    ],
+)
+def test_print_method_on_the_command_line(cab_cli, flags, settings):
+    assert run("print", cab_cli.path, *flags) == 0
+    (options,) = cab_cli.printed
+    assert dict(options.settings) == settings
+
+
+def test_print_method_only_for_printers_that_have_it(mono, label_file, capsys):
+    path = label_file(TextElement(text="x"))
+    assert run("print", path, "--host", "h", "--print-method", "direct") == cli.EXIT_USAGE
+    assert "has no print method setting: fake-mono" in err(capsys)
+    assert mono.prepared == []
+
+
+def test_print_method_must_be_one_of_the_choices(capsys):
+    assert cli.main(["print", "x.etiketto", "--print-method", "ribbon"]) == cli.EXIT_USAGE
+    assert "invalid choice" in err(capsys)

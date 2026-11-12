@@ -252,6 +252,9 @@ class PrinterInfo:
     # the id of another backend that fits the loaded media (e.g. die-cut
     # labels loaded while the label is for continuous rolls); "" = none
     media_backend: str = ""
+    # thermal printers: the print method set on the printer, "transfer"
+    # (with a ribbon) or "direct"; "" = unknown
+    print_method: str = ""
 
 
 # --- a print job ------------------------------------------------------------
@@ -414,6 +417,18 @@ class LabelNotFound(PrinterError):
 
 class RibbonError(PrinterError):
     code = "ribbon"
+
+
+class RibbonOut(RibbonError):
+    """No ribbon (used up or not loaded) where the printer prints with one."""
+
+    code = "ribbon_out"
+
+
+class RibbonInDirectMode(RibbonError):
+    """A ribbon is loaded, but the printer prints without one (thermal direct)."""
+
+    code = "ribbon_direct"
 
 
 class PrinterPaused(PrinterError):

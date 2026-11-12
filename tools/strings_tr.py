@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Değişkenler için fikirler (sayaç, tarih, UUID), kod içermez",
     "Waiting for the printer's answer…": "Yazıcının yanıtı bekleniyor…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "uygulamada en son seçilen kesim, renkler, kalite, ekler (zincirleme baskı, yüksek çözünürlük, bant besleme) ve yazıcı ayarları yerine yazıcı modelinin varsayılanlarıyla yazdır; adres ve güvenlik payı kalır",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "bu ayara sahip bir termal yazıcının yazdırma yöntemi: printer (yazıcıda ayarlandığı gibi), transfer (ribonlu) veya direct (doğrudan termal, ribonsuz); varsayılan olarak uygulamada seçilen, --printer-defaults ile de",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: bu yazıcı modelinin yazdırma yöntemi ayarı yok: %s",
+    "Print method set on the printer": "Yazıcıda ayarlanan yazdırma yöntemi",
+    "Print method": "Yazdırma yöntemi",
+    "Thermal transfer (ribbon)": "Termal transfer (ribon)",
+    "Thermal direct": "Doğrudan termal",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Yazıcı ribon bulamıyor. Bir ribon takın ve yeniden deneyin. Ribonsuz yazdırılan etiketler için “%(method)s” altında “%(direct)s” gerekir.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Ribon takılı, ancak yazıcı onsuz yazdırıyor (doğrudan termal). Ribon gerektiren etiketler için “%(method)s” altında “%(transfer)s” seçin veya ribonu çıkarın.",
 }

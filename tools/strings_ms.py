@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Idea untuk pemboleh ubah (pembilang, tarikh, UUID), tanpa kod",
     "Waiting for the printer's answer…": "Menunggu jawapan pencetak…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "cetak dengan lalai model pencetak, bukan potongan, warna, kualiti, tambahan (cetakan berantai, resolusi tinggi, suapan pita) dan tetapan pencetak yang terakhir dipilih dalam aplikasi; alamat dan jidar keselamatan kekal",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "kaedah cetakan pencetak terma yang mempunyai tetapan ini: printer (seperti ditetapkan pada pencetak), transfer (dengan reben) atau direct (terma terus, tanpa reben); secara lalai kaedah yang dipilih dalam aplikasi, juga dengan --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: model pencetak ini tiada tetapan kaedah cetakan: %s",
+    "Print method set on the printer": "Kaedah cetakan yang ditetapkan pada pencetak",
+    "Print method": "Kaedah cetakan",
+    "Thermal transfer (ribbon)": "Pindahan terma (reben)",
+    "Thermal direct": "Terma terus",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Pencetak tidak menemui reben. Masukkan reben dan cuba lagi. Label yang dicetak tanpa reben memerlukan “%(direct)s” di bawah “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Reben dimasukkan, tetapi pencetak mencetak tanpanya (terma terus). Untuk label yang memerlukan reben, pilih “%(transfer)s” di bawah “%(method)s”, atau keluarkan reben.",
 }

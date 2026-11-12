@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ідеї для змінних (лічильник, дата, UUID), без коду",
     "Waiting for the printer's answer…": "Очікування відповіді принтера…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "друкувати з типовими значеннями моделі принтера замість обрізання, кольорів, якості, додатків (ланцюговий друк, висока роздільна здатність, подача стрічки) та налаштувань принтера, востаннє вибраних у застосунку; адреса і безпечне поле лишаються",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "спосіб друку термопринтера, який має це налаштування: printer (як налаштовано на принтері), transfer (зі стрічкою) або direct (прямий термодрук, без стрічки); за замовчуванням вибраний у застосунку, також із --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: ця модель принтера не має налаштування способу друку: %s",
+    "Print method set on the printer": "Спосіб друку, заданий на принтері",
+    "Print method": "Спосіб друку",
+    "Thermal transfer (ribbon)": "Термотрансферний (стрічка)",
+    "Thermal direct": "Прямий термодрук",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Принтер не знаходить стрічку. Вставте стрічку й повторіть спробу. Для етикеток, які друкуються без стрічки, виберіть «%(direct)s» у розділі «%(method)s».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Стрічку вставлено, але принтер друкує без неї (прямий термодрук). Для етикеток, яким потрібна стрічка, виберіть «%(transfer)s» у розділі «%(method)s» або вийміть стрічку.",
 }

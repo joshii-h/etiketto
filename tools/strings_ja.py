@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "変数（カウンター、日付、UUID）のアイデア。コードは含まれていません",
     "Waiting for the printer's answer…": "プリンターの応答を待っています…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "アプリで最後に選んだカット、色、品質、追加設定（チェーン印刷、高解像度、テープ送り）、プリンター設定ではなく、プリンター機種の既定値で印刷する。アドレスと安全マージンはそのまま",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "この設定があるサーマルプリンターの印刷方式: printer（プリンターの設定どおり）、transfer（リボンを使う）、direct（ダイレクトサーマル、リボンなし）。既定はアプリで選んだ方式で、--printer-defaults でも同じです",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: このプリンター機種には印刷方式の設定がありません: %s",
+    "Print method set on the printer": "プリンターで設定した印刷方式",
+    "Print method": "印刷方式",
+    "Thermal transfer (ribbon)": "熱転写（リボン）",
+    "Thermal direct": "ダイレクトサーマル",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "プリンターがリボンを検出できません。リボンをセットして、もう一度お試しください。リボンなしで印刷するラベルには「%(method)s」で「%(direct)s」を選んでください。",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "リボンがセットされていますが、プリンターはリボンなしで印刷しています（ダイレクトサーマル）。リボンが必要なラベルには「%(method)s」で「%(transfer)s」を選ぶか、リボンを取り外してください。",
 }

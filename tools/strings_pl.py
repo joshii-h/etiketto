@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Pomysły na zmienne (licznik, data, UUID), bez kodu",
     "Waiting for the printer's answer…": "Oczekiwanie na odpowiedź drukarki…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "drukuj z ustawieniami domyślnymi modelu drukarki zamiast cięcia, kolorów, jakości, dodatków (druk łańcuchowy, wysoka rozdzielczość, posuw taśmy) i ustawień drukarki wybranych ostatnio w aplikacji; adres i margines bezpieczeństwa pozostają",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metoda druku drukarki termicznej, która ma to ustawienie: printer (jak ustawiono w drukarce), transfer (z taśmą barwiącą) lub direct (termiczny bezpośredni, bez taśmy); domyślnie wybrana w aplikacji, także z --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: ten model drukarki nie ma ustawienia metody druku: %s",
+    "Print method set on the printer": "Metoda druku ustawiona w drukarce",
+    "Print method": "Metoda druku",
+    "Thermal transfer (ribbon)": "Termotransfer (taśma barwiąca)",
+    "Thermal direct": "Termiczny bezpośredni",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Drukarka nie znajduje taśmy barwiącej. Załóż taśmę i spróbuj ponownie. Etykiety drukowane bez taśmy wymagają opcji „%(direct)s” w „%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Taśma barwiąca jest założona, ale drukarka drukuje bez niej (termiczny bezpośredni). Dla etykiet wymagających taśmy wybierz „%(transfer)s” w „%(method)s” albo wyjmij taśmę.",
 }

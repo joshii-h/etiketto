@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ideen für die Variablen (Zähler, Datum, UUID), kein Code",
     "Waiting for the printer's answer…": "Warten auf die Antwort des Druckers …",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "mit den Standardwerten des Druckermodells drucken statt mit Schnitt, Farben, Qualität, Extras (Kettendruck, hohe Auflösung, Bandvorschub) und Druckereinstellungen, die zuletzt in der App gewählt wurden; Adresse und Sicherheitsabstand bleiben",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "Druckverfahren eines Thermodruckers, der diese Einstellung hat: printer (wie am Drucker eingestellt), transfer (mit Farbband) oder direct (Thermodirekt, ohne Farbband); standardmässig das in der App gewählte, auch mit --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: Dieses Druckermodell hat keine Einstellung für das Druckverfahren: %s",
+    "Print method set on the printer": "Am Drucker eingestelltes Druckverfahren",
+    "Print method": "Druckverfahren",
+    "Thermal transfer (ribbon)": "Thermotransfer (Farbband)",
+    "Thermal direct": "Thermodirekt",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Der Drucker findet kein Farbband. Legen Sie ein Farbband ein und versuchen Sie es erneut. Etiketten, die ohne Farbband drucken, brauchen „%(direct)s“ unter „%(method)s“.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Ein Farbband ist eingelegt, aber der Drucker druckt ohne (Thermodirekt). Für Etiketten, die das Farbband brauchen, wählen Sie „%(transfer)s“ unter „%(method)s“, oder nehmen Sie das Farbband heraus.",
 }

@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ideed muutujate jaoks (loendur, kuupäev, UUID), koodi ei kasutata",
     "Waiting for the printer's answer…": "Ootan printeri vastust…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "prindi printerimudeli vaikeväärtustega, mitte rakenduses viimati valitud lõike, värvide, kvaliteedi, lisade (ahelprint, kõrge eraldusvõime, lindi etteanne) ja printeriseadetega; aadress ja ohutusvaru jäävad",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "termoprinteri prindimeetod, kui printeril on see seadistus: printer (nagu printeris seadistatud), transfer (värvilindiga) või direct (otsetermo, ilma värvilindita); vaikimisi rakenduses valitud meetod, ka koos --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: sellel printerimudelil pole prindimeetodi seadistust: %s",
+    "Print method set on the printer": "Printeris seatud prindimeetod",
+    "Print method": "Prindimeetod",
+    "Thermal transfer (ribbon)": "Termosiire (värvilint)",
+    "Thermal direct": "Otsetermo",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Printer ei leia värvilinti. Paigalda värvilint ja proovi uuesti. Ilma värvilindita prinditavad sildid vajavad jaotises „%(method)s“ valikut „%(direct)s“.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Värvilint on paigaldatud, kuid printer prindib ilma selleta (otsetermo). Värvilinti vajavate siltide jaoks vali jaotises „%(method)s“ valik „%(transfer)s“ või eemalda värvilint.",
 }

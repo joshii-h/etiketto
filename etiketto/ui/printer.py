@@ -433,6 +433,11 @@ class Printer:
             (_("Firmware"), info.firmware),
             self._media_row(info),
             (_("Label distance"), unit.format(info.pitch_mm) if info.pitch_mm else ""),
+            # Etiketto's own choice (the printer setting) may differ for a job
+            (
+                _("Print method set on the printer"),
+                choice_name(info.print_method) if info.print_method else "",
+            ),
             (_("Remaining tape"), self._remaining_text(info) or ""),
         ]
 

@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Ideeën voor de variabelen (teller, datum, UUID), geen code",
     "Waiting for the printer's answer…": "Wachten op het antwoord van de printer…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "afdrukken met de standaardwaarden van het printermodel in plaats van de snijwijze, kleuren, kwaliteit, extra’s (kettingprint, hoge resolutie, tapetoevoer) en printerinstellingen die laatst in de app zijn gekozen; adres en veiligheidsmarge blijven",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "printmethode van een thermische printer die deze instelling heeft: printer (zoals ingesteld op de printer), transfer (met lint) of direct (direct thermisch, zonder lint); standaard de in de app gekozen methode, ook met --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: dit printermodel heeft geen instelling voor de printmethode: %s",
+    "Print method set on the printer": "Op de printer ingestelde printmethode",
+    "Print method": "Printmethode",
+    "Thermal transfer (ribbon)": "Thermisch transfer (lint)",
+    "Thermal direct": "Direct thermisch",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "De printer vindt geen lint. Plaats een lint en probeer het opnieuw. Etiketten die zonder lint printen, hebben „%(direct)s” nodig onder „%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Er is een lint geplaatst, maar de printer print zonder (direct thermisch). Kies voor etiketten die het lint nodig hebben „%(transfer)s” onder „%(method)s”, of verwijder het lint.",
 }

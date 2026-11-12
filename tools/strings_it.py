@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "Idee per le variabili (contatore, data, UUID), nessun codice",
     "Waiting for the printer's answer…": "In attesa della risposta della stampante…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "stampa con i valori predefiniti del modello di stampante invece di taglio, colori, qualità, extra (stampa a catena, alta risoluzione, avanzamento del nastro) e impostazioni scelti per ultimi nell’app; indirizzo e margine di sicurezza restano",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metodo di stampa di una stampante termica che ha questa impostazione: printer (come impostato sulla stampante), transfer (con nastro) o direct (termico diretto, senza nastro); per impostazione predefinita quello scelto nell’app, anche con --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: questo modello di stampante non ha un’impostazione del metodo di stampa: %s",
+    "Print method set on the printer": "Metodo di stampa impostato sulla stampante",
+    "Print method": "Metodo di stampa",
+    "Thermal transfer (ribbon)": "Trasferimento termico (nastro)",
+    "Thermal direct": "Termico diretto",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "La stampante non trova il nastro. Inserisci un nastro e riprova. Le etichette che si stampano senza nastro richiedono «%(direct)s» in «%(method)s».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "È inserito un nastro, ma la stampante stampa senza (termico diretto). Per le etichette che richiedono il nastro scegli «%(transfer)s» in «%(method)s», oppure togli il nastro.",
 }

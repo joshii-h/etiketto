@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "أفكار للمتغيرات (العدّاد والتاريخ وUUID)، دون شيفرة",
     "Waiting for the printer's answer…": "في انتظار رد الطابعة…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "اطبع بالإعدادات الافتراضية لطراز الطابعة بدلًا من القص والألوان والجودة والإضافات (الطباعة المتسلسلة والدقة العالية وتقديم الشريط) وإعدادات الطابعة المختارة آخر مرة في التطبيق؛ يبقى العنوان وهامش الأمان",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "طريقة الطباعة لطابعة حرارية تملك هذا الإعداد: printer (كما هو مضبوط في الطابعة) أو transfer (مع شريط الحبر) أو direct (حرارية مباشرة، بلا شريط)؛ افتراضيًا الطريقة المختارة في التطبيق، حتى مع --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: لا يملك طراز الطابعة هذا إعدادًا لطريقة الطباعة: %s",
+    "Print method set on the printer": "طريقة الطباعة المضبوطة على الطابعة",
+    "Print method": "طريقة الطباعة",
+    "Thermal transfer (ribbon)": "نقل حراري (شريط حبر)",
+    "Thermal direct": "حرارية مباشرة",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "لا تجد الطابعة شريط حبر. ركّب شريطًا وحاول مرة أخرى. الملصقات التي تُطبع بلا شريط تحتاج إلى «%(direct)s» في «%(method)s».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "شريط الحبر مركّب، لكن الطابعة تطبع بدونه (حرارية مباشرة). للملصقات التي تحتاج إلى الشريط اختر «%(transfer)s» في «%(method)s»، أو أزل الشريط.",
 }

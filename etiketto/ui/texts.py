@@ -75,6 +75,7 @@ SETTING_TITLES = {
     "density": _("Print density"),
     "speed": _("Speed"),
     "upside_down": _("Print upside down"),
+    "method": _("Print method"),
 }
 # their values by protocol name; resolutions are shown as "203 dpi"
 CHOICE_NAMES = {
@@ -87,6 +88,14 @@ CHOICE_NAMES = {
     "tear": _("Tear off"),
     "peel": _("Peel off"),
     "cut": _("Cut off"),
+    "transfer": _("Thermal transfer (ribbon)"),
+    "direct": _("Thermal direct"),
+}
+# the print method setting and its choices, named in the ribbon errors
+_METHOD_NAMES = {
+    "method": SETTING_TITLES["method"],
+    "transfer": CHOICE_NAMES["transfer"],
+    "direct": CHOICE_NAMES["direct"],
 }
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
@@ -401,6 +410,21 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "There is a problem with the ribbon. Check that it is inserted correctly and "
             "matches the print method set on the printer."
         ),
+        # translators: %(direct)s is the choice “Thermal direct”, %(method)s the
+        # setting “Print method”
+        "ribbon_out": _(
+            "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
+            "without one need “%(direct)s” under “%(method)s”."
+        )
+        % _METHOD_NAMES,
+        # translators: %(transfer)s is the choice “Thermal transfer (ribbon)”,
+        # %(method)s the setting “Print method”
+        "ribbon_direct": _(
+            "A ribbon is loaded, but the printer prints without it (thermal direct). For "
+            "labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or "
+            "remove the ribbon."
+        )
+        % _METHOD_NAMES,
         "paused": _("The printer is paused. Resume it on its display and try again."),
         "out_of_paper": _("The printer is out of paper. Load paper and try again."),
         "media_jam": _(

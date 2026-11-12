@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "变量（计数器、日期、UUID）的构思，不含其代码",
     "Waiting for the printer's answer…": "正在等待打印机的回应…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "使用打印机型号的默认值打印，而不是应用中最后选择的裁切、颜色、质量、附加功能（连续打印、高分辨率、走带）和打印机设置；地址和安全边距保留",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "带此设置的热敏打印机的打印方式：printer（按打印机上的设置）、transfer（使用碳带）或 direct（热敏直打，无碳带）；默认为应用中选择的方式，使用 --printer-defaults 时也是如此",
+    "--print-method: this printer model has no print method setting: %s": "--print-method：此打印机型号没有打印方式设置：%s",
+    "Print method set on the printer": "打印机上设置的打印方式",
+    "Print method": "打印方式",
+    "Thermal transfer (ribbon)": "热转印（碳带）",
+    "Thermal direct": "热敏直打",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "打印机找不到碳带。请装入碳带后重试。无需碳带打印的标签需要在“%(method)s”中选择“%(direct)s”。",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "已装入碳带，但打印机不使用碳带打印（热敏直打）。需要碳带的标签请在“%(method)s”中选择“%(transfer)s”，或取出碳带。",
 }

@@ -522,4 +522,12 @@ TRANSLATIONS = {
     "Ideas for the variables (counter, date, UUID), no code": "वेरिएबल के लिए विचार (काउंटर, तारीख़, UUID), कोई कोड नहीं",
     "Waiting for the printer's answer…": "प्रिंटर के उत्तर की प्रतीक्षा…",
     "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed) and printer settings last chosen in the app; the address and the safety margin stay": "ऐप में पिछली बार चुने गए कट, रंग, गुणवत्ता, अतिरिक्त विकल्पों (चेन प्रिंटिंग, उच्च रिज़ॉल्यूशन, टेप फ़ीड) और प्रिंटर सेटिंग की जगह प्रिंटर मॉडल की डिफ़ॉल्ट सेटिंग से प्रिंट करें; पता और सुरक्षा मार्जिन वही रहते हैं",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "इस सेटिंग वाले थर्मल प्रिंटर की प्रिंट विधि: printer (जैसा प्रिंटर पर सेट है), transfer (रिबन के साथ) या direct (डायरेक्ट थर्मल, बिना रिबन); डिफ़ॉल्ट रूप से ऐप में चुनी गई विधि, --printer-defaults के साथ भी",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: इस प्रिंटर मॉडल में प्रिंट विधि की सेटिंग नहीं है: %s",
+    "Print method set on the printer": "प्रिंटर पर सेट प्रिंट विधि",
+    "Print method": "प्रिंट विधि",
+    "Thermal transfer (ribbon)": "थर्मल ट्रांसफ़र (रिबन)",
+    "Thermal direct": "डायरेक्ट थर्मल",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "प्रिंटर को रिबन नहीं मिल रहा। रिबन लगाएँ और फिर से कोशिश करें। बिना रिबन के छपने वाले लेबल के लिए “%(method)s” में “%(direct)s” चाहिए।",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "रिबन लगा है, पर प्रिंटर उसके बिना प्रिंट करता है (डायरेक्ट थर्मल)। रिबन की ज़रूरत वाले लेबल के लिए “%(method)s” में “%(transfer)s” चुनें, या रिबन निकाल दें।",
 }
