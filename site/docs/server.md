@@ -20,6 +20,28 @@ etiketto serve --labels-dir ~/Labels
 - Stop with Ctrl+C: waiting jobs are canceled, a label being printed is
   finished and the counter saved.
 
+## Printers { #printers }
+
+- Name the printers in a file `printers.toml` and start the server with
+  `--printers printers.toml`. Programs then choose a printer by its name;
+  no other printer can be used.
+
+  ```toml
+  [printers.shipping]
+  backend = "cab"
+  host = "cab-shipping.example.com"
+  description = "Shipping labels"
+  location = "Warehouse, gate 2"
+  default = true
+  max_copies = 200
+  ```
+
+- `backend` is the printer model, `host` the printer's address.
+- Mistakes in the file are named when the server starts.
+- The list of printers shows each printer with its state.
+- The server searches the network for printers only when started with
+  `--discover`.
+
 ## Access token { #token }
 
 - Create a token and keep it secret:
@@ -36,6 +58,24 @@ etiketto serve --labels-dir ~/Labels
   For other computers, put a reverse proxy with HTTPS in front.
 - `--allow-printer` limits the printer addresses, for example
   `--allow-printer '*.local'`.
+
+## Access per device { #tokens }
+
+- Several devices or people get a token each, with a role:
+
+  ```sh
+  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml
+  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml
+  ```
+
+- The token is shown only once; the file keeps only a fingerprint (hash)
+  of it.
+- `preview` only lists and shows previews, `print` also prints and
+  follows its own jobs, `admin` sees and cancels all jobs.
+- `--printer shipping` limits a token to that printer, `--expires
+  2027-12-31` to a date.
+- To take a token back, delete its entry in `tokens.toml`. The server
+  notices it at once.
 
 ## Programs (REST API) { #api }
 
@@ -94,8 +134,9 @@ Claude Desktop, in `claude_desktop_config.json`:
 
 - As a service of your user: `packaging/systemd/etiketto.service`
   (instructions in the file).
-- As a container: `packaging/docker/Dockerfile` and `compose.yaml`. To
-  find printers on the network, the container needs the network of the
-  computer (`network_mode: host`).
+- As a container: `packaging/docker/compose.yaml`, for printers in the
+  network, with `printers.toml` and `tokens.toml` in the folder `config`.
+- To find printers on the network, or for USB, add `compose.host.yaml`:
+  `docker compose -f compose.yaml -f compose.host.yaml up -d`.
 - Technical details and security:
   [docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md).

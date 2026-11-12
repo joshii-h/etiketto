@@ -153,8 +153,10 @@ etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
-etiketto serve [--host ADDR] [--port N] [--token-file FILE] [--labels-dir DIR] [--mcp]
-etiketto mcp [--labels-dir DIR]
+etiketto serve [--host ADDR] [--port N] [--labels-dir DIR] [--mcp] [--discover]
+               [--printers FILE] [--tokens FILE | --token-file FILE]
+etiketto mcp [--labels-dir DIR] [--printers FILE]
+etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 etiketto --version | --help
 ```
 
@@ -201,10 +203,16 @@ etiketto serve --labels-dir ~/Labels --token-file ~/.config/etiketto/token --mcp
 claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
 ```
 
-Only label and data files inside the labels folder are used. The server
+Only label and data files inside the labels folder are used. Network
+printers come first: `--printers printers.toml` names the printers clients
+may use, by name (searching the network only with `--discover`), and
+`--tokens tokens.toml` gives each device or person its own access token
+with a role (preview, print, admin), made with `etiketto token new`; the
+file keeps only hashes, and deleting an entry revokes it. The server
 listens on 127.0.0.1 and refuses other addresses without an access token
-(`Authorization: Bearer`). A Dockerfile, a Compose file and a systemd user
-unit are in `packaging/`. Details, API reference and security notes:
+(`Authorization: Bearer`). A Dockerfile, Compose files (network printers;
+an override for the host's network, mDNS and USB) and a systemd user unit
+are in `packaging/`. Details, API reference and security notes:
 [docs/server.md](docs/server.md).
 
 ## How labels are laid out

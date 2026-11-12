@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:01+0100\n"
+"POT-Creation-Date: 2026-11-12 10:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -860,6 +860,55 @@ msgstr ""
 #. type: Title ##
 #: docs/server.md
 #, markdown-text, no-wrap
+msgid "Printers { #printers }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Name the printers in a file `printers.toml` and start the server with `--printers printers.toml`. Programs then choose a printer by its name; no other printer can be used."
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.shipping]\n"
+"  backend = \"cab\"\n"
+"  host = \"cab-shipping.example.com\"\n"
+"  description = \"Shipping labels\"\n"
+"  location = \"Warehouse, gate 2\"\n"
+"  default = true\n"
+"  max_copies = 200\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`backend` is the printer model, `host` the printer's address."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Mistakes in the file are named when the server starts."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The list of printers shows each printer with its state."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The server searches the network for printers only when started with `--discover`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
 msgid "Access token { #token }"
 msgstr ""
 
@@ -895,6 +944,50 @@ msgstr ""
 #: docs/server.md
 #, markdown-text
 msgid "`--allow-printer` limits the printer addresses, for example `--allow-printer '*.local'`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Access per device { #tokens }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Several devices or people get a token each, with a role:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
+"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The token is shown only once; the file keeps only a fingerprint (hash)  of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`preview` only lists and shows previews, `print` also prints and follows its own jobs, `admin` sees and cancels all jobs."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--printer shipping` limits a token to that printer, `--expires 2027-12-31` to a date."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To take a token back, delete its entry in `tokens.toml`. The server notices it at once."
 msgstr ""
 
 #. type: Title ##
@@ -1032,7 +1125,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "As a container: `packaging/docker/Dockerfile` and `compose.yaml`. To find printers on the network, the container needs the network of the computer (`network_mode: host`)."
+msgid "As a container: `packaging/docker/compose.yaml`, for printers in the network, with `printers.toml` and `tokens.toml` in the folder `config`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To find printers on the network, or for USB, add `compose.host.yaml`: `docker compose -f compose.yaml -f compose.host.yaml up -d`."
 msgstr ""
 
 #. type: Bullet: '- '

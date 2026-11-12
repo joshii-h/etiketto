@@ -1211,6 +1211,67 @@ msgstr ""
 #. type: Title ##
 #: docs/server.md
 #, no-wrap
+msgid "Printers { #printers }"
+msgstr "Drucker { #printers }"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"Name the printers in a file `printers.toml` and start the server with `--"
+"printers printers.toml`. Programs then choose a printer by its name; no "
+"other printer can be used."
+msgstr ""
+"Die Drucker in einer Datei `printers.toml` benennen und den Server mit "
+"`--printers printers.toml` starten. Programme wählen einen Drucker dann über "
+"seinen Namen; andere Drucker lassen sich nicht verwenden."
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.shipping]\n"
+"  backend = \"cab\"\n"
+"  host = \"cab-shipping.example.com\"\n"
+"  description = \"Shipping labels\"\n"
+"  location = \"Warehouse, gate 2\"\n"
+"  default = true\n"
+"  max_copies = 200\n"
+msgstr ""
+"  [printers.shipping]\n"
+"  backend = \"cab\"\n"
+"  host = \"cab-shipping.example.com\"\n"
+"  description = \"Shipping labels\"\n"
+"  location = \"Warehouse, gate 2\"\n"
+"  default = true\n"
+"  max_copies = 200\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "`backend` is the printer model, `host` the printer's address."
+msgstr "`backend` ist das Druckermodell, `host` die Adresse des Druckers."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Mistakes in the file are named when the server starts."
+msgstr "Fehler in der Datei werden beim Start des Servers genannt."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "The list of printers shows each printer with its state."
+msgstr "Die Druckerliste zeigt jeden Drucker mit seinem Zustand."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"The server searches the network for printers only when started with `--"
+"discover`."
+msgstr ""
+"Der Server sucht nur dann im Netzwerk nach Druckern, wenn er mit "
+"`--discover` gestartet wird."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
 msgid "Access token { #token }"
 msgstr "Zugangstoken { #token }"
 
@@ -1255,6 +1316,71 @@ msgid ""
 msgstr ""
 "`--allow-printer` beschränkt die Druckeradressen, zum Beispiel "
 "`--allow-printer '*.local'`."
+
+#. type: Title ##
+#: docs/server.md
+#, no-wrap
+msgid "Access per device { #tokens }"
+msgstr "Zugang pro Gerät { #tokens }"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid "Several devices or people get a token each, with a role:"
+msgstr "Mehrere Geräte oder Personen bekommen je ein Token mit einer Rolle:"
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, fuzzy, no-wrap
+#| msgid ""
+#| "  mkdir -p ~/.config/etiketto\n"
+#| "  openssl rand -hex 32 > ~/.config/etiketto/token\n"
+#| "  chmod 600 ~/.config/etiketto/token\n"
+#| "  etiketto serve --token-file ~/.config/etiketto/token\n"
+msgid ""
+"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
+"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
+msgstr ""
+"  mkdir -p ~/.config/etiketto\n"
+"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
+"  chmod 600 ~/.config/etiketto/token\n"
+"  etiketto serve --token-file ~/.config/etiketto/token\n"
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"The token is shown only once; the file keeps only a fingerprint (hash)  of "
+"it."
+msgstr ""
+"Das Token wird nur einmal gezeigt; die Datei speichert nur einen "
+"Fingerabdruck (Hash) davon."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`preview` only lists and shows previews, `print` also prints and follows its "
+"own jobs, `admin` sees and cancels all jobs."
+msgstr ""
+"`preview` listet nur auf und zeigt Vorschauen, `print` druckt auch und "
+"verfolgt seine eigenen Aufträge, `admin` sieht alle Aufträge und kann sie "
+"abbrechen."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"`--printer shipping` limits a token to that printer, `--expires 2027-12-31` "
+"to a date."
+msgstr ""
+"`--printer shipping` beschränkt ein Token auf diesen Drucker, `--expires "
+"2027-12-31` auf ein Datum."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"To take a token back, delete its entry in `tokens.toml`. The server notices "
+"it at once."
+msgstr ""
+"Um ein Token zurückzuziehen, seinen Eintrag in `tokens.toml` löschen. Der "
+"Server bemerkt das sofort."
 
 #. type: Title ##
 #: docs/server.md
@@ -1423,13 +1549,20 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 msgid ""
-"As a container: `packaging/docker/Dockerfile` and `compose.yaml`. To find "
-"printers on the network, the container needs the network of the computer "
-"(`network_mode: host`)."
+"As a container: `packaging/docker/compose.yaml`, for printers in the "
+"network, with `printers.toml` and `tokens.toml` in the folder `config`."
 msgstr ""
-"Als Container: `packaging/docker/Dockerfile` und `compose.yaml`. Um Drucker "
-"im Netzwerk zu finden, braucht der Container das Netzwerk des Computers "
-"(`network_mode: host`)."
+"Als Container: `packaging/docker/compose.yaml`, für Drucker im Netzwerk, mit "
+"`printers.toml` und `tokens.toml` im Ordner `config`."
+
+#. type: Bullet: '- '
+#: docs/server.md
+msgid ""
+"To find printers on the network, or for USB, add `compose.host.yaml`: "
+"`docker compose -f compose.yaml -f compose.host.yaml up -d`."
+msgstr ""
+"Um Drucker im Netzwerk zu finden, oder für USB, `compose.host.yaml` "
+"dazunehmen: `docker compose -f compose.yaml -f compose.host.yaml up -d`."
 
 #. type: Bullet: '- '
 #: docs/server.md
