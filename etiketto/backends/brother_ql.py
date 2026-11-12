@@ -150,7 +150,7 @@ MODELS = {
         _two_color("QL-800", compression=False),
         _two_color("QL-810W"),
         _two_color("QL-820NWB"),
-        _wide("QL-1050", 295, 35433, high_res=False),
+        _wide("QL-1050", 295, 35433, high_res=False, invalidate=350),
         _wide("QL-1060N", 295, 35433, high_res=False),
         _wide("QL-1100", 301, 35434, invalidate=350),
         _wide("QL-1100NWB", 301, 35434, invalidate=350),
@@ -303,7 +303,14 @@ class Status:
     media_length: int = 0
     status_type: int = REPLY
     phase: int = PHASE_WAITING
+    colour: int = 0  # byte 25, reserved in Brother's references
     raw: bytes = b""
+
+    @property
+    def red_roll_hint(self) -> bool:
+        """Bit 7 of byte 25: 0x81 with the red and black roll on a QL-8xx
+        [assumed: seen by other projects, not in Brother's references]."""
+        return bool(self.colour & 0x80)
 
     @property
     def media(self) -> Media | None:
@@ -337,6 +344,7 @@ def parse_status(data: bytes) -> Status:
         media_length=data[17],
         status_type=data[18],
         phase=data[19],
+        colour=data[25],
         raw=bytes(data),
     )
 
@@ -623,6 +631,11 @@ class _Session:
         self.answered = True
         return status
 
+    def drop(self) -> None:
+        """Forget what was read but not used yet."""
+        self.buffer = b""
+        self.junk = 0
+
     def poll(self) -> Status:
         """The status while a job may run: no NULs, they would end it."""
         self.send(STATUS_REQUEST)
@@ -696,13 +709,16 @@ def _wait_idle(s: _Session, status: Status) -> Status:
     return status
 
 
-def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> None:
-    """Count the "printing completed" notices. A printer that sends none
-    within FIRST_NOTICE (answers to status requests do not count) does not
-    report on this connection: the job was sent, that has to do."""
+def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> int:
+    """Count the "printing completed" notices; returns how many came.
+    Everything before the answer to the job's own status request belongs
+    to an earlier job (the notices of a refused one) and is skipped. A
+    printer that sends no notice within FIRST_NOTICE (answers to status
+    requests do not count) does not report on this connection: the job
+    was sent, that has to do."""
     done = 0
     deadline = _clock() + FIRST_NOTICE
-    notified = False
+    notified = synced = False
     while done < copies:
         try:
             status = s.read(max(0.0, deadline - _clock()))
@@ -711,6 +727,10 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
                 break
             e.params.update(printed=done, copies=copies)
             raise
+        if not synced:
+            synced = status.status_type == REPLY
+            if not synced:
+                continue
         _checked(status, done, copies)
         if status.status_type == REPLY:
             continue
@@ -721,6 +741,7 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
             if done < copies:
                 report_progress(progress, done + 1, copies)
     report_progress(progress, copies, copies)
+    return done
 
 
 def _finished(s: _Session) -> bool:
@@ -883,7 +904,7 @@ class _BrotherQL(Backend):
             None,
             _state(status, error),
             error=error.code if error else "",
-            modes=_modes(model, media, _two_color_rolls.get(host)),
+            modes=_modes(model, media, _roll_guess(host, status)),
             qualities=_qualities(model),
         )
         if status.media and not media:  # the other kind: the other backend fits
@@ -917,14 +938,20 @@ class _BrotherQL(Backend):
     def to_printer(self, image: Image.Image) -> Image.Image:
         return image
 
-    def plan(self, image: Image.Image, options: PrintOptions, host: str, status) -> _Plan:
+    def plan(
+        self,
+        image: Image.Image,
+        options: PrintOptions,
+        host: str,
+        status,
+        two_color: bool | None = None,
+    ) -> _Plan:
+        """`two_color`: the kind of job to send, else the roll decides (as
+        far as known), else the choice in the dialog."""
         made_for = self.label_media(image)
         media = _roll(made_for, status)
         model = self.model_for(host, status) or (WIDE if media.wide else NARROW)
-        two_color = False
-        if model.two_color and media == RED_ROLL:
-            # the roll decides once it is known, else the choice in the dialog
-            two_color = _two_color_rolls.get(host, options.mode == RED.id)
+        two_color = _two_color_job(model, media, two_color, _roll_guess(host, status), options)
         high_res = options.quality == "high" and model.high_res and not two_color
         scale = _scale(image)
         printed = self.fit(self.to_printer(image), made_for, media)
@@ -964,26 +991,55 @@ class _BrotherQL(Backend):
             plan = self.plan(image, options, host, status)
             report_progress(progress, 1, copies)
             try:
-                self._send(s, plan, options, progress)
+                done = self._send(s, plan, options, progress)
             except WrongMedia as e:
                 if e.params.get("printed") or not _other_roll_kind(plan, status):
                     raise
                 # the 62 mm roll is the other one (red and black or plain):
                 # the printer refused the job before printing, send it the
                 # other way [assumed: refused before anything is printed]
-                _two_color_rolls[host] = not plan.two_color
-                plan = self.plan(image, options, host, status)
-                self._send(s, plan, options, progress)
-        if status is not None and plan.media == RED_ROLL and plan.model.two_color:
+                plan = self.plan(image, options, host, status, not plan.two_color)
+                s.drop()  # the rest of the refused job's notices
+                try:
+                    done = self._send(s, plan, options, progress)
+                except WrongMedia:
+                    _two_color_rolls.pop(host, None)  # it was something else
+                    raise
+        if done and plan.media == RED_ROLL and plan.model.two_color:
+            # a label came out: this is what the roll takes
             _two_color_rolls[host] = plan.two_color
         return _result(options, plan)
 
-    def _send(self, s: _Session, plan: _Plan, options: PrintOptions, progress) -> None:
+    def _send(self, s: _Session, plan: _Plan, options: PrintOptions, progress) -> int:
+        """Send the job; the labels the printer reports printed (0 if it
+        reports nothing)."""
+        copies = max(1, options.copies)
         s.send(build_job(self.job(plan, options)))
         if s.answered:
-            _wait_done(s, progress, max(1, options.copies))
-        else:  # a printer that does not answer: sent is all we know
-            report_progress(progress, max(1, options.copies), max(1, options.copies))
+            return _wait_done(s, progress, copies)
+        report_progress(progress, copies, copies)  # sent is all we know
+        return 0
+
+
+def _two_color_job(
+    model: Model, media: Media, wanted: bool | None, guess: bool | None, options: PrintOptions
+) -> bool:
+    """Two colours: only on the 62 mm roll of a QL-8xx; as asked by the
+    caller, else as the roll is known or guessed, else the dialog's choice."""
+    if not (model.two_color and media == RED_ROLL):
+        return False
+    if wanted is not None:
+        return wanted
+    return options.mode == RED.id if guess is None else guess
+
+
+def _roll_guess(host: str, status: Status | None) -> bool | None:
+    """Whether the red and black roll is loaded: what the last printed job
+    showed, else the status' hint (only ever True), else None."""
+    known = _two_color_rolls.get(host)
+    if known is None and status is not None and status.red_roll_hint:
+        return True
+    return known
 
 
 def _state(status: Status, error: PrinterError | None) -> str:

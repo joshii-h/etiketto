@@ -76,6 +76,7 @@ is running. The answer is 32 bytes. [ref]
 | 17 | media length in mm, 0 for continuous | the loaded roll |
 | 18 | status type: `00` reply, `01` printing completed, `02` error, `04` turned off, `05` notification, `06` phase change | progress, errors |
 | 19 | phase: `00` waiting to receive, `01` printing | busy, done |
+| 25 | reserved in Brother's references; `81` with the red and black roll on a QL-8xx [assumed: reported by other projects (sklad, thermal-label docs)] | first guess for the roll |
 
 [ref]
 
@@ -132,7 +133,8 @@ fork]
 | QL-710W, QL-720NW | 150-11811 | 720 | yes | yes | yes | yes | yes | no | 200 |
 | QL-800 | 150-11811 | 720 | yes | yes | yes | no | yes | yes | 400 |
 | QL-810W, QL-820NWB | 150-11811 | 720 | yes | yes | yes | yes | yes | yes | 400 |
-| QL-1050, QL-1060N | 295-35433 | 1296 | yes | yes | yes | yes | no | no | 200 |
+| QL-1050 | 295-35433 | 1296 | yes | yes | yes | yes | no | no | 350 |
+| QL-1060N | 295-35433 | 1296 | yes | yes | yes | yes | no | no | 200 |
 | QL-1100 series | 301-35434 | 1296 | yes | yes | yes | yes | yes | no | 350 |
 
 - The model comes from the USB device ID, else from the name the network
@@ -240,18 +242,25 @@ lines               67 00 n data, or 77 01 n black + 77 02 n red per line
 
 On DK-22251 every job has to be a two-colour job, even one with black
 content only [spec: brother_ql's command line help], and a two-colour
-job on a plain roll fails [assumed]. Since the status does not tell the rolls
-apart, Etiketto:
+job on a plain roll fails [assumed]. Brother's status does not tell the
+rolls apart, so Etiketto:
 
-- sends what the print dialog says (Colours: Black, or Red and black)
-  the first time;
+- takes the roll it remembers for this printer; else, if bit 7 of status
+  byte 25 is set, the red and black roll [assumed, see above]; else what
+  the print dialog says (Colours: Black, or Red and black);
 - if the printer refuses the job with "replace media" before printing,
-  sends it once more as the other kind and says so ("Printed with Red and
-  black, as the loaded roll needs it") [assumed: the refusal comes before
-  anything is printed];
-- remembers the roll for this printer: from then on the job follows the
-  roll whatever the dialog says, and the dialog offers only what the roll
-  prints, until a job is refused again (the roll was changed).
+  sends it once more as the other kind on the same connection and says so
+  ("Printed with Red and black, as the loaded roll needs it") [assumed:
+  the refusal comes before anything is printed, and the printer takes the
+  next job without a key press]. Every page of the refused job is
+  refused: everything that arrives before the answer to the retry's own
+  `ESC i S` is skipped, so those notices are not taken for the retry's;
+- remembers the roll once the printer reported a label printed; from then
+  on the job follows the roll whatever the dialog says, and the dialog
+  offers only what the roll prints, until a job is refused again (the
+  roll was changed). If the retry is refused too, the problem is
+  something else: the error is shown and the remembered roll is
+  forgotten.
 
 ## Raster
 
@@ -294,6 +303,22 @@ error packet stops the job with the number of labels printed so far.
   is done, anything else a timeout with the labels printed so far.
 - While another job prints (phase 1), Etiketto asks `ESC i S` every 0.5 s,
   without NULs, for up to 180 s. [assumed]
+
+## To try on a printer
+
+No QL printer was at hand; these need one:
+
+- Does a QL-8xx take a new job on the same connection right after
+  refusing one with "replace media", or does it wait for a key press
+  (and does anything come out of the refused job)?
+- What does status byte 25 report with DK-22251, with DK-22205 and with
+  other rolls, on the QL-800, QL-810W and QL-820NWB?
+- Do models answer `ESC i S` on port 9100, and do they send the page
+  notices there?
+- Several copies as pages of one job, and "Cut after the last label"
+  (cut at end without auto cut).
+- 600 dpi: line limits and feed margin; the right margin of 60 × 86 mm
+  and 54 × 29 mm; the 90 mm roll's print area.
 
 ## Not used yet
 

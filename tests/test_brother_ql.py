@@ -51,7 +51,15 @@ ESC = b"\x1b"
 
 
 def packet(
-    model=0x41, err1=0, err2=0, width=62, kind=0x0A, length=0, status_type=0, phase=0
+    model=0x41,
+    err1=0,
+    err2=0,
+    width=62,
+    kind=0x0A,
+    length=0,
+    status_type=0,
+    phase=0,
+    colour=0,
 ) -> bytes:
     """A status packet as the printer sends it."""
     data = bytearray(32)
@@ -59,6 +67,7 @@ def packet(
     data[3], data[4], data[5] = 0x34, model, 0x30
     data[8], data[9], data[10], data[11] = err1, err2, width, kind
     data[17], data[18], data[19] = length, status_type, phase
+    data[25] = colour
     return bytes(data)
 
 
@@ -95,6 +104,7 @@ class FakeQL:
         # kind (ESC i K bit 0) is refused with "replace media"; None: any
         self.red_roll = None
         self.refused = 0
+        self.colour = 0  # status byte 25
         self.buffer = b""
         self.out = b""
         self.pages: list[dict] = []
@@ -116,6 +126,7 @@ class FakeQL:
             self.length,
             status_type,
             phase,
+            self.colour,
         )
 
     @staticmethod
@@ -1377,3 +1388,74 @@ def test_sessions_on_tcp_send_in_pieces(monkeypatch):
 
 def test_no_answer_when_asked_whether_the_job_is_done():
     assert not ql._finished(ql._Session(Chunks(), False))
+
+
+# --- the red and black roll: retries, memory, the status' hint ----------------------
+
+
+@pytest.mark.parametrize("red_roll, mode, used", [(True, "black", "red"), (False, "red", "black")])
+def test_retry_with_copies(printer, red_roll, mode, used):
+    """Every page of the refused job is refused: those notices must not be
+    taken for the retry's."""
+    device = printer.device
+    device.red_roll = red_roll
+    backend = BrotherQL()
+    options = PrintOptions(copies=3, mode=mode)
+    events = []
+    result = backend.print_label(
+        backend.prepare(_continuous(), options), "ql.local", options, events.append
+    )
+    assert result == PrintResult(mode=used, reason="roll")
+    assert device.refused == 3 and device.printed() == 3
+    assert [e.copy for e in events] == [1, 2, 3, 3]
+    assert ql._two_color_rolls == {"ql.local": red_roll}
+
+
+def test_a_retry_refused_too_forgets_the_roll(printer):
+    device = printer.device
+    ql._two_color_rolls["ql.local"] = False
+
+    def refuse(last):
+        device.refused += 1
+        device.page = device._new_page()
+        device.out += packet(device.model, 0, 0x01, 62, 0x4A, 0, 0x02)
+
+    device._page_done = refuse
+    backend = BrotherQL()
+    with pytest.raises(WrongMedia):
+        backend.print_label(
+            backend.prepare(_continuous(), PrintOptions()), "ql.local", PrintOptions()
+        )
+    assert device.refused == 2 and "ql.local" not in ql._two_color_rolls
+
+
+def test_the_roll_is_remembered_only_once_a_label_came_out(printer):
+    printer.device.notify = False
+    backend = BrotherQL()
+    options = PrintOptions(mode="red")
+    backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert ql._two_color_rolls == {}
+
+
+def test_status_hint_for_the_red_and_black_roll(printer):
+    device = printer.device
+    device.red_roll, device.colour = True, 0x81
+    backend = BrotherQL()
+    assert ql.parse_status(device.status()).red_roll_hint
+    assert [m.id for m in backend.query("ql.local").modes] == ["red"]
+    options = PrintOptions(mode="black")
+    result = backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert result == PrintResult(mode="red", reason="roll") and device.refused == 0
+    # what a printed job showed wins over the hint
+    ql._two_color_rolls["ql.local"] = False
+    assert [m.id for m in backend.query("ql.local").modes] == ["black"]
+
+
+def test_ql1050_invalidates_with_350_bytes():
+    assert ql.MODELS["QL-1050"].invalidate == 350 and ql.MODELS["QL-1060N"].invalidate == 200
+
+
+def test_notices_before_the_jobs_own_answer_are_skipped():
+    stale = packet(err2=0x01, status_type=0x02)  # the refused job's next page
+    s = ql._Session(Chunks(stale, packet(), packet(status_type=0x01)), True)
+    assert ql._wait_done(s, None, 1) == 1
