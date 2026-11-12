@@ -6,6 +6,10 @@ is code and data that are part of Etiketto or its Flatpak; section 2 the
 sources of protocol knowledge, used as facts only: no code of theirs is
 included, the protocols were written anew.
 
+In the Flatpak each component's licence is in
+`share/licenses/xyz.joshuahirsig.Etiketto/<module>/` (this file in
+`etiketto/`).
+
 ## Licence expressions
 
 - The Python package (sdist and wheel, `pyproject.toml`): what it contains,
@@ -85,7 +89,7 @@ Stuart and contributors, BSD-3-Clause, encodes most code types. It comes
 inside zint-bindings; its license text is in
 [`build-aux/flatpak/LICENSE.zint`](build-aux/flatpak/LICENSE.zint) (in the
 source distribution too), and the Flatpak installs it as
-`share/licenses/xyz.joshuahirsig.Etiketto/LICENSE.zint`.
+`share/licenses/xyz.joshuahirsig.Etiketto/python3-zint-bindings/LICENSE.zint`.
 
 ### zint-bindings (Apache-2.0)
 

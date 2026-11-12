@@ -327,7 +327,7 @@ Most code types are encoded by [Zint](https://zint.org.uk) (libzint,
 Copyright (C) 2009-2025 Robin Stuart and contributors, BSD-3-Clause) through
 [zint-bindings](https://github.com/bindreams/zint-bindings) (Anna Zhukova,
 Apache-2.0); Etiketto takes Zint's modules and draws them itself. The
-Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/LICENSE.zint`.
+Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/python3-zint-bindings/LICENSE.zint`.
 QR codes come from [segno](https://github.com/heuer/segno) (BSD-3-Clause),
 Code 128 and EAN-13 from
 [python-barcode](https://github.com/WhyNotHugo/python-barcode) (MIT).

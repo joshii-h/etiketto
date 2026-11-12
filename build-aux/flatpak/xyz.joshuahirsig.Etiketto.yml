@@ -31,9 +31,12 @@ build-options:
   env:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
 
-# Every bundled component's licence goes to /app/share/licenses/<app id>/
-# (LICENSE.<name>, poppler/, poppler-data/); THIRD_PARTY_NOTICES.md there
-# says what each one is.
+# Licences: flatpak-builder copies a module's licence files from its
+# source (LICENSE*, COPYING*) to /app/share/licenses/<app id>/<module>/
+# by itself. What it does not find (the licences inside wheels, Etiketto's
+# notices and data licences) is installed into the same per-module folder,
+# so each licence is there once; THIRD_PARTY_NOTICES.md (etiketto/) says
+# what each component is.
 modules:
   # build-only: Pillow's setup.py imports pybind11.setup_helpers
   - name: python3-pybind11
@@ -57,7 +60,6 @@ modules:
     build-commands:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         .
-      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.pillow
     sources:
       - type: archive
         url: https://files.pythonhosted.org/packages/ce/a4/9cc30690a394a8305e8be4c9036aa16d0dfddadd09079860b582f562496d/pillow-13.0.0.tar.gz
@@ -72,7 +74,7 @@ modules:
     build-commands:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         segno-*.whl
-      - install -Dm644 ${FLATPAK_DEST}/lib/python3*/site-packages/segno-*.dist-info/licenses/LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.segno
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-segno ${FLATPAK_DEST}/lib/python3*/site-packages/segno-*.dist-info/licenses/LICENSE
     cleanup:
       - /bin/segno
       - /share/man/man1/segno.1
@@ -91,7 +93,7 @@ modules:
     build-commands:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         python_barcode-*.whl
-      - install -Dm644 ${FLATPAK_DEST}/lib/python3*/site-packages/python_barcode-*.dist-info/licenses/LICENCE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.python-barcode
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-python-barcode ${FLATPAK_DEST}/lib/python3*/site-packages/python_barcode-*.dist-info/licenses/LICENCE
     cleanup:
       - /bin/python-barcode
       # the 0.16.1 wheel also ships its docs/ and tests/ as top-level packages
@@ -115,8 +117,8 @@ modules:
     build-commands:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         zint_bindings-*.whl
-      - install -Dm644 ${FLATPAK_DEST}/lib/python3*/site-packages/zint_bindings-*.dist-info/licenses/LICENSE.md ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.zint-bindings
-      - install -Dm644 LICENSE.zint ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.zint
+      # (LICENSE.zint, a source of this module, flatpak-builder copies itself)
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-zint-bindings ${FLATPAK_DEST}/lib/python3*/site-packages/zint_bindings-*.dist-info/licenses/LICENSE.md
     sources:
       - type: file
         only-arches: [x86_64]
@@ -147,13 +149,22 @@ modules:
     build-commands:
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         .
-      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.labelprinter
     cleanup:
-      # CLI tools, the CUPS backend and the package's tests are not used by the app
+      # Etiketto uses connection.py and printer.py; the CLI tools, queue,
+      # CUPS backend and tests (also compiled) are not used by the app
       - /bin/label-*
       - /bin/vc500w-cups-backend
+      - /lib/python3*/site-packages/labelprinter/__main__.py
       - /lib/python3*/site-packages/labelprinter/cups_backend.py
+      - /lib/python3*/site-packages/labelprinter/print_text.py
+      - /lib/python3*/site-packages/labelprinter/queue_*.py
+      - /lib/python3*/site-packages/labelprinter/tape.py
       - /lib/python3*/site-packages/labelprinter/test
+      - /lib/python3*/site-packages/labelprinter/__pycache__/__main__.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/cups_backend.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/print_text.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/queue_*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/tape.*
     sources:
       - type: git
         url: https://github.com/joshii-h/labelprinter-vc500w.git
@@ -227,10 +238,9 @@ modules:
       # setup.py also installs desktop file, metainfo, icons, MIME type and translations
       - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
         .
-      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE
-      - install -Dm644 THIRD_PARTY_NOTICES.md ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/THIRD_PARTY_NOTICES.md
-      - install -Dm644 etiketto/sheets/LICENSE.glabels ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.glabels
-      - install -Dm644 etiketto/symbols/LICENSE.mdi ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE.mdi
+      # (LICENSE flatpak-builder copies itself)
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/etiketto THIRD_PARTY_NOTICES.md
+        etiketto/sheets/LICENSE.glabels etiketto/symbols/LICENSE.mdi
     sources:
       # local checkout, for development builds
       - type: dir

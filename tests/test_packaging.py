@@ -52,39 +52,44 @@ def test_check_sh_runs_what_the_ci_runs():
 
 
 def test_the_flatpak_ships_every_licence_once():
-    """Each bundled component's licence in share/licenses/<app id>/, Zint's
-    once; what the app does not use is cleaned up; every downloaded source
+    """One layout: share/licenses/<app id>/<module>/, where flatpak-builder
+    copies a module's own LICENSE*/COPYING* by itself; installed by hand
+    only what it does not find (licences inside wheels, Etiketto's notices
+    and data licences), into the same folder, never a second copy at the
+    top. What the app does not use is cleaned up; every downloaded source
     can be checked for updates."""
+    import re
+
     import pytest
 
     yaml = pytest.importorskip("yaml")
     path = ROOT / "build-aux" / "flatpak" / "xyz.joshuahirsig.Etiketto.yml"
     manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
-    commands = "\n".join(
-        command
-        for module in manifest["modules"]
-        for command in module.get("build-commands", []) + module.get("post-install", [])
-    )
     target = "${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/"
-    for name in (
-        "LICENSE",
-        "THIRD_PARTY_NOTICES.md",
-        "LICENSE.glabels",
-        "LICENSE.mdi",
-        "LICENSE.zint",
-        "LICENSE.zint-bindings",
-        "LICENSE.segno",
-        "LICENSE.python-barcode",
-        "LICENSE.pillow",
-        "LICENSE.labelprinter",
-        "poppler ",
-        "poppler-data ",
-    ):
-        assert target + name in commands + " ", name
-    assert commands.count("LICENSE.zint ") == 1
+    by_hand: dict[str, str] = {}
+    for module in manifest["modules"]:
+        commands = module.get("build-commands", []) + module.get("post-install", [])
+        for command in commands:
+            for folder in re.findall(re.escape(target) + r"([^\s/]*)", command):
+                assert folder == module["name"], command  # the module's own folder
+                by_hand[module["name"]] = command
+    assert set(by_hand) == {
+        "python3-segno",
+        "python3-python-barcode",
+        "python3-zint-bindings",
+        "poppler-data",
+        "poppler",
+        "etiketto",
+    }
+    assert "THIRD_PARTY_NOTICES.md" in by_hand["etiketto"]
+    assert "LICENSE.glabels" in by_hand["etiketto"] and "LICENSE.mdi" in by_hand["etiketto"]
+    assert "LICENSE.zint" not in "".join(by_hand.values())  # a source: copied by itself
+    zint = next(m for m in manifest["modules"] if m["name"] == "python3-zint-bindings")
+    assert {"type": "file", "path": "LICENSE.zint"} in zint["sources"]
     cleanup = [c for module in manifest["modules"] for c in module.get("cleanup", [])]
     assert "/share/man/man1/segno.1" in cleanup
-    assert any(c.endswith("labelprinter/test") for c in cleanup)
+    for unused in ("test", "cups_backend.py", "__main__.py", "print_text.py", "queue_*.py"):
+        assert any(c.endswith("labelprinter/" + unused) for c in cleanup), unused
     for module in manifest["modules"]:
         for source in module.get("sources", []):
             if source.get("type") in ("file", "archive") and "url" in source:
