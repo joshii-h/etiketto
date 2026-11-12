@@ -405,7 +405,7 @@ LATIN = [
 ]
 
 
-@pytest.mark.parametrize("symbology", ["datamatrix", "pdf417", "aztec"])
+@pytest.mark.parametrize("symbology", ["datamatrix", "pdf417", "aztec", "qr"])
 def test_latin_text_reads_back_exactly(symbology):
     zxingcpp = pytest.importorskip("zxingcpp")
     for text in [*LATIN, "ÿ\x80", "caf\x85"]:  # C1 controls too
@@ -462,3 +462,24 @@ def test_ean_bars_without_their_digits(monkeypatch):
     monkeypatch.setattr(render_module, "_ink", lambda *args: None)
     part = render_module.render_code(CodeElement("400638133393", "ean13"), 300)
     assert part.code_module >= 2 and ink_bbox(_page(part, 0), 255)
+
+
+@pytest.mark.parametrize(
+    "data",
+    ["https://example.org", "x", "HELLO WORLD 123", "1234567890", "WIFI:S:net;T:WPA;P:pw;;"],
+)
+def test_ascii_qr_codes_keep_their_modules(data):
+    """Labels made before print the same QR code (segno's defaults)."""
+    import segno
+
+    expected = segno.make(data, error="m", micro=False).matrix
+    rows = tuple("".join("1" if v else "0" for v in row) for row in expected)
+    assert codes.encode(CodeElement(data)).rows == rows
+
+
+def test_qr_text_beyond_ascii_carries_eci_26():
+    import segno
+
+    rows = codes.encode(CodeElement("Temp 37°")).rows
+    utf8 = segno.make("Temp 37°", error="m", micro=False, encoding="utf-8", eci=True)
+    assert rows == tuple("".join("1" if v else "0" for v in row) for row in utf8.matrix)

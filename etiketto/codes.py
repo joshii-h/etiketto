@@ -172,11 +172,21 @@ def _encode(symbology: str, data: str) -> Symbol:
 
 
 def _segno(data: str) -> Symbol:
-    """Never a Micro QR code (most phones cannot read those)."""
+    """Never a Micro QR code (most phones cannot read those). Text beyond
+    ASCII as UTF-8 with ECI 26: without an ECI scanners guess at the bytes
+    and read Latin-1 "37°" as katakana. ASCII stays as in the first
+    versions, module for module."""
     import segno
 
+    ascii_only = data.isascii()
     try:
-        matrix = segno.make(data, error="m", micro=False).matrix
+        matrix = segno.make(
+            data,
+            error="m",
+            micro=False,
+            encoding=None if ascii_only else "utf-8",
+            eci=not ascii_only,
+        ).matrix
     except segno.DataOverflowError:
         raise CodeError("code_too_long") from None
     return Symbol(tuple("".join("1" if v else "0" for v in row) for row in matrix))

@@ -1152,6 +1152,18 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
+"QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked "
+"as UTF-8, so scanners read them correctly. Labels made with earlier versions "
+"print such a QR code with a slightly different pattern."
+msgstr ""
+"QR-Codes mit Zeichen jenseits von einfachem ASCII (Umlaute, °, £ …) sind "
+"jetzt als UTF-8 gekennzeichnet, damit Scanner sie richtig lesen. Etiketten "
+"aus früheren Versionen drucken einen solchen QR-Code mit einem leicht "
+"anderen Muster."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
 "Labels made with earlier versions: QR codes come out up to about a third "
 "smaller (their blank margin is now inside the element), barcodes slightly "
 "wider."

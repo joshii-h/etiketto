@@ -41,6 +41,9 @@ Elements are placed one after another along the label. Order them with
 - A code whose bars are only one printer dot wide, or without room for its
   blank margin, may not scan: Etiketto warns before printing, make the
   code larger. A code that does not fit at all is not printed.
+- QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now
+  marked as UTF-8, so scanners read them correctly. Labels made with
+  earlier versions print such a QR code with a slightly different pattern.
 - Labels made with earlier versions: QR codes come out up to about a
   third smaller (their blank margin is now inside the element), barcodes
   slightly wider.

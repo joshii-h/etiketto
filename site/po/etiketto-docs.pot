@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 09:39+0100\n"
+"POT-Creation-Date: 2026-11-12 09:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -801,6 +801,12 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "A code whose bars are only one printer dot wide, or without room for its blank margin, may not scan: Etiketto warns before printing, make the code larger. A code that does not fit at all is not printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a slightly different pattern."
 msgstr ""
 
 #. type: Bullet: '- '
