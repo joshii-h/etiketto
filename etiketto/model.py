@@ -328,15 +328,49 @@ def default_of(cls: type, name: str):
     return spec.default
 
 
+def _boxed(text) -> bool:
+    return bool(text.inverted or text.box_color or text.frame_mm > 0)
+
+
+# fields that change nothing unless another one is set (by class name): an
+# outline colour without an outline is neither written nor a feature
+EFFECTIVE: dict[str, dict[str, Callable[[Any], bool]]] = {
+    "TextElement": {
+        "min_size_pt": lambda e: e.shrink,
+        "padding_mm": _boxed,
+        "corner_mm": _boxed,
+        "outline_color": lambda e: e.outline_mm > 0,
+        "shadow_color": lambda e: e.shadow_mm > 0,
+    },
+    "ImageElement": {
+        "threshold": lambda e: e.mode == "threshold",
+        "border_color": lambda e: e.border_mm > 0,
+    },
+    "Label": {
+        "border_radius_mm": lambda label: label.border_mm > 0,
+        "border_style": lambda label: label.border_mm > 0,
+        "border_inset_mm": lambda label: label.border_mm > 0,
+    },
+}
+
+
+def _matters(item, name: str) -> bool:
+    """Whether the field differs from its default and does something."""
+    if getattr(item, name) == default_of(type(item), name):
+        return False
+    condition = EFFECTIVE.get(type(item).__name__, {}).get(name)
+    return condition is None or condition(item)
+
+
 def styled(item, names: tuple[str, ...]) -> bool:
-    """Whether any of the fields differs from its default."""
-    return any(getattr(item, name) != default_of(type(item), name) for name in names)
+    """Whether any of the fields differs from its default (and has an effect)."""
+    return any(_matters(item, name) for name in names)
 
 
 def _compact(item, data: dict, names: tuple[str, ...]) -> dict:
-    """data without the fields that have their default value."""
+    """data without the fields that have their default value or no effect."""
     for name in names:
-        if getattr(item, name) == default_of(type(item), name):
+        if not _matters(item, name):
             data.pop(name, None)
     return data
 

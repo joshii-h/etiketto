@@ -43,7 +43,7 @@ STYLED_TEXT = {
     "gap_mm": 0.0,
 }
 STYLED_IMAGE = {
-    "mode": "ordered",
+    "mode": "threshold",
     "threshold": 100,
     "brightness": 10.0,
     "contrast": -20.0,
@@ -288,3 +288,33 @@ def test_positional_arguments_keep_their_meaning():
     """The placement fields are keyword-only: TextElement("x") is still the text."""
     assert TextElement("x").text == "x"
     assert CodeElement("data", "ean13").symbology == "ean13"
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        TextElement(outline_color="#ff0000"),
+        TextElement(shadow_color="#00ff00"),
+        TextElement(min_size_pt=8),
+        TextElement(padding_mm=2, corner_mm=1),
+        ImageElement(threshold=50),
+        ImageElement(border_color="#ff0000"),
+    ],
+)
+def test_fields_without_effect_are_not_written(item):
+    label = Label(elements=[item])
+    data = label.to_dict()
+    assert "features" not in data
+    assert data["elements"][0].keys().isdisjoint(model.STYLE_FIELDS[type(item)])
+
+
+def test_fields_with_effect_are_written():
+    label = Label(elements=[TextElement(outline_mm=0.2, outline_color="#ff0000")])
+    assert label.to_dict()["elements"][0]["outline_color"] == "#ff0000"
+    image = ImageElement(mode="threshold", threshold=50)
+    assert Label(elements=[image]).to_dict()["elements"][0]["threshold"] == 50
+
+
+def test_label_border_shape_without_border_is_not_written():
+    data = Label(border_radius_mm=3, border_style="dotted").to_dict()
+    assert "features" not in data and "border_style" not in data

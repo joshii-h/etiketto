@@ -196,7 +196,7 @@ def _fitted_size(element: TextElement, measure, limits, dpi: float) -> float:
     (None: no limit), at most its own size (or MAX_TEXT_PT for size 0),
     at least min_size_pt (where it may not fit)."""
     width, height = limits
-    lowest = max(1.0, element.min_size_pt / 72 * dpi)
+    lowest = max(1.0, element.min_size_pt / 72 * dpi) if element.shrink else 1.0
     if element.size_pt > 0:
         highest = element.size_pt / 72 * dpi
     else:
