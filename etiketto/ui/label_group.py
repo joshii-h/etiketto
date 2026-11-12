@@ -21,8 +21,14 @@ from etiketto.model import (  # noqa: E402
 from etiketto.sheets import find  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.sheets import positions_text, sheet_summary  # noqa: E402
-from etiketto.ui.texts import ALIGNS, ORIENTATIONS, PRINT_ON  # noqa: E402
-from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row  # noqa: E402
+from etiketto.ui.texts import ALIGNS, BORDER_STYLES, ORIENTATIONS, PRINT_ON  # noqa: E402
+from etiketto.ui.widgets import (  # noqa: E402
+    color_button,
+    combo_row,
+    expander,
+    flat_button,
+    length_row,
+)
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
@@ -154,6 +160,37 @@ class LabelGroup(Adw.PreferencesGroup):
         )
         border.add_suffix(color_button(lab.border_color, lambda v: window.change(border_color=v)))
         self.add(border)
+        shape = expander(_("Border style"), _("Corners, line and distance from the edge"))
+        shape.add_row(
+            self._length_row(
+                _("Corner radius"),
+                lab.border_radius_mm,
+                0,
+                50,
+                0.5,
+                lambda v: window.change(border_radius_mm=v),
+            )
+        )
+        shape.add_row(
+            combo_row(
+                _("Line style"),
+                BORDER_STYLES,
+                lab.border_style,
+                lambda v: window.change(border_style=v),
+            )
+        )
+        shape.add_row(
+            self._length_row(
+                _("Inset"),
+                lab.border_inset_mm,
+                0,
+                10,
+                0.5,
+                lambda v: window.change(border_inset_mm=v),
+                _("extra %(unit)s inside the safety margin"),
+            )
+        )
+        self.add(shape)
 
     def _add_length_rows(self) -> None:
         """Length, automatic length and alignment: only for endless tape."""

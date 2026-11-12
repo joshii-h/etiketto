@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import os
 from datetime import datetime
 from pathlib import Path
@@ -18,10 +19,12 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend, PrintOptions, margins_for  # noqa: E402
+from etiketto.history import History  # noqa: E402
 from etiketto.model import (  # noqa: E402
     MAX_COUNTER,
     CodeElement,
     Label,
+    ShapeElement,
     SheetChoice,
     SymbolElement,
     TextElement,
@@ -31,6 +34,7 @@ from etiketto.serial import unknown_columns  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
 from etiketto.shipping.source import clear_caches  # noqa: E402
+from etiketto.ui import shortcuts  # noqa: E402
 from etiketto.ui.data import DATA_SUFFIXES, STEPS, DataGroup, DataSource  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
@@ -56,6 +60,7 @@ class Window(Adw.ApplicationWindow):
         self.set_default_size(1200, 760)
         self.settings = Settings.load()
         self.label = Label(elements=[TextElement(text=_("Label"))])
+        self.history = History(self.label)
         self.path: Path | None = None
         self.dirty = False
         # the start label and "New label" take the width of the inserted tape
@@ -136,6 +141,13 @@ class Window(Adw.ApplicationWindow):
         save_button.set_action_name("win.save")
         header.pack_start(save_button)
 
+        for icon, tip, action in (
+            ("edit-undo-symbolic", _("Undo"), "win.undo"),
+            ("edit-redo-symbolic", _("Redo"), "win.redo"),
+        ):
+            button = Gtk.Button(icon_name=icon, tooltip_text=tip, action_name=action)
+            header.pack_start(button)
+
         header.pack_end(
             Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=self._main_menu())
         )
@@ -156,6 +168,8 @@ class Window(Adw.ApplicationWindow):
         menu.append(_("Data for serial labels…"), "win.choose-data")
         menu.append(_("Forget allowed data files"), "win.forget-data")
         menu.append(_("Export PNG…"), "win.export")
+        if shortcuts.available():
+            menu.append(_("Keyboard shortcuts"), "win.shortcuts")
         menu.append(_("Help"), "win.help")
         menu.append(_("Report a problem…"), "win.report")
         menu.append(_("About Etiketto"), "app.about")
@@ -242,18 +256,83 @@ class Window(Adw.ApplicationWindow):
     def change(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self.label, key, value)
-        self.mark_changed()
+        self.mark_changed("label:" + ",".join(sorted(kwargs)))
 
-    def mark_changed(self) -> None:
+    def mark_changed(self, key: str | None = None, record: bool = True) -> None:
+        """The label changed. key: what changed, for undo (History.record);
+        record False: a change undo does not take back."""
         self.dirty = True
+        if record:
+            self.history.record(self.label, key)
+        self.update_history_actions()
         self.update_title()
         self.counter_group.update()
         self.schedule_render()
 
     def set_counter_next(self, value: int) -> None:
-        """After printing: the counter of the next label, a change of the document."""
+        """After printing: the counter of the next label, a change of the
+        document that undo does not take back (it would print numbers again)."""
         self.label.counter_next = min(value, MAX_COUNTER)
-        self.mark_changed()
+        self.history.patch("counter_next", self.label.counter_next)
+        self.mark_changed(record=False)
+
+    # --- undo and redo -------------------------------------------------------------
+
+    def update_history_actions(self) -> None:
+        for name, enabled in (("undo", self.history.can_undo), ("redo", self.history.can_redo)):
+            action = self.lookup_action(name)
+            if action:
+                action.set_enabled(enabled)
+
+    def undo(self, *_args) -> None:
+        self._restore(self.history.undo())
+
+    def redo(self, *_args) -> None:
+        self._restore(self.history.redo())
+
+    def _restore(self, label: Label | None) -> None:
+        if label is None:
+            return
+        printer_changed = label.printer != self.label.printer
+        data_changed = label.data_file != self.label.data_file
+        self.label = label
+        if self.expand_index >= len(label.elements):
+            self.expand_index = -1
+        self.rebuild_sidebar()
+        self.mark_changed(record=False)
+        if data_changed:
+            self.data.follow_label()
+        if printer_changed:
+            self.printer.info = None
+            self.printer.refresh()
+
+    # --- the open element ------------------------------------------------------------
+
+    def _current(self) -> int | None:
+        """The element whose row is open, if any."""
+        index = self.expand_index
+        return index if 0 <= index < len(self.label.elements) else None
+
+    def duplicate_element(self, *_args) -> None:
+        index = self._current()
+        if index is None:
+            return
+        self.label.elements.insert(index + 1, copy.deepcopy(self.label.elements[index]))
+        self.expand_index = index + 1
+        self._structure_changed()
+
+    def remove_current(self, *_args) -> None:
+        index = self._current()
+        if index is not None:
+            self.remove_element(index)
+
+    def move_current(self, delta: int) -> None:
+        index = self._current()
+        if index is not None and 0 <= index + delta < len(self.label.elements):
+            self.move_element(index, index + delta)
+
+    def show_shortcuts(self, *_args) -> None:
+        self.present_dialog(shortcuts.dialog())
 
     def _counter_edited(self) -> None:
         self.counter_edited = True
@@ -328,6 +407,8 @@ class Window(Adw.ApplicationWindow):
         self.path = path
         self.remember_saved()
         self.dirty = False
+        self.history.reset(label)
+        self.update_history_actions()
         self._geometries = {}
         self.expand_index = -1
         self.rebuild_sidebar()
@@ -476,7 +557,7 @@ class Window(Adw.ApplicationWindow):
             dpi=self._render_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
-            mono=backend.capabilities.color_model == "mono",
+            mono=backend.renders_mono(self.print_flow.mode),
         )
         rendered.warnings[:0] = warnings
         image = backend.preview(rendered.image, self.print_flow.mode)
@@ -638,6 +719,14 @@ class Window(Adw.ApplicationWindow):
             "add-image": lambda *_a: self.files.choose_image(self.add_element),
             "add-code": lambda *_a: self.add_element(CodeElement()),
             "add-symbol": lambda *_a: self.choose_symbol(),
+            "add-shape": lambda *_a: self.add_element(ShapeElement()),
+            "undo": self.undo,
+            "redo": self.redo,
+            "duplicate-element": self.duplicate_element,
+            "remove-element": self.remove_current,
+            "element-up": lambda *_a: self.move_current(-1),
+            "element-down": lambda *_a: self.move_current(1),
+            "shortcuts": self.show_shortcuts,
             "choose-data": self.data.choose,
             "forget-data": self.data.forget_allowed,
         }
@@ -648,6 +737,8 @@ class Window(Adw.ApplicationWindow):
             action.connect("activate", callback)
             self.add_action(action)
         self.data.update_forget_action()
+        self.update_history_actions()
+        shortcuts.install(self)
         template = Gio.SimpleAction.new("open-template", GLib.VariantType.new("s"))
         template.connect("activate", self.files.open_template)
         self.add_action(template)
@@ -658,6 +749,7 @@ class Window(Adw.ApplicationWindow):
         app.set_accels_for_action("win.save-as", ["<Control><Shift>s"])
         app.set_accels_for_action("win.print", ["<Control>p"])
         app.set_accels_for_action("win.help", ["F1"])
+        app.set_accels_for_action("win.shortcuts", ["<Control>question"])
         app.set_accels_for_action("win.new", ["<Control>n"])
         app.set_accels_for_action("win.row-first", ["<Alt>Home"])
         app.set_accels_for_action("win.row-previous", ["<Alt>Page_Up"])

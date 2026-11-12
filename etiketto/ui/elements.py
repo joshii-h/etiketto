@@ -12,7 +12,14 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto.model import ImageElement, PageElement, SymbolElement, TextElement  # noqa: E402
+from etiketto.model import (  # noqa: E402
+    ImageElement,
+    PageElement,
+    ShapeElement,
+    SymbolElement,
+    TextElement,
+)
+from etiketto.ui import styles  # noqa: E402
 from etiketto.ui.data import column_button  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.symbols import SymbolChooser, SymbolIcon  # noqa: E402
@@ -37,6 +44,7 @@ from etiketto.ui.widgets import (  # noqa: E402
     grouped_combo_row,
     length_row,
     spin_row,
+    toggle,
 )
 
 if TYPE_CHECKING:
@@ -69,6 +77,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         add_menu.append(_("Image…"), "win.add-image")
         add_menu.append(_("Symbol…"), "win.add-symbol")
         add_menu.append(_("QR code / barcode"), "win.add-code")
+        add_menu.append(_("Line or shape"), "win.add-shape")
         add = Gtk.MenuButton(
             icon_name="list-add-symbolic", menu_model=add_menu, tooltip_text=_("Add")
         )
@@ -81,6 +90,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         prefix = SymbolIcon(element.path) if isinstance(element, SymbolElement) else None
         row.add_prefix(prefix or Gtk.Image(icon_name=element_icon(element)))
         row.set_expanded(index == self.window.expand_index)
+        row.connect("notify::expanded", lambda r, _p: self._on_expanded(index, r.get_expanded()))
         self._add_header_buttons(row, index)
 
         def retitle():
@@ -92,7 +102,8 @@ class ElementsGroup(Adw.PreferencesGroup):
             for key, value in kwargs.items():
                 setattr(element, key, value)
             retitle()
-            self.window.mark_changed()
+            # typing into one field is one step of undo (History.record)
+            self.window.mark_changed("element:%d:%s" % (index, ",".join(sorted(kwargs))))
 
         if isinstance(element, TextElement):
             self._text_rows(row, element, set_attr)
@@ -103,9 +114,19 @@ class ElementsGroup(Adw.PreferencesGroup):
             self._symbol_rows(row, element, set_attr, prefix)
         elif isinstance(element, PageElement):
             self._page_rows(row, element, set_attr)
+        elif isinstance(element, ShapeElement):
+            styles.shape_rows(self.window, row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
+        row.add_row(styles.position_rows(self.window, element, set_attr))
         return row
+
+    def _on_expanded(self, index: int, expanded: bool) -> None:
+        """The open element is the one the shortcuts (Ctrl+D, Delete, Alt+Up/Down) act on."""
+        if expanded:
+            self.window.expand_index = index
+        elif self.window.expand_index == index:
+            self.window.expand_index = -1
 
     def _add_header_buttons(self, row: Adw.ExpanderRow, index: int) -> None:
         window = self.window
@@ -142,6 +163,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         row.add_row(
             combo_row(_("Line alignment"), TEXT_ALIGNS, element.align, lambda v: set_attr(align=v))
         )
+        styles.text_rows(self.window, row, element, set_attr)
         row.add_row(self._name_row(element, set_attr))
 
     @staticmethod
@@ -192,16 +214,15 @@ class ElementsGroup(Adw.PreferencesGroup):
             lambda b, _p: set_attr(font=b.get_font_desc().get_family() or "Sans"),
         )
         font_row.add_suffix(font_button)
-        for icon, attr in (
-            ("format-text-bold-symbolic", "bold"),
-            ("format-text-italic-symbolic", "italic"),
+        for icon, tip, attr in (
+            ("format-text-bold-symbolic", _("Bold"), "bold"),
+            ("format-text-italic-symbolic", _("Italic"), "italic"),
+            ("format-text-underline-symbolic", _("Underline"), "underline"),
+            ("format-text-strikethrough-symbolic", _("Strikethrough"), "strikethrough"),
         ):
-            toggle = Gtk.ToggleButton(
-                icon_name=icon, valign=Gtk.Align.CENTER, active=getattr(element, attr)
+            font_row.add_suffix(
+                toggle(icon, tip, getattr(element, attr), lambda v, a=attr: set_attr(**{a: v}))
             )
-            toggle.add_css_class("flat")
-            toggle.connect("toggled", lambda t, a=attr: set_attr(**{a: t.get_active()}))
-            font_row.add_suffix(toggle)
         return font_row
 
     def _image_rows(self, row: Adw.ExpanderRow, element: ImageElement, set_attr) -> None:
@@ -216,6 +237,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)
         row.add_row(image_row)
+        styles.image_rows(self.window, row, element, set_attr)
 
     def _page_rows(self, row: Adw.ExpanderRow, element: PageElement, set_attr) -> None:
         area = Adw.ActionRow(title=_("Area"))

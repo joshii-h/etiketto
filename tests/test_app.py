@@ -340,8 +340,7 @@ def test_text_element_widgets(window):
     view.get_buffer().set_text("Neuer Text\nZeile 2")
     assert element.text == "Neuer Text\nZeile 2"
     assert window.dirty
-    expander = one(window.sidebar, Adw.ExpanderRow)
-    assert expander.get_title() == "Neuer Text"
+    expander = one(window.sidebar, Adw.ExpanderRow, title="Neuer Text")
     toggles = {t.get_icon_name(): t for t in find(window.sidebar, Gtk.ToggleButton)}
     bold = toggles["format-text-bold-symbolic"]
     italic = toggles["format-text-italic-symbolic"]
@@ -383,7 +382,7 @@ def test_code_element_widgets(window):
     colour_row = one(window.sidebar, Adw.ActionRow, title="Colour")
     one(colour_row, Gtk.ColorDialogButton).set_rgba(widgets.hex_to_rgba("#0000ff"))
     assert element.color == "#0000ff"
-    assert find(window.sidebar, Adw.ExpanderRow)[1].get_title() == "Code 128: \u2068ABC\u2069"
+    one(window.sidebar, Adw.ExpanderRow, title="Code 128: \u2068ABC\u2069")
 
 
 def test_image_element_widgets(window, file_dialog, tmp_path):
@@ -2250,7 +2249,7 @@ def test_insert_variable_into_a_code(window):
     window.add_element(CodeElement(data="https://x/"))
     entry = one(window.sidebar, Adw.EntryRow, title="Content (link, text, number)")
     entry.set_position(len("https://"))
-    expander = find(window.sidebar, Adw.ExpanderRow)[1]
+    expander = one(window.sidebar, Adw.ExpanderRow, title="QR code: \u2068https://x/\u2069")
     choose_variable(variable_popover(expander), "Counter with leading zeros")
     assert window.label.elements[1].data == "https://{=counter:0001}x/"
     assert entry.get_position() == len("https://{=counter:0001}")

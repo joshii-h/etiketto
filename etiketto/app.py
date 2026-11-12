@@ -83,6 +83,12 @@ class App(Adw.Application):
         css = Gtk.CssProvider()
         css.load_from_string(
             ".label-preview { border-radius: 0; box-shadow: 0 1px 4px alpha(black, 0.5); }"
+            # an expander in an open expander row (widgets.expander()): libadwaita
+            # would show its arrow as open too
+            " row.expander.nested:not(:checked) image.expander-row-arrow"
+            " { -gtk-icon-transform: rotate(0.5turn); color: inherit; }"
+            " row.expander.nested:not(:checked) image.expander-row-arrow:dir(rtl)"
+            " { -gtk-icon-transform: rotate(-0.5turn); }"
         )
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
@@ -118,9 +124,11 @@ class App(Adw.Application):
                     "EOS2/300", None, None, None, "IDLE", pitch_mm=pitch
                 )
             window.printer.update_row()
-            if state == "expand":
+            if state in ("expand", "styles"):
                 window.expand_index = len(window.label.elements) - 1
                 window.rebuild_sidebar()
+                if state == "styles":  # the last element's box and frame options open
+                    self._open_nested(window.elements_group, _("Box and frame"))
 
                 def scroll_down():
                     child = window.sidebar.get_first_child()
@@ -151,6 +159,14 @@ class App(Adw.Application):
 
         GLib.timeout_add(max(500, delay - 1500), prepare)
         GLib.timeout_add(delay, self._screenshot, window, shot)
+
+    def _open_nested(self, widget, title):  # pragma: no cover - see _maybe_screenshot
+        child = widget.get_first_child()
+        while child:
+            if isinstance(child, Adw.ExpanderRow) and child.get_title() == title:
+                child.set_expanded(True)
+            self._open_nested(child, title)
+            child = child.get_next_sibling()
 
     def _screenshot(self, window, path):  # pragma: no cover - see _maybe_screenshot
         paintable = Gtk.WidgetPaintable.new(window)
