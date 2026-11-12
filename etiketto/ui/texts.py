@@ -87,6 +87,7 @@ def warning_text(warning: RenderWarning) -> str:
         "code_empty": _("Element %(n)d: the code is empty"),
         "ean13_digits": _("Element %(n)d: EAN-13 needs exactly 12 digits"),
         "ean13_check": _("Element %(n)d: the EAN-13 check digit is wrong"),
+        "code128_long": _("Element %(n)d: Code 128 holds at most %(max)d characters"),
         "code128_charset": _(
             "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
         ),

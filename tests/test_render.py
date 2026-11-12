@@ -453,10 +453,10 @@ def test_check_code_accepts(symbology, data):
 
 
 def test_other_element_errors(make_label, monkeypatch):
-    def broken(element, height):
+    def broken(element):
         raise RuntimeError("segno broke")
 
-    monkeypatch.setattr(render_module, "render_code", broken)
+    monkeypatch.setattr(render_module, "_code_image", broken)
     rendered = render(make_label(elements=[CodeElement(data="x")]))
     assert rendered.warnings == [RenderWarning("element_failed", {"n": 1})]
 
@@ -583,3 +583,112 @@ def test_fixed_size_text_taller_than_the_tape_fits(make_label):
     label = make_label(elements=[TextElement(text="Hg", size_pt=200)], tape_mm=12)
     rendered = render_module.render(label, 100)
     assert rendered.image.height == render_module.mm_to_px(12, 100)
+
+
+def _file(raw: bytes) -> str:
+    return base64.b64encode(raw).decode()
+
+
+def test_only_common_image_formats_are_read(make_label, tmp_path, monkeypatch):
+    marker = tmp_path / "gs-ran"
+    eps = (
+        b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 10 10\n%%EndComments\n"
+        b"(" + str(marker).encode() + b") (w) file closefile\nshowpage\n%%EOF\n"
+    )
+    buffer = io.BytesIO()
+    Image.new("RGBA", (16, 16)).save(buffer, "ICO")
+    for raw in (eps, buffer.getvalue()):
+        rendered = render(make_label(elements=[ImageElement(data=_file(raw))]))
+        assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+    assert not marker.exists()  # Ghostscript never ran
+    assert set(render_module.IMAGE_FORMATS) == {"PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF"}
+
+
+def test_decompression_bomb_warnings_refuse_the_image(make_label, png_b64, monkeypatch):
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 150)  # 20 x 10 is over it, under twice
+    rendered = render(make_label(elements=[ImageElement(data=png_b64((20, 10), "blue"))]))
+    assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+
+
+def test_images_are_measured_from_their_header(make_label, png_b64, monkeypatch):
+    elements = [ImageElement(data=png_b64((10 + n, 10), "red")) for n in range(10)]
+    label = make_label(elements=elements)
+    render(label)
+    decoded = []
+    real = render_module._decode
+    monkeypatch.setattr(render_module, "_decode", lambda data: decoded.append(1) or real(data))
+    render(label)  # ten images, the decode cache holds eight: still no decoding
+    assert decoded == []
+
+
+def test_exif_orientation_counts_when_measuring(png_b64):
+    buffer = io.BytesIO()
+    exif = Image.Exif()
+    exif[0x0112] = 6  # turned by 90 degrees
+    Image.new("RGB", (40, 10), "red").save(buffer, "JPEG", exif=exif)
+    assert render_module._header_size(_file(buffer.getvalue())) == (10, 40)
+
+
+def test_within_limits_each_image_is_decoded_once_per_render(make_label, png_b64, monkeypatch):
+    data = png_b64((30, 10), "red")
+    label = make_label(elements=[ImageElement(data=data)] * 5, auto_length=False, length_mm=20)
+    decoded = []
+    real = render_module._decode
+    monkeypatch.setattr(render_module, "_decode", lambda d: decoded.append(1) or real(d))
+    with render_module.limited(10**8):
+        render(label)
+        render(label)
+    assert decoded == [1, 1]  # once per render, nothing kept between them
+
+
+def test_image_files_together_are_within_the_budget(make_label, png_b64):
+    files = [ImageElement(data=png_b64((100, 100), c)) for c in ("red", "green", "blue")]
+    with render_module.limited(25_000), pytest.raises(render_module.RenderTooLarge):
+        render(make_label(elements=files))
+    same = make_label(elements=[files[0]] * 3)  # one file three times counts once
+    with render_module.limited(25_000):
+        render_module._source_budget(same)
+
+
+def test_code128_has_a_length_limit(make_label):
+    long_code = CodeElement(data="A" * (render_module.CODE128_MAX + 1), symbology="code128")
+    rendered = render(make_label(elements=[long_code]))
+    warning = rendered.warnings[0]
+    assert warning.key == "code128_long" and warning.params["max"] == render_module.CODE128_MAX
+    from etiketto.ui.texts import warning_text
+
+    assert str(render_module.CODE128_MAX) in warning_text(warning)
+
+
+def test_codes_on_a_page_are_not_drawn_page_sized_while_measuring(monkeypatch):
+    label = Label(
+        printer="system",
+        tape_mm=297,
+        length_mm=210,
+        auto_length=False,
+        orientation="across",
+        elements=[CodeElement(data="https://example.org/%d" % n) for n in range(25)],
+    )
+    label.set_media_size(210, 297)
+    sizes = []
+    real = render_module._Part
+
+    def part(width, height, draw):
+        def drawn(w, h):
+            sizes.append(w * h)
+            return draw(w, h)
+
+        return real(width, height, drawn)
+
+    monkeypatch.setattr(render_module, "_Part", part)
+    with render_module.limited(40_000_000):
+        rendered = render_module.render(label, 300)
+    assert rendered.overflow and max(sizes) < 3500 * 3500 / 10
+
+
+def test_a_file_that_fails_only_when_drawn(make_label):
+    buffer = io.BytesIO()
+    Image.effect_noise((64, 64), 50).convert("RGB").save(buffer, "PNG")
+    cut = buffer.getvalue()[: len(buffer.getvalue()) // 2]  # header fine, data cut off
+    rendered = render(make_label(elements=[ImageElement(data=_file(cut))]))
+    assert [w.key for w in rendered.warnings] == ["image_unreadable"]
