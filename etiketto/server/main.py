@@ -87,7 +87,13 @@ def _service(args, printers):
     from etiketto.server.service import Service
 
     folder = labels_dir(args.labels_dir)
-    return Service(folder, tuple(args.allow_printer), printers=printers, discover=args.discover)
+    return Service(
+        folder,
+        tuple(args.allow_printer),
+        printers=printers,
+        discover=args.discover,
+        max_labels=args.max_labels,
+    )
 
 
 def serve(args) -> int:
@@ -95,6 +101,7 @@ def serve(args) -> int:
 
     _logging()
     printers, tokens = _configured(args)
+    _warn(args, printers, tokens)
     token = read_token(args.token_file) if tokens is None else None
     if token is None and tokens is None and not binds_loopback(args.host):
         raise CliError(
@@ -106,7 +113,16 @@ def serve(args) -> int:
             EXIT_USAGE,
         )
     service = _service(args, printers)
-    config = Config(args.host, args.port, token, args.mcp, tuple(args.allow_origin), tokens=tokens)
+    config = Config(
+        args.host,
+        args.port,
+        token,
+        args.mcp,
+        tuple(args.allow_origin),
+        max_body=args.max_body * 1024 * 1024,
+        tokens=tokens,
+        trusted_proxies=tuple(args.trusted_proxy),
+    )
     try:
         server = Server(config, service)
     except OSError as e:
@@ -116,9 +132,29 @@ def serve(args) -> int:
             % {"address": "%s:%d" % (args.host, args.port), "reason": e.strerror or e},
             EXIT_USAGE,
         ) from None
-    if tokens is not None:  # revoked tokens: read the file again on SIGHUP too
-        signal.signal(signal.SIGHUP, lambda _signum, _frame: tokens.reload())
+    signal.signal(signal.SIGHUP, lambda _signum, _frame: _reload(tokens))
     return _run(server, service)
+
+
+def _warn(args, printers, tokens) -> None:
+    """Settings that work, but likely not as meant."""
+    if tokens is None:
+        return
+    if os.environ.get(TOKEN_VARIABLE):
+        log.warning("%s is ignored: the tokens of %s are used", TOKEN_VARIABLE, args.tokens)
+    if printers is None and not args.allow_printer:
+        log.warning(
+            "--tokens without --printers: tokens with the role print can print on any "
+            "address (limit them with --printers or --allow-printer)"
+        )
+
+
+def _reload(tokens) -> None:
+    """SIGHUP (systemctl reload): tokens.toml is read again with the next
+    request. Only a flag here: a signal handler must not take locks. Without
+    tokens.toml there is nothing to read, but the server goes on running."""
+    if tokens is not None:
+        tokens.request_reload()
 
 
 def _run(server, service) -> int:
@@ -129,7 +165,7 @@ def _run(server, service) -> int:
     host, port = server.server_address[:2]
     log.info(
         "listening on http://%s:%d%s (labels: %s)",
-        host,
+        "[%s]" % host if ":" in host else host,
         port,
         " with MCP at /mcp" if server.mcp else "",
         service.labels.root,
@@ -176,39 +212,100 @@ def _expiry(text: str | None) -> str:
 
 
 def token_new(args) -> int:
-    """Make a token, add its hash to tokens.toml, show the token once."""
-    from etiketto.model import write_file
-    from etiketto.server.config import NAME, hash_token, new_token, token_entry
+    """Make a token (or take one from standard input), add its hash to
+    tokens.toml, show the token once. The file is locked meanwhile: two
+    at once do not lose one."""
+    from etiketto.model import LockTimeout, locked
+    from etiketto.server.config import NAME, new_token
 
     if not NAME.match(args.name):
         raise CliError(_("Not a valid name: letters, digits, . _ - (up to 64)"), EXIT_USAGE)
     path = args.tokens or default_tokens_file()
     printers = _printers_file(args.printers)
-    old = path.read_text(encoding="utf-8") if path.exists() else ""
-    token = new_token()
+    token, ident = _chosen_token() if args.from_stdin else new_token()
+    created = _create(path)
+    try:
+        try:
+            with locked(path):
+                _add(args, path, printers, token, ident)
+        except LockTimeout:
+            raise CliError(
+                _("%s is in use by another program – try again later") % path, EXIT_FILE
+            ) from None
+    except BaseException:
+        if created and path.exists() and path.stat().st_size == 0:
+            path.unlink()  # the empty file made for it
+        raise
+    if not args.from_stdin:
+        sys.stdout.write(token + "\n")
+        sys.stdout.flush()
+        sys.stderr.write(
+            "etiketto: "
+            + _("The token is shown only this once; %s keeps only its hash.") % path
+            + "\n"
+        )
+    return EXIT_OK
+
+
+def _chosen_token() -> tuple[str, str]:
+    """A token people chose, from standard input: kept as an scrypt hash."""
+    token = sys.stdin.readline().strip()
+    if not token or not all(33 <= ord(c) < 127 for c in token):
+        raise CliError(
+            _("The access token may only contain printable ASCII characters without spaces"),
+            EXIT_USAGE,
+        )
+    if len(token) < MIN_TOKEN:
+        raise CliError(
+            _("The access token must be at least %d characters long") % MIN_TOKEN, EXIT_USAGE
+        )
+    return token, ""
+
+
+def _create(path: Path) -> bool:
+    """Make tokens.toml for this user only, if it is not there yet."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.close(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
+    except FileExistsError:
+        return False
+    except OSError as e:
+        raise _unreadable(path, e) from None
+    return True
+
+
+def _unreadable(path: Path, error: Exception) -> CliError:
+    reason = getattr(error, "strerror", None) or error
+    return CliError(
+        _("Cannot read %(file)s: %(reason)s") % {"file": path, "reason": reason}, EXIT_FILE
+    )
+
+
+def _add(args, path: Path, printers, token: str, ident: str) -> None:
+    from etiketto.model import write_file
+    from etiketto.server.config import hash_token, token_entry
+
+    try:
+        old = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        raise _unreadable(path, e) from None
+    method = "scrypt" if args.scrypt or args.from_stdin else "sha256"
     entry = token_entry(
         args.name,
-        hash_token(token, "scrypt" if args.scrypt else "sha256"),
+        hash_token(token, method),
         args.role,
         args.printer,
         _expiry(args.expires),
         args.description or "",
+        ident,
     )
     if old.strip() and any(e.caller.name == args.name for e in _entries(path, printers)):
         raise CliError(_("A token named %s exists already") % args.name, EXIT_USAGE)
     _check_new(path, old + entry, printers)
-    if not path.exists():  # only for this user, from the start
-        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        os.close(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
-    write_file(path, (old + entry).encode())
-    sys.stdout.write(token + "\n")
-    sys.stdout.flush()
-    sys.stderr.write(
-        "etiketto: "
-        + _("The token is shown only this once; %s keeps only its hash.") % path
-        + "\n"
-    )
-    return EXIT_OK
+    try:
+        write_file(path, (old + entry).encode())
+    except OSError as e:
+        raise _unreadable(path, e) from None
 
 
 def _printers_file(path: Path | None):
@@ -238,6 +335,7 @@ def _check_new(path: Path, text: str, printers) -> None:
     with tempfile.TemporaryDirectory() as folder:
         trial = Path(folder) / path.name
         trial.write_text(text, encoding="utf-8")
+        trial.chmod(0o600)
         try:
             load_tokens(trial, printers)
         except ConfigError as e:

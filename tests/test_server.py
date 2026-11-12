@@ -133,7 +133,7 @@ def test_token_is_required_except_for_health(make_server):
 
 def test_wrong_tokens_block_the_address(make_server):
     _server, base = make_server(token=TOKEN)
-    for _n in range(9):
+    for _n in range(10):
         assert call(base, "GET", "/api/v1/labels", token="nope")[0] == 401
     status, _response, body = call(base, "GET", "/api/v1/labels", token="nope")
     assert status == 429 and body["error"]["code"] == "too_many_requests"
@@ -157,7 +157,7 @@ def test_rate_limit_forgets_after_the_window(monkeypatch):
     assert not limit.blocked("a")
     for n in range(10_002):
         limit.failed(str(n))
-    assert len(limit._failures) < 10_000
+    assert len(limit._failures) <= 10_000
 
 
 def test_dns_rebinding_and_origins(make_server):

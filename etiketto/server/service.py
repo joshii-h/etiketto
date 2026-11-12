@@ -14,8 +14,11 @@ import contextlib
 import errno
 import fnmatch
 import io
+import ipaddress
 import logging
 import os
+import re
+import socket
 import threading
 import time
 from collections.abc import Callable, Iterator, Mapping
@@ -85,6 +88,7 @@ from etiketto.variables import BUILTIN, Values, label_names, uses_counter
 
 log = logging.getLogger(__name__)
 DISCOVERY_SECONDS = 30.0  # printers found are remembered this long
+STATUS_SECONDS = 5.0  # the state of printers in the list, as long
 MAX_HOST = 512
 RENDERS = 2  # renders for previews and checks at once: a large label takes much memory
 # what one label of a request may be: a text of thousands of lines, or
@@ -178,10 +182,70 @@ def host_ok(host: str) -> bool:
     return host_name(host) is not None
 
 
+def _ip_pattern(pattern: str) -> bool:
+    """192.168.1.0/24, 192.168.1.*, 2001:db8::/32: patterns for addresses."""
+    return bool(re.fullmatch(r"[0-9.*]+(/\d+)?|[0-9A-Fa-f:.*]*:[0-9A-Fa-f:.*]*(/\d+)?", pattern))
+
+
+def _ip_matches(address: str, pattern: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    if "/" in pattern:
+        try:
+            return ip in ipaddress.ip_network(pattern, strict=False)
+        except ValueError:
+            return False
+    return fnmatch.fnmatchcase(str(ip), pattern.lower())
+
+
+def _resolved(name: str) -> list[str]:
+    try:
+        return sorted({str(info[4][0]) for info in socket.getaddrinfo(name, None)})
+    except OSError:
+        return []
+
+
+def host_allowed(name: str, patterns: tuple[str, ...]) -> bool:
+    """Whether a printer's host matches --allow-printer. Patterns are
+    compared with the host, never the whole address (a path or a user name
+    cannot make "evil/x.printers.lan" pass "*.printers.lan"). Address
+    patterns (192.168.1.0/24, 192.168.1.*) match IP addresses only, a name
+    by all the addresses it resolves to: "192.168.1.evil.example" is no
+    address in 192.168.1.*. Name patterns match names."""
+    is_ip = bool(_ip_matches(name, "*"))
+    for pattern in patterns:
+        if not _ip_pattern(pattern):
+            if not is_ip and fnmatch.fnmatchcase(name, pattern.lower()):
+                return True
+            continue
+        addresses = [name] if is_ip else _resolved(name)
+        if addresses and all(_ip_matches(a, pattern) for a in addresses):
+            return True
+    return False
+
+
+DEFAULT_PORTS = {"ipp": 631, "ipps": 631, "http": 80, "https": 443}
+
+
 def queue_key(host: str) -> str:
-    """The same printer however its address is written (case of the name)."""
+    """The same printer however its address is written: the case of the
+    name, a dot at its end, the default port given or not."""
     parts = urlsplit(host if "://" in host else "//" + host)
-    return "%s:%s%s" % (parts.hostname, parts.port or "", parts.path)
+    name = (parts.hostname or "").rstrip(".")
+    port = parts.port or DEFAULT_PORTS.get(parts.scheme.lower()) or ""
+    return "%s:%s%s" % (name, port, parts.path)
+
+
+def _cost(prepared: Prepared) -> int:
+    """About the bytes a waiting job holds: the label (images in it) and
+    the data rows."""
+    label = prepared.label
+    size = sum(len(getattr(e, "data", "") or getattr(e, "text", "")) for e in label.elements)
+    size += len(label.background_image.data) if label.background_image else 0
+    rows = sum(len(k) + len(v) + 100 for row in prepared.rows for k, v in row.items())
+    return 2 * size + rows + 4096
 
 
 def redacted(host: str | None) -> str | None:
@@ -201,12 +265,14 @@ class Service:
         clock: Callable[[], datetime] = datetime.now,
         printers: Mapping[str, NamedPrinter] | None = None,
         discover: bool = False,
+        max_labels: int = 10_000,
     ):
         self.labels = LabelsDir(labels_dir)
         self.allowed_hosts = allowed_hosts  # fnmatch patterns; () allows any
         # printers.toml: only these printers, chosen by name
         self.named = dict(printers) if printers is not None else None
         self.discovery = discover  # search the network (off unless --discover)
+        self.max_labels = max_labels  # copies times rows of one job
         self._settings = settings
         self._clock = clock
         self.jobs = JobQueue(self._failed)
@@ -214,6 +280,7 @@ class Service:
         self._found_lock = threading.Lock()
         self._label_locks: dict[str, threading.Lock] = {}
         self._searches: dict[str, threading.Lock] = {}
+        self._states: dict[str, tuple[float, dict]] = {}
         self._renders = threading.BoundedSemaphore(RENDERS)
 
     def close(self, timeout: float = 30.0) -> None:
@@ -257,13 +324,22 @@ class Service:
         ]
 
     def _state(self, printer: NamedPrinter) -> dict:
-        """A printer's state for the list; a problem is part of the state."""
+        """A printer's state for the list, remembered a few seconds (a list
+        asked for often must not keep every printer busy); a problem is part
+        of the state."""
+        with self._found_lock:
+            cached = self._states.get(printer.name)
+        if cached and time.monotonic() - cached[0] < STATUS_SECONDS:
+            return cached[1]
         try:
-            return self._query(
+            state = self._query(
                 get_backend(printer.backend), printer.host, self._named_settings(printer)
             )
         except ApiError as e:
-            return {"state": "UNREACHABLE", "error": e.to_dict()}
+            state = {"state": "UNREACHABLE", "error": e.to_dict()}
+        with self._found_lock:
+            self._states[printer.name] = (time.monotonic(), state)
+        return state
 
     def _named_settings(self, printer: NamedPrinter) -> Settings:
         """The app's settings, with this printer's own for its model."""
@@ -275,12 +351,10 @@ class Service:
     def _named(self, name: object, caller: Caller) -> NamedPrinter:
         assert self.named is not None
         printer = self.named.get(name) if isinstance(name, str) else None
-        if printer is None:
+        # a printer the token may not use is as unknown as one that is not
+        # there: the names of the others are none of its business
+        if printer is None or not caller.may_use(printer.name):
             raise not_found("printer_not_found", _("Unknown printer: %s") % name)
-        if not caller.may_use(printer.name):
-            raise ApiError(
-                403, "printer_forbidden", _("This access token may not use the printer %s") % name
-            )
         return printer
 
     def _choose(self, name: str | None, caller: Caller, required: bool) -> NamedPrinter | None:
@@ -288,11 +362,9 @@ class Service:
         assert self.named is not None
         if name is not None:
             return self._named(name, caller)
-        defaults = [p for p in self.named.values() if p.default] or (
-            list(self.named.values()) if len(self.named) == 1 else []
-        )
-        if defaults:
-            return self._named(defaults[0].name, caller)
+        chosen = _default_printer([p for p in self.named.values() if caller.may_use(p.name)])
+        if chosen is not None:
+            return chosen
         if required:
             raise bad_request(_("Choose a printer by its name"), "no_printer")
         return None
@@ -357,6 +429,9 @@ class Service:
             named = self._named(printer, caller)
             data = self._query(get_backend(named.backend), named.host, self._named_settings(named))
             return dict(data, name=named.name)
+        if host is not None and not caller.may("print"):
+            # a preview token must not make the server contact any address
+            raise ApiError(403, "forbidden", _("This access token may not do this"))
         backend = self._backend(printer)
         settings = self._settings()
         return self._query(backend, self._host(host or settings.printer(backend).host), settings)
@@ -410,11 +485,7 @@ class Service:
         name = host_name(host)
         if name is None:
             raise invalid_field("host")
-        # patterns match the host itself, not the whole address: a path or a
-        # user name cannot make "evil/x.printers.lan" pass "*.printers.lan"
-        if self.allowed_hosts and not any(
-            fnmatch.fnmatchcase(name, p.lower()) for p in self.allowed_hosts
-        ):
+        if self.allowed_hosts and not host_allowed(name, self.allowed_hosts):
             raise ApiError(
                 403, "host_not_allowed", _("This printer address is not allowed: %s") % host
             )
@@ -663,11 +734,17 @@ class Service:
         _require(caller, "print")
         prepared = self.prepare(request, request.copies, request.rows, caller, printing=True)
         _check_copies(prepared, request.copies)
+        total = request.copies * (len(prepared.indexes) if prepared.rows else 1)
+        if total > self.max_labels:
+            raise ApiError(
+                413,
+                "too_many_labels",
+                _("At most %d labels in one print job") % self.max_labels,
+            )
         with self._rendering(prepared):
             warnings = self._check(prepared)
         save = self._saves(prepared, request.no_save_counter)
         host = self._print_host(request, prepared)
-        total = request.copies * (len(prepared.indexes) if prepared.rows else 1)
         name = self.labels.name_of(prepared.path) if prepared.path else ""
 
         def run(job: PrintJob):
@@ -677,6 +754,7 @@ class Service:
         job.owner = caller.name
         job.printer_name = prepared.named.name if prepared.named else ""
         job.key = queue_key(host)
+        job.cost = _cost(prepared)
         try:
             self.jobs.submit(job)
         except QueueFull:
@@ -932,6 +1010,14 @@ def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
             )
             % {"elements": MAX_ELEMENTS, "chars": MAX_TEXT},
         )
+
+
+def _default_printer(usable: list[NamedPrinter]) -> NamedPrinter | None:
+    """The default among the printers a token may use, else the only one."""
+    defaults = [p for p in usable if p.default]
+    if defaults:
+        return defaults[0]
+    return usable[0] if len(usable) == 1 else None
 
 
 def _check_copies(prepared: Prepared, copies: int) -> None:

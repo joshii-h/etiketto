@@ -310,11 +310,14 @@ def _operation(summary: str, responses: dict, **extra) -> dict:
             "that contacts printers)"
         ),
     )
+    responses.setdefault("405", _error("Not a method of this path"))
     responses.setdefault("408", _error("The request took longer than 30 s to send"))
+    responses.setdefault("500", _error("An error of the server (logged)"))
+    responses.setdefault("501", {"description": "A method HTTP knows but the server does not"})
     responses.setdefault("421", _error("Not a loopback Host on a loopback server"))
     if "requestBody" in extra:
         responses.setdefault("411", _error("No Content-Length"))
-        responses.setdefault("413", _error("Too large"))
+        responses.setdefault("413", _error("Too large (--max-body, 4 MB by default)"))
         responses.setdefault("415", _error("Not application/json"))
     operation: dict[str, Any] = {
         "summary": summary,

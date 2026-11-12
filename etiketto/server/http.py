@@ -22,6 +22,7 @@ a header.
 
 from __future__ import annotations
 
+import contextlib
 import hmac
 import ipaddress
 import json
@@ -48,7 +49,12 @@ from etiketto.ui.i18n import _, language
 log = logging.getLogger(__name__)
 
 PREFIX = "/api/v1"
-MAX_BODY = 32 * 1024 * 1024  # a label with large images, or many data rows
+# a label with images, or many data rows; JSON takes up to about 30 times
+# its size once parsed, so large bodies are parsed two at a time
+MAX_BODY = 4 * 1024 * 1024
+LARGE_BODY = 512 * 1024
+PARSES = 2
+ANSWER_SECONDS = 60.0  # to send the answer, once the request is in
 MAX_CONNECTIONS = 32
 MAX_PER_CLIENT = 8  # connections from one address at once
 REQUEST_SECONDS = 30.0  # to send the whole request: line, headers and body
@@ -115,15 +121,33 @@ class Config:
     mcp: bool = False
     origins: tuple[str, ...] = ()  # web origins allowed besides the server itself
     max_body: int = MAX_BODY
+    # reverse proxies whose X-Forwarded-For names the client (--trusted-proxy)
+    trusted_proxies: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...] = ()
     tokens: TokenStore | None = None  # named tokens with roles (tokens.toml)
+
+
+def rate_key(address: str) -> str:
+    """Whom wrong tokens are counted for: the address, an IPv6 address by
+    its /64 network (one computer can use all of it)."""
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    if isinstance(ip, ipaddress.IPv6Address):
+        if ip.ipv4_mapped:
+            return str(ip.ipv4_mapped)
+        return str(ipaddress.ip_network("%s/64" % ip, strict=False))
+    return str(ip)
 
 
 class RateLimit:
     """Wrong tokens per client address within a minute."""
 
+    MAX_CLIENTS = 10_000
+
     def __init__(self, limit: int = AUTH_FAILURES, window: float = 60.0):
         self.limit, self.window = limit, window
-        self._failures: dict[str, deque[float]] = defaultdict(deque)
+        self._failures: dict[str, deque[float]] = {}
         self._lock = threading.Lock()
 
     def blocked(self, client: str) -> bool:
@@ -139,9 +163,10 @@ class RateLimit:
 
     def failed(self, client: str) -> None:
         with self._lock:
-            if len(self._failures) > 10_000:  # many addresses: forget, do not grow
-                self._failures.clear()
-            self._failures[client].append(time.monotonic())
+            if client not in self._failures and len(self._failures) >= self.MAX_CLIENTS:
+                self._failures.pop(next(iter(self._failures)))  # the oldest makes room
+            # never more than the limit kept: enough to know it is reached
+            self._failures.setdefault(client, deque(maxlen=self.limit)).append(time.monotonic())
 
 
 class Server(ThreadingHTTPServer):
@@ -154,16 +179,27 @@ class Server(ThreadingHTTPServer):
         self.loopback = is_loopback(address)
         self.mcp = HttpTransport(Mcp(service)) if config.mcp else None
         self.rate_limit = RateLimit()
+        self.parses = threading.BoundedSemaphore(PARSES)
+        self.reaper = Reaper()
         self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
         self._clients: dict[str, int] = defaultdict(int)
         self._clients_lock = threading.Lock()
         self.address_family = socket.AF_INET6 if ":" in address else socket.AF_INET
         super().__init__((address, config.port), Handler)
 
+    def trusted(self, address: str) -> bool:
+        """Whether the address is a reverse proxy given with --trusted-proxy."""
+        try:
+            ip = ipaddress.ip_address(address)
+        except ValueError:
+            return False
+        return any(ip in network for network in self.config.trusted_proxies)
+
     def _admit(self, client: str) -> bool:
-        """A slot for one more connection, at most MAX_PER_CLIENT per address."""
+        """A slot for one more connection, at most MAX_PER_CLIENT per address
+        (not for a trusted proxy: every client comes from it)."""
         with self._clients_lock:
-            if self._clients[client] >= MAX_PER_CLIENT:
+            if self._clients[client] >= MAX_PER_CLIENT and not self.trusted(client):
                 return False
             if not self._slots.acquire(blocking=False):
                 return False
@@ -193,6 +229,56 @@ class Server(ThreadingHTTPServer):
             super().process_request_thread(request, client_address)
         finally:
             self._leave(client_address[0])
+
+
+class Reaper:
+    """Closes connections whose request is not in by its deadline. A socket
+    timeout only bounds one recv: a client sending a byte every few
+    seconds would hold a connection for ever (slowloris), inside a line or
+    a body too."""
+
+    def __init__(self, interval: float = 0.25):
+        self._deadlines: dict[socket.socket, float] = {}
+        self._expired: set[socket.socket] = set()  # cut off, not yet finished
+        self._lock = threading.Lock()
+        self._interval = interval
+        self._thread: threading.Thread | None = None
+
+    def watch(self, connection: socket.socket, seconds: float) -> None:
+        with self._lock:
+            self._deadlines[connection] = time.monotonic() + seconds
+            if self._thread is None:
+                self._thread = threading.Thread(target=self._run, daemon=True, name="reaper")
+                self._thread.start()
+
+    def done(self, connection: socket.socket) -> None:
+        with self._lock:
+            self._deadlines.pop(connection, None)
+
+    def finished(self, connection: socket.socket) -> None:
+        with self._lock:
+            self._deadlines.pop(connection, None)
+            self._expired.discard(connection)
+
+    def expired(self, connection: socket.socket) -> bool:
+        """Cut off: what was read of the request (headers ending early at
+        the cut) must not be taken as a request."""
+        with self._lock:
+            return connection in self._expired
+
+    def _run(self) -> None:
+        while True:
+            time.sleep(self._interval)
+            now = time.monotonic()
+            with self._lock:
+                late = [c for c, deadline in self._deadlines.items() if deadline <= now]
+                for connection in late:
+                    del self._deadlines[connection]
+                    self._expired.add(connection)
+            for connection in late:
+                with contextlib.suppress(OSError):
+                    # reading ends; an answer (408) can still be sent
+                    connection.shutdown(socket.SHUT_RD)
 
 
 class _Deadline:
@@ -233,6 +319,32 @@ class Handler(BaseHTTPRequestHandler):
     def setup(self) -> None:
         super().setup()
         self.rfile = _Deadline(self.rfile, self.connection, REQUEST_SECONDS)  # type: ignore[assignment]
+        self.server.reaper.watch(self.connection, REQUEST_SECONDS)
+        self.who = "-"
+
+    def finish(self) -> None:
+        self.server.reaper.finished(self.connection)
+        with contextlib.suppress(OSError):  # the client went away
+            super().finish()
+
+    def _request_in(self) -> None:
+        """The whole request is read: no deadline for it any more, and time
+        to send the answer."""
+        self.server.reaper.done(self.connection)
+        with contextlib.suppress(OSError):
+            self.connection.settimeout(ANSWER_SECONDS)
+
+    def client(self) -> str:
+        """The client's address; behind a trusted proxy the last address in
+        X-Forwarded-For that is no trusted proxy itself."""
+        peer = self.client_address[0]
+        forwarded = self.headers.get("X-Forwarded-For") if hasattr(self, "headers") else None
+        if not forwarded or not self.server.trusted(peer):
+            return peer
+        for hop in reversed([part.strip() for part in forwarded.split(",")]):
+            if not self.server.trusted(hop):
+                return hop
+        return peer
 
     # --- the checks -------------------------------------------------------------
 
@@ -258,20 +370,32 @@ class Handler(BaseHTTPRequestHandler):
 
     def _handle(self, method: str) -> None:
         self.caller = LOCAL
+        config = self.server.config
+        self.who = "-" if config.token or config.tokens else LOCAL.name
+        if self.server.reaper.expired(self.connection):
+            self.close_connection = True
+            self._error(ApiError(408, "timeout", _("The request took too long")))
+            return
+        if method not in ("POST",) or self._path() == PREFIX + "/health":
+            self._request_in()  # no body to wait for
         with language(self.headers.get("Accept-Language")):
-            try:
-                if method == "OPTIONS" and self._preflight():
-                    return
-                self._check()
-                self._route(method)
-            except ApiError as e:
-                self._error(e)
-            except TimeoutError:  # the body came too slowly
-                self.close_connection = True
-                self._error(ApiError(408, "timeout", _("The request took too long")))
-            except Exception:  # noqa: BLE001 - one broken request must not end the server
-                log.exception("request failed")
-                self._error(ApiError(500, "internal", _("Internal error")))
+            self._answer(method)
+
+    def _answer(self, method: str) -> None:
+        """Check and route the request; every problem becomes an answer."""
+        try:
+            if method == "OPTIONS" and self._preflight():
+                return
+            self._check()
+            self._route(method)
+        except ApiError as e:
+            self._error(e)
+        except TimeoutError:  # the body came too slowly
+            self.close_connection = True
+            self._error(ApiError(408, "timeout", _("The request took too long")))
+        except Exception:  # noqa: BLE001 - one broken request must not end the server
+            log.exception("request failed")
+            self._error(ApiError(500, "internal", _("Internal error")))
 
     def _check(self) -> None:
         host = self.headers.get("Host")  # browsers always send it
@@ -285,26 +409,27 @@ class Handler(BaseHTTPRequestHandler):
         config = self.server.config
         if (config.token or config.tokens) and self._path() != PREFIX + "/health":
             self.caller = self._authorize()
+            self.who = self.caller.name
 
     def _authorize(self) -> Caller:
         """Who the token belongs to; 401 for a wrong, expired or revoked one.
         Wrong tokens block the address for a while, valid ones never: a
         blocked address only skips the slow hash of tokens not seen before."""
-        client = self.client_address[0]
+        client = rate_key(self.client())
         blocked = self.server.rate_limit.blocked(client)
         scheme, _sep, value = self.headers.get("Authorization", "").partition(" ")
         caller = self._caller(value.strip(), blocked) if scheme.lower() == "bearer" else None
         if caller is not None:
             return caller
-        self.server.rate_limit.failed(client)
-        if blocked or self.server.rate_limit.blocked(client):
+        if blocked:  # not counted again: the block ends a minute after the last counted one
             raise ApiError(429, "too_many_requests", _("Too many requests – try again later"))
+        self.server.rate_limit.failed(client)
         raise ApiError(401, "unauthorized", _("Access token missing or wrong"))
 
     def _caller(self, given: str, known_only: bool = False) -> Caller | None:
         config = self.server.config
         if config.tokens is not None:
-            return config.tokens.find(given, known_only=known_only) if given else None
+            return config.tokens.find(given, cheap_only=known_only) if given else None
         assert config.token is not None
         return (
             Caller("token") if hmac.compare_digest(given.encode(), config.token.encode()) else None
@@ -332,7 +457,8 @@ class Handler(BaseHTTPRequestHandler):
         return origin in own or origin in self.server.config.origins
 
     def _path(self) -> str:
-        return urlsplit(self.path).path
+        # also for a request line that could not be read (no path then)
+        return urlsplit(getattr(self, "path", "") or "").path
 
     def _query(self) -> dict[str, list[str]]:
         return parse_qs(urlsplit(self.path).query, max_num_fields=20)
@@ -340,15 +466,17 @@ class Handler(BaseHTTPRequestHandler):
     def _body(self) -> bytes:
         if self.headers.get("Transfer-Encoding"):
             raise ApiError(411, "length_required", _("The request needs a Content-Length"))
-        try:
-            length = int(self.headers.get("Content-Length", ""))
-        except ValueError:
-            raise ApiError(
-                411, "length_required", _("The request needs a Content-Length")
-            ) from None
-        if length < 0 or length > self.server.config.max_body:
+        value = self.headers.get("Content-Length", "").strip()
+        if not (value.isascii() and value.isdigit()):  # not "+5", " 5", "٥"
+            raise ApiError(411, "length_required", _("The request needs a Content-Length"))
+        length = int(value)
+        if length > self.server.config.max_body:
             raise ApiError(413, "too_large", _("The request is too large"))
-        return self.rfile.read(length)
+        body = self.rfile.read(length)
+        if len(body) < length:  # cut off at the deadline, or the client stopped
+            raise TimeoutError("request body incomplete")
+        self._request_in()
+        return body
 
     def _json_type(self) -> None:
         kind = self.headers.get("Content-Type", "").split(";")[0].strip().lower()
@@ -358,10 +486,16 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self) -> object:
         self._json_type()
         body = self._body()
+        large = len(body) > LARGE_BODY
+        if large:  # parsed, it takes many times its size: a few at a time
+            self.server.parses.acquire()
         try:
             return json.loads(body)
         except (ValueError, RecursionError):
             raise bad_request(_("The request is not valid JSON"), "not_json") from None
+        finally:
+            if large:
+                self.server.parses.release()
 
     # --- routes -------------------------------------------------------------------
 
@@ -499,9 +633,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         for key, value in dict(self._cors(), **(headers or {})).items():
             self.send_header(key, value)
-        self.end_headers()
-        if data and self.command != "HEAD":
-            self.wfile.write(data)
+        try:
+            self.end_headers()
+            if data and self.command != "HEAD":
+                self.wfile.write(data)
+        except OSError:  # the client went away (or never finished its request)
+            self.close_connection = True
 
     def version_string(self) -> str:
         return self.server_version
@@ -510,9 +647,9 @@ class Handler(BaseHTTPRequestHandler):
         status = code.value if isinstance(code, HTTPStatus) else code
         log.info(
             "%s %s %s %s %s",
-            self.client_address[0],
-            self.caller.name,
-            self.command,
+            self.client() if hasattr(self, "headers") else self.client_address[0],
+            getattr(self, "who", "-"),
+            getattr(self, "command", None) or "-",
             self._path(),
             status,
         )

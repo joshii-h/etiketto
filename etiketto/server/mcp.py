@@ -66,6 +66,7 @@ INSTRUCTIONS = (
 )
 MAX_LINE = 64 * 1024 * 1024  # one message on stdio
 MAX_SESSIONS = 100
+MAX_SESSIONS_PER_OWNER = 10  # one token cannot push the others' sessions out
 SESSION_SECONDS = 3600.0  # an HTTP session unused this long ends
 DEFAULT_WAIT = 10.0  # seconds print_label waits for its job, unless told
 
@@ -354,8 +355,11 @@ class Mcp:
         params = message.get("params")
         if message.get("method") != "notifications/cancelled" or not isinstance(params, dict):
             return
+        ident = params.get("requestId")
+        if isinstance(ident, bool) or not isinstance(ident, (str, int)):
+            return  # no request has such an id (and a list could not be looked up)
         with self._calls_lock:
-            cancel = self._calls.get((scope, params.get("requestId")))
+            cancel = self._calls.get((scope, ident))
         if cancel is not None:
             cancel.set()
 
@@ -643,8 +647,11 @@ class HttpTransport:
     def _open(self, session: Session) -> None:
         with self._lock:
             self._expire()
-            if len(self._sessions) >= MAX_SESSIONS:  # the one unused longest makes room
-                oldest = min(self._sessions.values(), key=lambda s: s.used)
+            own = [s for s in self._sessions.values() if s.owner == session.owner]
+            if len(own) >= MAX_SESSIONS_PER_OWNER or len(self._sessions) >= MAX_SESSIONS:
+                # the token's own session unused longest makes room; only
+                # when it has none, the one unused longest of all
+                oldest = min(own or self._sessions.values(), key=lambda s: s.used)
                 del self._sessions[oldest.id]
             self._sessions[session.id] = session
 

@@ -43,6 +43,7 @@ import logging
 import os
 import re
 import secrets
+import stat
 import threading
 import tomllib
 from collections.abc import Mapping
@@ -51,7 +52,7 @@ from pathlib import Path
 from typing import Any
 
 from etiketto.backends import get_backend
-from etiketto.backends.base import CUT_MODES, ColorAdjust
+from etiketto.backends.base import ColorAdjust
 from etiketto.ui.i18n import _
 
 log = logging.getLogger(__name__)
@@ -115,6 +116,8 @@ class _Table:
             return default
         if not isinstance(value, str) or len(value) > 1000:
             raise self.fail(key, _("expected text"))
+        if any(ord(c) < 32 or ord(c) == 127 for c in value):  # it reaches logs and answers
+            raise self.fail(key, _("control characters are not allowed"))
         return value
 
     def flag(self, key: str) -> bool:
@@ -232,8 +235,12 @@ def _printer(path: Path, name: str, data: object, host_ok) -> NamedPrinter:
 
 def _settings(table: _Table, caps, host: str) -> dict[str, Any]:
     """The printer's settings as settings.json keeps them for a model."""
+    if not caps.cut_modes and "cut" in table.data:
+        raise table.fail("cut", _("this printer model does not cut"))
+    if not caps.supports_color_adjust and "color" in table.data:
+        raise table.fail("color", _("this printer model has no colour settings"))
     found = {
-        "cut": table.choice("cut", caps.cut_modes or CUT_MODES[:0]),
+        "cut": table.choice("cut", caps.cut_modes),
         "mode": table.choice("mode", tuple(m.id for m in caps.modes)),
         "safe_mm": table.number("safe_mm", 0, 10),
         "data_format": table.choice("data_format", caps.data_formats),
@@ -278,9 +285,15 @@ class TokenEntry:
     caller: Caller
     hash: str
     expires: dt.datetime | None = None
+    id: str = ""  # the id in the token (etk_<id>_<secret>): found without trying all
 
     def valid(self, now: dt.datetime) -> bool:
         return self.expires is None or now < self.expires
+
+
+# what scrypt may take: 128 * n * r * p bytes of memory
+SCRYPT_MAXMEM = 2**28
+TOKEN_ID = re.compile(r"etk_([0-9a-f]{12})_[A-Za-z0-9_-]{16,}\Z")
 
 
 def hash_token(token: str, method: str = "sha256") -> str:
@@ -289,14 +302,14 @@ def hash_token(token: str, method: str = "sha256") -> str:
     if method == "sha256":
         return "sha256:" + hashlib.sha256(token.encode()).hexdigest()
     salt = secrets.token_bytes(16)
-    digest = hashlib.scrypt(token.encode(), salt=salt, dklen=32, **SCRYPT)
+    digest = hashlib.scrypt(token.encode(), salt=salt, dklen=32, maxmem=SCRYPT_MAXMEM, **SCRYPT)
     return "scrypt:%(n)d:%(r)d:%(p)d:" % SCRYPT + ":".join(
         base64.b64encode(part).decode() for part in (salt, digest)
     )
 
 
 def _parse_hash(value: str) -> tuple:
-    """None if `value` is no hash this module makes."""
+    """() if `value` is no hash this module makes."""
     method, _sep, rest = value.partition(":")
     if method == "sha256" and re.fullmatch(r"[0-9a-f]{64}", rest):
         return ("sha256", bytes.fromhex(rest))
@@ -305,13 +318,26 @@ def _parse_hash(value: str) -> tuple:
 
 
 def _scrypt(parts: list[str]) -> tuple:
+    """scrypt parameters a check can run with: digits only, n a power of
+    two, within the memory scrypt may take; salt and hash not too short."""
+    if not all(x.isascii() and x.isdigit() for x in parts[:3]):
+        return ()
+    n, r, p = (int(x) for x in parts[:3])
     try:
-        n, r, p = (int(x) for x in parts[:3])
         salt, digest = (base64.b64decode(x, validate=True) for x in parts[3:])
     except (ValueError, binascii.Error):
         return ()
-    sane = 2 <= n <= 2**20 and n & (n - 1) == 0 and 1 <= r <= 32 and 1 <= p <= 16
-    return ("scrypt", n, r, p, salt, digest) if sane and digest else ()
+    sane = _scrypt_cost_ok(n, r, p) and len(salt) >= 8 and 16 <= len(digest) <= 64
+    return ("scrypt", n, r, p, salt, digest) if sane else ()
+
+
+def _scrypt_cost_ok(n: int, r: int, p: int) -> bool:
+    if not (2 <= n <= 2**20 and n & (n - 1) == 0):
+        return False
+    return 1 <= r <= 32 and 1 <= p <= 16 and 128 * n * r * p < SCRYPT_MAXMEM
+
+
+_SCRYPTS = threading.BoundedSemaphore(2)  # slow checks at once: a CPU and memory each
 
 
 def token_matches(token: str, stored: str) -> bool:
@@ -321,26 +347,55 @@ def token_matches(token: str, stored: str) -> bool:
     if parsed[0] == "sha256":
         return hmac.compare_digest(hashlib.sha256(token.encode()).digest(), parsed[1])
     _method, n, r, p, salt, digest = parsed
-    mine = hashlib.scrypt(
-        token.encode(), salt=salt, n=n, r=r, p=p, dklen=len(digest), maxmem=2**28
-    )
+    with _SCRYPTS:
+        try:
+            mine = hashlib.scrypt(
+                token.encode(), salt=salt, n=n, r=r, p=p, dklen=len(digest), maxmem=SCRYPT_MAXMEM
+            )
+        except ValueError:  # parameters the library refuses after all
+            return False
     return hmac.compare_digest(mine, digest)
 
 
 def _expiry(table: _Table) -> dt.datetime | None:
+    """A date and time, or a date: valid through that whole day."""
     value = table.data.pop("expires", None)
     if value is None:
         return None
     if isinstance(value, dt.datetime):
         return value if value.tzinfo else value.astimezone()  # local time if none given
     if isinstance(value, dt.date):
-        return dt.datetime.combine(value, dt.time()).astimezone()
+        return dt.datetime.combine(value + dt.timedelta(days=1), dt.time()).astimezone()
     raise table.fail("expires", _("expected a date such as 2027-12-31"))
 
 
 def load_tokens(path: Path, printers: Mapping[str, NamedPrinter] | None) -> list[TokenEntry]:
+    _check_mode(path)
     entries = _tables(path, read_toml(path), "tokens")
-    return [_token(path, name, data, printers) for name, data in entries.items()]
+    tokens = [_token(path, name, data, printers) for name, data in entries.items()]
+    seen: set[str] = set()
+    for token in tokens:
+        # one token under two names (and maybe two roles): which one counts?
+        keys = {token.hash} if token.hash.startswith("sha256:") else set()
+        keys |= {"id:" + token.id} if token.id else set()
+        if keys & seen:
+            raise _problem(path, "tokens.%s.hash" % token.caller.name, _("the same token twice"))
+        seen |= keys
+    return tokens
+
+
+def _check_mode(path: Path) -> None:
+    """Anyone who can change tokens.toml can give themselves a token."""
+    try:
+        mode = os.stat(path).st_mode
+    except OSError:
+        return  # read_toml says what is wrong
+    if mode & stat.S_IWOTH:
+        raise ConfigError(
+            _("%s can be changed by every user of this computer: chmod 600 it") % path
+        )
+    if mode & (stat.S_IRWXG | stat.S_IRWXO):
+        log.warning("%s can be read or changed by others than its owner: chmod 600 it", path)
 
 
 def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
@@ -348,12 +403,17 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
     stored = table.text("hash", required=True)
     if not _parse_hash(stored):
         raise table.fail("hash", _("not a token hash: expected sha256:… or scrypt:…"))
-    role = table.choice("role", ROLES) or "print"
+    role = table.choice("role", ROLES)
+    if role is None:
+        raise table.fail("role", _("missing"))
+    ident = table.text("id")
+    if ident and not re.fullmatch(r"[0-9a-f]{12}", ident):
+        raise table.fail("id", _("expected text"))
     chosen = _token_printers(table, printers)
     expires = _expiry(table)
     table.text("description")
     table.done()
-    return TokenEntry(Caller(name, role, chosen), stored, expires)
+    return TokenEntry(Caller(name, role, chosen), stored, expires, ident)
 
 
 def _token_printers(table: _Table, printers) -> frozenset[str] | None:
@@ -370,64 +430,86 @@ def _token_printers(table: _Table, printers) -> frozenset[str] | None:
 
 
 class TokenStore:
-    """The tokens of tokens.toml, read again when the file changes. A file
-    that became unusable lets no token in until it is fixed: a revoked
-    token must not stay valid because of a typo elsewhere."""
+    """The tokens of tokens.toml, read again when the file changes (or
+    after SIGHUP: request_reload()). A file that became unusable lets no
+    token in until it is fixed: a revoked token must not stay valid
+    because of a typo elsewhere."""
 
     def __init__(self, path: Path, printers: Mapping[str, NamedPrinter] | None = None):
         self.path = path
         self.printers = printers
         self._lock = threading.Lock()
         self._entries = load_tokens(path, printers)  # ConfigError at startup
-        self._stamp = self._mtime()
-        self._known: dict[bytes, Caller] = {}  # sha256 of a token checked before
+        self._stamp = self._stat()
+        # tokens checked before, by their SHA-256: no slow hash again
+        self._known: dict[bytes, TokenEntry] = {}
+        self._reload = threading.Event()
 
-    def _mtime(self) -> tuple[int, int] | None:
+    def _stat(self) -> tuple[int, ...] | None:
+        """What changes when the file is edited or replaced."""
         try:
             info = os.stat(self.path)
         except OSError:
             return None
-        return (info.st_mtime_ns, info.st_size)
+        return (info.st_ino, info.st_mtime_ns, info.st_ctime_ns, info.st_size)
+
+    def request_reload(self) -> None:
+        """For a signal handler: only sets a flag, the next request reads."""
+        self._reload.set()
 
     def reload(self) -> None:
+        self._reload.clear()
         with self._lock:
-            self._stamp = self._mtime()
-            self._known = {}
+            self._stamp = self._stat()
             try:
-                self._entries = load_tokens(self.path, self.printers)
+                entries = load_tokens(self.path, self.printers)
             except ConfigError as e:
-                self._entries = []
+                self._entries, self._known = [], {}
                 log.error("no token is valid until %s is fixed: %s", self.path, e)
                 return
-            log.info("read %s: %d tokens", self.path, len(self._entries))
+            # tokens known before stay known if their entry is unchanged
+            self._known = {k: e for k, e in self._known.items() if e in entries}
+            self._entries = entries
+            log.info("read %s: %d tokens", self.path, len(entries))
 
     def find(
-        self, token: str, now: dt.datetime | None = None, known_only: bool = False
+        self, token: str, now: dt.datetime | None = None, cheap_only: bool = False
     ) -> Caller | None:
-        """The caller of a token; `known_only`: only tokens found before
-        (no slow hash for an address that keeps sending wrong ones)."""
-        if self._mtime() != self._stamp:
+        """The caller of a token. `cheap_only`: no scrypt check of a token
+        not seen before (for an address that keeps sending wrong ones)."""
+        if self._reload.is_set() or self._stat() != self._stamp:
             self.reload()
         now = now or dt.datetime.now().astimezone()
         key = hashlib.sha256(token.encode()).digest()
         with self._lock:
-            entries = list(self._entries)
+            entries = [e for e in self._entries if e.valid(now)]
             known = self._known.get(key)
-        valid = {e.caller.name: e for e in entries if e.valid(now)}
         if known is not None:
-            return known if known.name in valid else None
-        if known_only:
-            return None
-        for entry in valid.values():
-            if token_matches(token, entry.hash):
-                with self._lock:
-                    self._known[key] = entry.caller
-                return entry.caller
+            return known.caller if known in entries else None
+        entry = self._match(token, entries, cheap_only)
+        if entry is not None:
+            with self._lock:
+                self._known[key] = entry
+            return entry.caller
         return None
 
+    @staticmethod
+    def _match(token: str, entries: list[TokenEntry], cheap_only: bool) -> TokenEntry | None:
+        """The entry of a token: by the id in it, else SHA-256 entries (fast),
+        else scrypt entries one after the other."""
+        ident = TOKEN_ID.match(token)
+        if ident:
+            entries = [e for e in entries if e.id == ident.group(1)] or entries
+        order = sorted(entries, key=lambda e: not e.hash.startswith("sha256:"))
+        if cheap_only:
+            order = [e for e in order if e.hash.startswith("sha256:")]
+        return next((e for e in order if token_matches(token, e.hash)), None)
 
-def new_token() -> str:
-    return TOKEN_PREFIX + secrets.token_urlsafe(32)
+
+def new_token() -> tuple[str, str]:
+    """A random token and its id: etk_<id>_<secret>."""
+    ident = secrets.token_hex(6)
+    return "%s%s_%s" % (TOKEN_PREFIX, ident, secrets.token_urlsafe(32)), ident
 
 
 def _toml_string(value: str) -> str:
@@ -438,15 +520,24 @@ def _toml_string(value: str) -> str:
 
 
 def token_entry(
-    name: str, hash_: str, role: str, printers: list[str], expires: str, description: str
+    name: str,
+    hash_: str,
+    role: str,
+    printers: list[str],
+    expires: str,
+    description: str,
+    ident: str = "",
 ) -> str:
-    """The lines of a new entry in tokens.toml."""
+    """The lines of a new entry in tokens.toml; the name quoted, so a dot
+    in it does not make a table inside a table."""
     lines = [
         "",
-        "[tokens.%s]" % name,
+        "[tokens.%s]" % _toml_string(name),
         "role = %s" % _toml_string(role),
         "hash = %s" % _toml_string(hash_),
     ]
+    if ident:
+        lines.append("id = %s" % _toml_string(ident))
     if printers:
         lines.append("printers = [%s]" % ", ".join(_toml_string(p) for p in printers))
     if expires:

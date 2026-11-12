@@ -244,6 +244,17 @@ def parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _network(text: str):
+    import ipaddress
+
+    try:
+        return ipaddress.ip_network(text.strip(), strict=False)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            _("expected an address or network such as 172.16.0.0/12: %s") % text
+        ) from None
+
+
 def _server_options(command: argparse.ArgumentParser) -> None:
     """What `serve` and `mcp` share: where the labels are, which printers."""
     command.add_argument(
@@ -264,6 +275,13 @@ def _server_options(command: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=Path,
         help=_("printers.toml: the printers clients may use, by name"),
+    )
+    command.add_argument(
+        "--max-labels",
+        metavar="N",
+        type=_number(1, 10**7),
+        default=10_000,
+        help=_("most labels in one print job, copies times rows (default 10000)"),
     )
     command.add_argument(
         "--discover",
@@ -300,6 +318,24 @@ def _server_parsers(commands) -> None:
         help=_("tokens.toml: named access tokens with roles"),
     )
     serve.add_argument("--mcp", action="store_true", help=_("also serve MCP at /mcp"))
+    serve.add_argument(
+        "--max-body",
+        metavar="MB",
+        type=_number(1, 64),
+        default=4,
+        help=_("largest request body in MB (default 4)"),
+    )
+    serve.add_argument(
+        "--trusted-proxy",
+        metavar="CIDR",
+        type=_network,
+        action="append",
+        default=[],
+        help=_(
+            "a reverse proxy whose X-Forwarded-For header names the client, e.g. "
+            "172.16.0.0/12; repeatable"
+        ),
+    )
     serve.add_argument(
         "--allow-origin",
         metavar="URL",
@@ -353,6 +389,13 @@ def _token_parser(commands) -> None:
     new.add_argument("--description", metavar="TEXT", help=_("a note for people"))
     new.add_argument(
         "--scrypt", action="store_true", help=_("store the hash with scrypt instead of SHA-256")
+    )
+    new.add_argument(
+        "--from-stdin",
+        action="store_true",
+        help=_(
+            "take a token you chose from standard input (stored with scrypt) instead of making one"
+        ),
     )
 
 

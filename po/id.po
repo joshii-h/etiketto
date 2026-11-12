@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:36+0100\n"
+"PO-Revision-Date: 2026-11-12 11:40+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: id\n"
 "Language: id\n"
@@ -120,236 +120,261 @@ msgstr "Menampilkan daftar pencetak yang ditemukan di jaringan: model, alamat, n
 msgid "only this printer model: %s"
 msgstr "hanya model pencetak ini: %s"
 
-#: etiketto/cli.py:253
+#: etiketto/cli.py:254
+#, python-format
+msgid "expected an address or network such as 172.16.0.0/12: %s"
+msgstr "diharapkan alamat atau jaringan seperti 172.16.0.0/12: %s"
+
+#: etiketto/cli.py:264
 msgid "the folder with the label files the server may use"
 msgstr "folder berisi berkas label yang boleh digunakan server"
 
-#: etiketto/cli.py:260
+#: etiketto/cli.py:271
 msgid "only print on this printer address (* matches anything); repeatable"
 msgstr "hanya cetak ke alamat pencetak ini (* cocok dengan apa saja); dapat diulang"
 
-#: etiketto/cli.py:266
+#: etiketto/cli.py:277
 msgid "printers.toml: the printers clients may use, by name"
 msgstr "printers.toml: pencetak yang boleh digunakan klien, berdasarkan nama"
 
-#: etiketto/cli.py:271
+#: etiketto/cli.py:284
+msgid "most labels in one print job, copies times rows (default 10000)"
+msgstr "label terbanyak dalam satu tugas cetak, salinan kali baris (bawaan 10000)"
+
+#: etiketto/cli.py:289
 msgid "search the network for printers (off by default)"
 msgstr "cari pencetak di jaringan (mati secara bawaan)"
 
-#: etiketto/cli.py:278
+#: etiketto/cli.py:296
 msgid "run a print server with a REST API"
 msgstr "jalankan server cetak dengan REST API"
 
-#: etiketto/cli.py:279
+#: etiketto/cli.py:297
 msgid "Run a print server: a REST API and, with --mcp, MCP for AI clients."
 msgstr "Jalankan server cetak: REST API dan, dengan --mcp, MCP untuk klien AI."
 
-#: etiketto/cli.py:282
+#: etiketto/cli.py:300
 msgid "address to listen on (default 127.0.0.1)"
 msgstr "alamat untuk mendengarkan (bawaan 127.0.0.1)"
 
-#: etiketto/cli.py:288
+#: etiketto/cli.py:306
 #, python-format
 msgid "port to listen on (default %d)"
 msgstr "port untuk mendengarkan (bawaan %d)"
 
-#: etiketto/cli.py:294
+#: etiketto/cli.py:312
 msgid ""
 "file with the access token; else the environment variable ETIKETTO_TOKEN"
 msgstr "berkas berisi token akses; jika tidak ada, variabel lingkungan ETIKETTO_TOKEN"
 
-#: etiketto/cli.py:300
+#: etiketto/cli.py:318
 msgid "tokens.toml: named access tokens with roles"
 msgstr "tokens.toml: token akses bernama beserta perannya"
 
-#: etiketto/cli.py:302
+#: etiketto/cli.py:320
 msgid "also serve MCP at /mcp"
 msgstr "sajikan juga MCP di /mcp"
 
-#: etiketto/cli.py:308
+#: etiketto/cli.py:326
+msgid "largest request body in MB (default 4)"
+msgstr "ukuran badan permintaan terbesar dalam MB (bawaan 4)"
+
+#: etiketto/cli.py:335
+msgid ""
+"a reverse proxy whose X-Forwarded-For header names the client, e.g. "
+"172.16.0.0/12; repeatable"
+msgstr "proksi balik yang header X-Forwarded-For-nya menyebutkan klien, mis. 172.16.0.0/12; dapat diulang"
+
+#: etiketto/cli.py:344
 msgid "allow requests from web pages of this origin; repeatable"
 msgstr "izinkan permintaan dari halaman web dengan asal ini; dapat diulang"
 
-#: etiketto/cli.py:313
+#: etiketto/cli.py:349
 msgid "serve MCP on standard input and output"
 msgstr "sajikan MCP melalui input dan output standar"
 
-#: etiketto/cli.py:315
+#: etiketto/cli.py:351
 msgid ""
 "Serve MCP on standard input and output, for AI clients such as Claude "
 "Desktop."
 msgstr "Sajikan MCP melalui input dan output standar, untuk klien AI seperti Claude Desktop."
 
-#: etiketto/cli.py:325
+#: etiketto/cli.py:361
 msgid "manage the access tokens of the print server"
 msgstr "kelola token akses server cetak"
 
-#: etiketto/cli.py:326
+#: etiketto/cli.py:362
 msgid "Manage the access tokens of the print server."
 msgstr "Kelola token akses server cetak."
 
-#: etiketto/cli.py:331
+#: etiketto/cli.py:367
 msgid "make a token and add its hash to tokens.toml"
 msgstr "buat token dan tambahkan hash-nya ke tokens.toml"
 
-#: etiketto/cli.py:332
+#: etiketto/cli.py:368
 msgid "Make a token, add its hash to tokens.toml and show the token once."
 msgstr "Buat token, tambahkan hash-nya ke tokens.toml, dan tampilkan token sekali saja."
 
-#: etiketto/cli.py:334
+#: etiketto/cli.py:370
 msgid "name of the token, e.g. the device"
 msgstr "nama token, mis. perangkatnya"
 
-#: etiketto/cli.py:339
+#: etiketto/cli.py:375
 msgid "preview: look only; print: also print; admin: also all jobs"
 msgstr "preview: hanya melihat; print: juga mencetak; admin: juga semua tugas"
 
-#: etiketto/cli.py:341
+#: etiketto/cli.py:377
 msgid "tokens.toml to add it to"
 msgstr "berkas tokens.toml tempat menambahkannya"
 
-#: etiketto/cli.py:347
+#: etiketto/cli.py:383
 msgid "only this printer of printers.toml; repeatable"
 msgstr "hanya pencetak ini dari printers.toml; dapat diulang"
 
-#: etiketto/cli.py:350
+#: etiketto/cli.py:386
 msgid "printers.toml, to check --printer"
 msgstr "printers.toml, untuk memeriksa --printer"
 
-#: etiketto/cli.py:352
+#: etiketto/cli.py:388
 msgid "valid until, e.g. 2027-12-31"
 msgstr "berlaku sampai, mis. 2027-12-31"
 
-#: etiketto/cli.py:353
+#: etiketto/cli.py:389
 msgid "a note for people"
 msgstr "catatan untuk manusia"
 
-#: etiketto/cli.py:355
+#: etiketto/cli.py:391
 msgid "store the hash with scrypt instead of SHA-256"
 msgstr "simpan hash dengan scrypt alih-alih SHA-256"
 
-#: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:346
+#: etiketto/cli.py:397
+msgid ""
+"take a token you chose from standard input (stored with scrypt) instead of "
+"making one"
+msgstr "ambil token pilihan Anda dari input standar (disimpan dengan scrypt) alih-alih membuat token baru"
+
+#: etiketto/cli.py:417 etiketto/server/config.py:216
+#: etiketto/server/service.py:419
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Model pencetak tidak dikenal: %s"
 
-#: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:495
+#: etiketto/cli.py:424 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
+#: etiketto/server/service.py:567
 #, python-format
 msgid "Cannot open %s"
 msgstr "Tidak dapat membuka %s"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:174
+#: etiketto/cli.py:446 etiketto/server/main.py:203
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s bukan tanggal, diharapkan mis. 2026-12-31 atau 2026-12-31T08:30"
 
-#: etiketto/cli.py:433
+#: etiketto/cli.py:476
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} diisi saat pencetakan dan tidak dapat diatur"
 
-#: etiketto/cli.py:438
+#: etiketto/cli.py:481
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "Label tidak memiliki elemen atau variabel bernama %s"
 
-#: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:708
+#: etiketto/cli.py:505 etiketto/ui/printing.py:85
+#: etiketto/server/service.py:787
 msgid "The label is empty"
 msgstr "Label kosong"
 
-#: etiketto/cli.py:495
+#: etiketto/cli.py:538
 msgid "Cannot write the output"
 msgstr "Tidak dapat menulis keluaran"
 
-#: etiketto/cli.py:526
+#: etiketto/cli.py:569
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output menulis gambar PNG: berikan nama yang berakhiran .png"
 
-#: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
-#: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:656 etiketto/server/service.py:854
-#: etiketto/server/service.py:970
+#: etiketto/cli.py:605 etiketto/cli.py:639 etiketto/cli.py:758
+#: etiketto/cli.py:786 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
+#: etiketto/server/service.py:728 etiketto/server/service.py:933
+#: etiketto/server/service.py:1049
 msgid "The label cannot be prepared for printing."
 msgstr "Label tidak dapat disiapkan untuk dicetak."
 
-#: etiketto/cli.py:623
+#: etiketto/cli.py:666
 msgid "No printer found – give its address with --host"
 msgstr "Pencetak tidak ditemukan – berikan alamatnya dengan --host"
 
-#: etiketto/cli.py:625
+#: etiketto/cli.py:668
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Beberapa pencetak ditemukan – pilih satu dengan --host (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
+#: etiketto/cli.py:679 etiketto/ui/texts.py:271 etiketto/server/service.py:1039
 #, python-format
 msgid "Cannot save %s"
 msgstr "Tidak dapat menyimpan %s"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:963
+#: etiketto/cli.py:681 etiketto/server/service.py:1042
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "label sudah dicetak, tetapi nilai penghitung berikutnya tidak tersimpan"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:732
+#: etiketto/cli.py:696 etiketto/server/service.py:811
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "tidak ada yang dicetak: nilai penghitung berikutnya tidak akan dapat disimpan"
 
-#: etiketto/cli.py:713 etiketto/cli.py:740 etiketto/cli.py:942
+#: etiketto/cli.py:756 etiketto/cli.py:783 etiketto/cli.py:985
 msgid "Interrupted"
 msgstr "Dihentikan"
 
-#: etiketto/cli.py:816
+#: etiketto/cli.py:859
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "Label menggunakan berkas data di luar foldernya: berikan dengan --data"
 
-#: etiketto/cli.py:822
+#: etiketto/cli.py:865
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet dan --rows memerlukan berkas data (--data)"
 
-#: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:582
+#: etiketto/cli.py:880 etiketto/ui/printing.py:346
+#: etiketto/server/service.py:654
 msgid "No rows to print"
 msgstr "Tidak ada baris untuk dicetak"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
+#: etiketto/cli.py:889 etiketto/ui/window.py:389 etiketto/server/service.py:707
 #, python-format
 msgid "No such column: %s"
 msgstr "Kolom tidak ada: %s"
 
-#: etiketto/cli.py:851 etiketto/ui/printing.py:419
+#: etiketto/cli.py:894 etiketto/ui/printing.py:419
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Kode batang atau kode QR baris-baris ini tidak dapat dibuat dari nilainya, misalnya EAN-13 dengan huruf atau sel kosong. Perbaiki berkas data lalu baca lagi, atau cetak tanpa baris-baris ini."
 
-#: etiketto/cli.py:856 etiketto/ui/printing.py:424
+#: etiketto/cli.py:899 etiketto/ui/printing.py:424
 #, python-format
 msgid "Rows: %s"
 msgstr "Baris: %s"
 
-#: etiketto/cli.py:864
+#: etiketto/cli.py:907
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "Menunggu pencetakan lain dari %s selesai…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:848
+#: etiketto/cli.py:914 etiketto/server/service.py:927
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s masih dikunci oleh pencetakan lain – coba lagi nanti"
 
-#: etiketto/cli.py:877
+#: etiketto/cli.py:920
 msgid "--output needs --dry-run"
 msgstr "--output memerlukan --dry-run"
 
-#: etiketto/cli.py:886
+#: etiketto/cli.py:929
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "Nilai penghitung berikutnya tidak disimpan: pencetakan berikutnya mengulang nomor-nomornya"
 
-#: etiketto/cli.py:913 etiketto/ui/printer.py:161
+#: etiketto/cli.py:956 etiketto/ui/printer.py:161
 msgid "No printer found"
 msgstr "Pencetak tidak ditemukan"
 
@@ -1427,7 +1452,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s bukan label Etiketto"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:506
+#: etiketto/server/service.py:578
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Berkas rusak: %s"
@@ -1629,80 +1654,101 @@ msgstr "Hanya berkas lokal yang dapat dijatuhkan"
 msgid "Please wait until printing has finished"
 msgstr "Tunggu sampai pencetakan selesai"
 
-#: etiketto/server/config.py:74
+#: etiketto/server/config.py:75
 #, python-format
 msgid "%(file)s: %(key)s: %(problem)s"
 msgstr "%(file)s: %(key)s: %(problem)s"
 
-#: etiketto/server/config.py:84 etiketto/server/config.py:88
-#: etiketto/server/config.py:94
+#: etiketto/server/config.py:85 etiketto/server/config.py:89
+#: etiketto/server/config.py:95 etiketto/server/main.py:273
 #, python-format
 msgid "Cannot read %(file)s: %(reason)s"
 msgstr "Tidak dapat membaca %(file)s: %(reason)s"
 
-#: etiketto/server/config.py:104
+#: etiketto/server/config.py:105
 msgid "expected a table"
 msgstr "diharapkan tabel"
 
-#: etiketto/server/config.py:114
+#: etiketto/server/config.py:115 etiketto/server/config.py:403
 msgid "missing"
 msgstr "tidak ada"
 
-#: etiketto/server/config.py:117
+#: etiketto/server/config.py:118 etiketto/server/config.py:406
 msgid "expected text"
 msgstr "diharapkan teks"
 
-#: etiketto/server/config.py:123
+#: etiketto/server/config.py:120
+msgid "control characters are not allowed"
+msgstr "karakter kontrol tidak diizinkan"
+
+#: etiketto/server/config.py:126
 msgid "expected true or false"
 msgstr "diharapkan true atau false"
 
-#: etiketto/server/config.py:134
+#: etiketto/server/config.py:137
 #, python-format
 msgid "expected a number from %(min)s to %(max)s"
 msgstr "diharapkan angka dari %(min)s sampai %(max)s"
 
-#: etiketto/server/config.py:141
+#: etiketto/server/config.py:144
 #, python-format
 msgid "expected one of: %s"
 msgstr "diharapkan salah satu dari: %s"
 
-#: etiketto/server/config.py:146 etiketto/server/config.py:152
+#: etiketto/server/config.py:149 etiketto/server/config.py:155
 msgid "unknown key"
 msgstr "kunci tidak dikenal"
 
-#: etiketto/server/config.py:155
+#: etiketto/server/config.py:158
 msgid "nothing defined"
 msgstr "tidak ada yang didefinisikan"
 
-#: etiketto/server/config.py:161
+#: etiketto/server/config.py:164
 msgid "not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "bukan nama yang valid: huruf, angka, . _ - (maksimal 64)"
 
-#: etiketto/server/config.py:202
+#: etiketto/server/config.py:205
 msgid "only one printer can be the default"
 msgstr "hanya satu pencetak yang dapat menjadi bawaan"
 
-#: etiketto/server/config.py:216
+#: etiketto/server/config.py:219
 msgid "not a valid printer address"
 msgstr "bukan alamat pencetak yang valid"
 
-#: etiketto/server/config.py:338
+#: etiketto/server/config.py:239
+msgid "this printer model does not cut"
+msgstr "model pencetak ini tidak memotong"
+
+#: etiketto/server/config.py:241
+msgid "this printer model has no colour settings"
+msgstr "model pencetak ini tidak memiliki pengaturan warna"
+
+#: etiketto/server/config.py:364
 msgid "expected a date such as 2027-12-31"
 msgstr "diharapkan tanggal seperti 2027-12-31"
 
-#: etiketto/server/config.py:350
+#: etiketto/server/config.py:377
+msgid "the same token twice"
+msgstr "token yang sama dua kali"
+
+#: etiketto/server/config.py:390
+#, python-format
+msgid "%s can be changed by every user of this computer: chmod 600 it"
+msgstr "%s dapat diubah oleh setiap pengguna komputer ini: jalankan chmod 600 padanya"
+
+#: etiketto/server/config.py:400
 msgid "not a token hash: expected sha256:… or scrypt:…"
 msgstr "bukan hash token: diharapkan sha256:… atau scrypt:…"
 
-#: etiketto/server/config.py:364
+#: etiketto/server/config.py:419
 msgid "expected a list of printer names"
 msgstr "diharapkan daftar nama pencetak"
 
-#: etiketto/server/config.py:366
+#: etiketto/server/config.py:421
 msgid "printers can only be limited with --printers"
 msgstr "pencetak hanya dapat dibatasi dengan --printers"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:279
+#: etiketto/server/config.py:423 etiketto/server/service.py:357
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Pencetak tidak dikenal: %s"
@@ -1712,55 +1758,55 @@ msgstr "Pencetak tidak dikenal: %s"
 msgid "Invalid value for %s"
 msgstr "Nilai tidak valid untuk %s"
 
-#: etiketto/server/http.py:271
+#: etiketto/server/http.py:377 etiketto/server/http.py:391
 msgid "The request took too long"
 msgstr "Permintaan memakan waktu terlalu lama"
 
-#: etiketto/server/http.py:274
+#: etiketto/server/http.py:394
 msgid "Internal error"
 msgstr "Kesalahan internal"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:399
 msgid "This server only answers on its local address"
 msgstr "Server ini hanya menjawab di alamat lokalnya"
 
-#: etiketto/server/http.py:283
+#: etiketto/server/http.py:403
 msgid "Requests from this web page are not allowed"
 msgstr "Permintaan dari halaman web ini tidak diizinkan"
 
-#: etiketto/server/http.py:301
+#: etiketto/server/http.py:421
 msgid "Too many requests – try again later"
 msgstr "Terlalu banyak permintaan – coba lagi nanti"
 
-#: etiketto/server/http.py:302
+#: etiketto/server/http.py:423
 msgid "Access token missing or wrong"
 msgstr "Token akses tidak ada atau salah"
 
-#: etiketto/server/http.py:342 etiketto/server/http.py:347
+#: etiketto/server/http.py:464 etiketto/server/http.py:467
 msgid "The request needs a Content-Length"
 msgstr "Permintaan memerlukan Content-Length"
 
-#: etiketto/server/http.py:350
+#: etiketto/server/http.py:470
 msgid "The request is too large"
 msgstr "Permintaan terlalu besar"
 
-#: etiketto/server/http.py:356
+#: etiketto/server/http.py:480
 msgid "Send the request as application/json"
 msgstr "Kirim permintaan sebagai application/json"
 
-#: etiketto/server/http.py:364
+#: etiketto/server/http.py:491
 msgid "The request is not valid JSON"
 msgstr "Permintaan bukan JSON yang valid"
 
-#: etiketto/server/http.py:374 etiketto/server/http.py:384
+#: etiketto/server/http.py:504 etiketto/server/http.py:514
 msgid "Not found"
 msgstr "Tidak ditemukan"
 
-#: etiketto/server/http.py:383
+#: etiketto/server/http.py:513
 msgid "Method not allowed"
 msgstr "Metode tidak diizinkan"
 
-#: etiketto/server/http.py:400
+#: etiketto/server/http.py:530
 #, python-format
 msgid "Send the header %s with this request"
 msgstr "Kirim header %s bersama permintaan ini"
@@ -1775,12 +1821,12 @@ msgstr "Folder label %s tidak ada"
 msgid "Cannot read the token file %s"
 msgstr "Tidak dapat membaca berkas token %s"
 
-#: etiketto/server/main.py:54
+#: etiketto/server/main.py:54 etiketto/server/main.py:248
 msgid ""
 "The access token may only contain printable ASCII characters without spaces"
 msgstr "Token akses hanya boleh berisi karakter ASCII yang dapat dicetak tanpa spasi"
 
-#: etiketto/server/main.py:59
+#: etiketto/server/main.py:59 etiketto/server/main.py:253
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "Token akses harus terdiri dari setidaknya %d karakter"
@@ -1793,31 +1839,36 @@ msgstr "Gunakan --printers atau --allow-printer, bukan keduanya"
 msgid "Use either --tokens or --token-file"
 msgstr "Gunakan --tokens atau --token-file, bukan keduanya"
 
-#: etiketto/server/main.py:102
+#: etiketto/server/main.py:115
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "Menolak mendengarkan di %s tanpa token akses: atur ETIKETTO_TOKEN atau gunakan --token-file"
 
-#: etiketto/server/main.py:115
+#: etiketto/server/main.py:137
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "Tidak dapat mendengarkan di %(address)s: %(reason)s"
 
-#: etiketto/server/main.py:184
+#: etiketto/server/main.py:215
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Bukan nama yang valid: huruf, angka, . _ - (maksimal 64)"
 
-#: etiketto/server/main.py:198
+#: etiketto/server/main.py:226
 #, python-format
-msgid "A token named %s exists already"
-msgstr "Token bernama %s sudah ada"
+msgid "%s is in use by another program – try again later"
+msgstr "%s sedang digunakan oleh program lain – coba lagi nanti"
 
-#: etiketto/server/main.py:208
+#: etiketto/server/main.py:237
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "Token hanya ditampilkan kali ini saja; %s hanya menyimpan hash-nya."
+
+#: etiketto/server/main.py:296
+#, python-format
+msgid "A token named %s exists already"
+msgstr "Token bernama %s sudah ada"
 
 #: etiketto/server/paths.py:39
 #, python-format
@@ -1861,66 +1912,66 @@ msgstr "Terlalu banyak kolom: maksimal %d"
 msgid "Too many cells: at most %d"
 msgstr "Terlalu banyak sel: maksimal %d"
 
-#: etiketto/server/service.py:282
-#, python-format
-msgid "This access token may not use the printer %s"
-msgstr "Token akses ini tidak boleh menggunakan pencetak %s"
-
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:370
 msgid "Choose a printer by its name"
 msgstr "Pilih pencetak berdasarkan namanya"
 
-#: etiketto/server/service.py:409
+#: etiketto/server/service.py:435 etiketto/server/service.py:968
+msgid "This access token may not do this"
+msgstr "Token akses ini tidak boleh melakukan ini"
+
+#: etiketto/server/service.py:485
 msgid "No printer address: give it as host"
 msgstr "Tidak ada alamat pencetak: berikan sebagai host"
 
-#: etiketto/server/service.py:419
+#: etiketto/server/service.py:491
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Alamat pencetak ini tidak diizinkan: %s"
 
-#: etiketto/server/service.py:590
+#: etiketto/server/service.py:662
 msgid "A sheet needs a data file"
 msgstr "Lembar memerlukan berkas data"
 
-#: etiketto/server/service.py:596
+#: etiketto/server/service.py:668
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "Label menggunakan berkas data di luar folder label: kirim juga baris-barisnya"
 
-#: etiketto/server/service.py:684
+#: etiketto/server/service.py:743
+#, python-format
+msgid "At most %d labels in one print job"
+msgstr "Maksimal %d label dalam satu tugas cetak"
+
+#: etiketto/server/service.py:763
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Terlalu banyak tugas cetak yang menunggu – coba lagi nanti"
 
-#: etiketto/server/service.py:870
+#: etiketto/server/service.py:949
 #, python-format
 msgid "No such print job: %s"
 msgstr "Tugas cetak tidak ada: %s"
 
-#: etiketto/server/service.py:882
+#: etiketto/server/service.py:961
 msgid "The print job has already finished"
 msgstr "Tugas cetak sudah selesai"
 
-#: etiketto/server/service.py:889
-msgid "This access token may not do this"
-msgstr "Token akses ini tidak boleh melakukan ini"
-
-#: etiketto/server/service.py:905
+#: etiketto/server/service.py:984
 msgid "The label is too large to render"
 msgstr "Label terlalu besar untuk dirender"
 
-#: etiketto/server/service.py:931
+#: etiketto/server/service.py:1010
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "Label terlalu besar: maksimal %(elements)d elemen dan %(chars)d karakter dalam satu teks"
 
-#: etiketto/server/service.py:941
+#: etiketto/server/service.py:1020
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Maksimal %d salinan pada pencetak ini"
 
-#: etiketto/server/service.py:946
+#: etiketto/server/service.py:1025
 msgid "Printers are chosen by name: leave out host"
 msgstr "Pencetak dipilih berdasarkan nama: hilangkan host"

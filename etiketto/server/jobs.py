@@ -27,6 +27,11 @@ QUEUED, PRINTING, DONE, FAILED, CANCELED = "queued", "printing", "done", "failed
 WAITING = "waiting"  # its turn came, but another print holds the label file
 FINISHED = frozenset({DONE, FAILED, CANCELED})
 MAX_PENDING = 100  # jobs waiting or printing, on all printers together
+MAX_PER_OWNER = 20  # of them for one token
+# what waiting jobs may hold in memory (labels, images, data rows), about
+MAX_PENDING_BYTES = 256 * 1024 * 1024
+MAX_QUEUES = 64  # printers with a worker at once
+IDLE_SECONDS = 60.0  # a worker without jobs ends after this long
 MAX_KEPT = 1000  # finished jobs kept to be asked for
 KEEP_SECONDS = 24 * 3600
 
@@ -61,6 +66,7 @@ class PrintJob:
     remark: Callable[[], str | None] | None = None
     warnings: list = field(default_factory=list)  # the check's warnings (RenderWarning)
     owner: str = ""  # the name of the token that asked for it
+    cost: int = 0  # bytes the request holds while the job waits, about
     key: str = ""  # the printer's address, normalised: one queue per printer
     printer_name: str = ""  # its name in printers.toml, if any
     created: str = field(default_factory=_now)
@@ -113,7 +119,8 @@ class PrintJob:
 
 
 class QueueFull(Exception):
-    pass
+    """No room for the job: too many jobs, too much data waiting, or too
+    many printers busy at once."""
 
 
 class JobQueue:
@@ -130,20 +137,39 @@ class JobQueue:
 
     def submit(self, job: PrintJob) -> PrintJob:
         with self._lock:
-            if self._closed or self._pending() >= MAX_PENDING:
-                raise QueueFull
+            self._admit(job)
             self._forget_old()
-            self._jobs[job.id] = job
             key = (job.printer, job.key or job.host)
             if key not in self._queues:
-                self._queues[key] = queue.Queue()
-                worker = threading.Thread(
-                    target=self._work, args=(self._queues[key],), daemon=True, name="print-job"
-                )
-                self._workers.append(worker)
-                worker.start()
+                self._start(key)
+            self._jobs[job.id] = job
             self._queues[key].put(job)
         return job
+
+    def _admit(self, job: PrintJob) -> None:
+        pending = [j for j in self._jobs.values() if j.state not in FINISHED]
+        own = sum(1 for j in pending if j.owner == job.owner)
+        cost = sum(j.cost for j in pending) + job.cost
+        if self._closed or len(pending) >= MAX_PENDING or own >= MAX_PER_OWNER:
+            raise QueueFull
+        if cost > MAX_PENDING_BYTES:
+            raise QueueFull
+
+    def _start(self, key: tuple[str, str]) -> None:
+        """A queue and a worker for a printer that has none (any more)."""
+        self._workers = [w for w in self._workers if w.is_alive()]
+        if len(self._queues) >= MAX_QUEUES:
+            raise QueueFull
+        waiting: queue.Queue[PrintJob | None] = queue.Queue()
+        worker = threading.Thread(
+            target=self._work, args=(key, waiting), daemon=True, name="print-job"
+        )
+        try:
+            worker.start()
+        except RuntimeError:  # no thread to be had (TasksMax, memory)
+            raise QueueFull from None
+        self._queues[key] = waiting
+        self._workers.append(worker)
 
     def get(self, job_id: str) -> PrintJob | None:
         with self._lock:
@@ -186,8 +212,22 @@ class JobQueue:
             if n < excess or now - job.finished_at > KEEP_SECONDS:
                 del self._jobs[job.id]
 
-    def _work(self, waiting: queue.Queue[PrintJob | None]) -> None:
-        while (job := waiting.get()) is not None:
+    def _work(self, key: tuple[str, str], waiting: queue.Queue[PrintJob | None]) -> None:
+        """Print the printer's jobs one after the other; without a job for
+        IDLE_SECONDS the worker ends and its queue goes (a server asked for
+        many addresses keeps no thread for each)."""
+        while True:
+            try:
+                job = waiting.get(timeout=IDLE_SECONDS)
+            except queue.Empty:
+                with self._lock:
+                    if waiting.empty():
+                        if self._queues.get(key) is waiting:
+                            del self._queues[key]
+                        return
+                continue
+            if job is None:
+                return
             with self._lock:
                 if job.state != QUEUED:  # canceled while it waited
                     continue

@@ -31,7 +31,6 @@ max_copies = 3
 mode = "standard"
 safe_mm = 2.0
 data_format = "jpeg"
-color = { brightness = 1 }
 
 [printers.office]
 backend = "fake-mono"
@@ -85,7 +84,6 @@ def test_printers_file(printers_file):
         "mode": "standard",
         "safe_mm": 2.0,
         "data_format": "jpeg",
-        "color_adjust": {"brightness": 1, "red": 0, "green": 0, "blue": 0},
     }
     assert printers["office"].max_copies == 9999 and not printers["office"].default
     assert lager.to_dict()["location"] == "Gate 2"
@@ -103,7 +101,10 @@ def test_printers_file(printers_file):
         ('[printers.a]\nbackend = "nope"\nhost = "h"\n', "Unknown printer model: nope"),
         ('[printers.a]\nbackend = "fake-mono"\nhost = "a b"\n', "not a valid printer address"),
         ('[printers.a]\nbackend = "fake-mono"\nhost = 5\n', "printers.a.host: expected text"),
-        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ncut = "full"\n', "printers.a.cut"),
+        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ncut = "full"\n', "does not cut"),
+        ('[printers.a]\nbackend = "vc500w"\nhost = "h"\ncut = "x"\n', "full, half, none"),
+        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ncolor = { red = 1 }\n', "no colour"),
+        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\nlocation = "a\\nb"\n', "control"),
         (
             '[printers.a]\nbackend = "fake-mono"\nhost = "h"\nmode = "x"\n',
             "expected one of: standard",
@@ -111,8 +112,8 @@ def test_printers_file(printers_file):
         ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\nsafe_mm = 99\n', "expected a number"),
         ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\nmax_copies = 1.5\n', "max_copies"),
         ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ndefault = "yes"\n', "true or false"),
-        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ncolor = { red = 9 }\n', "color.red"),
-        ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\ncolor = { pink = 1 }\n', "color.pink"),
+        ('[printers.a]\nbackend = "vc500w"\nhost = "h"\ncolor = { red = 9 }\n', "color.red"),
+        ('[printers.a]\nbackend = "vc500w"\nhost = "h"\ncolor = { pink = 1 }\n', "color.pink"),
         ('[printers.a]\nbackend = "fake-mono"\nhost = "h"\nspeed = 1\n', "a.speed: unknown key"),
         (
             '[printers.a]\nbackend = "fake-mono"\nhost = "h"\ndefault = true\n'
@@ -153,20 +154,22 @@ def test_hashes():
     assert not cfg.token_matches("other", scrypt)
     for bad in ("plain", "sha256:xyz", "scrypt:3:8:1:AA==:AA==", "scrypt:a:b:c:d:e", "md5:00"):
         assert not cfg.token_matches("secret", bad)
-    assert cfg.new_token().startswith("etk_") and len(cfg.new_token()) > 40
+    token, ident = cfg.new_token()
+    assert token.startswith("etk_%s_" % ident) and len(token) > 50
+    assert cfg.TOKEN_ID.match(token).group(1) == ident
 
 
 def test_tokens_file(tmp_path, printers_file):
     printers = load_printers(printers_file)
     text = tokens_text(**TOKENS) + (
-        '\n[tokens.until]\nhash = "%s"\nexpires = 2030-01-02\ndescription = "x"\n'
-        '\n[tokens.moment]\nhash = "%s"\nexpires = 2030-01-02T08:00:00Z\n'
+        '\n[tokens.until]\nhash = "%s"\nrole = "print"\nexpires = 2030-01-02\ndescription = "x"\n'
+        '\n[tokens.moment]\nhash = "%s"\nrole = "admin"\nexpires = 2030-01-02T08:00:00Z\n'
         % (cfg.hash_token("a"), cfg.hash_token("b", "scrypt"))
     )
     entries = {e.caller.name: e for e in load_tokens(write(tmp_path / "t.toml", text), printers)}
     assert entries["terminal"].caller == Caller("terminal", "print", frozenset({"lager"}))
-    assert entries["until"].caller.role == "print"  # the default role
-    assert entries["until"].expires.date() == dt.date(2030, 1, 2)
+    assert entries["until"].caller.role == "print"
+    assert entries["until"].expires.date() == dt.date(2030, 1, 3)  # through the whole day
     assert entries["moment"].expires.tzinfo is not None
 
 
@@ -183,13 +186,14 @@ def test_tokens_file(tmp_path, printers_file):
     ],
 )
 def test_tokens_file_errors(tmp_path, printers_file, entry, where):
-    text = "[tokens.a]\n" + (entry % cfg.hash_token("x") if "%s" in entry else entry)
+    text = "[tokens.a]\n" + ("" if "role" in entry else 'role = "print"\n')
+    text += entry % cfg.hash_token("x") if "%s" in entry else entry
     with pytest.raises(ConfigError, match=where):
         load_tokens(write(tmp_path / "t.toml", text), load_printers(printers_file))
 
 
 def test_printers_of_a_token_need_a_printers_file(tmp_path):
-    text = '[tokens.a]\nhash = "%s"\nprinters = ["x"]\n' % cfg.hash_token("x")
+    text = '[tokens.a]\nrole = "print"\nhash = "%s"\nprinters = ["x"]\n' % cfg.hash_token("x")
     with pytest.raises(ConfigError, match="--printers"):
         load_tokens(write(tmp_path / "t.toml", text), None)
 
@@ -223,7 +227,9 @@ def test_token_store_expiry_revocation_and_broken_files(tmp_path, caplog, printe
     store.reload()
     assert store.find(token("viewer")) is not None
     # expired
-    late = '[tokens.late]\nhash = "%s"\nexpires = 2020-01-01\n' % cfg.hash_token("late")
+    late = '[tokens.late]\nrole = "print"\nhash = "%s"\nexpires = 2020-01-01\n' % cfg.hash_token(
+        "late"
+    )
     write(path, late)
     store.reload()
     assert store.find("late") is None
@@ -288,14 +294,17 @@ def test_printers_of_a_token(secured, server_env):
     terminal = token("terminal")
     body = {"label": "box", "printer": "office"}
     status, _r, answer = call(secured, "POST", "/api/v1/print", body=body, token=terminal)
-    assert status == 403 and answer["error"]["code"] == "printer_forbidden"
+    assert status == 404 and answer["error"]["code"] == "printer_not_found"  # not even named
     status, _r, answer = call(secured, "GET", "/api/v1/printers", token=terminal)
     assert [p["name"] for p in answer["printers"]] == ["lager"]
-    assert call(secured, "GET", "/api/v1/printers/office/status", token=terminal)[0] == 403
+    assert call(secured, "GET", "/api/v1/printers/office/status", token=terminal)[0] == 404
     assert server_env.printer.jobs == []
 
 
-def test_named_printers_list_and_status(secured, server_env):
+def test_named_printers_list_and_status(secured, server_env, monkeypatch):
+    from etiketto.server import service as service_module
+
+    monkeypatch.setattr(service_module, "STATUS_SECONDS", 0)  # asked anew every time
     boss = token("boss")
     server_env.printer.info = PrinterInfo("Fake", 12, 900, 1000, "IDLE")
     status, _r, body = call(secured, "GET", "/api/v1/printers", token=boss)
@@ -330,7 +339,7 @@ def test_print_by_name(secured, server_env):
     assert job["printer_name"] == "lager" and job["host"] == "lager.local"
     _image, host, options = server_env.printer.jobs[-1]
     assert host == "lager.local" and options.mode == "standard"
-    assert options.color.brightness == 1  # the printer's own settings
+    assert options.mode == "standard"  # the printer's own settings
     body = {"label": "box", "printer": "office", "wait": 10}
     _s, _r, job = call(secured, "POST", "/api/v1/print", body=body, token=boss)
     assert job["host"] == "office.local"

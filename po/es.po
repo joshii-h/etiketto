@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:36+0100\n"
+"PO-Revision-Date: 2026-11-12 11:40+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: es\n"
 "Language: es\n"
@@ -120,236 +120,261 @@ msgstr "Lista las impresoras encontradas en la red: modelo, dirección, nombre."
 msgid "only this printer model: %s"
 msgstr "solo este modelo de impresora: %s"
 
-#: etiketto/cli.py:253
+#: etiketto/cli.py:254
+#, python-format
+msgid "expected an address or network such as 172.16.0.0/12: %s"
+msgstr "se esperaba una dirección o red como 172.16.0.0/12: %s"
+
+#: etiketto/cli.py:264
 msgid "the folder with the label files the server may use"
 msgstr "la carpeta con los archivos de etiqueta que puede usar el servidor"
 
-#: etiketto/cli.py:260
+#: etiketto/cli.py:271
 msgid "only print on this printer address (* matches anything); repeatable"
 msgstr "imprimir solo en esta dirección de impresora (* coincide con todo); repetible"
 
-#: etiketto/cli.py:266
+#: etiketto/cli.py:277
 msgid "printers.toml: the printers clients may use, by name"
 msgstr "printers.toml: las impresoras que pueden usar los clientes, por nombre"
 
-#: etiketto/cli.py:271
+#: etiketto/cli.py:284
+msgid "most labels in one print job, copies times rows (default 10000)"
+msgstr "máximo de etiquetas en un trabajo de impresión, copias por filas (por defecto 10000)"
+
+#: etiketto/cli.py:289
 msgid "search the network for printers (off by default)"
 msgstr "buscar impresoras en la red (desactivado por defecto)"
 
-#: etiketto/cli.py:278
+#: etiketto/cli.py:296
 msgid "run a print server with a REST API"
 msgstr "ejecuta un servidor de impresión con una REST API"
 
-#: etiketto/cli.py:279
+#: etiketto/cli.py:297
 msgid "Run a print server: a REST API and, with --mcp, MCP for AI clients."
 msgstr "Ejecuta un servidor de impresión: una REST API y, con --mcp, MCP para clientes de IA."
 
-#: etiketto/cli.py:282
+#: etiketto/cli.py:300
 msgid "address to listen on (default 127.0.0.1)"
 msgstr "dirección en la que escuchar (por defecto 127.0.0.1)"
 
-#: etiketto/cli.py:288
+#: etiketto/cli.py:306
 #, python-format
 msgid "port to listen on (default %d)"
 msgstr "puerto en el que escuchar (por defecto %d)"
 
-#: etiketto/cli.py:294
+#: etiketto/cli.py:312
 msgid ""
 "file with the access token; else the environment variable ETIKETTO_TOKEN"
 msgstr "archivo con el token de acceso; si no, la variable de entorno ETIKETTO_TOKEN"
 
-#: etiketto/cli.py:300
+#: etiketto/cli.py:318
 msgid "tokens.toml: named access tokens with roles"
 msgstr "tokens.toml: tokens de acceso con nombre y roles"
 
-#: etiketto/cli.py:302
+#: etiketto/cli.py:320
 msgid "also serve MCP at /mcp"
 msgstr "servir también MCP en /mcp"
 
-#: etiketto/cli.py:308
+#: etiketto/cli.py:326
+msgid "largest request body in MB (default 4)"
+msgstr "tamaño máximo del cuerpo de la solicitud en MB (por defecto 4)"
+
+#: etiketto/cli.py:335
+msgid ""
+"a reverse proxy whose X-Forwarded-For header names the client, e.g. "
+"172.16.0.0/12; repeatable"
+msgstr "un proxy inverso cuya cabecera X-Forwarded-For indica el cliente, p. ej. 172.16.0.0/12; repetible"
+
+#: etiketto/cli.py:344
 msgid "allow requests from web pages of this origin; repeatable"
 msgstr "permitir solicitudes desde páginas web de este origen; repetible"
 
-#: etiketto/cli.py:313
+#: etiketto/cli.py:349
 msgid "serve MCP on standard input and output"
 msgstr "sirve MCP por la entrada y la salida estándar"
 
-#: etiketto/cli.py:315
+#: etiketto/cli.py:351
 msgid ""
 "Serve MCP on standard input and output, for AI clients such as Claude "
 "Desktop."
 msgstr "Sirve MCP por la entrada y la salida estándar, para clientes de IA como Claude Desktop."
 
-#: etiketto/cli.py:325
+#: etiketto/cli.py:361
 msgid "manage the access tokens of the print server"
 msgstr "gestiona los tokens de acceso del servidor de impresión"
 
-#: etiketto/cli.py:326
+#: etiketto/cli.py:362
 msgid "Manage the access tokens of the print server."
 msgstr "Gestiona los tokens de acceso del servidor de impresión."
 
-#: etiketto/cli.py:331
+#: etiketto/cli.py:367
 msgid "make a token and add its hash to tokens.toml"
 msgstr "crea un token y añade su hash a tokens.toml"
 
-#: etiketto/cli.py:332
+#: etiketto/cli.py:368
 msgid "Make a token, add its hash to tokens.toml and show the token once."
 msgstr "Crea un token, añade su hash a tokens.toml y muestra el token una sola vez."
 
-#: etiketto/cli.py:334
+#: etiketto/cli.py:370
 msgid "name of the token, e.g. the device"
 msgstr "nombre del token, p. ej. el dispositivo"
 
-#: etiketto/cli.py:339
+#: etiketto/cli.py:375
 msgid "preview: look only; print: also print; admin: also all jobs"
 msgstr "preview: solo ver; print: también imprimir; admin: también todos los trabajos"
 
-#: etiketto/cli.py:341
+#: etiketto/cli.py:377
 msgid "tokens.toml to add it to"
 msgstr "tokens.toml al que añadirlo"
 
-#: etiketto/cli.py:347
+#: etiketto/cli.py:383
 msgid "only this printer of printers.toml; repeatable"
 msgstr "solo esta impresora de printers.toml; repetible"
 
-#: etiketto/cli.py:350
+#: etiketto/cli.py:386
 msgid "printers.toml, to check --printer"
 msgstr "printers.toml, para comprobar --printer"
 
-#: etiketto/cli.py:352
+#: etiketto/cli.py:388
 msgid "valid until, e.g. 2027-12-31"
 msgstr "válido hasta, p. ej. 2027-12-31"
 
-#: etiketto/cli.py:353
+#: etiketto/cli.py:389
 msgid "a note for people"
 msgstr "una nota para personas"
 
-#: etiketto/cli.py:355
+#: etiketto/cli.py:391
 msgid "store the hash with scrypt instead of SHA-256"
 msgstr "guardar el hash con scrypt en lugar de SHA-256"
 
-#: etiketto/cli.py:374 etiketto/server/config.py:213
-#: etiketto/server/service.py:346
+#: etiketto/cli.py:397
+msgid ""
+"take a token you chose from standard input (stored with scrypt) instead of "
+"making one"
+msgstr "tomar de la entrada estándar un token elegido por usted (guardado con scrypt) en lugar de crear uno"
+
+#: etiketto/cli.py:417 etiketto/server/config.py:216
+#: etiketto/server/service.py:419
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Modelo de impresora desconocido: %s"
 
-#: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:495
+#: etiketto/cli.py:424 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
+#: etiketto/server/service.py:567
 #, python-format
 msgid "Cannot open %s"
 msgstr "No se puede abrir %s"
 
-#: etiketto/cli.py:403 etiketto/server/main.py:174
+#: etiketto/cli.py:446 etiketto/server/main.py:203
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s no es una fecha, se esperaba p. ej. 2026-12-31 o 2026-12-31T08:30"
 
-#: etiketto/cli.py:433
+#: etiketto/cli.py:476
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} se rellena al imprimir y no se puede establecer"
 
-#: etiketto/cli.py:438
+#: etiketto/cli.py:481
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "La etiqueta no tiene ningún elemento ni variable llamado %s"
 
-#: etiketto/cli.py:462 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:708
+#: etiketto/cli.py:505 etiketto/ui/printing.py:85
+#: etiketto/server/service.py:787
 msgid "The label is empty"
 msgstr "La etiqueta está vacía"
 
-#: etiketto/cli.py:495
+#: etiketto/cli.py:538
 msgid "Cannot write the output"
 msgstr "No se puede escribir la salida"
 
-#: etiketto/cli.py:526
+#: etiketto/cli.py:569
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output escribe imágenes PNG: indica un nombre que termine en .png"
 
-#: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
-#: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:656 etiketto/server/service.py:854
-#: etiketto/server/service.py:970
+#: etiketto/cli.py:605 etiketto/cli.py:639 etiketto/cli.py:758
+#: etiketto/cli.py:786 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
+#: etiketto/server/service.py:728 etiketto/server/service.py:933
+#: etiketto/server/service.py:1049
 msgid "The label cannot be prepared for printing."
 msgstr "No se puede preparar la etiqueta para imprimir."
 
-#: etiketto/cli.py:623
+#: etiketto/cli.py:666
 msgid "No printer found – give its address with --host"
 msgstr "No se encontró ninguna impresora – indique su dirección con --host"
 
-#: etiketto/cli.py:625
+#: etiketto/cli.py:668
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Se encontraron varias impresoras – elija una con --host (etiketto list-printers)"
 
-#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:960
+#: etiketto/cli.py:679 etiketto/ui/texts.py:271 etiketto/server/service.py:1039
 #, python-format
 msgid "Cannot save %s"
 msgstr "No se puede guardar %s"
 
-#: etiketto/cli.py:638 etiketto/server/service.py:963
+#: etiketto/cli.py:681 etiketto/server/service.py:1042
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "las etiquetas se imprimieron, pero no se guardó el siguiente valor del contador"
 
-#: etiketto/cli.py:653 etiketto/server/service.py:732
+#: etiketto/cli.py:696 etiketto/server/service.py:811
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "no se imprimió nada: el siguiente valor del contador no se podría guardar"
 
-#: etiketto/cli.py:713 etiketto/cli.py:740 etiketto/cli.py:942
+#: etiketto/cli.py:756 etiketto/cli.py:783 etiketto/cli.py:985
 msgid "Interrupted"
 msgstr "Interrumpido"
 
-#: etiketto/cli.py:816
+#: etiketto/cli.py:859
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "La etiqueta usa un archivo de datos fuera de su carpeta: indíquelo con --data"
 
-#: etiketto/cli.py:822
+#: etiketto/cli.py:865
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet y --rows requieren un archivo de datos (--data)"
 
-#: etiketto/cli.py:837 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:582
+#: etiketto/cli.py:880 etiketto/ui/printing.py:346
+#: etiketto/server/service.py:654
 msgid "No rows to print"
 msgstr "No hay filas para imprimir"
 
-#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:635
+#: etiketto/cli.py:889 etiketto/ui/window.py:389 etiketto/server/service.py:707
 #, python-format
 msgid "No such column: %s"
 msgstr "No existe la columna: %s"
 
-#: etiketto/cli.py:851 etiketto/ui/printing.py:419
+#: etiketto/cli.py:894 etiketto/ui/printing.py:419
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "El código de barras o el código QR de estas filas no se puede crear con sus valores, por ejemplo un EAN-13 con letras o una celda vacía. Corrija el archivo de datos y vuelva a leerlo, o imprima sin estas filas."
 
-#: etiketto/cli.py:856 etiketto/ui/printing.py:424
+#: etiketto/cli.py:899 etiketto/ui/printing.py:424
 #, python-format
 msgid "Rows: %s"
 msgstr "Filas: %s"
 
-#: etiketto/cli.py:864
+#: etiketto/cli.py:907
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "Esperando a que termine otra impresión de %s…"
 
-#: etiketto/cli.py:871 etiketto/server/service.py:848
+#: etiketto/cli.py:914 etiketto/server/service.py:927
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s sigue bloqueado por otra impresión – inténtalo más tarde"
 
-#: etiketto/cli.py:877
+#: etiketto/cli.py:920
 msgid "--output needs --dry-run"
 msgstr "--output requiere --dry-run"
 
-#: etiketto/cli.py:886
+#: etiketto/cli.py:929
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "El siguiente valor del contador no se guarda: la próxima impresión repetirá los números"
 
-#: etiketto/cli.py:913 etiketto/ui/printer.py:161
+#: etiketto/cli.py:956 etiketto/ui/printer.py:161
 msgid "No printer found"
 msgstr "No se encontró ninguna impresora"
 
@@ -1427,7 +1452,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s no es una etiqueta de Etiketto"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:506
+#: etiketto/server/service.py:578
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "El archivo está dañado: %s"
@@ -1629,80 +1654,101 @@ msgstr "Solo se pueden soltar archivos locales"
 msgid "Please wait until printing has finished"
 msgstr "Espere a que termine la impresión"
 
-#: etiketto/server/config.py:74
+#: etiketto/server/config.py:75
 #, python-format
 msgid "%(file)s: %(key)s: %(problem)s"
 msgstr "%(file)s: %(key)s: %(problem)s"
 
-#: etiketto/server/config.py:84 etiketto/server/config.py:88
-#: etiketto/server/config.py:94
+#: etiketto/server/config.py:85 etiketto/server/config.py:89
+#: etiketto/server/config.py:95 etiketto/server/main.py:273
 #, python-format
 msgid "Cannot read %(file)s: %(reason)s"
 msgstr "No se puede leer %(file)s: %(reason)s"
 
-#: etiketto/server/config.py:104
+#: etiketto/server/config.py:105
 msgid "expected a table"
 msgstr "se esperaba una tabla"
 
-#: etiketto/server/config.py:114
+#: etiketto/server/config.py:115 etiketto/server/config.py:403
 msgid "missing"
 msgstr "falta"
 
-#: etiketto/server/config.py:117
+#: etiketto/server/config.py:118 etiketto/server/config.py:406
 msgid "expected text"
 msgstr "se esperaba texto"
 
-#: etiketto/server/config.py:123
+#: etiketto/server/config.py:120
+msgid "control characters are not allowed"
+msgstr "no se permiten caracteres de control"
+
+#: etiketto/server/config.py:126
 msgid "expected true or false"
 msgstr "se esperaba true o false"
 
-#: etiketto/server/config.py:134
+#: etiketto/server/config.py:137
 #, python-format
 msgid "expected a number from %(min)s to %(max)s"
 msgstr "se esperaba un número de %(min)s a %(max)s"
 
-#: etiketto/server/config.py:141
+#: etiketto/server/config.py:144
 #, python-format
 msgid "expected one of: %s"
 msgstr "se esperaba uno de: %s"
 
-#: etiketto/server/config.py:146 etiketto/server/config.py:152
+#: etiketto/server/config.py:149 etiketto/server/config.py:155
 msgid "unknown key"
 msgstr "clave desconocida"
 
-#: etiketto/server/config.py:155
+#: etiketto/server/config.py:158
 msgid "nothing defined"
 msgstr "no hay nada definido"
 
-#: etiketto/server/config.py:161
+#: etiketto/server/config.py:164
 msgid "not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "no es un nombre válido: letras, dígitos, . _ - (hasta 64)"
 
-#: etiketto/server/config.py:202
+#: etiketto/server/config.py:205
 msgid "only one printer can be the default"
 msgstr "solo una impresora puede ser la predeterminada"
 
-#: etiketto/server/config.py:216
+#: etiketto/server/config.py:219
 msgid "not a valid printer address"
 msgstr "no es una dirección de impresora válida"
 
-#: etiketto/server/config.py:338
+#: etiketto/server/config.py:239
+msgid "this printer model does not cut"
+msgstr "este modelo de impresora no corta"
+
+#: etiketto/server/config.py:241
+msgid "this printer model has no colour settings"
+msgstr "este modelo de impresora no tiene ajustes de color"
+
+#: etiketto/server/config.py:364
 msgid "expected a date such as 2027-12-31"
 msgstr "se esperaba una fecha como 2027-12-31"
 
-#: etiketto/server/config.py:350
+#: etiketto/server/config.py:377
+msgid "the same token twice"
+msgstr "el mismo token dos veces"
+
+#: etiketto/server/config.py:390
+#, python-format
+msgid "%s can be changed by every user of this computer: chmod 600 it"
+msgstr "%s puede ser modificado por cualquier usuario de este equipo: aplíquele chmod 600"
+
+#: etiketto/server/config.py:400
 msgid "not a token hash: expected sha256:… or scrypt:…"
 msgstr "no es un hash de token: se esperaba sha256:… o scrypt:…"
 
-#: etiketto/server/config.py:364
+#: etiketto/server/config.py:419
 msgid "expected a list of printer names"
 msgstr "se esperaba una lista de nombres de impresora"
 
-#: etiketto/server/config.py:366
+#: etiketto/server/config.py:421
 msgid "printers can only be limited with --printers"
 msgstr "las impresoras solo se pueden limitar con --printers"
 
-#: etiketto/server/config.py:368 etiketto/server/service.py:279
+#: etiketto/server/config.py:423 etiketto/server/service.py:357
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Impresora desconocida: %s"
@@ -1712,55 +1758,55 @@ msgstr "Impresora desconocida: %s"
 msgid "Invalid value for %s"
 msgstr "Valor no válido para %s"
 
-#: etiketto/server/http.py:271
+#: etiketto/server/http.py:377 etiketto/server/http.py:391
 msgid "The request took too long"
 msgstr "La solicitud tardó demasiado"
 
-#: etiketto/server/http.py:274
+#: etiketto/server/http.py:394
 msgid "Internal error"
 msgstr "Error interno"
 
-#: etiketto/server/http.py:279
+#: etiketto/server/http.py:399
 msgid "This server only answers on its local address"
 msgstr "Este servidor solo responde en su dirección local"
 
-#: etiketto/server/http.py:283
+#: etiketto/server/http.py:403
 msgid "Requests from this web page are not allowed"
 msgstr "No se permiten solicitudes desde esta página web"
 
-#: etiketto/server/http.py:301
+#: etiketto/server/http.py:421
 msgid "Too many requests – try again later"
 msgstr "Demasiadas solicitudes: inténtelo de nuevo más tarde"
 
-#: etiketto/server/http.py:302
+#: etiketto/server/http.py:423
 msgid "Access token missing or wrong"
 msgstr "Falta el token de acceso o es incorrecto"
 
-#: etiketto/server/http.py:342 etiketto/server/http.py:347
+#: etiketto/server/http.py:464 etiketto/server/http.py:467
 msgid "The request needs a Content-Length"
 msgstr "La solicitud necesita un Content-Length"
 
-#: etiketto/server/http.py:350
+#: etiketto/server/http.py:470
 msgid "The request is too large"
 msgstr "La solicitud es demasiado grande"
 
-#: etiketto/server/http.py:356
+#: etiketto/server/http.py:480
 msgid "Send the request as application/json"
 msgstr "Envíe la solicitud como application/json"
 
-#: etiketto/server/http.py:364
+#: etiketto/server/http.py:491
 msgid "The request is not valid JSON"
 msgstr "La solicitud no es JSON válido"
 
-#: etiketto/server/http.py:374 etiketto/server/http.py:384
+#: etiketto/server/http.py:504 etiketto/server/http.py:514
 msgid "Not found"
 msgstr "No encontrado"
 
-#: etiketto/server/http.py:383
+#: etiketto/server/http.py:513
 msgid "Method not allowed"
 msgstr "Método no permitido"
 
-#: etiketto/server/http.py:400
+#: etiketto/server/http.py:530
 #, python-format
 msgid "Send the header %s with this request"
 msgstr "Envíe la cabecera %s con esta solicitud"
@@ -1775,12 +1821,12 @@ msgstr "La carpeta de etiquetas %s no existe"
 msgid "Cannot read the token file %s"
 msgstr "No se puede leer el archivo de token %s"
 
-#: etiketto/server/main.py:54
+#: etiketto/server/main.py:54 etiketto/server/main.py:248
 msgid ""
 "The access token may only contain printable ASCII characters without spaces"
 msgstr "El token de acceso solo puede contener caracteres ASCII imprimibles sin espacios"
 
-#: etiketto/server/main.py:59
+#: etiketto/server/main.py:59 etiketto/server/main.py:253
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "El token de acceso debe tener al menos %d caracteres"
@@ -1793,31 +1839,36 @@ msgstr "Use --printers o --allow-printer, no ambos"
 msgid "Use either --tokens or --token-file"
 msgstr "Use --tokens o --token-file, no ambos"
 
-#: etiketto/server/main.py:102
+#: etiketto/server/main.py:115
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "No se escuchará en %s sin token de acceso: defina ETIKETTO_TOKEN o use --token-file"
 
-#: etiketto/server/main.py:115
+#: etiketto/server/main.py:137
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "No se puede escuchar en %(address)s: %(reason)s"
 
-#: etiketto/server/main.py:184
+#: etiketto/server/main.py:215
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "No es un nombre válido: letras, dígitos, . _ - (hasta 64)"
 
-#: etiketto/server/main.py:198
+#: etiketto/server/main.py:226
 #, python-format
-msgid "A token named %s exists already"
-msgstr "Ya existe un token llamado %s"
+msgid "%s is in use by another program – try again later"
+msgstr "%s está en uso por otro programa: inténtelo de nuevo más tarde"
 
-#: etiketto/server/main.py:208
+#: etiketto/server/main.py:237
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "El token se muestra solo esta vez; %s guarda solo su hash."
+
+#: etiketto/server/main.py:296
+#, python-format
+msgid "A token named %s exists already"
+msgstr "Ya existe un token llamado %s"
 
 #: etiketto/server/paths.py:39
 #, python-format
@@ -1861,66 +1912,66 @@ msgstr "Demasiadas columnas: como máximo %d"
 msgid "Too many cells: at most %d"
 msgstr "Demasiadas celdas: como máximo %d"
 
-#: etiketto/server/service.py:282
-#, python-format
-msgid "This access token may not use the printer %s"
-msgstr "Este token de acceso no puede usar la impresora %s"
-
-#: etiketto/server/service.py:297
+#: etiketto/server/service.py:370
 msgid "Choose a printer by its name"
 msgstr "Elija una impresora por su nombre"
 
-#: etiketto/server/service.py:409
+#: etiketto/server/service.py:435 etiketto/server/service.py:968
+msgid "This access token may not do this"
+msgstr "Este token de acceso no puede hacer esto"
+
+#: etiketto/server/service.py:485
 msgid "No printer address: give it as host"
 msgstr "No hay dirección de impresora: indíquela como host"
 
-#: etiketto/server/service.py:419
+#: etiketto/server/service.py:491
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Esta dirección de impresora no está permitida: %s"
 
-#: etiketto/server/service.py:590
+#: etiketto/server/service.py:662
 msgid "A sheet needs a data file"
 msgstr "Una hoja necesita un archivo de datos"
 
-#: etiketto/server/service.py:596
+#: etiketto/server/service.py:668
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "La etiqueta usa un archivo de datos fuera de la carpeta de etiquetas: envíe también sus filas"
 
-#: etiketto/server/service.py:684
+#: etiketto/server/service.py:743
+#, python-format
+msgid "At most %d labels in one print job"
+msgstr "Como máximo %d etiquetas en un trabajo de impresión"
+
+#: etiketto/server/service.py:763
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Hay demasiados trabajos de impresión en espera: inténtelo de nuevo más tarde"
 
-#: etiketto/server/service.py:870
+#: etiketto/server/service.py:949
 #, python-format
 msgid "No such print job: %s"
 msgstr "No existe el trabajo de impresión: %s"
 
-#: etiketto/server/service.py:882
+#: etiketto/server/service.py:961
 msgid "The print job has already finished"
 msgstr "El trabajo de impresión ya ha terminado"
 
-#: etiketto/server/service.py:889
-msgid "This access token may not do this"
-msgstr "Este token de acceso no puede hacer esto"
-
-#: etiketto/server/service.py:905
+#: etiketto/server/service.py:984
 msgid "The label is too large to render"
 msgstr "La etiqueta es demasiado grande para renderizarla"
 
-#: etiketto/server/service.py:931
+#: etiketto/server/service.py:1010
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "La etiqueta es demasiado grande: como máximo %(elements)d elementos y %(chars)d caracteres por texto"
 
-#: etiketto/server/service.py:941
+#: etiketto/server/service.py:1020
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Como máximo %d copias en esta impresora"
 
-#: etiketto/server/service.py:946
+#: etiketto/server/service.py:1025
 msgid "Printers are chosen by name: leave out host"
 msgstr "Las impresoras se eligen por su nombre: omita host"
