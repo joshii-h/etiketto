@@ -1441,6 +1441,95 @@ def test_black_and_white_keeps_own_grey():
     assert set(mono.black_and_white(flat).tobytes()) == {255}
 
 
+def _shaded_label() -> Image.Image:
+    """Shaded boxes (85 to 45 % grey) with black text in them, grey text,
+    and bars below, as a 300 dpi image."""
+    image = Image.new("L", (1200, 1000), 255)
+    draw = ImageDraw.Draw(image)
+    for i, level in enumerate((217, 191, 153, 115)):
+        top = 40 + i * 130
+        draw.rectangle((40, top, 560, top + 100), fill=level)
+        for x in range(60, 300, 16):  # black "letters" in the box
+            draw.rectangle((x, top + 30, x + 5, top + 60), fill=0)
+    for y in range(600, 640, 8):  # light grey text lines (#aaa to #ccc)
+        draw.rectangle((640, y, 1100, y + 3), fill=190)
+    for x in range(100, 1100, 8):
+        draw.rectangle((x, 760, x + 2, 960), fill=0)
+    return image
+
+
+def test_shaded_boxes_keep_their_grey():
+    """Light shading is not turned solid black by a tile's own levels, grey
+    stays grey (for the dithering), black text in it stays black with
+    paper around it, light grey text is kept."""
+    from etiketto.shipping import mono
+
+    result = mono.black_and_white(_shaded_label())
+    for i, level in enumerate((217, 191, 153, 115)):
+        top = 40 + i * 130
+        inside = result.crop((330, top + 10, 550, top + 90))
+        assert set(inside.tobytes()) == {level}, level  # grey, not black or white
+        assert result.getpixel((62, top + 45)) == 0  # the letter
+        assert result.getpixel((58, top + 45)) == 255  # paper right beside it
+    assert result.getpixel((700, 601)) == 190  # light grey text
+    bars = result.crop((100, 800, 1100, 900))
+    assert set(bars.tobytes()) == {0, 255}
+
+
+def test_a_line_of_text_is_no_barcode():
+    """Rows through many letters are a barcode only over a tile's height:
+    grey in a line of text keeps its grey."""
+    from etiketto.shipping import mono
+
+    image = Image.new("L", (1200, 1000), 255)
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((40, 100, 1160, 160), fill=150)  # a grey band ...
+    for x in range(60, 1100, 14):  # ... with a line of black letters, 20 rows high
+        draw.rectangle((x, 120, x + 4, 139), fill=0)
+    for x in range(100, 1100, 8):
+        draw.rectangle((x, 600, x + 2, 900), fill=0)
+    result = mono.black_and_white(image)
+    assert result.getpixel((1120, 130)) == 150
+    rows = mono.barcode_rows(image.crop((0, 0, 400, 1000)), 128)
+    assert 130 in rows and 130 not in mono._tall(rows, 30) and 700 in mono._tall(rows, 30)
+
+
+def test_spread_is_a_min_and_max_filter():
+    from PIL import ImageChops, ImageFilter
+
+    from etiketto.shipping import mono
+
+    noise = Image.effect_noise((90, 70), 60)
+    for size in (3, 5, 11, 15):
+        inner = (size, size, 90 - size, 70 - size)
+        for darkest, rank in ((True, ImageFilter.MinFilter), (False, ImageFilter.MaxFilter)):
+            spread = mono.spread(noise, darkest, size).crop(inner)
+            assert (
+                ImageChops.difference(spread, noise.filter(rank(size)).crop(inner)).getbbox()
+                is None
+            )
+    assert mono.spread(noise, True, 1) is noise
+
+
+def test_mono_area_is_kept_for_the_preview(monkeypatch):
+    """The preview renders again on every change: the black and white of
+    the page area is made once."""
+    from etiketto.shipping import mono
+
+    calls = []
+    real = mono.black_and_white
+
+    def counting(grey, scale=1.0):
+        calls.append(scale)
+        return real(grey, scale)
+
+    monkeypatch.setattr(mono, "black_and_white", counting)
+    label = mono_label(bars_and_grey(True))
+    first = render(label, dpi=203.2, safe_mm=1.5, mono=True).image
+    second = render(label, dpi=203.2, safe_mm=1.5, mono=True).image
+    assert len(calls) == 1 and first.tobytes() == second.tobytes()
+
+
 @needs_poppler
 def test_page_area_stays_sharp_next_to_another_element(pdf):
     """A label of fixed length too short for all its elements: the page

@@ -241,18 +241,25 @@ def render_page(
     args = (element.data, element.page, crop, element.rotation, box, element.fit)
     if not mono:
         return source.draw(*args).convert("RGBA")
+    # kept: the preview renders again on every change of the label
+    return source.cached(("mono", *args), lambda: _mono_page(element, args)).convert("RGBA")
+
+
+def _mono_page(element: PageElement, args) -> Image.Image:
+    from etiketto.shipping import source
     from etiketto.shipping.mono import black_and_white
 
     info = source.page_info(element.data, element.page)
     # an image is enlarged smoothly here: the threshold then finds its
     # edges between the pixels instead of on the steps of whole pixels
-    image = source.draw(*args, sharp=info.pdf)
+    data, page, crop, rotation, box, fit = args
+    image = source.draw(data, page, crop, rotation, box, fit, sharp=info.pdf)
     scale = 1.0
     if not info.pdf:
         _x, _y, w, h = source.area(crop, info.width, info.height)
         turned_w, turned_h = source.turned(w, h, element.rotation)
         scale = max(image.width / turned_w, image.height / turned_h)
-    return black_and_white(image.convert("L"), scale).convert("RGBA")
+    return black_and_white(image.convert("L"), scale)
 
 
 def render_element(

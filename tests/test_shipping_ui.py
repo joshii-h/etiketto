@@ -91,6 +91,13 @@ def open_dialog(window, path) -> shipping.ShippingDialog:
     return dialogs[0]
 
 
+def stored(dialog):
+    """Wait for the background copies of the pages, then the main loop."""
+    for thread in list(dialog._storage_threads.values()):
+        thread.join()
+    pump()
+
+
 def sized(view, width=500, height=700):
     """A crop view laid out at a fixed size (the dialog is not mapped in tests)."""
     view.get_width = lambda: width
@@ -470,10 +477,12 @@ def test_edit_keeps_only_the_page(cab_window, tmp_path):
 @needs_poppler
 def test_note_when_the_whole_document_is_stored(cab_window, sample_pdf, monkeypatch):
     dialog = open_dialog(cab_window, sample_pdf)
+    stored(dialog)
     assert not dialog.store_note.get_visible()  # only the page is stored
     dialog.close()
     monkeypatch.setattr(shipping, "only_page", lambda data, page: (data, page))
     dialog = open_dialog(cab_window, sample_pdf)
+    stored(dialog)
     assert dialog.store_note.get_visible()
     assert "whole document" in dialog.store_note.get_label()
     data = dialog.element.data
@@ -494,3 +503,36 @@ def test_closing_the_dialog_frees_the_document(cab_window, sample_png):
     dialog.close()
     pump()
     assert len(source._pictures) == 0 and len(source._drawings) == 0
+
+
+@needs_poppler
+def test_page_copy_runs_in_the_background(cab_window, sample_pdf, monkeypatch):
+    """The dialog does not wait for the copy of a page; Create label does."""
+    import threading
+
+    started, release = threading.Event(), threading.Event()
+    real = shipping.only_page
+
+    def slow(data, page):
+        started.set()
+        release.wait(5)
+        return real(data, page)
+
+    monkeypatch.setattr(shipping, "only_page", slow)
+    dialog = open_dialog(cab_window, sample_pdf)
+    assert started.wait(5)  # running, and the dialog is open already
+    assert not dialog.store_note.get_visible()
+    release.set()
+    dialog.finish()  # waits for the copy
+    pump()
+    assert source.page_info(cab_window.label.elements[0].data).pages == 1
+    # a page seen before is not copied again
+    calls = []
+    monkeypatch.setattr(shipping, "only_page", lambda d, p: calls.append(p) or (d, p))
+    dialog = open_dialog(cab_window, sample_pdf)
+    stored(dialog)
+    dialog.set_page(1)
+    stored(dialog)
+    dialog.set_page(0)
+    assert calls == [0, 1]
+    dialog.close()

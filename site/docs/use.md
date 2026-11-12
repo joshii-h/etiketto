@@ -91,15 +91,20 @@ it is black and white but for grey edges (barcodes and text, also from a
 scan with grey ink on grey paper), it is cut at the middle between its
 own black and white, so bars keep clean edges; images are enlarged
 smoothly for this, so the edges fall between the pixels of the scan.
-Where it has grey of its own (a grey logo, grey text, a shaded band),
-the grey is printed as a dot pattern. A scan or photo of a label should
-have at least 150 dpi; at 100 dpi only a clean one keeps all its bars.
+Where it has grey of its own (a grey logo, grey text down to light grey,
+a shaded band), the grey is printed as a dot pattern; black text on it
+gets a narrow edge of paper so that it stays readable. A scan or photo of
+a label should have at least 150 dpi; at 100 dpi only a clean one keeps
+all its bars.
 
 The label file keeps the whole page the area was taken from, also outside
 the area (addresses, tracking numbers). Of a PDF with several pages only
 the chosen page is kept if it can be copied unchanged, otherwise the whole
-document (the dialog then says so); of a TIFF with several pages only the
-chosen page.
+document (the dialog then says so). Unchanged is strict: a copy that differs
+by more than rounding anywhere, even by a few dots, is not used; pages with
+embedded fonts that are drawn slightly differently when copied (TeX, for
+example) keep the whole document. Of a TIFF with several pages only the
+chosen page is kept.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
 along, otherwise install it from your distribution (see the README).

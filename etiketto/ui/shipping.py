@@ -4,6 +4,7 @@ how it is turned and the size it is printed at."""
 from __future__ import annotations
 
 import copy
+import threading
 from collections.abc import Callable
 from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING
@@ -206,6 +207,9 @@ class ShippingDialog(Adw.Dialog):
         self.targets = [] if edit else targets_for(window.backend.capabilities, self._tape())
         self.target: Target | None = None if edit else matching(self.targets, window.label)
         self.info = page_info(self.element.data, self.element.page)
+        # per page: what goes into the label file (see _check_storage)
+        self._stored: dict[int, tuple[str, int]] = {}
+        self._storage_threads: dict[int, threading.Thread] = {}
         self._build()
         self._load_page(find=not edit)
         # the decoded document and its drawings go with the dialog
@@ -305,13 +309,49 @@ class ShippingDialog(Adw.Dialog):
 
     def _check_storage(self) -> None:
         """What goes into the label file: only this page of the document if
-        it can be copied unchanged, else all of it (then a note says so)."""
-        data, page = self.element.data, self.element.page
-        self.stored = (data, page)
-        if self.info.pages > 1:
-            with suppress(SourceError):
-                self.stored = only_page(data, page)
-        self.store_note.set_visible(self.info.pages > 1 and self.stored[0] is data)
+        it can be copied unchanged, else all of it (then a note says so).
+        Copying and comparing a page takes up to a second: it is done in the
+        background, with its own Poppler document, once per page."""
+        page = self.element.page
+        self.store_note.set_visible(False)
+        if self.info.pages < 2:
+            self._stored[page] = (self.element.data, page)
+        if page in self._stored:
+            self._show_storage(page)
+            return
+        thread = threading.Thread(
+            target=self._store_in_background,
+            args=(self.element.data, page),
+            name="etiketto-page-copy",
+            daemon=True,
+        )
+        self._storage_threads[page] = thread
+        thread.start()
+
+    def _store_in_background(self, data: str, page: int) -> None:
+        stored = (data, page)
+        with suppress(SourceError):
+            stored = only_page(data, page)
+        self._stored[page] = stored  # for stored(), which may wait for it
+        GLib.idle_add(self._stored_ready, page)
+
+    def _stored_ready(self, page: int) -> bool:
+        if page == self.element.page:
+            self._show_storage(page)
+        return False
+
+    def _show_storage(self, page: int) -> None:
+        whole = self._stored[page][0] is self.element.data
+        self.store_note.set_visible(self.info.pages > 1 and whole)
+
+    def stored(self) -> tuple[str, int]:
+        """(data, page) to keep for the page shown: waits for the copy if it
+        is still being made."""
+        page = self.element.page
+        thread = self._storage_threads.get(page)
+        if thread is not None:
+            thread.join()
+        return self._stored.get(page, (self.element.data, page))
 
     def find(self) -> None:
         self.detection = detect.detect(self.page_image, self.page_width_mm)
@@ -393,6 +433,6 @@ class ShippingDialog(Adw.Dialog):
         self.result.set_paintable(texture)
 
     def finish(self) -> None:
-        self.element.data, self.element.page = self.stored
+        self.element.data, self.element.page = self.stored()
         self.on_done(self.element, self.target)
         self.close()

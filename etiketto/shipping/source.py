@@ -170,6 +170,18 @@ _drawings = _Cache(16, CACHE_BYTES, _image_bytes)
 _threads = threading.local()
 
 
+def cached(key: tuple, make: Callable[[], Image.Image]) -> Image.Image:
+    """make()'s image, kept with the drawings (by the same limits): for
+    work done on a drawing, like the black and white of a page area."""
+    found = _drawings.get(key)
+    if found is not None:
+        return found
+    image = make()
+    if _image_bytes(image) <= CACHE_ITEM_BYTES:
+        _drawings.put(key, image)
+    return image
+
+
 def clear_caches() -> None:
     """Forget decoded files and drawings (tests; the memory after a label)."""
     _pictures.clear()
@@ -538,9 +550,10 @@ def _same_drawing(page_a, page_b) -> bool:
         a = _render(page_a, region, 0, size, scale, smooth)
         b = _render(page_b, region, 0, size, scale, smooth)
         levels, share = (SMOOTH_LEVELS, SMOOTH_SHARE) if smooth else (0, SHARP_SHARE)
-        if _differing(a, b, levels) > share * size[0] * size[1]:
+        differing = _differing(a, b, levels)
+        if differing > share * size[0] * size[1]:
             return False
-        if _changed_tile(_unexplained(a, b, levels)):
+        if differing and _changed_tile(_unexplained(a, b, levels)):
             return False
     return True
 
@@ -555,7 +568,9 @@ def _differing(a: Image.Image, b: Image.Image, levels: int) -> int:
 def _outside(a: Image.Image, b: Image.Image, levels: int) -> Image.Image:
     """255 where b is darker or lighter (by more than levels) than all of a
     around the pixel: not a pixel of a moved by one."""
-    lowest, highest = a.filter(ImageFilter.MinFilter(3)), a.filter(ImageFilter.MaxFilter(3))
+    from etiketto.shipping.mono import spread
+
+    lowest, highest = spread(a, True, 3), spread(a, False, 3)
     darker = ImageChops.subtract(lowest, b).point(lambda v: 255 if v > levels else 0)
     lighter = ImageChops.subtract(b, highest).point(lambda v: 255 if v > levels else 0)
     return ImageChops.lighter(darker, lighter)
