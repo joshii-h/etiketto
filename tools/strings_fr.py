@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "Le jeton %(name)s a été ajouté à %(file)s.",
     "Access token: ": "Jeton d’accès\xa0: ",
     "This token is in the file already, as %s": "Ce jeton figure déjà dans le fichier, sous le nom %s",
+    "The label is too large: at most %d images and codes": "L’étiquette est trop grande : %d images et codes au maximum",
 }

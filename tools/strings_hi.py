@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "टोकन %(name)s को %(file)s में जोड़ा गया।",
     "Access token: ": "एक्सेस टोकन: ",
     "This token is in the file already, as %s": "यह टोकन फ़ाइल में पहले से %s के रूप में मौजूद है",
+    "The label is too large: at most %d images and codes": "लेबल बहुत बड़ा है: अधिकतम %d चित्र और कोड",
 }

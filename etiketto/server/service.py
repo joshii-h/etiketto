@@ -13,6 +13,7 @@ import base64
 import contextlib
 import errno
 import fnmatch
+import functools
 import io
 import ipaddress
 import logging
@@ -92,6 +93,8 @@ STATUS_SECONDS = 5.0  # the state of printers in the list, as long
 MAX_HOST = 512
 RENDERS = 2  # renders for previews and checks at once: a large label takes much memory
 RENDER_WAIT = 20.0  # seconds a request waits for one, then 503
+MAX_WAITERS = 8  # requests waiting for one; more get 503 at once
+MAX_PICTURES = 50  # image and code elements of a label: each takes time to draw
 # what one label of a request may be: a text of thousands of lines, or
 # thousands of elements, would take gigabytes and minutes to render
 MAX_ELEMENTS = 200
@@ -184,8 +187,15 @@ def host_ok(host: str) -> bool:
 
 
 def _ip_pattern(pattern: str) -> bool:
-    """192.168.1.0/24, 192.168.1.*, 2001:db8::/32: patterns for addresses."""
-    return bool(re.fullmatch(r"[0-9.*]+(/\d+)?|[0-9A-Fa-f:.*]*:[0-9A-Fa-f:.*]*(/\d+)?", pattern))
+    """An address pattern: an IP address or network as ipaddress reads it
+    (192.168.1.5, 192.168.1.0/24, 2001:db8::/32), or four parts of an IPv4
+    address with * for whole parts (192.168.1.*). Anything else ("*.*",
+    "123", "*.5") is a pattern for host names."""
+    try:
+        ipaddress.ip_network(pattern, strict=False)
+        return True
+    except ValueError:
+        return bool(re.fullmatch(r"(\d{1,3}|\*)(\.(\d{1,3}|\*)){3}", pattern))
 
 
 def _ip_matches(address: str, pattern: str) -> bool:
@@ -202,10 +212,13 @@ def _ip_matches(address: str, pattern: str) -> bool:
 
 
 def _resolved(name: str) -> list[str]:
+    """The addresses of a name in the resolver's order (the first is the
+    one printed on), each once."""
     try:
-        return sorted({str(info[4][0]) for info in socket.getaddrinfo(name, None)})
+        infos = socket.getaddrinfo(name, None, type=socket.SOCK_STREAM)
     except OSError:
         return []
+    return list(dict.fromkeys(str(info[4][0]) for info in infos))
 
 
 def host_allowed(name: str, patterns: tuple[str, ...]) -> str | None:
@@ -304,6 +317,9 @@ class Service:
         self._states: dict[str, tuple[float, PrinterInfo | Exception]] = {}
         self._asking: dict[str, threading.Lock] = {}
         self._renders = threading.BoundedSemaphore(RENDERS)
+        self._held = threading.local()  # render slots this thread holds
+        self._waiting = 0  # requests waiting for a render slot
+        self._waiting_lock = threading.Lock()
 
     def close(self, timeout: float = 30.0) -> None:
         """Cancel the waiting jobs; printing ones stop after their label."""
@@ -748,17 +764,51 @@ class Service:
 
     @contextlib.contextmanager
     def _rendering(self, prepared: Prepared) -> Iterator[None]:
-        """Render for a request: two at a time, within the limits."""
+        """Render for a request: in a render slot, within the limits."""
         caps = prepared.backend.capabilities
-        if not self._renders.acquire(timeout=RENDER_WAIT):  # both busy with large labels
-            raise ApiError(503, "busy", _("The server is busy – try again later"))
-        try:
-            with limited(MAX_PIXELS, caps.max_length_mm):
+        with self.render_slot(RENDER_WAIT):
+            try:
+                with limited(MAX_PIXELS, caps.max_length_mm):
+                    yield
+            except RenderTooLarge:
+                raise _too_large() from None
+
+    @contextlib.contextmanager
+    def render_slot(self, timeout: float | None = RENDER_WAIT) -> Iterator[None]:
+        """One of the RENDERS slots every render takes: previews, checks and
+        print jobs alike. Held by this thread already: nothing more to take
+        (the HTTP server takes it before it parses a request). A request
+        that would be the MAX_WAITERS-th to wait, or waits `timeout`
+        seconds, gets 503; print jobs (timeout None) wait their turn."""
+        if getattr(self._held, "count", 0):
+            self._held.count += 1
+            try:
                 yield
-        except RenderTooLarge:
-            raise _too_large() from None
+            finally:
+                self._held.count -= 1
+            return
+        self._take(timeout)
+        self._held.count = 1
+        try:
+            yield
         finally:
+            self._held.count = 0
             self._renders.release()
+
+    def _take(self, timeout: float | None) -> None:
+        if timeout is None:
+            self._renders.acquire()
+            return
+        with self._waiting_lock:
+            if self._waiting >= MAX_WAITERS:
+                raise _busy()
+            self._waiting += 1
+        try:
+            if not self._renders.acquire(timeout=timeout):
+                raise _busy()
+        finally:
+            with self._waiting_lock:
+                self._waiting -= 1
 
     @staticmethod
     def _printer_image(job: Job, label: Label):
@@ -873,8 +923,11 @@ class Service:
         caps = prepared.backend.capabilities
         if save:
             job.state = WAITING  # until the label file is free
+        # every render of the job takes a render slot (waits for it): print
+        # jobs share the two with previews, the memory stays bounded
+        slot = functools.partial(self.render_slot, None)
         with (
-            limited(MAX_PIXELS, caps.max_length_mm),
+            limited(MAX_PIXELS, caps.max_length_mm, slot),
             self._exclusive(prepared.path if save else None),
         ):
             job.state = PRINTING
@@ -1029,12 +1082,27 @@ def _printer_failed(error: Exception, settings: Settings) -> ApiError:
     return ApiError(502, "printer_" + code, printer_error_text(error, unit_for(settings.units)))
 
 
+def _busy() -> ApiError:
+    return ApiError(503, "busy", _("The server is busy – try again later"))
+
+
 def _too_large() -> ApiError:
     return ApiError(413, "label_too_large", _("The label is too large to render"))
 
 
 def _too_long(text: str) -> bool:
     return len(text) > MAX_TEXT or text.count("\n") > MAX_LINES
+
+
+def _check_pictures(label: Label) -> None:
+    """Images and codes take long to draw: at most MAX_PICTURES of them."""
+    pictures = sum(isinstance(e, (ImageElement, CodeElement)) for e in label.elements)
+    if pictures > MAX_PICTURES:
+        raise ApiError(
+            413,
+            "label_too_large",
+            _("The label is too large: at most %d images and codes") % MAX_PICTURES,
+        )
 
 
 def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
@@ -1047,6 +1115,7 @@ def _check_limits(label: Label, rows: list[dict[str, str]]) -> None:
     ]
     columns = used_columns(label) if rows else []
     cells = (row.get(name, "") for row in rows for name in columns)
+    _check_pictures(label)
     if (
         len(label.elements) > MAX_ELEMENTS
         or any(map(_too_long, contents))

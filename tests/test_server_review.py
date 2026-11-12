@@ -225,23 +225,20 @@ def test_bodies_are_limited_to_4_mb_by_default(make_server):
         assert sock.recv(1024).startswith(b"HTTP/1.0 413")
 
 
-def test_large_bodies_are_parsed_a_few_at_a_time(make_server, monkeypatch):
+def test_preview_bodies_are_parsed_in_a_render_slot(make_server, monkeypatch):
     server, base = make_server()
-    monkeypatch.setattr(server_http, "LARGE_BODY", 10)
-    acquired = []
-    real = server.parses
+    service = server.service
+    parsed_in_slot = []
+    real_parse = server_http._parse
 
-    class Counting:
-        def __enter__(self):
-            acquired.append(1)
-            return real.__enter__()
+    def parse(body):
+        parsed_in_slot.append(getattr(service._held, "count", 0) > 0)
+        return real_parse(body)
 
-        def __exit__(self, *args):
-            return real.__exit__(*args)
-
-    server.parses = Counting()
+    monkeypatch.setattr(server_http, "_parse", parse)
     assert call(base, "POST", "/api/v1/preview", body={"label": "box"})[0] == 200
-    assert acquired == [1]
+    assert call(base, "POST", "/api/v1/print", body={"label": "box", "wait": 10})[0] == 200
+    assert parsed_in_slot == [True, True]
 
 
 def test_pending_jobs_per_owner_and_by_size(make_server, secured, server_env, monkeypatch):
@@ -532,7 +529,10 @@ def test_role_is_required_and_tokens_are_unique(tmp_path):
     with pytest.raises(ConfigError, match="the same token twice"):
         load_tokens(path, None)
     write(path, '[tokens.a]\nrole = "print"\nhash = "%s"\nid = "XYZ"\n' % cfg.hash_token("a"))
-    with pytest.raises(ConfigError, match="id"):
+    assert load_tokens(path, None)[0].id == ""  # a wrong id is ignored (and warned about)
+    scrypt = cfg.hash_token("chosen-token-12345", "scrypt")
+    write(path, "".join('[tokens.%s]\nrole = "print"\nhash = "%s"\n' % (n, scrypt) for n in "ab"))
+    with pytest.raises(ConfigError, match="the same token twice"):
         load_tokens(path, None)
 
 

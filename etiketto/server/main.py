@@ -100,7 +100,11 @@ def serve(args) -> int:
     from etiketto.server.http import Config, Server, binds_loopback
 
     _logging()
+    # first of all: a reload sent while the files are read must not end it
+    loaded: list = []
+    signal.signal(signal.SIGHUP, lambda _signum, _frame: _reload(loaded[0] if loaded else None))
     printers, tokens = _configured(args)
+    loaded.append(tokens)
     _warn(args, printers, tokens)
     token = read_token(args.token_file) if tokens is None else None
     if token is None and tokens is None and not binds_loopback(args.host):
@@ -112,8 +116,7 @@ def serve(args) -> int:
             % args.host,
             EXIT_USAGE,
         )
-    # before the server exists: a reload sent while it starts must not end it
-    signal.signal(signal.SIGHUP, lambda _signum, _frame: _reload(tokens))
+    _warm_up()
     service = _service(args, printers)
     config = Config(
         args.host,
@@ -193,7 +196,16 @@ def mcp(args) -> int:
 
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
     printers, _tokens = _configured(args)
+    _warm_up()
     return run_stdio(_service(args, printers))
+
+
+def _warm_up() -> None:
+    """Pango set up in the main thread, before requests and print jobs
+    render in threads of their own (render.warm_up())."""
+    from etiketto.render import warm_up
+
+    warm_up()
 
 
 # --- etiketto token new -------------------------------------------------------------

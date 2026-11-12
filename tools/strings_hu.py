@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "A(z) %(name)s token hozzáadva ehhez: %(file)s.",
     "Access token: ": "Hozzáférési token: ",
     "This token is in the file already, as %s": "Ez a token már szerepel a fájlban, %s néven",
+    "The label is too large: at most %d images and codes": "A címke túl nagy: legfeljebb %d kép és kód",
 }

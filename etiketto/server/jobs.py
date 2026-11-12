@@ -135,6 +135,9 @@ class JobQueue:
         self._lock = threading.Lock()
         self._jobs: dict[str, PrintJob] = {}
         self._queues: dict[tuple[str, str], queue.Queue[PrintJob | None]] = {}
+        # jobs given to each printer's worker and not done yet
+        self._load: dict[tuple[str, str], int] = {}
+        self._used: dict[tuple[str, str], float] = {}  # when each last had a job
         self._workers: list[threading.Thread] = []
         self._closed = False
 
@@ -146,6 +149,7 @@ class JobQueue:
             if key not in self._queues:
                 self._start(key)
             self._jobs[job.id] = job
+            self._load[key] = self._load.get(key, 0) + 1
             self._queues[key].put(job)
         return job
 
@@ -161,7 +165,7 @@ class JobQueue:
     def _start(self, key: tuple[str, str]) -> None:
         """A queue and a worker for a printer that has none (any more)."""
         self._workers = [w for w in self._workers if w.is_alive()]
-        if len(self._queues) >= MAX_QUEUES:
+        if len(self._queues) >= MAX_QUEUES and not self._evict_idle():
             raise QueueFull
         waiting: queue.Queue[PrintJob | None] = queue.Queue()
         worker = threading.Thread(
@@ -173,6 +177,18 @@ class JobQueue:
             raise QueueFull from None
         self._queues[key] = waiting
         self._workers.append(worker)
+
+    def _evict_idle(self) -> bool:
+        """End the worker of the printer idle longest, to make room: the
+        limit is on printers printing at once, not on printers a minute."""
+        idle = [k for k in self._queues if not self._load.get(k)]
+        if not idle:
+            return False
+        oldest = min(idle, key=lambda k: self._used.get(k, 0.0))
+        self._queues.pop(oldest).put(None)
+        self._used.pop(oldest, None)
+        self._load.pop(oldest, None)
+        return True
 
     def get(self, job_id: str) -> PrintJob | None:
         with self._lock:
@@ -227,16 +243,24 @@ class JobQueue:
                     if waiting.empty():
                         if self._queues.get(key) is waiting:
                             del self._queues[key]
+                            self._load.pop(key, None)
+                            self._used.pop(key, None)
                         return
                 continue
             if job is None:
                 return
             with self._lock:
-                if job.state != QUEUED:  # canceled while it waited
-                    continue
-                job.state = PRINTING
-                job.started = _now()
-            self._run(job)
+                skip = job.state != QUEUED  # canceled while it waited
+                if not skip:
+                    job.state = PRINTING
+                    job.started = _now()
+            try:
+                if not skip:
+                    self._run(job)
+            finally:
+                with self._lock:
+                    self._load[key] = self._load.get(key, 1) - 1
+                    self._used[key] = time.monotonic()
 
     def _run(self, job: PrintJob) -> None:
         try:

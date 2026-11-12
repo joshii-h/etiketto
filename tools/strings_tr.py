@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "%(name)s belirteci %(file)s dosyasına eklendi.",
     "Access token: ": "Erişim belirteci: ",
     "This token is in the file already, as %s": "Bu belirteç dosyada zaten %s adıyla var",
+    "The label is too large: at most %d images and codes": "Etiket çok büyük: en fazla %d görsel ve kod",
 }

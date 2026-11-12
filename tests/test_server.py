@@ -219,16 +219,25 @@ def test_body_size_limit(make_server):
 
 def test_connection_limit(api, monkeypatch):
     server = api.server
-    total = server_http.MAX_CONNECTIONS + server_http.RESERVED
-    for _n in range(total):
-        assert server._slots.acquire(blocking=False)
+    for _n in range(server_http.MAX_CONNECTIONS):
+        assert server._slots.acquire(timeout=5)  # a request before may still be closing
     try:
-        with pytest.raises((ConnectionError, http.client.HTTPException, OSError)):
-            call(api.base, "GET", "/api/v1/health")
+        # every slot taken: a reserve connection, for /health only
+        assert call(api.base, "GET", "/api/v1/health")[0] == 200
+        status, _r, body = call(api.base, "GET", "/api/v1/labels")
+        assert status == 503 and body["error"]["code"] == "busy"
+        for _n in range(server_http.RESERVED):
+            assert server._reserve.acquire(timeout=5)
+        try:
+            with pytest.raises((ConnectionError, http.client.HTTPException, OSError)):
+                call(api.base, "GET", "/api/v1/health")
+        finally:
+            for _n in range(server_http.RESERVED):
+                server._reserve.release()
     finally:
-        for _n in range(total):
+        for _n in range(server_http.MAX_CONNECTIONS):
             server._slots.release()
-    assert call(api.base, "GET", "/api/v1/health")[0] == 200
+    assert call(api.base, "GET", "/api/v1/labels")[0] == 200
 
 
 def test_loopback_detection():

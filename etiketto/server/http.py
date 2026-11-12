@@ -58,6 +58,7 @@ ANSWER_SECONDS = 60.0  # to send the answer, once the request is in
 MAX_CONNECTIONS = 32
 MAX_PER_CLIENT = 8  # connections from one address at once
 RESERVED = 2  # connections beyond MAX_CONNECTIONS, for /health only
+RESERVED_SECONDS = 5.0  # such a connection has this long to send its request
 REQUEST_SECONDS = 30.0  # to send the whole request: line, headers and body
 # without a token a web page could make the server ask printers with an
 # <img src=...>: requests that contact printers need this header then,
@@ -152,7 +153,7 @@ def _hop(text: str) -> str | None:
     elif text.count(":") == 1:
         text = text.split(":")[0]
     try:
-        return str(ipaddress.ip_address(text))
+        return str(_plain(ipaddress.ip_address(text)))  # ::ffff:192.0.2.1 as 192.0.2.1
     except ValueError:
         return None
 
@@ -216,7 +217,11 @@ class Server(ThreadingHTTPServer):
         self.reaper = Reaper()
         # a few more connections than requests: /health is answered even
         # when every request slot is taken
-        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS + RESERVED)
+        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
+        # taken only when every slot is: such a connection may ask for
+        # /health and nothing else, and has RESERVED_SECONDS to send it
+        self._reserve = threading.BoundedSemaphore(RESERVED)
+        self.reserved: set[socket.socket] = set()
         self.requests = threading.BoundedSemaphore(MAX_CONNECTIONS)
         self._forwarded: dict[str, int] = defaultdict(int)
         self._clients: dict[str, int] = defaultdict(int)
@@ -248,45 +253,54 @@ class Server(ThreadingHTTPServer):
                     if self._forwarded[client] <= 0:
                         del self._forwarded[client]
 
-    def _admit(self, client: str) -> bool:
+    def _admit(self, request, client: str) -> bool:
         """A slot for one more connection, at most MAX_PER_CLIENT per address
-        (not for a trusted proxy: every client comes from it)."""
+        (an IPv6 address by its /64; not for a trusted proxy: every client
+        comes from it). Every slot taken: one of the reserve, for /health."""
+        key = rate_key(client)
         with self._clients_lock:
-            if self._clients[client] >= MAX_PER_CLIENT and not self.trusted(client):
+            if self._clients[key] >= MAX_PER_CLIENT and not self.trusted(client):
                 return False
             if not self._slots.acquire(blocking=False):
-                return False
-            self._clients[client] += 1
+                if not self._reserve.acquire(blocking=False):
+                    return False
+                self.reserved.add(request)
+            self._clients[key] += 1
             return True
 
-    def _leave(self, client: str) -> None:
+    def _leave(self, request, client: str) -> None:
+        key = rate_key(client)
         with self._clients_lock:
-            self._clients[client] -= 1
-            if self._clients[client] <= 0:
-                del self._clients[client]
-            self._slots.release()
+            self._clients[key] -= 1
+            if self._clients[key] <= 0:
+                del self._clients[key]
+            if request in self.reserved:
+                self.reserved.discard(request)
+                self._reserve.release()
+            else:
+                self._slots.release()
 
     def process_request(self, request, client_address) -> None:
         client = client_address[0]
-        if not self._admit(client):  # too many at once: hang up
+        if not self._admit(request, client):  # too many at once: hang up
             self.shutdown_request(request)
             return
         try:
             super().process_request(request, client_address)
         except RuntimeError:  # no thread to be had (TasksMax, memory)
-            self._leave(client)
+            self._leave(request, client)
             with contextlib.suppress(OSError):
                 request.sendall(b"HTTP/1.0 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n")
             self.shutdown_request(request)
         except BaseException:
-            self._leave(client)
+            self._leave(request, client)
             raise
 
     def process_request_thread(self, request, client_address) -> None:
         try:
             super().process_request_thread(request, client_address)
         finally:
-            self._leave(client_address[0])
+            self._leave(request, client_address[0])
 
 
 class Reaper:
@@ -376,8 +390,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def setup(self) -> None:
         super().setup()
-        self.rfile = _Deadline(self.rfile, self.connection, REQUEST_SECONDS)  # type: ignore[assignment]
-        self.server.reaper.watch(self.connection, REQUEST_SECONDS)
+        reserved = self.connection in self.server.reserved
+        seconds = RESERVED_SECONDS if reserved else REQUEST_SECONDS
+        self.rfile = _Deadline(self.rfile, self.connection, seconds)  # type: ignore[assignment]
+        self.server.reaper.watch(self.connection, seconds)
         self.who = "-"
 
     def finish(self) -> None:
@@ -395,7 +411,7 @@ class Handler(BaseHTTPRequestHandler):
     def client(self) -> str:
         """The client's address; behind a trusted proxy the last address in
         X-Forwarded-For that is no trusted proxy itself."""
-        peer = self.client_address[0]
+        peer = str(_plain(ipaddress.ip_address(self.client_address[0])))
         lines = self.headers.get_all("X-Forwarded-For") if hasattr(self, "headers") else None
         if not lines or not self.server.trusted(peer):
             return peer
@@ -454,15 +470,21 @@ class Handler(BaseHTTPRequestHandler):
         if self._path() == PREFIX + "/health":
             yield True
             return
+        if self.connection in self.server.reserved:  # a /health connection
+            yield False
+            return
         if not self.server.requests.acquire(blocking=False):
             yield False
             return
         try:
-            forwarded = self.client() if self.server.trusted(self.client_address[0]) else None
-            if forwarded is None:
+            peer = self.client_address[0]
+            forwarded = self.client() if self.server.trusted(peer) else None
+            if forwarded is None or forwarded == str(_plain(ipaddress.ip_address(peer))):
+                # no usable X-Forwarded-For: the proxy's own requests, held
+                # to the overall limit only (it speaks for many clients)
                 yield True
                 return
-            with self.server.forwarded(forwarded) as allowed:
+            with self.server.forwarded(rate_key(forwarded)) as allowed:
                 yield allowed
         finally:
             self.server.requests.release()
@@ -573,14 +595,15 @@ class Handler(BaseHTTPRequestHandler):
         if kind != "application/json":
             raise ApiError(415, "not_json", _("Send the request as application/json"))
 
-    def _json(self) -> object:
+    def _raw_json(self) -> bytes:
+        """The body of a JSON request, not parsed yet."""
         self._json_type()
-        body = self._body()
+        return self._body()
+
+    def _json(self) -> object:
+        body = self._raw_json()
         with self._parsing(body):
-            try:
-                return json.loads(body)
-            except (ValueError, RecursionError):
-                raise bad_request(_("The request is not valid JSON"), "not_json") from None
+            return _parse(body)
 
     @contextlib.contextmanager
     def _parsing(self, body: bytes) -> Iterator[None]:
@@ -650,8 +673,10 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, self.server.service.describe("/".join(parts[1:])))
 
     def preview(self, _parts: list[str]) -> None:
-        request = requests.preview_request(self._json())
-        preview = self.server.service.preview(request, self.caller)
+        body = self._raw_json()
+        with self.server.service.render_slot():  # parsed only once it may render
+            request = requests.preview_request(_parse(body))
+            preview = self.server.service.preview(request, self.caller)
         if request.format == "json":
             self._send(200, preview.to_dict())
             return
@@ -660,9 +685,11 @@ class Handler(BaseHTTPRequestHandler):
         self._send_bytes(200, preview.png, "image/png", extra)
 
     def print_job(self, _parts: list[str]) -> None:
-        request = requests.print_request(self._json())
+        body = self._raw_json()
         service = self.server.service
-        job = service.submit(request, self.caller)
+        with service.render_slot():  # parsed only once it may render its check
+            request = requests.print_request(_parse(body))
+            job = service.submit(request, self.caller)
         finished = job.done.wait(request.wait) if request.wait else job.done.is_set()
         location = {"Location": "%s/jobs/%s" % (PREFIX, job.id)}
         self._send(200 if finished else 202, service.job_dict(job), location)
@@ -752,6 +779,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args) -> None:  # noqa: A002 - http.server's name
         log.debug("%s " + format, self.client_address[0], *args)
+
+
+def _parse(body: bytes) -> object:
+    try:
+        return json.loads(body)
+    except (ValueError, RecursionError):
+        raise bad_request(_("The request is not valid JSON"), "not_json") from None
 
 
 def _matches(pattern: tuple[str, ...], parts: list[str]) -> bool:

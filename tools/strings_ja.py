@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "トークン %(name)s を %(file)s に追加しました。",
     "Access token: ": "アクセストークン: ",
     "This token is in the file already, as %s": "このトークンはすでに %s としてファイルにあります",
+    "The label is too large: at most %d images and codes": "ラベルが大きすぎます: 画像とコードは最大 %d 個です",
 }

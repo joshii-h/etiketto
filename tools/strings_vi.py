@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "Đã thêm mã truy cập %(name)s vào %(file)s.",
     "Access token: ": "Mã truy cập: ",
     "This token is in the file already, as %s": "Mã truy cập này đã có trong tệp, với tên %s",
+    "The label is too large: at most %d images and codes": "Nhãn quá lớn: tối đa %d hình ảnh và mã",
 }

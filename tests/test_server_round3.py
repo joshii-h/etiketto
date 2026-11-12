@@ -209,7 +209,8 @@ def test_entries_with_an_id_are_only_tried_for_their_token(tmp_path, monkeypatch
     assert len(checked) == 1  # the entry with an id was not tried
     checked.clear()
     unknown = "etk_%s_%s" % ("0" * 12, "x" * 43)  # an id no entry has
-    assert store.find(unknown) is None and len(checked) == 1
+    assert store.find(unknown) is None
+    assert checked[0] == cfg._DUMMY.hash and len(checked) == 2  # a dummy, then the id-less one
     checked.clear()
     assert store.find(made).name == "made" and len(checked) == 1
 
@@ -242,12 +243,12 @@ def test_a_chosen_token_already_in_the_file_is_refused(tmp_path, capsys, monkeyp
     assert "in the file already, as first" in capsys.readouterr().err
 
 
-def test_a_wrong_id_is_named_clearly(tmp_path):
-    text = '[tokens.a]\nrole = "print"\nhash = "%s"\nid = "XYZ"\n' % cfg.hash_token("a")
+def test_a_wrong_id_is_warned_about_and_the_token_still_works(tmp_path, caplog):
+    text = '[tokens.a]\nrole = "print"\nhash = "%s"\nid = "XYZ"\n' % cfg.hash_token("a-token-123")
     path = write(tmp_path / "t.toml", text)
     os.chmod(path, 0o600)
-    with pytest.raises(cfg.ConfigError, match="12 hexadecimal digits"):
-        cfg.load_tokens(path, None)
+    assert TokenStore(path).find("a-token-123").name == "a"
+    assert "12 hexadecimal digits" in caplog.text
 
 
 def test_a_chosen_token_is_asked_for_without_echo(tmp_path, capsys, monkeypatch):

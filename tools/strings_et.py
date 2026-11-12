@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "Pääsuluba %(name)s lisati faili %(file)s.",
     "Access token: ": "Pääsuluba: ",
     "This token is in the file already, as %s": "See pääsuluba on failis juba olemas nimega %s",
+    "The label is too large: at most %d images and codes": "Silt on liiga suur: kuni %d pilti ja koodi",
 }

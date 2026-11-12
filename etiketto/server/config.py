@@ -377,8 +377,9 @@ def load_tokens(path: Path, printers: Mapping[str, NamedPrinter] | None) -> list
     seen: set[str] = set()
     for token in tokens:
         # one token under two names (and maybe two roles): which one counts?
-        keys = {token.hash} if token.hash.startswith("sha256:") else set()
-        keys |= {"id:" + token.id} if token.id else set()
+        # also an scrypt hash copied twice (salt and all); the same chosen
+        # token hashed twice cannot be told apart here (token new refuses it)
+        keys = {token.hash} | ({"id:" + token.id} if token.id else set())
         if keys & seen:
             raise _problem(path, "tokens.%s.hash" % token.caller.name, _("the same token twice"))
         seen |= keys
@@ -409,7 +410,13 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
         raise table.fail("role", _("missing"))
     ident = table.text("id")
     if ident and not re.fullmatch(r"[0-9a-f]{12}", ident):
-        raise table.fail("id", _("expected 12 hexadecimal digits (written by token new)"))
+        # as before ids existed: the token works, it is only found the slow way
+        log.warning(
+            "%s: tokens.%s.id is not 12 hexadecimal digits (as token new writes it): ignored",
+            path,
+            name,
+        )
+        ident = ""
     chosen = _token_printers(table, printers)
     expires = _expiry(table)
     table.text("description")
@@ -510,14 +517,19 @@ class TokenStore:
         return next((e for e in order if token_matches(token, e.hash)), None)
 
 
+_DUMMY = TokenEntry(Caller("-"), "sha256:" + "0" * 64)
+
+
 def _candidates(token: str, entries: list[TokenEntry]) -> list[TokenEntry]:
     """The entry with the token's id; without one (or an id no entry has),
-    the entries without an id."""
+    the entries without an id. An id no entry has is compared with a dummy
+    entry as well: the answer takes as long as for a known id."""
     ident = TOKEN_ID.match(token)
     if ident:
         mine = [e for e in entries if e.id == ident.group(1)]
         if mine:
             return mine
+        return [_DUMMY] + [e for e in entries if not e.id]
     return [e for e in entries if not e.id]
 
 

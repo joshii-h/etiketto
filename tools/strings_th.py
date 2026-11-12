@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "เพิ่มโทเค็น %(name)s ลงใน %(file)s แล้ว",
     "Access token: ": "โทเค็นการเข้าถึง: ",
     "This token is in the file already, as %s": "โทเค็นนี้มีอยู่ในไฟล์แล้วในชื่อ %s",
+    "The label is too large: at most %d images and codes": "ฉลากมีขนาดใหญ่เกินไป: รูปภาพและโค้ดรวมกันไม่เกิน %d รายการ",
 }

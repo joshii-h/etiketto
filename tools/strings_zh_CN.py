@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "令牌 %(name)s 已添加到 %(file)s。",
     "Access token: ": "访问令牌：",
     "This token is in the file already, as %s": "此令牌已在文件中，名为 %s",
+    "The label is too large: at most %d images and codes": "标签过大：图片和条码最多 %d 个",
 }

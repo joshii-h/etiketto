@@ -453,4 +453,5 @@ TRANSLATIONS = {
     "The token %(name)s was added to %(file)s.": "Token %(name)s telah ditambah ke %(file)s.",
     "Access token: ": "Token akses: ",
     "This token is in the file already, as %s": "Token ini sudah ada dalam fail, sebagai %s",
+    "The label is too large: at most %d images and codes": "Label terlalu besar: paling banyak %d imej dan kod",
 }
