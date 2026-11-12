@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Leht on liiga suur, et seda printeri toetatud eraldusvõimega luua. Vali väiksem paberisuurus või prindi printeriga, mis võtab vastu PDF-i.",
     "Sent to the printer – it did not confirm printing": "Saadetud printerisse – printer ei kinnitanud printimist",
     "The printer's battery is low – charge it or connect the power adapter.": "Printeri aku on tühjenemas – lae seda või ühenda toiteadapter.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "ära küsi printerilt enne renderdamist (mudel, lint ja eraldusvõime)",
 }

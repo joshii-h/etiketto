@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Halaman terlalu besar untuk dibuat pada resolusi yang diterima pencetak. Pilih saiz kertas yang lebih kecil, atau cetak pada pencetak yang menerima PDF.",
     "Sent to the printer – it did not confirm printing": "Dihantar ke pencetak – pencetak tidak mengesahkan pencetakan",
     "The printer's battery is low – charge it or connect the power adapter.": "Bateri pencetak lemah – cas atau sambungkan penyesuai kuasa.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "jangan tanya pencetak sebelum memaparkan (model, pita dan resolusinya)",
 }

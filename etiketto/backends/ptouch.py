@@ -920,6 +920,7 @@ def _blind_status(tape_mm: float) -> Status:
 class PTouch(Backend):
     id = "ptouch"
     name = "Brother P-touch"
+    query_before_render = True  # the model's print area and the tape
     capabilities = Capabilities(
         tape_widths_mm=TAPE_WIDTHS_MM,
         dpi=180,

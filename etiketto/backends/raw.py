@@ -287,6 +287,8 @@ class RawBackend(Backend):
     language, on port 9100 or USB. Subclasses build the job and, where the
     language has one, ask for the status."""
 
+    query_before_render = True  # the resolution, with "as reported by the printer"
+
     port = DEFAULT_PORT
     # the language's names in the IEEE 1284 command set (CMD:ZPL) and in the
     # usb_CMD of an mDNS announcement

@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "الصفحة أكبر من أن تُنشأ بالدقة التي تقبلها الطابعة. اختر حجم ورق أصغر، أو اطبع على طابعة تقبل PDF.",
     "Sent to the printer – it did not confirm printing": "أُرسل إلى الطابعة – لم تؤكد الطباعة",
     "The printer's battery is low – charge it or connect the power adapter.": "بطارية الطابعة منخفضة – اشحنها أو وصّل محوّل الطاقة.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "لا تسأل الطابعة قبل الرسم (طرازها وشريطها ودقتها)",
 }

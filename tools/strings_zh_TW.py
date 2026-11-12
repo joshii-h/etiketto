@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "頁面太大，無法以印表機接受的解析度產生。請選擇較小的紙張尺寸，或使用接受 PDF 的印表機列印。",
     "Sent to the printer – it did not confirm printing": "已傳送到印表機 – 印表機未確認已列印",
     "The printer's battery is low – charge it or connect the power adapter.": "印表機電量不足 – 請充電或連接電源變壓器。",
+    "do not ask the printer before rendering (its model, tape and resolution)": "算繪前不詢問印表機（型號、標籤帶和解析度）",
 }

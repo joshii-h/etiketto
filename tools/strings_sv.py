@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Sidan är för stor för att skapas i den upplösning som skrivaren tar emot. Välj ett mindre pappersformat eller skriv ut på en skrivare som tar emot PDF.",
     "Sent to the printer – it did not confirm printing": "Skickat till skrivaren – den bekräftade inte utskriften",
     "The printer's battery is low – charge it or connect the power adapter.": "Skrivarens batteri är svagt – ladda det eller anslut nätadaptern.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "fråga inte skrivaren före renderingen (modell, tejp och upplösning)",
 }

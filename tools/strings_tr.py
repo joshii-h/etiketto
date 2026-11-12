@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Sayfa, yazıcının kabul ettiği çözünürlükte oluşturulamayacak kadar büyük. Daha küçük bir kâğıt boyutu seçin veya PDF kabul eden bir yazıcıda yazdırın.",
     "Sent to the printer – it did not confirm printing": "Yazıcıya gönderildi – yazıcı yazdırmayı onaylamadı",
     "The printer's battery is low – charge it or connect the power adapter.": "Yazıcının pili zayıf – şarj edin veya güç adaptörünü takın.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "işlemeden önce yazıcıyı sorgulama (modeli, bandı ve çözünürlüğü)",
 }

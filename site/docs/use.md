@@ -264,6 +264,10 @@ etiketto --version
   repeats the numbers. The label file is locked while printing: a second
   `etiketto print` of the same file waits. The window reads the saved
   number again before printing and saving.
+- Some printers are asked before the label is drawn, because it depends
+  on what they report (the tape, the resolution); a printer that does not
+  answer within 5 s gets the label drawn without. `--no-query` skips the
+  question.
 - Serial labels: one label for each row of the data file, `--copies` of
   each; `--data` gives the data file (by default the label's own, if it
   lies in the label's folder), `--sheet` the sheet, `--rows` the rows

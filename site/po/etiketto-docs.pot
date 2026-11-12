@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:53+0100\n"
+"POT-Creation-Date: 2026-11-12 11:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1847,6 +1847,12 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "With a counter the next number is saved in the label file after printing, also when the printer fails half-way or the print is stopped with Ctrl+C. If the file cannot be written, nothing is printed; `--no-save-counter` prints anyway and saves nothing, so the next print repeats the numbers. The label file is locked while printing: a second `etiketto print` of the same file waits. The window reads the saved number again before printing and saving."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Some printers are asked before the label is drawn, because it depends on what they report (the tape, the resolution); a printer that does not answer within 5 s gets the label drawn without. `--no-query` skips the question."
 msgstr ""
 
 #. type: Bullet: '- '

@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Az oldal túl nagy ahhoz, hogy a nyomtató által elfogadott felbontásban elkészüljön. Válasszon kisebb papírméretet, vagy nyomtasson PDF-et elfogadó nyomtatóra.",
     "Sent to the printer – it did not confirm printing": "Elküldve a nyomtatónak – nem igazolta vissza a nyomtatást",
     "The printer's battery is low – charge it or connect the power adapter.": "A nyomtató akkumulátora lemerülőben van – töltse fel, vagy csatlakoztassa a hálózati adaptert.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "ne kérdezze le a nyomtatót a megjelenítés előtt (típus, szalag és felbontás)",
 }

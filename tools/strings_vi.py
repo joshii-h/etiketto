@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Trang quá lớn để tạo ở độ phân giải mà máy in nhận. Hãy chọn khổ giấy nhỏ hơn hoặc in trên máy in nhận PDF.",
     "Sent to the printer – it did not confirm printing": "Đã gửi đến máy in – máy in không xác nhận đã in",
     "The printer's battery is low – charge it or connect the power adapter.": "Pin máy in yếu – hãy sạc hoặc cắm bộ đổi nguồn.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "không hỏi máy in trước khi kết xuất (kiểu máy, băng và độ phân giải)",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:59+0100\n"
+"PO-Revision-Date: 2026-11-12 11:02+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: sv\n"
 "Language: sv\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: etiketto/app.py:182 etiketto/cli.py:150
+#: etiketto/app.py:182 etiketto/cli.py:151
 msgid "Design and print labels"
 msgstr "Designa och skriv ut etiketter"
 
@@ -30,224 +30,229 @@ msgid ""
 "code; see THIRD_PARTY_NOTICES.md"
 msgstr "Från %(projects)s och tillverkarnas handböcker, nyskrivet utan deras kod; se THIRD_PARTY_NOTICES.md"
 
-#: etiketto/cli.py:105
+#: etiketto/cli.py:106
 #, python-format
 msgid "expected NAME=VALUE: %s"
 msgstr "förväntade NAME=VALUE: %s"
 
-#: etiketto/cli.py:121
+#: etiketto/cli.py:122
 #, python-format
 msgid "expected a whole number from %(min)d to %(max)d: %(value)s"
 msgstr "förväntade ett heltal från %(min)d till %(max)d: %(value)s"
 
-#: etiketto/cli.py:139 etiketto/cli.py:143
+#: etiketto/cli.py:140 etiketto/cli.py:144
 #, python-format
 msgid "expected rows such as 3-10, 5 or 7-: %s"
 msgstr "rader förväntades, t.ex. 3-10, 5 eller 7-: %s"
 
-#: etiketto/cli.py:151
+#: etiketto/cli.py:152
 msgid "Without a command the application starts; label files given open in it."
 msgstr "Utan kommando startar appen; angivna etikettfiler öppnas i den."
 
-#: etiketto/cli.py:157
+#: etiketto/cli.py:158
 msgid "print a label file without opening a window"
 msgstr "skriv ut en etikettfil utan att öppna något fönster"
 
-#: etiketto/cli.py:158
+#: etiketto/cli.py:159
 msgid "Print a label file without opening a window."
 msgstr "Skriv ut en etikettfil utan att öppna något fönster."
 
-#: etiketto/cli.py:160
+#: etiketto/cli.py:161
 msgid "the label (.etiketto)"
 msgstr "etiketten (.etiketto)"
 
-#: etiketto/cli.py:163
+#: etiketto/cli.py:164
 #, python-format
 msgid "printer model, by default the label's: %s"
 msgstr "skrivarmodell, som standard etikettens: %s"
 
-#: etiketto/cli.py:166
+#: etiketto/cli.py:167
 msgid "printer address, by default the one set in the app"
 msgstr "skrivaradress, som standard den som är inställd i appen"
 
-#: etiketto/cli.py:169
+#: etiketto/cli.py:170
 msgid "number of copies"
 msgstr "antal kopior"
 
-#: etiketto/cli.py:179
+#: etiketto/cli.py:180
 msgid ""
 "text of the element NAME, or value of the variable {=NAME}; variables in a "
 "text are filled in; repeatable"
 msgstr "text i elementet NAME, eller värdet för variabeln {=NAME}; variabler i en text fylls i; kan upprepas"
 
-#: etiketto/cli.py:189
+#: etiketto/cli.py:190
 msgid "like --set, but the value is used as it is: braces are no variables"
 msgstr "som --set, men värdet används som det är: klammerparenteser är inga variabler"
 
-#: etiketto/cli.py:195
+#: etiketto/cli.py:196
 msgid "counter of the first label, instead of the one saved in the label"
 msgstr "räknare för den första etiketten, i stället för den som är sparad i etiketten"
 
 #: etiketto/cli.py:201
 msgid ""
+"do not ask the printer before rendering (its model, tape and resolution)"
+msgstr "fråga inte skrivaren före renderingen (modell, tejp och upplösning)"
+
+#: etiketto/cli.py:207
+msgid ""
 "do not save the next counter value in the label (a read-only file); the next "
 "print starts from the same number"
 msgstr "spara inte nästa räknarvärde i etiketten (en skrivskyddad fil); nästa utskrift börjar på samma nummer"
 
-#: etiketto/cli.py:210
+#: etiketto/cli.py:216
 msgid ""
 "serial labels: one label for each row of this CSV, ODS or XLSX file; by "
 "default the data file of the label"
 msgstr "serieetiketter: en etikett för varje rad i den här CSV-, ODS- eller XLSX-filen; som standard etikettens datafil"
 
-#: etiketto/cli.py:215
+#: etiketto/cli.py:221
 msgid "the sheet of the data file, by default the first"
 msgstr "datafilens blad, som standard det första"
 
-#: etiketto/cli.py:221
+#: etiketto/cli.py:227
 msgid "only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"
 msgstr "bara de här raderna i datafilen, t.ex. 3-10, 5 eller 7- (räknat från 1)"
 
-#: etiketto/cli.py:224
+#: etiketto/cli.py:230
 msgid "check and render only, do not print"
 msgstr "kontrollera och rendera bara, skriv inte ut"
 
-#: etiketto/cli.py:230
+#: etiketto/cli.py:236
 msgid ""
 "with --dry-run: save the images as the printer would get them, as PNG (- for "
 "stdout: the first only)"
 msgstr "med --dry-run: spara bilderna som PNG så som skrivaren skulle få dem (- för stdout: bara den första)"
 
-#: etiketto/cli.py:236
+#: etiketto/cli.py:242
 msgid "list the printers found on the network"
 msgstr "lista skrivarna som hittas på nätverket"
 
-#: etiketto/cli.py:237
+#: etiketto/cli.py:243
 msgid "List the printers found on the network: model, address, name."
 msgstr "Lista skrivarna som hittas på nätverket: modell, adress, namn."
 
-#: etiketto/cli.py:239
+#: etiketto/cli.py:245
 #, python-format
 msgid "only this printer model: %s"
 msgstr "bara denna skrivarmodell: %s"
 
-#: etiketto/cli.py:258
+#: etiketto/cli.py:264
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Okänd skrivarmodell: %s"
 
-#: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
+#: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
 #: etiketto/ui/texts.py:241 etiketto/ui/texts.py:529
 #, python-format
 msgid "Cannot open %s"
 msgstr "Kan inte öppna %s"
 
-#: etiketto/cli.py:287
+#: etiketto/cli.py:293
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s är inget datum, förväntade t.ex. 2026-12-31 eller 2026-12-31T08:30"
 
-#: etiketto/cli.py:317
+#: etiketto/cli.py:323
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} fylls i vid utskrift och kan inte anges"
 
-#: etiketto/cli.py:322
+#: etiketto/cli.py:328
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "Etiketten har inget element eller någon variabel med namnet %s"
 
-#: etiketto/cli.py:346 etiketto/ui/printing.py:109
+#: etiketto/cli.py:352 etiketto/ui/printing.py:109
 msgid "The label is empty"
 msgstr "Etiketten är tom"
 
-#: etiketto/cli.py:379
+#: etiketto/cli.py:385
 msgid "Cannot write the output"
 msgstr "Det går inte att skriva utdata"
 
-#: etiketto/cli.py:410
+#: etiketto/cli.py:416
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output skriver PNG-bilder: ange ett namn som slutar på .png"
 
-#: etiketto/cli.py:434 etiketto/cli.py:638 etiketto/ui/printing.py:590
+#: etiketto/cli.py:440 etiketto/cli.py:644 etiketto/ui/printing.py:590
 #: etiketto/ui/printing.py:741
 msgid "The label cannot be prepared for printing."
 msgstr "Etiketten kan inte förberedas för utskrift."
 
-#: etiketto/cli.py:516
+#: etiketto/cli.py:522
 msgid "No printer found – give its address with --host"
 msgstr "Ingen skrivare hittades – ange adressen med --host"
 
-#: etiketto/cli.py:518
+#: etiketto/cli.py:524
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Flera skrivare hittades – välj en med --host (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:563
+#: etiketto/cli.py:535 etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kan inte spara %s"
 
-#: etiketto/cli.py:531
+#: etiketto/cli.py:537
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "etiketterna skrevs ut, men nästa räknarvärde sparades inte"
 
-#: etiketto/cli.py:546
+#: etiketto/cli.py:552
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "inget skrevs ut: nästa räknarvärde skulle inte kunna sparas"
 
-#: etiketto/cli.py:606 etiketto/cli.py:633 etiketto/cli.py:844
+#: etiketto/cli.py:612 etiketto/cli.py:639 etiketto/cli.py:876
 msgid "Interrupted"
 msgstr "Avbruten"
 
-#: etiketto/cli.py:715
+#: etiketto/cli.py:721
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "Etiketten använder en datafil utanför sin mapp: ange den med --data"
 
-#: etiketto/cli.py:721
+#: etiketto/cli.py:727
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet och --rows kräver en datafil (--data)"
 
-#: etiketto/cli.py:741 etiketto/ui/printing.py:619
+#: etiketto/cli.py:747 etiketto/ui/printing.py:619
 msgid "No rows to print"
 msgstr "Inga rader att skriva ut"
 
-#: etiketto/cli.py:750 etiketto/ui/window.py:525
+#: etiketto/cli.py:756 etiketto/ui/window.py:525
 #, python-format
 msgid "No such column: %s"
 msgstr "Okänd kolumn: %s"
 
-#: etiketto/cli.py:755 etiketto/ui/printing.py:692
+#: etiketto/cli.py:761 etiketto/ui/printing.py:692
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Streckkoden eller QR-koden för de här raderna kan inte skapas från deras värden, till exempel en EAN-13 med bokstäver eller en tom cell. Rätta datafilen och läs den igen, eller skriv ut utan de här raderna."
 
-#: etiketto/cli.py:760 etiketto/ui/printing.py:697
+#: etiketto/cli.py:766 etiketto/ui/printing.py:697
 #, python-format
 msgid "Rows: %s"
 msgstr "Rader: %s"
 
-#: etiketto/cli.py:768
+#: etiketto/cli.py:774
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "Väntar på att en annan utskrift av %s ska bli klar…"
 
-#: etiketto/cli.py:775
+#: etiketto/cli.py:781
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s är fortfarande låst av en annan utskrift – försök igen senare"
 
-#: etiketto/cli.py:781
+#: etiketto/cli.py:787
 msgid "--output needs --dry-run"
 msgstr "--output kräver --dry-run"
 
-#: etiketto/cli.py:793
+#: etiketto/cli.py:799
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "Nästa räknarvärde sparas inte: nästa utskrift upprepar numren"
 
-#: etiketto/cli.py:820 etiketto/ui/printer.py:197
+#: etiketto/cli.py:852 etiketto/ui/printer.py:197
 msgid "No printer found"
 msgstr "Ingen skrivare hittades"
 

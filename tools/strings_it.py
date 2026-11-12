@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "La pagina è troppo grande per essere creata alla risoluzione accettata dalla stampante. Scegli un formato carta più piccolo o stampa su una stampante che accetta PDF.",
     "Sent to the printer – it did not confirm printing": "Inviato alla stampante – non ha confermato la stampa",
     "The printer's battery is low – charge it or connect the power adapter.": "La batteria della stampante è scarica – ricaricala o collega l’alimentatore.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "non interrogare la stampante prima del rendering (modello, nastro e risoluzione)",
 }

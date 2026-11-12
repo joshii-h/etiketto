@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:59+0100\n"
+"PO-Revision-Date: 2026-11-12 11:02+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: fi\n"
 "Language: fi\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: etiketto/app.py:182 etiketto/cli.py:150
+#: etiketto/app.py:182 etiketto/cli.py:151
 msgid "Design and print labels"
 msgstr "Suunnittele ja tulosta tarroja"
 
@@ -30,224 +30,229 @@ msgid ""
 "code; see THIRD_PARTY_NOTICES.md"
 msgstr "Lähteistä %(projects)s ja valmistajien käyttöoppaista, kirjoitettu uudelleen ilman niiden koodia; katso THIRD_PARTY_NOTICES.md"
 
-#: etiketto/cli.py:105
+#: etiketto/cli.py:106
 #, python-format
 msgid "expected NAME=VALUE: %s"
 msgstr "odotettiin NAME=VALUE: %s"
 
-#: etiketto/cli.py:121
+#: etiketto/cli.py:122
 #, python-format
 msgid "expected a whole number from %(min)d to %(max)d: %(value)s"
 msgstr "odotettiin kokonaislukua väliltä %(min)d–%(max)d: %(value)s"
 
-#: etiketto/cli.py:139 etiketto/cli.py:143
+#: etiketto/cli.py:140 etiketto/cli.py:144
 #, python-format
 msgid "expected rows such as 3-10, 5 or 7-: %s"
 msgstr "odotettiin rivejä, esim. 3-10, 5 tai 7-: %s"
 
-#: etiketto/cli.py:151
+#: etiketto/cli.py:152
 msgid "Without a command the application starts; label files given open in it."
 msgstr "Ilman komentoa sovellus käynnistyy; annetut tarratiedostot avataan siinä."
 
-#: etiketto/cli.py:157
+#: etiketto/cli.py:158
 msgid "print a label file without opening a window"
 msgstr "tulostaa tarratiedoston avaamatta ikkunaa"
 
-#: etiketto/cli.py:158
+#: etiketto/cli.py:159
 msgid "Print a label file without opening a window."
 msgstr "Tulostaa tarratiedoston avaamatta ikkunaa."
 
-#: etiketto/cli.py:160
+#: etiketto/cli.py:161
 msgid "the label (.etiketto)"
 msgstr "tarra (.etiketto)"
 
-#: etiketto/cli.py:163
+#: etiketto/cli.py:164
 #, python-format
 msgid "printer model, by default the label's: %s"
 msgstr "tulostinmalli, oletuksena tarran malli: %s"
 
-#: etiketto/cli.py:166
+#: etiketto/cli.py:167
 msgid "printer address, by default the one set in the app"
 msgstr "tulostimen osoite, oletuksena sovellukseen asetettu osoite"
 
-#: etiketto/cli.py:169
+#: etiketto/cli.py:170
 msgid "number of copies"
 msgstr "kopioiden määrä"
 
-#: etiketto/cli.py:179
+#: etiketto/cli.py:180
 msgid ""
 "text of the element NAME, or value of the variable {=NAME}; variables in a "
 "text are filled in; repeatable"
 msgstr "elementin NAME teksti tai muuttujan {=NAME} arvo; tekstin muuttujat täytetään; voi toistaa"
 
-#: etiketto/cli.py:189
+#: etiketto/cli.py:190
 msgid "like --set, but the value is used as it is: braces are no variables"
 msgstr "kuten --set, mutta arvoa käytetään sellaisenaan: aaltosulkeet eivät ole muuttujia"
 
-#: etiketto/cli.py:195
+#: etiketto/cli.py:196
 msgid "counter of the first label, instead of the one saved in the label"
 msgstr "ensimmäisen tarran laskuri tarraan tallennetun sijaan"
 
 #: etiketto/cli.py:201
 msgid ""
+"do not ask the printer before rendering (its model, tape and resolution)"
+msgstr "älä kysy tulostimelta ennen piirtämistä (malli, nauha ja tarkkuus)"
+
+#: etiketto/cli.py:207
+msgid ""
 "do not save the next counter value in the label (a read-only file); the next "
 "print starts from the same number"
 msgstr "älä tallenna laskurin seuraavaa arvoa tarraan (vain luku -tiedosto); seuraava tulostus alkaa samasta numerosta"
 
-#: etiketto/cli.py:210
+#: etiketto/cli.py:216
 msgid ""
 "serial labels: one label for each row of this CSV, ODS or XLSX file; by "
 "default the data file of the label"
 msgstr "sarjatarrat: yksi tarra tämän CSV-, ODS- tai XLSX-tiedoston jokaiselle riville; oletuksena tarran datatiedosto"
 
-#: etiketto/cli.py:215
+#: etiketto/cli.py:221
 msgid "the sheet of the data file, by default the first"
 msgstr "datatiedoston taulukko, oletuksena ensimmäinen"
 
-#: etiketto/cli.py:221
+#: etiketto/cli.py:227
 msgid "only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"
 msgstr "vain nämä datatiedoston rivit, esim. 3-10, 5 tai 7- (laskettuna 1:stä)"
 
-#: etiketto/cli.py:224
+#: etiketto/cli.py:230
 msgid "check and render only, do not print"
 msgstr "vain tarkista ja renderöi, älä tulosta"
 
-#: etiketto/cli.py:230
+#: etiketto/cli.py:236
 msgid ""
 "with --dry-run: save the images as the printer would get them, as PNG (- for "
 "stdout: the first only)"
 msgstr "valitsimen --dry-run kanssa: tallentaa kuvat PNG-muodossa sellaisina kuin tulostin ne saisi (- stdout: vain ensimmäinen)"
 
-#: etiketto/cli.py:236
+#: etiketto/cli.py:242
 msgid "list the printers found on the network"
 msgstr "luettelee verkosta löytyvät tulostimet"
 
-#: etiketto/cli.py:237
+#: etiketto/cli.py:243
 msgid "List the printers found on the network: model, address, name."
 msgstr "Luettelee verkosta löytyvät tulostimet: malli, osoite, nimi."
 
-#: etiketto/cli.py:239
+#: etiketto/cli.py:245
 #, python-format
 msgid "only this printer model: %s"
 msgstr "vain tämä tulostinmalli: %s"
 
-#: etiketto/cli.py:258
+#: etiketto/cli.py:264
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Tuntematon tulostinmalli: %s"
 
-#: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
+#: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
 #: etiketto/ui/texts.py:241 etiketto/ui/texts.py:529
 #, python-format
 msgid "Cannot open %s"
 msgstr "Kohdetta %s ei voi avata"
 
-#: etiketto/cli.py:287
+#: etiketto/cli.py:293
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s ei ole päivämäärä, odotettiin esim. 2026-12-31 tai 2026-12-31T08:30"
 
-#: etiketto/cli.py:317
+#: etiketto/cli.py:323
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} täytetään tulostettaessa, eikä sitä voi asettaa"
 
-#: etiketto/cli.py:322
+#: etiketto/cli.py:328
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "Tarrassa ei ole elementtiä tai muuttujaa nimeltä %s"
 
-#: etiketto/cli.py:346 etiketto/ui/printing.py:109
+#: etiketto/cli.py:352 etiketto/ui/printing.py:109
 msgid "The label is empty"
 msgstr "Tarra on tyhjä"
 
-#: etiketto/cli.py:379
+#: etiketto/cli.py:385
 msgid "Cannot write the output"
 msgstr "Tulostetta ei voi kirjoittaa"
 
-#: etiketto/cli.py:410
+#: etiketto/cli.py:416
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output kirjoittaa PNG-kuvia: anna nimi, joka päättyy .png"
 
-#: etiketto/cli.py:434 etiketto/cli.py:638 etiketto/ui/printing.py:590
+#: etiketto/cli.py:440 etiketto/cli.py:644 etiketto/ui/printing.py:590
 #: etiketto/ui/printing.py:741
 msgid "The label cannot be prepared for printing."
 msgstr "Tarraa ei voi valmistella tulostusta varten."
 
-#: etiketto/cli.py:516
+#: etiketto/cli.py:522
 msgid "No printer found – give its address with --host"
 msgstr "Tulostinta ei löytynyt – anna sen osoite valitsimella --host"
 
-#: etiketto/cli.py:518
+#: etiketto/cli.py:524
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Löytyi useita tulostimia – valitse yksi valitsimella --host (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:563
+#: etiketto/cli.py:535 etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kohdetta %s ei voi tallentaa"
 
-#: etiketto/cli.py:531
+#: etiketto/cli.py:537
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "tarrat tulostettiin, mutta seuraavaa laskurin arvoa ei tallennettu"
 
-#: etiketto/cli.py:546
+#: etiketto/cli.py:552
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "mitään ei tulostettu: seuraavaa laskurin arvoa ei voitaisi tallentaa"
 
-#: etiketto/cli.py:606 etiketto/cli.py:633 etiketto/cli.py:844
+#: etiketto/cli.py:612 etiketto/cli.py:639 etiketto/cli.py:876
 msgid "Interrupted"
 msgstr "Keskeytetty"
 
-#: etiketto/cli.py:715
+#: etiketto/cli.py:721
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "Tarra käyttää kansionsa ulkopuolista datatiedostoa: anna se valitsimella --data"
 
-#: etiketto/cli.py:721
+#: etiketto/cli.py:727
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet ja --rows vaativat datatiedoston (--data)"
 
-#: etiketto/cli.py:741 etiketto/ui/printing.py:619
+#: etiketto/cli.py:747 etiketto/ui/printing.py:619
 msgid "No rows to print"
 msgstr "Ei tulostettavia rivejä"
 
-#: etiketto/cli.py:750 etiketto/ui/window.py:525
+#: etiketto/cli.py:756 etiketto/ui/window.py:525
 #, python-format
 msgid "No such column: %s"
 msgstr "Tuntematon sarake: %s"
 
-#: etiketto/cli.py:755 etiketto/ui/printing.py:692
+#: etiketto/cli.py:761 etiketto/ui/printing.py:692
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Näiden rivien viivakoodia tai QR-koodia ei voi muodostaa niiden arvoista, esimerkiksi EAN-13, jossa on kirjaimia, tai tyhjä solu. Korjaa datatiedosto ja lue se uudelleen, tai tulosta ilman näitä rivejä."
 
-#: etiketto/cli.py:760 etiketto/ui/printing.py:697
+#: etiketto/cli.py:766 etiketto/ui/printing.py:697
 #, python-format
 msgid "Rows: %s"
 msgstr "Rivit: %s"
 
-#: etiketto/cli.py:768
+#: etiketto/cli.py:774
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "Odotetaan, että toinen tiedoston %s tulostus päättyy…"
 
-#: etiketto/cli.py:775
+#: etiketto/cli.py:781
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s on yhä toisen tulostuksen lukitsema – yritä myöhemmin uudelleen"
 
-#: etiketto/cli.py:781
+#: etiketto/cli.py:787
 msgid "--output needs --dry-run"
 msgstr "--output vaatii --dry-run"
 
-#: etiketto/cli.py:793
+#: etiketto/cli.py:799
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "Laskurin seuraavaa arvoa ei tallenneta: seuraava tulostus toistaa numerot"
 
-#: etiketto/cli.py:820 etiketto/ui/printer.py:197
+#: etiketto/cli.py:852 etiketto/ui/printer.py:197
 msgid "No printer found"
 msgstr "Tulostinta ei löytynyt"
 

@@ -724,6 +724,10 @@ class Backend(ABC):
             image = image.crop((0, 0, image.width, raster.width_px))
         return self.preview(image, options.mode)
 
+    # the render depends on what query() reports (the model's print head,
+    # the loaded tape, the resolution): the command line asks first
+    query_before_render: bool = False
+
     @abstractmethod
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
         """Printers announced on the local network; [] if none or no mDNS."""

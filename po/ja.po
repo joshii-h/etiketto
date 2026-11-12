@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:59+0100\n"
+"PO-Revision-Date: 2026-11-12 11:02+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ja\n"
 "Language: ja\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: etiketto/app.py:182 etiketto/cli.py:150
+#: etiketto/app.py:182 etiketto/cli.py:151
 msgid "Design and print labels"
 msgstr "ラベルをデザインして印刷"
 
@@ -30,224 +30,229 @@ msgid ""
 "code; see THIRD_PARTY_NOTICES.md"
 msgstr "%(projects)s とメーカーのマニュアルに基づき、それらのコードを使わずに新たに記述; THIRD_PARTY_NOTICES.md を参照"
 
-#: etiketto/cli.py:105
+#: etiketto/cli.py:106
 #, python-format
 msgid "expected NAME=VALUE: %s"
 msgstr "NAME=VALUE の形式が必要です: %s"
 
-#: etiketto/cli.py:121
+#: etiketto/cli.py:122
 #, python-format
 msgid "expected a whole number from %(min)d to %(max)d: %(value)s"
 msgstr "%(min)d から %(max)d までの整数が必要です: %(value)s"
 
-#: etiketto/cli.py:139 etiketto/cli.py:143
+#: etiketto/cli.py:140 etiketto/cli.py:144
 #, python-format
 msgid "expected rows such as 3-10, 5 or 7-: %s"
 msgstr "3-10、5、7- のような行が必要です: %s"
 
-#: etiketto/cli.py:151
+#: etiketto/cli.py:152
 msgid "Without a command the application starts; label files given open in it."
 msgstr "コマンドなしではアプリが起動し、指定したラベルファイルがそこで開きます。"
 
-#: etiketto/cli.py:157
+#: etiketto/cli.py:158
 msgid "print a label file without opening a window"
 msgstr "ウィンドウを開かずにラベルファイルを印刷する"
 
-#: etiketto/cli.py:158
+#: etiketto/cli.py:159
 msgid "Print a label file without opening a window."
 msgstr "ウィンドウを開かずにラベルファイルを印刷します。"
 
-#: etiketto/cli.py:160
+#: etiketto/cli.py:161
 msgid "the label (.etiketto)"
 msgstr "ラベル (.etiketto)"
 
-#: etiketto/cli.py:163
+#: etiketto/cli.py:164
 #, python-format
 msgid "printer model, by default the label's: %s"
 msgstr "プリンターの機種。省略時はラベルの設定: %s"
 
-#: etiketto/cli.py:166
+#: etiketto/cli.py:167
 msgid "printer address, by default the one set in the app"
 msgstr "プリンターのアドレス。省略時はアプリで設定したもの"
 
-#: etiketto/cli.py:169
+#: etiketto/cli.py:170
 msgid "number of copies"
 msgstr "部数"
 
-#: etiketto/cli.py:179
+#: etiketto/cli.py:180
 msgid ""
 "text of the element NAME, or value of the variable {=NAME}; variables in a "
 "text are filled in; repeatable"
 msgstr "要素 NAME のテキスト、または変数 {=NAME} の値。テキスト内の変数は埋め込まれます。複数回指定できます"
 
-#: etiketto/cli.py:189
+#: etiketto/cli.py:190
 msgid "like --set, but the value is used as it is: braces are no variables"
 msgstr "--set と同じですが、値をそのまま使います: 波括弧は変数になりません"
 
-#: etiketto/cli.py:195
+#: etiketto/cli.py:196
 msgid "counter of the first label, instead of the one saved in the label"
 msgstr "最初のラベルのカウンター。ラベルに保存された値の代わりに使用"
 
 #: etiketto/cli.py:201
 msgid ""
+"do not ask the printer before rendering (its model, tape and resolution)"
+msgstr "描画の前にプリンターに問い合わせない（機種、テープ、解像度）"
+
+#: etiketto/cli.py:207
+msgid ""
 "do not save the next counter value in the label (a read-only file); the next "
 "print starts from the same number"
 msgstr "次のカウンター値をラベルに保存しない (読み取り専用ファイル)。次の印刷は同じ番号から始まります"
 
-#: etiketto/cli.py:210
+#: etiketto/cli.py:216
 msgid ""
 "serial labels: one label for each row of this CSV, ODS or XLSX file; by "
 "default the data file of the label"
 msgstr "差し込み印刷ラベル: この CSV、ODS、XLSX ファイルの行ごとにラベルを 1 枚。省略時はラベルのデータファイル"
 
-#: etiketto/cli.py:215
+#: etiketto/cli.py:221
 msgid "the sheet of the data file, by default the first"
 msgstr "データファイルのシート。省略時は最初のシート"
 
-#: etiketto/cli.py:221
+#: etiketto/cli.py:227
 msgid "only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"
 msgstr "データファイルのこれらの行だけ。例: 3-10、5、7- (1 から数える)"
 
-#: etiketto/cli.py:224
+#: etiketto/cli.py:230
 msgid "check and render only, do not print"
 msgstr "確認とレンダリングのみ行い、印刷しない"
 
-#: etiketto/cli.py:230
+#: etiketto/cli.py:236
 msgid ""
 "with --dry-run: save the images as the printer would get them, as PNG (- for "
 "stdout: the first only)"
 msgstr "--dry-run 指定時: プリンターに送られるとおりの画像を PNG で保存する (- で標準出力: 最初の 1 枚のみ)"
 
-#: etiketto/cli.py:236
+#: etiketto/cli.py:242
 msgid "list the printers found on the network"
 msgstr "ネットワーク上で見つかったプリンターを一覧表示する"
 
-#: etiketto/cli.py:237
+#: etiketto/cli.py:243
 msgid "List the printers found on the network: model, address, name."
 msgstr "ネットワーク上で見つかったプリンターを一覧表示します: 機種、アドレス、名前。"
 
-#: etiketto/cli.py:239
+#: etiketto/cli.py:245
 #, python-format
 msgid "only this printer model: %s"
 msgstr "この機種のプリンターのみ: %s"
 
-#: etiketto/cli.py:258
+#: etiketto/cli.py:264
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "不明なプリンターの機種: %s"
 
-#: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
+#: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
 #: etiketto/ui/texts.py:241 etiketto/ui/texts.py:529
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s を開けません"
 
-#: etiketto/cli.py:287
+#: etiketto/cli.py:293
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s は日付ではありません。2026-12-31 や 2026-12-31T08:30 のように指定してください"
 
-#: etiketto/cli.py:317
+#: etiketto/cli.py:323
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} は印刷時に入力されるため、設定できません"
 
-#: etiketto/cli.py:322
+#: etiketto/cli.py:328
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "ラベルに %s という名前の要素または変数がありません"
 
-#: etiketto/cli.py:346 etiketto/ui/printing.py:109
+#: etiketto/cli.py:352 etiketto/ui/printing.py:109
 msgid "The label is empty"
 msgstr "ラベルが空です"
 
-#: etiketto/cli.py:379
+#: etiketto/cli.py:385
 msgid "Cannot write the output"
 msgstr "出力を書き込めません"
 
-#: etiketto/cli.py:410
+#: etiketto/cli.py:416
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output は PNG 画像を書き込みます: .png で終わる名前を指定してください"
 
-#: etiketto/cli.py:434 etiketto/cli.py:638 etiketto/ui/printing.py:590
+#: etiketto/cli.py:440 etiketto/cli.py:644 etiketto/ui/printing.py:590
 #: etiketto/ui/printing.py:741
 msgid "The label cannot be prepared for printing."
 msgstr "ラベルを印刷用に準備できません。"
 
-#: etiketto/cli.py:516
+#: etiketto/cli.py:522
 msgid "No printer found – give its address with --host"
 msgstr "プリンターが見つかりません。--host でアドレスを指定してください"
 
-#: etiketto/cli.py:518
+#: etiketto/cli.py:524
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "複数のプリンターが見つかりました。--host で 1 台選んでください (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:563
+#: etiketto/cli.py:535 etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s を保存できません"
 
-#: etiketto/cli.py:531
+#: etiketto/cli.py:537
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "ラベルは印刷されましたが、次のカウンター値は保存されませんでした"
 
-#: etiketto/cli.py:546
+#: etiketto/cli.py:552
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "何も印刷されていません: 次のカウンター値を保存できないためです"
 
-#: etiketto/cli.py:606 etiketto/cli.py:633 etiketto/cli.py:844
+#: etiketto/cli.py:612 etiketto/cli.py:639 etiketto/cli.py:876
 msgid "Interrupted"
 msgstr "中断しました"
 
-#: etiketto/cli.py:715
+#: etiketto/cli.py:721
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "ラベルはフォルダーの外にあるデータファイルを使っています: --data で指定してください"
 
-#: etiketto/cli.py:721
+#: etiketto/cli.py:727
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet と --rows にはデータファイル (--data) が必要です"
 
-#: etiketto/cli.py:741 etiketto/ui/printing.py:619
+#: etiketto/cli.py:747 etiketto/ui/printing.py:619
 msgid "No rows to print"
 msgstr "印刷する行がありません"
 
-#: etiketto/cli.py:750 etiketto/ui/window.py:525
+#: etiketto/cli.py:756 etiketto/ui/window.py:525
 #, python-format
 msgid "No such column: %s"
 msgstr "その列はありません: %s"
 
-#: etiketto/cli.py:755 etiketto/ui/printing.py:692
+#: etiketto/cli.py:761 etiketto/ui/printing.py:692
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "これらの行の値からはバーコードまたは QR コードを作れません(例: 文字を含む EAN-13、空のセル)。データファイルを修正して読み込み直すか、これらの行を除いて印刷してください。"
 
-#: etiketto/cli.py:760 etiketto/ui/printing.py:697
+#: etiketto/cli.py:766 etiketto/ui/printing.py:697
 #, python-format
 msgid "Rows: %s"
 msgstr "行: %s"
 
-#: etiketto/cli.py:768
+#: etiketto/cli.py:774
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "%s の別の印刷が終わるのを待っています…"
 
-#: etiketto/cli.py:775
+#: etiketto/cli.py:781
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s は別の印刷によってまだロックされています – 後でもう一度お試しください"
 
-#: etiketto/cli.py:781
+#: etiketto/cli.py:787
 msgid "--output needs --dry-run"
 msgstr "--output には --dry-run が必要です"
 
-#: etiketto/cli.py:793
+#: etiketto/cli.py:799
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "次のカウンター値は保存されません: 次の印刷では同じ番号が繰り返されます"
 
-#: etiketto/cli.py:820 etiketto/ui/printer.py:197
+#: etiketto/cli.py:852 etiketto/ui/printer.py:197
 msgid "No printer found"
 msgstr "プリンターが見つかりません"
 

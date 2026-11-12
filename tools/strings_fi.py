@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Sivu on liian suuri tehtäväksi tulostimen hyväksymällä tarkkuudella. Valitse pienempi paperikoko tai tulosta tulostimella, joka hyväksyy PDF:n.",
     "Sent to the printer – it did not confirm printing": "Lähetetty tulostimelle – se ei vahvistanut tulostusta",
     "The printer's battery is low – charge it or connect the power adapter.": "Tulostimen akku on vähissä – lataa se tai kytke virtalähde.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "älä kysy tulostimelta ennen piirtämistä (malli, nauha ja tarkkuus)",
 }

@@ -28,6 +28,7 @@ import os
 import re
 import signal
 import sys
+import threading
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
@@ -37,7 +38,7 @@ from typing import IO, NamedTuple
 
 from etiketto import __version__
 from etiketto.backends import backends, get_backend
-from etiketto.backends.base import Backend, PrinterError, PrintOptions
+from etiketto.backends.base import Backend, PrinterError, PrinterInfo, PrintOptions
 from etiketto.job import Job, PrepareFailed
 from etiketto.merge import MergeError, read_book
 from etiketto.model import (
@@ -193,6 +194,11 @@ def parser() -> argparse.ArgumentParser:
         metavar="N",
         type=_number(0, 10**15 - 1),
         help=_("counter of the first label, instead of the one saved in the label"),
+    )
+    print_.add_argument(
+        "--no-query",
+        action="store_true",
+        help=_("do not ask the printer before rendering (its model, tape and resolution)"),
     )
     print_.add_argument(
         "--no-save-counter",
@@ -801,7 +807,33 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
 
 def _print(args, job: Job, series: Series | None, host: str, settings: Settings) -> int:
     unit = unit_for(settings.units)
+    info = None if args.no_query else ask_printer(job.backend, host)
+    if info is not None:  # rendered for what the printer reported
+        job.options = replace(job.options, info=info, host=host)
+        if series:
+            series = replace(series, options=replace(series.options, info=info, host=host))
     return _send_series(args, series, host, unit) if series else _send(args, job, host, unit)
+
+
+QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer
+
+
+def ask_printer(backend: Backend, host: str, wait: float = QUERY_WAIT) -> PrinterInfo | None:
+    """What the printer reports, for backends whose render depends on it
+    (Backend.query_before_render); None if they do not, or the printer does
+    not answer within `wait` (the print then reports what is wrong)."""
+    if not backend.query_before_render:
+        return None
+    answer: list[PrinterInfo] = []
+
+    def query() -> None:
+        with contextlib.suppress(Exception):
+            answer.append(backend.query(host))
+
+    thread = threading.Thread(target=query, name="etiketto-query", daemon=True)
+    thread.start()
+    thread.join(wait)
+    return answer[0] if answer else None
 
 
 # --- list-printers ----------------------------------------------------------

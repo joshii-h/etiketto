@@ -197,7 +197,7 @@ changes what `{=date}` means.
 ```sh
 etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--set NAME=VALUE ...] [--set-literal NAME=VALUE ...]
-                    [--counter-start N] [--no-save-counter]
+                    [--counter-start N] [--no-save-counter] [--no-query]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
@@ -211,6 +211,9 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--no-save-counter` prints a read-only label without saving the counter
 (the next print repeats the numbers). Without
 `--host` the printer set in the app is used, or the only one found.
+Printers whose label depends on what they report (P-touch: model and tape;
+ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution) are asked first, for at most
+5 s; `--no-query` skips that.
 `--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
 (by default the label's own data file, if it lies beside it), `--sheet`
 and `--rows 3-10` choose which; the counter goes on from row to row.

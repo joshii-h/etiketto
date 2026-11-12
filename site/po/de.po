@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:53+0100\n"
+"POT-Creation-Date: 2026-11-12 11:03+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2836,6 +2836,18 @@ msgstr ""
 "ist die Etikettendatei gesperrt: Ein zweites `etiketto print` derselben "
 "Datei wartet. Das Fenster liest die gespeicherte Nummer vor dem Drucken und "
 "Speichern neu."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Some printers are asked before the label is drawn, because it depends on "
+"what they report (the tape, the resolution); a printer that does not answer "
+"within 5 s gets the label drawn without. `--no-query` skips the question."
+msgstr ""
+"Manche Drucker werden vor dem Zeichnen des Etiketts abgefragt, weil es "
+"davon abhängt, was sie melden (das Band, die Auflösung); ein Drucker, der "
+"nicht innerhalb von 5 s antwortet, bekommt das Etikett ohne gezeichnet. "
+"`--no-query` lässt die Abfrage weg."
 
 #. type: Bullet: '- '
 #: docs/use.md

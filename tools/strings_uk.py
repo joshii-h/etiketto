@@ -525,4 +525,5 @@ TRANSLATIONS = {
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Сторінка завелика, щоб створити її в роздільній здатності, яку приймає принтер. Виберіть менший формат паперу або друкуйте на принтері, що приймає PDF.",
     "Sent to the printer – it did not confirm printing": "Надіслано на принтер – він не підтвердив друк",
     "The printer's battery is low – charge it or connect the power adapter.": "Батарея принтера розряджена – зарядіть її або під’єднайте блок живлення.",
+    "do not ask the printer before rendering (its model, tape and resolution)": "не опитувати принтер перед рендерингом (модель, стрічка і роздільна здатність)",
 }

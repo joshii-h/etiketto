@@ -18,7 +18,7 @@ from PIL import Image
 
 from etiketto import __version__, cli
 from etiketto.backends import register, unregister
-from etiketto.backends.base import FoundPrinter, PaperJam, PrintResult
+from etiketto.backends.base import FoundPrinter, PaperJam, PrinterTimeout, PrintResult
 from etiketto.model import CodeElement, Label, TextElement
 from etiketto.ui import settings as config
 from etiketto.ui.settings import Settings
@@ -989,3 +989,34 @@ def test_a_csv_file_with_a_saved_sheet_prints(mono, label_file, rows_csv, capsys
     assert capsys.readouterr().out.splitlines()[0] == "1\t1\tScrews"
     assert run("print", path, "--dry-run", "--sheet", "Mai") == cli.EXIT_USAGE
     assert err(capsys) == "etiketto: rows.csv has no sheet named Mai\n"
+
+
+def test_the_printer_is_asked_before_rendering_where_it_matters(mono, label_file, monkeypatch):
+    """A backend whose render depends on the printer (Backend.
+    query_before_render) is asked first; its answer goes with the job.
+    --no-query and a printer that does not answer: rendered without."""
+    path = label_file(TextElement(text="x"))
+    assert run("print", path, "--host", "h") == 0
+    assert mono.queries == []  # the fake renders the same for every printer
+    monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    assert run("print", path, "--host", "h") == 0
+    assert mono.queries == ["h"] and mono.jobs[-1][2].info is mono.info
+    assert mono.jobs[-1][2].host == "h"
+    assert run("print", path, "--host", "h", "--no-query") == 0
+    assert mono.queries == ["h"] and mono.jobs[-1][2].info is None
+    rows = path.parent / "rows.csv"
+    rows.write_text("Name\nA\nB\n")
+    assert run("print", path, "--host", "h", "--data", rows) == 0  # serial labels too
+    assert mono.jobs[-1][2].info is mono.info
+    mono.error = PrinterTimeout("no answer")
+    assert cli.ask_printer(mono, "h") is None
+
+
+def test_a_printer_that_answers_too_late_is_not_waited_for(mono, monkeypatch):
+    import threading
+
+    monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    release = threading.Event()
+    monkeypatch.setattr(mono, "query", lambda host: release.wait(5) and mono.info)
+    assert cli.ask_printer(mono, "h", wait=0.05) is None
+    release.set()
