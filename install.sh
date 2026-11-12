@@ -19,6 +19,9 @@ if [ "${1:-}" = "--uninstall" ]; then
         "$DATA/applications/$APP_ID.desktop" \
         "$DATA/icons/hicolor/scalable/apps/$APP_ID.svg" \
         "$DATA/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" \
+        "$DATA/icons/hicolor/16x16/apps/$APP_ID.svg" \
+        "$DATA/icons/hicolor/24x24/apps/$APP_ID.svg" \
+        "$DATA/icons/hicolor/32x32/apps/$APP_ID.svg" \
         "$DATA/metainfo/$APP_ID.metainfo.xml" \
         "$DATA/mime/packages/$APP_ID.xml"
     update-mime-database "$DATA/mime" 2>/dev/null || true
@@ -65,6 +68,11 @@ SHARE="$VENV/share"
 sed "s|^Exec=tavletta |Exec=$BIN/tavletta |" "$SHARE/applications/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
 cp "$SHARE/icons/hicolor/scalable/apps/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
 cp "$SHARE/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
+# the icon drawn for small sizes (thicker frame, fewer details)
+for size in 16x16 24x24 32x32; do
+    mkdir -p "$DATA/icons/hicolor/$size/apps"
+    cp "$SHARE/icons/hicolor/$size/apps/$APP_ID.svg" "$DATA/icons/hicolor/$size/apps/"
+done
 cp "$SHARE/metainfo/$APP_ID.metainfo.xml" "$DATA/metainfo/"
 cp "$SHARE/mime/packages/$APP_ID.xml" "$DATA/mime/packages/"
 update-mime-database "$DATA/mime" 2>/dev/null || true

@@ -163,3 +163,16 @@ def test_small_sizes_use_their_own_drawing():
     assert tool.source(32).name == "tavletta-32.svg"
     assert tool.source(40).name == "tavletta-32.svg"
     assert tool.source(48).name == f"{APP_ID}.svg"
+
+
+def test_packaging_installs_the_small_drawings():
+    """setup.py installs the small drawings as the hicolor 16-32 px icons;
+    the sdist and install.sh carry them along."""
+    setup = (ROOT / "setup.py").read_text(encoding="utf-8")
+    manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    install = (ROOT / "install.sh").read_text(encoding="utf-8")
+    assert "data/icons/tavletta-{size}.svg" in setup
+    for size in (16, 24, 32):
+        assert (ROOT / "data" / "icons" / f"tavletta-{size}.svg").is_file()
+        assert f"{size}x{size}" in install
+    assert "include data/icons/tavletta-*.svg" in manifest

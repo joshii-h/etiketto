@@ -3,6 +3,8 @@ include data/xyz.joshuahirsig.Tavletta.desktop
 include data/xyz.joshuahirsig.Tavletta.metainfo.xml
 include data/xyz.joshuahirsig.Tavletta.svg
 include data/xyz.joshuahirsig.Tavletta-symbolic.svg
+# the icon drawn for 16, 24 and 32 px (setup.py) and its macOS version
+include data/icons/tavletta-*.svg
 include data/xyz.joshuahirsig.Tavletta.xml
 include po/*.po
 include THIRD_PARTY_NOTICES.md

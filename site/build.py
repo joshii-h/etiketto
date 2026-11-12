@@ -240,6 +240,8 @@ def stage(lang: str) -> Path:
     (docs / "assets").mkdir(exist_ok=True)
     shutil.copy(SITE / "assets" / "extra.css", docs / "assets" / "extra.css")
     shutil.copy(REPO / "data" / "xyz.joshuahirsig.Tavletta.svg", docs / "assets" / "logo.svg")
+    # the favicon: the icon drawn for 32 px, sharp in a browser tab
+    shutil.copy(REPO / "data" / "icons" / "tavletta-32.svg", docs / "assets" / "favicon.svg")
 
     media = docs / "media"
     media.mkdir(exist_ok=True)
@@ -290,7 +292,7 @@ def landing(langs: list[str]) -> None:
 <html lang="en"><head><meta charset="utf-8">
 <title>Tavletta</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="en/assets/logo.svg">
+<link rel="icon" href="en/assets/favicon.svg" type="image/svg+xml">
 <noscript><meta http-equiv="refresh" content="0; url=en/"></noscript>
 <script>
 (function () {

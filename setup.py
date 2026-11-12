@@ -6,6 +6,10 @@ install prefix, so `pip install --prefix=/app .` puts them under /app/share
 and a venv install under <venv>/share. They are part of the wheel, so
 installing a prebuilt wheel brings them along too.
 
+The icon: the scalable SVG for every size, and below 48 px the drawings
+made for 16, 24 and 32 px (data/icons/tavletta-<size>.svg, a thicker frame
+and fewer details), installed as the hicolor <size>x<size> icons.
+
 Building needs msgfmt (gettext). A broken translation stops the build.
 """
 
@@ -30,17 +34,28 @@ DATA_FILES = [
 ]
 
 
+SMALL_ICONS = (16, 24, 32)
+
+
 class InstallData(install_data):
-    """Compile po/<lang>.po and install it as share/locale/<lang>/LC_MESSAGES/tavletta.mo."""
+    """Compile po/<lang>.po and install it as share/locale/<lang>/LC_MESSAGES/tavletta.mo.
+
+    Also installs the small icon drawings under the app ID's name."""
 
     def run(self):
+        build_base = Path(self.get_finalized_command("build").build_base)
+        for size in SMALL_ICONS:
+            icon = build_base / "small-icons" / f"{size}x{size}" / f"{APP_ID}.svg"
+            icon.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(f"data/icons/tavletta-{size}.svg", icon)
+            self.data_files.append((f"share/icons/hicolor/{size}x{size}/apps", [str(icon)]))
         msgfmt = shutil.which("msgfmt")
         if msgfmt is None:
             raise SystemExit("error: msgfmt (gettext) is needed to build the translations")
         po_files = sorted(Path("po").glob("*.po"))
         if not po_files:
             raise SystemExit("error: no translations found in po/")
-        out = Path(self.get_finalized_command("build").build_base) / "mo"
+        out = build_base / "mo"
         for po in po_files:
             mo = out / po.stem / "tavletta.mo"
             mo.parent.mkdir(parents=True, exist_ok=True)
