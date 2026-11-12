@@ -31,6 +31,7 @@ from etiketto.backends.base import (
 )
 
 SYSFS = Path("/sys/class/usbmisc")
+USB_DEVICES = Path("/sys/bus/usb/devices")  # every USB device, also those that are no printer
 DEV = Path("/dev/usb")
 SCHEME = "usb://"
 
@@ -118,6 +119,34 @@ def _usb_serial(node: Path) -> str:
         return (node / "device" / ".." / "serial").read_text(errors="replace").strip()
     except OSError:
         return ""
+
+
+def product_id(printer: UsbPrinter, vendor: int) -> int | None:
+    """The USB product ID of a printer from that vendor (idVendor, idProduct
+    of the USB device in sysfs); None if unknown or another vendor's."""
+    node = SYSFS / printer.device.name / "device" / ".."
+    ids = _ids(node)
+    return ids[1] if ids and ids[0] == vendor else None
+
+
+def _ids(node: Path) -> tuple[int, int] | None:
+    try:
+        vendor = int((node / "idVendor").read_text().strip(), 16)
+        product = int((node / "idProduct").read_text().strip(), 16)
+    except (OSError, ValueError):
+        return None
+    return vendor, product
+
+
+def other_devices(vendor: int) -> list[int]:
+    """Product IDs of that vendor's USB devices that are no printer for
+    usblp (no /dev/usb/lpN), e.g. a printer that shows up as a drive."""
+    found = []
+    for node in sorted(USB_DEVICES.glob("*")):
+        ids = _ids(node)
+        if ids and ids[0] == vendor and not any(node.glob("*:*/usbmisc/lp*")):
+            found.append(ids[1])
+    return found
 
 
 def is_usb(host: str) -> bool:

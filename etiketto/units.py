@@ -13,8 +13,19 @@ MM_PER_INCH = 25.4
 # Territories that use US customary units for everyday lengths
 IMPERIAL_TERRITORIES = {"US", "LR", "MM"}
 
-# Brother's own names for the cassettes in the US (CZ-1001 ... CZ-1005)
-INCH_TAPE_NAMES = {9: "3/8″", 12: "1/2″", 19: "3/4″", 25: "1″", 50: "2″"}
+# Brother's own names for the cassettes in the US: VC-500W (CZ-1001 ... CZ-1005)
+# and P-touch TZe tapes (6, 18, 24 and 36 mm; 9 and 12 mm are the same)
+INCH_TAPE_NAMES = {
+    6: "1/4″",
+    9: "3/8″",
+    12: "1/2″",
+    18: "3/4″",
+    19: "3/4″",
+    24: "1″",
+    25: "1″",
+    36: "1-1/2″",
+    50: "2″",
+}
 
 
 def locale_territory(environ=None) -> str | None:

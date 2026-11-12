@@ -3521,3 +3521,117 @@ def test_ql_says_when_the_roll_decided_the_colours(ql_window, ql_env, monkeypatc
     win.print_flow.start(PrintOptions(mode="black"))
     assert pump(lambda: not win.print_flow.busy)
     assert toast_titles(win)[-1] == "Printed with “Red and black”, as the loaded roll needs it"
+
+
+# --- Brother P-touch: tape widths, extra print settings, tape type ---------------------------
+
+
+@pytest.fixture
+def ptouch_env(gui_env, monkeypatch):
+    """The P-touch backend with faked query/print/discover: a PT-P710BT with
+    heat-shrink tube (as if; that model takes none) for the details."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("ptouch")
+    env = SimpleNamespace(
+        backend=backend,
+        info=PrinterInfo(
+            "PT-P710BT",
+            12,
+            None,
+            None,
+            "IDLE",
+            cassette=CassetteInfo(printable_mm=9.3, media="heat_shrink_2"),
+        ),
+        prints=[],
+    )
+
+    def print_label(image, host, options, progress=None):
+        env.prints.append((image, host, options))
+        progress(Progress(1, options.copies))
+
+    monkeypatch.setattr(backend, "query", lambda host: env.info)
+    monkeypatch.setattr(backend, "print_label", print_label)
+    monkeypatch.setattr(
+        backend,
+        "discover",
+        lambda timeout=3.0: [
+            FoundPrinter("Brother PT-P710BT (USB)", "usb://Brother/PT-P710BT", "")
+        ],
+    )
+    return env
+
+
+def test_ptouch_printer(make_window, ptouch_env):
+    win = make_window()
+    model = one(win.sidebar, Adw.ComboRow, title="Printer model")
+    model.set_selected(_items(model).index("Brother P-touch"))
+    assert pump(lambda: win.printer.info is ptouch_env.info)
+    assert win.label.printer == "ptouch"
+    tape = win.label_group.tape_row
+    assert _items(tape) == ["3.5 mm", "6 mm", "9 mm", "12 mm", "18 mm", "24 mm", "36 mm"]
+    tape.set_selected(0)
+    assert win.label.tape_mm == 3.5
+    tape.set_selected(3)
+    assert win.label.tape_mm == 12 and isinstance(win.label.tape_mm, int)
+    assert ("Tape type", "Heat-shrink tube 2:1") in win.printer.details()
+    assert ("Printable width", "9.3 mm") in win.printer.details()
+    assert win.printer.row.get_title() == "Brother PT-P710BT"
+
+    win.label.elements = [TextElement(text="P")]
+    render_now(win)
+    win.print_flow.on_print()
+    box = win.last_dialog.get_extra_child()
+    rows = [box.get_row_at_index(i) for i in range(5)]
+    assert [r.get_title() for r in rows] == [
+        "Copies",
+        "Cut",
+        "Chain printing",
+        "High resolution",
+        "Tape feed",
+    ]
+    assert box.get_row_at_index(5) is None  # a single mode, no colour correction
+    assert _items(rows[1]) == ["Full cut", "No cut"]  # no half cut on this model
+    assert rows[4].get_adjustment().get_lower() == 2  # Brother: 2 mm on 128-pin models
+    rows[2].set_active(True)
+    rows[4].set_value(5)
+    win.last_dialog.emit("response", "print")
+    assert pump(lambda: not win.print_flow.busy)
+    _image, host, options = ptouch_env.prints[0]
+    assert host == "usb://Brother/PT-P710BT"
+    assert options.info is ptouch_env.info  # rendered for the model as asked
+    assert (options.cut, options.chain, options.high_res, options.feed_mm) == (
+        "full",
+        True,
+        False,
+        5.0,
+    )
+    saved = Settings.load().data["printers"]["ptouch"]
+    assert (saved["chain"], saved["high_res"], saved["feed_mm"]) == (True, False, 5.0)
+    assert win.print_flow.choices() == {
+        "copies": 1,
+        "cut": "full",
+        "mode": "standard",
+        "quality": "",  # no choice of quality
+        "chain": True,
+        "high_res": False,
+        "feed_mm": 5.0,
+    }
+
+
+def test_ptouch_feed_setting_is_checked(make_window, ptouch_env):
+    win = make_window()
+    win.set_backend("ptouch")
+    win.printer.info = None
+    for junk, expected in ((True, 2.0), ("x", 2.0), (500, 127.0), (0.5, 1.0), (3, 3.0)):
+        win.printer_settings.update(feed_mm=junk, chain="yes")
+        choices = win.print_flow.choices()
+        assert choices["feed_mm"] == expected and choices["chain"] is False
+
+
+def test_ptouch_texts():
+    from etiketto.ui.texts import MEDIA_NAMES, code_text
+
+    assert set(MEDIA_NAMES) >= {"laminated", "heat_shrink_2", "heat_shrink_3"}
+    for code in ("battery", "overheat", "unsupported_model", "editor_lite"):
+        assert code_text(code, MILLIMETRES) != code_text("generic", MILLIMETRES)

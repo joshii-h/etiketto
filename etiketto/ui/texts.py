@@ -27,6 +27,26 @@ CUT_MODES = [
     ("end", _("Cut after the last label")),
     ("none", _("No cut")),
 ]
+# Capabilities.extras shown as switches: (choice key, title, subtitle)
+EXTRA_SWITCHES = [
+    (
+        "chain",
+        _("Chain printing"),
+        _("Saves tape: the last label stays in the printer until the next print"),
+    ),
+    ("high_res", _("High resolution"), _("Twice as fine along the tape, prints more slowly")),
+]
+# CassetteInfo.media: the kind of tape
+MEDIA_NAMES = {
+    "laminated": _("Laminated tape"),
+    "non_laminated": _("Non-laminated tape"),
+    "fabric": _("Fabric tape"),
+    "fle": _("FLe tape"),
+    "flexible": _("Flexible ID tape"),
+    "satin": _("Satin tape"),
+    "heat_shrink_2": _("Heat-shrink tube 2:1"),
+    "heat_shrink_3": _("Heat-shrink tube 3:1"),
+}
 # print modes by protocol name; unknown modes are shown by their name
 MODE_NAMES = {
     "vivid": _("Vivid"),
@@ -400,6 +420,22 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
         "wrong_media": _(
             "The loaded roll does not match the label. Load a matching roll, or choose "
             "the label size or printer model of the roll that is loaded."
+        ),
+        "battery": _(
+            "The printer's batteries are low. Connect the power adapter or charge the "
+            "batteries, then try again."
+        ),
+        "overheat": _("The print head is too hot. Wait until it has cooled down, then try again."),
+        "unsupported_model": _(
+            "Etiketto cannot print on this printer model: it does not take the raster "
+            "images Etiketto sends."
+        ),
+        "unknown_model": _(
+            "Etiketto does not know this printer model and cannot print on it yet."
+        ),
+        "editor_lite": _(
+            "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
+            "Editor Lite off on the printer (its lamp goes out), then search again."
         ),
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "

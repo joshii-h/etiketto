@@ -64,7 +64,9 @@ class BackendContract:
         if caps.continuous:
             assert caps.tape_widths_mm
             assert list(caps.tape_widths_mm) == sorted(caps.tape_widths_mm)
-            assert all(isinstance(w, int) and w > 0 for w in caps.tape_widths_mm)
+            # whole millimetres as int (25, not 25.0), others such as 3.5 as float
+            assert all(isinstance(w, (int, float)) and w > 0 for w in caps.tape_widths_mm)
+            assert all(isinstance(w, int) for w in caps.tape_widths_mm if w == int(w))
         else:
             assert caps.label_sizes  # die-cut: sizes to choose from
             limit = caps.max_width_mm or float("inf")

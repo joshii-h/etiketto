@@ -50,10 +50,10 @@ def test_unknown_backend():
 
 def test_register_orders_default_first(mono):
     # the default first, then by name, whatever the case
-    # names: Brother QL (twice, in the order registered), cab, CUPS / IPP,
-    # DYMO, ESC/POS, Fake Mono, TSPL, Zebra EPL2, Zebra ZPL
+    # names: Brother P-touch, Brother QL (twice, in the order registered), cab,
+    # CUPS / IPP, DYMO, ESC/POS, Fake Mono, TSPL, Zebra EPL2, Zebra ZPL
     ql = ["brother_ql", "brother_ql_diecut"]
-    builtin = [*ql, "cab", "system", "dymo", "escpos"]
+    builtin = ["ptouch", *ql, "cab", "system", "dymo", "escpos"]
     assert [b.id for b in backends()] == ["vc500w", *builtin, "fake-mono", "tspl", "epl", "zpl"]
     assert get_backend("fake-mono") is mono
     registry.unregister("fake-mono")
@@ -97,6 +97,7 @@ def test_entry_points(monkeypatch):
             "cab",
             "fake-mono",
             "plugin",
+            "ptouch",
             "system",
             "zpl",
             "epl",
@@ -112,6 +113,7 @@ def test_entry_points(monkeypatch):
 def test_every_backend_has_a_contract_test():
     import test_brother_ql  # noqa: F401 - define their BackendContract subclasses
     import test_cab  # noqa: F401
+    import test_ptouch  # noqa: F401
     import test_raw_backends  # noqa: F401
     import test_system  # noqa: F401
     import test_vc500w  # noqa: F401

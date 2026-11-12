@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:22+0100\n"
+"POT-Creation-Date: 2026-11-12 10:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -651,6 +651,138 @@ msgstr ""
 #: docs/printer.md
 #, markdown-text
 msgid "Print too pale or too dark: change the heat level in the printer's setup."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother P-touch { #ptouch }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto prints on Brother P-touch tape printers with TZe tape and HSe heat-shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900 series, the PT-D series and older models such as the PT-2430PC. Not tried on a printer yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the printer, or enter its address. Etiketto uses port 9100."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Bluetooth is not supported; models with Bluetooth print over USB."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Editor Lite: with the Editor Lite lamp on, the printer is a USB drive and cannot print. Switch Editor Lite off, then search again."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Tape { #ptouch-tape }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Etiketto shows the inserted tape, its type (laminated, heat-shrink tube, ...) and the printable width under [[ui:Printer details]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label fills the printable part of the tape. The edges of the tape stay blank: on 12 mm tape about 9.9 mm are printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Heat-shrink tube: choose the nearest [[ui:Tape width]] (12 mm for an 11.2 mm tube)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print in black: on coloured tape the tape's ink colour prints. Images are printed in black and white without dithering."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Print options { #ptouch-print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] cuts each label off. [[ui:Half cut]] cuts through the label, the backing holds the labels together. [[ui:No cut]] prints the labels as one strip. The strip is cut after the last label.  Models with a cutter lever have no cut setting."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Chain printing]]: the last label stays in the printer and comes out with the next print. Saves about 25 mm of tape per print."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:High resolution]]: finer print along the tape, slower."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm (PT-P900 series: 1 mm)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The first label after switching on starts with a blank piece: the cutter sits behind the print head."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #ptouch-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Wrong cassette]]: another tape width is inserted. The label is scaled to the tape."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open, no tape, tape not recognised: close the cover, insert the tape until it clicks."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Batteries low: connect the power adapter."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print head too hot: wait a few minutes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Model not supported: Etiketto knows the models listed above."
 msgstr ""
 
 #. type: Title ##

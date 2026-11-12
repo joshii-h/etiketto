@@ -191,6 +191,55 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 - Paused: resume the printer on its display.
 - Print too pale or too dark: change the heat level in the printer's setup.
 
+## Brother P-touch { #ptouch }
+
+Etiketto prints on Brother P-touch tape printers with TZe tape and HSe
+heat-shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900
+series, the PT-D series and older models such as the PT-2430PC. Not tried
+on a printer yet.
+
+- USB: plug the printer in; [[ui:Search for printers]] finds it.
+- Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the
+  printer, or enter its address. Etiketto uses port 9100.
+- Bluetooth is not supported; models with Bluetooth print over USB.
+- Editor Lite: with the Editor Lite lamp on, the printer is a USB drive and
+  cannot print. Switch Editor Lite off, then search again.
+
+### Tape { #ptouch-tape }
+
+- Etiketto shows the inserted tape, its type (laminated, heat-shrink tube,
+  ...) and the printable width under [[ui:Printer details]].
+- The label fills the printable part of the tape. The edges of the tape
+  stay blank: on 12 mm tape about 9.9 mm are printed.
+- Heat-shrink tube: choose the nearest [[ui:Tape width]] (12 mm for an
+  11.2 mm tube).
+- Print in black: on coloured tape the tape's ink colour prints. Images
+  are printed in black and white without dithering.
+
+### Print options { #ptouch-print }
+
+- [[ui:Cut]]: [[ui:Full cut]] cuts each label off. [[ui:Half cut]] cuts
+  through the label, the backing holds the labels together. [[ui:No cut]]
+  prints the labels as one strip. The strip is cut after the last label.
+  Models with a cutter lever have no cut setting.
+- [[ui:Chain printing]]: the last label stays in the printer and comes out
+  with the next print. Saves about 25 mm of tape per print.
+- [[ui:High resolution]]: finer print along the tape, slower.
+- [[ui:Tape feed]]: blank tape before and after each label, at least 2 mm
+  (PT-P900 series: 1 mm).
+- The first label after switching on starts with a blank piece: the cutter
+  sits behind the print head.
+
+### Problems { #ptouch-problems }
+
+- [[ui:Wrong cassette]]: another tape width is inserted. The label is
+  scaled to the tape.
+- Cover open, no tape, tape not recognised: close the cover, insert the
+  tape until it clicks.
+- Batteries low: connect the power adapter.
+- Print head too hot: wait a few minutes.
+- Model not supported: Etiketto knows the models listed above.
+
 ## System printer (CUPS, IPP) { #system }
 
 Prints on the printers your computer knows: printers set up in the system

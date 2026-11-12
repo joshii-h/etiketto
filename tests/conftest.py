@@ -23,7 +23,18 @@ import pytest
 from gi.repository import Gio, GLib
 from PIL import Image, ImageChops
 
-from etiketto.backends import backends, brother_ql, cab, get_backend, ipp, mdns, raw, usb, vc500w
+from etiketto.backends import (
+    backends,
+    brother_ql,
+    cab,
+    get_backend,
+    ipp,
+    mdns,
+    ptouch,
+    raw,
+    usb,
+    vc500w,
+)
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -83,11 +94,14 @@ def _no_network(request, monkeypatch):
     monkeypatch.setattr(vc500w, "_connect", refusal("printer"))
     monkeypatch.setattr(cab, "_connect", refusal("printer"))
     monkeypatch.setattr(brother_ql, "_connect", refusal("printer"))
+    monkeypatch.setattr(ptouch, "_connect", refusal("printer"))
+    monkeypatch.setattr(ptouch, "_browse", lambda *_args, **_kwargs: [])  # nor search the network
     monkeypatch.setattr(raw, "_connect", refusal("printer"))  # ZPL, EPL2, TSPL, ESC/POS, DYMO
     # nor search the real network for them (mDNS)
     monkeypatch.setattr(raw, "_browse", lambda *_args, **_kwargs: [])
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
+    monkeypatch.setattr(usb, "USB_DEVICES", Path("/nonexistent/usb-devices"))
     monkeypatch.setattr(mdns.Gio, "bus_get_sync", refusal("D-Bus"))
     if request.node.get_closest_marker("real_ipp") is None:
         monkeypatch.setattr(ipp, "send", refusal("IPP"))

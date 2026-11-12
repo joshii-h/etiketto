@@ -291,7 +291,7 @@ class Label:
         label = cls(printer=printer)
         if caps.continuous:
             widths = caps.tape_widths_mm
-            fallback = 50 if 50 in widths else widths[-1]
+            fallback = caps.default_tape_mm or (50 if 50 in widths else widths[-1])
             label.tape_mm = (
                 inserted_tape if inserted_tape in widths and inserted_tape else fallback
             )
