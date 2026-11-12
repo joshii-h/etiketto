@@ -8,6 +8,7 @@ import threading
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import NamedTuple
 
 import gi
 
@@ -21,7 +22,7 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend, PrintOptions, margins_for  # noqa: E402
-from etiketto.job import PREVIEW_MAX_DPI, preview_image  # noqa: E402
+from etiketto.job import PREVIEW_MAX_DPI, PREVIEW_MAX_PIXELS, preview_image  # noqa: E402
 from etiketto.model import (  # noqa: E402
     MAX_COUNTER,
     CodeElement,
@@ -34,7 +35,11 @@ from etiketto.render import Rendered  # noqa: E402
 from etiketto.serial import unknown_columns  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import first_positions, in_margins  # noqa: E402
-from etiketto.shipping.source import clear_caches, drop_stale_documents  # noqa: E402
+from etiketto.shipping.source import (  # noqa: E402
+    clear_caches,
+    drop_stale_documents,
+    drop_thread_documents,
+)
 from etiketto.ui.data import DATA_SUFFIXES, STEPS, DataGroup, DataSource  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
@@ -65,8 +70,8 @@ class Window(Adw.ApplicationWindow):
         self._geometries: dict[str, dict] = {}  # label size per printer model
         self._last_sheet: SheetChoice | None = None  # back to it after a single label
         self.rendered: Rendered | None = None
-        # the resolution the preview was last rendered at (print_dpi()):
-        # its code warnings hold for that one
+        # the resolution of the render the preview shows: its code
+        # warnings hold for that one
         self.rendered_dpi: float | None = None
         # what the preview was rendered for: (resolution, Raster: tape,
         # print head, reductions), see render_geometry()
@@ -477,15 +482,18 @@ class Window(Adw.ApplicationWindow):
         most PREVIEW_MAX_DPI (an A4 page at 1200 dpi would be 140
         megapixels, rendered on every keystroke), a page only as fine as
         it fits (Backend.label_dpi)."""
-        return self.backend.label_dpi(self.label, self.render_options(), PREVIEW_MAX_DPI)
+        return self.backend.label_dpi(
+            self.label, self.render_options(), PREVIEW_MAX_DPI, PREVIEW_MAX_PIXELS
+        )
 
     def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,
         at the resolution it is printed at (codes and thin lines differ),
         and the image of it as the printer would print it (preview, export)."""
-        return self._render_work()()
+        done = self._render_work()()
+        return done.rendered, done.image
 
-    def _render_work(self) -> Callable[[], tuple[Rendered, Image.Image]]:
+    def _render_work(self) -> Callable[[], PreviewResult]:
         """What a render needs, copied from the window now (the label filled
         in, the options, the sheet, what the backend's capabilities say),
         and a function that renders it from those copies alone: it runs in
@@ -495,15 +503,14 @@ class Window(Adw.ApplicationWindow):
         label = copy.deepcopy(label)  # the window's elements change while it renders
         options = copy.deepcopy(self.render_options())
         self.rendered_geometry = self.render_geometry()
-        self.rendered_dpi = backend.label_dpi(label, options, PREVIEW_MAX_DPI)
         safe_mm, choice = self.printer_settings.safe_mm, self.label.sheet
         sheet = self.sheet if choice else None  # round labels and CDs: their shape
         rotated = bool(choice and choice.rotated)
 
-        def work() -> tuple[Rendered, Image.Image]:
-            rendered, image, _dpi = preview_image(backend, label, options, safe_mm, sheet, rotated)
+        def work() -> PreviewResult:
+            rendered, image, dpi = preview_image(backend, label, options, safe_mm, sheet, rotated)
             rendered.warnings[:0] = warnings
-            return rendered, image
+            return PreviewResult(rendered, image, label.tape_mm, dpi)
 
         return work
 
@@ -511,14 +518,23 @@ class Window(Adw.ApplicationWindow):
         """What a render for the next print depends on besides the label:
         the resolution and the raster (the tape or print area in pixels,
         the head's reductions), from the printer as last asked."""
-        options = self.render_options()
-        dpi = self.backend.label_dpi(self.label, options, PREVIEW_MAX_DPI)
+        return self._geometry(self.render_options(), PREVIEW_MAX_PIXELS)
+
+    def _geometry(self, options: PrintOptions, max_pixels: float | None) -> tuple:
+        dpi = self.backend.label_dpi(self.label, options, PREVIEW_MAX_DPI, max_pixels)
         return dpi, self.backend.label_raster(self.label, options)
 
     def render_for(self, options: PrintOptions) -> Rendered:
-        """The label (the next print's values) rendered for these options:
-        the print dialog's choices of quality or high resolution change the
-        resolution, so its code check renders anew."""
+        """The label (the next print's values) rendered for these options,
+        for the print's code check: at the resolution it is printed at (at
+        most PREVIEW_MAX_DPI, a page in full; one too large for the printer
+        raises PageTooLarge before anything is drawn). The preview's render
+        when it is current and was made for the same resolution and raster;
+        the print dialog's choices of quality or high resolution, or a page
+        the preview draws coarser, render anew."""
+        shown = self.rendered if self.preview_current else None
+        if shown is not None and self._geometry(options, None) == self.rendered_geometry:
+            return shown
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
         rendered = self.backend.render_label(
             label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
@@ -571,6 +587,7 @@ class Window(Adw.ApplicationWindow):
         try:
             work = self._render_work()
         except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
+            self._shown_generation = generation  # no older render replaces the message
             self._render_failed(e)
             return False
         if wait:
@@ -592,10 +609,13 @@ class Window(Adw.ApplicationWindow):
         if error is not None:
             self._render_failed(error)
             return False
-        self.rendered, image = result
+        self.rendered, self.rendered_dpi = result.rendered, result.dpi
         self._render_error = None
         self.preview.show_image(
-            image, self.rendered.length_mm, self.label.tape_mm, self._status_text(self.rendered)
+            result.image,
+            result.rendered.length_mm,
+            result.tape_mm,
+            self._status_text(self.rendered),
         )
         return False
 
@@ -778,20 +798,28 @@ class Window(Adw.ApplicationWindow):
         return True
 
     def _on_destroy(self, _window) -> None:
+        self._shut_down()
+
+    def _shut_down(self) -> None:
+        """The window closes: a search or query still running is outdated,
+        a render still running is not shown, none starts any more, and the
+        preview's thread ends after the render it is in. On close-request
+        (GTK does not always emit destroy for a closed window), again on
+        destroy."""
         self.printer._next_generation()
-        self._closed = True  # a render still running is not shown, none starts
+        self._closed = True
         self._render_generation += 1
         if self._render_source:
             GLib.source_remove(self._render_source)
             self._render_source = 0
-        self.preview_worker.stop(timeout=0)  # it ends after the render it is in
+        self.preview_worker.close()
 
     def _on_close_request(self, _window) -> bool:
         if self.print_flow.busy:
             self.toast(_("Please wait until printing has finished"))
             return True
         if not self.dirty:
-            self.preview_worker.stop(timeout=0)  # closes: it ends after its render
+            self._shut_down()  # it closes
             return False
 
         def close():
@@ -811,7 +839,17 @@ def _stamp(path: Path) -> tuple | None:
     return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)
 
 
-def _run(work: Callable[[], tuple[Rendered, Image.Image]]) -> tuple:
+class PreviewResult(NamedTuple):
+    """A render for the preview: what it shows (the image, the tape and the
+    resolution it was made for, not the label's of now)."""
+
+    rendered: Rendered
+    image: Image.Image
+    tape_mm: float
+    dpi: float
+
+
+def _run(work: Callable[[], PreviewResult]) -> tuple:
     """(result, None), or (None, the exception): shown in the main loop."""
     try:
         return work(), None
@@ -826,7 +864,8 @@ class PreviewWorker:
     request: one overtaken while another renders is dropped unstarted.
     done(generation, result, error) is called in the main loop. A request
     after stop(), or after the thread ended on a BaseException, starts a
-    new thread (the one stopping ends after its render)."""
+    new thread (the one stopping ends after its render); after close()
+    (the window is gone) none."""
 
     def __init__(self, done: Callable[..., bool]):
         self._done = done
@@ -834,10 +873,13 @@ class PreviewWorker:
         self._pending: tuple[int, Callable] | None = None
         self._stop = threading.Event()  # the current thread's
         self._drop = False  # drop_documents() asked: wake up for it
+        self._closed = False
         self.thread: threading.Thread | None = None
 
     def submit(self, generation: int, work: Callable) -> None:
         with self._wake:
+            if self._closed:
+                return
             self._pending = (generation, work)  # the older request, if any, is dropped
             thread = self.thread
             if thread is None or not thread.is_alive() or self._stop.is_set():
@@ -849,8 +891,9 @@ class PreviewWorker:
             self._wake.notify_all()
 
     def drop_documents(self) -> None:
-        """The thread forgets the documents it decoded before clear_caches()
-        now, not only at its next render (shipping/source.py)."""
+        """The thread forgets the documents it decoded so far (the label
+        before), after the render it is in, if any: not only at its next
+        render, and also those that render opened after clear_caches()."""
         with self._wake:
             self._drop = True
             self._wake.notify_all()
@@ -864,6 +907,12 @@ class PreviewWorker:
         if self.thread is not None:
             self.thread.join(timeout)
 
+    def close(self) -> None:
+        """stop() for good: no request is taken any more."""
+        with self._wake:
+            self._closed = True
+        self.stop(timeout=0)
+
     def _loop(self, stop: threading.Event) -> None:
         while True:
             with self._wake:
@@ -871,8 +920,10 @@ class PreviewWorker:
                     self._wake.wait()
                 if stop.is_set():
                     return
-                self._drop = False
+                drop, self._drop = self._drop, False
                 request, self._pending = self._pending, None
+            if drop:  # a new label: all of them, even one reopened meanwhile
+                drop_thread_documents()
             drop_stale_documents()  # of the label before (clear_caches)
             if request is None:
                 continue

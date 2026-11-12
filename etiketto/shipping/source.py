@@ -197,8 +197,13 @@ def drop_stale_documents() -> None:
     """This thread's documents go if they were opened before the last
     clear_caches() (window.PreviewWorker calls it before each render)."""
     if getattr(_threads, "generation", None) != _generation[0]:
-        _threads.__dict__.clear()
-        _threads.generation = _generation[0]
+        drop_thread_documents()
+
+
+def drop_thread_documents() -> None:
+    """This thread's documents go, whenever they were opened."""
+    _threads.__dict__.clear()
+    _threads.generation = _generation[0]
 
 
 # --- PDF documents --------------------------------------------------------------

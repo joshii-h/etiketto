@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import io
-
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -16,6 +14,18 @@ from etiketto.ui.widgets import flat_button  # noqa: E402
 
 # Preview: screen pixels per mm at zoom 1
 PREVIEW_PX_PER_MM = 6.0
+
+
+def texture(image) -> Gdk.Texture:
+    """The image's pixels as a texture, as they are: no PNG to encode and
+    decode in the main loop (a page of 16 megapixels took 0.4 s)."""
+    if image.mode not in ("RGB", "RGBA"):
+        image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+    rgb = image.mode == "RGB"
+    memory = Gdk.MemoryFormat.R8G8B8 if rgb else Gdk.MemoryFormat.R8G8B8A8
+    stride = image.width * (3 if rgb else 4)
+    data = GLib.Bytes.new(image.tobytes())
+    return Gdk.MemoryTexture.new(image.width, image.height, memory, data, stride)
 
 
 class Preview(Gtk.Box):
@@ -93,10 +103,7 @@ class Preview(Gtk.Box):
 
     def show_image(self, image, length_mm: float, height_mm: float, text: str) -> None:
         """Show a rendered preview image and its status text."""
-        buf = io.BytesIO()
-        image.save(buf, format="PNG")
-        texture = Gdk.Texture.new_from_bytes(GLib.Bytes.new(buf.getvalue()))
-        self.picture.set_paintable(texture)
+        self.picture.set_paintable(texture(image))
         self._size_mm = (length_mm, height_mm)
         self.apply_zoom()
         self.status.set_text(text)

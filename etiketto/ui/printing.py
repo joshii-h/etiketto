@@ -470,8 +470,13 @@ class PrintFlow:
         """Codes that may not scan at the resolution of this print (the
         dialog's quality or high resolution may differ from the preview's:
         rendered anew for its options): ask first; a code that does not fit:
-        say so, nothing is printed."""
-        rendered = self.window.render_for(options)
+        say so, nothing is printed; so is a page too large for the
+        printer's resolution (PageTooLarge, before anything is drawn)."""
+        try:
+            rendered = self.window.render_for(options)
+        except PrinterError as e:
+            self.failed(e, printer_error_text(e, self.window.unit))
+            return
         warnings = [w for w in rendered.warnings if w.key in CODE_WARNINGS]
         too_big = [w for w in warnings if w.key == "code_too_big"]
         if too_big:

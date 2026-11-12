@@ -616,31 +616,36 @@ def test_a_stopped_series_keeps_the_printers_remark(office):
     )
 
 
-def test_an_a3_page_at_600_dpi_is_previewed_and_refused_when_printed(
-    office, system_env, monkeypatch
-):
-    """An A3 page on a printer reporting 600 dpi (70 megapixels): the
-    preview is drawn as fine as it fits, Print opens its dialog, and the
-    print says the page is too large (not "cannot be drawn")."""
+def test_a_page_too_large_is_previewed_and_refused_when_printed(office, system_env, monkeypatch):
+    """A page too large for the printer's 600 dpi (an A3 page: 70
+    megapixels; here a smaller page and smaller limits, to be quick): the
+    preview is drawn within its own pixel budget, Print opens its dialog,
+    and the print says the page is too large before drawing it again."""
+    from etiketto import job
     from etiketto.backends import system
+    from etiketto.ui import window as ui_window
 
+    monkeypatch.setattr(system, "MAX_PAGE_PIXELS", 2_000_000)
+    monkeypatch.setattr(job, "PREVIEW_MAX_PIXELS", 500_000)
+    monkeypatch.setattr(ui_window, "PREVIEW_MAX_PIXELS", 500_000)
     win = office
-    a3 = Label(printer="system", orientation="across", auto_length=False)
-    a3.set_media_size(297, 420)
-    a3.elements = [TextElement(text="A3 Plakat")]
-    win.set_label(a3, None)
-    system_env.info = PrinterInfo("Office A3", None, None, None, "IDLE", dpi=600)
+    page = Label(printer="system", orientation="across", auto_length=False)
+    page.set_media_size(100, 150)
+    page.elements = [TextElement(text="Plakat")]
+    win.set_label(page, None)
+    system_env.info = PrinterInfo("Office", None, None, None, "IDLE", dpi=600)
     win.printer.info = system_env.info
     render_now(win)
     assert win.rendered is not None and win._render_error is None
-    assert win.preview.status.get_text().startswith("297 × 420 mm")
-    assert win.print_dpi() == system.fitting_dpi(297, 420)
-
-    def print_label(image, host, options, progress=None):
-        system.check_page_size(image, 600)  # as the real print does
-        system_env.labels.append(image)
-
-    monkeypatch.setattr(win.backend, "print_label", print_label)
+    assert win.preview.status.get_text().startswith("100 × 150 mm")
+    budget = system.fitting_dpi(100, 150, 500_000)
+    assert win.print_dpi() == budget == win.rendered_dpi
+    assert win.rendered.image.width == round(100 / 25.4 * budget)
+    drawn = []
+    real = system.Backend.render_label  # what draws, after the size check
+    monkeypatch.setattr(
+        system.Backend, "render_label", lambda *a, **k: drawn.append(k) or real(*a, **k)
+    )
     win.print_flow.on_print()
     assert win.last_dialog.get_heading() == "Print label"
     respond(win.last_dialog, "print")
@@ -648,4 +653,23 @@ def test_an_a3_page_at_600_dpi_is_previewed_and_refused_when_printed(
     dialog = win.get_visible_dialog()
     assert dialog.get_heading() == "Printing failed"
     assert dialog.get_body().startswith("The page is too large")
-    assert system_env.labels == []
+    assert system_env.labels == [] and drawn == []  # refused before drawing
+
+
+def test_print_reuses_the_preview_for_its_code_check(office, system_env, monkeypatch):
+    """The preview is current and was drawn at the print's resolution and
+    raster: the print's code check takes it, nothing is drawn again."""
+    win = office
+    render_now(win)
+    assert win.preview_current
+    drawn = []
+    real = win.backend.render_label
+    monkeypatch.setattr(
+        win.backend, "render_label", lambda *a, **k: drawn.append(1) or real(*a, **k)
+    )
+    assert win.render_for(win.render_options()) is win.rendered
+    assert drawn == []
+    win.label.elements[0].text = "edited"
+    win.schedule_render()  # not current: drawn anew
+    assert win.render_for(win.render_options()) is not win.rendered
+    assert drawn == [1]

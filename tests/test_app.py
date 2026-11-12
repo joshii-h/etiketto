@@ -4045,26 +4045,48 @@ def test_a_render_of_the_label_before_is_not_shown(window, monkeypatch):
 
 
 def test_a_closed_window_shows_no_render_still_running(make_window, monkeypatch):
-    """Destroyed while its thread renders: the result is not shown, a
-    failure raises no toast, and nothing renders any more."""
+    """Closed (win.close(): GTK does not emit destroy then) while its thread
+    renders and an edit's render is pending: nothing is shown, a failure
+    raises no toast, the pending render never starts, no thread is
+    started again and the one running ends."""
+    import threading
+    import time
+
+    def preview_threads():
+        return [t for t in threading.enumerate() if t.name == "etiketto-preview"]
+
     win = make_window()
+    win.present()
+    pump()
     started, release = _blocking_render(win, monkeypatch)
     win.render_preview()
     assert started.wait(5)
+    thread = win.preview_worker.thread
+    before = preview_threads()
     shown = []
     monkeypatch.setattr(win.preview, "show_image", lambda *a: shown.append(a))
-    win.schedule_render()  # an edit just before: its render does not start
-    win._on_destroy(win)
-    assert win._render_source == 0
+    win.label.elements[0].text = "edited just before closing"
+    win.schedule_render()  # its timer would fire 120 ms later
+    win.close()
+    assert win._closed and win._render_source == 0
     release.set()
-    win.preview_worker.thread.join(5)
+    deadline = time.monotonic() + 0.4  # past the timer, with the main loop running
+    while time.monotonic() < deadline:
+        pump()
+        time.sleep(0.01)
+    thread.join(5)
     pump()
     assert shown == [] and win.toast_log == []
+    assert win.preview_worker.thread is thread and not thread.is_alive()
+    assert [t for t in preview_threads() if t not in before] == []
     win._show_render(win._render_generation, None, RuntimeError("late"))
     assert win.toast_log == []
-    win.schedule_render()
-    assert win.render_preview() is False and win._render_source == 0
-    assert not win.preview_worker.thread.is_alive()
+    win.preview_worker.submit(win._render_generation + 1, lambda: None)  # refused
+    assert win.preview_worker.thread is thread
+    generation = win._render_generation
+    win.schedule_render()  # an edit after closing: nothing
+    assert win.render_preview() is False
+    assert win._render_source == 0 and win._render_generation == generation
 
 
 def test_the_preview_worker_starts_again_after_stop_or_a_fatal_error():
@@ -4161,3 +4183,102 @@ def test_a_fixed_length_in_high_quality_shows_the_users_length(window):
     assert window.size_text(20.5) in status and window.size_text(20.55) not in status
     body = window.print_flow._body(window.print_flow.choices())
     assert body == window.size_text(20.5)
+
+
+def test_an_overtaken_render_is_shown_with_its_own_tape(window, monkeypatch):
+    """The tape changes while a render runs: the render is shown for the
+    tape (and resolution) it was made for, not the label's of now."""
+    started, release = _blocking_render(window, monkeypatch)
+    old = window.label.tape_mm
+    window.render_preview()
+    assert started.wait(5)
+    calls = []
+    real_show = window.preview.show_image
+    monkeypatch.setattr(
+        window.preview, "show_image", lambda *a: calls.append(a[2]) or real_show(*a)
+    )
+    widths = window.backend.capabilities.tape_widths_mm
+    new = next(w for w in widths if w != old)
+    window.label.tape_mm = new
+    window.schedule_render()
+    release.set()
+    assert pump(lambda: window.preview_current, timeout=5)
+    assert calls == [old, new]
+    assert window.rendered_dpi == window.print_dpi()
+
+
+def test_a_render_that_cannot_start_is_not_replaced_by_an_older_one(window, monkeypatch):
+    """Preparing the render of an edit fails while an older one runs: the
+    older result does not replace the failure's message."""
+    started, release = _blocking_render(window, monkeypatch)
+    window.render_preview()
+    assert started.wait(5)
+
+    def broken():
+        raise RuntimeError("cannot expand")
+
+    monkeypatch.setattr(window, "_render_work", broken)
+    window.render_preview()
+    assert window.preview.status.get_text() == "The preview cannot be drawn"
+    release.set()
+    window.preview_worker.thread.join(0.5)
+    pump(lambda: False, timeout=0.3)
+    assert window.rendered is None
+    assert window.preview.status.get_text() == "The preview cannot be drawn"
+
+
+def test_a_document_reopened_by_a_running_render_is_dropped_too(window):
+    """A render of label A still running when B opens opens A's document
+    again after clear_caches(): the thread drops it all the same."""
+    import gc
+    import threading
+    import weakref
+    from unittest import mock
+
+    from etiketto.shipping import source
+
+    opened = []
+
+    class Document:
+        pass
+
+    def fake_open(_raw):
+        document = Document()
+        opened.append(weakref.ref(document))
+        return document
+
+    go, carry_on, done = threading.Event(), threading.Event(), threading.Event()
+
+    def work():
+        source._pdf("QUFB")  # label A's document
+        go.set()
+        carry_on.wait(5)
+        source._pdf("QUFB")  # the render goes on after the label changed
+        done.set()
+        return
+
+    with (
+        mock.patch.object(source, "_open_pdf", fake_open),
+        mock.patch.object(source, "_decoded", lambda data: b""),
+    ):
+        window.preview_worker.submit(-1, work)  # older than anything: not shown
+        assert go.wait(5)
+        window.set_label(Label(printer=window.label.printer, elements=[]), None)
+        if window._render_source:  # no render: only the drop
+            GLib.source_remove(window._render_source)
+            window._render_source = 0
+        carry_on.set()
+        assert done.wait(5)
+        assert pump(
+            lambda: gc.collect() is not None and all(r() is None for r in opened), timeout=5
+        )
+    assert len(opened) == 2
+
+
+def test_the_preview_texture_takes_the_pixels_as_they_are():
+    from PIL import Image
+
+    for mode, color in (("RGB", (1, 2, 3)), ("RGBA", (1, 2, 3, 4)), ("L", 7), ("1", 1)):
+        image = Image.new(mode, (5, 3), color)
+        texture = preview.texture(image)
+        assert (texture.get_width(), texture.get_height()) == (5, 3), mode
