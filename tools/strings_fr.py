@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Plein",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Élément %(n)d\xa0: une imprimante noir et blanc l’imprime dans la couleur du fond – choisissez une couleur plus foncée ou plus claire",
     "Element %(n)d: the shape has neither a line nor a fill": "Élément %(n)d\xa0: la forme n’a ni trait ni remplissage",
+    "Set a border width first": "Définissez d’abord une épaisseur de bordure",
+    "%(unit)s, with a box or frame": "%(unit)s, avec un encadré ou un cadre",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Élément %(n)d\xa0: la marge intérieure, le cadre, le contour ou l’ombre ne laissent aucune place au texte – réduisez-les",
 }

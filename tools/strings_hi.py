@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "ठोस",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "तत्व %(n)d: श्वेत-श्याम प्रिंटर इसे पृष्ठभूमि के रंग में छापता है – गहरा या हल्का रंग चुनें",
     "Element %(n)d: the shape has neither a line nor a fill": "तत्व %(n)d: आकृति में न रेखा है न भराव",
+    "Set a border width first": "पहले बॉर्डर की चौड़ाई सेट करें",
+    "%(unit)s, with a box or frame": "%(unit)s, बॉक्स या फ़्रेम के साथ",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "तत्व %(n)d: पैडिंग, फ़्रेम, आउटलाइन या छाया पाठ के लिए कोई जगह नहीं छोड़ते – इन्हें छोटा करें",
 }

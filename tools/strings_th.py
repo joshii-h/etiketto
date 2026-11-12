@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "ทึบ",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "องค์ประกอบ %(n)d: เครื่องพิมพ์ขาวดำจะพิมพ์เป็นสีเดียวกับพื้นหลัง – เลือกสีที่เข้มขึ้นหรืออ่อนลง",
     "Element %(n)d: the shape has neither a line nor a fill": "องค์ประกอบ %(n)d: รูปทรงไม่มีทั้งเส้นและการเติม",
+    "Set a border width first": "ตั้งความกว้างกรอบก่อน",
+    "%(unit)s, with a box or frame": "%(unit)s, ใช้กับกล่องหรือกรอบ",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "องค์ประกอบ %(n)d: ระยะห่างภายใน กรอบ เส้นขอบตัวอักษร หรือเงา ไม่เหลือพื้นที่สำหรับข้อความ – โปรดลดลง",
 }

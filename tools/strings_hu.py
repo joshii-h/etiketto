@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Tömör",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "%(n)d. elem: a fekete-fehér nyomtató a háttér színében nyomtatja – válasszon sötétebb vagy világosabb színt",
     "Element %(n)d: the shape has neither a line nor a fill": "%(n)d. elem: az alakzatnak nincs se vonala, se kitöltése",
+    "Set a border width first": "Előbb adja meg a keret vastagságát",
+    "%(unit)s, with a box or frame": "%(unit)s, dobozzal vagy kerettel",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "%(n)d. elem: a belső margó, a keret, a körvonal vagy az árnyék nem hagy helyet a szövegnek – csökkentse őket",
 }

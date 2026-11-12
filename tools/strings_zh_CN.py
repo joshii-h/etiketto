@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "实心",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "元素 %(n)d：黑白打印机会以背景颜色打印此元素 – 请选择较深或较浅的颜色",
     "Element %(n)d: the shape has neither a line nor a fill": "元素 %(n)d：此形状既无线条也无填充",
+    "Set a border width first": "请先设置边框宽度",
+    "%(unit)s, with a box or frame": "%(unit)s，需配合方框或外框",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "元素 %(n)d：内边距、外框、轮廓或阴影使文本没有空间 – 请减小",
 }

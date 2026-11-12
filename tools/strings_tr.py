@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Düz",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Öge %(n)d: siyah beyaz yazıcı bunu arka plan renginde basar – daha koyu veya daha açık bir renk seçin",
     "Element %(n)d: the shape has neither a line nor a fill": "Öge %(n)d: şeklin ne çizgisi ne de dolgusu var",
+    "Set a border width first": "Önce bir kenarlık kalınlığı ayarlayın",
+    "%(unit)s, with a box or frame": "%(unit)s, kutu veya çerçeveyle",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Öge %(n)d: iç boşluk, çerçeve, kontur veya gölge metne yer bırakmıyor – bunları küçültün",
 }

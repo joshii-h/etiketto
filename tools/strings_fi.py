@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Täysi",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Elementti %(n)d: mustavalkotulostin tulostaa sen taustan värisenä – valitse tummempi tai vaaleampi väri",
     "Element %(n)d: the shape has neither a line nor a fill": "Elementti %(n)d: muodolla ei ole viivaa eikä täyttöä",
+    "Set a border width first": "Aseta ensin reunuksen leveys",
+    "%(unit)s, with a box or frame": "%(unit)s, laatikon tai kehyksen kanssa",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elementti %(n)d: täyte, kehys, ääriviiva tai varjo eivät jätä tilaa tekstille – pienennä niitä",
 }

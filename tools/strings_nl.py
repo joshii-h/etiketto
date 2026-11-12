@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Egaal",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Element %(n)d: een zwart-witprinter drukt het af in de kleur van de achtergrond – kies een donkerdere of lichtere kleur",
     "Element %(n)d: the shape has neither a line nor a fill": "Element %(n)d: de vorm heeft geen lijn en geen vulling",
+    "Set a border width first": "Stel eerst een randbreedte in",
+    "%(unit)s, with a box or frame": "%(unit)s, met een vlak of kader",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Element %(n)d: binnenmarge, kader, omtrek of schaduw laten geen ruimte over voor de tekst – verklein ze",
 }

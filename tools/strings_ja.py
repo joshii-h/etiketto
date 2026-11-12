@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "ベタ",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "要素 %(n)d: モノクロプリンターでは背景と同じ色で印刷されます – より暗い色か明るい色を選んでください",
     "Element %(n)d: the shape has neither a line nor a fill": "要素 %(n)d: 図形に線も塗りつぶしもありません",
+    "Set a border width first": "先に枠線の幅を設定してください",
+    "%(unit)s, with a box or frame": "%(unit)s、ボックスまたは枠がある場合",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "要素 %(n)d: 内側の余白、枠、輪郭、影のためテキストの場所がありません – 小さくしてください",
 }

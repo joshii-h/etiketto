@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "مصمت",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "العنصر %(n)d: تطبعه الطابعة بالأبيض والأسود بلون الخلفية – اختر لونًا أغمق أو أفتح",
     "Element %(n)d: the shape has neither a line nor a fill": "العنصر %(n)d: الشكل بلا خط ولا تعبئة",
+    "Set a border width first": "عيّن عرض الإطار أولًا",
+    "%(unit)s, with a box or frame": "%(unit)s، مع مربع أو إطار",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "العنصر %(n)d: لا يترك الحشو أو الإطار أو الحد الخارجي أو الظل أي مساحة للنص – قلّلها",
 }

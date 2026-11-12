@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Суцільна",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Елемент %(n)d: чорно-білий принтер надрукує його кольором тла – виберіть темніший або світліший колір",
     "Element %(n)d: the shape has neither a line nor a fill": "Елемент %(n)d: фігура не має ні лінії, ні заливки",
+    "Set a border width first": "Спершу задайте ширину рамки",
+    "%(unit)s, with a box or frame": "%(unit)s, із плашкою або рамкою",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Елемент %(n)d: внутрішній відступ, рамка, контур або тінь не залишають місця для тексту – зменште їх",
 }

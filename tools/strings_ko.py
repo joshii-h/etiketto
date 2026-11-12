@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "단색",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "요소 %(n)d: 흑백 프린터에서는 배경색으로 인쇄됩니다 – 더 어둡거나 밝은 색을 선택하세요",
     "Element %(n)d: the shape has neither a line nor a fill": "요소 %(n)d: 도형에 선도 채우기도 없습니다",
+    "Set a border width first": "먼저 테두리 두께를 설정하세요",
+    "%(unit)s, with a box or frame": "%(unit)s, 상자나 틀이 있을 때",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "요소 %(n)d: 안쪽 여백, 틀, 윤곽선 또는 그림자 때문에 텍스트 공간이 없습니다 – 더 작게 하세요",
 }

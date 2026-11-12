@@ -643,4 +643,7 @@ TRANSLATIONS = {
     "fill\x04Solid": "Padu",
     "Element %(n)d: a black-and-white printer prints it in the colour of the background – choose a darker or lighter colour": "Elemen %(n)d: pencetak hitam putih mencetaknya dalam warna latar – pilih warna yang lebih gelap atau lebih cerah",
     "Element %(n)d: the shape has neither a line nor a fill": "Elemen %(n)d: bentuk ini tiada garisan mahupun isian",
+    "Set a border width first": "Tetapkan lebar sempadan dahulu",
+    "%(unit)s, with a box or frame": "%(unit)s, dengan kotak atau bingkai",
+    "Element %(n)d: the padding, frame, outline or shadow leave no room for the text – make them smaller": "Elemen %(n)d: lapik, bingkai, garis luar atau bayang tidak meninggalkan ruang untuk teks – kecilkan nilainya",
 }
