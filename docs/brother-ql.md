@@ -76,7 +76,7 @@ is running. The answer is 32 bytes. [ref]
 | 17 | media length in mm, 0 for continuous | the loaded roll |
 | 18 | status type: `00` reply, `01` printing completed, `02` error, `04` turned off, `05` notification, `06` phase change | progress, errors |
 | 19 | phase: `00` waiting to receive, `01` printing | busy, done |
-| 25 | reserved in Brother's references; `81` with the red and black roll on a QL-8xx [assumed: reported by other projects (sklad, thermal-label docs)] | first guess for the roll |
+| 25 | reserved in Brother's references; `81` with the red and black roll on a QL-8xx [assumed: reported by other projects (sklad, thermal-label docs)] | preselects Red and black |
 
 [ref]
 
@@ -245,16 +245,20 @@ content only [spec: brother_ql's command line help], and a two-colour
 job on a plain roll fails [assumed]. Brother's status does not tell the
 rolls apart, so Etiketto:
 
-- takes the roll it remembers for this printer; else, if bit 7 of status
-  byte 25 is set, the red and black roll [assumed, see above]; else what
-  the print dialog says (Colours: Black, or Red and black);
+- takes the roll it remembers for this printer, else what the print
+  dialog says (Colours: Black, or Red and black). If bit 7 of status byte
+  25 is set, the dialog lists Red and black first, so it is preselected
+  [assumed, see above]; a wrong hint cannot lock the choice;
 - if the printer refuses the job with "replace media" before printing,
   sends it once more as the other kind on the same connection and says so
   ("Printed with Red and black, as the loaded roll needs it") [assumed:
   the refusal comes before anything is printed, and the printer takes the
   next job without a key press]. Every page of the refused job is
-  refused: everything that arrives before the answer to the retry's own
-  `ESC i S` is skipped, so those notices are not taken for the retry's;
+  refused: for the retry only, everything that arrives before the answer
+  to its own `ESC i S` is skipped, so those notices are not taken for the
+  retry's. If that answer never comes after packets were skipped, one
+  more `ESC i S` decides: an error is raised, otherwise the job counts as
+  sent;
 - remembers the roll once the printer reported a label printed; from then
   on the job follows the roll whatever the dialog says, and the dialog
   offers only what the roll prints, until a job is refused again (the

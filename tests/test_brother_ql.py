@@ -105,6 +105,8 @@ class FakeQL:
         self.red_roll = None
         self.refused = 0
         self.colour = 0  # status byte 25
+        self.answer_in_job = True  # answers the ESC i S inside a job
+        self.in_job = False
         self.buffer = b""
         self.out = b""
         self.pages: list[dict] = []
@@ -150,6 +152,7 @@ class FakeQL:
             self.nuls += 1
             return 1
         if data.startswith(ESC + b"@"):
+            self.in_job = True  # the next ESC i S is the job's own
             self.inits += 1
             self.page = self._new_page()
             return 2
@@ -176,7 +179,8 @@ class FakeQL:
             return 0
         if data[2:3] == b"S":
             self.requests += 1
-            if not self.silent:
+            in_job, self.in_job = self.in_job, False
+            if not self.silent and (self.answer_in_job or not in_job):
                 self.out += self.status()
         else:
             self.page["commands"].append(data[:size])
@@ -1442,10 +1446,17 @@ def test_status_hint_for_the_red_and_black_roll(printer):
     device.red_roll, device.colour = True, 0x81
     backend = BrotherQL()
     assert ql.parse_status(device.status()).red_roll_hint
-    assert [m.id for m in backend.query("ql.local").modes] == ["red"]
+    # the hint only preselects red and black; the dialog's choice wins
+    assert [m.id for m in backend.query("ql.local").modes] == ["red", "black"]
+    options = PrintOptions(mode="red")
+    assert (
+        backend.print_label(backend.prepare(_continuous(), options), "ql.local", options) is None
+    )
+    assert device.refused == 0
+    ql._two_color_rolls.clear()
     options = PrintOptions(mode="black")
     result = backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
-    assert result == PrintResult(mode="red", reason="roll") and device.refused == 0
+    assert result == PrintResult(mode="red", reason="roll") and device.refused == 1
     # what a printed job showed wins over the hint
     ql._two_color_rolls["ql.local"] = False
     assert [m.id for m in backend.query("ql.local").modes] == ["black"]
@@ -1458,4 +1469,38 @@ def test_ql1050_invalidates_with_350_bytes():
 def test_notices_before_the_jobs_own_answer_are_skipped():
     stale = packet(err2=0x01, status_type=0x02)  # the refused job's next page
     s = ql._Session(Chunks(stale, packet(), packet(status_type=0x01)), True)
-    assert ql._wait_done(s, None, 1) == 1
+    assert ql._wait_done(s, None, 1, sync=True) == 1
+    # a first job does not skip: the same error is its own
+    s = ql._Session(Chunks(stale, packet(), packet(status_type=0x01)), True)
+    with pytest.raises(WrongMedia):
+        ql._wait_done(s, None, 1)
+
+
+def test_retry_without_its_own_answer_asks_once_more():
+    """Packets were skipped and the job's answer never came: an error the
+    printer then reports is raised, not taken as success."""
+    notice = packet(status_type=0x06, phase=1)
+    s = ql._Session(Chunks(notice, b"", packet(err1=0x04)), True)
+    with pytest.raises(PaperJam):
+        ql._wait_done(s, None, 2, sync=True)
+    # nothing wrong when asked: as before, no notices counted means "sent"
+    s = ql._Session(Chunks(notice, b"", packet()), True)
+    assert ql._wait_done(s, None, 2, sync=True) == 0
+
+
+def test_first_job_on_a_printer_without_the_jobs_answer(printer):
+    """A printer that answers the session's status request but not the one
+    inside a job: a first job counts its notices as before."""
+    device = printer.device
+    device.answer_in_job = False
+    backend = BrotherQL()
+    options = PrintOptions(copies=3)
+    events = []
+    backend.print_label(
+        backend.prepare(_continuous(), options), "ql.local", options, events.append
+    )
+    assert device.printed() == 3 and [e.copy for e in events] == [1, 2, 3, 3]
+    device.fail_on_page = 4  # the second page of the next job
+    with pytest.raises(PaperJam) as raised:
+        backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert raised.value.params == {"printed": 1, "copies": 3}

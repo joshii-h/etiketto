@@ -709,27 +709,32 @@ def _wait_idle(s: _Session, status: Status) -> Status:
     return status
 
 
-def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> int:
-    """Count the "printing completed" notices; returns how many came.
-    Everything before the answer to the job's own status request belongs
-    to an earlier job (the notices of a refused one) and is skipped. A
+def _wait_done(
+    s: _Session, progress: ProgressCallback | None, copies: int, sync: bool = False
+) -> int:
+    """Count the "printing completed" notices; returns how many came. A
     printer that sends no notice within FIRST_NOTICE (answers to status
     requests do not count) does not report on this connection: the job
-    was sent, that has to do."""
-    done = 0
+    was sent, that has to do.
+
+    `sync` (a retry): what comes before the answer to the job's own status
+    request belongs to the refused job and is skipped. If that answer never
+    comes after packets were skipped, one more status request decides."""
+    done = skipped = 0
     deadline = _clock() + FIRST_NOTICE
-    notified = synced = False
+    notified, synced = False, not sync
     while done < copies:
         try:
             status = s.read(max(0.0, deadline - _clock()))
         except PrinterTimeout as e:
-            if not notified or _finished(s):
-                break
-            e.params.update(printed=done, copies=copies)
-            raise
+            if not synced and skipped:
+                _checked(s.poll())  # the retry's answer never came
+            _give_up(s, e, notified, done, copies)
+            break
         if not synced:
             synced = status.status_type == REPLY
             if not synced:
+                skipped += 1
                 continue
         _checked(status, done, copies)
         if status.status_type == REPLY:
@@ -742,6 +747,15 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> i
                 report_progress(progress, done + 1, copies)
     report_progress(progress, copies, copies)
     return done
+
+
+def _give_up(s: _Session, error: PrinterTimeout, notified: bool, done: int, copies: int):
+    """No more notices: fine if none ever came (the printer does not report
+    here) or the printer says it is done; else the timeout, with the labels
+    printed so far."""
+    if notified and not _finished(s):
+        error.params.update(printed=done, copies=copies)
+        raise error
 
 
 def _finished(s: _Session) -> bool:
@@ -904,7 +918,7 @@ class _BrotherQL(Backend):
             None,
             _state(status, error),
             error=error.code if error else "",
-            modes=_modes(model, media, _roll_guess(host, status)),
+            modes=_modes(model, media, _two_color_rolls.get(host), status.red_roll_hint),
             qualities=_qualities(model),
         )
         if status.media and not media:  # the other kind: the other backend fits
@@ -951,7 +965,7 @@ class _BrotherQL(Backend):
         made_for = self.label_media(image)
         media = _roll(made_for, status)
         model = self.model_for(host, status) or (WIDE if media.wide else NARROW)
-        two_color = _two_color_job(model, media, two_color, _roll_guess(host, status), options)
+        two_color = _two_color_job(model, media, two_color, _two_color_rolls.get(host), options)
         high_res = options.quality == "high" and model.high_res and not two_color
         scale = _scale(image)
         printed = self.fit(self.to_printer(image), made_for, media)
@@ -1001,7 +1015,7 @@ class _BrotherQL(Backend):
                 plan = self.plan(image, options, host, status, not plan.two_color)
                 s.drop()  # the rest of the refused job's notices
                 try:
-                    done = self._send(s, plan, options, progress)
+                    done = self._send(s, plan, options, progress, retry=True)
                 except WrongMedia:
                     _two_color_rolls.pop(host, None)  # it was something else
                     raise
@@ -1010,13 +1024,15 @@ class _BrotherQL(Backend):
             _two_color_rolls[host] = plan.two_color
         return _result(options, plan)
 
-    def _send(self, s: _Session, plan: _Plan, options: PrintOptions, progress) -> int:
+    def _send(
+        self, s: _Session, plan: _Plan, options: PrintOptions, progress, retry: bool = False
+    ) -> int:
         """Send the job; the labels the printer reports printed (0 if it
         reports nothing)."""
         copies = max(1, options.copies)
         s.send(build_job(self.job(plan, options)))
         if s.answered:
-            return _wait_done(s, progress, copies)
+            return _wait_done(s, progress, copies, sync=retry)
         report_progress(progress, copies, copies)  # sent is all we know
         return 0
 
@@ -1025,21 +1041,13 @@ def _two_color_job(
     model: Model, media: Media, wanted: bool | None, guess: bool | None, options: PrintOptions
 ) -> bool:
     """Two colours: only on the 62 mm roll of a QL-8xx; as asked by the
-    caller, else as the roll is known or guessed, else the dialog's choice."""
+    caller, else as a printed job showed the roll, else the dialog's choice
+    (which the status' hint only preselects)."""
     if not (model.two_color and media == RED_ROLL):
         return False
     if wanted is not None:
         return wanted
     return options.mode == RED.id if guess is None else guess
-
-
-def _roll_guess(host: str, status: Status | None) -> bool | None:
-    """Whether the red and black roll is loaded: what the last printed job
-    showed, else the status' hint (only ever True), else None."""
-    known = _two_color_rolls.get(host)
-    if known is None and status is not None and status.red_roll_hint:
-        return True
-    return known
 
 
 def _state(status: Status, error: PrinterError | None) -> str:
@@ -1090,14 +1098,18 @@ def _roll(made_for: Media, status: Status | None) -> Media:
 
 
 def _modes(
-    model: Model | None, media: Media | None, two_color_roll: bool | None = None
+    model: Model | None,
+    media: Media | None,
+    two_color_roll: bool | None = None,
+    hint: bool = False,
 ) -> tuple[PrintMode, ...]:
     """Red and black: a QL-8xx with the 62 mm roll (DK-22251 or plain);
-    once a job showed which roll it is, only what that roll prints."""
+    once a job showed which roll it is, only what that roll prints. The
+    status' hint for the red roll only puts it first (preselected)."""
     if not (model and model.two_color and media == RED_ROLL):
         return (BLACK,)
     if two_color_roll is None:
-        return (BLACK, RED)
+        return (RED, BLACK) if hint else (BLACK, RED)
     return (RED,) if two_color_roll else (BLACK,)
 
 
