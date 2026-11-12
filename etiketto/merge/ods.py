@@ -93,13 +93,23 @@ def _rows(zf: zipfile.ZipFile, sheets: _Sheets, stop: bool = True) -> Iterator[E
         if elem.tag == TABLE:
             if sheets.table(event, elem) and stop:
                 return
-            tags = 0 if sheets.depth == 1 and event == "start" else tags
+            tags = _sheet_start(sheets, event, tags)
         elif event == "end" and elem.tag == ROW:
-            tags += 1
-            if tags > limits.MAX_ROW_TAGS:
-                raise too_large("more than %d rows" % limits.MAX_ROW_TAGS)
+            tags = _counted(tags)
             if sheets.selected and sheets.depth == 1:
                 yield elem
+
+
+def _sheet_start(sheets: _Sheets, event: str, tags: int) -> int:
+    """The row count starts again with each sheet."""
+    return 0 if sheets.depth == 1 and event == "start" else tags
+
+
+def _counted(tags: int) -> int:
+    tags += 1
+    if tags > limits.MAX_ROW_TAGS:
+        raise too_large("more than %d rows" % limits.MAX_ROW_TAGS)
+    return tags
 
 
 def _cells(row: ET.Element) -> list[str]:

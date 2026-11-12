@@ -1026,13 +1026,13 @@ def test_padding_larger_than_the_tape_warns():
 
 def test_adjusting_a_photo_uses_the_cached_scaled_image():
     data = b64(Image.new("RGB", (1200, 800), "grey"))
-    render_module._scaled_cut.cache_clear()
+    render_module._scaled_cut_cached.cache_clear()
     element = ImageElement(data=data, rotation=90)
     render_image(element, 60)
     for brightness in (10, 20, 30):
         element.brightness = brightness
         render_image(element, 60)
-    info = render_module._scaled_cut.cache_info()
+    info = render_module._scaled_cut_cached.cache_info()
     assert info.misses == 1 and info.hits == 3
 
 

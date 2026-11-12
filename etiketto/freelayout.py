@@ -228,14 +228,16 @@ def render(
     inks = _inks(label, mono, red)
     frame = flow._frame(label, dpi, safe_mm, raster[0], raster[1], [])
     shortest = mm_to_px(min_length_mm, dpi) if min_length_mm > 0 else 1
+    flow._source_budget(label)
     images, places, rooms, length = _drawn(label, frame, (dpi, inks, steps), shortest, warnings)
     # a fixed length is the user's, though rounded to whole pixel pairs
     # (as render.render())
     user_length = not label.auto_length and label.length_mm >= min_length_mm
     length += -length % steps[0]
+    flow.check_label(length, frame.tape + 2 * frame.bleed, dpi)
     nominal = mm_to_px(label.tape_mm, dpi)
     top = frame.bleed + (frame.tape - nominal) // 2
-    warnings += flow._code_warnings(label, images)
+    warnings += flow._code_warnings(label, images, dpi)
     warnings += _warnings(label, images, places, (length, nominal), top)
     img = flow._canvas(label, (length, frame.tape + 2 * frame.bleed), warnings)
     if mono:
@@ -267,6 +269,7 @@ def _drawn(label: Label, frame, how, shortest: int, warnings):
     ]
     places = [_place(part, origin, steps) for part, origin in zip(parts, origins, strict=True)]
     images = [part.image for part in parts]
+    flow._check_budget(sum(i.width * i.height for i in images), "elements")
     if label.auto_length:
         right = max((x + i.width for i, (x, _y) in zip(images, places, strict=True)), default=0)
         length = max(shortest, right + frame.margin + frame.frame)  # as in the flow
@@ -288,6 +291,8 @@ def _part(element: Element, index: int, room, how, warnings) -> Part:
     dpi, inks, steps = how
     try:
         return element_part(element, dpi, inks, room, steps)
+    except flow.RenderTooLarge:
+        raise
     except Exception as e:  # noqa: BLE001 - show any element error, keep going
         warnings.append(flow._element_warning(element, index, e))
         return Part(flow._placeholder(mm_to_px(FREE_SIZE_MM, dpi)))
@@ -357,6 +362,8 @@ def _again(element: Element, image: Image.Image, how, room) -> Image.Image:
     dpi, inks, steps = how
     try:
         drawn = element_part(element, dpi, inks, room, steps).image
+    except flow.RenderTooLarge:
+        raise
     except Exception:  # noqa: BLE001 - it was drawn before: keep that
         return image
     return drawn if drawn.size == image.size else image

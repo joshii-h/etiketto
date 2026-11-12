@@ -283,20 +283,29 @@ def print_series(
         # the counter goes on from the labels before; UUID and ID are new
         start = replace(values, counter=values.counter + values.step * outcome.labels)
         job = Job(backend, series.label, series.options, series.safe_mm, start, series.rows[index])
-        try:
-            # queued, not confirmed or another mode on any row: the series says so
-            outcome.result = merge_results([outcome.result, job.run(host, report)])
-        except PrepareFailed as e:
-            cause = e.__cause__ if isinstance(e.__cause__, Exception) else e
-            raise SeriesError(row, list(outcome.printed), cause, True, outcome, job.printed) from e
-        except Exception as e:  # noqa: BLE001 - the interface maps PrinterError codes
-            raise SeriesError(row, list(outcome.printed), e, False, outcome, job.printed) from e
-        finally:  # also after Ctrl+C: the labels sent used their numbers
-            outcome.labels += job.printed
-            if counting:
-                outcome.counter = values.counter + values.step * outcome.labels
+        _print_row(job, host, report, row, outcome, values if counting else None)
         outcome.printed.append(row)
     return outcome
+
+
+def _print_row(
+    job: Job, host: str, report, row: int, outcome: SeriesResult, values: Values | None
+) -> None:
+    """One row's job; a failure as SeriesError. The counter (`values`, None
+    for a label without one) goes on by the labels printed, also after a
+    failure or Ctrl+C: the labels sent used their numbers."""
+    try:
+        # queued, not confirmed or another mode on any row: the series says so
+        outcome.result = merge_results([outcome.result, job.run(host, report)])
+    except PrepareFailed as e:
+        cause = e.__cause__ if isinstance(e.__cause__, Exception) else e
+        raise SeriesError(row, list(outcome.printed), cause, True, outcome, job.printed) from e
+    except Exception as e:  # noqa: BLE001 - the interface maps PrinterError codes
+        raise SeriesError(row, list(outcome.printed), e, False, outcome, job.printed) from e
+    finally:
+        outcome.labels += job.printed
+        if values is not None:
+            outcome.counter = values.counter + values.step * outcome.labels
 
 
 # --- serial labels on label sheets ---------------------------------------------------

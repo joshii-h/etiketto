@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import contextlib
 import gettext
 import sys
+from collections.abc import Iterator
+from contextvars import ContextVar
+from functools import lru_cache
 from pathlib import Path
 
 
@@ -21,12 +25,75 @@ def _locale_dir() -> Path:
 
 LOCALE_DIR = _locale_dir()
 TRANSLATION = gettext.translation("etiketto", LOCALE_DIR, fallback=True)
-_ = TRANSLATION.gettext
+# the server answers each request in the language it asks for (see
+# language()); everywhere else this stays None: the system language
+_ACTIVE: ContextVar[gettext.NullTranslations | None] = ContextVar("translation", default=None)
+
+
+def _catalog():
+    return _ACTIVE.get() or TRANSLATION
+
+
+def _(message: str) -> str:
+    return _catalog().gettext(message)
 
 
 def pgettext(context: str, message: str) -> str:
     """A translation with context, for words with several meanings ("May")."""
-    return TRANSLATION.pgettext(context, message)
+    return _catalog().pgettext(context, message)
+
+
+def _quality(params: str) -> float:
+    """The weight of a language range: "q=0.8" -> 0.8, none -> 1."""
+    params = params.strip()
+    if not params.startswith("q="):
+        return 1.0
+    try:
+        return float(params[2:])
+    except ValueError:
+        return 0.0
+
+
+def accepted_languages(header: str) -> list[str]:
+    """The languages of an HTTP Accept-Language header as gettext names
+    ("de-CH;q=0.9" -> "de_CH"), the preferred first. English is the
+    language of the texts themselves: the list ends there, so "en, de"
+    gives English and not the German catalog that exists."""
+    ranked = []
+    for position, part in enumerate(header.split(",")[:20]):
+        tag, _sep, params = part.strip().partition(";")
+        tag, quality = tag.strip(), _quality(params)
+        if tag and tag != "*" and quality > 0 and tag.replace("-", "").isalnum():
+            ranked.append((-quality, position, tag.split("-")))
+    languages = []
+    for *_order, parts in sorted(ranked):
+        if parts[0].lower() == "en":
+            break
+        region = [p.upper() for p in parts[1:] if len(p) == 2][:1]
+        languages.append("_".join([parts[0].lower()] + region))
+    return languages
+
+
+@lru_cache(maxsize=64)
+def translation_for(languages: tuple[str, ...]) -> gettext.NullTranslations:
+    """The catalog for the first of these languages there is one for."""
+    if not languages:
+        return gettext.NullTranslations()
+    return gettext.translation("etiketto", LOCALE_DIR, languages=list(languages), fallback=True)
+
+
+@contextlib.contextmanager
+def language(header: str | None) -> Iterator[None]:
+    """Translate into the languages of an Accept-Language header while
+    the block runs, in this thread only; None: the system language."""
+    if header is None:
+        yield
+        return
+    token = _ACTIVE.set(translation_for(tuple(accepted_languages(header))))
+    try:
+        yield
+    finally:
+        _ACTIVE.reset(token)
 
 
 RTL_LANGUAGES = {"ar", "he", "fa", "ur"}

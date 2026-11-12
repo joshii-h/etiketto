@@ -24,6 +24,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from fake_backends import FakeMono
 from gi.repository import Gio, GLib
 from PIL import Image, ImageChops
 
@@ -41,7 +42,7 @@ from etiketto.backends import (
     vc500w,
 )
 from etiketto.backends.base import PrinterInfo, Progress
-from etiketto.model import Label
+from etiketto.model import Label, TextElement
 
 
 def _png_b64(size=(20, 10), color="red", mode="RGB", fmt="PNG", exif=None) -> str:
@@ -444,3 +445,92 @@ def render_now(win) -> None:
 
 def toast_titles(win) -> list[str]:
     return [t.get_title() for t in win.toast_log]
+
+
+# --- the print server ----------------------------------------------------------
+
+
+class ServerPrinter(FakeMono):
+    """The fake printer of the server tests: `gate` holds a print until it
+    is set, `started` tells that one began."""
+
+    def __init__(self):
+        super().__init__()
+        self.gate: threading.Event | None = None
+        self.started = threading.Event()
+
+    def print_label(self, image, host, options, progress=None):
+        self.started.set()
+        if self.gate is not None:
+            assert self.gate.wait(10), "the test never opened the gate"
+        return super().print_label(image, host, options, progress)
+
+
+@pytest.fixture
+def server_env(monkeypatch, tmp_path):
+    """A fake printer registered, the real ones unable to reach anything,
+    settings and labels folder in tmp_path, a label "box" in it."""
+    from etiketto.backends import backends, register, unregister
+    from etiketto.ui import settings as config
+
+    def refuse(*_args, **_kwargs):
+        raise AssertionError("a real printer was contacted in a test")
+
+    for backend in backends():
+        monkeypatch.setattr(backend, "discover", lambda timeout=3.0: [])
+        monkeypatch.setattr(backend, "query", refuse)
+        monkeypatch.setattr(backend, "print_label", refuse)
+    monkeypatch.setattr(config, "CONFIG_DIR", tmp_path / "config")
+    monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
+    printer = ServerPrinter()
+    register(printer)
+    labels = tmp_path / "labels"
+    labels.mkdir()
+    Label(
+        printer="fake-mono",
+        tape_mm=12,
+        elements=[TextElement(text="Box {=counter}", name="title")],
+    ).save(labels / "box.etiketto")
+    yield SimpleNamespace(printer=printer, labels=labels, tmp=tmp_path)
+    unregister(printer.id)
+
+
+@pytest.fixture
+def make_server(server_env):
+    """Factory: an HTTP server on 127.0.0.1 and a free port, in a thread;
+    returns (server, base URL). Stopped after the test."""
+    from etiketto.server.http import Config, Server
+    from etiketto.server.service import Service
+    from etiketto.ui.settings import Settings
+
+    servers = []
+
+    def factory(
+        token=None, mcp=True, settings=None, allowed=(), printers=None, discover=False, **config
+    ):
+        data = (
+            settings
+            if settings is not None
+            else {"printers": {"fake-mono": {"host": "mono.local"}}}
+        )
+        service = Service(
+            server_env.labels,
+            allowed,
+            settings=lambda: Settings(dict(data)),
+            printers=printers,
+            discover=discover,
+        )
+        server = Server(Config("127.0.0.1", 0, token, mcp, **config), service)
+        thread = threading.Thread(
+            target=server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True
+        )
+        thread.start()
+        servers.append((server, thread))
+        return server, "http://127.0.0.1:%d" % server.server_address[1]
+
+    yield factory
+    for server, thread in servers:
+        server.shutdown()
+        server.server_close()
+        server.service.close(timeout=5)
+        thread.join(5)

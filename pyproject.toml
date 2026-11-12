@@ -32,7 +32,7 @@ dependencies = [
 # install with a venv that has --system-site-packages (see install.sh).
 
 [project.scripts]
-etiketto = "etiketto.cli:main"
+etiketto = "etiketto.launch:main"
 
 [tool.setuptools.packages.find]
 include = ["etiketto*"]

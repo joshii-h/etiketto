@@ -196,11 +196,15 @@ class Builder:
         if self._width * sum(count for _cells, count in rest) > limits.MAX_CELLS:
             raise too_large("more than %d cells (rows times columns)" % limits.MAX_CELLS)
         columns = column_names(self._padded(header))
+        return Table(columns, self._records(columns, rest))
+
+    def _records(self, columns: list[str], rest) -> list[dict[str, str]]:
+        """The data rows as column -> value, repeated rows each on their own."""
         rows: list[dict[str, str]] = []
         for cells, count in rest:
             values = dict(zip(columns, self._padded(cells), strict=True))
             rows.extend(dict(values) for _ in range(count))
-        return Table(columns, rows)
+        return rows
 
     def _padded(self, cells: list[str]) -> list[str]:
         return cells + [""] * (self._width - len(cells))

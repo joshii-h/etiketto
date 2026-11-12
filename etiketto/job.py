@@ -10,6 +10,7 @@ same image, or from one render per position.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable, Iterator, Mapping
 from dataclasses import replace
 from datetime import datetime
@@ -110,6 +111,7 @@ class Job:
         self.positions = positions
         self.position: int | None = None  # on sheets: the position being rendered
         self.printed = 0
+        self.stopped = False  # run() ended early because `stop` was set
         # the first label is filled in once: its UUID is the same in the
         # check and the print; the others are made as they are needed, a
         # job of many copies does not keep them all
@@ -188,8 +190,17 @@ class Job:
             raise PrepareFailed(str(e)) from e
         return image, dpi
 
-    def run(self, host: str, progress: ProgressCallback | None = None) -> PrintResult | None:
+    def run(
+        self,
+        host: str,
+        progress: ProgressCallback | None = None,
+        stop: threading.Event | None = None,
+    ) -> PrintResult | None:
         """Print; raises PrepareFailed or the backend's PrinterError.
+
+        `stop` is looked at between two copies sent one by one: the copy
+        being printed is finished, the first one too; `stopped` tells.
+        Copies the printer makes of one render cannot be stopped.
 
         `printed` counts the labels that came out: those sent before a
         failure, and those a backend reports in PrinterError.params
@@ -208,6 +219,9 @@ class Job:
         single = replace(self.options, copies=1)
         results = []
         for copy, label in self.labels():
+            if self.printed and stop is not None and stop.is_set():
+                self.stopped = True
+                break
             progress_of_copy = self._progress(progress, copy)
             results.append(self._send(self.image(label), label, host, single, progress_of_copy))
         return merge_results(results)

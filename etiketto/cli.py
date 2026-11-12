@@ -4,6 +4,8 @@
     etiketto print FILE [options]    print a label file
     etiketto print FILE --data ROWS  one label for each row of a data file
     etiketto list-printers           printers found on the network
+    etiketto serve [options]         print server: REST API, MCP (server/)
+    etiketto mcp [options]           MCP on stdin/stdout, for AI clients
     etiketto --version, --help
 
 Printing needs no display: rendering uses Pango and Cairo, not GTK, and
@@ -80,7 +82,8 @@ from etiketto.ui.texts import (
 from etiketto.units import unit_for
 from etiketto.variables import BUILTIN, Values, label_names
 
-COMMANDS = ("print", "list-printers", "--version", "--help", "-h")
+COMMANDS = ("print", "list-printers", "serve", "mcp", "token", "--version", "--help", "-h")
+DEFAULT_PORT = 8790
 
 EXIT_OK = 0
 EXIT_PRINTER = 1  # the printer cannot be reached or reports a problem; none found
@@ -142,13 +145,23 @@ def _rows(text: str) -> tuple[int, int]:
     from 1, both included."""
     match = _ROWS.match(text)
     first, dash, last = match.groups() if match else ("", "", "")
-    if not match or not (first or last) or (not dash and not first):
-        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+    if not (first or last) or (not dash and not first):  # also no match at all
+        raise _rows_error(text)
     start = int(first) if first else 1
-    end = int(last) if last else (ALL_ROWS if dash else start)
+    end = _row_end(last, dash, start)
     if start < 1 or end < start:
-        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+        raise _rows_error(text)
     return start, end
+
+
+def _row_end(last: str, dash: str, start: int) -> int:
+    if last:
+        return int(last)
+    return ALL_ROWS if dash else start
+
+
+def _rows_error(text: str) -> argparse.ArgumentTypeError:
+    return argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -267,7 +280,163 @@ def parser() -> argparse.ArgumentParser:
         description=_("List the printers found on the network: model, address, name."),
     )
     listing.add_argument("--printer", metavar="ID", help=_("only this printer model: %s") % ids)
+    _server_parsers(commands)
     return parser
+
+
+def _network(text: str):
+    import ipaddress
+
+    try:
+        return ipaddress.ip_network(text.strip(), strict=False)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            _("expected an address or network such as 172.16.0.0/12: %s") % text
+        ) from None
+
+
+def _server_options(command: argparse.ArgumentParser) -> None:
+    """What `serve` and `mcp` share: where the labels are, which printers."""
+    command.add_argument(
+        "--labels-dir",
+        metavar="DIR",
+        type=Path,
+        help=_("the folder with the label files the server may use"),
+    )
+    command.add_argument(
+        "--allow-printer",
+        metavar="ADDR",
+        action="append",
+        default=[],
+        help=_("only print on this printer address (* matches anything); repeatable"),
+    )
+    command.add_argument(
+        "--printers",
+        metavar="FILE",
+        type=Path,
+        help=_("printers.toml: the printers clients may use, by name"),
+    )
+    command.add_argument(
+        "--max-labels",
+        metavar="N",
+        type=_number(1, 10**7),
+        default=10_000,
+        help=_("most labels in one print job, copies times rows (default 10000)"),
+    )
+    command.add_argument(
+        "--discover",
+        action="store_true",
+        help=_("search the network for printers (off by default)"),
+    )
+
+
+def _server_parsers(commands) -> None:
+    serve = commands.add_parser(
+        "serve",
+        help=_("run a print server with a REST API"),
+        description=_("Run a print server: a REST API and, with --mcp, MCP for AI clients."),
+    )
+    serve.add_argument(
+        "--host", default="127.0.0.1", help=_("address to listen on (default 127.0.0.1)")
+    )
+    serve.add_argument(
+        "--port",
+        type=_number(0, 65535),
+        default=DEFAULT_PORT,
+        help=_("port to listen on (default %d)") % DEFAULT_PORT,
+    )
+    serve.add_argument(
+        "--token-file",
+        metavar="FILE",
+        type=Path,
+        help=_("file with the access token; else the environment variable ETIKETTO_TOKEN"),
+    )
+    serve.add_argument(
+        "--tokens",
+        metavar="FILE",
+        type=Path,
+        help=_("tokens.toml: named access tokens with roles"),
+    )
+    serve.add_argument("--mcp", action="store_true", help=_("also serve MCP at /mcp"))
+    serve.add_argument(
+        "--max-body",
+        metavar="MB",
+        type=_number(1, 64),
+        default=4,
+        help=_("largest request body in MB (default 4)"),
+    )
+    serve.add_argument(
+        "--trusted-proxy",
+        metavar="CIDR",
+        type=_network,
+        action="append",
+        default=[],
+        help=_(
+            "a reverse proxy whose X-Forwarded-For header names the client, e.g. "
+            "172.16.0.0/12; repeatable"
+        ),
+    )
+    serve.add_argument(
+        "--allow-origin",
+        metavar="URL",
+        action="append",
+        default=[],
+        help=_("allow requests from web pages of this origin; repeatable"),
+    )
+    _server_options(serve)
+    mcp = commands.add_parser(
+        "mcp",
+        help=_("serve MCP on standard input and output"),
+        description=_(
+            "Serve MCP on standard input and output, for AI clients such as Claude Desktop."
+        ),
+    )
+    _server_options(mcp)
+    _token_parser(commands)
+
+
+def _token_parser(commands) -> None:
+    token = commands.add_parser(
+        "token",
+        help=_("manage the access tokens of the print server"),
+        description=_("Manage the access tokens of the print server."),
+    )
+    actions = token.add_subparsers(dest="action", required=True, metavar="ACTION")
+    new = actions.add_parser(
+        "new",
+        help=_("make a token and add its hash to tokens.toml"),
+        description=_("Make a token, add its hash to tokens.toml and show the token once."),
+    )
+    new.add_argument("name", metavar="NAME", help=_("name of the token, e.g. the device"))
+    new.add_argument(
+        "--role",
+        choices=("preview", "print", "admin"),
+        default="print",
+        help=_("preview: look only; print: also print; admin: also all jobs"),
+    )
+    new.add_argument("--tokens", metavar="FILE", type=Path, help=_("tokens.toml to add it to"))
+    new.add_argument(
+        "--printer",
+        metavar="NAME",
+        action="append",
+        default=[],
+        help=_("only this printer of printers.toml; repeatable"),
+    )
+    new.add_argument(
+        "--printers", metavar="FILE", type=Path, help=_("printers.toml, to check --printer")
+    )
+    new.add_argument("--expires", metavar="DATE", help=_("valid until, e.g. 2027-12-31"))
+    new.add_argument("--description", metavar="TEXT", help=_("a note for people"))
+    new.add_argument(
+        "--scrypt", action="store_true", help=_("store the hash with scrypt instead of SHA-256")
+    )
+    new.add_argument(
+        "--from-stdin",
+        action="store_true",
+        help=_(
+            "take a token you chose from standard input (stored with scrypt) instead of making one"
+        ),
+    )
 
 
 # --- print ------------------------------------------------------------------
@@ -327,30 +496,35 @@ def apply_assignments(
     The element texts are set first: a variable used only in a new text
     (--set title="Lot {=lot}" --set lot=7) can be given too."""
     overrides = Overrides()
-    rest = []
-    for assignment in assignments:
-        name, value, literal = assignment
-        # "{=" as it is, in a text (a variable's value is never filled in).
-        # Only a text with "{=" is expanded at all, or every text of a
-        # serial label (`serial`): other braces ('{"a":1}' in a QR code)
-        # stay as they are and must not be doubled.
-        if literal and ("{=" in value or (serial and ("{" in value or "}" in value))):
-            value = value.replace("{", "{{").replace("}", "}}")
-        if not _set_element(label, name, value):
-            rest.append(assignment)
+    rest = [a for a in assignments if not _set_element(label, a.name, _escaped(a, serial))]
     used = label_names(label)
     for name, value, _literal in rest:
-        if name == "date":
-            _set_date(overrides, value)
-        elif name in BUILTIN:
-            raise CliError(
-                _("{=%s} is filled in when printing and cannot be set") % name, EXIT_USAGE
-            )
-        elif name in used:
-            overrides.custom[name] = value  # a value is never filled in itself
-        else:
-            raise CliError(_("The label has no element or variable named %s") % name, EXIT_USAGE)
+        _set_variable(overrides, used, name, value)
     return overrides
+
+
+def _escaped(assignment: Assignment, serial: bool) -> str:
+    """The value of --set-literal with its braces doubled where they would
+    be read: "{=" as it is, in a text (a variable's value is never filled
+    in). Only a text with "{=" is expanded at all, or every text of a
+    serial label (`serial`): other braces ('{"a":1}' in a QR code) stay as
+    they are and must not be doubled."""
+    value = assignment.value
+    braces = "{" in value or "}" in value
+    if assignment.literal and ("{=" in value or (serial and braces)):
+        return value.replace("{", "{{").replace("}", "}}")
+    return value
+
+
+def _set_variable(overrides: Overrides, used: set[str], name: str, value: str) -> None:
+    if name == "date":
+        _set_date(overrides, value)
+    elif name in BUILTIN:
+        raise CliError(_("{=%s} is filled in when printing and cannot be set") % name, EXIT_USAGE)
+    elif name in used:
+        overrides.custom[name] = value  # a value is never filled in itself
+    else:
+        raise CliError(_("The label has no element or variable named %s") % name, EXIT_USAGE)
 
 
 # what would print a label other than meant: a variable as text, or without
@@ -365,6 +539,7 @@ REFUSED = frozenset(
         "element_failed",
         "image_unreadable",
         "background_unreadable",
+        "code128_long",  # wider than any label; refused for serial labels too
     }
 )
 
@@ -782,14 +957,7 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
     [] for a label without one. A data file the label names is read only
     if it lies in the label's folder (as the window does without asking):
     a label from elsewhere could name any file."""
-    path = args.data
-    if path is None and label.data_file:
-        if not data_inside(label.data_file, args.file):
-            raise CliError(
-                _("The label uses a data file outside its folder: give it with --data"),
-                EXIT_USAGE,
-            )
-        path = Path(label.data_file)
+    path = _data_path(args, label)
     if path is None:
         if args.sheet or args.rows:
             raise CliError(_("--sheet and --rows need a data file (--data)"), EXIT_USAGE)
@@ -797,6 +965,28 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
     own = label.data_file and Path(label.data_file).resolve() == path.resolve()
     # the label's sheet goes with its own data file, also given with --data
     sheet = args.sheet or (label.data_sheet if own else "")
+    rows = _read_rows(path, sheet, bool(args.sheet))
+    first, last = args.rows or (1, ALL_ROWS)
+    indexes = list(row_span(first, last, len(rows)))
+    if not indexes:
+        raise CliError(_("No rows to print"), EXIT_USAGE)
+    return rows, indexes
+
+
+def _data_path(args, label: Label) -> Path | None:
+    """--data, else the label's own data file if it lies in its folder."""
+    if args.data is not None or not label.data_file:
+        return args.data
+    if not data_inside(label.data_file, args.file):
+        raise CliError(
+            _("The label uses a data file outside its folder: give it with --data"),
+            EXIT_USAGE,
+        )
+    return Path(label.data_file)
+
+
+def _read_rows(path: Path, sheet: str, asked: bool) -> list[dict[str, str]]:
+    """The rows of the sheet; `asked`: the sheet was given with --sheet."""
     try:
         book = read_book(path, sheet)
     except (OSError, MergeError) as e:
@@ -804,16 +994,11 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
     # never another sheet than the one asked for; a CSV file has no sheets:
     # a sheet saved with the label (the file was a spreadsheet once) is
     # ignored, one given with --sheet is refused
-    if sheet and not book.sheets and not args.sheet:
+    if sheet and not book.sheets and not asked:
         sheet = ""
     if sheet and book.sheet != sheet:
         raise CliError(data_error_text(MergeError("no_sheet", sheet), _name(path)), EXIT_USAGE)
-    rows = book.table.rows
-    first, last = args.rows or (1, ALL_ROWS)
-    indexes = list(row_span(first, last, len(rows)))
-    if not indexes:
-        raise CliError(_("No rows to print"), EXIT_USAGE)
-    return rows, indexes
+    return book.table.rows
 
 
 def _check_rows(series: Series) -> None:
@@ -1011,6 +1196,11 @@ def run(argv: list[str]) -> int:
     try:
         if args.command == "print":
             return print_command(args)
+        if args.command in ("serve", "mcp", "token"):
+            from etiketto.server import main as server
+
+            run = {"serve": server.serve, "mcp": server.mcp, "token": server.token_new}
+            return run[args.command](args)
         return list_command(args)
     except CliError as e:
         _say(str(e))

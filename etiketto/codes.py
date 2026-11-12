@@ -111,12 +111,18 @@ def gs1_check_digit(digits: str) -> int:
     return (10 - total % 10) % 10
 
 
+# longer Code 128 codes are wider than any label and no scanner reads them
+CODE128_MAX = 200
+
+
 def check(element: CodeElement) -> None:
     """Raise CodeError for content that cannot be encoded as it is: the
     libraries would drop or change characters, or correct a check digit."""
     data, symbology = element.data, element.symbology
     if not data:
         raise CodeError("code_empty")
+    if symbology == "code128" and len(data) > CODE128_MAX:
+        raise CodeError("code128_long", max=CODE128_MAX)
     try:
         data.encode("utf-8")
     except UnicodeEncodeError:  # a lone surrogate: no text a code can carry

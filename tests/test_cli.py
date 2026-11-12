@@ -1356,3 +1356,12 @@ def test_a_roll_with_another_label_distance_gets_a_hint(cab_cli, capsys):
     cab_cli.info.pitch_mm = None  # not synchronised: nothing to compare
     assert run("print", cab_cli.path) == 0
     assert "measured" not in err(capsys)
+
+
+def test_print_refuses_a_code_128_too_long(mono, label_file, capsys):
+    from etiketto.render import CODE128_MAX
+
+    path = label_file(CodeElement(data="A" * (CODE128_MAX + 1), symbology="code128"))
+    assert run("print", path, "--host", "mono.local") == cli.EXIT_LABEL
+    assert "Code 128" in err(capsys)
+    assert mono.jobs == []

@@ -62,6 +62,9 @@ CODE_WARNINGS = ("code_too_big", "code_quiet", "code_thin")
 ROWS_LISTED = 20  # rows named in a message; more are "…"
 
 
+REFUSED_CODES = frozenset({"code128_long"})
+
+
 class PrintFlow:
     """From the Print button to the result: checks, dialog, job, progress."""
 
@@ -101,13 +104,7 @@ class PrintFlow:
         window.render_if_stale()
         if not window.rendered:  # the render failed: its message is shown
             return
-        if not window.label.elements and not window.label.background_image:
-            window.toast(_("The label is empty"))
-            return
-        if window.label.sheet and not window.sheet:
-            window.toast(_("This label sheet is unknown to this version – choose another one"))
-            return
-        if problem := self._data_problem():
+        if problem := self._refusal():
             window.toast(problem)
             return
         if tape := window.printer.other_tape():
@@ -118,6 +115,21 @@ class PrintFlow:
             self._wrong_labels_dialog(pitch)
         else:
             self.dialog()
+
+    def _refusal(self) -> str | None:
+        """Why the label cannot be printed at all, if it cannot."""
+        window = self.window
+        if not window.label.elements and not window.label.background_image:
+            return _("The label is empty")
+        if window.label.sheet and not window.sheet:
+            return _("This label sheet is unknown to this version – choose another one")
+        if problem := self._data_problem():
+            return problem
+        # a code no scanner could read, refused as for serial labels, the
+        # command line and the print server
+        assert window.rendered is not None
+        refused = [w for w in window.rendered.warnings if w.key in REFUSED_CODES]
+        return warning_text(refused[0]) if refused else None
 
     def _data_problem(self) -> str | None:
         """Why a linked data file cannot be printed from: a label with its

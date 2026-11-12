@@ -8,9 +8,11 @@ image width matches the tape width, which is what the printer expects.
 from __future__ import annotations
 
 import base64
+import contextlib
 import io
 import math
-from collections.abc import Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextvars import ContextVar
 from dataclasses import dataclass, field, fields, replace
 from functools import lru_cache, partial
 from types import MappingProxyType
@@ -48,11 +50,72 @@ class RenderWarning(NamedTuple):
     pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
     outside_label (the free layout), background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
     etiketto.codes.CodeError; codes that may not scan or do not fit:
-    code_thin, code_quiet, code_too_big)."""
+    code_thin, code_quiet, code_too_big, barcode_narrow; code128_long: a Code 128 longer
+    than CODE128_MAX characters)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
     params: Mapping[str, object] = MappingProxyType({})
+
+
+class RenderTooLarge(ValueError):
+    """An image would exceed the limits set with limited()."""
+
+
+@dataclass(frozen=True)
+class Limits:
+    pixels: int  # of any one image made while rendering
+    max_length_mm: float | None = None  # of the label, if the printer has a limit
+    # what every render within these limits holds while it runs (the
+    # server's render slots, so print jobs share them with previews)
+    slot: Callable[[], contextlib.AbstractContextManager] | None = None
+
+    @property
+    def image_pixels(self) -> int:
+        """Image files decoded at most, together: a decoded RGBA image is
+        held while it is drawn, so less than the drawing budget."""
+        return self.pixels // 2
+
+
+# Untrusted labels (the print server) are rendered within limits: a text of
+# thousands of lines or a tiny PNG that unpacks to gigapixels must fail,
+# not fill the memory. The window and the command line render without.
+_LIMITS: ContextVar[Limits | None] = ContextVar("render_limits", default=None)
+
+
+@contextlib.contextmanager
+def limited(
+    pixels: int,
+    max_length_mm: float | None = None,
+    slot: Callable[[], contextlib.AbstractContextManager] | None = None,
+) -> Iterator[None]:
+    """Render within limits in this thread while the block runs; images
+    are then decoded without the caches (they would keep large ones).
+    `slot()` is held by every render meanwhile."""
+    token = _LIMITS.set(Limits(pixels, max_length_mm, slot))
+    try:
+        yield
+    finally:
+        _LIMITS.reset(token)
+
+
+def check_size(width: int, height: int) -> None:
+    """Within limits: an image of this size may be made (RenderTooLarge)."""
+    limits = _LIMITS.get()
+    if limits is not None and width * height > limits.pixels:
+        raise RenderTooLarge("%d x %d pixels" % (width, height))
+
+
+_check_size = check_size
+
+
+def warm_up() -> None:
+    """Draw a small text once. PyGObject sets up Pango's types on first use,
+    and that is not safe in several threads at once (texts then failed
+    until a restart): the server calls this in its main thread before any
+    request or print job renders. (The window renders in the main thread,
+    where GTK has set up Pango already.)"""
+    _text_block(TextElement(text="x"), 10)
 
 
 class ElementError(ValueError):
@@ -112,7 +175,8 @@ def _text_block(
     wrap_px: int | None = None,
 ) -> Image.Image:
     """Lay out text with Pango (font fallback, emoji, kerning) into RGBA;
-    without anti-aliasing every pixel is either ink or not (typeset.block)."""
+    without anti-aliasing every pixel is either ink or not (typeset.block;
+    within limits a text of thousands of lines fails there)."""
     return typeset.block(element, size_px, dpi, antialias, wrap_px)
 
 
@@ -304,34 +368,106 @@ def _largest(fits, low: float, high: float) -> float:
 
 # Decoding a large photo (base64 + EXIF + resample) takes far longer than the
 # rest of a render; cache it so typing in a text field stays smooth.
-Image.MAX_IMAGE_PIXELS = 80_000_000  # refuse decompression bombs early
+# Refuse decompression bombs early: checked by _opened() itself, so Pillow's
+# own check (a warning from 80 MP, an error from twice that) is turned off;
+# a warning filter to keep it quiet would not be safe in threads.
+IMAGE_FILE_PIXELS = 80_000_000
+Image.MAX_IMAGE_PIXELS = None
+# image files a label may embed: what Pillow decodes itself, quickly. Not
+# EPS (Ghostscript would run it), not ICO/ICNS/CUR (decoded when opened,
+# before their size can be checked), not the dozens of rarer formats.
+IMAGE_FORMATS = ("PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF")
+# within limits: decoded images of the render running in this thread,
+# each image once however often the label uses it; never kept afterwards
+_RENDER_CACHE: ContextVar[dict | None] = ContextVar("render_cache", default=None)
 
 
-@lru_cache(maxsize=8)
-def _decoded(data: str) -> Image.Image:
-    with Image.open(io.BytesIO(base64.b64decode(data))) as src:
-        return ImageOps.exif_transpose(src).convert("RGBA")
+@contextlib.contextmanager
+def _opened(data: str) -> Iterator[Image.Image]:
+    """An image file opened: only the common formats, and refused when it
+    would unpack to more than IMAGE_FILE_PIXELS."""
+    with Image.open(io.BytesIO(base64.b64decode(data)), formats=IMAGE_FORMATS) as src:
+        if src.width * src.height > IMAGE_FILE_PIXELS:
+            raise Image.DecompressionBombError("%d x %d pixels" % src.size)
+        yield src
 
 
-@lru_cache(maxsize=16)
-def _scaled(data: str, height: int) -> Image.Image:
+def image_size(data: str) -> tuple[int, int]:
+    """Width and height of an image file, from its header (EXIF
+    orientation not applied): nothing is decoded."""
+    with _opened(data) as src:
+        return src.size
+
+
+def _decode(data: str) -> Image.Image:
+    with _opened(data) as src:
+        _check_size(*src.size)  # before anything is unpacked
+        image = ImageOps.exif_transpose(src)
+        _check_size(*image.size)  # a format may know its size only now
+        return image.convert("RGBA")
+
+
+def _scale(data: str, height: int) -> Image.Image:
     img = _decoded(data)
     width = max(1, round(img.width * height / img.height))
+    _check_size(width, height)
     return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
 # a large photo: cropped and turned once (cheap), then scaled to the label,
 # then adjusted at that size, not at its own
-@lru_cache(maxsize=2)
-def _cut(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) -> Image.Image:
+def _cut_image(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) -> Image.Image:
     return imagefx.turned(imagefx.cropped(_decoded(data), crop), rotation, mirror, flip)
 
 
-@lru_cache(maxsize=2)
-def _scaled_cut(data: str, cut: tuple, height: int) -> Image.Image:
+def _scale_cut(data: str, cut: tuple, height: int) -> Image.Image:
     img = _cut(data, *cut)
     width = max(1, round(img.width * height / img.height))
+    _check_size(width, height)
     return img.resize((width, height), Image.Resampling.LANCZOS)
+
+
+_decoded_cached = lru_cache(maxsize=8)(_decode)
+_scaled_cached = lru_cache(maxsize=16)(_scale)
+_cut_cached = lru_cache(maxsize=2)(_cut_image)
+_scaled_cut_cached = lru_cache(maxsize=2)(_scale_cut)
+
+
+def _per_render(kind: str, key, make):
+    """The result of `make` once per render (within limits), else None."""
+    cache = _RENDER_CACHE.get()
+    if cache is None:
+        return make()
+    if (kind, key) not in cache:
+        cache[(kind, key)] = make()
+    return cache[(kind, key)]
+
+
+def _decoded(data: str) -> Image.Image:
+    if _LIMITS.get():
+        return _per_render("decoded", data, lambda: _decode(data))
+    return _decoded_cached(data)
+
+
+def _scaled(data: str, height: int) -> Image.Image:
+    if _LIMITS.get():
+        return _per_render("scaled", (data, height), lambda: _scale(data, height))
+    return _scaled_cached(data, height)
+
+
+def _cut(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) -> Image.Image:
+    key = (data, crop, rotation, mirror, flip)
+    if _LIMITS.get():
+        return _per_render("cut", key, lambda: _cut_image(*key))
+    return _cut_cached(*key)
+
+
+def _scaled_cut(data: str, cut: tuple, height: int) -> Image.Image:
+    if _LIMITS.get():
+        return _per_render(
+            "scaled_cut", (data, cut, height), lambda: _scale_cut(data, cut, height)
+        )
+    return _scaled_cut_cached(data, cut, height)
 
 
 def render_image(
@@ -355,6 +491,9 @@ def render_image(
         shapes.px(element.border_mm, dpi),
         _color(element.border_color),
     )
+
+
+CODE128_MAX = codes.CODE128_MAX
 
 
 def check_code(element: CodeElement) -> None:
@@ -495,11 +634,9 @@ def _matrix(
     thin = THIN_MODULE * max(steps)
     across = _fit_at(module, wide, quiet, width, thin)
     down = _fit_at(module, tall, quiet, height, thin)
-    mask = Image.new(
-        "L",
-        (max(width, across.start + wide * module), max(height, down.start + tall * module)),
-        0,
-    )
+    size = (max(width, across.start + wide * module), max(height, down.start + tall * module))
+    _check_size(*size)
+    mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
     row_px = spec.row_modules * module
     for index, row in enumerate(symbol.rows):
@@ -518,6 +655,8 @@ def _ink(text: str, size_px: float) -> Image.Image | None:
     cropped to its ink; None if it cannot be laid out."""
     try:
         block = _text_block(TextElement(text=text, font="Monospace"), size_px, antialias=False)
+    except RenderTooLarge:
+        raise
     except Exception:  # noqa: BLE001 - the bars alone still scan
         return None
     alpha = block.getchannel("A")
@@ -567,6 +706,7 @@ def _barcode(
     module, left = fit.module, fit.start
     top = round(BAR_TOP_MM * scale)
     bars_h = max(1, round(BAR_HEIGHT_MM * scale))
+    _check_size(max(width, left + module * len(pattern)), height)
     mask = Image.new("L", (max(width, left + module * len(pattern)), height), 0)
     draw = ImageDraw.Draw(mask)
     guards = EAN_LAYOUTS[spec.layout][0] if spec.layout in EAN_LAYOUTS else ()
@@ -669,6 +809,7 @@ def _draw_symbol(path: str, rotation: int, color: str, mono: bool, size: int) ->
     import cairo
 
     path_segments = segments(path)  # PathError: a damaged file
+    _check_size(size, size)
     surface = cairo.ImageSurface(cairo.FORMAT_A8, size, size)
     ctx = cairo.Context(surface)
     ctx.translate(size / 2, size / 2)
@@ -718,6 +859,8 @@ def render_page(
     kept for the printer's dithering."""
     from etiketto.shipping import source
 
+    if width is not None:
+        _check_size(width, height)
     crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
     box = (width, height)
     args = (element.data, element.page, crop, element.rotation, box, element.fit)
@@ -848,6 +991,7 @@ def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
     drawn = redraw(max(1, width), max(1, height)) if redraw is not None else None
     if drawn is not None:
         return drawn
+    _check_size(max(1, width), max(1, height))
     return part.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
 
 
@@ -936,21 +1080,128 @@ def _parts(
     room: int | None,
     inks: Inks | bool,
     steps: tuple[int, int] = (1, 1),
-) -> list[Image.Image]:
+) -> list:
     inks = _as_inks(inks)
-    parts = []
+    _source_budget(label)
+    parts: list = []  # images, and texts drawn later (_LaterText)
+    used = 0
     for index, element in enumerate(label.elements, 1):
+        part: Image.Image | _LaterText
         try:
-            part = render_element(element, f.inner, dpi, room, steps=steps, inks=inks)
+            if _later(element, room, inks):
+                assert isinstance(element, TextElement)
+                part = _LaterText(element, f.inner, dpi)
+            else:
+                part = render_element(element, f.inner, dpi, room, steps=steps, inks=inks)
+        except RenderTooLarge:
+            raise
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
         if part.height > f.inner and not isinstance(element, CodeElement):
             # fixed-size text taller than the tape (a code too large for it
             # stays as it is: it cannot be printed, see code_too_big)
-            part = _resize(part, round(part.width * f.inner / part.height), f.inner)
+            width = round(part.width * f.inner / part.height)
+            if isinstance(part, _LaterText):
+                part = part.drawn(max(1, width), f.inner)
+            else:
+                part = _resize(part, width, f.inner)
+        if not isinstance(part, _LaterText):  # counted once drawn (_render)
+            used += part.width * part.height
+            _check_budget(used, "elements")
         parts.append(part)
     return parts
+
+
+class _LaterText:
+    """A text on a label of fixed length, measured but not drawn yet: if
+    the content is scaled down to fit, it is drawn at the size it ends up
+    with (never drawn large and scaled down: on a page that would take
+    gigapixels), else at its own (_drawn())."""
+
+    def __init__(self, element: TextElement, height: int, dpi: float):
+        wrap = None
+        self.size_px = _fill_or_own(element, height, dpi)
+        self.width, self.height = _size_of(element, self.size_px, dpi, True, wrap)
+        self.element, self.dpi = element, dpi
+        self.info = {"redraw": self.drawn}
+
+    @property
+    def size(self) -> tuple[int, int]:
+        return self.width, self.height
+
+    def drawn(self, width: int, height: int) -> Image.Image:
+        size = self.size_px * min(width / self.width, height / self.height)
+        block = _text_block(self.element, size, dpi=self.dpi)
+        block.info["size_px"] = size
+        if block.size != (width, height):  # a pixel off: the size it is placed at
+            block = block.resize((width, height), Image.Resampling.LANCZOS)
+            block.info["size_px"] = size
+        return block
+
+
+def _later(element: Element, room: int | None, inks: Inks) -> bool:
+    """A text drawn once its size is known (_LaterText): in colour, on a
+    label of fixed length, a plain text whose block scales with its size."""
+    return (
+        room is not None
+        and not inks.mono
+        and isinstance(element, TextElement)
+        and element.max_width_mm <= 0
+        and not _needs_fitting(element, None)
+    )
+
+
+def _fill_or_own(element: TextElement, height: int, dpi: float) -> float:
+    if element.size_pt > 0:
+        return element.size_pt / 72 * dpi
+    measure = partial(_size_of, element, dpi=dpi, antialias=True, wrap_px=None)
+    return _fill_height(measure, height)
+
+
+def _drawn(part) -> Image.Image:
+    """A part as an image: a _LaterText at the size it got."""
+    return part.drawn(part.width, part.height) if isinstance(part, _LaterText) else part
+
+
+def _check_budget(used: int, what: str) -> None:
+    """Within limits: the parts of a label together (many small parts add
+    up) stay within the pixel budget."""
+    limits = _LIMITS.get()
+    if limits is not None and used > limits.pixels:
+        raise RenderTooLarge("%d pixels of %s" % (used, what))
+
+
+def _source_budget(label: Label) -> None:
+    """Within limits: the image files of a label together (each counted
+    once) may not unpack to more than the image budget; checked from their
+    headers before any is decoded."""
+    limits = _LIMITS.get()
+    if limits is None:
+        return
+    files = {e.data for e in label.elements if isinstance(e, ImageElement) and e.data}
+    if label.background_image and label.background_image.data:
+        files.add(label.background_image.data)
+    total = 0
+    for data in files:
+        try:
+            width, height = _per_render("size", data, lambda data=data: image_size(data))
+        except Exception:  # noqa: BLE001 - an unreadable file becomes its warning later
+            continue
+        total += width * height
+        if total > limits.image_pixels:
+            raise RenderTooLarge("%d pixels of image files" % total)
+
+
+def check_label(length: int, height: int, dpi: float) -> None:
+    """Within the limits, before the label's image is made: its size, and
+    its length if the printer has a limit."""
+    limits = _LIMITS.get()
+    if limits is None:
+        return
+    if limits.max_length_mm is not None and px_to_mm(length, dpi) > limits.max_length_mm + 1:
+        raise RenderTooLarge("%.0f mm" % px_to_mm(length, dpi))
+    _check_size(length, height)
 
 
 def _content_width(parts: list[Image.Image], gaps: list[int]) -> int:
@@ -995,11 +1246,15 @@ def _at_size(
     a code in the inks it is printed with."""
     if part.size == size:
         return part
+    if isinstance(part, _LaterText):
+        return part.drawn(*size)
     if isinstance(element, CodeElement):
         try:
             if inks.mono:
                 element = replace(element, color=inks.color(element.color))
             return render_code(element, size[1], size[0], steps)
+        except RenderTooLarge:
+            raise
         except Exception:  # noqa: BLE001 - the placeholder of a code that failed
             pass
     if isinstance(element, PageElement):
@@ -1007,6 +1262,8 @@ def _at_size(
             drawn = render_page(replace(element, fit="fill"), size[0], size[1], inks.mono)
             if drawn.size == size:
                 return drawn
+        except RenderTooLarge:
+            raise
         except Exception:  # noqa: BLE001 - it was drawn before: reduce that instead
             pass
     return _resize(part, *size)
@@ -1046,6 +1303,7 @@ def _fit_length(
 def _canvas(label: Label, size: tuple[int, int], warnings) -> Image.Image:
     """The background in colour: its colour, its image covering it (where
     the image is transparent, the colour shows)."""
+    _check_size(*size)
     img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
@@ -1055,6 +1313,8 @@ def _canvas(label: Label, size: tuple[int, int], warnings) -> Image.Image:
             else:
                 cover = _cover(bg, img.size)
                 img.paste(cover.convert("RGB"), (0, 0), cover)
+        except RenderTooLarge:
+            raise
         except Exception:  # noqa: BLE001
             warnings.append(RenderWarning("background_unreadable"))
     return img
@@ -1089,6 +1349,8 @@ def background_brightness(label: Label) -> float:
     if label.background_image and label.background_image.data:
         try:
             return _image_brightness(label.background_image.data, colour)
+        except RenderTooLarge:
+            raise
         except Exception:  # noqa: BLE001 - render() warns about it
             pass
     return imagefx.luma(colour)
@@ -1239,8 +1501,33 @@ def render(
     along_step: the same along the label (x; a die-cut label whose length
     lies across a print head that is coarser, the QL's in high quality):
     codes get modules and first modules on multiples of it.
-    A label of the free layout: etiketto.freelayout."""
-    steps = (along_step, across_step)
+    A label of the free layout: etiketto.freelayout.
+
+    Within limits (limited(), the print server) every image made is
+    checked and the label refused (RenderTooLarge) instead of drawn."""
+    limits = _LIMITS.get()
+    token = _RENDER_CACHE.set({}) if limits else None
+    slot = limits.slot() if limits and limits.slot else contextlib.nullcontext()
+    try:
+        with slot:
+            return _render(
+                label,
+                dpi,
+                safe_mm,
+                (tape_px, bleed_px),
+                min_length_mm,
+                (mono, red),
+                (along_step, across_step),
+            )
+    finally:
+        if token is not None:
+            _RENDER_CACHE.reset(token)
+
+
+def _render(label: Label, dpi: float, safe_mm: float, raster, min_length_mm, colours, steps):
+    tape_px, bleed_px = raster
+    mono, red = colours
+    across_step = steps[1]
     if tape_px is None and across_step > 1:  # whole pixel pairs: a multiple of the step
         tape_px = mm_to_px(label.tape_mm, dpi)
         tape_px += -tape_px % across_step
@@ -1260,12 +1547,15 @@ def render(
     length, parts, gaps, overflow = _fit_length(
         label, parts, f, dpi, warnings, min_length_mm, inks, steps
     )
+    parts = [_drawn(part) for part in parts]
+    _check_budget(sum(part.width * part.height for part in parts), "elements")
     # a fixed length is the user's, though rounded to whole pixels (pairs):
     # 20.1 mm stays 20.1 mm in the status line and the print dialog; one
     # shorter than the printer's shortest label says the length printed
     user_length = not label.auto_length and label.length_mm >= min_length_mm
-    length += -length % along_step  # whole pixel pairs, also once the label is turned
-    warnings += _code_warnings(label, parts) + _layout_warnings(label, f, dpi)
+    length += -length % steps[0]  # whole pixel pairs, also once the label is turned
+    check_label(length, f.tape + 2 * f.bleed, dpi)
+    warnings += _code_warnings(label, parts, dpi) + _layout_warnings(label, f, dpi)
     img = _canvas(label, (length, f.tape + 2 * f.bleed), warnings)
     places = _positions(length, label, parts, gaps, f, steps)
     if mono:  # each part on its own, at its final size, against what lies under it
@@ -1390,18 +1680,35 @@ def _redrawn(
     """The element drawn again in other inks, at the size it was placed at."""
     try:
         drawn = render_element(element, f.inner, dpi, None, steps=steps, inks=inks)
+    except RenderTooLarge:
+        raise
     except Exception:  # noqa: BLE001 - it was drawn before: keep that
         return part
     return _at_size(element, drawn, part.size, inks, steps)
 
 
-def _code_warnings(label: Label, parts) -> list[RenderWarning]:
-    return [
-        RenderWarning(key, {"n": index})
-        for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)
-        if isinstance(element, CodeElement)
-        for key in code_problems(part)
-    ]
+# a barcode's narrowest bar at least this wide: thinner bars do not scan
+# reliably (most scanners want 0.17 mm or more); one printer dot is code_thin
+MIN_MODULE_MM = 0.17
+
+
+def _code_warnings(label: Label, parts, dpi: float) -> list[RenderWarning]:
+    found = []
+    for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1):
+        if not isinstance(element, CodeElement):
+            continue
+        problems = code_problems(part)
+        found += [RenderWarning(key, {"n": index}) for key in problems]
+        if "code_thin" not in problems and _narrow(element, part, dpi):
+            found.append(RenderWarning("barcode_narrow", {"n": index}))
+    return found
+
+
+def _narrow(element: CodeElement, part: Image.Image, dpi: float) -> bool:
+    """A linear barcode whose bars are whole dots but under MIN_MODULE_MM."""
+    module = getattr(part, "code_module", None)
+    linear = codes.SPECS[element.symbology].layout not in ("matrix", "stacked")
+    return linear and module is not None and module * 25.4 / dpi < MIN_MODULE_MM
 
 
 def _invisible_shape(element: Element) -> bool:

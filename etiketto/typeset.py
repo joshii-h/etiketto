@@ -268,6 +268,9 @@ def block(
     extra = extras(element, dpi)
     width = max(1, logical.width) + 2 * extra.pad + extra.shadow
     height = max(1, logical.height) + 2 * extra.pad + extra.shadow
+    from etiketto.render import check_size  # render imports this module
+
+    check_size(width, height)  # within limits (the print server)
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
     if not antialias:

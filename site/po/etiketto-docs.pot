@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 15:25+0100\n"
+"POT-Creation-Date: 2026-11-12 15:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1324,6 +1324,397 @@ msgstr ""
 #: docs/serial.md
 #, markdown-text
 msgid "`etiketto print shelf.etiketto --data items.csv --rows 3-10` prints rows 3 to 10 without opening a window; see [Command line](use.md#command-line).  With `--dry-run` each line of the listing starts with the row number."
+msgstr ""
+
+#. type: Title #
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Print server"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Other programs and AI assistants can print labels through Etiketto without opening the window: `etiketto serve` offers a web interface for programs (REST API), `etiketto mcp` connects AI assistants such as Claude."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Start { #start }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "etiketto serve --labels-dir ~/Labels\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The server listens on `http://127.0.0.1:8790`, only on this computer."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Only label files in the labels folder (and its subfolders) can be used, with their data files. Without `--labels-dir`: `~/.local/share/etiketto/labels`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Printer address, safety margin and print settings are those set in the app."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--mcp` adds the connection for AI assistants at `/mcp`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Stop with Ctrl+C: waiting jobs are canceled, a label being printed is finished and the counter saved."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Printers { #printers }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Name the printers in a file `printers.toml` and start the server with `--printers printers.toml`. Programs then choose a printer by its name; no other printer can be used."
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.shipping]\n"
+"  backend = \"cab\"\n"
+"  host = \"cab-shipping.example.com\"\n"
+"  description = \"Shipping labels\"\n"
+"  location = \"Warehouse, gate 2\"\n"
+"  default = true\n"
+"  max_copies = 200\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`backend` is the printer model, `host` the printer's address."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The printer's settings, as in the app's printer settings, go into a table of their own; only the ones the model has:"
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.inventory]\n"
+"  backend = \"cab\"\n"
+"  host = \"printer04.example.com\"\n"
+"\n"
+"  [printers.inventory.settings]\n"
+"  method = \"transfer\"\n"
+"  upside_down = true\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`method` is the [[ui:Print method]] (`printer`, `transfer`, `direct`), `upside_down` [[ui:Print upside down]]; others are `quality`, `chain`, `high_res`, `feed_mm`, `darkness`, `media` and `outlines`, see [docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md#printers)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Mistakes in the file are named when the server starts."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The list of printers shows each printer with its state."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The server searches the network for printers only when started with `--discover`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Access token { #token }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Create a token and keep it secret:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  mkdir -p ~/.config/etiketto\n"
+"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
+"  chmod 600 ~/.config/etiketto/token\n"
+"  etiketto serve --token-file ~/.config/etiketto/token\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Every request then needs the header `Authorization: Bearer <token>`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To listen on another address (`--host 0.0.0.0`), a token is required.  For other computers, put a reverse proxy with HTTPS in front."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--allow-printer` limits the printer addresses, for example `--allow-printer '*.local'`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Access per device { #tokens }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Several devices or people get a token each, with a role:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
+"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The token is shown only once; the file keeps only a fingerprint (hash)  of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`preview` only lists and shows previews, `print` also prints and follows its own jobs, `admin` sees and cancels all jobs."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--printer shipping` limits a token to that printer, `--expires 2027-12-31` to a date."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To take a token back, delete its entry in `tokens.toml`. The server notices it at once."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Programs (REST API) { #api }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The description of all requests: `http://127.0.0.1:8790/api/v1/openapi.json`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`GET /api/v1/labels` lists the labels, `GET /api/v1/labels/<name>` shows what can be filled in: element names, variables and columns."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`POST /api/v1/preview` returns the label as a PNG image."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`POST /api/v1/print` queues a print job; `GET /api/v1/jobs/<id>` shows its state, `DELETE` cancels it between two labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Each printer prints one job after the other."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Messages come in the language of the `Accept-Language` header."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Without an access token, requests that ask printers need the header `X-Etiketto-Request: 1`, so that no web page can send them."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`set` fills in elements by their name and variables such as `{=lot}`, as on the command line."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Serial labels: `\"data_rows\": [{\"Name\": \"Tea\"}, {\"Name\": \"Rice\"}]`, or `\"data_file\"` with a table in the labels folder."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "One label from another program, for example an inventory: the fields as one data row, the printer by its name."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"       -H 'Content-Type: application/json' \\\n"
+"       -d '{\"label\": \"inventory\", \"printer\": \"inventory\", \"copies\": 1,\n"
+"            \"data_rows\": [{\"Inventarnummer\": \"100001\"}]}' \\\n"
+"       http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`{=counter}`: the server saves the next number in the label file. A program that keeps its own numbers sends the number in the data row or as `\"counter_start\"` with `\"no_save_counter\": true`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "AI assistants (MCP) { #mcp }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "The assistant can list the labels and printers, show a preview, print and follow or cancel print jobs. It asks before it uses a tool, depending on its settings."
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Claude Code:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Claude Desktop, in `claude_desktop_config.json`:"
+msgstr ""
+
+#. type: Fenced code block (json)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"{\n"
+"  \"mcpServers\": {\n"
+"    \"etiketto\": {\n"
+"      \"command\": \"etiketto\",\n"
+"      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
+"    }\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Over the network: `etiketto serve --mcp` and the address `http://127.0.0.1:8790/mcp` with the access token as `Authorization: Bearer` header."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Printing uses real labels: ask for a preview first."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Server and container { #service }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "As a service of your user: `packaging/systemd/etiketto.service` (instructions in the file)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "As a container: `packaging/docker/compose.yaml`, for printers in the network, with `printers.toml` and `tokens.toml` in the folder `config`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To find printers on the network, or for USB, add `compose.host.yaml`: `docker compose -f compose.yaml -f compose.host.yaml up -d`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Technical details and security: [docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md)."
 msgstr ""
 
 #. type: Title #

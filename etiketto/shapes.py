@@ -53,6 +53,9 @@ def dashes(style: str, width: int) -> list[float]:
 
 
 def mask_surface(size: tuple[int, int], antialias: bool) -> tuple:
+    from etiketto.render import check_size  # render imports this module
+
+    check_size(*size)  # within limits (the print server)
     surface = cairo.ImageSurface(cairo.FORMAT_A8, max(1, size[0]), max(1, size[1]))
     ctx = cairo.Context(surface)
     if not antialias:
@@ -226,6 +229,9 @@ def _area_path(element: ShapeElement, ctx, size, inset: float, dpi: float) -> No
 def _area_mask(element: ShapeElement, size, line: int, dpi: float, antialias: bool):
     """A rectangle or ellipse: the fill (a pattern) inside, the outline on
     the edge, both inside size."""
+    from etiketto.render import check_size
+
+    check_size(*size)
     mask = Image.new("L", size, 0)
     if element.fill != "none":
         surface, ctx = mask_surface(size, antialias)

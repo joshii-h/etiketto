@@ -801,3 +801,199 @@ def test_along_step_puts_linear_code_modules_on_whole_pairs():
     bars = halved.crop((0, halved.height // 2, halved.width, halved.height // 2 + 1))
     histogram = bars.histogram()
     assert sum(histogram[1:255]) == 0  # no bar averaged with a space
+
+
+# --- limits for untrusted labels (the print server) -----------------------------------
+
+
+def test_many_parts_add_up_to_the_limit(make_label, png_b64):
+    """Each part is small, together they are over the budget: refused
+    before the label's image is made."""
+    image = ImageElement(data=png_b64((40, 10)))
+    label = make_label(elements=[image] * 20)
+    one = render_module.render(make_label(elements=[image]), 100)
+    budget = one.image.height * one.image.width * 5  # room for about five
+    with render_module.limited(budget), pytest.raises(render_module.RenderTooLarge):
+        render_module.render(label, 100)
+
+
+def test_auto_length_over_the_printer_maximum_is_refused(make_label):
+    label = make_label(elements=[TextElement(text="W" * 200)])
+    assert render_module.render(label, 100).image.width > 0  # no limits by default
+    with (
+        render_module.limited(10**9, max_length_mm=50),
+        pytest.raises(render_module.RenderTooLarge),
+    ):
+        render_module.render(label, 100)
+
+
+def test_a_text_of_thousands_of_lines_is_refused(make_label):
+    label = make_label(elements=[TextElement(text="line\n" * 5000, size_pt=12)])
+    with render_module.limited(2_000_000), pytest.raises(render_module.RenderTooLarge):
+        render_module.render(label, 300)
+
+
+def test_the_free_layout_is_rendered_within_the_limits(make_label):
+    label = make_label(
+        layout="free", elements=[TextElement(text="W" * 400, size_pt=40, x_mm=1, y_mm=1)]
+    )
+    with (
+        render_module.limited(10**9, max_length_mm=50),
+        pytest.raises(render_module.RenderTooLarge),
+    ):
+        render_module.render(label, 100)
+
+
+def test_fixed_size_text_taller_than_the_tape_fits(make_label):
+    label = make_label(elements=[TextElement(text="Hg", size_pt=200)], tape_mm=12)
+    rendered = render_module.render(label, 100)
+    assert rendered.image.height == render_module.mm_to_px(12, 100)
+
+
+def _file(raw: bytes) -> str:
+    return base64.b64encode(raw).decode()
+
+
+def test_only_common_image_formats_are_read(make_label, tmp_path):
+    marker = tmp_path / "gs-ran"
+    eps = (
+        b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 10 10\n%%EndComments\n"
+        b"(" + str(marker).encode() + b") (w) file closefile\nshowpage\n%%EOF\n"
+    )
+    buffer = io.BytesIO()
+    Image.new("RGBA", (16, 16)).save(buffer, "ICO")
+    for raw in (eps, buffer.getvalue()):
+        rendered = render(make_label(elements=[ImageElement(data=_file(raw))]))
+        assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+    assert not marker.exists()  # Ghostscript never ran
+    assert set(render_module.IMAGE_FORMATS) == {"PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF"}
+
+
+def test_decompression_bomb_warnings_refuse_the_image(make_label, png_b64, monkeypatch):
+    monkeypatch.setattr(render_module, "IMAGE_FILE_PIXELS", 150)  # 20 x 10 is over it
+    rendered = render(make_label(elements=[ImageElement(data=png_b64((20, 10), "blue"))]))
+    assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+
+
+def test_no_warning_filter_for_bombs(png_b64, monkeypatch):
+    import warnings
+
+    monkeypatch.setattr(render_module, "IMAGE_FILE_PIXELS", 150)
+    before = list(warnings.filters)
+    with warnings.catch_warnings(record=True), pytest.raises(Image.DecompressionBombError):
+        render_module._decode(png_b64((20, 10), "blue"))
+    assert warnings.filters == before
+    assert Image.MAX_IMAGE_PIXELS is None  # Pillow's own check is ours now
+
+
+def test_within_limits_each_image_is_decoded_once_per_render(make_label, png_b64, monkeypatch):
+    data = png_b64((30, 10), "red")
+    label = make_label(elements=[ImageElement(data=data)] * 5, auto_length=False, length_mm=20)
+    decoded = []
+    real = render_module._decode
+    monkeypatch.setattr(render_module, "_decode", lambda d: decoded.append(1) or real(d))
+    with render_module.limited(10**8):
+        render(label)
+        render(label)
+    assert decoded == [1, 1]  # once per render, nothing kept between them
+
+
+def test_within_limits_nothing_is_kept_in_the_caches(png_b64):
+    data = png_b64((31, 9), "green")
+    render_module._decoded_cached.cache_clear()
+    render_module._scaled_cached.cache_clear()
+    with render_module.limited(10**6):
+        render_module._decoded(data)
+        render_module._scaled(data, 5)
+    assert render_module._decoded_cached.cache_info().currsize == 0
+    assert render_module._scaled_cached.cache_info().currsize == 0
+    render_module._scaled(data, 5)
+    assert render_module._scaled_cached.cache_info().currsize == 1
+
+
+def test_image_files_together_are_within_the_budget(make_label, png_b64):
+    files = [ImageElement(data=png_b64((100, 100), c)) for c in ("red", "green", "blue")]
+    with render_module.limited(25_000), pytest.raises(render_module.RenderTooLarge):
+        render(make_label(elements=files))
+    same = make_label(elements=[files[0]] * 3)  # one file three times counts once
+    with render_module.limited(25_000):
+        render_module._source_budget(same)
+
+
+def test_code128_has_a_length_limit(make_label):
+    long_code = CodeElement(data="A" * (render_module.CODE128_MAX + 1), symbology="code128")
+    rendered = render(make_label(elements=[long_code]))
+    warning = rendered.warnings[0]
+    assert warning.key == "code128_long" and warning.params["max"] == render_module.CODE128_MAX
+    from etiketto.ui.texts import warning_text
+
+    assert str(render_module.CODE128_MAX) in warning_text(warning)
+
+
+def test_a_file_that_fails_only_when_drawn(make_label):
+    buffer = io.BytesIO()
+    Image.effect_noise((64, 64), 50).convert("RGB").save(buffer, "PNG")
+    cut = buffer.getvalue()[: len(buffer.getvalue()) // 2]  # header fine, data cut off
+    rendered = render(make_label(elements=[ImageElement(data=_file(cut))]))
+    assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+
+
+def test_warm_up_draws_a_text():
+    render_module.warm_up()
+
+
+def test_warning_keys_are_documented():
+    for key in ("code128_long", "barcode_narrow"):
+        assert key in render_module.RenderWarning.__doc__
+
+
+@pytest.mark.parametrize(
+    ("dpi", "module", "key"),
+    [(300, 2, "barcode_narrow"), (300, 3, None), (203, 2, None), (600, 3, "barcode_narrow")],
+)
+def test_thin_bars_are_judged_by_their_width_on_paper(dpi, module, key):
+    """Bars of whole dots, but thinner than 0.17 mm: a warning (one dot
+    wide is code_thin, said once)."""
+    element = CodeElement(data="ABC", symbology="code128")
+    part = Image.new("RGBA", (10, 10))
+    part.code_module = module  # type: ignore[attr-defined]
+    part.code_problems = ()  # type: ignore[attr-defined]
+    label = Label(elements=[element])
+    keys = [w.key for w in render_module._code_warnings(label, [part], dpi)]
+    assert keys == ([key] if key else [])
+    qr = Label(elements=[CodeElement(data="ABC")])
+    assert render_module._code_warnings(qr, [part], dpi) == []  # 2D codes: modules of their own
+
+
+def test_the_thin_bars_warning_fits_die_cut_labels_too():
+    from etiketto.ui.texts import warning_text
+
+    text = warning_text(render_module.RenderWarning("barcode_narrow", {"n": 1}))
+    assert "longer or larger label" in text
+
+
+def test_text_fitted_to_a_page_is_drawn_at_its_final_size(monkeypatch):
+    """A fit-to-height text on a page wider than tall would be drawn huge
+    and scaled down; it is drawn at the size it ends up with."""
+    label = Label(
+        printer="system",
+        auto_length=False,
+        orientation="across",
+        elements=[TextElement(text="Hello World")],
+    )
+    label.set_media_size(210, 297)
+    sizes = []
+    real = render_module._text_block
+
+    def block(element, size, **options):
+        image = real(element, size, **options)
+        sizes.append(image.width * image.height)
+        return image
+
+    monkeypatch.setattr(render_module, "_text_block", block)
+    with render_module.limited(40_000_000):
+        rendered = render_module.render(label, 300)
+    assert rendered.overflow and rendered.warnings == []
+    assert max(sizes) <= rendered.image.width * rendered.image.height
+    text = render_module.render(Label(elements=[TextElement(text="Hello World")]), 300)
+    assert text.image.width > 0  # a label that grows: drawn as before

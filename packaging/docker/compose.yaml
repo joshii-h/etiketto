@@ -1,0 +1,60 @@
+# Etiketto print server with Docker Compose: network printers (docs/server.md).
+#
+#   mkdir -p config labels
+#   cp printers.example.toml config/printers.toml   # name your printers
+#   docker compose build
+#   docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint etiketto \
+#       etiketto-server token new shipping-pc --role print \
+#       --tokens /config/tokens.toml --printers /config/printers.toml
+#   docker compose up -d
+#
+# `token new` shows the token once and keeps only its hash in tokens.toml.
+#
+# Printers are reached by their address in printers.toml; nothing is
+# searched on the network. Finding printers by mDNS, the host's CUPS and
+# USB devices: add compose.host.yaml (-f compose.yaml -f compose.host.yaml).
+#
+# config/ is mounted as a folder, not file by file: `etiketto token new`
+# replaces tokens.toml, and the server reads it again when it changes
+# (a single mounted file would keep showing the old one).
+
+services:
+  etiketto:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: etiketto-server
+    restart: unless-stopped
+    # the owner of config/ and labels/ on the host: the container reads
+    # tokens.toml (mode 600) and saves counters into the label files as that
+    # user (export ETIKETTO_UID=$(id -u) ETIKETTO_GID=$(id -g) if not 1000)
+    user: "${ETIKETTO_UID:-1000}:${ETIKETTO_GID:-1000}"
+    mem_limit: 1g
+    pids_limit: 128
+    ports:
+      - "127.0.0.1:8790:8790"  # only this computer; a reverse proxy adds TLS for others
+    command:
+      - "--mcp"
+      - "--printers"
+      - "/config/printers.toml"
+      - "--tokens"
+      - "/config/tokens.toml"
+      # behind a reverse proxy in a Docker network: its X-Forwarded-For
+      # names the clients (the rate limit and the log use them). Give the
+      # proxy's own address (a fixed one in the network, /32), never a whole
+      # range: connections through the published port come from the Docker
+      # gateway, which is in that range too, and could name any client.
+      # With a proxy, publish no port at all (remove "ports:"), so the
+      # server is reached only through the proxy.
+      # - "--trusted-proxy"
+      # - "172.30.0.10/32"
+    volumes:
+      # printers.toml, tokens.toml (hashes only), etiketto/settings.json if wanted
+      - ./config:/config:ro
+      - ./labels:/labels  # the label files (.etiketto) and their data files
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true

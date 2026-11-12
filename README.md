@@ -123,6 +123,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   across copies), copy number, random ID and UUID
 - Command line: `etiketto print` prints a label file without a window or
   display, with copies, counter start and texts set per job
+- Print server: `etiketto serve` offers a REST API (OpenAPI 3.1) and MCP
+  for AI assistants (`etiketto mcp` for Claude Desktop and Claude Code),
+  with print jobs queued per printer; a Dockerfile and a systemd unit
 - Serial labels: placeholders such as `{Name}` in texts and codes, filled
   from each row of a CSV, ODS or XLSX file; step through the rows in the
   preview and print all of them, or a range, on any printer
@@ -218,6 +221,10 @@ etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
+etiketto serve [--host ADDR] [--port N] [--labels-dir DIR] [--mcp] [--discover]
+               [--printers FILE] [--tokens FILE | --token-file FILE]
+etiketto mcp [--labels-dir DIR] [--printers FILE]
+etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 etiketto --version | --help
 ```
 
@@ -278,6 +285,34 @@ reached if it is handed over too:
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@
 ```
+
+## Print server and MCP
+
+`etiketto serve` prints for other programs, without a window or display:
+a REST API under `/api/v1` (JSON; the OpenAPI description at
+`/api/v1/openapi.json`) to list printers and labels, ask a printer for its
+state, render a preview, and print with values, data rows and copies. Jobs
+are queued, one per printer at a time, and can be canceled between two
+labels; counters are saved as on the command line. `--mcp` serves the same
+as MCP tools at `/mcp`; `etiketto mcp` speaks MCP on standard input and
+output for Claude Desktop and Claude Code:
+
+```sh
+etiketto serve --labels-dir ~/Labels --token-file ~/.config/etiketto/token --mcp
+claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
+```
+
+Only label and data files inside the labels folder are used. Network
+printers come first: `--printers printers.toml` names the printers clients
+may use, by name (searching the network only with `--discover`), and
+`--tokens tokens.toml` gives each device or person its own access token
+with a role (preview, print, admin), made with `etiketto token new`; the
+file keeps only hashes, and deleting an entry revokes it. The server
+listens on 127.0.0.1 and refuses other addresses without an access token
+(`Authorization: Bearer`). A Dockerfile, Compose files (network printers;
+an override for the host's network, mDNS and USB) and a systemd user unit
+are in `packaging/`. Details, API reference and security notes:
+[docs/server.md](docs/server.md).
 
 ## How labels are laid out
 
