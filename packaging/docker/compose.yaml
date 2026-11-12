@@ -1,13 +1,22 @@
-# Etiketto print server with Docker Compose (docs/server.md).
+# Etiketto print server with Docker Compose: network printers (docs/server.md).
 #
-#   openssl rand -hex 32 > token && chmod 600 token
-#   docker compose -f packaging/docker/compose.yaml up -d --build
+#   mkdir -p config labels
+#   cp printers.example.toml config/printers.toml   # name your printers
+#   docker compose build
+#   docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint etiketto \
+#       etiketto-server token new shipping-pc --role print \
+#       --tokens /config/tokens.toml --printers /config/printers.toml
+#   docker compose up -d
 #
-# Printers on the network: finding them (mDNS) needs the host's network
-# and its Avahi daemon. With `network_mode: host` the port mapping is not
-# used: then listen on 127.0.0.1 (command) or keep the token.
-# CUPS queues of the host (also USB printers set up in CUPS) are reached at
-# ipp://localhost:631 with the host's network.
+# `token new` shows the token once and keeps only its hash in tokens.toml.
+#
+# Printers are reached by their address in printers.toml; nothing is
+# searched on the network. Finding printers by mDNS, the host's CUPS and
+# USB devices: add compose.host.yaml (-f compose.yaml -f compose.host.yaml).
+#
+# config/ is mounted as a folder, not file by file: `etiketto token new`
+# replaces tokens.toml, and the server reads it again when it changes
+# (a single mounted file would keep showing the old one).
 
 services:
   etiketto:
@@ -18,30 +27,22 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8790:8790"  # only this computer; a reverse proxy adds TLS for others
-    secrets:
-      - etiketto_token
-    command: ["--mcp", "--token-file", "/run/secrets/etiketto_token"]
+    command:
+      - "--mcp"
+      - "--printers"
+      - "/config/printers.toml"
+      - "--tokens"
+      - "/config/tokens.toml"
     volumes:
+      - ./config:/config:ro  # printers.toml, tokens.toml (hashes only)
       - ./labels:/labels  # the label files (.etiketto) and their data files
-      - etiketto-data:/data  # settings.json: printer addresses, safety margin
-    # mDNS discovery through the host's Avahi, CUPS of the host:
-    # network_mode: host
-    # volumes:
-    #   - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
-    # USB printers handed to the container directly (for printer backends
-    # that talk USB; CUPS queues need no device):
-    # devices:
-    #   - /dev/usb:/dev/usb
+      - etiketto-data:/data  # settings.json of the app, if wanted
     read_only: true
     tmpfs:
       - /tmp
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-
-secrets:
-  etiketto_token:
-    file: ./token
 
 volumes:
   etiketto-data:

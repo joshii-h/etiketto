@@ -18,6 +18,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/etiketto/token --labels-dir %h/.local/share/etiketto/labels
+# With a printer list and named tokens (docs/server.md) instead:
+# ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --printers %h/.config/etiketto/printers.toml --tokens %h/.config/etiketto/tokens.toml --labels-dir %h/.local/share/etiketto/labels
+# SIGHUP reads tokens.toml again (it is also read again when it changes)
+ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=5
 # SIGTERM: waiting jobs are canceled, a printing one finishes its label and

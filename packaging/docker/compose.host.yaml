@@ -1,0 +1,29 @@
+# Override for compose.yaml: the host's network, mDNS and USB.
+#
+#   docker compose -f compose.yaml -f compose.host.yaml up -d
+#
+# - network_mode host: the container shares the host's network. The port
+#   mapping does not apply; the server listens on 127.0.0.1 of the host.
+# - --discover with the host's D-Bus socket: printers announced by mDNS
+#   (through the host's Avahi daemon) are listed and can be found.
+# - CUPS queues of the host, also USB printers set up there, are at
+#   ipp://localhost:631/printers/<queue>; name them in printers.toml.
+# - /dev/usb: for printer backends that talk to USB devices themselves.
+
+services:
+  etiketto:
+    network_mode: host
+    ports: !reset []
+    command:
+      - "--host"
+      - "127.0.0.1"
+      - "--mcp"
+      - "--printers"
+      - "/config/printers.toml"
+      - "--tokens"
+      - "/config/tokens.toml"
+      - "--discover"
+    volumes:
+      - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
+    devices:
+      - /dev/usb:/dev/usb
