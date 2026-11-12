@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 11:14+0100\n"
+"POT-Creation-Date: 2026-11-12 11:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1497,6 +1497,198 @@ msgstr ""
 #. type: Title ##
 #: docs/use.md
 #, markdown-text, no-wrap
+msgid "Text style { #text-style }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Text in a box and a frame, lines and a rounded border](media/design.png#only-light)  ![Text in a box and a frame, lines and a rounded border](media/design-dark.png#only-dark)"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The rows of a text element:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Font]]: family, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]], [[ui:Strikethrough]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Spacing and fitting]]: [[ui:Letter spacing]] and [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the label height and, with a fixed length, the length, never below [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or 270° prints the text vertically."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Box and frame]]: [[ui:White on black]] cuts the text out of a box in the text colour; [[ui:Background box]] puts a box of another colour behind it; [[ui:Padding]], [[ui:Corner radius]] and [[ui:Frame]] shape the box."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Outline and shadow]]: a line around each letter, a shadow down and to the right."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Images { #images }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Crop…]]: drag on the image or type the area in percent."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Adjust]]: [[ui:Brightness]], [[ui:Contrast]], [[ui:Gamma]], [[ui:Invert]], [[ui:Rotation]], [[ui:Mirror]], [[ui:Flip]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Corners and border]]: rounded corners and a border around the image."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Black and white]]: how black-and-white printers print the image, see below."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Lines and shapes { #shapes }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line or shape]] in the add menu:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line]]: horizontal, vertical or diagonal, with [[ui:Arrows]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Rectangle]] (rounded with [[ui:Corner radius]]) and [[ui:Ellipse]], with a [[ui:Fill]]: solid, hatched, dotted or a grid."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Separator]]: a line across the whole label height between two elements."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line width]] and [[ui:Line style]] (solid, dashed, dotted). Every line is at least one printer dot wide."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels with lines or shapes, or with the options on this page, do not open in earlier versions of Etiketto: they say the label needs a newer version. Labels without them open as before."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Position { #position }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Each element has [[ui:Position]]:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Vertical alignment]]: at the top, in the middle or at the bottom of the label height."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Own spacing]]: [[ui:Space after it]] instead of the label's [[ui:Spacing]]."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Black-and-white printers { #black-and-white }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Text, codes, symbols, lines and borders print with sharp edges: text is drawn without smoothed edges, every part is converted on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]] uses a threshold for drawings and logos and dithering for photos; [[ui:Threshold]] sets which grey still prints black."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Colours print black, or white if they are light. A shadow prints solid black. Outlines and shadows are at least one printer dot."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Undo and keyboard shortcuts { #shortcuts }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field counts as one step. In a text field Ctrl+Z undoes the typing there."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The open element (its row expanded): Ctrl+D duplicates it, Delete removes it, Alt+Up and Alt+Down move it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Ctrl+Shift+T, G, Y, B and L add text, an image, a symbol, a code or a line."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Keyboard shortcuts]] (Ctrl+?) in the main menu lists them all."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
 msgid "Symbols"
 msgstr ""
 
@@ -1581,7 +1773,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin."
+msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin.  [[ui:Border style]]: [[ui:Corner radius]], [[ui:Line style]] (also double) and [[ui:Inset]]."
 msgstr ""
 
 #. type: Bullet: '- '

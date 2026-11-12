@@ -180,7 +180,11 @@ extension of the interface first; please open an issue before you start.
      `prepare()` that depends on the model; `capabilities.default_tape_mm`
      sets the tape of a new label.
    - Override `preview(image, mode)` if a mode changes the result (the
-     VC-500W shows black and white as grey).
+     VC-500W shows black and white as grey), and `renders_mono(mode)` if a
+     mono printer has a mode in colour (the Brother QL's red and black):
+     labels for mono printers are rendered black and white part by part
+     (`render(mono=True)`: text without anti-aliasing, images by their
+     mode), so the backend's own conversion changes nothing.
    - `settings`: printer settings of the backend's own (resolution, label
      sensor, darkness, ...) as `Choice` (protocol values, the first is the
      default) or `Level` (steps; None keeps the printer's own setting). The
@@ -265,6 +269,21 @@ version. The features (`model.FEATURES`):
 - `"variables"`: variables (`{=date}`, `{=counter}` …) in texts or codes, or
   a counter other than the default; older versions would print `{=date}` as
   it is and drop the counter when they save.
+
+- `"styles"`: a design option set to anything but its default
+  (`model.STYLE_FIELDS`: text decoration, spacing, fitting, rotation, boxes,
+  outline and shadow; image mode, adjustments, crop, corners and border;
+  every element's `valign` and `gap_mm`; the label's `border_radius_mm`,
+  `border_style` and `border_inset_mm`). These fields are written only
+  when they differ from their default, which is how earlier versions print,
+  so a label without them stays readable everywhere; older versions would
+  ignore them and print the label differently.
+- `"shapes"`: a line or shape element (kind `shape`, `model.ShapeElement`);
+  versions before it also refuse the unknown element kind.
+
+A new design option: a field with the old behaviour as its default, its
+name in `model.STYLE_FIELDS` (or `LABEL_STYLE_FIELDS`), validation in
+`model.py` and a test of the round trip.
 
 Shipping labels (element kind `page`) need no feature: versions before them
 refuse the unknown element kind as "newer" already.

@@ -2,7 +2,8 @@
 # Every image is taken light and dark: <name>.png and <name>-dark.png.
 #
 # name      example file from docs/examples, without .etiketto
-# state     ETIKETTO_SCREENSHOT_STATE: - (main window), expand, print
+# state     ETIKETTO_SCREENSHOT_STATE: - (main window), expand, styles (expand
+#           with the box and frame options open), print
 # targets   readme      README and Flathub, English: docs/screenshots/
 #           readme:LL   README in language LL: docs/screenshots/
 #           docs        user documentation, every documentation language:
@@ -17,3 +18,4 @@ sticker     sticker   -        readme
 cable-de    cable     -        readme:de
 die-cut     shelf     -        readme docs
 serial      serial    expand   readme docs
+design      design    styles   readme docs
