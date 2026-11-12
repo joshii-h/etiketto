@@ -21,6 +21,7 @@ import pytest
 from backend_contract import BackendContract
 from hypothesis import given
 from hypothesis import strategies as st
+from packbits import unpackbits
 from PIL import Image
 
 from etiketto.backends import brother_ql as ql
@@ -441,12 +442,12 @@ def test_packbits_like_apple_tn1023():
     raw = bytes.fromhex("aaaaaa80002aaaaaaaaa80002a22aaaaaaaaaaaaaaaaaaaa")
     packed = bytes.fromhex("feaa0280002afdaa0380002a22f7aa")
     assert ql.packbits(raw) == packed
-    assert ql.unpackbits(packed) == raw
+    assert unpackbits(packed) == raw
 
 
 @given(st.binary(max_size=600))
 def test_packbits_roundtrip(data):
-    assert ql.unpackbits(ql.packbits(data)) == data
+    assert unpackbits(ql.packbits(data)) == data
     assert _unpack(ql.packbits(data)) == data
 
 
@@ -460,13 +461,13 @@ def test_packbits_long_runs_and_literals():
     assert ql.packbits(b"\x05" * 300) == b"\x81\x05\x81\x05\xd5\x05"
     literal = bytes(range(130))
     assert ql.packbits(literal) == b"\x7f" + literal[:128] + b"\x01" + literal[128:]
-    assert ql.unpackbits(b"\x80\x00\x41") == b"A"  # 0x80 is a no-op
+    assert unpackbits(b"\x80\x00\x41") == b"A"  # 0x80 is a no-op
 
 
 @pytest.mark.parametrize("data", [b"\x02AB", b"\xfe"])
 def test_unpackbits_refuses_cut_off_data(data):
     with pytest.raises(ValueError):
-        ql.unpackbits(data)
+        unpackbits(data)
 
 
 # --- status ----------------------------------------------------------------------------

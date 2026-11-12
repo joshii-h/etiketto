@@ -104,7 +104,8 @@ def _sheet(entry: dict) -> Sheet:
         description=entry.get("description", ""),
         paper=(entry["paper"][0], entry["paper"][1]),
         paper_name=entry.get("paper_name", ""),
-        shape=entry["shape"],
+        # a shape this version does not draw (a newer template): a rectangle
+        shape=entry["shape"] if entry["shape"] in SHAPES else "rectangle",
         width=entry["width"],
         height=entry["height"],
         layouts=tuple(tuple(layout) for layout in entry["layouts"]),

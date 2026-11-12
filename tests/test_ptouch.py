@@ -19,6 +19,7 @@ import pytest
 from backend_contract import BackendContract
 from hypothesis import given
 from hypothesis import strategies as st
+from packbits import unpackbits
 from PIL import Image
 
 from etiketto.backends import net, ptouch, usb
@@ -52,22 +53,6 @@ from etiketto.model import Label, TextElement
 
 REAL_CONNECT = ptouch._connect  # before conftest's guard replaces it
 ESC = b"\x1b"
-
-
-def unpackbits(data: bytes) -> bytes:
-    """TIFF PackBits, decoded: what the printer does with a compressed line."""
-    out = bytearray()
-    i = 0
-    while i < len(data):
-        n = data[i]
-        i += 1
-        if n < 128:
-            out += data[i : i + n + 1]
-            i += n + 1
-        elif n > 128:
-            out += bytes([data[i]]) * (257 - n)
-            i += 1
-    return bytes(out)
 
 
 def status_frame(

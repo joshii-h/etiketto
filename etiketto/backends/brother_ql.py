@@ -419,28 +419,6 @@ def _flush(out: bytearray, literal: bytearray) -> None:
         literal.clear()
 
 
-def unpackbits(data: bytes) -> bytes:
-    """The inverse of packbits(); ValueError for data cut off in the middle."""
-    out = bytearray()
-    i = 0
-    while i < len(data):
-        header = data[i]
-        if header < 128:
-            chunk = data[i + 1 : i + 2 + header]
-            if len(chunk) != header + 1:
-                raise ValueError("PackBits literal cut off")
-            out += chunk
-            i += header + 2
-        elif header > 128:
-            if i + 1 >= len(data):
-                raise ValueError("PackBits run cut off")
-            out += bytes((data[i + 1],)) * (257 - header)
-            i += 2
-        else:  # 128: no operation
-            i += 1
-    return bytes(out)
-
-
 def _mask(image: Image.Image, keep) -> Image.Image:
     """A 1-bit image, set (255) where keep(value) is true."""
     return image.point(lambda v: 255 if keep(v) else 0, "1")

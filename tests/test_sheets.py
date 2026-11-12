@@ -312,3 +312,11 @@ def test_sizes_in_a_search_are_numbers():
 @pytest.mark.parametrize("text", ["Igepa EA-381x212", "EA-381x212", "ea381x212", "381x212"])
 def test_a_part_number_that_looks_like_a_size_is_found(text):
     assert "Igepa EA-381x212" in [sheet.id for sheet in search(text)]
+
+
+def test_a_shape_this_version_does_not_draw_is_a_rectangle():
+    import json
+
+    entry = json.loads(sheets.DATA.read_text(encoding="utf-8"))[0]
+    assert sheets._sheet({**entry, "shape": "star"}).shape == "rectangle"
+    assert sheets._sheet(entry).shape in sheets.SHAPES
