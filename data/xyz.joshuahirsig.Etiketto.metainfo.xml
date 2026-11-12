@@ -56,6 +56,7 @@
     <p>Supported printers:</p>
     <ul>
       <li>Brother VC-500W (also sold as ColAura): colour labels on ZINK tape, with cassette detection, vivid colours and cut modes</li>
+      <li>Brother QL-500 to QL-1115NWB: continuous rolls and die-cut labels in black, red and black on the QL-800 series (not yet tried on a printer)</li>
       <li>cab EOS2, EOS5, SQUIX 4 and MACH 4S: die-cut labels in black, with a check of the loaded roll</li>
       <li>Any printer the system knows through CUPS or IPP, such as office printers: one label per page at its exact size</li>
     </ul>
@@ -120,6 +121,8 @@
     <keyword>VC-500W</keyword>
     <keyword>ColAura</keyword>
     <keyword>VC-500WCR</keyword>
+    <keyword>Brother QL</keyword>
+    <keyword>QL-820NWB</keyword>
     <keyword>cab</keyword>
     <keyword>EOS2</keyword>
     <keyword>SQUIX</keyword>

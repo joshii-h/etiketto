@@ -19,14 +19,16 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Printer | Labels | What Etiketto does with it | Protocol |
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
+| Brother QL (QL-500 to QL-1115NWB), **untested on hardware** | Black on DK continuous rolls (12 to 104 mm, any length) or die-cut DK labels; red and black on the QL-800 series with DK-22251 | Reads the loaded roll and the printer's problems; full cut, cut after the last label or no cut; 600 dpi on the models that have it | Brother's raster commands on TCP port 9100 or USB ([docs/brother-ql.md](docs/brother-ql.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
 | System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
 Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
-kernel's printer driver: cab printers and the VC-500W are found on USB by
-themselves, and the system printer reaches every printer CUPS has, USB
-included. On USB, the VC-500W and cab printers have not been tried on a
-printer yet. Your user needs to be in the group `lp`
+kernel's printer driver: cab printers, Brother QL printers and the
+VC-500W are found on USB by themselves, and the system printer reaches
+every printer CUPS has, USB included. On USB, the VC-500W and cab printers
+have not been tried on a printer yet; the Brother QL backend has not been
+tried on any printer at all, it follows the documented protocol. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.
 
@@ -161,6 +163,12 @@ Etiketto prints through its descendant
 The VC-500W on USB follows the observations of
 [barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
 MPL-2.0), written anew; no barnguard code is included.
+
+The Brother QL raster commands, models and media table follow
+[brother_ql](https://github.com/pklaus/brother_ql) by Philipp Klaus and
+its fork [brother-ql-next](https://github.com/LunarEclipse363/brother_ql)
+by LunarEclipse (both GPL-3.0), written anew; no brother_ql code is
+included.
 
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no

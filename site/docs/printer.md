@@ -100,6 +100,57 @@ Do it when stripes appear, or every 20 to 30 labels.
 - Stripes: clean with the CK-1000.
 - Content askew: insert the cassette straight.
 
+## Brother QL { #brother-ql }
+
+Etiketto prints on Brother QL label printers from the QL-500 to the
+QL-1115NWB, red and black too on the QL-800, QL-810W and QL-820NWB. This
+has not been tried on a printer yet: it follows the protocol as others
+documented it. Reports of what works and what does not are very welcome.
+
+- [[ui:Printer model]]: the QL appears twice. Choose
+  "Brother QL, continuous rolls" for continuous DK rolls (the label is as
+  long as its content or has a fixed length) and
+  "Brother QL, die-cut labels" for die-cut DK labels of a fixed size.
+- Network: models with Wi-Fi or LAN are reached on port 9100.
+  [[ui:Search for printers]] finds them, or enter the address.
+- USB: plug the printer in; [[ui:Search for printers]] finds it. On the
+  QL-700 and the QL-800 series, switch off "Editor Lite" first (hold its
+  button until the green light goes out), otherwise the printer appears
+  as a USB drive.
+- Before each print Etiketto reads which roll is loaded. A continuous
+  roll of another width is printed scaled to it after a warning, like a
+  cassette on the VC-500W.
+- Die-cut labels: choose the [[ui:Label size]] of the roll. The printer
+  finds the labels by itself; leave the [[ui:Gap]] at 3 mm. About 1.5 mm
+  at the sides and 3 mm at both ends of each label cannot be printed: a
+  [[ui:Safety margin]] of 3 mm keeps content away from there.
+- Black and white without dithering: text and codes stay sharp, photos
+  become hard black and white, as the preview shows.
+
+### Print options { #brother-ql-print }
+
+- [[ui:Cut]]: [[ui:Full cut]] after every label,
+  [[ui:Cut after the last label]] keeps the copies together as one strip,
+  [[ui:No cut]]. Printers without a cutter (QL-500) ignore it.
+- [[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a
+  62 mm continuous roll is loaded; red parts of the label print red on the
+  red and black roll DK-22251.
+- [[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution
+  along the roll on the models that have it; printing takes longer.
+
+### Problems { #brother-ql-problems }
+
+- [[ui:Connected, the printer does not report its state]]: some models
+  do not answer status requests over the network. Printing works, but
+  Etiketto cannot check the roll first.
+- "The loaded roll does not match the label": a die-cut roll is loaded
+  for a label on continuous roll, or the other way round. Load the other
+  roll or choose the other entry under [[ui:Printer model]].
+- Out of labels: load a new roll. Cover open: close it. Label jammed:
+  open the cover and remove it, check the cutter.
+- Red parts print black: red and black only works on the QL-800 series
+  with the DK-22251 roll.
+
 ## cab label printers { #cab }
 
 Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5,
