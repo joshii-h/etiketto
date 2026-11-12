@@ -222,7 +222,9 @@ class DataSource:
     def _loaded(self, generation: int, book: Book) -> bool:
         if generation != self._generation:
             return False
-        wanted = self.window.label.data_sheet
+        # a CSV file has no sheets: a saved sheet (the file was a
+        # spreadsheet once) means nothing, the file is read as it is
+        wanted = self.window.label.data_sheet if book.sheets else ""
         if wanted and book.sheet != wanted:
             # renamed or deleted since the label was saved: never print
             # another sheet instead; the sheet row offers those there are

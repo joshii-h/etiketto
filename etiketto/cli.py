@@ -727,7 +727,12 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
         book = read_book(path, sheet)
     except (OSError, MergeError) as e:
         raise CliError(data_error_text(e, _name(path)), EXIT_FILE) from None
-    if sheet and book.sheet != sheet:  # never another sheet than the one asked for
+    # never another sheet than the one asked for; a CSV file has no sheets:
+    # a sheet saved with the label (the file was a spreadsheet once) is
+    # ignored, one given with --sheet is refused
+    if sheet and not book.sheets and not args.sheet:
+        sheet = ""
+    if sheet and book.sheet != sheet:
         raise CliError(data_error_text(MergeError("no_sheet", sheet), _name(path)), EXIT_USAGE)
     rows = book.table.rows
     first, last = args.rows or (1, ALL_ROWS)

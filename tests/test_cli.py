@@ -979,3 +979,13 @@ def test_serial_stop_names_the_copies_of_the_row_printed(
         " Copies of row 2 already printed: 1.\n"
     )
     assert Label.load(path).counter_next == 4
+
+
+def test_a_csv_file_with_a_saved_sheet_prints(mono, label_file, rows_csv, capsys):
+    """The label's own data file, once a spreadsheet, now a CSV file: the
+    saved sheet is ignored; one given with --sheet is still refused."""
+    path = label_file(TextElement(text="{Name}"), data_file=str(rows_csv), data_sheet="Mai")
+    assert run("print", path, "--dry-run") == 0
+    assert capsys.readouterr().out.splitlines()[0] == "1\t1\tScrews"
+    assert run("print", path, "--dry-run", "--sheet", "Mai") == cli.EXIT_USAGE
+    assert err(capsys) == "etiketto: rows.csv has no sheet named Mai\n"

@@ -272,6 +272,21 @@ def test_unprintable_rows_are_found_before_the_first_label():
     assert info.value.rows == [2, 3, 4] and backend.prepared == [] and backend.jobs == []
 
 
+def test_a_counter_that_overflows_a_code_on_a_later_copy():
+    """The second copy's counter makes the EAN-13 13 digits with a wrong
+    check digit: found before printing, not halfway through the row."""
+    label = Label(
+        tape_mm=12,
+        printer="fake-mono",
+        elements=[CodeElement(data="{P}{=counter}", symbology="ean13")],
+    )
+    rows = [{"P": "40063813339"}]
+    one = Values(datetime(2026, 1, 1), counter=9, copies=1)
+    two = Values(datetime(2026, 1, 1), counter=9, copies=2)
+    assert unprintable_rows(label, rows, [0], one) == []
+    assert unprintable_rows(label, rows, [0], two) == [1]
+
+
 def test_the_counter_goes_on_from_row_to_row():
     label = Label(
         tape_mm=12, printer="fake-mono", elements=[TextElement(text="{=counter} {Name}")]

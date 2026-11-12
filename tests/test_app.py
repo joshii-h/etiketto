@@ -3140,6 +3140,19 @@ def test_a_saved_sheet_that_is_gone_is_not_replaced(ready, tmp_path):
     assert ready.label.data_sheet == "Mai" and preview_text(ready) == "Anna"
 
 
+def test_a_csv_file_with_a_saved_sheet_is_read(ready, rows_csv):
+    """A saved sheet name (the data was a spreadsheet once) means nothing for
+    a CSV file: it is read, and no sheet row offers only the missing one."""
+    ready.label.elements[0].text = "{Name}"
+    ready.label.data_sheet = "Mai"
+    attach(ready, rows_csv)
+    ready.label.data_sheet = "Mai"
+    ready.data.load()
+    assert loaded(ready) and ready.data.state == "ready" and ready.data.active
+    assert not find(ready._groups[-1], Adw.ComboRow, title="Sheet")
+    assert preview_text(ready) == "Screws"
+
+
 def test_series_stop_text():
     assert texts.series_stop_text(3) == (
         "Printing stopped at row 3. To continue, print again from row 3."

@@ -21,7 +21,14 @@ from etiketto.job import Job, PrepareFailed
 from etiketto.merge.fill import VARIABLE
 from etiketto.model import CodeElement, Label, TextElement
 from etiketto.render import DEFAULT_SAFE_MM, check_code
-from etiketto.variables import Values, column_names, expand, expand_label, uses_counter
+from etiketto.variables import (
+    Values,
+    column_names,
+    expand,
+    expand_label,
+    uses_counter,
+    varies_per_copy,
+)
 
 # what a QR code takes in any case: bytes, error correction M, the largest size
 QR_BYTES = 2331
@@ -192,19 +199,23 @@ def unprintable_rows(
     renderer would print a crossed-out box instead. Only codes with column
     placeholders are checked; the others are the same for every row and
     the preview already shows their problem. Variables are filled in with
-    `values` (those of the first label), the counter as it will be on the
-    first copy of each row; the other copies of a row differ only in
-    numbers that grow (a code that takes the first takes them too, except
-    an EAN-13 whose digits a counter would overflow)."""
+    `values` (those of the first label), the counter as it will be on each
+    copy of each row: a counter can overflow a code's digits on a later
+    copy (an EAN-13 at 99999 + 1). Without variables that change per copy
+    one check per row does."""
     codes = [e for e in label.elements if isinstance(e, CodeElement) and column_names(e.data)]
     if not codes:
         return []
     first = values or Values(datetime.now())
+    copies = range(1, first.copies + 1) if varies_per_copy(label) else range(1, 2)
     bad = []
     for position, index in enumerate(indexes):
         row_values = replace(first, counter=first.counter + first.step * first.copies * position)
         if any(
-            _code_fails(replace(code, data=expand(code.data, row_values, rows[index])[0]))
+            _code_fails(
+                replace(code, data=expand(code.data, row_values.for_copy(copy), rows[index])[0])
+            )
+            for copy in copies
             for code in codes
         ):
             bad.append(index + 1)
