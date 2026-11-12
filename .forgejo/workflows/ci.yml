@@ -76,6 +76,8 @@ jobs:
         working-directory: src
         run: |
           python3 -m venv --system-site-packages .venv
+          # --group needs pip 25.1 or newer, whatever the image brings
+          .venv/bin/pip install -q --upgrade "pip>=25.1"
           .venv/bin/pip install -q -e . --group dev
 
       - name: ruff format
@@ -152,6 +154,8 @@ jobs:
         working-directory: src
         run: |
           python3 -m venv --system-site-packages .venv
+          # --group needs pip 25.1 or newer, whatever the image brings
+          .venv/bin/pip install -q --upgrade "pip>=25.1"
           .venv/bin/pip install -q -e . --group dev
 
       - name: mypy (types)

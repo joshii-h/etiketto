@@ -21,7 +21,7 @@ import pytest
 from backend_contract import BackendContract
 from hypothesis import given
 from hypothesis import strategies as st
-from packbits import unpackbits
+from packbits_ref import unpackbits
 from PIL import Image
 
 from etiketto.backends import brother_ql as ql

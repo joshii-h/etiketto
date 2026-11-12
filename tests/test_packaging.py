@@ -49,6 +49,9 @@ def test_check_sh_runs_what_the_ci_runs():
     for tool in ("pytest", "ruff", "mypy", "bandit", "radon", "xenon", "pip-audit", "pyyaml"):
         assert tool in dev, tool
     assert ci.count("pip install -q -e . --group dev") == 2  # both jobs: the same tools
+    assert ci.count('pip install -q --upgrade "pip>=25.1"') == 2  # --group needs it
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "-e . --group dev" in readme
 
 
 def test_the_flatpak_ships_every_licence_once():
@@ -60,9 +63,8 @@ def test_the_flatpak_ships_every_licence_once():
     can be checked for updates."""
     import re
 
-    import pytest
+    import yaml  # in the dev dependency group: the test runs, never skips
 
-    yaml = pytest.importorskip("yaml")
     path = ROOT / "build-aux" / "flatpak" / "xyz.joshuahirsig.Etiketto.yml"
     manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
     target = "${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/"

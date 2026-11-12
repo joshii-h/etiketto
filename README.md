@@ -268,7 +268,7 @@ each filling the label's height unless a text or symbol has a fixed size.
 
 ```sh
 uv venv --system-site-packages .venv
-uv pip install --python .venv/bin/python -e . pytest hypothesis ruff
+uv pip install --python .venv/bin/python -e . --group dev
 .venv/bin/python -m pytest
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 LANGUAGE=de .venv/bin/python -m etiketto.app
