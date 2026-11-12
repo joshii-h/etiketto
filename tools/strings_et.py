@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Printimise tihedus",
     "Higher values print darker": "Suuremad väärtused prindivad tumedamalt",
     "Label type": "Sildi tüüp",
+    "Protocol knowledge": "Protokolliteave",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Projektidest %(projects)s ja tootjate juhenditest, kirjutatud uuesti ilma nende koodita; vt THIRD_PARTY_NOTICES.md",
 }

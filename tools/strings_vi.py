@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Độ đậm khi in",
     "Higher values print darker": "Giá trị càng cao in càng đậm",
     "Label type": "Loại nhãn",
+    "Protocol knowledge": "Kiến thức về giao thức",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Từ %(projects)s và tài liệu hướng dẫn của nhà sản xuất, viết lại mà không dùng mã của họ; xem THIRD_PARTY_NOTICES.md",
 }

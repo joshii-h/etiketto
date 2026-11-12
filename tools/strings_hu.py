@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Nyomtatási sűrűség",
     "Higher values print darker": "A nagyobb értékek sötétebben nyomtatnak",
     "Label type": "Címketípus",
+    "Protocol knowledge": "Protokollismeret",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "A következőkből: %(projects)s, valamint a gyártók kézikönyveiből, újraírva a kódjuk nélkül; lásd THIRD_PARTY_NOTICES.md",
 }

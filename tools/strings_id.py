@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Kepekatan cetak",
     "Higher values print darker": "Nilai lebih tinggi mencetak lebih gelap",
     "Label type": "Jenis label",
+    "Protocol knowledge": "Pengetahuan protokol",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Dari %(projects)s dan panduan produsen, ditulis ulang tanpa kode mereka; lihat THIRD_PARTY_NOTICES.md",
 }

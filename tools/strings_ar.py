@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "كثافة الطباعة",
     "Higher values print darker": "القيم الأعلى تطبع بلون أغمق",
     "Label type": "نوع الملصقات",
+    "Protocol knowledge": "المعرفة بالبروتوكولات",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "من %(projects)s ومن أدلة الشركات المصنّعة، مكتوبة من جديد دون شيفرتها؛ انظر THIRD_PARTY_NOTICES.md",
 }

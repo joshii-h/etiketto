@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Gęstość druku",
     "Higher values print darker": "Wyższe wartości drukują ciemniej",
     "Label type": "Rodzaj etykiet",
+    "Protocol knowledge": "Wiedza o protokołach",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Z %(projects)s oraz instrukcji producentów, napisane od nowa bez ich kodu; zob. THIRD_PARTY_NOTICES.md",
 }

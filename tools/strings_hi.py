@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "प्रिंट घनत्व",
     "Higher values print darker": "ऊँचे मान ज़्यादा गहरा प्रिंट करते हैं",
     "Label type": "लेबल का प्रकार",
+    "Protocol knowledge": "प्रोटोकॉल की जानकारी",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s और निर्माताओं की पुस्तिकाओं से, उनके कोड के बिना नए सिरे से लिखा गया; देखें THIRD_PARTY_NOTICES.md",
 }

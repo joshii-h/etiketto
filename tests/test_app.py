@@ -3720,3 +3720,17 @@ def test_serial_port_and_battery_texts():
     assert "“dialout”" in text and "usermod -aG dialout" in text and "“uucp”" in text
     assert texts.code_text("battery", MILLIMETRES).startswith("The printer's batteries are low.")
     assert texts.MEDIA_TYPE_NAMES["black_mark"] == "Labels with black marks"
+
+
+def test_third_party_notices_name_everything_the_about_dialog_credits():
+    """THIRD_PARTY_NOTICES.md is the complete list: every legal section of
+    the About dialog and every protocol source is in it."""
+    from pathlib import Path
+
+    notices = (Path(__file__).parent.parent / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+    for name, _holder, _license, _text in app.LEGAL:
+        for part in name.split(", "):
+            assert part in notices, part
+    for source in app.PROTOCOL_SOURCES:
+        assert "**%s**" % source in notices, source
+    assert "labelburg" in notices

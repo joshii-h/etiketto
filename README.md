@@ -348,12 +348,20 @@ and [Thermalith](https://github.com/EvilGeniusLabs-ca/Thermalith) /
 Niimbot.Net (EvilGeniusLabs, GPL-3.0-or-later); no code of either is
 included.
 
+The variables (counter, date and UUID in texts and codes) were inspired by
+[labelburg](https://github.com/DL6ER/labelburg) (DL6ER, GPL-3.0); ideas
+only, no code of it is included.
+
+Everything Etiketto ships or derives from, with licenses and notices, is
+listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
-templates (`etiketto/sheets/templates.json`) are MIT licensed, the symbols
-(`etiketto/symbols/mdi.json.gz`) Apache-2.0 licensed, see Credits. Not
+templates (`etiketto/sheets/templates.json`) and the parts derived from
+ThermalPrint are MIT licensed, the symbols (`etiketto/symbols/mdi.json.gz`)
+Apache-2.0 licensed; the Flatpak also bundles BSD-3-Clause libraries (Zint,
+segno), see Credits and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Not
 affiliated with Brother Industries, cab Produkttechnik GmbH & Co. KG or the
 makers of the other printers; "Brother", "ColAura", "VC-500W", "P-touch",
 "TZe", "HSe", "cab", "EOS", "SQUIX", "MACH", "Zebra", "ZPL", "EPL", "TSC",

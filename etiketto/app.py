@@ -20,6 +20,52 @@ from etiketto.ui.window import Window  # noqa: E402
 
 APP_ID = "xyz.joshuahirsig.Etiketto"
 
+# what Etiketto ships or derives from, for the About dialog: (name,
+# copyright as the project states it, license, text of a custom license);
+# THIRD_PARTY_NOTICES.md has the details and the license texts
+LEGAL: tuple[tuple[str, str, Gtk.License, str | None], ...] = (
+    ("labelprinter", "© 2021 Andrea Micheloni and contributors", Gtk.License.AGPL_3_0, None),
+    ("gLabels", "© 2001-2026 Jaye Evins", Gtk.License.MIT_X11, None),
+    (
+        "Material Design Icons",
+        "© Austin Andrews and contributors (Pictogrammers)",
+        Gtk.License.APACHE_2_0,
+        None,
+    ),
+    ("ThermalPrint", "© 2026 Alexis Rios-Negron", Gtk.License.MIT_X11, None),
+    ("Zint", "© 2009-2025 Robin Stuart and contributors", Gtk.License.BSD_3, None),
+    ("zint-bindings", "© 2024-2025 Anna Zhukova", Gtk.License.APACHE_2_0, None),
+    ("segno", "© 2016-2025 Lars Heuer", Gtk.License.BSD_3, None),
+    (
+        "python-barcode",
+        "© 2010-2013 Thorsten Weimann, © 2017-2023 Hugo Osvaldo Barrera et al.",
+        Gtk.License.MIT_X11,
+        None,
+    ),
+    # Flatpak only (elsewhere the distribution's): Xpdf's code GPL-2.0-only OR
+    # GPL-3.0-only, Poppler's additions GPL-2.0-or-later
+    (
+        "Poppler, poppler-data",
+        "© The Poppler developers, © 1996-2011 Glyph &amp; Cog, LLC, © 1990-2019 Adobe",
+        Gtk.License.CUSTOM,
+        "GPL-2.0-only OR GPL-3.0-only; BSD-3-Clause (poppler-data CMaps)",
+    ),
+)
+# printer protocols written anew from what these document (no code of theirs)
+PROTOCOL_SOURCES = (
+    "LPrint",
+    "libcups",
+    "PAPPL",
+    "libcupsfilters",
+    "brother_ql",
+    "brother-ql-next",
+    "ptouch-print",
+    "ptouch",
+    "niimbluelib",
+    "Thermalith",
+    "barnguard",
+)
+
 
 class App(Adw.Application):
     def __init__(self):
@@ -140,18 +186,20 @@ class App(Adw.Application):
             # translators: replace with your name to be credited in the About dialog
             translator_credits=_("translator-credits"),
         )
-        # the code encoders (etiketto.codes); copyrights as their packages state them
-        for title, holder, license_type in (
-            ("Zint", "© 2009-2025 Robin Stuart and contributors", Gtk.License.BSD_3),
-            ("zint-bindings", "© 2024-2025 Anna Zhukova", Gtk.License.APACHE_2_0),
-            ("segno", "© 2016-2025 Lars Heuer", Gtk.License.BSD_3),
-            (
-                "python-barcode",
-                "© 2010-2013 Thorsten Weimann, © 2017-2023 Hugo Osvaldo Barrera et al.",
-                Gtk.License.MIT_X11,
+        for title, holder, license_type, text in LEGAL:
+            about.add_legal_section(title, holder, license_type, text)
+        about.add_legal_section(
+            _("Protocol knowledge"),
+            None,
+            Gtk.License.CUSTOM,
+            GLib.markup_escape_text(
+                _(
+                    "From %(projects)s and the manufacturers' manuals, written anew without "
+                    "their code; see THIRD_PARTY_NOTICES.md"
+                )
+                % {"projects": ", ".join(PROTOCOL_SOURCES)}
             ),
-        ):
-            about.add_legal_section(title, holder, license_type, None)
+        )
         about.present(self.get_active_window())
 
 

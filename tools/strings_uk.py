@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Щільність друку",
     "Higher values print darker": "Більші значення друкують темніше",
     "Label type": "Тип етикеток",
+    "Protocol knowledge": "Відомості про протоколи",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "З %(projects)s і посібників виробників, написано заново без їхнього коду; див. THIRD_PARTY_NOTICES.md",
 }

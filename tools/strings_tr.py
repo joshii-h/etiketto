@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "Baskı yoğunluğu",
     "Higher values print darker": "Daha yüksek değerler daha koyu basar",
     "Label type": "Etiket türü",
+    "Protocol knowledge": "Protokol bilgisi",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s ve üreticilerin kılavuzlarından, onların kodu kullanılmadan yeniden yazıldı; bkz. THIRD_PARTY_NOTICES.md",
 }

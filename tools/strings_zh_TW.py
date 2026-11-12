@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "列印濃度",
     "Higher values print darker": "數值越高列印越深",
     "Label type": "標籤類型",
+    "Protocol knowledge": "協定知識",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "依據 %(projects)s 及製造商手冊重新撰寫，未使用其程式碼；請參閱 THIRD_PARTY_NOTICES.md",
 }

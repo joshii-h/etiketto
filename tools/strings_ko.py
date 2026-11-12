@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Print density": "인쇄 농도",
     "Higher values print darker": "값이 높을수록 진하게 인쇄됩니다",
     "Label type": "라벨 종류",
+    "Protocol knowledge": "프로토콜 지식",
+    "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s 및 제조사 설명서를 바탕으로 해당 코드 없이 새로 작성함; THIRD_PARTY_NOTICES.md 참조",
 }
