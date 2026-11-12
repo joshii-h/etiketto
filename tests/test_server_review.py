@@ -144,7 +144,7 @@ def secured(make_server, server_env, tmp_path):
 
 def test_valid_tokens_work_from_a_blocked_address(secured):
     for _n in range(12):
-        call(secured.base, "GET", "/api/v1/labels", token="etk_wrong-token-0123456789")
+        call(secured.base, "GET", "/api/v1/labels", token="tav_wrong-token-0123456789")
     assert call(secured.base, "GET", "/api/v1/labels", token="nope")[0] == 429
     assert call(secured.base, "GET", "/api/v1/labels", token=token("viewer"))[0] == 200
     failures = secured.server.rate_limit._failures["127.0.0.1"]
@@ -360,7 +360,7 @@ def test_a_replaced_file_is_noticed_even_with_the_same_size_and_time(tmp_path):
     store = TokenStore(path)
     assert store.find(token("viewer"))
     info = path.stat()
-    other = tokens_text(viewer=("etk_viewer-token-9876543210", "preview", ""))
+    other = tokens_text(viewer=("tav_viewer-token-9876543210", "preview", ""))
     replacement = tmp_path / "new.toml"
     write(replacement, other)
     os.chmod(replacement, 0o600)
@@ -616,7 +616,7 @@ def test_token_file_locked_elsewhere(tmp_path, monkeypatch, capsys):
 
 def test_default_printer_among_the_tokens_own(make_server, server_env, tmp_path):
     printers = load_printers(write(tmp_path / "p.toml", PRINTERS))
-    entry = ("etk_office-token-0123456789", "print", 'printers = ["office"]')
+    entry = ("tav_office-token-0123456789", "print", 'printers = ["office"]')
     path = write(tmp_path / "t.toml", tokens_text(office=entry))
     os.chmod(path, 0o600)
     _server, base = make_server(printers=printers, tokens=TokenStore(path, printers))

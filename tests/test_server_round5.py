@@ -85,7 +85,7 @@ def test_unknown_ids_cost_as_much_as_scrypt_ids(tmp_path, monkeypatch):
     checked = []
     real = cfg.token_matches
     monkeypatch.setattr(cfg, "token_matches", lambda t, h: checked.append(h) or real(t, h))
-    unknown = "etk_%s_%s" % ("f" * 12, "y" * 43)
+    unknown = "tav_%s_%s" % ("f" * 12, "y" * 43)
     assert store.find(unknown) is None
     assert checked and checked[0].startswith("scrypt:")  # as slow as the known one
     checked.clear()

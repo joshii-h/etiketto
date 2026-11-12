@@ -127,7 +127,7 @@ description = "PC at gate 2"
 | `admin` | as `print`, and see and cancel every job |
 
 - `tavletta token new shipping-pc --role print --tokens tokens.toml`
-  makes a random token, `etk_<id>_<secret>` (12 hex digits, 43 random
+  makes a random token, `tav_<id>_<secret>` (12 hex digits, 43 random
   characters), adds its SHA-256 hash and the id to the file and prints
   the token once. The file is made with mode 600 if new and locked while
   the entry is added (two at once lose none); the result is checked as
@@ -138,7 +138,7 @@ description = "PC at gate 2"
   (asked for without echo on a terminal; printable ASCII, at least 16
   characters; not printed again, a line says it was added; refused if it
   is in the file already under another name, or if it looks like a
-  made one, `etk_` with an id: it would be looked for by that id, which
+  made one, `tav_` with an id: it would be looked for by that id, which
   no entry has) and keeps it as an scrypt
   hash, which slows down guessing a chosen token;
   `--scrypt` does that for a made one too (random tokens need no slow

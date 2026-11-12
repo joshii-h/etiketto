@@ -27,6 +27,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
+from types import EllipsisType
 from urllib.parse import urlsplit, urlunsplit
 
 from tavletta import __version__
@@ -36,14 +37,17 @@ from tavletta.cli import (
     EXIT_COUNTER,
     EXIT_FILE,
     EXIT_LABEL,
+    QUERY_FINISH,
+    QUERY_WAIT,
     REFUSED,
     CliError,
     _check_rows,
     _options,
     _sheet_job,
     apply_assignments,
+    ask_printer,
 )
-from tavletta.job import Job, PrepareFailed
+from tavletta.job import Job, PrepareFailed, preview_image
 from tavletta.merge import MergeError, read_book
 from tavletta.model import (
     CodeElement,
@@ -56,7 +60,7 @@ from tavletta.model import (
     locked,
     writable,
 )
-from tavletta.render import RenderTooLarge, RenderWarning, limited, render
+from tavletta.render import RenderTooLarge, RenderWarning, limited
 from tavletta.serial import (
     Series,
     SeriesError,
@@ -103,7 +107,8 @@ MAX_ELEMENTS = 200
 MAX_TEXT = 5000  # characters of one text or code, filled in
 MAX_LINES = 100
 # of any one image made while rendering, and of all elements of a label
-# drawn together; image files and QR codes each get half of it (render.Limits)
+# drawn together; the image files of a label, decoded, get half of it
+# together (render.Limits.image_pixels)
 MAX_PIXELS = 40_000_000
 
 
@@ -451,11 +456,12 @@ class Service:
             return {"state": "UNREACHABLE", "error": e.to_dict()}
 
     def _named_settings(self, printer: NamedPrinter) -> Settings:
-        """The app's settings, with this printer's own for its model."""
+        """The app's settings, with this printer's own for its model: under
+        the key the model's settings are kept by (Backend.settings_id; the
+        die-cut QL keeps them with the QL's)."""
         base = self._settings()
-        return Settings(
-            {"units": base.units, "printers": {printer.backend: dict(printer.settings)}}
-        )
+        key = get_backend(printer.backend).settings_id
+        return Settings({"units": base.units, "printers": {key: dict(printer.settings)}})
 
     def _named(self, name: object, caller: Caller) -> NamedPrinter:
         assert self.named is not None
@@ -719,6 +725,8 @@ class Service:
             raise _cli_error(e) from None
         _check_limits(label, table)
         options = _options(backend, printer, copies, label.gap_mm)
+        if named:  # its check renders for what is known of this printer
+            options = replace(options, host=named.host)
         values = Values.for_label(
             label, overrides.now or self._clock(), copies, custom=overrides.custom
         )
@@ -801,14 +809,14 @@ class Service:
         with self._rendering(prepared):
             label, warnings = job.expanded(1)
             if request.view == "printer":
+                # the print's own render tells what would print wrongly
+                warnings = warnings + self._print_warnings(job, label)
                 image = self._printer_image(job, label)
             else:
-                caps = prepared.backend.capabilities
-                rendered = render(
-                    label, caps.dpi, safe_mm=job.safe_mm, min_length_mm=caps.min_length_mm
-                )
+                # as the window's preview: the one render path (mono inks,
+                # the printer's raster and reduction, the label sheet)
+                rendered, image = self._preview_image(prepared, job, label)
                 warnings = warnings + rendered.warnings
-                image = prepared.backend.preview(rendered.image, prepared.options.mode)
             buffer = io.BytesIO()
             image.save(buffer, format="PNG")
         texts = [_warning(w.key, warning_text(w)) for w in warnings]
@@ -829,13 +837,13 @@ class Service:
                 raise _too_large() from None
 
     @contextlib.contextmanager
-    def render_slot(self, timeout: float | None = RENDER_WAIT) -> Iterator[None]:
+    def render_slot(self, timeout: float | None | EllipsisType = ...) -> Iterator[None]:
         """One of the RENDERS slots every render takes: previews, checks and
         print jobs alike. Held by this thread already: nothing more to take
         (the HTTP server takes it before it parses a request). With
         MAX_WAITERS requests waiting already, the next one gets 503 at once,
-        as one that waits `timeout` seconds; print jobs (timeout None) wait
-        their turn."""
+        as one that waits `timeout` seconds (by default RENDER_WAIT, as it
+        is when asked); print jobs (timeout None) wait their turn."""
         if getattr(self._held, "count", 0):
             self._held.count += 1
             try:
@@ -844,7 +852,7 @@ class Service:
                 if self._held.count:  # 0: given back meanwhile (slot_released)
                     self._held.count -= 1
             return
-        self._take(timeout)
+        self._take(RENDER_WAIT if timeout is ... else timeout)
         self._held.count = 1
         try:
             yield
@@ -879,6 +887,38 @@ class Service:
         finally:
             with self._waiting_lock:
                 self._waiting -= 1
+
+    @staticmethod
+    def _preview_image(prepared: Prepared, job: Job, label: Label):
+        """The label as the window's preview shows it (job.preview_image())."""
+        sheet = prepared.sheet
+        try:
+            rendered, image, _dpi = preview_image(
+                prepared.backend,
+                label,
+                job.options,
+                job.safe_mm,
+                sheet.sheet if sheet else None,
+                sheet.rotated if sheet else False,
+            )
+        except RenderTooLarge:
+            raise
+        except Exception:  # noqa: BLE001 - whatever went wrong while drawing
+            raise ApiError(
+                422, "prepare_failed", _("The label cannot be prepared for printing.")
+            ) from None
+        return rendered, image
+
+    @staticmethod
+    def _print_warnings(job: Job, label: Label) -> list[RenderWarning]:
+        """What the print's render of this label points out (Job.check())."""
+        try:
+            rendered = job.backend.render_label(label, job.options, job.safe_mm)
+        except RenderTooLarge:
+            raise
+        except Exception:  # noqa: BLE001 - told by the printer image that follows
+            return []
+        return rendered.warnings
 
     @staticmethod
     def _printer_image(job: Job, label: Label):
@@ -1008,6 +1048,7 @@ class Service:
 
     def _print(self, job: PrintJob, prepared: Prepared, save: bool):
         caps = prepared.backend.capabilities
+        prepared = self._for_the_printer(job, prepared)
         if save:
             job.state = WAITING  # until the label file is free
         # every render of the job takes a render slot (waits for it): print
@@ -1024,6 +1065,27 @@ class Service:
             if prepared.rows:
                 return self._print_series(job, prepared, values, save)
             return self._print_one(job, prepared, values, save)
+
+    def _for_the_printer(self, job: PrintJob, prepared: Prepared) -> Prepared:
+        """The job's options for this printer and what it reports, as the
+        command line asks before printing (cli._for_the_printer): rendered
+        for its model, tape and resolution, with the extras it has. A
+        printer of printers.toml is asked through _probe() (an answer of
+        the last seconds counts); one that does not answer prints with
+        what is known of it."""
+        info = None
+        backend = prepared.backend
+        if backend.query_before_render:
+            if prepared.named is not None:
+                outcome = self._probe(prepared.named)
+                info = None if isinstance(outcome, Exception) else outcome
+            else:
+                # waits as the command line does, all of it at once: a
+                # question left behind asks a copy of the backend
+                info = ask_printer(backend, job.host, QUERY_WAIT + QUERY_FINISH, 0.0)
+        options = prepared.options
+        options = prepared.printer.options(info, options.copies, options.gap_mm, host=job.host)
+        return replace(prepared, options=options)
 
     def _fresh_values(self, prepared: Prepared, save: bool) -> Values:
         """The values when the job prints: the time of printing (unless

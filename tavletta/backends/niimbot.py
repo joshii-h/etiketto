@@ -917,9 +917,19 @@ class Niimbot(Backend):
 
     def __init__(self) -> None:
         self.model: Model | None = None  # of the printer last asked
+        # the models the printers reported, by address: a job renders for
+        # its own printer (PrintOptions.host), also beside others
+        self.models: dict[str, Model] = {}
 
-    def _model(self, info: PrinterInfo | None) -> Model | None:
-        return BY_NAME.get(info.model) if info else self.model
+    def _model(self, info: PrinterInfo | None, host: str = "") -> Model | None:
+        """The model of the answer; else the one this printer reported,
+        without an address the one last asked."""
+        if info:
+            return BY_NAME.get(info.model)
+        return self.models.get(host) if host else self.model
+
+    def _learn(self, host: str, model: Model) -> None:
+        self.models[host] = self.model = model
 
     def display_name(self, info: PrinterInfo | None) -> str:
         if info and info.model:
@@ -965,10 +975,12 @@ class Niimbot(Backend):
                 if "reported" not in e.params:
                     raise
                 error = e.code
-        if identity:
-            self.model = identity.model or self.model
+        known = self.models.get(host)
+        if identity and identity.model:
+            self._learn(host, identity.model)
+            known = identity.model
         return PrinterInfo(
-            model=_model_name(identity, self.model),
+            model=_model_name(identity, known),
             tape_mm=None,
             remaining_mm=None,
             total_mm=None,
@@ -978,7 +990,7 @@ class Niimbot(Backend):
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
-        model = self._model(options.info)
+        model = self._model(options.info, options.host)
         return Raster(model.dpi if model else self.capabilities.dpi)
 
     def prepare(
@@ -1008,7 +1020,7 @@ class Niimbot(Backend):
             model = identity.model
             if model is None:
                 raise PrinterError("unknown NIIMBOT model id %d" % identity.model_id)
-            self.model = model
+            self._learn(host, model)
             task = task_for(model, identity.protocol)
             job = _job_for(image, rendered, model, task, options, copies)
             try:

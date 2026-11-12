@@ -60,10 +60,10 @@ def tokens_text(**entries):
 
 
 TOKENS = {
-    "viewer": ("etk_viewer-token-0123456789", "preview", ""),
-    "terminal": ("etk_terminal-token-0123456789", "print", 'printers = ["lager"]'),
-    "other": ("etk_other-token-0123456789", "print", ""),
-    "boss": ("etk_boss-token-0123456789", "admin", ""),
+    "viewer": ("tav_viewer-token-0123456789", "preview", ""),
+    "terminal": ("tav_terminal-token-0123456789", "print", 'printers = ["lager"]'),
+    "other": ("tav_other-token-0123456789", "print", ""),
+    "boss": ("tav_boss-token-0123456789", "admin", ""),
 }
 
 
@@ -155,7 +155,7 @@ def test_hashes():
     for bad in ("plain", "sha256:xyz", "scrypt:3:8:1:AA==:AA==", "scrypt:a:b:c:d:e", "md5:00"):
         assert not cfg.token_matches("secret", bad)
     token, ident = cfg.new_token()
-    assert token.startswith("etk_%s_" % ident) and len(token) > 50
+    assert token.startswith("tav_%s_" % ident) and len(token) > 50
     assert cfg.TOKEN_ID.match(token).group(1) == ident
 
 
@@ -211,7 +211,7 @@ def test_token_store_expiry_revocation_and_broken_files(tmp_path, caplog, printe
     store = TokenStore(path, load_printers(printers_file))
     assert store.find(token("boss")).role == "admin"
     assert store.find(token("boss")).role == "admin"  # remembered
-    assert store.find("etk_wrong") is None
+    assert store.find("tav_wrong") is None
     # revoking: remove the entry; the file is read again when it changes
     rest = {k: v for k, v in TOKENS.items() if k != "boss"}
     write(path, tokens_text(**rest))
@@ -266,7 +266,7 @@ def test_roles_over_http(secured, server_env):
     assert call(secured, "GET", path, token=other)[0] == 404  # not theirs
     assert call(secured, "GET", path, token=viewer)[0] == 403
     assert call(secured, "GET", path, token=boss)[2]["owner"] == "terminal"
-    assert call(secured, "GET", "/api/v1/labels", token="etk_nope")[0] == 401
+    assert call(secured, "GET", "/api/v1/labels", token="tav_nope")[0] == 401
     assert call(secured, "GET", "/api/v1/labels")[0] == 401
 
 
@@ -447,7 +447,7 @@ def test_token_new(tmp_path, capsys, printers_file):
     assert run("token", "new", "terminal", "--tokens", path) == cli.EXIT_OK
     out = capsys.readouterr()
     first = out.out.strip()
-    assert first.startswith("etk_") and "only this once" in out.err
+    assert first.startswith("tav_") and "only this once" in out.err
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
     assert first not in path.read_text()
     assert TokenStore(path).find(first).role == "print"

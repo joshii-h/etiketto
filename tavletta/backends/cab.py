@@ -22,6 +22,7 @@ import json
 import math
 import re
 import socket
+import threading
 import time
 from contextlib import AbstractContextManager, suppress
 from dataclasses import dataclass, replace
@@ -93,6 +94,10 @@ WEB_PORT = 80
 WEB_TIMEOUT = 2.0  # seconds for the web interface's setup, an optional hint
 SETUP_PATH = "/cgi-bin/get?cmd=1"  # the setup as JSON, read without a password
 MAX_SETUP_BYTES = 1 << 20
+# the setup read is kept this long per printer: a job of many labels, each
+# sent on its own (a counter), asks once, not once per label (up to
+# WEB_TIMEOUT each where port 80 is filtered)
+SETUP_SECONDS = 30.0
 
 # common die-cut sizes (width × height); the first one is the default
 LABEL_SIZES = (
@@ -277,8 +282,23 @@ def _fetch_setup(host: str) -> bytes | None:
         return None
 
 
-def web_setup(host: str) -> Setup:
-    return parse_setup(_fetch_setup(host))
+_setups: dict[str, tuple[float, Setup]] = {}  # host -> (when read, setup)
+_setups_lock = threading.Lock()
+
+
+def web_setup(host: str, fresh: bool = False) -> Setup:
+    """The setup of the printer's web interface, read again after
+    SETUP_SECONDS (fresh: now); what told nothing (no answer) is kept as
+    long."""
+    now = _clock()
+    with _setups_lock:
+        cached = _setups.get(host)
+    if not fresh and cached and 0 <= now - cached[0] < SETUP_SECONDS:
+        return cached[1]
+    setup = parse_setup(_fetch_setup(host))
+    with _setups_lock:
+        _setups[host] = (now, setup)
+    return setup
 
 
 # --- the job --------------------------------------------------------------------
@@ -302,16 +322,20 @@ def build_job(
     method: str = "printer",
     speed: int = DEFAULT_SPEED,
     upside_down: bool = False,
+    size_mm: tuple[float, float] | None = None,
 ) -> bytes:
     """Download the image and print it on die-cut labels of its size.
 
     The image is in printer orientation: x across the print head, y along the
-    feed, one pixel per dot. A print method other than "printer" is sent
-    with the speed (H needs one) and heat 0, which adds nothing to the heat
-    set on the printer. upside_down: O R, the whole label turned by 180°
-    (O must directly follow S)."""
-    width = image.width / dots_per_mm
-    height = image.height / dots_per_mm
+    feed, one pixel per dot. size_mm: the label's size (width across, height
+    along), sent as it is where the image agrees with it within a dot (an
+    18.6 mm label is 18.6, not the 18.58 of its 223 dots), else the image's.
+    A print method other than "printer" is sent with the speed (H needs
+    one) and heat 0, which adds nothing to the heat set on the printer.
+    upside_down: O R, the whole label turned by 180° (O must directly
+    follow S)."""
+    width = _size(image.width, dots_per_mm, size_mm[0] if size_mm else None)
+    height = _size(image.height, dots_per_mm, size_mm[1] if size_mm else None)
     data = base64.b64encode(encode_png(image))
     lines = [
         b"d PNG;" + IMAGE_NAME.encode(),
@@ -334,6 +358,14 @@ def build_job(
         b"A %d" % max(1, copies),
     ]
     return CR.join(lines) + CR
+
+
+def _size(pixels: int, dots_per_mm: float, mm: float | None) -> float:
+    """The label's size in mm if the pixels make it within a dot, else
+    the pixels' size."""
+    if mm is not None and abs(mm * dots_per_mm - pixels) <= 1:
+        return mm
+    return pixels / dots_per_mm
 
 
 # --- connection -----------------------------------------------------------------
@@ -421,8 +453,22 @@ class Cab(Backend):
 
     def __init__(self, port: int = DEFAULT_PORT):
         self.port = port
-        # the resolution of the printer last asked; prepare() renders for it
+        # the resolutions the printers reported, by address: prepare()
+        # renders for the job's printer (PrintOptions.host); one backend
+        # serves every cab printer of a print server
+        self.reported: dict[str, float] = {}
+        # the printer last asked: for a job whose printer is not known
         self.dots_per_mm = DEFAULT_DOTS_PER_MM
+
+    def _learn(self, host: str, dots_per_mm: float) -> None:
+        self.reported[host] = self.dots_per_mm = dots_per_mm
+
+    def _dots(self, host: str) -> float:
+        """The resolution of this printer as reported, else the default;
+        without an address the one of the printer last asked."""
+        if not host:
+            return self.dots_per_mm
+        return self.reported.get(host, DEFAULT_DOTS_PER_MM)
 
     def display_name(self, info: PrinterInfo | None) -> str:
         """ "cab EOS2/300": the printer names its model and resolution."""
@@ -451,8 +497,10 @@ class Cab(Backend):
                 # a printer with a problem may not answer text commands:
                 # the status is what matters
                 version, pitch = Version(), None
+        dots = self._dots(host)
         if version.model:
-            self.dots_per_mm = version.dots_per_mm
+            dots = version.dots_per_mm
+            self._learn(host, dots)
         error = status_error(status)
         return PrinterInfo(
             model=version.model or "cab",
@@ -463,13 +511,14 @@ class Cab(Backend):
             error=error.code if error else "",
             firmware=version.firmware,
             pitch_mm=pitch,
-            dpi=dpi_for(self.dots_per_mm),
-            print_method=web_setup(host).method,
+            dpi=dpi_for(dots),
+            # asked for the printer's state: read now, kept for the print
+            print_method=web_setup(host, fresh=True).method,
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         info = options.info  # this job's answer, else the printer as last asked
-        return Raster(info.dpi if info and info.dpi else dpi_for(self.dots_per_mm))
+        return Raster(info.dpi if info and info.dpi else dpi_for(self._dots(options.host)))
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
@@ -482,6 +531,8 @@ class Cab(Backend):
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)
         image.info["dots_per_mm"] = dots
+        # in printer orientation too: x across the print head (build_job)
+        image.info["size_mm"] = label.media_size()
         return image
 
     def print_label(
@@ -491,7 +542,7 @@ class Cab(Backend):
         options: PrintOptions,
         progress: ProgressCallback | None = None,
     ) -> PrintResult | None:
-        rendered = float(image.info.get("dots_per_mm", self.dots_per_mm))
+        rendered = float(image.info.get("dots_per_mm", self._dots(host)))
         check_width(image.width / rendered, self.capabilities)
         copies = max(1, options.copies)
         method = str(self.setting(options, "method"))
@@ -502,11 +553,14 @@ class Cab(Backend):
             # the printer may not have been asked yet (switched on later)
             version = s.version()
             dots = version.dots_per_mm if version.model else rendered
-            self.dots_per_mm = dots
+            self._learn(host, dots)
+            size_mm = image.info.get("size_mm")
             if not math.isclose(dots, rendered):
                 image = _rescale(image, dots / rendered)
             upside_down = self.setting(options, "upside_down") is True
-            job = build_job(image, dots, options.gap_mm, copies, method, speed, upside_down)
+            job = build_job(
+                image, dots, options.gap_mm, copies, method, speed, upside_down, size_mm
+            )
             _wait_idle(s)
             try:
                 # a job cut off while sending would leave a partial image

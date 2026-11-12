@@ -115,7 +115,7 @@ def test_an_unknown_id_costs_one_check_of_the_usual_kind(tmp_path, monkeypatch, 
     monkeypatch.setattr(cfg, "token_matches", lambda t, h: checked.append(h) or real(t, h))
     made = []
     monkeypatch.setattr(cfg, "hash_token", lambda *a: made.append(a) or "")
-    assert store.find("etk_%s_%s" % ("a" * 12, "z" * 43)) is None
+    assert store.find("tav_%s_%s" % ("a" * 12, "z" * 43)) is None
     assert len(checked) == 1 and checked[0].startswith(dummy)
     assert made == []  # the dummy was made when the file was read, not now
 
@@ -125,7 +125,7 @@ def test_an_unknown_id_costs_one_check_of_the_usual_kind(tmp_path, monkeypatch, 
 
 def test_a_chosen_token_must_not_look_like_a_made_one(tmp_path, capsys, monkeypatch):
     path = tmp_path / "tokens.toml"
-    chosen = "etk_%s_%s" % ("1" * 12, "q" * 43)
+    chosen = "tav_%s_%s" % ("1" * 12, "q" * 43)
     monkeypatch.setattr(sys, "stdin", io.StringIO(chosen + "\n"))
     assert run("token", "new", "a", "--tokens", path, "--from-stdin") == cli.EXIT_USAGE
     assert "must not look like a made one" in capsys.readouterr().err
