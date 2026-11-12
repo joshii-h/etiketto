@@ -43,6 +43,7 @@ from etiketto.ui.texts import (
     QUALITY_NAMES,
     data_error_text,
     error_details,
+    printed_remark,
     printed_text,
     printer_error_text,
     series_stop_text,
@@ -596,7 +597,7 @@ class PrintFlow:
             try:
                 outcome = print_series(backend, host, series, progress, self._stop)
             except UnprintableRows as e:
-                GLib.idle_add(self.series_refused, e, options, series.indexes)
+                GLib.idle_add(self.series_refused, e, options, series.indexes, series.sheet)
                 return
             except SeriesError as e:
                 GLib.idle_add(self.series_failed, e)
@@ -629,10 +630,15 @@ class PrintFlow:
         return False
 
     def series_refused(
-        self, error: UnprintableRows, options: PrintOptions, indexes: Sequence[int]
+        self,
+        error: UnprintableRows,
+        options: PrintOptions,
+        indexes: Sequence[int],
+        sheet: SheetJob | None = None,
     ) -> bool:
         """Codes of some rows cannot be drawn: nothing printed yet. Print the
-        other rows, or correct the data file first."""
+        other rows (on the same label sheet, if any), or correct the data
+        file first."""
         self._finish()
         bad = set(error.rows)
         shown = ", ".join(str(row) for row in error.rows[:ROWS_LISTED])
@@ -657,7 +663,7 @@ class PrintFlow:
 
         def response(_dialog, result: str) -> None:
             if result == "skip":
-                self.start_series(options, others)
+                self.start_series(options, others, sheet)
 
         dialog.connect("response", response)
         self.window.present_dialog(dialog)
@@ -674,10 +680,11 @@ class PrintFlow:
         if not outcome.printed:  # nothing to print: print_series() was given no rows
             return False
         first, last = outcome.printed[0], outcome.printed[-1]
+        remark = printed_remark(options, outcome.result)  # queued, not confirmed, other mode
         if outcome.stopped:
             text = _("Stopped after row %(row)d") % {"row": last}
-        elif outcome.result and outcome.result.mode and outcome.result.mode != options.mode:
-            text = printed_text(options, outcome.result)
+        elif remark:
+            text = remark
         elif first == last:
             text = _("Printed row %(row)d") % {"row": first}
         else:

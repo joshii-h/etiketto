@@ -572,3 +572,33 @@ def test_where_a_series_on_sheets_goes_on():
         "Printing stopped at row 3. To continue, print again from row 3. "
         "Copies of row 3 already printed: 1. Row 3 goes at position 4 of sheet 2."
     )
+
+
+def test_rows_left_out_keep_the_label_sheet(office, monkeypatch):
+    """Codes of some rows cannot be made: printing the others stays on the
+    label sheet."""
+    from etiketto.backends.base import PrintOptions
+    from etiketto.serial import UnprintableRows
+    from etiketto.sheets.layout import SheetJob
+
+    win = office
+    started = []
+    monkeypatch.setattr(
+        win.print_flow,
+        "start_series",
+        lambda options, indexes, sheet=None: started.append((list(indexes), sheet)),
+    )
+    sheet = SheetJob(find_sheet("Avery L7160"), 3)
+    win.print_flow.series_refused(UnprintableRows([2]), PrintOptions(), [0, 1, 2], sheet)
+    respond(win.get_visible_dialog(), "skip")
+    assert started == [([0, 2], sheet)]
+
+
+def test_a_series_the_printer_did_not_confirm_says_so(office):
+    from etiketto.backends.base import PrintOptions, PrintResult
+    from etiketto.serial import SeriesResult
+
+    win = office
+    outcome = SeriesResult(printed=[1, 2], result=PrintResult(unconfirmed=True))
+    win.print_flow.series_done(outcome, PrintOptions())
+    assert toast_titles(win)[-1] == "Sent to the printer – it did not confirm printing"

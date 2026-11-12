@@ -10,7 +10,7 @@ same image, or from one render per position.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import replace
 from datetime import datetime
 
@@ -29,6 +29,9 @@ from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM, RenderWarning
 from etiketto.sheets.layout import Copies, LabelSource, Pages, SheetJob
 from etiketto.variables import Values, expand_label, uses_counter, varies_per_copy
+
+# serial labels on sheets: position n (from 0) -> its values and data row
+PositionValues = Callable[[int], tuple[Values, Mapping[str, str] | None]]
 
 
 class PrepareFailed(Exception):
@@ -58,9 +61,12 @@ class Job:
         values: Values | None = None,
         columns: Mapping[str, str] | None = None,
         sheet: SheetJob | None = None,
+        positions: PositionValues | None = None,
     ):
         """sheet: print on label sheets; options.copies is then the number
-        of labels (sheet.count)."""
+        of labels (sheet.count). positions: what position n of the sheets
+        is filled with (values and data row; serial labels on sheets),
+        instead of copy n + 1 of this label."""
         self.backend = backend
         self.sheet = sheet
         self.label = label
@@ -68,11 +74,20 @@ class Job:
         self.safe_mm = safe_mm
         self.values = values or Values.for_label(label, datetime.now(), options.copies)
         self.columns = columns  # serial labels: the row the placeholders are filled from
+        self.positions = positions
+        self.position: int | None = None  # on sheets: the position being rendered
         self.printed = 0
         # the first label is filled in once: its UUID is the same in the
         # check and the print; the others are made as they are needed, a
         # job of many copies does not keep them all
         self._first: tuple[Label, list[RenderWarning]] | None = None
+
+    def label_at(self, n: int) -> Label:
+        """The label for position n (from 0) of the sheets."""
+        if self.positions is None:
+            return self.expanded(n + 1)[0]
+        values, columns = self.positions(n)
+        return expand_label(self.label, values, columns)[0]
 
     def expanded(self, copy: int) -> tuple[Label, list[RenderWarning]]:
         """The label of the given copy with its variables filled in, and the
@@ -112,7 +127,8 @@ class Job:
 
     def image(self, label: Label) -> Image.Image:
         """The image the printer gets for one label of the job (labels())."""
-        options = replace(self.options, copies=1) if self.per_copy else self.options
+        one_each = self.per_copy or self.positions is not None
+        options = replace(self.options, copies=1) if one_each else self.options
         try:
             return self.backend.prepare(label, options, self.safe_mm)
         except Exception as e:  # noqa: BLE001 - whatever went wrong while drawing
@@ -175,7 +191,8 @@ class Job:
     ) -> PrintResult | None:
         """The labels on sheets. A backend's error counts printed sheets
         (params "pages"): the labels on them count as printed."""
-        first = None if self.per_copy else self.image(self.expanded(1)[0])
+        each = self.per_copy or self.positions is not None
+        first = None if each else self.image(self.expanded(1)[0])
         source: LabelSource = _EachCopy(self) if first is None else Copies(first)
         slots = sheet.slots()
         pages = Pages(sheet, source, self.backend.capabilities.dpi)
@@ -218,7 +235,8 @@ class _EachCopy:
         self.job, self.dpi = job, dpi
 
     def __call__(self, n: int) -> Image.Image:
-        image = self.job.image(self.job.expanded(n + 1)[0])
+        self.job.position = n
+        image = self.job.image(self.job.label_at(n))
         render_at = image.info.get("render_at")
         if self.dpi is not None and callable(render_at):
             return render_at(self.dpi)

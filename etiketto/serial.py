@@ -16,14 +16,12 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 
-from PIL import Image
-
-from etiketto.backends.base import Backend, PrinterError, PrintOptions, PrintResult, Progress
-from etiketto.job import Job, PrepareFailed
+from etiketto.backends.base import Backend, PrintOptions, PrintResult, Progress
+from etiketto.job import Job, PrepareFailed, merge_results
 from etiketto.merge.fill import VARIABLE
 from etiketto.model import CodeElement, Label, TextElement
 from etiketto.render import DEFAULT_SAFE_MM, check_code
-from etiketto.sheets.layout import Pages, SheetJob
+from etiketto.sheets.layout import SheetJob
 from etiketto.variables import (
     Values,
     column_names,
@@ -286,7 +284,8 @@ def print_series(
         start = replace(values, counter=values.counter + values.step * outcome.labels)
         job = Job(backend, series.label, series.options, series.safe_mm, start, series.rows[index])
         try:
-            outcome.result = job.run(host, report) or outcome.result
+            # queued, not confirmed or another mode on any row: the series says so
+            outcome.result = merge_results([outcome.result, job.run(host, report)])
         except PrepareFailed as e:
             cause = e.__cause__ if isinstance(e.__cause__, Exception) else e
             raise SeriesError(row, list(outcome.printed), cause, True, outcome, job.printed) from e
@@ -303,49 +302,6 @@ def print_series(
 # --- serial labels on label sheets ---------------------------------------------------
 
 
-class _PreparingFailed(Exception):
-    """A label of the sheets could not be rendered: at position `n` (from 0,
-    over all sheets)."""
-
-    def __init__(self, n: int):
-        super().__init__(n)
-        self.n = n
-
-
-class _RowLabels:
-    """The label source of serial labels on sheets: position n (from 0, over
-    all sheets) is copy n % copies + 1 of the row n // copies of the series,
-    with its own counter, copy number, UUID and ID; at_dpi() renders them
-    again at another resolution (see sheets.layout.Copies)."""
-
-    def __init__(self, backend: Backend, series: Series, values: Values, dpi: float | None = None):
-        self.backend, self.series, self.values, self.dpi = backend, series, values, dpi
-        self.copies = max(1, series.options.copies)
-        self.options = replace(series.options, copies=1)
-
-    def label(self, n: int) -> Label:
-        position, copy = divmod(n, self.copies)
-        values = self.values
-        start = replace(values, counter=values.counter + values.step * self.copies * position)
-        row = self.series.rows[self.series.indexes[position]]
-        return expand_label(self.series.label, start.for_copy(copy + 1), row)[0]
-
-    def __call__(self, n: int) -> Image.Image:
-        try:
-            image = self.backend.prepare(self.label(n), self.options, self.series.safe_mm)
-        except Exception as e:  # noqa: BLE001 - whatever went wrong while drawing
-            raise _PreparingFailed(n) from e
-        render_at = image.info.get("render_at")
-        if self.dpi is not None and callable(render_at):
-            return render_at(self.dpi)
-        return image
-
-    def at_dpi(self, dpi: float) -> _RowLabels | None:
-        if not callable(self(0).info.get("render_at")):
-            return None
-        return _RowLabels(self.backend, self.series, self.values, dpi)
-
-
 def _print_on_sheets(
     backend: Backend,
     host: str,
@@ -354,66 +310,60 @@ def _print_on_sheets(
     progress: Callable[[SeriesProgress], None] | None,
     outcome: SeriesResult,
 ) -> SeriesResult:
-    """One job of label sheets: the rows in order, each `copies` times on
-    consecutive positions, from the chosen positions of the first sheet on.
-    It cannot be stopped between rows. A failure names the row to go on
-    from, the copies of it printed and where on the sheets it goes."""
+    """One job of label sheets (job.Job with a label for each position):
+    the rows in order, each `copies` times on consecutive positions, from
+    the chosen positions of the first sheet on, each position with its own
+    counter, copy number, UUID and ID. It cannot be stopped between rows. A
+    failure names the row to go on from, the copies of it printed and where
+    on the sheets it goes; the labels that came out count (also on Ctrl+C,
+    see Job.run)."""
     assert series.sheet is not None
-    source = _RowLabels(backend, series, values)
-    total = len(series.indexes) * source.copies
-    job = replace(series.sheet, count=total)
-    slots = job.slots()
+    copies = max(1, series.options.copies)
+    total = len(series.indexes) * copies
+    sheet = replace(series.sheet, count=total)
+    slots = sheet.slots()
     starts = [sum(len(page) for page in slots[:i]) for i in range(len(slots))]
     rows = [index + 1 for index in series.indexes]
+
+    def position(n: int) -> tuple[Values, Mapping[str, str] | None]:
+        row, copy = divmod(n, copies)
+        start = replace(values, counter=values.counter + values.step * copies * row)
+        return start.for_copy(copy + 1), series.rows[series.indexes[row]]
 
     def report(event: Progress) -> None:
         if progress:
             page = min(max(0, event.copy - 1), len(slots) - 1)
-            row = rows[min(starts[page] // source.copies, len(rows) - 1)]
+            row = rows[min(starts[page] // copies, len(rows) - 1)]
             progress(SeriesProgress(event.copy, event.copies, row, event))
+
+    def count(done: int) -> None:
+        outcome.labels += done
+        outcome.printed = rows[: done // copies]
+        if outcome.counter is not None:
+            outcome.counter = values.counter + values.step * outcome.labels
 
     def stopped_at(done: int, error: Exception, preparing: bool) -> SeriesError:
         """The SeriesError after `done` labels came out (whole sheets)."""
-        outcome.labels += done
-        outcome.printed = rows[: done // source.copies]
-        if outcome.counter is not None:
-            outcome.counter = values.counter + values.step * outcome.labels
-        at = min(done // source.copies, len(rows) - 1)
-        page = next((i for i, start in enumerate(starts) if start + len(slots[i]) > done), 0)
-        position = (slots[page][done - starts[page]] + 1, page + 1)
-        return SeriesError(
-            rows[at],
-            list(outcome.printed),
-            error,
-            preparing,
-            outcome,
-            done % source.copies,
-            position,
-        )
+        count(done)
+        at = min(done // copies, len(rows) - 1)
+        page = next((i for i, first in enumerate(starts) if first + len(slots[i]) > done), 0)
+        where = (slots[page][done - starts[page]] + 1, page + 1)
+        printed = list(outcome.printed)
+        return SeriesError(rows[at], printed, error, preparing, outcome, done % copies, where)
 
     options = replace(series.options, copies=total)
-    pages = Pages(job, source, backend.capabilities.dpi)
+    job = Job(backend, series.label, options, series.safe_mm, values, None, sheet, position)
     try:
-        outcome.result = backend.print_pages(pages, host, options, report)
-    except _PreparingFailed as e:
+        outcome.result = job.run(host, report)
+    except PrepareFailed as e:
         cause = e.__cause__ if isinstance(e.__cause__, Exception) else e
-        raise stopped_at(_sheets_before(e.n, starts), cause, True) from e
-    except PrinterError as e:
-        sheets_done = e.params.get("printed", 0)
-        if not isinstance(sheets_done, int) or isinstance(sheets_done, bool):
-            sheets_done = 0
-        done = starts[sheets_done] if sheets_done < len(starts) else total
-        raise stopped_at(min(done, total), e, False) from e
-    except Exception as e:  # noqa: BLE001 - nothing known to have come out
-        raise stopped_at(0, e, False) from e
-    outcome.labels += total
-    outcome.printed = list(rows)
-    if outcome.counter is not None:
-        outcome.counter = values.counter + values.step * outcome.labels
+        # a sheet is sent whole: a label that cannot be drawn stops its sheet
+        before = max((first for first in starts if first <= (job.position or 0)), default=0)
+        raise stopped_at(before, cause, True) from e
+    except Exception as e:  # noqa: BLE001 - the interface maps PrinterError codes
+        raise stopped_at(min(job.printed, total), e, False) from e
+    except BaseException:  # Ctrl+C: the labels that came out used their numbers
+        count(job.printed)
+        raise
+    count(total)
     return outcome
-
-
-def _sheets_before(n: int, starts: list[int]) -> int:
-    """The labels on the sheets before the one with position n: a sheet is
-    sent whole, so a label that cannot be drawn stops it before its sheet."""
-    return max((start for start in starts if start <= n), default=0)

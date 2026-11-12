@@ -17,6 +17,7 @@ from etiketto.serial import (
     Series,
     SeriesError,
     SeriesProgress,
+    SeriesResult,
     UnprintableRows,
     filled,
     insertable,
@@ -431,3 +432,37 @@ def test_serial_labels_on_sheets_that_cannot_be_drawn():
         print_series(backend, "office", sheet_series())
     assert info.value.preparing and info.value.row == 1 and info.value.position == (1, 1)
     assert backend.pages == []
+
+
+def test_ctrl_c_on_sheets_counts_the_labels_that_may_have_come_out():
+    """Interrupted while the sheets are sent: every label of the job used
+    its number (job.Job counts them), so the counter goes on after them."""
+    label = Label(
+        tape_mm=12, printer="fake-mono", elements=[TextElement(text="{=counter} {Name}")]
+    )
+    backend = SheetPrinter()
+
+    def interrupted(pages, host, options, progress=None):
+        raise KeyboardInterrupt
+
+    backend.print_pages = interrupted
+    outcome = SeriesResult()
+    with pytest.raises(KeyboardInterrupt):
+        print_series(backend, "office", sheet_series(copies=2, label=label), outcome=outcome)
+    assert outcome.labels == 6 and outcome.counter == 7
+
+
+def test_a_row_the_printer_did_not_confirm_is_kept_for_the_series():
+    """The result of every row counts: one row sent without confirmation
+    and the series says so, also when the last row was confirmed."""
+    backend = Recorder()
+    results = iter([None, PrintResult(unconfirmed=True), None])
+    real = backend.print_label
+
+    def print_label(image, host, options, progress=None):
+        real(image, host, options, progress)
+        return next(results)
+
+    backend.print_label = print_label
+    outcome = print_series(backend, "h", series())
+    assert outcome.result == PrintResult(unconfirmed=True)
