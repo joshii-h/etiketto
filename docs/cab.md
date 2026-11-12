@@ -33,9 +33,10 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   tried on a printer]
 - Timeouts on USB: 10 s for an answer; while sending a job, 10 s without
   the printer taking any data (each write that gets data through starts it
-  again), at most 10 s + the job's size at 100 kB/s. A print waits up to
-  45 s for a status query still using the device, a status query 5 s. On
-  TCP the socket's timeout of 10 s applies as before.
+  again), at most 10 s + the job's size at 8 kB/s (`MIN_RATE`). A print
+  waits up to 45 s for a status query still using the device, a status
+  query 5 s. On TCP the same: 10 s without progress, at most 10 s + the
+  job's size at 8 kB/s.
 - Commands end with CR; Tavletta sends CR LF. [confirmed]
 - ESC commands (`0x1B` + letter) are executed at once, also while a job is
   running, and answer on the same connection without a terminator unless
@@ -72,7 +73,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   sends a job. [confirmed]
 - `ESC l` reports the distance of the loaded labels (label height + gap)
   once the printer has synchronised, e.g. after Feed. [manual] [confirmed]
-  [open: printer04 answered `Y0020` with a roll that cablabel describes as
+  [open: a test printer answered `Y0020` with a roll that cablabel describes as
   18.6 mm high with a 22.6 mm distance (see "What cablabel sends"); the
   window would then warn "Different labels loaded" for the right label.
   To check after pressing Feed whether the printer measures 22 or 23 mm.]
@@ -232,7 +233,7 @@ Setting "Print method" (`method` in settings.json, per printer model):
 ## What cablabel sends
 
 cablabel S3 Lite (driver 1.0.7.3, target EOS2/300) sent this for a
-40 × 18.6 mm label with a 4 mm gap on printer04 (images and job, captured
+40 × 18.6 mm label with a 4 mm gap on a test printer (images and job, captured
 on the way to the printer): [confirmed]
 
 ```
