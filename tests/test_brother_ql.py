@@ -1504,3 +1504,33 @@ def test_first_job_on_a_printer_without_the_jobs_answer(printer):
     with pytest.raises(PaperJam) as raised:
         backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
     assert raised.value.params == {"printed": 1, "copies": 3}
+
+
+@pytest.mark.parametrize(
+    "backend_id, orientation",
+    [("brother_ql", "along"), ("brother_ql_diecut", "across"), ("brother_ql_diecut", "along")],
+)
+def test_high_quality_keeps_2d_code_modules_whole_on_the_300_dpi_head(backend_id, orientation):
+    """Rendered at 600 dpi and halved across the head (300 dpi) when
+    printed: a code's modules fall on whole pairs of pixels, so the printed
+    image has no grey; the render's warnings are those of the head."""
+    from etiketto.backends import get_backend
+    from etiketto.model import CodeElement, Label
+
+    backend = get_backend(backend_id)
+    code = CodeElement(data="https://example.org/quality", symbology="datamatrix")
+    if backend_id == "brother_ql":
+        label = Label(printer=backend_id, tape_mm=62, elements=[code])
+    else:
+        label = Label(
+            printer=backend_id, orientation=orientation, auto_length=False, elements=[code]
+        )
+        label.set_media_size(62, 29)
+    options = PrintOptions(quality="high")
+    raster = backend.label_raster(label, options)
+    assert raster.across_step * raster.along_step == 2
+    image = backend.prepare(label, options)
+    media = backend.label_media(image)
+    printer = ql._resolution(backend.fit(backend.to_printer(image), media, media), 2, True)
+    histogram = printer.convert("L").histogram()
+    assert sum(histogram[1:255]) == 0

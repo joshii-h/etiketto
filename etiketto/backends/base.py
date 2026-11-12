@@ -166,11 +166,18 @@ class Raster:
     tape_px: int | None = None
     bleed_px: int = 0
     width_px: int | None = None
+    # whole factors the printer reduces the render by afterwards, across the
+    # tape (y) and along the label (x): a head coarser than the render (the
+    # QL's 300 dpi in high quality, 600 along the feed); 0: across from
+    # tape_px and width_px (the P-touch's high resolution)
+    across: int = 0
+    along_step: int = 1
 
     @property
     def across_step(self) -> int:
-        """The whole factor the render is reduced by across the tape
-        afterwards (tape_px to width_px: the P-touch's high resolution)."""
+        """The whole factor the render is reduced by across the tape."""
+        if self.across:
+            return self.across
         if self.tape_px and self.width_px and self.tape_px > self.width_px:
             return max(1, round(self.tape_px / self.width_px))
         return 1
@@ -669,6 +676,11 @@ class Backend(ABC):
             dpi = min(dpi, max_dpi) if max_dpi else dpi
         return dpi
 
+    def label_raster(self, label: Label, options: PrintOptions) -> Raster:
+        """raster() for this label; a backend whose geometry depends on more
+        than the tape (the label's orientation) overrides it."""
+        return self.raster(label.tape_mm, options)
+
     def render_label(
         self,
         label: Label,
@@ -682,7 +694,7 @@ class Backend(ABC):
         across (Raster.across_step) as prepare() uses them. The preview and
         the command line's check render with it too, so their warnings are
         the print's. bleed=False: no background beyond the tape (preview)."""
-        raster = self.raster(label.tape_mm, options)
+        raster = self.label_raster(label, options)
         dpi = self.render_dpi(label.tape_mm, options, max_dpi)
         return render(
             label,
@@ -693,6 +705,7 @@ class Backend(ABC):
             min_length_mm=self.capabilities.min_length_mm,
             mono=self.capabilities.color_model == "mono",
             across_step=raster.across_step,
+            along_step=raster.along_step,
         )
 
     @property

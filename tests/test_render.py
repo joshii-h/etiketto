@@ -735,7 +735,7 @@ def test_across_step_puts_2d_code_modules_on_whole_rows(step):
     from etiketto.render import render_code
 
     code = CodeElement(data="across step", symbology="datamatrix")
-    part = render_code(code, 101, step=step)
+    part = render_code(code, 101, steps=(1, step))
     assert part.code_module % step == 0 and part.code_module >= step
     label = Label(tape_mm=24, elements=[code])
     rendered = render(label, dpi=360, tape_px=338, across_step=step)

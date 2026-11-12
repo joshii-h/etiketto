@@ -764,8 +764,11 @@ def _fit(image: Image.Image, width: int, height: int) -> Image.Image:
     return canvas
 
 
-def _crop_centre(image: Image.Image, width: int, height: int) -> Image.Image:
+def _crop_centre(image: Image.Image, width: int, height: int, align: int = 1) -> Image.Image:
+    """The centre width × height; the corner on a multiple of `align`, so
+    pixel pairs of a render for a later halving stay pairs."""
     left, top = (image.width - width) // 2, (image.height - height) // 2
+    left, top = left - left % align, top - top % align
     return image.crop((left, top, left + width, top + height))
 
 
@@ -775,7 +778,11 @@ def _resolution(image: Image.Image, scale: int, high_res: bool) -> Image.Image:
     height = image.height * (2 if high_res else 1) // scale
     if (width, height) == image.size:
         return image
-    return image.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
+    # halving the render made for it (Raster.across: codes on whole pairs of
+    # pixels): averaging each pair keeps them black, no ringing at the edges
+    exact = image.width % scale == 0 and height in (image.height, image.height // scale)
+    method = Image.Resampling.BOX if exact else Image.Resampling.LANCZOS
+    return image.resize((max(1, width), max(1, height)), method)
 
 
 def _length_checked(image: Image.Image, model: Model, high_res: bool) -> Image.Image:
@@ -1118,7 +1125,9 @@ class BrotherQL(_BrotherQL):
         nearest = self.capabilities.nearest_tape(tape_mm)
         media = next(m for m in CONTINUOUS if m.width_mm == nearest)
         scale = 2 if options.quality == "high" else 1
-        return Raster(DPI * scale, tape_px=media.dots[0] * scale)
+        # high quality: 600 dpi along the feed, the head's 300 across; the
+        # render's 600 across is halved when printing (_resolution)
+        return Raster(DPI * scale, tape_px=media.dots[0] * scale, across=scale)
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
@@ -1183,6 +1192,16 @@ class BrotherQLDieCut(_BrotherQL):
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(DPI * (2 if options.quality == "high" else 1))
 
+    def label_raster(self, label: Label, options: PrintOptions) -> Raster:
+        """High quality: rendered at 600 dpi, the head's axis halved when
+        printing; for content across the roll that is the label's length
+        (x), along the roll its height (y)."""
+        raster = self.raster(label.tape_mm, options)
+        scale = 2 if options.quality == "high" else 1
+        if label.orientation == "along":
+            return replace(raster, across=scale)
+        return replace(raster, along_step=scale)
+
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
     ) -> Image.Image:
@@ -1210,7 +1229,7 @@ class BrotherQLDieCut(_BrotherQL):
         scale = _scale(image)
         dpi = DPI * scale
         image = _fit(image, mm_to_px(media.width_mm, dpi), mm_to_px(media.length_mm, dpi))
-        return _crop_centre(image, media.dots[0] * scale, media.dots[1] * scale)
+        return _crop_centre(image, media.dots[0] * scale, media.dots[1] * scale, scale)
 
     def print_label(
         self,
