@@ -667,10 +667,14 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     # block height not proportional to the size: the first estimate overshoots
     sizes = []
 
-    def fake_block(element, size_px, **_options):
+    def fake_size(element, size_px, **_options):  # measured, then drawn once
         sizes.append(size_px)
-        return Image.new("RGBA", (10, round(size_px + 40)))
+        return 10, round(size_px + 40)
 
+    def fake_block(element, size_px, **_options):
+        return Image.new("RGBA", fake_size(element, size_px))
+
+    monkeypatch.setattr(render_module.typeset, "size_of", fake_size)
     monkeypatch.setattr(render_module, "_text_block", fake_block)
     block = render_module.render_text(TextElement(text="x"), 100, 317)
     assert block.height <= 100

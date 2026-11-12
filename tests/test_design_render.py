@@ -875,3 +875,193 @@ def test_a_converted_render_is_not_dithered_again(monkeypatch):
     monkeypatch.setattr(Image.Image, "convert", counting)
     apply_color_model(image, "mono")
     assert "1" not in calls
+
+
+# --- review 2: redrawn texts, inks under each element, speed, edge cases ----------------
+
+
+def short_label(*elements, length=20):
+    return Label(tape_mm=12, auto_length=False, length_mm=length, elements=list(elements))
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"frame_mm": 0.4, "padding_mm": 1},
+        {"box_color": "#000000", "padding_mm": 1, "corner_mm": 1},
+        {"shadow_mm": 0.5},
+        {"outline_mm": 0.3, "color": "#ffffff", "outline_color": "#000000"},
+        {"max_width_mm": 15, "size_pt": 14},
+    ],
+)
+def test_mono_texts_reduced_to_a_fixed_length_scale_every_length(options):
+    """Laid out again with padding, frame, outline, shadow and wrap width
+    scaled: it fits where the colour render's text goes, no closer to the
+    edges."""
+    element = TextElement(text="Regal 12 links", **options)
+    label = short_label(element, ShapeElement(width_mm=10))
+    colour = render(label, dpi=300, safe_mm=1)
+    mono = render(label, dpi=300, safe_mm=1, mono=True)
+    assert colour.overflow and mono.overflow
+    assert greys(mono.image) == 0
+    c, m = ink_bbox(colour.image, WHITE), ink_bbox(mono.image, WHITE)
+    assert m[0] >= c[0] - 1 and m[1] >= c[1] - 1
+    assert m[2] <= c[2] + 1 and m[3] <= c[3] + 1
+
+
+def test_text_redraw_fits_its_size_and_keeps_no_image():
+    element = TextElement(text="Hg", frame_mm=0.5, padding_mm=2, size_pt=30)
+    block = render_text(element, 1000, 300, mono=True)
+    redraw = block.info["redraw"]
+    assert not any(isinstance(value, Image.Image) for value in vars(redraw).values())
+    small = redraw(block.width // 2, block.height // 2)
+    assert small.width <= block.width // 2 and small.height <= block.height // 2
+    alpha = small.getchannel("A")
+    assert alpha.getpixel((0, small.height // 2)) == 255  # the frame, on its edge
+    assert alpha.getpixel((small.width // 2, small.height - 1)) == 255
+    assert redraw(1, 1) is None  # nothing fits: the caller resamples
+    assert render_module._resize(block, 1, 1).size == (1, 1)
+
+
+def test_a_coloured_code_stays_visible_when_reduced_on_mono():
+    code = CodeElement(data="ABC123", symbology="code128", color="#ffe066")
+    label = short_label(code, TextElement(text="wide text here"), length=25)
+    rendered = render(label, dpi=300, safe_mm=1, mono=True)
+    assert rendered.overflow
+    assert "no_contrast" not in [w.key for w in rendered.warnings]
+    first = rendered.image.crop((0, 0, rendered.image.width // 2, rendered.image.height))
+    assert first.convert("L").histogram()[0] > 500  # the bars
+
+
+def half_dark(width=800, dark=400) -> str:
+    img = Image.new("RGB", (width, 200), "white")
+    ImageDraw.Draw(img).rectangle((0, 0, dark, 200), fill="#102040")
+    return b64(img)
+
+
+def test_inks_follow_the_background_under_each_element():
+    """White text over the dark part of a background image prints white,
+    black text over its light part black."""
+    label = Label(
+        tape_mm=12,
+        auto_length=False,
+        length_mm=80,
+        align="start",
+        margin_mm=1,
+        background_image=ImageElement(data=half_dark()),
+        elements=[
+            TextElement(text="Logo", color="#c0c0c0", gap_mm=25),
+            TextElement(text="Name", color="#606060"),
+        ],
+    )
+    rendered = render(label, dpi=300, safe_mm=0, mono=True)
+    assert rendered.warnings == []
+    image = rendered.image.convert("L")
+    left = image.crop((0, 0, image.width // 3, image.height))
+    right = image.crop((image.width * 2 // 3, 0, image.width, image.height))
+    # left: dark background with white letters; right: white with black letters
+    assert left.histogram()[255] > 0 and right.histogram()[0] > 0
+    colour = render(label, dpi=300, safe_mm=0)
+    assert colour.image.size == rendered.image.size
+
+
+def test_ink_as_bright_as_what_lies_under_it_warns():
+    label = Label(
+        tape_mm=12,
+        background_image=ImageElement(data=b64(Image.new("RGB", (40, 10), (15, 15, 15)))),
+        elements=[TextElement(text="x", color="#000000")],
+    )
+    assert "no_contrast" in [w.key for w in render(label, dpi=203, mono=True).warnings]
+
+
+def test_red_on_red_warns_on_black_and_red():
+    label = Label(
+        tape_mm=12, background="#ff0000", elements=[TextElement(text="x", color="#e00000")]
+    )
+    keys = [w.key for w in render(label, dpi=300, mono=True, red=True).warnings]
+    assert keys == ["no_contrast"]
+    label.elements[0].color = "#000000"
+    assert render(label, dpi=300, mono=True, red=True).warnings == []
+
+
+def test_plain_backgrounds_take_the_quick_way(monkeypatch):
+    calls = []
+    for name in ("black_and_white", "red_mask"):
+        original = getattr(imagefx, name)
+        monkeypatch.setattr(
+            imagefx, name, lambda *a, _o=original, _n=name, **k: (calls.append(_n), _o(*a, **k))[1]
+        )
+    label = Label(
+        tape_mm=12, background="#e0e0e0", elements=[TextElement(text="Hi"), CodeElement()]
+    )
+    image = render(label, dpi=300, mono=True).image
+    assert calls == []
+    assert greys(image) == 0
+    assert image.crop((0, 0, 8, 8)).tobytes() == image.crop((8, 8, 16, 16)).tobytes()  # a pattern
+
+
+def test_a_border_without_room_does_not_fail():
+    for length in (2, 4, 6):
+        label = Label(
+            tape_mm=12, border_mm=1, border_inset_mm=2, auto_length=False, length_mm=length
+        )
+        label.elements = [TextElement(text="i")]
+        rendered = render(label, dpi=300, safe_mm=1, mono=True)
+        assert "no_room" in [w.key for w in rendered.warnings]
+
+
+def test_a_too_large_inset_stays_inside_the_label():
+    label = Label(tape_mm=12, border_mm=0.5, border_inset_mm=10, auto_length=False, length_mm=15)
+    rendered = render(label, dpi=254, safe_mm=1, mono=True)
+    assert "no_room" in [w.key for w in rendered.warnings]
+    assert rendered.image.convert("L").histogram()[0] > 0  # the border is still drawn
+
+
+def test_padding_larger_than_the_tape_warns():
+    label = Label(tape_mm=9, elements=[TextElement(text="x", box_color="#ff0000", padding_mm=6)])
+    assert "padding_too_large" in [w.key for w in render(label).warnings]
+    label.elements[0].padding_mm = 0.5
+    assert render(label).warnings == []
+
+
+def test_adjusting_a_photo_uses_the_cached_scaled_image():
+    data = b64(Image.new("RGB", (1200, 800), "grey"))
+    render_module._scaled_cut.cache_clear()
+    element = ImageElement(data=data, rotation=90)
+    render_image(element, 60)
+    for brightness in (10, 20, 30):
+        element.brightness = brightness
+        render_image(element, 60)
+    info = render_module._scaled_cut.cache_info()
+    assert info.misses == 1 and info.hits == 3
+
+
+def test_colour_emoji_in_mono_text_are_dithered_not_blown_out():
+    part = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(part)
+    draw.ellipse((10, 10, 90, 90), fill=(255, 204, 77, 255))  # a yellow face
+    draw.rectangle((30, 40, 34, 44), fill=(60, 40, 0, 255))
+    out = render_module._mono_part(TextElement(), part, render_module.Inks(True), 300)
+    histogram = out.convert("L").histogram(out.getchannel("A"))
+    assert histogram[1:255] == [0] * 254
+    assert histogram[0] > 0.1 * sum(histogram)  # the face shows as dots
+    plain = render_module._mono_part(
+        TextElement(), Image.new("RGBA", (10, 10), (0, 0, 0, 255)), render_module.Inks(True), 300
+    )
+    assert plain.getpixel((5, 5)) == (0, 0, 0, 255)
+
+
+def test_a_flat_grey_logo_is_a_drawing():
+    logo = Image.new("RGB", (60, 60), "white")
+    ImageDraw.Draw(logo).rectangle((10, 10, 49, 49), fill=(128, 128, 128))
+    assert imagefx.is_drawing(logo.convert("L"))
+    out = imagefx.black_and_white(logo.convert("RGBA"), "auto").convert("L")
+    assert out.crop((12, 12, 48, 48)).getextrema() == (0, 0)  # solid, not dithered
+
+
+def test_short_lines_keep_whole_arrow_heads_within_the_line():
+    line = ShapeElement(shape="line", width_mm=1, line_mm=0.3, arrows="both")
+    img = render_module.render_shape(line, 100, 300, mono=True)
+    assert img.width == shapes.px(1, 300)
+    alpha = img.getchannel("A")
+    assert alpha.getbbox() and alpha.getbbox()[2] <= img.width

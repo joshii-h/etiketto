@@ -18,6 +18,7 @@ _BAYER2 = ((0, 2), (3, 1))
 # a drawing (a logo, a scan of text): a threshold keeps its edges
 AUTO_GREY_SHARE = 0.12
 DARK, LIGHT = 48, 208
+HALF = [0] * 128 + [255] * 128  # a threshold at the middle, as a table
 
 
 def _bayer(n: int) -> list[list[int]]:
@@ -158,11 +159,11 @@ def _on_white(img: Image.Image) -> Image.Image:
 def _hard_alpha(img: Image.Image) -> Image.Image:
     if img.mode != "RGBA":
         return Image.new("L", img.size, 255)
-    return img.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
+    return img.getchannel("A").point(HALF)
 
 
 def threshold(grey: Image.Image, level: int = 128) -> Image.Image:
-    return grey.point(lambda v: 255 if v >= level else 0)
+    return grey.point([0] * level + [255] * (256 - level))
 
 
 def floyd_steinberg(grey: Image.Image) -> Image.Image:
@@ -175,13 +176,27 @@ def ordered(grey: Image.Image) -> Image.Image:
     return above.point(lambda v: 255 if v > 0 else 0)
 
 
+# a picture whose pixels are almost all (TONE_COVER) in at most this many
+# grey levels is a drawing, also in flat middle tones (a grey logo)
+DRAWING_TONES = 8
+TONE_COVER = 0.95
+
+
 def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
-    """Few pixels between dark and light: a drawing, not a photo."""
+    """A drawing, not a photo: few pixels between dark and light, or only a
+    few distinct tones."""
     histogram = grey.histogram(mask)
     total = sum(histogram)
     if not total:
         return True
-    return sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE
+    if sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
+        return True
+    covered = 0
+    for tones, count in enumerate(sorted(histogram, reverse=True)[:DRAWING_TONES], 1):
+        covered += count
+        if covered >= TONE_COVER * total:
+            return tones <= DRAWING_TONES
+    return False
 
 
 def otsu(histogram: list[int]) -> int:
@@ -275,8 +290,22 @@ def hard(img: Image.Image, red: bool = False) -> Image.Image:
     """A part drawn in black and white (text, a code, a symbol, a line,
     their colours already mapped by mono_ink()) for a black-and-white
     printer: anti-aliased edges become whole dots, not dithered noise;
-    transparency hard edged."""
-    return black_and_white(img, "threshold", 128, red)
+    transparency hard edged. Without red no compositing: the colours are
+    black and white already."""
+    if red:
+        return black_and_white(img, "threshold", 128, True)
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    grey = img.convert("L").point(HALF)
+    return Image.merge("RGBA", (grey, grey, grey, img.getchannel("A").point(HALF)))
+
+
+def has_tones(img: Image.Image) -> bool:
+    """Whether a part has opaque pixels between black and white (a colour
+    emoji in a text): those need a drawing's or photo's conversion."""
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    return sum(img.convert("L").histogram(img.getchannel("A").point(HALF))[1:255]) > 0
 
 
 # --- inks -------------------------------------------------------------------------

@@ -16,7 +16,7 @@ from functools import lru_cache, partial
 from types import MappingProxyType
 from typing import NamedTuple
 
-from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageStat
+from PIL import Image, ImageDraw, ImageOps, ImageStat
 
 from etiketto import codes, imagefx, shapes, typeset
 from etiketto.codes import CodeError
@@ -46,7 +46,7 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: image_unreadable, page_unreadable,
     pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
-    background_unreadable, no_contrast, shape_invisible; codes that cannot be encoded: see
+    background_unreadable, no_contrast, shape_invisible, padding_too_large; codes that cannot be encoded: see
     etiketto.codes.CodeError; codes that may not scan or do not fit:
     code_thin, code_quiet, code_too_big)."""
 
@@ -93,6 +93,7 @@ class Inks:
     mono: bool = False
     red: bool = False
     background: float = 255.0
+    behind_red: bool = False  # red under the element (a black-and-red printer)
 
     def color(self, value: str) -> str:
         if not self.mono:
@@ -136,16 +137,18 @@ def render_text(
         element = typeset.mono_text(element, inks.background, inks.red)
     wrap = mm_to_px(element.max_width_mm, dpi) if element.max_width_mm > 0 else None
     draw = partial(_text_block, element, antialias=antialias, dpi=dpi, wrap_px=wrap)
+    measure = partial(typeset.size_of, element, dpi=dpi, antialias=antialias, wrap_px=wrap)
     if element.size_pt > 0 and not element.shrink:
         size = element.size_pt / 72 * dpi
     elif not _needs_fitting(element, wrap):
-        block = _fill_height(draw, height)
-        return _redrawable(block, draw, block.info["size"], inks.mono)
+        size = _fill_height(measure, height)
     else:
-        measure = partial(typeset.size_of, element, dpi=dpi, antialias=antialias, wrap_px=wrap)
         limits = (_width_limit(element, room, wrap), height)
         size = _fitted_size(element, measure, limits, dpi)
-    return _redrawable(draw(size), draw, size, inks.mono)
+    block = draw(size)
+    if inks.mono:  # reduced to a fixed length: laid out again (see _resize)
+        block.info["redraw"] = _TextRedraw(element, size, dpi, block.height)
+    return block
 
 
 def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
@@ -163,24 +166,44 @@ def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
     )
 
 
-def _redrawable(block: Image.Image, draw, size: float, mono: bool) -> Image.Image:
-    """Black and white: a text reduced to fit a fixed length is laid out
-    again at the smaller size, not resampled (see _resize)."""
-    if mono:
-        block.info["redraw"] = lambda _w, h: draw(size * h / max(1, block.height))
-    return block
+# the lengths of a text element that scale with it when it is laid out
+# again at a smaller size
+TEXT_LENGTHS = ("padding_mm", "corner_mm", "frame_mm", "outline_mm", "shadow_mm", "max_width_mm")
+REDRAW_TRIES = 12
 
 
-def _fill_height(draw, height: int) -> Image.Image:
-    """Fit to the tape: the block height scales about linearly with font size."""
-    block = draw(TEXT_PROBE)
-    size = TEXT_PROBE * height / max(1, block.height)
-    block = draw(size)
-    while block.height > height and size > 1:
+class _TextRedraw:
+    """A black-and-white text laid out again at a smaller size (a fixed
+    length too short): the font and every length of the element (padding,
+    frame, outline, shadow, wrap width) scaled, then checked against the
+    size it must fit, smaller in steps until it does; None if no layout
+    fits (the caller resamples). Keeps the parameters, not the image."""
+
+    def __init__(self, element: TextElement, size: float, dpi: float, height: int):
+        self.element, self.size, self.dpi, self.height = element, size, dpi, max(1, height)
+
+    def __call__(self, width: int, height: int) -> Image.Image | None:
+        scale = height / self.height
+        for _try in range(REDRAW_TRIES):
+            changes = {name: getattr(self.element, name) * scale for name in TEXT_LENGTHS}
+            element = replace(self.element, **changes)
+            wrap = mm_to_px(element.max_width_mm, self.dpi) if element.max_width_mm > 0 else None
+            img = _text_block(
+                element, self.size * scale, antialias=False, dpi=self.dpi, wrap_px=wrap
+            )
+            if img.width <= width and img.height <= height:
+                return img
+            scale *= 0.95
+        return None
+
+
+def _fill_height(measure, height: int) -> float:
+    """Fit to the tape: the block height scales about linearly with font
+    size. Measured, not drawn: only the final size is drawn."""
+    size = TEXT_PROBE * height / max(1, measure(TEXT_PROBE)[1])
+    while measure(size)[1] > height and size > 1:
         size *= 0.97
-        block = draw(size)
-    block.info["size"] = size
-    return block
+    return size
 
 
 def _width_limit(element: TextElement, room: int | None, wrap: int | None) -> int | None:
@@ -265,10 +288,10 @@ def _cut(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) -> Ima
 
 
 @lru_cache(maxsize=2)
-def _scaled_cut(data: str, cut: tuple, adjust: tuple, height: int) -> Image.Image:
+def _scaled_cut(data: str, cut: tuple, height: int) -> Image.Image:
     img = _cut(data, *cut)
     width = max(1, round(img.width * height / img.height))
-    return imagefx.adjusted(img.resize((width, height), Image.Resampling.LANCZOS), *adjust)
+    return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
 def render_image(
@@ -282,7 +305,8 @@ def render_image(
     if cut == ((0.0, 0.0, 1.0, 1.0), 0, False, False) and adjust == (0.0, 0.0, 1.0, False):
         img = _scaled(element.data, height).copy()
     else:
-        img = _scaled_cut(element.data, cut, adjust, height).copy()
+        # adjusted at the label's size: a brightness step on a large photo is quick
+        img = imagefx.adjusted(_scaled_cut(element.data, cut, height), *adjust).copy()
     if mono:
         return img
     return imagefx.framed(
@@ -714,6 +738,8 @@ def _mono_part(element: Element, part: Image.Image, inks: Inks, dpi: float) -> I
         border = _color(inks.color(element.border_color))
         radius, width = shapes.px(element.corner_mm, dpi), shapes.px(element.border_mm, dpi)
         hard = imagefx.framed(hard, radius, width, border, antialias=False)
+    elif isinstance(element, TextElement) and imagefx.has_tones(part):
+        hard = imagefx.black_and_white(part, "auto", red=inks.red)  # a colour emoji
     else:
         hard = imagefx.hard(part, inks.red)
     for name in ("code_row0", "code_module", "code_problems"):  # what _place needs
@@ -722,26 +748,37 @@ def _mono_part(element: Element, part: Image.Image, inks: Inks, dpi: float) -> I
     return hard
 
 
-def _visible(part: Image.Image, background: float) -> bool:
-    """Whether a black-and-white part shows on a plain background of that
-    brightness: some ink of the other colour (or red)."""
-    alpha = part.getchannel("A")
+# a background darker or lighter than this takes black or white ink as its own
+DARK_BEHIND, LIGHT_BEHIND = 40, 215
+
+
+def _visible(part: Image.Image, inks: Inks) -> bool:
+    """Whether a black-and-white part shows against what lies under it:
+    black ink on anything not dark, white ink on anything not light, red
+    (black-and-red printers) on anything not red."""
+    alpha = part.getchannel("A")  # hard edged already (_mono_part)
     if not alpha.getbbox():
         return False
-    if 5 < background < 250:  # a dithered grey: either ink shows
-        return True
-    other = 0 if background >= 250 else 255
-    grey = part.convert("RGB").convert("L")
-    reds = ImageChops.multiply(imagefx.red_mask(part), alpha)
-    return grey.histogram(alpha)[other] > 0 or bool(reds.getbbox())
+    # black and white (and red, kept apart below): the red channel says it
+    histogram = (part.convert("L") if inks.red else part.getchannel("R")).histogram(alpha)
+    black, white = sum(histogram[:128]), sum(histogram[128:])
+    if inks.red:
+        reds = sum(imagefx.red_mask(part).histogram(alpha)[128:])
+        black -= reds  # red counts as dark in grey
+        if reds and not inks.behind_red:
+            return True
+    return (black > 0 and inks.background > DARK_BEHIND) or (
+        white > 0 and inks.background < LIGHT_BEHIND
+    )
 
 
 def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
     """A part in another size: drawn again if it can be (symbols, shapes,
     black-and-white text), else resampled."""
     redraw = part.info.get("redraw")
-    if redraw is not None:
-        return redraw(max(1, width), max(1, height))
+    drawn = redraw(max(1, width), max(1, height)) if redraw is not None else None
+    if drawn is not None:
+        return drawn
     return part.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
 
 
@@ -811,8 +848,15 @@ def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | No
 
 
 def _parts(
-    label: Label, f: _Frame, dpi: float, warnings, room: int | None, inks: Inks, step: int = 1
+    label: Label,
+    f: _Frame,
+    dpi: float,
+    warnings,
+    room: int | None,
+    inks: Inks | bool,
+    step: int = 1,
 ) -> list[Image.Image]:
+    inks = _as_inks(inks)
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
@@ -841,20 +885,37 @@ def _gaps(label: Label, f: _Frame, dpi: float) -> list[int]:
 
 
 def _smaller(
-    element: Element, part: Image.Image, scale: float, mono: bool, step: int = 1
+    element: Element, part: Image.Image, scale: float, inks: Inks | bool, step: int = 1
 ) -> Image.Image:
-    """A part reduced to fit a label of fixed length. A code, a page area or
-    a symbol is drawn again at the smaller size (not reduced: that would
-    blur bars, or a code's modules would no longer be whole pixels)."""
+    """A part reduced to fit a label of fixed length (see _at_size)."""
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
+    return _at_size(element, part, size, _as_inks(inks), step)
+
+
+def _as_inks(inks: Inks | bool) -> Inks:
+    """Inks, also from mono as a bool (as these helpers took it before)."""
+    return inks if isinstance(inks, Inks) else Inks(bool(inks))
+
+
+def _at_size(
+    element: Element, part: Image.Image, size: tuple[int, int], inks: Inks, step: int = 1
+) -> Image.Image:
+    """A part in another size. A code, a page area, a symbol, a shape or a
+    black-and-white text is drawn again at that size (not resampled: that
+    would blur bars, or a code's modules would no longer be whole pixels);
+    a code in the inks it is printed with."""
+    if part.size == size:
+        return part
     if isinstance(element, CodeElement):
         try:
+            if inks.mono:
+                element = replace(element, color=inks.color(element.color))
             return render_code(element, size[1], size[0], step)
         except Exception:  # noqa: BLE001 - the placeholder of a code that failed
             pass
     if isinstance(element, PageElement):
         try:
-            drawn = render_page(replace(element, fit="fill"), size[0], size[1], mono)
+            drawn = render_page(replace(element, fit="fill"), size[0], size[1], inks.mono)
             if drawn.size == size:
                 return drawn
         except Exception:  # noqa: BLE001 - it was drawn before: reduce that instead
@@ -869,10 +930,11 @@ def _fit_length(
     dpi: float,
     warnings,
     min_length_mm: float,
-    mono: bool,
+    inks: Inks | bool,
     step: int = 1,
 ):
     """Label length, the (possibly scaled) parts and the gaps between them."""
+    inks = _as_inks(inks)
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     gaps = _gaps(label, f, dpi)
     content_w = _content_width(parts, gaps)
@@ -885,14 +947,15 @@ def _fit_length(
     elif parts and content_w > room:
         scale = room / content_w
         parts = [
-            _smaller(element, p, scale, mono, step)
+            _smaller(element, p, scale, inks, step)
             for element, p in zip(label.elements, parts, strict=True)
         ]
         return length, parts, [round(gap * scale) for gap in gaps], True
     return length, parts, gaps, False
 
 
-def _background(label: Label, size: tuple[int, int], warnings, inks: Inks) -> Image.Image:
+def _canvas(label: Label, size: tuple[int, int], warnings) -> Image.Image:
+    """The background in colour: its colour, its image covering it."""
     img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
@@ -900,22 +963,55 @@ def _background(label: Label, size: tuple[int, int], warnings, inks: Inks) -> Im
             img.paste(_cover(bg, img.size), (0, 0))
         except Exception:  # noqa: BLE001
             warnings.append(RenderWarning("background_unreadable"))
-    if inks.mono:  # dithered on its own: no error spreads into the crisp elements
-        img = imagefx.black_and_white(img, "dither", red=inks.red).convert("RGB")
     return img
 
 
+def _dithered(label: Label, img: Image.Image, inks: Inks) -> Image.Image:
+    """The background for a black-and-white printer, dithered on its own (no
+    error spreads into the crisp elements); a plain colour as an even
+    pattern (ordered dithering of one tile, repeated), white or black as
+    it is."""
+    if inks.red:
+        return imagefx.black_and_white(img, "dither", red=True).convert("RGB")
+    if label.background_image and label.background_image.data:  # opaque: no compositing
+        return imagefx.floyd_steinberg(img.convert("L")).convert("RGB")
+    level = round(imagefx.luma(_color(label.background, "#ffffff")))
+    if level >= 255 or level <= 0:
+        return Image.new("RGB", img.size, (255, 255, 255) if level >= 255 else (0, 0, 0))
+    tile = imagefx.ordered(Image.new("L", (8, 8), level))
+    return imagefx.tiled(tile, img.size).convert("RGB")
+
+
 def background_brightness(label: Label) -> float:
-    """How bright the label's background is (0-255): its colour, or the
-    average of its background image. Black-and-white inks are chosen
-    against it (Inks)."""
+    """How bright the label's background is (0-255) for a first choice of
+    black-and-white inks: its colour, or the average of its background
+    image. render() then decides each element against what lies under it
+    (_local_inks)."""
     if label.background_image and label.background_image.data:
         try:
-            small = _decoded(label.background_image.data).convert("RGB").resize((16, 16))
-            return imagefx.luma(ImageStat.Stat(small).mean)  # type: ignore[arg-type]
+            return _image_brightness(label.background_image.data)
         except Exception:  # noqa: BLE001 - render() warns about it
             pass
     return imagefx.luma(_color(label.background, "#ffffff"))
+
+
+@lru_cache(maxsize=4)
+def _image_brightness(data: str) -> float:
+    small = _decoded(data).convert("RGB").reduce(16) if min(_decoded(data).size) >= 64 else None
+    small = small or _decoded(data).convert("RGB")
+    return imagefx.luma(ImageStat.Stat(small).mean)  # type: ignore[arg-type]
+
+
+def _local_inks(canvas: Image.Image, box, inks: Inks) -> Inks:
+    """The inks for an element against what lies under its rectangle on the
+    background (a background image's dark or light part, red on a black and
+    red printer)."""
+    area = canvas.crop(box)
+    if not area.width or not area.height:
+        return inks
+    brightness = imagefx.luma(ImageStat.Stat(area).mean)  # type: ignore[arg-type]
+    behind_red = inks.red and ImageStat.Stat(imagefx.red_mask(area)).mean[0] >= 128
+    return replace(inks, background=brightness, behind_red=behind_red)
 
 
 def _top(element: Element, part: Image.Image, f: _Frame) -> int:
@@ -929,10 +1025,8 @@ def _top(element: Element, part: Image.Image, f: _Frame) -> int:
     return f.bleed + (f.tape - part.height) // 2
 
 
-def _place(
-    img: Image.Image, label: Label, parts, gaps: list[int], f: _Frame, step: int = 1
-) -> None:
-    length = img.width
+def _positions(length: int, label: Label, parts, gaps: list[int], f: _Frame, step: int = 1):
+    """Where each part goes: (x, y) of its top left corner."""
     content_w = _content_width(parts, gaps)
     if label.auto_length or label.align == "center":
         x = f.frame + (length - 2 * f.frame - content_w) // 2
@@ -940,24 +1034,37 @@ def _place(
         x = length - f.frame - f.margin - content_w
     else:
         x = f.frame + f.margin
+    places = []
     for element, part, gap in zip(label.elements, parts, [*gaps, 0][: len(parts)], strict=True):
         y = _top(element, part, f)
         row0 = getattr(part, "code_row0", None)
         if row0 is not None:  # a 2D code's first row on a multiple of step
             y -= (y + row0) % step
-        img.paste(part, (x, y), part)
+        places.append((x, y))
         x += part.width + gap
+    return places
 
 
-def _draw_border(img: Image.Image, label: Label, f: _Frame, dpi: float, inks: Inks) -> None:
+def _draw_border(img: Image.Image, label: Label, f: _Frame, dpi: float, inks: Inks, warnings):
     if not f.border:
         return
     color = _color(inks.color(label.border_color))
     # inside the safety margin (and the inset) so it is never cut off; the
-    # content keeps clear of it (_frame)
-    inset = f.safe + f.inset
+    # content keeps clear of it (_frame). An inset too large for a short
+    # label is reduced; without room for the border at all it is left out.
+    inset = min(f.safe + f.inset, (img.width - 2 * f.border) // 2)
+    if inset < f.safe:
+        inset = f.safe
     top, bottom = f.bleed + inset, f.bleed + f.tape - 1 - inset
     box = (inset, top, img.width - 1 - inset, bottom)
+    room = min(box[2] - box[0], box[3] - box[1]) + 1
+    tight = inset != f.safe + f.inset or room < 2 * f.border
+    if tight and RenderWarning("no_room") not in warnings:
+        warnings.append(RenderWarning("no_room"))
+    if room < 2 * f.border:  # all border: a block, or nothing if not even that fits
+        if room > 0:
+            ImageDraw.Draw(img).rectangle(box, fill=color)
+        return
     if (label.border_style, label.border_radius_mm) == ("solid", 0):
         ImageDraw.Draw(img).rectangle(box, outline=color, width=f.border)
         return
@@ -993,23 +1100,81 @@ def render(
     warnings: list[RenderWarning] = []
     step = across_step
     inks = Inks(mono, mono and red, background_brightness(label) if mono else 255.0)
+    if inks.red:
+        red_bg = imagefx.red_mask(Image.new("RGB", (1, 1), _color(label.background, "#ffffff")))
+        inks = replace(inks, behind_red=bool(red_bg.getpixel((0, 0))))
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), inks, step)
     length, parts, gaps, overflow = _fit_length(
-        label, parts, f, dpi, warnings, min_length_mm, mono, step
+        label, parts, f, dpi, warnings, min_length_mm, inks, step
     )
-    warnings += _code_warnings(label, parts) + _shape_warnings(label)
-    if mono:  # each part on its own, at its final size
-        parts = [_mono_part(e, p, inks, dpi) for e, p in zip(label.elements, parts, strict=True)]
-        warnings += _ink_warnings(label, parts, inks)
-    img = _background(label, (length, f.tape + 2 * f.bleed), warnings, inks)
-    _place(img, label, parts, gaps, f, step)
-    _draw_border(img, label, f, dpi, inks)
+    warnings += _code_warnings(label, parts) + _layout_warnings(label, f, dpi)
+    img = _canvas(label, (length, f.tape + 2 * f.bleed), warnings)
+    places = _positions(length, label, parts, gaps, f, step)
+    if mono:  # each part on its own, at its final size, against what lies under it
+        parts = _mono_parts(label, parts, places, img, inks, (f, dpi, step), warnings)
+        img = _dithered(label, img, inks)
+    for part, place in zip(parts, places, strict=True):
+        img.paste(part, place, part)
+    _draw_border(img, label, f, dpi, inks, warnings)
     # nothing left for apply_color_model to do (a page area keeps its greys)
     img.info["black_and_white"] = mono and not any(
         isinstance(e, PageElement) for e in label.elements
     )
     return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
+
+
+def _mono_parts(label: Label, parts, places, canvas, inks: Inks, geometry, warnings):
+    """Black and white: each element's inks against the background under it
+    (drawn again where they differ from the first choice), converted on its
+    own; a warning for an element that does not show."""
+    f, dpi, step = geometry
+    plain = not (label.background_image and label.background_image.data)
+    done = []
+    for index, (element, part, (x, y)) in enumerate(
+        zip(label.elements, parts, places, strict=True), 1
+    ):
+        local = inks
+        if not plain and not isinstance(element, PageElement):
+            local = _local_inks(canvas, (x, y, x + part.width, y + part.height), inks)
+            if _ink_choice(element, local) != _ink_choice(element, inks):
+                part = _redrawn(element, part, f, dpi, local, step)
+        part = _mono_part(element, part, local, dpi)
+        if _shows_ink(element) and not _visible(part, local):
+            warnings.append(RenderWarning("no_contrast", {"n": index}))
+        done.append(part)
+    return done
+
+
+def _ink_choice(element: Element, inks: Inks) -> tuple:
+    """The black-and-white inks an element gets with these inks: drawn again
+    only where another background changes them."""
+    if isinstance(element, TextElement):
+        mono = typeset.mono_text(element, inks.background, inks.red)
+        return (
+            mono.color,
+            mono.box_color,
+            mono.outline_color if element.outline_mm > 0 else "",
+            mono.shadow_color if element.shadow_mm > 0 else "",
+        )
+    if isinstance(element, ImageElement):
+        return (inks.color(element.border_color),)
+    return (inks.color(getattr(element, "color", "#000000")),)
+
+
+def _shows_ink(element: Element) -> bool:
+    """Whether an element is expected to show (a page area keeps its greys,
+    an empty shape warns of its own)."""
+    return not isinstance(element, PageElement) and not _invisible_shape(element)
+
+
+def _redrawn(element: Element, part: Image.Image, f: _Frame, dpi: float, inks: Inks, step: int):
+    """The element drawn again in other inks, at the size it was placed at."""
+    try:
+        drawn = render_element(element, f.inner, dpi, None, step=step, inks=inks)
+    except Exception:  # noqa: BLE001 - it was drawn before: keep that
+        return part
+    return _at_size(element, drawn, part.size, inks, step)
 
 
 def _code_warnings(label: Label, parts) -> list[RenderWarning]:
@@ -1018,15 +1183,6 @@ def _code_warnings(label: Label, parts) -> list[RenderWarning]:
         for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)
         if isinstance(element, CodeElement)
         for key in code_problems(part)
-    ]
-
-
-def _shape_warnings(label: Label) -> list[RenderWarning]:
-    """A rectangle or ellipse without outline and fill draws nothing."""
-    return [
-        RenderWarning("shape_invisible", {"n": index})
-        for index, e in enumerate(label.elements, 1)
-        if _invisible_shape(e)
     ]
 
 
@@ -1039,13 +1195,17 @@ def _invisible_shape(element: Element) -> bool:
     )
 
 
-def _ink_warnings(label: Label, parts, inks: Inks) -> list[RenderWarning]:
-    """Black and white: an element that ends up with no ink against the
-    background (a white code on white paper) is not printed at all."""
-    return [
-        RenderWarning("no_contrast", {"n": index})
-        for index, (e, part) in enumerate(zip(label.elements, parts, strict=True), 1)
-        if not isinstance(e, PageElement)
-        and not _invisible_shape(e)
-        and not _visible(part, inks.background)
-    ]
+def _layout_warnings(label: Label, f: _Frame, dpi: float) -> list[RenderWarning]:
+    """A shape that draws nothing; a text whose padding leaves no room."""
+    found = []
+    for index, e in enumerate(label.elements, 1):
+        if _invisible_shape(e):
+            found.append(RenderWarning("shape_invisible", {"n": index}))
+        elif isinstance(e, TextElement) and _padding_too_large(e, f, dpi):
+            found.append(RenderWarning("padding_too_large", {"n": index}))
+    return found
+
+
+def _padding_too_large(element: TextElement, f: _Frame, dpi: float) -> bool:
+    extra = typeset.extras(element, dpi)
+    return extra.any() and 2 * extra.pad + extra.shadow >= f.inner

@@ -394,6 +394,10 @@ def warning_text(warning: RenderWarning) -> str:
             "background – choose a darker or lighter colour"
         ),
         "shape_invisible": _("Element %(n)d: the shape has neither a line nor a fill"),
+        "padding_too_large": _(
+            "Element %(n)d: the padding, frame, outline or shadow leave no room for the text "
+            "– make them smaller"
+        ),
     }
     return texts.get(warning.key, warning.key) % warning.params
 
