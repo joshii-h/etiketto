@@ -43,6 +43,7 @@ from etiketto.ui.texts import (
     QUALITY_NAMES,
     data_error_text,
     error_details,
+    other_pitch_text,
     printed_remark,
     printed_text,
     printer_error_text,
@@ -176,20 +177,10 @@ class PrintFlow:
         )
 
     def _wrong_labels_dialog(self, measured_mm: float) -> None:
-        unit, label = self.window.unit, self.window.label
+        window = self.window
         self._warn(
             _("Different labels loaded"),
-            _(
-                "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
-                "%(pitch)s. The printer measured a label every %(measured)s. Check the "
-                "label size and the gap."
-            )
-            % {
-                "size": isolate(unit.size(*label.media_size())),
-                "gap": isolate(unit.format(label.gap_mm)),
-                "pitch": isolate(unit.format(label.pitch_mm())),
-                "measured": isolate(unit.format(measured_mm)),
-            },
+            other_pitch_text(window.label, measured_mm, window.unit),
         )
 
     # --- print dialog ------------------------------------------------------------

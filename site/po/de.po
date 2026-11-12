@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:36+0100\n"
+"POT-Creation-Date: 2026-11-12 14:41+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2963,6 +2963,17 @@ msgstr ""
 "Thermodruckers, der diese Einstellung hat, für diesen Druck fest (wie am "
 "Drucker eingestellt, mit Farbband, Thermodirekt), auch mit "
 "`--printer-defaults`."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A roll whose label distance, as the printer measured it, is not the label's "
+"height plus [[ui:Gap]] gets a hint, as in the window; the label is printed "
+"anyway."
+msgstr ""
+"Eine Rolle, deren Etikettenabstand laut Messung des Druckers nicht der Höhe "
+"plus [[ui:Gap]] des Etiketts entspricht, führt zu einem Hinweis wie im "
+"Fenster; das Etikett wird trotzdem gedruckt."
 
 #. type: Bullet: '- '
 #: docs/use.md

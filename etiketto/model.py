@@ -45,6 +45,8 @@ MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may 
 # die-cut labels: smallest and largest side a file may have
 MIN_SIZE_MM, MAX_SIZE_MM = 5.0, 1000.0
 MAX_GAP_MM = 50.0
+# a measured label distance this far from the label's own is a different roll
+PITCH_TOLERANCE_MM = 1.0
 # {=counter}: up to 15 digits stay exact in the interface's number fields
 MAX_COUNTER = 10**15 - 1
 MAX_COUNTER_STEP = 10**6

@@ -231,7 +231,8 @@ the orientation "across", `length_mm` is the width across the head and
 high, a label every 43 mm) on a roll of 50 × 20 mm labels; the corrected
 file sends `S l1;0,0,18,20,48`. [confirmed] The window warns before
 printing when the distance Etiketto sends (height + gap) differs from the
-one `ESC l` reports ("Different labels loaded").
+one `ESC l` reports ("Different labels loaded"); `etiketto print` says
+the same on standard error and prints anyway.
 
 What the manual says about the settings around the start of a label, for
 later:

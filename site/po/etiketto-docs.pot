@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:36+0100\n"
+"POT-Creation-Date: 2026-11-12 14:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1907,6 +1907,12 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "`--print-method printer|transfer|direct` sets the [[ui:Print method]] of a thermal printer that has it for this print (as set on the printer, with a ribbon, thermal direct), also with `--printer-defaults`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A roll whose label distance, as the printer measured it, is not the label's height plus [[ui:Gap]] gets a hint, as in the window; the label is printed anyway."
 msgstr ""
 
 #. type: Bullet: '- '

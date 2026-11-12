@@ -372,6 +372,20 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
     return text
 
 
+def other_pitch_text(label, measured_mm: float, unit: Unit) -> str:
+    """The roll in the printer has another label distance than the label."""
+    return _(
+        "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
+        "%(pitch)s. The printer measured a label every %(measured)s. Check the "
+        "label size and the gap."
+    ) % {
+        "size": isolate(unit.size(*label.media_size())),
+        "gap": isolate(unit.format(label.gap_mm)),
+        "pitch": isolate(unit.format(label.pitch_mm())),
+        "measured": isolate(unit.format(measured_mm)),
+    }
+
+
 def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
     """The text for a PrinterError code (also PrinterInfo.error); max_mm
     is the limit of "too_long" and "too_wide"."""

@@ -44,6 +44,7 @@ from etiketto.backends.cab import METHODS  # the choices of the printer setting 
 from etiketto.job import Job, PrepareFailed
 from etiketto.merge import MergeError, read_book
 from etiketto.model import (
+    PITCH_TOLERANCE_MM,
     CodeElement,
     Label,
     LabelError,
@@ -69,6 +70,7 @@ from etiketto.ui.settings import PrinterSettings, Settings
 from etiketto.ui.texts import (
     data_error_text,
     label_error_text,
+    other_pitch_text,
     printed_remark,
     printer_error_text,
     save_error_text,
@@ -901,6 +903,7 @@ def _for_the_printer(
     )
     if info is None:
         return series
+    _check_pitch(job, info, settings)
     options = _flagged(
         args,
         _choices(args, settings, job.backend).options(
@@ -909,6 +912,17 @@ def _for_the_printer(
     )
     job.options = options
     return replace(series, options=options) if series else None
+
+
+def _check_pitch(job: Job, info: PrinterInfo, settings: Settings) -> None:
+    """Die-cut labels: a roll whose measured label distance is not the
+    label's gets a hint, as the window warns; printed anyway."""
+    caps, label = job.backend.capabilities, job.label
+    if caps.continuous or caps.pages or not info.pitch_mm:
+        return
+    if abs(info.pitch_mm - label.pitch_mm()) > PITCH_TOLERANCE_MM:
+        text = other_pitch_text(label, info.pitch_mm, unit_for(settings.units))
+        _say(text.replace("\u2068", "").replace("\u2069", ""))  # no bidi marks
 
 
 QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer

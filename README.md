@@ -221,6 +221,8 @@ printer's address and the safety margin stay as set in the app).
 setting (cab) for this print: `printer` (as set on the printer),
 `transfer` (with a ribbon) or `direct`; it applies with
 `--printer-defaults` too.
+A die-cut roll whose measured label distance (cab) is not the label's
+height plus gap gets a hint on standard error, as the window warns.
 Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
 range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO and office printers: the resolution; a dry run waits
