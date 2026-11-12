@@ -17,7 +17,7 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-from conftest import gtk_available, pump, render_now, toast_titles
+from conftest import gtk_available, pump, read_only, render_now, toast_titles
 
 pytestmark = pytest.mark.gui
 if not gtk_available():
@@ -93,6 +93,23 @@ def one(root, cls, **props):
 
 def subtitle(win):
     return win.window_title.get_subtitle()
+
+
+def as_shown(markup: str) -> str:
+    """The text a label shows for this markup, which must be plain text
+    (escaped, not bold, no link): what is on the screen, whichever way the
+    text was escaped."""
+    _ok, attributes, text, _accel = Pango.parse_markup(markup, -1, "\0")
+    assert attributes.get_attributes() == [], markup
+    return text
+
+
+def shown_subtitle(row: Adw.ActionRow) -> str:
+    """The subtitle as the row shows it. Not get_subtitle(): libadwaita 1.7
+    returns it without its markup, 1.8 as set."""
+    (label,) = [w for w in walk(row) if isinstance(w, Gtk.Label) and w.has_css_class("subtitle")]
+    assert label.get_use_markup()
+    return as_shown(label.get_label())
 
 
 def respond(dialog, response):
@@ -2558,8 +2575,7 @@ def test_the_file_is_read_only_when_it_changed(window, tmp_path, monkeypatch):
 def test_a_read_only_label_is_not_saved_over(window, tmp_path):
     path = tmp_path / "locked.tavletta"
     window.files.write(path)
-    path.chmod(0o444)
-    try:
+    with read_only(path):
         window.change(margin_mm=3.0)
         window.files.write(path)
         assert window.dirty
@@ -2567,8 +2583,6 @@ def test_a_read_only_label_is_not_saved_over(window, tmp_path):
         assert Label.load(path).margin_mm == 2.0
         window.files.write(tmp_path / "copy.tavletta")  # Save as: works
         assert not window.dirty and window.path == tmp_path / "copy.tavletta"
-    finally:
-        path.chmod(0o644)
 
 
 # --- serial labels ----------------------------------------------------------------
@@ -3025,7 +3039,7 @@ def test_column_names_are_shown_as_text(window, tmp_path):
     path.write_text("first_name,A&B,<b>x</b>\n1,2,3\n")
     attach(window, path)
     row = one(window._groups[-1], Adw.ActionRow, title="Columns")
-    assert row.get_subtitle() == "first_name, A&amp;B, &lt;b&gt;x&lt;/b&gt;"
+    assert shown_subtitle(row) == "first_name, A&B, <b>x</b>"
     menu = one(window.sidebar, Gtk.MenuButton, tooltip="Insert column").get_menu_model()
     labels = [menu.get_item_attribute_value(i, "label").unpack() for i in range(3)]
     assert labels == ["first__name", "A&B", "<b>x</b>"]
@@ -3066,13 +3080,12 @@ def test_data_file_outside_the_label_folder_is_read_only_when_agreed(ready, tmp_
     dialog = ready.last_dialog
     assert dialog.get_heading() == "Read the data file?"
     assert str(secret) in dialog.get_body()
-    assert one(ready._groups[-1], Adw.ActionRow, title="secret.csv").get_subtitle() == (
-        "Not read: outside the label&apos;s folder"
-    )
+    row = one(ready._groups[-1], Adw.ActionRow, title="secret.csv")
+    assert shown_subtitle(row) == "Not read: outside the label's folder"
     respond(dialog, "cancel")
     assert ready.data.state == "unread"
     ready.print_flow.on_print()
-    assert toast_titles(ready)[-1] == "Not read: outside the label&apos;s folder"  # escaped
+    assert as_shown(toast_titles(ready)[-1]) == "Not read: outside the label's folder"  # escaped
     respond(dialog, "read")
     assert loaded(ready) and ready.data.rows == [{"Name": "hidden"}]
 

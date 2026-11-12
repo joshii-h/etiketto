@@ -62,6 +62,9 @@ dev = [
     "xenon>=0.9",
     "pip-audit>=2.7",
     "pyyaml>=6",  # tests/test_packaging.py reads the Flatpak manifest
+    # tests/test_icons.py runs setup.py itself; a venv of Python 3.12 or newer
+    # has no setuptools of its own (pip builds in an isolated environment)
+    "setuptools>=77",
 ]
 
 [tool.ruff]

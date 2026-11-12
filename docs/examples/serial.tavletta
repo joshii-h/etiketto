@@ -24,7 +24,8 @@
    "size_pt": 0.0,
    "color": "#000000",
    "align": "left",
-   "kind": "text"
+   "kind": "text",
+   "shrink": true
   }
  ],
  "printer": "cab",
@@ -34,6 +35,7 @@
  "data_sheet": "",
  "version": 2,
  "features": [
-  "serial"
+  "serial",
+  "styles"
  ]
 }

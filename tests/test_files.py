@@ -9,6 +9,7 @@ import os
 import stat
 
 import pytest
+from conftest import read_only
 
 from tavletta import model
 from tavletta.model import FORMAT_VERSION, CodeElement, Label, LabelError, TextElement
@@ -185,13 +186,10 @@ def test_without_flock_it_goes_on(tmp_path, monkeypatch):
 def test_a_read_only_file_is_not_replaced(tmp_path):
     path = tmp_path / "a.tavletta"
     Label().save(path)
-    path.chmod(0o444)
-    try:
+    with read_only(path):
         assert not model.writable(path)
         with pytest.raises(PermissionError):
             Label(tape_mm=12).save(path)
-    finally:
-        path.chmod(0o644)
     assert Label.load(path).tape_mm == 50
     assert model.writable(path) and model.writable(tmp_path / "new.tavletta")
 

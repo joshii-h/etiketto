@@ -428,7 +428,9 @@ def test_adopt_keeps_the_places(png_b64):
     assert image.height_mm > 0 and symbol.size_mm > 0 and shape.height_mm > 0
     label.layout = "free"
     placed = mono(label)
-    assert box(placed) == box(flowing)
+    # to a pixel: the text is matched by its antialiased ink, and on which
+    # side of the black-and-white threshold its edge falls depends on the font
+    assert all(abs(a - b) <= 1 for a, b in zip(box(placed), box(flowing), strict=True))
     differing = sum(
         1 for a, b in zip(dark(placed).tobytes(), dark(flowing).tobytes(), strict=True) if a != b
     )

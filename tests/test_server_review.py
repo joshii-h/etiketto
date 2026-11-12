@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import os
+import re
 import socket
 import subprocess  # nosec B404 - two `tavletta token new` at once
 import sys
@@ -408,7 +409,7 @@ def test_a_broken_request_line_is_answered_without_a_traceback(api, caplog):
     with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
         sock.sendall(b"GARBAGE\r\n\r\n")
         answer = sock.recv(1024)
-    assert answer.startswith(b"HTTP/1.0 400")
+    assert re.match(rb"HTTP/1\.[01] 400 ", answer)  # a status line on every Python
     wait_for(lambda: "GARBAGE" in caplog.text or "400" in caplog.text)
     assert "Traceback" not in caplog.text
 

@@ -437,7 +437,7 @@ def small_icon_sizes() -> tuple[int, ...]:
 
 def test_setup_installs_the_small_drawings(tmp_path):
     """A real install of the data files: each small drawing as its hicolor icon."""
-    subprocess.run(
+    built = subprocess.run(
         [
             sys.executable,
             "setup.py",
@@ -450,9 +450,10 @@ def test_setup_installs_the_small_drawings(tmp_path):
             str(tmp_path / "root"),
         ],
         cwd=ROOT,
-        check=True,
         capture_output=True,
+        text=True,
     )
+    assert built.returncode == 0, built.stderr  # the error itself, not just its exit status
     hicolor = tmp_path / "root" / "share" / "icons" / "hicolor"
     sizes = small_icon_sizes()
     assert sizes == (16, 20, 22, 24, 32)

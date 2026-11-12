@@ -15,13 +15,21 @@ every backend.
 from __future__ import annotations
 
 import base64
+import contextlib
 import io
 import os
 import re
 import threading
 import time
+from collections.abc import Iterator
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
+
+# The same fonts on every computer: "Sans", "Serif" and "Monospace" are DejaVu
+# (tests/fonts.conf), not what this computer or its user prefers. Set before
+# anything asks fontconfig (it reads the variable once), so before the imports.
+os.environ["FONTCONFIG_FILE"] = str(Path(__file__).with_name("fonts.conf"))
 
 import pytest
 from fake_backends import FakeMono
@@ -274,6 +282,31 @@ def printer(monkeypatch):
     monkeypatch.setattr(vc500w, "_sleep", sleep)
     monkeypatch.setattr(vc500w, "_clock", lambda: now[0])
     return SimpleNamespace(device=device, calls=calls, waits=waits, sleeps=sleeps, now=now)
+
+
+# --- files ------------------------------------------------------------------
+
+
+@contextlib.contextmanager
+def read_only(path: Path) -> Iterator[None]:
+    """The file without write permission (mode 444) meanwhile. Root may
+    write it all the same (the CI runs the tests as root in a container),
+    so for root os.access, which Tavletta asks before it replaces a file,
+    answers for it as for anyone else: no writing."""
+    target = os.path.realpath(path)
+    real_access = os.access
+
+    def access(name, mode, *args, **kwargs):
+        if mode & os.W_OK and os.path.realpath(name) == target:
+            return False
+        return real_access(name, mode, *args, **kwargs)
+
+    path.chmod(0o444)
+    try:
+        with mock.patch("os.access", access) if os.geteuid() == 0 else contextlib.nullcontext():
+            yield
+    finally:
+        path.chmod(0o644)
 
 
 # --- GTK -------------------------------------------------------------------

@@ -14,6 +14,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from conftest import read_only
 from fake_backends import FakeMono
 from PIL import Image
 
@@ -596,22 +597,16 @@ def test_waiting_for_another_print(mono, label_file, monkeypatch, capsys):
 
 def test_nothing_is_printed_if_the_counter_cannot_be_saved(mono, label_file, tmp_path, capsys):
     path = label_file(TextElement(text="{=counter}"))
-    path.chmod(0o444)
-    try:
+    with read_only(path):
         assert run("print", path, "--host", "h") == cli.EXIT_COUNTER
-    finally:
-        path.chmod(0o644)
     assert err(capsys) == (
         "tavletta: Cannot save label.tavletta: no permission to write there – nothing was "
         "printed: the next counter value could not be saved\n"
     )
     assert mono.jobs == []
     plain = label_file(TextElement(text="no counter"))
-    plain.chmod(0o444)
-    try:
+    with read_only(plain):
         assert run("print", plain, "--host", "h") == 0  # nothing to save
-    finally:
-        plain.chmod(0o644)
 
 
 def test_set_literal_and_set_order(mono, label_file):
@@ -726,8 +721,7 @@ def test_set_literal_keeps_other_braces(mono, label_file):
 
 def test_no_save_counter_for_read_only_labels(mono, label_file, capsys):
     path = label_file(TextElement(text="{=counter}"), counter_next=7)
-    path.chmod(0o444)
-    try:
+    with read_only(path):
         argv = ["print", path, "--host", "h", "--copies", "2", "--no-save-counter"]
         assert run(*argv) == 0
         assert err(capsys) == (
@@ -735,8 +729,6 @@ def test_no_save_counter_for_read_only_labels(mono, label_file, capsys):
         )
         assert run(*argv, "--counter-start", "20") == 0
         err(capsys)
-    finally:
-        path.chmod(0o644)
     assert contents(mono) == [["7"], ["8"], ["20"], ["21"]]
     assert Label.load(path).counter_next == 7
     plain = label_file(TextElement(text="x"))

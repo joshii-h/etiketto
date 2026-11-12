@@ -779,6 +779,17 @@ class Handler(BaseHTTPRequestHandler):
         except OSError:  # the client went away (or never finished its request)
             self.close_connection = True
 
+    def send_error(
+        self, code: int, message: str | None = None, explain: str | None = None
+    ) -> None:
+        """http.server's own answers (a request line or header it cannot
+        read, a method it does not know) with a status line on every Python:
+        before 3.14 a request line it cannot read is answered as HTTP/0.9,
+        the body alone. (Ours: _error.)"""
+        if getattr(self, "request_version", "") == "HTTP/0.9":
+            self.request_version = ""
+        super().send_error(code, message, explain)
+
     def version_string(self) -> str:
         return self.server_version
 

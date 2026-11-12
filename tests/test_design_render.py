@@ -721,7 +721,16 @@ def test_shapes_and_mono_text_are_drawn_again_when_reduced():
     )
     colour = render(label, dpi=300, safe_mm=0)
     assert colour.overflow
-    shape_area = colour.image.crop((0, 0, colour.image.width // 3, colour.image.height))
+    # the shape alone: from its first column with ink to the first blank one
+    # after it (the text, antialiased, starts nearer or further, by its font)
+    grey = colour.image.convert("L")
+    inked = [
+        grey.crop((x, 0, x + 1, grey.height)).getextrema()[0] < 255 for x in range(grey.width)
+    ]
+    start = inked.index(True)
+    end = inked.index(False, start)
+    assert end - start > grey.width // 6
+    shape_area = colour.image.crop((start, 0, end, colour.image.height))
     assert greys(shape_area) == 0  # the pattern drawn again, not resampled
     assert "redraw" in render_text(TextElement(text="x"), 100, 300, mono=True).info
     assert "redraw" not in render_text(TextElement(text="x"), 100, 300).info
