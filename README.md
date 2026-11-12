@@ -218,7 +218,7 @@ tape feed, and the printer settings (label sensor, darkness …);
 `--printer-defaults` takes the model's defaults instead.
 Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
-range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution; a dry run waits
+range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO and office printers: the resolution; a dry run waits
 2 s); the label is then checked for that printer. A question still on its
 way after that gets up to 10 s more to end before printing (Etiketto says
 so); what it brings later still sets the resolution the label is drawn at.

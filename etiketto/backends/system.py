@@ -55,7 +55,7 @@ from etiketto.backends.base import (
     report_progress,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, render
+from etiketto.render import DEFAULT_SAFE_MM
 
 CUPS_URI = "ipp://localhost/"
 DPI = 300.0
@@ -634,6 +634,7 @@ def pdf_resolution(attrs: dict) -> int:
 
 
 class SystemPrinter(Backend):
+    query_before_render = True  # the resolution the printer takes (the check's)
     id = "system"
     name = "CUPS / IPP"  # the interface shows a translated name
     capabilities = Capabilities(
@@ -697,13 +698,7 @@ class SystemPrinter(Backend):
         self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
     ) -> Image.Image:
         label = replace(label, auto_length=False)
-        rendered = render(
-            label,
-            dpi=dpi,
-            safe_mm=safe_mm,
-            min_length_mm=self.capabilities.min_length_mm,
-            mono=self.capabilities.color_model == "mono",
-        )
+        rendered = self.render_label(label, options, safe_mm, dpi=dpi)  # the one path
         check_codes(rendered.warnings)  # at the resolution it is printed at
         image = rendered.image
         image = self.preview(image, options.mode)

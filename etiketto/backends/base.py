@@ -688,14 +688,17 @@ class Backend(ABC):
         safe_mm: float = DEFAULT_SAFE_MM,
         max_dpi: float | None = None,
         bleed: bool = True,
+        dpi: float | None = None,
     ) -> Rendered:
         """The label rendered as for printing, in label space (x along the
         tape), with its warnings: resolution, tape height, the reduction
         across (Raster.across_step) as prepare() uses them. The preview and
         the command line's check render with it too, so their warnings are
-        the print's. bleed=False: no background beyond the tape (preview)."""
+        the print's. bleed=False: no background beyond the tape (preview);
+        dpi: this resolution instead (a page rendered again at the one the
+        printer takes, see system.py)."""
         raster = self.label_raster(label, options)
-        dpi = self.render_dpi(label.tape_mm, options, max_dpi)
+        dpi = dpi or self.render_dpi(label.tape_mm, options, max_dpi)
         return render(
             label,
             dpi=dpi,

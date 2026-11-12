@@ -2172,3 +2172,22 @@ def test_a_printer_that_takes_apple_raster_at_1200_dpi_only(fake):
     with pytest.raises(PageTooLarge):
         backend.print_label(backend.prepare(a4, PrintOptions()), "x.local", PrintOptions())
     assert len(fake.documents) == 1
+
+
+def test_pages_are_rendered_through_render_label(monkeypatch):
+    """One render path: the system printer's pages too, at the resolution
+    asked for; the command line asks the printer first (its resolution)."""
+    backend = get_backend("system")
+    seen = []
+    real = backend.render_label
+    monkeypatch.setattr(
+        backend,
+        "render_label",
+        lambda label, options, safe_mm, dpi=None, **kw: (
+            seen.append(dpi) or real(label, options, safe_mm, dpi=dpi, **kw)
+        ),
+    )
+    image = backend.prepare(_shipping_label(), PrintOptions())
+    image.info["render_at"](203)
+    assert seen == [system.DPI, 203]
+    assert backend.query_before_render
