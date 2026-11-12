@@ -153,6 +153,13 @@ Etiketto prints through its descendant
 [labelprinter](https://github.com/sgrimee/labelprinter-vc500w)
 (m7i.org → lenchan139 → sgrimee).
 
+Apple Raster (URF) for AirPrint printers follows the byte layout of
+[libcups](https://github.com/OpenPrinting/libcups),
+[PAPPL](https://github.com/michaelrsweet/pappl) and
+[libcupsfilters](https://github.com/OpenPrinting/libcupsfilters)
+(OpenPrinting, Apple Inc., Michael R Sweet, Till Kamppeter; Apache-2.0),
+written anew; no code of theirs is included.
+
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.

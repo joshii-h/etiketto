@@ -3,10 +3,9 @@
 How Etiketto prints on printers the operating system knows. Everything goes
 through IPP (Internet Printing Protocol, RFC 8010 and RFC 8011), the
 protocol CUPS itself speaks and that every IPP Everywhere printer
-understands. A printer that only takes AirPrint's `image/urf` gets no job
-directly (no format Etiketto can make, see below); set up as a CUPS queue,
-CUPS converts the PDF for it. Python's standard library is enough; there is no dependency on
-CUPS libraries or drivers.
+understands; AirPrint printers that only take Apple Raster (`image/urf`)
+get that (see below). Python's standard library is enough; there is no
+dependency on CUPS libraries or drivers.
 
 Markers as in [cab.md](cab.md): **[spec]** from the RFCs or PWG standards,
 **[confirmed]** seen on a device, **[assumed]** likely but untested.
@@ -36,7 +35,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 
 - `Get-Printer-Attributes` first: state, `printer-state-reasons`, the
   formats, `print-scaling-supported`, `media-size-supported`,
-  `copies-supported` and `operations-supported`. A printer that reports a problem, or whose
+  `copies-supported`, `operations-supported` and `urf-supported`. A printer that reports a problem, or whose
   `printer-state` is stopped (a paused CUPS queue: `cupsdisable`), gets no
   job. [spec] [confirmed with a paused CUPS queue]
 - The page size comes from the label in millimetres (A4 is exactly 21000 ×
@@ -62,9 +61,16 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   `Validate-Job`): an ignored `media-col` would print on its default
   paper, so the job is canceled with the paper size message; an ignored
   `copies` means it prints one, the others follow as below. [spec]
-- `Print-Job` with one page in the label's exact size: PDF if the printer
-  or CUPS takes it, else PWG Raster, which every IPP Everywhere printer
-  must take, else JPEG (quality 95 without chroma subsampling). `media-col`
+- `Print-Job` with one page in the label's exact size, in the first of
+  these formats the printer lists in `document-format-supported` (none
+  listed: PDF, CUPS takes it): PDF; PWG Raster, which every IPP
+  Everywhere printer must take (`srgb_8`, else `sgray_8` from
+  `pwg-raster-document-type-supported`); Apple Raster (URF, AirPrint, see
+  below: `SRGB24`, else `W8`); JPEG (quality 95 without chroma
+  subsampling). A raster format whose colour spaces Etiketto cannot make
+  (only `black_1`, only `DEVCMYK32` …) is passed over; if nothing is
+  left, the message "no format" comes before anything is sent, with the
+  formats and colour spaces in the details. `media-col`
   carries the size, `print-scaling=none` (if supported) keeps it at 100 %,
   `copies` is the number of labels, `requesting-user-name` the login
   name. [spec]
@@ -76,8 +82,11 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   595.276 × 841.89 pt), the image at 300 dpi. A mostly white page stays
   small: a black-and-white 4 × 6 inch label is about 2 kB, an A4 page
   filled with large text (grey edges: 8 bits) 40 to 80 kB, where JPEG at
-  quality 95 made 300 to 370 kB, with grey noise around every edge. PWG Raster (8-bit sRGB or sGray) is
-  made at 300 dpi or the next resolution the printer lists, and the label
+  quality 95 made 300 to 370 kB, with grey noise around every edge. PWG
+  Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi or
+  the next resolution the printer lists
+  (`pwg-raster-document-resolution-supported`, the `RS` keywords of
+  `urf-supported`; only 100 to 1200 dpi are believed), and the label
   (or the label sheet's pages) is rendered again at that resolution
   instead of resized, so a 203 dpi printer gets 812 × 1218 pixels for
   4 × 6 inches, sharp. Only a page that cannot be rendered again is
@@ -88,13 +97,18 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   grey pixel) and as PWG Raster at 203, 300 and 600 dpi (812 × 1218,
   1200 × 1800, 2400 × 3600 pixels, 2.3 to 3 kB)]
 - Copies: if the upper bound of `copies-supported` is below the number of
-  labels, PWG Raster carries the page several times in one job
-  (`TotalPageCount`), at most 10 pages per job (the document is made in
-  memory: 10 noisy A4 pages are about 260 MB), so 23 labels are jobs of
-  10, 10 and 3 pages; PDF and JPEG go as one job per label. The document
-  is made once and sent again for every job of the same size. A printer
-  that does not list `copies-supported` is trusted to make the copies.
-  [spec]
+  labels, PWG Raster and Apple Raster carry the page several times in one
+  job (`TotalPageCount`, the URF page count): the page is compressed once
+  and its compressed data repeated. A job has at most 10 pages and at most
+  64 MB of data (one page at least), since the document is made in
+  memory: a noisy A4 page (a photo) is about 26 MB at 300 dpi and about
+  91 MB at 600 dpi, a label page a few kB. So 23 labels are jobs of 10, 10
+  and 3 pages; PDF and JPEG go as one job per label. The document is made
+  once and sent again for every job of the same size. A printer that does
+  not list `copies-supported` is trusted to make the copies, unless it
+  gets Apple Raster and `urf-supported` has no `CP<n>` (n at least 1).
+  [spec] [confirmed: `ippeveprinter -f image/urf` lists `copies-supported`
+  1-1 and gets two pages for two labels]
 - If a step fails after jobs were sent (a later `Print-Job` refused, a
   job canceled or stopped), every job sent and not seen completed is
   canceled, so that none of them prints later on its own; a job that
@@ -172,16 +186,63 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   directly and through a CUPS queue. An A4 label arrives as a
   595.276 × 841.89 pt PDF page, directly and through CUPS (2480 × 3508 px
   at 300 dpi inside). An HP LaserJet Pro 4002 accepted the same
-  job with `Validate-Job` (nothing printed). The PWG Raster pages convert
-  with CUPS's own `pwgtopdf`. [confirmed]
+  job with `Validate-Job` (nothing printed). The PWG Raster and Apple
+  Raster pages convert with CUPS's own `pwgtopdf` (libcupsfilters). An
+  `ippeveprinter -f image/urf` (no PDF, no PWG Raster: before, "no
+  format") takes the A4 label as Apple Raster, W8 at 600 dpi, and stores
+  a file that decodes to it. [confirmed]
+
+## Apple Raster (URF)
+
+AirPrint's page format, `image/urf`, for printers that list neither PDF
+nor PWG Raster. Apple has not published it; the open source
+implementations define it: OpenPrinting libcups (`cups/raster-stream.c`,
+writer and reader; `tools/ippeveprinter.c`), PAPPL
+(`pappl/printer-driver.c`, `printer-infra.c`) and libcupsfilters
+(`cupsfilters/raster.c`), all Apache-2.0, Copyright OpenPrinting, Apple
+Inc., Easy Software Products, Michael R Sweet and Till Kamppeter.
+`etiketto/backends/urf.py` follows their byte layout; it is written anew,
+no code is copied. [spec: from these sources]
+
+- File: `UNIRAST\0`, then the number of pages (32 bit, big endian).
+- Per page a 32-byte header, big endian: bits per pixel (8 for `W8`, 24
+  for `SRGB24`), colour space (0 sGray, 1 sRGB), duplex (1, one-sided),
+  print quality (4, normal), media type and media source (0, auto: the
+  printer uses what is loaded, the size in `media-col` says which), 6
+  reserved bytes, width and height in pixels, the resolution in dpi (one
+  value, square pixels), 8 reserved bytes. Auto is always valid:
+  libcups's `apple_media_types[0]` in `cups/raster-stream.c` is "auto",
+  and PAPPL (`pappl/printer-driver.c`) notes that auto (0) is always
+  present, also when `IS`/`MT` do not list it. [spec: from these sources]
+- The rows, top to bottom, compressed like PWG Raster's: a byte with the
+  number of identical lines minus 1 (up to 256 lines), then runs of a
+  repeated pixel (0x00–0x7f: the next pixel 1–128 times) and literal
+  pixels (0x81–0xff: 2–128 pixels follow). A lone pixel is a run of one,
+  as libcups writes it. 0x80 (the rest of the line white) is never
+  written, the decoder takes it. sGray is 0 black, 255 white; there is no
+  1-bit depth.
+- `urf-supported` keywords Etiketto uses (also from one comma-joined
+  value): `SRGB24` or `W8` (colour space; every AirPrint printer must
+  take `W8`, so a printer that lists no colour space at all gets it),
+  `RS<dpi>` and `RS<dpi>-<dpi>` (a list of resolutions, not a range),
+  `CP<n>` (the printer makes copies). Not used: `V1.4`/`V1.5` (version),
+  `DM` (duplex, nothing for labels), `PQ` (quality: always normal), `IS`
+  and `MT` (media source and type: always auto), `OB`, `FN`, `IFU`,
+  `OFU`, the `DEV…` and `ADOBERGB…` colour spaces. [spec] An HP LaserJet
+  Pro 4002 lists `CP1, MT1-2-8-9-10-11, PQ3-4-5, RS600, SRGB24, OB10, W8,
+  DEVW8, DEVRGB24, ADOBERGB24, DM3, IS1-1-2, V1.5, FN3` (it takes PDF, so
+  it never gets URF). [confirmed: Get-Printer-Attributes]
+- `urf.encode()` takes the pages as they come (a generator) and their
+  number, like `pwg.encode_pages()`; `urf.join()` and `pwg.join()` put
+  documents together (copies: the same one again).
 
 ## Label sheets
 
 Several labels on one sheet of paper (A4, US Letter, others), placed as
 the gLabels template database says (`etiketto/sheets`, see below).
 
-- Each page is composed at 300 dpi (PWG Raster: at the printer's
-  resolution, the labels rendered at it too): the paper's size from the template,
+- Each page is composed at 300 dpi (PWG Raster, Apple Raster: at the
+  printer's resolution, the labels rendered at it too): the paper's size from the template,
   every label at its exact position (rounded to the pixel, 0.08 mm), round
   labels, ellipses and CDs clipped to their shape (rectangles are printed to
   their edges). Each position gets its own label image from a source
@@ -191,11 +252,11 @@ the gLabels template database says (`etiketto/sheets`, see below).
 - The positions to fill: the chosen ones on the first sheet (partly used
   sheets), every position on the sheets after it. Up to 999 labels a job.
 - The pages go in `Print-Job`s of up to 10 pages each, every page once (no
-  `copies`): a PDF with a page each, or PWG Raster with `TotalPageCount`
-  set; 23 sheets are jobs of 10, 10 and 3 pages. Pages are composed one at
-  a time while the document is written: a job holds one page image at a
-  time, plus the encoded pages of that job (at most 10, as for copies
-  above). A printer that only takes JPEG gets one job per page. The jobs
+  `copies`): a PDF with a page each, or PWG Raster or Apple Raster with
+  the page count set; 23 sheets are jobs of 10, 10 and 3 pages. Pages are
+  composed one at a time while the document is written: a job holds one
+  page image at a time, plus the encoded pages of that job (at most 10,
+  raster pages also at most 64 MB, as for copies above). A printer that only takes JPEG gets one job per page. The jobs
   take part in everything above: `Validate-Job` once before the first,
   a busy printer asked again with the same document, the jobs sent and not
   over canceled when a step fails; the message then counts sheets

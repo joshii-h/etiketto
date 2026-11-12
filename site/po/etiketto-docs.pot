@@ -518,7 +518,7 @@ msgstr ""
 #. type: Plain text
 #: docs/printer.md
 #, markdown-text
-msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that support IPP Everywhere, as most office printers do. A network printer that only offers AirPrint can be printed on once it is set up in the system settings. The label is printed as one page of exactly its size, unscaled."
+msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that support IPP Everywhere or AirPrint, as most office printers do. The label is printed as one page of exactly its size, unscaled."
 msgstr ""
 
 #. type: Bullet: '- '
