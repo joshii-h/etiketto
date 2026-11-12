@@ -150,16 +150,15 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
-    # continuous only: the printer recognises the inserted tape or roll
-    # (else the paper width is the user's choice and nothing is "inserted")
-    cassettes: bool = True
     # printer settings the interface offers in the printer group
     settings: tuple[Setting, ...] = ()
     # print qualities ("standard", "high"); empty or one: the interface offers no choice
     qualities: tuple[str, ...] = ()
-    # continuous tape comes as a "cassette" (VC-500W) or a "roll" (Brother QL):
-    # the word the interface uses for it
-    media: str = "cassette"
+    # continuous only, what the tape comes as: a "cassette" (VC-500W, P-touch)
+    # or a "roll" (Brother QL) the printer recognises, or "paper" whose width
+    # is the user's choice, nothing "inserted" (receipt printers); the
+    # interface words and checks follow it
+    media: Literal["cassette", "roll", "paper"] = "cassette"
     extras: tuple[str, ...] = ()  # of EXTRAS: what the interface offers on top
     # endless tape: the width of a new label when no tape is known; None:
     # 50 mm if the printer takes it, else the widest

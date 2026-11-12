@@ -128,7 +128,7 @@ extension of the interface first; please open an issue before you start.
            data_formats=("jpeg",),  # the first one is the default
            min_length_mm=0,  # shorter labels are extended
            max_length_mm=None,  # longer labels are refused
-           cassettes=True,  # continuous: the printer recognises the inserted tape
+           media="cassette",  # continuous: "cassette" or "roll" it recognises, "paper"
            settings=(),  # Choice/Level: printer settings shown in the printer group
            qualities=(),  # e.g. ("standard", "high"); one or none: no choice
        )

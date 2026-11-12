@@ -392,7 +392,7 @@ class Printer:
             return code_text(info.error, unit)
         if info.state == "UNKNOWN":
             return _("Reachable · the printer reports no status")
-        if not caps.continuous or not caps.cassettes:
+        if not caps.continuous or caps.media == "paper":
             if info.state == "BUSY":
                 return _("Printing")
             if info.pitch_mm:
@@ -474,7 +474,7 @@ class Printer:
         if not info:
             return None
         caps = self.window.backend.capabilities
-        if caps.continuous and not caps.cassettes:
+        if caps.continuous and caps.media == "paper":
             media = "%g mm paper" % self.window.label.tape_mm
         elif caps.continuous:
             media = "%s cassette" % ("%g mm" % info.tape_mm if info.tape_mm else "no")

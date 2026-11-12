@@ -246,3 +246,13 @@ def test_the_preview_resolution_follows_a_dpi_setting():
     assert zpl.render_dpi(PrintOptions(settings={"dpi": "600"})) == pytest.approx(24 * 25.4)
     vc500w = get_backend("vc500w")
     assert vc500w.render_dpi(PrintOptions()) == vc500w.capabilities.dpi
+
+
+def test_every_continuous_backend_says_what_its_tape_comes_as():
+    """Capabilities.media: a cassette or roll the printer recognises, or
+    paper whose width the user chooses (one field, no second flag)."""
+    for backend in backends():
+        assert backend.capabilities.media in ("cassette", "roll", "paper")
+    assert get_backend("escpos").capabilities.media == "paper"
+    assert get_backend("brother_ql").capabilities.media == "roll"
+    assert get_backend("vc500w").capabilities.media == "cassette"

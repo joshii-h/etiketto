@@ -126,7 +126,7 @@ class EscPos(RawBackend):
         color_model="mono",
         cut_modes=("full", "half", "none"),
         continuous=True,
-        cassettes=False,
+        media="paper",
         data_formats=("escpos",),
         settings=(Choice("dpi", ("203", "180")), Toggle("upside_down")),
     )
