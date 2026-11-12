@@ -22,7 +22,7 @@ from etiketto.render import RenderWarning
 from etiketto.shipping.detect import Detection
 from etiketto.shipping.source import SourceError
 from etiketto.shipping.targets import Target
-from etiketto.ui.i18n import _, isolate, month_name
+from etiketto.ui.i18n import _, isolate, month_name, pgettext
 from etiketto.units import Unit
 
 # cassettes older than this get a hint: old ZINK paper prints paler
@@ -155,7 +155,11 @@ IMAGE_MODES = [
     ("dither", _("Dithering (photos)")),
     ("ordered", _("Ordered pattern")),
 ]
-LINE_STYLES = [("solid", _("Solid")), ("dashed", _("Dashed")), ("dotted", _("Dotted"))]
+LINE_STYLES = [
+    ("solid", pgettext("line style", "Solid")),
+    ("dashed", _("Dashed")),
+    ("dotted", _("Dotted")),
+]
 BORDER_STYLES = LINE_STYLES + [("double", _("Double"))]
 SHAPES = [
     ("line", _("Line")),
@@ -170,14 +174,14 @@ DIRECTIONS = [
     ("down", _("Diagonal, falling")),
 ]
 ARROWS = [
-    ("none", _("None")),
+    ("none", pgettext("arrows", "None")),
     ("start", _("At the start")),
     ("end", _("At the end")),
     ("both", _("At both ends")),
 ]
 FILLS = [
-    ("none", _("None")),
-    ("solid", _("Solid")),
+    ("none", pgettext("fill", "None")),
+    ("solid", pgettext("fill", "Solid")),
     ("hatched", _("Hatched")),
     ("dotted", _("Dotted")),
     ("grid", _("Grid")),

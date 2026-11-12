@@ -103,11 +103,15 @@ class CropDialog(Adw.Dialog):
         crop = [x, y, max(0.01, min(crop[2], 1 - x)), max(0.01, min(crop[3], 1 - y))]
         self.crop = crop
         self.view.set_crop(crop)
+        self._show(crop)  # a value that had to give way shows what is kept
 
     def _on_drag(self, crop, _final: bool) -> None:
         self.crop = [float(v) for v in crop]
+        self._show(self.crop)
+
+    def _show(self, crop) -> None:
         self._syncing = True
-        for spin, value in zip(self.spins, self.crop, strict=True):
+        for spin, value in zip(self.spins, crop, strict=True):
             spin.set_value(round(value * 100, 1))
         self._syncing = False
 

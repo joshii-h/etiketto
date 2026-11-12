@@ -12,6 +12,7 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
+from etiketto.history import typing_key  # noqa: E402
 from etiketto.model import (  # noqa: E402
     ImageElement,
     PageElement,
@@ -51,6 +52,29 @@ if TYPE_CHECKING:
     from etiketto.ui.window import Window
 
 
+IMAGE_OPTIONS = (
+    "crop",
+    "rotation",
+    "mirror",
+    "flip",
+    "brightness",
+    "contrast",
+    "gamma",
+    "invert",
+)
+
+
+def _image_options(element: ImageElement) -> dict:
+    """The options of the image that belong to its picture, set to their
+    defaults: the changed ones (empty if none was changed)."""
+    defaults = ImageElement()
+    return {
+        name: getattr(defaults, name)
+        for name in IMAGE_OPTIONS
+        if getattr(element, name) != getattr(defaults, name)
+    }
+
+
 class ElementsGroup(Adw.PreferencesGroup):
     """The "Content" group: one expander row per element."""
 
@@ -60,6 +84,8 @@ class ElementsGroup(Adw.PreferencesGroup):
             description=_("Elements are placed one after another along the tape"),
         )
         self.window = window
+        # the rows open, the one opened last at the end: the open element
+        self._open: list[int] = []
         self._add_menu_button()
 
         if not window.label.elements:
@@ -89,7 +115,9 @@ class ElementsGroup(Adw.PreferencesGroup):
         # a symbol shows itself
         prefix = SymbolIcon(element.path) if isinstance(element, SymbolElement) else None
         row.add_prefix(prefix or Gtk.Image(icon_name=element_icon(element)))
-        row.set_expanded(index == self.window.expand_index)
+        if index == self.window.expand_index:
+            row.set_expanded(True)
+            self._open.append(index)
         row.connect("notify::expanded", lambda r, _p: self._on_expanded(index, r.get_expanded()))
         self._add_header_buttons(row, index)
 
@@ -103,14 +131,21 @@ class ElementsGroup(Adw.PreferencesGroup):
                 setattr(element, key, value)
             retitle()
             # typing into one field is one step of undo (History.record)
-            self.window.mark_changed("element:%d:%s" % (index, ",".join(sorted(kwargs))))
+            self.window.mark_changed(typing_key("element:%d" % index, kwargs))
 
+        self._kind_rows(row, element, set_attr, prefix)
+        row.add_row(styles.position_row(self.window, element, set_attr))
+        for widget, field in self._fields(row):
+            widget.set_name("field:%d:%s" % (index, field))
+        return row
+
+    def _kind_rows(self, row, element, set_attr, prefix) -> None:
+        """The rows of the element's own kind."""
         if isinstance(element, TextElement):
             self._text_rows(row, element, set_attr)
         elif isinstance(element, ImageElement):
             self._image_rows(row, element, set_attr)
         elif isinstance(element, SymbolElement):
-            assert prefix
             self._symbol_rows(row, element, set_attr, prefix)
         elif isinstance(element, PageElement):
             self._page_rows(row, element, set_attr)
@@ -118,15 +153,32 @@ class ElementsGroup(Adw.PreferencesGroup):
             styles.shape_rows(self.window, row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
-        row.add_row(styles.position_rows(self.window, element, set_attr))
-        return row
+
+    @staticmethod
+    def _fields(widget) -> list:
+        """The text fields of a row: the window's undo is the one that counts
+        there too, and gives them the focus back (window._refocus)."""
+        found = []
+        child = widget.get_first_child()
+        while child:
+            if isinstance(child, Gtk.TextView):
+                child.get_buffer().set_enable_undo(False)
+                found.append((child, "text"))
+            elif isinstance(child, Adw.EntryRow):
+                child.set_enable_undo(False)
+                found.append((child, child.get_title()))
+            found += ElementsGroup._fields(child)
+            child = child.get_next_sibling()
+        return found
 
     def _on_expanded(self, index: int, expanded: bool) -> None:
-        """The open element is the one the shortcuts (Ctrl+D, Delete, Alt+Up/Down) act on."""
+        """The open element is the one the shortcuts (Ctrl+D, Delete,
+        Alt+Up/Down) act on: the row opened last of those still open."""
+        if index in self._open:
+            self._open.remove(index)
         if expanded:
-            self.window.expand_index = index
-        elif self.window.expand_index == index:
-            self.window.expand_index = -1
+            self._open.append(index)
+        self.window.expand_index = self._open[-1] if self._open else -1
 
     def _add_header_buttons(self, row: Adw.ExpanderRow, index: int) -> None:
         window = self.window
@@ -231,8 +283,12 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
 
         def picked(new: ImageElement):
-            set_attr(data=new.data, name=new.name)
+            options = _image_options(element)
+            set_attr(data=new.data, name=new.name, **options)
             image_row.set_subtitle(GLib.markup_escape_text(new.name))
+            if options:  # crop and turn were for the other picture
+                self.window.rebuild_sidebar()
+                self.window.toast(_("Crop, turn and adjustments reset for the new image"))
 
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)

@@ -131,9 +131,9 @@ def switch_row(title: str, active: bool, on_change, subtitle: str | None = None)
 
 
 def expander(title: str, subtitle: str | None = None) -> Adw.ExpanderRow:
-    """Advanced options folded away, so the sidebar stays tidy."""
+    """Options folded away in the sidebar (never inside another expander:
+    further options of an element open as a page, see styles.py)."""
     row = Adw.ExpanderRow(title=title)
-    row.add_css_class("nested")
     if subtitle:
         row.set_subtitle(subtitle)
     return row

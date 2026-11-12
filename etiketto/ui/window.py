@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import os
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 import gi
@@ -19,7 +20,7 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend, PrintOptions, margins_for  # noqa: E402
-from etiketto.history import History  # noqa: E402
+from etiketto.history import History, typing_key  # noqa: E402
 from etiketto.model import (  # noqa: E402
     MAX_COUNTER,
     CodeElement,
@@ -188,14 +189,36 @@ class Window(Adw.ApplicationWindow):
         side_scroller.set_size_request(420, -1)
         self.sidebar = Adw.PreferencesPage()
         side_scroller.set_child(self.sidebar)
-        paned.set_end_child(side_scroller)
+        # further options of an element open as pages of their own (styles.py)
+        self.sidebar_nav = Adw.NavigationView()
+        self.sidebar_root = Adw.NavigationPage(title=_("Label"), child=side_scroller, tag="root")
+        self.sidebar_nav.add(self.sidebar_root)
+        paned.set_end_child(self.sidebar_nav)
         return paned
+
+    def push_subpage(self, title: str, subtitle: str, rows) -> Adw.NavigationPage:
+        """A page of further options in the sidebar; rows(group) fills it.
+        Its header names the element (subtitle), its back button returns."""
+        header = Adw.HeaderBar(show_start_title_buttons=False, show_end_title_buttons=False)
+        header.set_title_widget(Adw.WindowTitle(title=title, subtitle=subtitle))
+        group = Adw.PreferencesGroup()
+        rows(group)
+        page = Adw.PreferencesPage()
+        page.add(group)
+        toolbar = Adw.ToolbarView(content=page)
+        toolbar.add_top_bar(header)
+        subpage = Adw.NavigationPage(title=title, child=toolbar)
+        self.sidebar_nav.push(subpage)
+        return subpage
 
     def _on_templates_menu(self, button, _pspec) -> None:
         if button.get_active():
             self.files.fill_templates()
 
     def rebuild_sidebar(self) -> None:
+        # an open page of options belongs to the rows rebuilt here
+        if self.sidebar_nav.get_visible_page() is not self.sidebar_root:
+            self.sidebar_nav.pop_to_page(self.sidebar_root)
         for group in self._groups:
             self.sidebar.remove(group)
         self.label_group = LabelGroup(self)
@@ -256,7 +279,7 @@ class Window(Adw.ApplicationWindow):
     def change(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self.label, key, value)
-        self.mark_changed("label:" + ",".join(sorted(kwargs)))
+        self.mark_changed(typing_key("label", kwargs))
 
     def mark_changed(self, key: str | None = None, record: bool = True) -> None:
         """The label changed. key: what changed, for undo (History.record);
@@ -295,16 +318,24 @@ class Window(Adw.ApplicationWindow):
             return
         printer_changed = label.printer != self.label.printer
         data_changed = label.data_file != self.label.data_file
+        sheet_changed = label.data_sheet != self.label.data_sheet
+        focus = _field_name(self.get_focus())
         self.label = label
         if self.expand_index >= len(label.elements):
             self.expand_index = -1
         self.rebuild_sidebar()
         self.mark_changed(record=False)
+        self.dirty = not self.history.at_saved
+        self.update_title()
         if data_changed:
             self.data.follow_label()
+        elif sheet_changed and label.data_file:
+            self.data.load()
         if printer_changed:
             self.printer.info = None
             self.printer.refresh()
+        if focus:
+            _refocus(self.sidebar, focus)
 
     # --- the open element ------------------------------------------------------------
 
@@ -331,6 +362,12 @@ class Window(Adw.ApplicationWindow):
         if index is not None and 0 <= index + delta < len(self.label.elements):
             self.move_element(index, index + delta)
 
+    def _unless_dialog(self, callback, *args) -> None:
+        """An editing shortcut acts on the label only while no dialog is open
+        (its keys reach the window, too)."""
+        if self.get_visible_dialog() is None:
+            callback(*args)
+
     def show_shortcuts(self, *_args) -> None:
         self.present_dialog(shortcuts.dialog())
 
@@ -342,6 +379,7 @@ class Window(Adw.ApplicationWindow):
         self.saved_counter = self.label.counter_next if self.path else None
         self._saved_stamp = _stamp(self.path) if self.path else None
         self.counter_edited = False
+        self.history.mark_saved()
 
     def sync_counter(self) -> None:
         """Before printing and saving: if the file changed since it was
@@ -733,12 +771,16 @@ class Window(Adw.ApplicationWindow):
         }
         for step in STEPS:
             actions["row-" + step] = lambda *_a, s=step: self.data.step(s)
+        for action_name, _accels in shortcuts.EDITING:  # not behind an open dialog
+            name = action_name.removeprefix("win.")
+            actions[name] = partial(self._unless_dialog, actions[name])
         for name, callback in actions.items():
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", callback)
             self.add_action(action)
         self.data.update_forget_action()
         self.update_history_actions()
+        self.lookup_action("shortcuts").set_enabled(shortcuts.available())
         shortcuts.install(self)
         template = Gio.SimpleAction.new("open-template", GLib.VariantType.new("s"))
         template.connect("activate", self.files.open_template)
@@ -750,7 +792,8 @@ class Window(Adw.ApplicationWindow):
         app.set_accels_for_action("win.save-as", ["<Control><Shift>s"])
         app.set_accels_for_action("win.print", ["<Control>p"])
         app.set_accels_for_action("win.help", ["F1"])
-        app.set_accels_for_action("win.shortcuts", ["<Control>question"])
+        if shortcuts.available():
+            app.set_accels_for_action("win.shortcuts", ["<Control>question"])
         app.set_accels_for_action("win.new", ["<Control>n"])
         app.set_accels_for_action("win.row-first", ["<Alt>Home"])
         app.set_accels_for_action("win.row-previous", ["<Alt>Page_Up"])
@@ -796,6 +839,35 @@ class Window(Adw.ApplicationWindow):
 
         self.files.confirm_discard(close)
         return True
+
+
+FIELD = "field:"  # widget names of the text fields undo gives the focus back to
+
+
+def _field_name(widget) -> str | None:
+    """The name of the text field (elements.py) that holds the focus."""
+    while widget is not None:
+        name = widget.get_name()
+        if name.startswith(FIELD):
+            return name
+        widget = widget.get_parent()
+    return None
+
+
+def _refocus(root, name: str) -> None:
+    """Give the focus back to the text field of that name, cursor at the end."""
+    child = root.get_first_child()
+    while child:
+        if child.get_name() == name:
+            child.grab_focus()
+            if isinstance(child, Gtk.TextView):
+                buffer = child.get_buffer()
+                buffer.place_cursor(buffer.get_end_iter())
+            elif isinstance(child, Gtk.Editable):
+                child.set_position(-1)
+            return
+        _refocus(child, name)
+        child = child.get_next_sibling()
 
 
 def _stamp(path: Path) -> tuple | None:
