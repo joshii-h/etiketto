@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>xyz.joshuahirsig.Tavletta</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later AND MIT AND Apache-2.0 AND BSD-3-Clause AND MIT-CMU AND (GPL-2.0-only OR GPL-3.0-only)</project_license>
+
+  <name>Tavletta</name>
+  <summary>Design and print labels</summary>
+  <summary xml:lang="de">Etiketten gestalten und drucken</summary>
+  <summary xml:lang="fr">Créer et imprimer des étiquettes</summary>
+  <summary xml:lang="it">Crea e stampa etichette</summary>
+  <summary xml:lang="es">Diseñe e imprima etiquetas</summary>
+  <summary xml:lang="nl">Etiketten ontwerpen en afdrukken</summary>
+  <summary xml:lang="sv">Designa och skriv ut etiketter</summary>
+  <summary xml:lang="ja">ラベルをデザインして印刷</summary>
+  <summary xml:lang="zh_TW">設計並列印標籤</summary>
+  <summary xml:lang="zh_HK">設計並列印標籤</summary>
+  <summary xml:lang="zh_CN">设计并打印标签</summary>
+  <summary xml:lang="pl">Twórz i drukuj etykiety</summary>
+  <summary xml:lang="pt">Crie e imprima etiquetas</summary>
+  <summary xml:lang="pt_BR">Crie e imprima etiquetas</summary>
+  <summary xml:lang="ru">Создание и печать этикеток</summary>
+  <summary xml:lang="uk">Дизайн і друк етикеток</summary>
+  <summary xml:lang="tr">Etiket tasarla ve yazdır</summary>
+  <summary xml:lang="ko">라벨 디자인 및 인쇄</summary>
+  <summary xml:lang="fi">Suunnittele ja tulosta tarroja</summary>
+  <summary xml:lang="hu">Címkék tervezése, nyomtatása</summary>
+  <summary xml:lang="et">Kujunda ja prindi silte</summary>
+  <summary xml:lang="id">Rancang dan cetak label</summary>
+  <summary xml:lang="ms">Reka dan cetak label</summary>
+  <summary xml:lang="th">ออกแบบและพิมพ์ฉลาก</summary>
+  <summary xml:lang="vi">Thiết kế và in nhãn</summary>
+  <summary xml:lang="hi">लेबल डिज़ाइन और प्रिंट करें</summary>
+  <summary xml:lang="ar">صمّم الملصقات واطبعها</summary>
+
+  <developer id="xyz.joshuahirsig">
+    <name>Joshua Hirsig</name>
+  </developer>
+
+  <description>
+    <p>
+      Tavletta designs labels with text, images, symbols and codes, shows them
+      exactly as they will be printed and prints them over the network or USB:
+      on label printers with endless tape or die-cut labels, and on office
+      printers, one label per page or on label sheets. It talks to each
+      printer in its own language.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Finds the printer on the network and on USB by itself and shows its state</li>
+      <li>Endless tape as long as the content or with a fixed length; die-cut labels in common or custom sizes</li>
+      <li>Text in any installed font, images and photos, over 7000 symbols</li>
+      <li>QR code, Data Matrix, PDF417, Aztec, Code 128, Code 39, Code 93, EAN, UPC, ITF-14 and GS1 codes, sharp at the printer's resolution</li>
+      <li>Variables in texts and codes: date, time, counter, copy number, random ID</li>
+      <li>Label sheets such as Avery or Zweckform on office printers: over 1700 sheets</li>
+      <li>Serial labels: one label for each row of a CSV, ODS or XLSX file</li>
+      <li>Background colours and images printed edge to edge, borders</li>
+      <li>Shipping labels from a carrier's PDF or image: the label is found on the page and printed at 4 × 6 in, 100 × 150 mm or on a sheet</li>
+      <li>Live preview at print resolution, millimetres or inches, templates, PNG export</li>
+      <li>A command line that prints label files without a window</li>
+      <li>Printer problems explained in plain words, with a way to report a problem</li>
+      <li>User documentation in English and German</li>
+    </ul>
+    <p>Supported printers:</p>
+    <ul>
+      <li>Brother VC-500W (also sold as ColAura): colour labels on ZINK tape, with cassette detection, vivid colours and cut modes</li>
+      <li>Brother QL-500 to QL-1115NWB: continuous rolls and die-cut labels in black, red and black on the QL-800 series (not yet tried on a printer)</li>
+      <li>Brother P-touch tape printers (PT-P700, PT-P750W, PT-P900 series and others): black on TZe tape and heat-shrink tube, with tape detection, cut and chain printing (not yet tried on a printer)</li>
+      <li>cab EOS2, EOS5, SQUIX 4 and MACH 4S: die-cut labels in black, with a check of the loaded roll</li>
+      <li>NIIMBOT B1, B21, B3S, B4, D11, D110, D101 and related models on USB (not yet tried on a printer): labels in black, with print density and label type</li>
+      <li>Any printer the system knows through CUPS or IPP, such as office printers: one label per page at its exact size, or label sheets such as Avery or Zweckform</li>
+      <li>Label printers with ZPL or EPL2 (Zebra and compatibles), TSPL (TSC and 4 × 6 inch shipping label printers), receipt printers with ESC/POS and DYMO LabelWriter: not yet tried on a printer</li>
+    </ul>
+    <p>
+      Tavletta is not affiliated with Brother Industries, cab Produkttechnik or
+      the makers of the other printers. Brother, ColAura, VC-500W, P-touch, TZe,
+      HSe, cab, EOS, SQUIX, MACH, Zebra, ZPL, EPL, TSC, TSPL, Epson, ESC/POS,
+      DYMO, LabelWriter and NIIMBOT are trademarks of their owners; ZINK is a
+      trademark of ZINK Holdings LLC.
+    </p>
+  </description>
+
+  <translation type="gettext">tavletta</translation>
+  <launchable type="desktop-id">xyz.joshuahirsig.Tavletta.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default" environment="gnome">
+      <caption>A label with a QR code and text</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/main.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>A label with a QR code and text</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/main-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>Full colour background printed edge to edge</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/colour.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>Full colour background printed edge to edge</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/colour-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>A square sticker with an image and a border</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/sticker.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>A square sticker with an image and a border</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/sticker-dark.png</image>
+    </screenshot>
+    <screenshot environment="gnome">
+      <caption>Print options: copies, cut mode and colour mode</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/print.png</image>
+    </screenshot>
+    <screenshot environment="gnome:dark">
+      <caption>Print options: copies, cut mode and colour mode</caption>
+      <image>https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.0.0/docs/screenshots/print-dark.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://git.joshuahirsig.xyz/joshii/tavletta</url>
+  <url type="bugtracker">https://git.joshuahirsig.xyz/joshii/tavletta/issues</url>
+  <url type="help">https://tavletta.joshuahirsig.xyz/</url>
+  <url type="vcs-browser">https://git.joshuahirsig.xyz/joshii/tavletta</url>
+
+  <categories>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>label</keyword>
+    <keyword>printer</keyword>
+    <keyword>sticker</keyword>
+    <keyword>Brother</keyword>
+    <keyword>VC-500W</keyword>
+    <keyword>ColAura</keyword>
+    <keyword>VC-500WCR</keyword>
+    <keyword>Brother QL</keyword>
+    <keyword>QL-820NWB</keyword>
+    <keyword>cab</keyword>
+    <keyword>EOS2</keyword>
+    <keyword>SQUIX</keyword>
+    <keyword>NIIMBOT</keyword>
+    <keyword>P-touch</keyword>
+    <keyword>Zebra</keyword>
+    <keyword>ZPL</keyword>
+    <keyword>TSPL</keyword>
+    <keyword>DYMO</keyword>
+    <keyword>LabelWriter</keyword>
+    <keyword>label sheet</keyword>
+    <keyword>shipping label</keyword>
+  </keywords>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#ffbe6f</color>
+    <color type="primary" scheme_preference="dark">#c64600</color>
+  </branding>
+
+  <content_rating type="oars-1.1"/>
+
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+
+  <provides>
+    <mediatype>application/x-tavletta</mediatype>
+  </provides>
+
+  <releases>
+    <release version="1.0.2" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/tavletta/releases/tag/v1.0.2</url>
+      <description>
+        <ul>
+          <li>The window shows the Tavletta icon in title bars that display one</li>
+          <li>Also found when searching for ColAura or VC-500WCR, other names of the VC-500W</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.0.1" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/tavletta/releases/tag/v1.0.1</url>
+      <description>
+        <p>Packaging update, no changes to the app itself.</p>
+        <ul>
+          <li>Installing with pip now also installs the desktop entry, icons, MIME type, metainfo and translations</li>
+          <li>A broken translation stops the build instead of being skipped</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.0.0" date="2026-11-05">
+      <url type="details">https://git.joshuahirsig.xyz/joshii/tavletta/releases/tag/v1.0.0</url>
+      <description>
+        <p>First release.</p>
+        <ul>
+          <li>Design labels with text, images, QR codes and barcodes; automatic or fixed length</li>
+          <li>Finds the printer on the network and shows the inserted cassette, remaining tape and firmware</li>
+          <li>Exact print geometry with edge-to-edge backgrounds and a safety margin per printer</li>
+          <li>Vivid, standard and black-and-white modes, colour adjustment, full, half or no cut</li>
+          <li>Clear error messages, cassette age hint, report a problem from the app</li>
+          <li>Available in 27 languages</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

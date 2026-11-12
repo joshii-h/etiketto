@@ -15,17 +15,17 @@ PYTHON="${PYTHON:-.venv/bin/python}"
 LIST=tools/screenshots.list
 CONF="$(mktemp -d)"
 trap 'rm -rf "$CONF"' EXIT
-mkdir -p "$CONF/etiketto"
-echo '{"host": "VC-500W.local", "printers": {"cab": {"host": "EOS2.local"}}}' > "$CONF/etiketto/settings.json"
+mkdir -p "$CONF/tavletta"
+echo '{"host": "VC-500W.local", "printers": {"cab": {"host": "EOS2.local"}}}' > "$CONF/tavletta/settings.json"
 
 # ImageMagick 7 is `magick`, ImageMagick 6 (some distributions) `convert`
 if command -v magick >/dev/null; then IM=magick; IDENTIFY="magick identify"; else IM=convert; IDENTIFY=identify; fi
 
-# the app reads its translations from etiketto/locale
+# the app reads its translations from tavletta/locale
 for po in po/*.po; do
     lang="$(basename "$po" .po)"
-    mkdir -p "etiketto/locale/$lang/LC_MESSAGES"
-    msgfmt -o "etiketto/locale/$lang/LC_MESSAGES/etiketto.mo" "$po"
+    mkdir -p "tavletta/locale/$lang/LC_MESSAGES"
+    msgfmt -o "tavletta/locale/$lang/LC_MESSAGES/tavletta.mo" "$po"
 done
 
 size_window() { # pid
@@ -33,7 +33,7 @@ size_window() { # pid
         id=""
         for _ in $(seq 40); do
             id=$(niri msg --json windows | python3 -c 'import json,sys
-w=[x for x in json.load(sys.stdin) if x.get("app_id")=="xyz.joshuahirsig.Etiketto"]
+w=[x for x in json.load(sys.stdin) if x.get("app_id")=="xyz.joshuahirsig.Tavletta"]
 print(w[-1]["id"] if w else "")')
             [ -n "$id" ] && break
             sleep 0.1
@@ -59,8 +59,8 @@ print(w[-1]["id"] if w else "")')
 shoot() { # output example state language scheme
     out="$1"
     XDG_CONFIG_HOME="$CONF" ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME="$5" LANGUAGE="$4" \
-    ETIKETTO_SCREENSHOT="$out.raw.png" ETIKETTO_SCREENSHOT_STATE="$3" ETIKETTO_SCREENSHOT_DELAY=6000 \
-        "$PYTHON" -m etiketto.app "docs/examples/$2.etiketto" </dev/null >/dev/null 2>&1 &
+    TAVLETTA_SCREENSHOT="$out.raw.png" TAVLETTA_SCREENSHOT_STATE="$3" TAVLETTA_SCREENSHOT_DELAY=6000 \
+        "$PYTHON" -m tavletta.app "docs/examples/$2.tavletta" </dev/null >/dev/null 2>&1 &
     pid=$!
     size_window "$pid"
     wait "$pid" || true

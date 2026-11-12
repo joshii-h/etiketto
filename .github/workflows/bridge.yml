@@ -1,7 +1,7 @@
 # Carries GitHub pull requests and issues over to Forgejo, the main repository.
 #
-# GitHub (joshii-h/etiketto) is a push mirror of
-# https://git.joshuahirsig.xyz/joshii/etiketto. Review and merge happen on
+# GitHub (joshii-h/tavletta) is a push mirror of
+# https://git.joshuahirsig.xyz/joshii/tavletta. Review and merge happen on
 # Forgejo; once the merge commit is mirrored back, GitHub marks the pull request
 # as merged because its commits are part of main (Forgejo must merge with a
 # merge commit, not squash).
@@ -35,8 +35,8 @@ concurrency:
 
 env:
   FORGEJO_URL: https://git.joshuahirsig.xyz
-  FORGEJO_REPO: joshii/etiketto
-  FORGEJO_USER: etiketto-bot
+  FORGEJO_REPO: joshii/tavletta
+  FORGEJO_USER: tavletta-bot
   MARKER: "<!-- forgejo-bridge -->"
 
 jobs:

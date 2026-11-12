@@ -7,7 +7,7 @@ import base64
 import io
 import json
 import os
-import subprocess  # nosec B404 - runs this checkout's `etiketto mcp`
+import subprocess  # nosec B404 - runs this checkout's `tavletta mcp`
 import sys
 import threading
 from pathlib import Path
@@ -15,10 +15,10 @@ from pathlib import Path
 import pytest
 from test_server import TOKEN, call
 
-from etiketto.backends.base import PaperJam
-from etiketto.model import Label, TextElement
-from etiketto.server import mcp as mcp_module
-from etiketto.server.mcp import (
+from tavletta.backends.base import PaperJam
+from tavletta.model import Label, TextElement
+from tavletta.server import mcp as mcp_module
+from tavletta.server.mcp import (
     HEADER_MISMATCH,
     INVALID_PARAMS,
     INVALID_REQUEST,
@@ -32,8 +32,8 @@ from etiketto.server.mcp import (
     Session,
     serve_stdio,
 )
-from etiketto.server.service import Service
-from etiketto.ui.settings import Settings
+from tavletta.server.service import Service
+from tavletta.ui.settings import Settings
 
 ROOT = Path(__file__).resolve().parent.parent
 ACCEPT = {"Accept": "application/json, text/event-stream"}
@@ -93,7 +93,7 @@ def test_legacy_initialize_negotiates_the_version(mcp):
     result = answer["result"]
     assert result["protocolVersion"] == "2025-06-18" == session.version
     assert result["capabilities"] == {"tools": {"listChanged": False}}
-    assert result["serverInfo"]["name"] == "etiketto" and result["instructions"]
+    assert result["serverInfo"]["name"] == "tavletta" and result["instructions"]
     answer = mcp.handle(request("initialize", {"protocolVersion": "1999-01-01"}))
     assert answer["result"]["protocolVersion"] == LEGACY[0]
     assert mcp.handle({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None
@@ -105,7 +105,7 @@ def test_modern_requests(mcp):
     answer = mcp.handle(modern("server/discover"))["result"]
     assert answer["resultType"] == "complete"
     assert answer["supportedVersions"] == list(MODERN + LEGACY)
-    assert answer["_meta"]["io.modelcontextprotocol/serverInfo"]["name"] == "etiketto"
+    assert answer["_meta"]["io.modelcontextprotocol/serverInfo"]["name"] == "tavletta"
     tools = mcp.handle(modern("tools/list"))["result"]
     assert tools["resultType"] == "complete" and len(tools["tools"]) == len(TOOLS)
     error = mcp.handle(modern("tools/list", version="1900-01-01"))["error"]
@@ -146,7 +146,7 @@ def tool(mcp, name, **arguments):
 
 def test_tools_list_and_describe(mcp, server_env):
     result = tool(mcp, "list_labels")
-    assert result["structuredContent"]["labels"][0]["name"] == "box.etiketto"
+    assert result["structuredContent"]["labels"][0]["name"] == "box.tavletta"
     assert json.loads(result["content"][0]["text"]) == result["structuredContent"]
     result = tool(mcp, "describe_label", label="box")
     assert result["structuredContent"]["elements"][0]["name"] == "title"
@@ -245,7 +245,7 @@ def test_stdio_limits_and_internal_errors(mcp, monkeypatch):
 def test_stdio_subprocess(tmp_path):
     labels = tmp_path / "labels"
     labels.mkdir()
-    Label(elements=[TextElement(text="Hi", name="t")]).save(labels / "hello.etiketto")
+    Label(elements=[TextElement(text="Hi", name="t")]).save(labels / "hello.tavletta")
     env = dict(os.environ, XDG_CONFIG_HOME=str(tmp_path / "config"), PYTHONPATH=str(ROOT))
     messages = [
         request("initialize", {"protocolVersion": "2025-06-18", "capabilities": {}}, 1),
@@ -257,7 +257,7 @@ def test_stdio_subprocess(tmp_path):
     ]
     stdin = "".join(json.dumps(m) + "\n" for m in messages)
     done = subprocess.run(  # nosec B603 - this checkout, fixed arguments
-        [sys.executable, "-m", "etiketto.cli", "mcp", "--labels-dir", str(labels)],
+        [sys.executable, "-m", "tavletta.cli", "mcp", "--labels-dir", str(labels)],
         input=stdin.encode(),
         capture_output=True,
         env=env,
@@ -268,7 +268,7 @@ def test_stdio_subprocess(tmp_path):
     answers = {a["id"]: a for a in map(json.loads, done.stdout.splitlines())}
     assert answers[1]["result"]["protocolVersion"] == "2025-06-18"
     assert [t["name"] for t in answers[2]["result"]["tools"]] == [t["name"] for t in TOOLS]
-    assert answers[3]["result"]["structuredContent"]["labels"][0]["name"] == "hello.etiketto"
+    assert answers[3]["result"]["structuredContent"]["labels"][0]["name"] == "hello.tavletta"
     assert answers[4]["result"]["content"][0]["type"] == "image"
     assert answers[5]["result"]["resultType"] == "complete"
 
@@ -328,7 +328,7 @@ def test_http_modern_requests(make_server):
     }
     status, response, answer = post(base, message, good)
     assert status == 200 and answer["result"]["resultType"] == "complete"
-    assert answer["result"]["structuredContent"]["name"] == "box.etiketto"
+    assert answer["result"]["structuredContent"]["name"] == "box.tavletta"
     assert response.getheader("Mcp-Session-Id") is None
     encoded = "=?base64?" + base64.b64encode(b"describe_label").decode() + "?="
     assert post(base, message, dict(good, **{"Mcp-Name": encoded}))[0] == 200

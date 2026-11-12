@@ -1,12 +1,12 @@
 # DYMO LabelWriter
 
-How Etiketto talks to DYMO LabelWriter printers: 300, 310, 315, 320, 330,
+How Tavletta talks to DYMO LabelWriter printers: 300, 310, 315, 320, 330,
 400, 450 (Turbo, Twin Turbo, DUO label side) and 4XL. **Not yet tried
 on a printer**: no LabelWriter was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)
 by Michael R Sweet (Apache-2.0, `lprint-dymo.c`, which goes back to the
-CUPS DYMO driver); Etiketto reimplements them in Python, no LPrint code is
+CUPS DYMO driver); Tavletta reimplements them in Python, no LPrint code is
 included. Roll selection, label length and status follow DYMO's
 "LabelWriter 450 Series Technical Reference Manual".
 
@@ -37,7 +37,7 @@ reference, **[assumed]** likely but untested, **[open]** unknown.
   byte, is not a status. No answer within 1 s: "no status", the job is
   sent anyway. LPrint asks nothing. [spec] [assumed: not tried on a
   printer]
-- No paper comes with the error bit; Etiketto names "no paper" first.
+- No paper comes with the error bit; Tavletta names "no paper" first.
 
 ## A print job
 
@@ -60,9 +60,9 @@ per label:
 - `ESC L` is "the maximum distance the printer should travel while
   searching for the top-of-form hole", "usually set to a value slightly
   longer than the true label length" (DYMO). LPrint sends the label's own
-  length; Etiketto sends label, gap and 3 mm. [spec]
+  length; Tavletta sends label, gap and 3 mm. [spec]
 - `ESC q`: the roll is an ASCII digit by DYMO's manual; LPrint sends a
-  binary 1. Etiketto sends `"1"`, which single-roll printers ignore. [spec]
+  binary 1. Tavletta sends `"1"`, which single-roll printers ignore. [spec]
 - Blank rows before a row with ink are skipped with `ESC f`; blank rows at
   the end are not sent, the form feed passes them. [LPrint]
 - Darkness in per cent: 3 × per cent / 100 selects `c` (lightest), `d`, `e`
@@ -72,12 +72,12 @@ per label:
 - Example from LPrint (rows `FF 00`, blank, `00 FF`, darkness 50 %, length
   as LPrint sends it):
   `1B×200 1B 40 1B 51 00 00 1B 42 00 1B 4C 00 03 1B 44 02 1B 71 01 1B 64 16 FF 00 1B 66 01 01 16 00 FF 1B 45`;
-  Etiketto sends `1B 71 31` for the roll. Its tests check the rest byte
+  Tavletta sends `1B 71 31` for the roll. Its tests check the rest byte
   for byte.
 
 ## Print head
 
-- LabelWriter 4xx: 672 dots (56.9 mm); 4XL: 1248 dots (105.7 mm). Etiketto
+- LabelWriter 4xx: 672 dots (56.9 mm); 4XL: 1248 dots (105.7 mm). Tavletta
   takes the 4XL's width when the USB model name contains "4XL". [spec]
   [assumed]
 - A label sold as 57 mm wide is one dot wider than the 4xx head: up to 1 mm

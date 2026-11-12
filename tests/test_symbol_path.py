@@ -9,7 +9,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from etiketto.symbols.path import MAX_PATH_CHARS, PathError, arc_to_cubics, parse
+from tavletta.symbols.path import MAX_PATH_CHARS, PathError, arc_to_cubics, parse
 
 
 def approx(segments):
@@ -259,7 +259,7 @@ def test_any_data_parses_or_raises_path_error(data):
 
 
 def test_arc_arithmetic_failures_fall_back_to_a_line(monkeypatch):
-    from etiketto.symbols import path
+    from tavletta.symbols import path
 
     with pytest.raises(ArithmeticError):  # end points that coincide: no centre
         path._arc_center(1, 1, 1, 1, 0, False, False, 1, 1)

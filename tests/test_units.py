@@ -1,6 +1,6 @@
 import pytest
 
-from etiketto.units import INCHES, MILLIMETRES, default_unit, locale_territory, unit_for
+from tavletta.units import INCHES, MILLIMETRES, default_unit, locale_territory, unit_for
 
 
 @pytest.mark.parametrize(

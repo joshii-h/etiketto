@@ -16,18 +16,18 @@ from urllib.parse import urlsplit
 import pytest
 from PIL import Image
 
-from etiketto import cli
-from etiketto.backends.base import PaperJam, PrinterInfo
-from etiketto.model import CodeElement, Label, TextElement
-from etiketto.server import http as server_http
-from etiketto.server import jobs as jobs_module
-from etiketto.server import main as server_main
-from etiketto.server.http import _host_name, _matches, binds_loopback, is_loopback
-from etiketto.server.openapi import spec
-from etiketto.ui import i18n
+from tavletta import cli
+from tavletta.backends.base import PaperJam, PrinterInfo
+from tavletta.model import CodeElement, Label, TextElement
+from tavletta.server import http as server_http
+from tavletta.server import jobs as jobs_module
+from tavletta.server import main as server_main
+from tavletta.server.http import _host_name, _matches, binds_loopback, is_loopback
+from tavletta.server.openapi import spec
+from tavletta.ui import i18n
 
 TOKEN = "s3cret-token-for-tests"
-ASK = {"X-Etiketto-Request": "1"}  # without a token, asking printers needs it
+ASK = {"X-Tavletta-Request": "1"}  # without a token, asking printers needs it
 
 
 def call(base, method, path, body=None, headers=None, token=None, raw=None):
@@ -79,7 +79,7 @@ def test_health_and_unknown_paths(api):
     status, response, body = call(api.base, "GET", "/api/v1/health")
     assert status == 200 and body["status"] == "ok"
     assert response.getheader("Cache-Control") == "no-store"
-    assert response.getheader("Server") == "Etiketto"
+    assert response.getheader("Server") == "Tavletta"
     assert call(api.base, "GET", "/api/v1/nothing")[0] == 404
     assert call(api.base, "GET", "/elsewhere")[0] == 404
     status, response, body = call(api.base, "POST", "/api/v1/health", body={})
@@ -95,7 +95,7 @@ def test_openapi_describes_every_route(api):
     assert document["openapi"].startswith("3.1")
     assert document["info"]["version"]
     assert "/mcp" in document["info"]["description"]
-    from etiketto.server.http import ROUTES
+    from tavletta.server.http import ROUTES
 
     for verb, pattern in ROUTES:
         parts = ["{name}" if p == "*" else ("{id}" if p == "?" else p) for p in pattern]
@@ -110,7 +110,7 @@ def test_openapi_describes_every_route(api):
 
 
 def test_route_patterns():
-    assert _matches(("labels", "*"), ["labels", "a", "b.etiketto"])
+    assert _matches(("labels", "*"), ["labels", "a", "b.tavletta"])
     assert not _matches(("labels", "*"), ["labels"])
     assert _matches(("jobs", "?"), ["jobs", "x"])
     assert not _matches(("jobs", "?"), ["jobs", ""])
@@ -145,7 +145,7 @@ def test_wrong_tokens_block_the_address(make_server):
 
 
 def test_rate_limit_forgets_after_the_window(monkeypatch):
-    from etiketto.server import http as server_http
+    from tavletta.server import http as server_http
 
     limit = server_http.RateLimit(limit=2, window=60)
     clock = [100.0]
@@ -268,17 +268,17 @@ def test_internal_errors_are_answered(api, monkeypatch):
 
 def test_labels_are_listed_from_the_folder_only(api, server_env, tmp_path):
     labels = server_env.labels
-    label_file(labels, "shelf/jar.etiketto")
-    label_file(labels, ".hidden/secret.etiketto")
-    label_file(labels, ".dot.etiketto")
+    label_file(labels, "shelf/jar.tavletta")
+    label_file(labels, ".hidden/secret.tavletta")
+    label_file(labels, ".dot.tavletta")
     (labels / "notes.txt").write_text("x")
-    outside = label_file(tmp_path, "outside.etiketto")
-    (labels / "link.etiketto").symlink_to(outside)
-    (labels / "inner.etiketto").symlink_to(labels / "box.etiketto")
+    outside = label_file(tmp_path, "outside.tavletta")
+    (labels / "link.tavletta").symlink_to(outside)
+    (labels / "inner.tavletta").symlink_to(labels / "box.tavletta")
     status, _r, body = call(api.base, "GET", "/api/v1/labels")
     assert status == 200
     names = [entry["name"] for entry in body["labels"]]
-    assert names == ["box.etiketto", "inner.etiketto", "shelf/jar.etiketto"]
+    assert names == ["box.tavletta", "inner.tavletta", "shelf/jar.tavletta"]
     assert body["labels"][0]["bytes"] > 0 and body["labels"][0]["modified"]
 
 
@@ -295,18 +295,18 @@ def test_labels_are_listed_from_the_folder_only(api, server_env, tmp_path):
     ],
 )
 def test_label_names_cannot_leave_the_folder(api, server_env, tmp_path, name):
-    label_file(tmp_path, "outside.etiketto")
-    label_file(server_env.labels, ".hidden/secret.etiketto")
+    label_file(tmp_path, "outside.tavletta")
+    label_file(server_env.labels, ".hidden/secret.tavletta")
     status, _r, body = call(api.base, "GET", "/api/v1/labels/" + name)
     assert status in (400, 404), body
     assert body["error"]["code"] in ("invalid_field", "label_not_found")
 
 
 def test_symlinks_out_of_the_folder_are_not_followed(api, server_env, tmp_path):
-    outside = label_file(tmp_path, "outside.etiketto", TextElement(text="secret"))
-    (server_env.labels / "link.etiketto").symlink_to(outside)
+    outside = label_file(tmp_path, "outside.tavletta", TextElement(text="secret"))
+    (server_env.labels / "link.tavletta").symlink_to(outside)
     (server_env.labels / "dir").symlink_to(tmp_path)
-    for name in ("link", "dir/outside.etiketto"):
+    for name in ("link", "dir/outside.tavletta"):
         status, _r, body = call(api.base, "GET", "/api/v1/labels/" + name)
         assert status == 404 and body["error"]["code"] == "label_not_found"
     status, _r, body = call(api.base, "POST", "/api/v1/preview", body={"label": "link"})
@@ -314,20 +314,20 @@ def test_symlinks_out_of_the_folder_are_not_followed(api, server_env, tmp_path):
 
 
 def test_folders_and_other_files_are_no_labels(api, server_env):
-    (server_env.labels / "folder.etiketto").mkdir()
+    (server_env.labels / "folder.tavletta").mkdir()
     status, _r, _body = call(api.base, "GET", "/api/v1/labels/folder")
     assert status == 404
-    (server_env.labels / "junk.etiketto").write_text("no json")
+    (server_env.labels / "junk.tavletta").write_text("no json")
     status, _r, body = call(api.base, "GET", "/api/v1/labels/junk")
     assert status == 422 and body["error"]["code"] == "label_not_label"
-    (server_env.labels / "locked.etiketto").write_text("{}")
-    os.chmod(server_env.labels / "locked.etiketto", 0)
+    (server_env.labels / "locked.tavletta").write_text("{}")
+    os.chmod(server_env.labels / "locked.tavletta", 0)
     try:
-        if not os.access(server_env.labels / "locked.etiketto", os.R_OK):
+        if not os.access(server_env.labels / "locked.tavletta", os.R_OK):
             status, _r, body = call(api.base, "GET", "/api/v1/labels/locked")
             assert status == 422 and body["error"]["code"] == "file_problem"
     finally:
-        os.chmod(server_env.labels / "locked.etiketto", 0o600)
+        os.chmod(server_env.labels / "locked.tavletta", 0o600)
 
 
 def test_describe_label(api, server_env):
@@ -335,15 +335,15 @@ def test_describe_label(api, server_env):
     data.write_text("Name,Code\nTea,4006381333931\n")
     label_file(
         server_env.labels,
-        "items.etiketto",
+        "items.tavletta",
         TextElement(text="{Name} {=lot} {=date}", name="title"),
         CodeElement(data="{Code}", symbology="ean13", name="code"),
         data_file=str(data),
         counter_next=5,
     )
-    status, _r, body = call(api.base, "GET", "/api/v1/labels/items.etiketto")
+    status, _r, body = call(api.base, "GET", "/api/v1/labels/items.tavletta")
     assert status == 200
-    assert body["name"] == "items.etiketto"
+    assert body["name"] == "items.tavletta"
     assert body["printer"]["id"] == "fake-mono"
     assert body["elements"][0] == {
         "index": 1,
@@ -360,13 +360,13 @@ def test_describe_label(api, server_env):
 
 
 def test_describe_label_with_a_data_file_elsewhere(api, server_env, tmp_path, png_b64):
-    from etiketto.model import ImageElement
+    from tavletta.model import ImageElement
 
     data = tmp_path / "rows.csv"
     data.write_text("Name\nTea\n")
     label_file(
         server_env.labels,
-        "far.etiketto",
+        "far.tavletta",
         ImageElement(data=png_b64(), name="logo.png"),
         data_file=str(data),
     )
@@ -469,7 +469,7 @@ def test_preview_png_and_json(api, server_env):
     assert status == 200 and response.getheader("Content-Type") == "image/png"
     image = Image.open(io.BytesIO(png))
     assert image.format == "PNG" and image.height > 0
-    assert response.getheader("X-Etiketto-Warnings") is None
+    assert response.getheader("X-Tavletta-Warnings") is None
     status, _r, body = call(
         api.base, "POST", "/api/v1/preview", body={"label": "box", "format": "json"}
     )
@@ -492,7 +492,7 @@ def test_preview_values_and_warnings(api, server_env, monkeypatch):
     monkeypatch.setattr(server_env.printer, "preview", preview)
     label_file(
         server_env.labels,
-        "vars.etiketto",
+        "vars.tavletta",
         TextElement(text="{=lot} {=nope}", name="title"),
         CodeElement(data="12", symbology="ean13", name="code"),
     )
@@ -500,7 +500,7 @@ def test_preview_values_and_warnings(api, server_env, monkeypatch):
         api.base, "POST", "/api/v1/preview", body={"label": "vars", "set": {"lot": 7}}
     )
     assert status == 200
-    codes = response.getheader("X-Etiketto-Warnings").split(",")
+    codes = response.getheader("X-Tavletta-Warnings").split(",")
     assert "unknown_variable" in codes and "ean13_digits" in codes
     status, _r, body = call(
         api.base,
@@ -592,7 +592,7 @@ def test_preview_request_errors(api, body, code):
 
 def test_preview_of_a_data_row(api, server_env):
     (server_env.labels / "rows.csv").write_text("Name\nTea\nCoffee\n")
-    label_file(server_env.labels, "named.etiketto", TextElement(text="{Name}", name="t"))
+    label_file(server_env.labels, "named.tavletta", TextElement(text="{Name}", name="t"))
     body = {"label": "named", "data_file": "rows.csv", "row": 2, "format": "json"}
     status, _r, answer = call(api.base, "POST", "/api/v1/preview", body=body)
     assert status == 200 and answer["warnings"] == []
@@ -617,7 +617,7 @@ def test_preview_printer_view_failure(api, server_env, monkeypatch):
 
 
 def test_inline_rows_limits(api, monkeypatch):
-    from etiketto.merge import limits
+    from tavletta.merge import limits
 
     monkeypatch.setattr(limits, "MAX_ROWS", 2)
     monkeypatch.setattr(limits, "MAX_COLUMNS", 2)
@@ -642,10 +642,10 @@ def test_print_and_follow_the_job(api, server_env):
     assert status == 200, job
     assert job["state"] == "done" and job["printed"] == 2 and job["total"] == 2
     assert response.getheader("Location") == "/api/v1/jobs/" + job["id"]
-    assert job["host"] == "mono.local" and job["label"] == "box.etiketto"
+    assert job["host"] == "mono.local" and job["label"] == "box.tavletta"
     assert [entry[1] for entry in server_env.printer.jobs] == ["mono.local", "mono.local"]
     # each copy has its own number, the next is saved
-    assert Label.saved_counter(server_env.labels / "box.etiketto") == 3
+    assert Label.saved_counter(server_env.labels / "box.tavletta") == 3
     status, _r, again = call(api.base, "GET", "/api/v1/jobs/" + job["id"])
     assert status == 200 and again["state"] == "done" and again["finished"]
     status, _r, body = call(api.base, "DELETE", "/api/v1/jobs/" + job["id"])
@@ -664,18 +664,18 @@ def test_the_counter_goes_on_from_job_to_job(api, server_env):
     for _n in range(3):
         call(api.base, "POST", "/api/v1/print", body={"label": "box", "wait": 10})
     assert len(server_env.printer.jobs) == 3
-    assert Label.saved_counter(server_env.labels / "box.etiketto") == 4
+    assert Label.saved_counter(server_env.labels / "box.tavletta") == 4
 
 
 def test_print_options(api, server_env):
     body = {"label": "box", "counter_start": 50, "no_save_counter": True, "wait": 10}
     status, _r, job = call(api.base, "POST", "/api/v1/print", body=body)
     assert job["state"] == "done"
-    assert Label.saved_counter(server_env.labels / "box.etiketto") == 1
+    assert Label.saved_counter(server_env.labels / "box.tavletta") == 1
     body = {"label": "box", "counter_start": 50, "host": "elsewhere.local", "wait": 10}
     status, _r, job = call(api.base, "POST", "/api/v1/print", body=body)
     assert job["host"] == "elsewhere.local"
-    assert Label.saved_counter(server_env.labels / "box.etiketto") == 51
+    assert Label.saved_counter(server_env.labels / "box.tavletta") == 51
 
 
 def test_print_inline_label_does_not_save(api, server_env):
@@ -686,8 +686,8 @@ def test_print_inline_label_does_not_save(api, server_env):
 
 
 def test_print_refuses_what_would_print_wrongly(api, server_env):
-    label_file(server_env.labels, "empty.etiketto")
-    label_file(server_env.labels, "unknown.etiketto", TextElement(text="{=nope}"))
+    label_file(server_env.labels, "empty.tavletta")
+    label_file(server_env.labels, "unknown.tavletta", TextElement(text="{=nope}"))
     for name in ("empty", "unknown"):
         status, _r, body = call(api.base, "POST", "/api/v1/print", body={"label": name})
         assert status == 422 and body["error"]["code"] == "label_unprintable"
@@ -696,7 +696,7 @@ def test_print_refuses_what_would_print_wrongly(api, server_env):
 
 def test_print_keeps_warnings_that_do_not_refuse(api, server_env):
     label_file(
-        server_env.labels, "check.etiketto", CodeElement(data="4006381333932", symbology="ean13")
+        server_env.labels, "check.tavletta", CodeElement(data="4006381333932", symbology="ean13")
     )
     status, _r, job = call(api.base, "POST", "/api/v1/print", body={"label": "check", "wait": 10})
     assert job["state"] == "done"
@@ -719,7 +719,7 @@ def test_print_needs_a_host(make_server, server_env):
 
 
 def test_print_refuses_a_counter_it_cannot_save(api, server_env):
-    path = server_env.labels / "box.etiketto"
+    path = server_env.labels / "box.tavletta"
     os.chmod(path, 0o444)
     try:
         if os.access(path, os.W_OK):
@@ -760,7 +760,7 @@ def test_printer_errors_fail_the_job_and_are_translated(api, server_env, monkeyp
 
 
 def test_a_failing_print_still_saves_the_counter(api, server_env, monkeypatch):
-    label_file(server_env.labels, "count.etiketto", TextElement(text="{=counter}"))
+    label_file(server_env.labels, "count.tavletta", TextElement(text="{=counter}"))
     sent = []
 
     def print_label(image, host, options, progress=None):
@@ -772,7 +772,7 @@ def test_a_failing_print_still_saves_the_counter(api, server_env, monkeypatch):
     body = {"label": "count", "copies": 3, "wait": 10}
     _status, _r, job = call(api.base, "POST", "/api/v1/print", body=body)
     assert job["state"] == "failed" and job["printed"] == 1
-    assert Label.saved_counter(server_env.labels / "count.etiketto") == 2
+    assert Label.saved_counter(server_env.labels / "count.tavletta") == 2
 
 
 def test_prepare_failure_fails_the_job(api, server_env, monkeypatch):
@@ -780,7 +780,7 @@ def test_prepare_failure_fails_the_job(api, server_env, monkeypatch):
         raise RuntimeError("cannot draw")  # the check renders without prepare()
 
     monkeypatch.setattr(server_env.printer, "prepare", prepare)
-    label_file(server_env.labels, "n.etiketto", TextElement(text="{=counter}"))
+    label_file(server_env.labels, "n.tavletta", TextElement(text="{=counter}"))
     _status, _r, job = call(api.base, "POST", "/api/v1/print", body={"label": "n", "wait": 10})
     assert job["state"] == "failed" and job["error"]["code"] == "prepare_failed"
 
@@ -792,7 +792,7 @@ def test_counter_save_failure_after_printing(api, server_env, monkeypatch):
     monkeypatch.setattr(Label, "store_counter", staticmethod(refuse))
     _status, _r, job = call(api.base, "POST", "/api/v1/print", body={"label": "box", "wait": 10})
     assert job["state"] == "failed" and job["error"]["code"] == "counter_not_saved"
-    assert job["printed"] == 1 and "box.etiketto" in job["error"]["message"]
+    assert job["printed"] == 1 and "box.tavletta" in job["error"]["message"]
 
     def broken(path, counter):
         raise ValueError("not a label any more")
@@ -803,8 +803,8 @@ def test_counter_save_failure_after_printing(api, server_env, monkeypatch):
 
 
 def test_a_locked_label_fails_the_job(api, server_env, monkeypatch):
-    from etiketto.model import LockTimeout
-    from etiketto.server import service as service_module
+    from tavletta.model import LockTimeout
+    from tavletta.server import service as service_module
 
     def locked(path, waiting=None, timeout=60.0):
         raise LockTimeout(11, "locked")
@@ -820,7 +820,7 @@ def test_a_locked_label_fails_the_job(api, server_env, monkeypatch):
 def test_print_data_rows_inline(api, server_env):
     label_file(
         server_env.labels,
-        "named.etiketto",
+        "named.tavletta",
         TextElement(text="{Name} {=counter}", name="t"),
     )
     rows = [{"Name": "Tea"}, {"Name": "Coffee"}, {"Name": "Cocoa"}]
@@ -828,14 +828,14 @@ def test_print_data_rows_inline(api, server_env):
     _status, _r, job = call(api.base, "POST", "/api/v1/print", body=body)
     assert job["state"] == "done" and job["total"] == 4 and job["printed"] == 4
     assert job["rows_printed"] == 2
-    assert Label.saved_counter(server_env.labels / "named.etiketto") == 5
+    assert Label.saved_counter(server_env.labels / "named.tavletta") == 5
 
 
 def test_print_the_labels_own_data_file(api, server_env):
     data = server_env.labels / "items.csv"
     data.write_text("Name\nTea\nCoffee\n")
     label_file(
-        server_env.labels, "items.etiketto", TextElement(text="{Name}"), data_file=str(data)
+        server_env.labels, "items.tavletta", TextElement(text="{Name}"), data_file=str(data)
     )
     _status, _r, job = call(api.base, "POST", "/api/v1/print", body={"label": "items", "wait": 10})
     assert job["state"] == "done" and job["total"] == 2
@@ -856,7 +856,7 @@ def test_print_the_labels_own_data_file(api, server_env):
 
 
 def test_serial_rows_that_cannot_print_are_refused(api, server_env):
-    label_file(server_env.labels, "ean.etiketto", CodeElement(data="{Code}", symbology="ean13"))
+    label_file(server_env.labels, "ean.tavletta", CodeElement(data="{Code}", symbology="ean13"))
     body = {"label": "ean", "data_rows": [{"Code": "4006381333931"}, {"Code": "abc"}]}
     status, _r, answer = call(api.base, "POST", "/api/v1/print", body=body)
     assert status == 422 and answer["error"]["code"] == "label_unprintable"
@@ -864,7 +864,7 @@ def test_serial_rows_that_cannot_print_are_refused(api, server_env):
 
 
 def test_serial_printer_failure(api, server_env, monkeypatch):
-    label_file(server_env.labels, "named.etiketto", TextElement(text="{Name}"))
+    label_file(server_env.labels, "named.tavletta", TextElement(text="{Name}"))
     sent = []
 
     def print_label(image, host, options, progress=None):
@@ -916,13 +916,13 @@ def test_cancel_between_copies(api, server_env, monkeypatch):
     wait_for(lambda: call(api.base, "GET", "/api/v1/jobs/" + job["id"])[2]["state"] == "canceled")
     final = call(api.base, "GET", "/api/v1/jobs/" + job["id"])[2]
     assert final["printed"] == 1 and final["total"] == 5
-    assert Label.saved_counter(server_env.labels / "box.etiketto") == 2
+    assert Label.saved_counter(server_env.labels / "box.tavletta") == 2
 
 
 def test_cancel_between_rows(api, server_env):
     printer = server_env.printer
     printer.gate = threading.Event()
-    label_file(server_env.labels, "named.etiketto", TextElement(text="{Name}"))
+    label_file(server_env.labels, "named.tavletta", TextElement(text="{Name}"))
     rows = [{"Name": "a"}, {"Name": "b"}, {"Name": "c"}]
     _s, _r, job = call(
         api.base, "POST", "/api/v1/print", body={"label": "named", "data_rows": rows}
@@ -1019,7 +1019,7 @@ def test_errors_follow_accept_language(api, monkeypatch, tmp_path):
         'msgid ""\nmsgstr "Content-Type: text/plain; charset=UTF-8\\n"\n\n'
         'msgid "Not found"\nmsgstr "Nicht gefunden"\n'
     )
-    mo = tmp_path / "locale" / "de" / "LC_MESSAGES" / "etiketto.mo"
+    mo = tmp_path / "locale" / "de" / "LC_MESSAGES" / "tavletta.mo"
     mo.parent.mkdir(parents=True)
     import subprocess  # nosec B404 - msgfmt from gettext
 
@@ -1045,10 +1045,10 @@ def test_token_from_file_and_environment(tmp_path, caplog):
     os.chmod(path, 0o644)
     assert server_main.read_token(path, {}) == TOKEN
     assert "can be read by others" in caplog.text
-    assert server_main.read_token(None, {"ETIKETTO_TOKEN": TOKEN}) == TOKEN
+    assert server_main.read_token(None, {"TAVLETTA_TOKEN": TOKEN}) == TOKEN
     assert server_main.read_token(None, {}) is None
     with pytest.raises(cli.CliError) as short:
-        server_main.read_token(None, {"ETIKETTO_TOKEN": "short"})
+        server_main.read_token(None, {"TAVLETTA_TOKEN": "short"})
     assert short.value.code == cli.EXIT_USAGE
     with pytest.raises(cli.CliError) as missing:
         server_main.read_token(tmp_path / "none", {})
@@ -1056,7 +1056,7 @@ def test_token_from_file_and_environment(tmp_path, caplog):
 
 
 def test_serve_refuses_other_addresses_without_a_token(monkeypatch, capsys, tmp_path):
-    monkeypatch.delenv("ETIKETTO_TOKEN", raising=False)
+    monkeypatch.delenv("TAVLETTA_TOKEN", raising=False)
     code = cli.main(["serve", "--host", "192.0.2.1", "--labels-dir", str(tmp_path)])
     assert code == cli.EXIT_USAGE
     assert "access token" in capsys.readouterr().err
@@ -1082,11 +1082,11 @@ def test_serve_runs_until_stopped(monkeypatch, tmp_path, server_env):
         started["server"] = self
         raise KeyboardInterrupt
 
-    from etiketto.server import http as server_http
+    from tavletta.server import http as server_http
 
     monkeypatch.setattr(server_http.Server, "serve_forever", serve_forever)
     monkeypatch.setattr(server_main.signal, "signal", lambda *args: None)
-    monkeypatch.setenv("ETIKETTO_TOKEN", TOKEN)
+    monkeypatch.setenv("TAVLETTA_TOKEN", TOKEN)
     code = cli.main(["serve", "--port", "0", "--labels-dir", str(tmp_path), "--mcp"])
     assert code == cli.EXIT_OK
     assert started["server"].config.token == TOKEN and started["server"].mcp is not None
@@ -1101,4 +1101,4 @@ def test_default_labels_folder(monkeypatch, tmp_path):
 
 def test_real_default_labels_folder():
     path = server_main.default_labels_dir()
-    assert path.parts[-2:] == ("etiketto", "labels")
+    assert path.parts[-2:] == ("tavletta", "labels")

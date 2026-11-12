@@ -1,0 +1,263 @@
+app-id: xyz.joshuahirsig.Tavletta
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: tavletta
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # GPU, and printers on USB (/dev/usb/lp*, the kernel's printer class
+  # driver; --device=usb only covers raw libusb access), also those on a
+  # USB serial port (/dev/ttyACM*, NIIMBOT; serial ports have no portal)
+  - --device=all
+  # printers on the network: TCP 9100, IPP to the printer or to CUPS on
+  # localhost:631 (no --socket=cups: Tavletta has no client for CUPS's Unix
+  # socket, see docs/system.md)
+  - --share=network
+  # resolve *.local names and browse for printers via the host's Avahi daemon
+  - --system-talk-name=org.freedesktop.Avahi
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - '*.a'
+  - '*.la'
+
+# The runtime already ships PyGObject and pycairo. All Python packages are
+# installed offline from the sources below (Flathub builds without network).
+build-options:
+  env:
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+
+# Licences: flatpak-builder copies a module's licence files from its
+# source (LICENSE*, COPYING*) to /app/share/licenses/<app id>/<module>/
+# by itself. What it does not find (the licences inside wheels, Tavletta's
+# notices and data licences) is installed into the same per-module folder,
+# so each licence is there once; THIRD_PARTY_NOTICES.md (tavletta/) says
+# what each component is.
+modules:
+  # build-only: Pillow's setup.py imports pybind11.setup_helpers
+  - name: python3-pybind11
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        pybind11-*.whl
+    cleanup:
+      - '*'
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/33/fd/8762f7ee3e4e4be6d1d846cffb4916dd9bb02b2f800d3603718a0efe494c/pybind11-3.1.0-py3-none-any.whl
+        sha256: b8488090f8acffbcb6b5d6a85571a6827a0a2981ffb75e5a0b27b87c4a6b7dd0
+        x-checker-data:
+          type: pypi
+          name: pybind11
+          packagetype: bdist_wheel
+
+  - name: python3-pillow
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/ce/a4/9cc30690a394a8305e8be4c9036aa16d0dfddadd09079860b582f562496d/pillow-13.0.0.tar.gz
+        sha256: cdcd1ba258178f7356d74170c9a81ba4eab6a5d55748bc402a5a2a6fe6be3510
+        x-checker-data:
+          type: pypi
+          name: pillow
+
+  # pure Python
+  - name: python3-segno
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        segno-*.whl
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-segno ${FLATPAK_DEST}/lib/python3*/site-packages/segno-*.dist-info/licenses/LICENSE
+    cleanup:
+      - /bin/segno
+      - /share/man/man1/segno.1
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/d6/02/12c73fd423eb9577b97fc1924966b929eff7074ae6b2e15dd3d30cb9e4ae/segno-1.6.6-py3-none-any.whl
+        sha256: 28c7d081ed0cf935e0411293a465efd4d500704072cdb039778a2ab8736190c7
+        x-checker-data:
+          type: pypi
+          name: segno
+          packagetype: bdist_wheel
+
+  # pure Python
+  - name: python3-python-barcode
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        python_barcode-*.whl
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-python-barcode ${FLATPAK_DEST}/lib/python3*/site-packages/python_barcode-*.dist-info/licenses/LICENCE
+    cleanup:
+      - /bin/python-barcode
+      # the 0.16.1 wheel also ships its docs/ and tests/ as top-level packages
+      - /lib/python3*/site-packages/docs
+      - /lib/python3*/site-packages/tests
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/b2/34/810885dca784b02e5ad0f71ced9c06ba5e9d33a6493bc886f7470ce82a39/python_barcode-0.16.1-py3-none-any.whl
+        sha256: 5776567478c9a0dae473374bb86631ba0b5ea99aaf302763b364e367ac51f367
+        x-checker-data:
+          type: pypi
+          name: python-barcode
+          packagetype: bdist_wheel
+
+  # all symbologies but QR, Code 128 and EAN-13: libzint 2.15.0 (BSD-3-Clause)
+  # in its Python binding (Apache-2.0). One extension module, no other
+  # dependencies; the wheel's Python tag must match the runtime's Python
+  # (GNOME 51: 3.14). Zint's BSD notice goes along with the binary.
+  - name: python3-zint-bindings
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        zint_bindings-*.whl
+      # (LICENSE.zint, a source of this module, flatpak-builder copies itself)
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/python3-zint-bindings ${FLATPAK_DEST}/lib/python3*/site-packages/zint_bindings-*.dist-info/licenses/LICENSE.md
+    sources:
+      - type: file
+        only-arches: [x86_64]
+        url: https://files.pythonhosted.org/packages/24/83/e46b9270e30645f2de42d8d144c55010572f6e2823306bfcf889698f70f8/zint_bindings-1.2.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+        sha256: eca28846dfac9222a0da8c8c1e1119575ac1080ad8921f61f519d5b85f1be38c
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/zint-bindings/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.filename | test("cp314-cp314-manylinux.*x86_64"))][0].url'
+
+      - type: file
+        only-arches: [aarch64]
+        url: https://files.pythonhosted.org/packages/84/d7/ad16bb204293f62bc75f5bdb72fb9988493c54d1a1bda4109b6f65cc689a/zint_bindings-1.2.2-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
+        sha256: b96f64fa77bc04289986919b5f7d09e747ddf1d1bb5eb5401e6c350b14e062d0
+        x-checker-data:
+          type: json
+          url: https://pypi.org/pypi/zint-bindings/json
+          version-query: .info.version
+          url-query: '[.urls[] | select(.filename | test("cp314-cp314-manylinux.*aarch64"))][0].url'
+
+      - type: file
+        path: LICENSE.zint
+
+  # native VC-500W protocol; fork until sgrimee/labelprinter-vc500w#1-#3 are merged
+  - name: python3-labelprinter
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+    cleanup:
+      # Tavletta uses connection.py and printer.py; the CLI tools, queue,
+      # CUPS backend and tests (also compiled) are not used by the app
+      - /bin/label-*
+      - /bin/vc500w-cups-backend
+      - /lib/python3*/site-packages/labelprinter/__main__.py
+      - /lib/python3*/site-packages/labelprinter/cups_backend.py
+      - /lib/python3*/site-packages/labelprinter/print_text.py
+      - /lib/python3*/site-packages/labelprinter/queue_*.py
+      - /lib/python3*/site-packages/labelprinter/tape.py
+      - /lib/python3*/site-packages/labelprinter/test
+      - /lib/python3*/site-packages/labelprinter/__pycache__/__main__.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/cups_backend.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/print_text.*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/queue_*
+      - /lib/python3*/site-packages/labelprinter/__pycache__/tape.*
+    sources:
+      - type: git
+        url: https://github.com/joshii-h/labelprinter-vc500w.git
+        commit: a6f2957de323f71f364b3acd6624da8b9885587a
+
+  # encoding files Poppler reads for CJK and Cyrillic text in PDF files
+  - name: poppler-data
+    buildsystem: cmake-ninja
+    post-install:
+      # CMaps: Adobe's licence; Glyph & Cog's files GPL-2.0-only OR
+      # GPL-3.0-only (the GPL 3 text is Poppler's COPYING3, see poppler/)
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/poppler-data "$FLATPAK_BUILDER_BUILDDIR"/COPYING "$FLATPAK_BUILDER_BUILDDIR"/COPYING.adobe "$FLATPAK_BUILDER_BUILDDIR"/COPYING.gpl2
+    cleanup:
+      - /share/pkgconfig
+    sources:
+      - type: archive
+        url: https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
+        sha256: c835b640a40ce357e1b83666aabd95edffa24ddddd49b8daff63adb851cdab74
+        x-checker-data:
+          type: html
+          url: https://poppler.freedesktop.org/
+          version-pattern: poppler-data-([\d.]+)\.tar\.gz
+          url-template: https://poppler.freedesktop.org/poppler-data-$version.tar.gz
+
+  # PDF pages for shipping labels (poppler-glib through GObject introspection);
+  # the GNOME runtime has no Poppler. Only the GLib library and its typelib:
+  # no command line tools, no Qt or C++ wrappers, no signatures or network.
+  # JPEG 2000 images (JPX) through the runtime's OpenJPEG.
+  - name: poppler
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DENABLE_GLIB=ON
+      - -DENABLE_GOBJECT_INTROSPECTION=ON
+      - -DENABLE_UTILS=OFF
+      - -DENABLE_CPP=OFF
+      - -DENABLE_QT5=OFF
+      - -DENABLE_QT6=OFF
+      - -DENABLE_BOOST=OFF
+      - -DENABLE_LIBOPENJPEG=ON
+      - -DENABLE_LIBTIFF=OFF
+      - -DENABLE_LCMS=OFF
+      - -DENABLE_BROTLI=OFF
+      - -DENABLE_HARFBUZZ=OFF
+      - -DENABLE_LIBCURL=OFF
+      - -DENABLE_NSS3=OFF
+      - -DENABLE_GPGME=OFF
+      - -DENABLE_GTK_DOC=OFF
+      - -DBUILD_GTK_TESTS=OFF
+      - -DBUILD_CPP_TESTS=OFF
+      - -DBUILD_MANUAL_TESTS=OFF
+      - -DBUILD_QT5_TESTS=OFF
+      - -DBUILD_QT6_TESTS=OFF
+    post-install:
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/poppler "$FLATPAK_BUILDER_BUILDDIR"/COPYING "$FLATPAK_BUILDER_BUILDDIR"/COPYING3
+    cleanup:
+      - /share/gir-1.0
+    sources:
+      - type: archive
+        url: https://poppler.freedesktop.org/poppler-26.11.0.tar.xz
+        sha256: 41c32680160addf5a8dd7a830e4869c01e9f6bee1abb91e44fabd1ba9d7828fb
+        x-checker-data:
+          type: anitya
+          project-id: 3686
+          url-template: https://poppler.freedesktop.org/poppler-$version.tar.xz
+
+  - name: tavletta
+    buildsystem: simple
+    build-commands:
+      # setup.py also installs desktop file, metainfo, icons, MIME type and translations
+      - pip3 install --prefix=${FLATPAK_DEST} --no-build-isolation --no-deps --no-index
+        .
+      # (LICENSE flatpak-builder copies itself)
+      - install -Dm644 -t ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/tavletta THIRD_PARTY_NOTICES.md
+        tavletta/sheets/LICENSE.glabels tavletta/symbols/LICENSE.mdi
+    sources:
+      # local checkout, for development builds
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - .venv
+          - .flatpak-builder
+          - build-dir
+          - repo
+          - tavletta/locale
+          - build
+      # for Flathub, replace the dir source with the release tag:
+      # - type: git
+      #   url: https://git.joshuahirsig.xyz/joshii/tavletta.git
+      #   tag: v<version>  # the release to build, as in tavletta/__init__.py
+      #   commit: <commit of that tag>
+      #   x-checker-data:
+      #     type: git
+      #     tag-pattern: ^v([\d.]+)$

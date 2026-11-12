@@ -2,7 +2,7 @@
 
 With the [[ui:System printer (CUPS, IPP)]], an office printer prints on
 sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels,
-as Avery, Zweckform, Herma and many others sell them. Etiketto knows more
+as Avery, Zweckform, Herma and many others sell them. Tavletta knows more
 than 1700 of these sheets, from the template collection of gLabels.
 
 ## Choose the sheet { #choose }
@@ -41,14 +41,14 @@ positions are saved with the label.
 - [[ui:Print outlines]]: prints the outline of every label. Print a test
   page on plain paper first and hold it against a label sheet in front of a
   light: if the content sits inside the outlines, the sheet fits.
-- Office printers cannot print near the paper's edges. Etiketto asks the
+- Office printers cannot print near the paper's edges. Tavletta asks the
   printer for that margin and warns if the content of a label (inside the
   [[ui:Safety margin]]) reaches into it. Leave those positions out, or
   increase the [[ui:Safety margin]].
 - The paper size comes from the sheet; turn off "fit to page" in the
   printer's setup, otherwise the printer may scale the sheet.
 
-Older versions of Etiketto refuse to open labels for a label sheet and say
+Older versions of Tavletta refuse to open labels for a label sheet and say
 that the label needs a newer version, instead of printing them as a single
 page.
 

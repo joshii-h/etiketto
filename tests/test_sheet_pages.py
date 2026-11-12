@@ -7,8 +7,8 @@ from conftest import ink_bbox
 from PIL import Image
 from test_sheets import _sheet
 
-from etiketto.sheets import find
-from etiketto.sheets.layout import (
+from tavletta.sheets import find
+from tavletta.sheets.layout import (
     MAX_LABELS,
     Pages,
     SheetJob,

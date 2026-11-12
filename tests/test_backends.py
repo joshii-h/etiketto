@@ -8,9 +8,9 @@ from backend_contract import BackendContract
 from fake_backends import FakeMono
 from PIL import Image
 
-import etiketto.backends as registry
-from etiketto.backends import backends, get_backend
-from etiketto.backends.base import (
+import tavletta.backends as registry
+from tavletta.backends import backends, get_backend
+from tavletta.backends.base import (
     Backend,
     ColorAdjust,
     LabelTooLong,
@@ -21,8 +21,8 @@ from etiketto.backends.base import (
     Raster,
     apply_color_model,
 )
-from etiketto.backends.vc500w import VC500W
-from etiketto.model import DEFAULT_PRINTER, Label
+from tavletta.backends.vc500w import VC500W
+from tavletta.model import DEFAULT_PRINTER, Label
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_entry_points(monkeypatch):
     monkeypatch.setattr(registry, "_loaded", False)
     monkeypatch.setattr(registry, "_registry", {})
     ids = [b.id for b in backends()]
-    assert groups == ["etiketto.backends"]
+    assert groups == ["tavletta.backends"]
     assert ids[0] == "vc500w"
     assert sorted(ids[1:]) == sorted(
         [
@@ -116,7 +116,7 @@ def test_entry_points(monkeypatch):
         ]
     )
     backends()  # loaded once only
-    assert groups == ["etiketto.backends"]
+    assert groups == ["tavletta.backends"]
 
 
 def test_every_backend_has_a_contract_test():
@@ -230,8 +230,8 @@ class TestFakeMono(BackendContract):
 
 
 def test_a_code_too_large_for_the_tape_is_not_printed():
-    from etiketto.backends.base import CodeTooLarge
-    from etiketto.model import CodeElement, Label
+    from tavletta.backends.base import CodeTooLarge
+    from tavletta.model import CodeElement, Label
 
     label = Label(tape_mm=9, elements=[CodeElement("x" * 1000)])  # 105 modules on 9 mm
     with pytest.raises(CodeTooLarge):
@@ -241,7 +241,7 @@ def test_a_code_too_large_for_the_tape_is_not_printed():
 def test_the_render_resolution_follows_the_print():
     """Backend.render_dpi: the resolution a label is printed at, from the
     options as the print has them (preview and command line check)."""
-    from etiketto.backends.base import PrinterInfo, PrintOptions
+    from tavletta.backends.base import PrinterInfo, PrintOptions
 
     zpl = get_backend("zpl")
     assert zpl.render_dpi(0, PrintOptions(settings={"dpi": "300"})) == pytest.approx(12 * 25.4)
@@ -276,7 +276,7 @@ def test_every_continuous_backend_says_what_its_tape_comes_as():
 def test_one_map_error_and_one_connect_for_the_tcp_and_usb_printers(monkeypatch):
     """raw, cab, QL and P-touch share base.map_error and net.connect; on
     USB the connection gets the backend's minimum rate like TCP."""
-    from etiketto.backends import base, brother_ql, cab, net, ptouch, raw, usb
+    from tavletta.backends import base, brother_ql, cab, net, ptouch, raw, usb
 
     assert raw.map_error is cab.map_error is brother_ql.map_error is ptouch.map_error
     assert raw.map_error is base.map_error
@@ -296,7 +296,7 @@ def test_one_map_error_and_one_connect_for_the_tcp_and_usb_printers(monkeypatch)
 
 
 def test_backends_offer_only_known_extras_and_cut_modes():
-    from etiketto.backends import base
+    from tavletta.backends import base
 
     for backend in backends():
         assert set(backend.capabilities.extras) <= set(base._EXTRAS), backend.id

@@ -8,12 +8,12 @@ from datetime import datetime
 import pytest
 from fake_backends import FakeMono
 
-from etiketto.backends.base import PaperJam, PrintOptions, PrintResult, Progress
-from etiketto.job import Job, PrepareFailed, merge_results
-from etiketto.model import CodeElement, Label, TextElement
-from etiketto.sheets import find
-from etiketto.sheets.layout import SheetJob
-from etiketto.variables import Values
+from tavletta.backends.base import PaperJam, PrintOptions, PrintResult, Progress
+from tavletta.job import Job, PrepareFailed, merge_results
+from tavletta.model import CodeElement, Label, TextElement
+from tavletta.sheets import find
+from tavletta.sheets.layout import SheetJob
+from tavletta.variables import Values
 
 NOW = datetime(2026, 3, 1, 9, 30)
 
@@ -283,7 +283,7 @@ def test_a_failed_sheet_counts_the_labels_of_the_sheets_printed():
 
 
 def test_per_label_renders_on_sheets_render_again_at_another_resolution():
-    from etiketto.job import _EachCopy
+    from tavletta.job import _EachCopy
 
     class Rerendering(SheetRecording):
         def prepare(self, label, options, safe_mm=1.5):
@@ -299,7 +299,7 @@ def test_per_label_renders_on_sheets_render_again_at_another_resolution():
 
 
 def test_a_printer_with_another_resolution_gets_the_label_rendered_again():
-    from etiketto.backends.base import RenderAgain
+    from tavletta.backends.base import RenderAgain
 
     class Changing(Recording):
         def print_label(self, image, host, options, progress=None):
@@ -337,7 +337,7 @@ def test_the_check_renders_as_the_print(monkeypatch):
 def test_an_export_renders_each_label_once(monkeypatch):
     """Job.export (the dry run's --output) draws a label once, as the
     window's export does, not once for the printer and once more."""
-    from etiketto.model import TextElement
+    from tavletta.model import TextElement
 
     backend = FakeMono()
     renders = []
@@ -355,10 +355,10 @@ def test_an_export_renders_each_label_once(monkeypatch):
 def test_an_export_is_the_windows_preview_image():
     """The same function, the same cap: a page printer reporting 1200 dpi
     exports at PREVIEW_MAX_DPI, as the window does."""
-    from etiketto.backends import get_backend
-    from etiketto.backends.base import PrinterInfo
-    from etiketto.job import PREVIEW_MAX_DPI, preview_image
-    from etiketto.model import TextElement
+    from tavletta.backends import get_backend
+    from tavletta.backends.base import PrinterInfo
+    from tavletta.job import PREVIEW_MAX_DPI, preview_image
+    from tavletta.model import TextElement
 
     backend = get_backend("system")
     label = Label(printer="system", orientation="across", auto_length=False)

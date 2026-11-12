@@ -18,7 +18,7 @@ import pytest
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
-from etiketto.merge import (
+from tavletta.merge import (
     Book,
     MergeError,
     Table,
@@ -30,7 +30,7 @@ from etiketto.merge import (
     read_table,
     sheet_names,
 )
-from etiketto.merge.safexml import GuardedStream
+from tavletta.merge.safexml import GuardedStream
 
 # --- building files -----------------------------------------------------------
 
@@ -1127,7 +1127,7 @@ def test_floods_of_comments_are_refused_quickly(tmp_path, markup):
 def test_cancel_is_seen_between_reads():
     import threading
 
-    from etiketto.merge.table import cancellable
+    from tavletta.merge.table import cancellable
 
     cancel = threading.Event()
     stream = GuardedStream(io.BytesIO(b"<a/>" * 100_000), 10**7)
@@ -1206,7 +1206,7 @@ def test_sheet_count_is_limited(tmp_path, monkeypatch):
     ],
 )
 def test_number_formats(code, raw, shown):
-    from etiketto.merge.numfmt import display
+    from tavletta.merge.numfmt import display
 
     assert display(raw, code, False) == shown
 

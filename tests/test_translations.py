@@ -1,5 +1,5 @@
 """The word lists of tools/strings_<lang>.py hold no strings the app does
-not use any more (po/etiketto.pot), so translators work on what counts."""
+not use any more (po/tavletta.pot), so translators work on what counts."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def _fill_po():
 
 def _pot_keys() -> set[str]:
     fill_po = _fill_po()
-    pot = (ROOT / "po" / "etiketto.pot").read_text(encoding="utf-8")
+    pot = (ROOT / "po" / "tavletta.pot").read_text(encoding="utf-8")
     keys = {"translator-credits"}
     for block in pot.split("\n\n")[1:]:
         msgid = re.search(r'msgid ((?:".*"\n?)+)msgstr', block)
@@ -56,10 +56,10 @@ def test_a_fuzzy_or_changed_code_block_of_the_documentation_is_an_error(capsys):
     English changed) would show other commands than the English page."""
     check = _site_check()
     block = "Fenced code block (sh)"
-    english = "etiketto print @@ a @@\netiketto print @@ a @@ --data @@ b @@\n"
+    english = "tavletta print @@ a @@\ntavletta print @@ a @@ --data @@ b @@\n"
     entries = [
         {"msgid": english, "msgstr": english, "flags": set(), "comment": block},
-        {"msgid": english, "msgstr": "etiketto print @@ a @@\n", "flags": set(), "comment": block},
+        {"msgid": english, "msgstr": "tavletta print @@ a @@\n", "flags": set(), "comment": block},
         {"msgid": english, "msgstr": english, "flags": {"fuzzy"}, "comment": block},
         {"msgid": "Text", "msgstr": "", "flags": {"fuzzy"}, "comment": "Plain text"},
     ]

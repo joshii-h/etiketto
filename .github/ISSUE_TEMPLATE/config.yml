@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: Documentation
-    url: https://etiketto.joshuahirsig.xyz
+    url: https://tavletta.joshuahirsig.xyz
     about: Setup, printing tips and solutions for common problems
   - name: Security problem
-    url: https://github.com/joshii-h/etiketto/security/advisories/new
+    url: https://github.com/joshii-h/tavletta/security/advisories/new
     about: Please report vulnerabilities privately

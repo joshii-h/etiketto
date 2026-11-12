@@ -8,7 +8,7 @@ import struct
 import pytest
 from PIL import Image
 
-from etiketto.backends import pwg
+from tavletta.backends import pwg
 
 
 def _stripes(width=300, height=7, mode="RGB"):

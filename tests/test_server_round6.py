@@ -10,12 +10,12 @@ import sys
 import pytest
 from test_server_config import write
 
-from etiketto import cli
-from etiketto.server import config as cfg
-from etiketto.server.config import TokenStore
-from etiketto.server.mcp import Mcp
-from etiketto.server.service import Service, pattern_problem
-from etiketto.ui.settings import Settings
+from tavletta import cli
+from tavletta.server import config as cfg
+from tavletta.server.config import TokenStore
+from tavletta.server.mcp import Mcp
+from tavletta.server.service import Service, pattern_problem
+from tavletta.ui.settings import Settings
 
 
 def run(*argv):

@@ -19,7 +19,7 @@ from setuptools import setup
 # after setuptools: it provides distutils (no longer in the standard library)
 from distutils.command.install_data import install_data
 
-APP_ID = "xyz.joshuahirsig.Etiketto"
+APP_ID = "xyz.joshuahirsig.Tavletta"
 
 DATA_FILES = [
     ("share/applications", [f"data/{APP_ID}.desktop"]),
@@ -31,7 +31,7 @@ DATA_FILES = [
 
 
 class InstallData(install_data):
-    """Compile po/<lang>.po and install it as share/locale/<lang>/LC_MESSAGES/etiketto.mo."""
+    """Compile po/<lang>.po and install it as share/locale/<lang>/LC_MESSAGES/tavletta.mo."""
 
     def run(self):
         msgfmt = shutil.which("msgfmt")
@@ -42,7 +42,7 @@ class InstallData(install_data):
             raise SystemExit("error: no translations found in po/")
         out = Path(self.get_finalized_command("build").build_base) / "mo"
         for po in po_files:
-            mo = out / po.stem / "etiketto.mo"
+            mo = out / po.stem / "tavletta.mo"
             mo.parent.mkdir(parents=True, exist_ok=True)
             # check=True: a broken translation stops the build
             subprocess.run([msgfmt, "--check-format", "-o", str(mo), str(po)], check=True)  # nosec B603

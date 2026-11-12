@@ -10,9 +10,9 @@ from datetime import datetime
 import pytest
 from fake_backends import FakeMono
 
-from etiketto.backends.base import PaperJam, PrintOptions, PrintResult, Progress
-from etiketto.model import CodeElement, ImageElement, Label, TextElement
-from etiketto.serial import (
+from tavletta.backends.base import PaperJam, PrintOptions, PrintResult, Progress
+from tavletta.model import CodeElement, ImageElement, Label, TextElement
+from tavletta.serial import (
     Cursor,
     Series,
     SeriesError,
@@ -28,7 +28,7 @@ from etiketto.serial import (
     unprintable_rows,
     used_columns,
 )
-from etiketto.variables import Values
+from tavletta.variables import Values
 
 ROWS = [
     {"Name": "Screws", "Code": "B-1", "Shelf": "B"},
@@ -369,8 +369,8 @@ class SheetPrinter(Recorder):
 
 
 def sheet_series(positions=(), copies=1, indexes=range(3), label=None):
-    from etiketto.sheets import find
-    from etiketto.sheets.layout import SheetJob
+    from tavletta.sheets import find
+    from tavletta.sheets.layout import SheetJob
 
     sheet = SheetJob(find("Avery L7160"), 0, tuple(positions))  # 21 per sheet
     values = Values(datetime(2026, 1, 1), counter=1)

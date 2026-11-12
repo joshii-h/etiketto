@@ -1,6 +1,6 @@
 # Brother P-touch raster protocol
 
-What Etiketto knows about printing on Brother P-touch tape printers (TZe
+What Tavletta knows about printing on Brother P-touch tape printers (TZe
 laminated tape, HSe heat-shrink tube). **Not yet tried on a printer**: no
 P-touch was at hand. Everything below comes
 from Brother's documents and from two open source projects, and is written
@@ -27,7 +27,7 @@ untested, from one of the projects, or contradicting between the sources,
 
 - USB: vendor `04f9`, printer class, bulk in and out (Appendix A); the
   kernel's `usblp` driver offers it as `/dev/usb/lpN`, read and write.
-  Etiketto uses that file (like for cab printers and the VC-500W), no
+  Tavletta uses that file (like for cab printers and the VC-500W), no
   libusb. The IEEE 1284 device ID names the model
   (`MFG:Brother;MDL:PT-P750W;...`); if the name is unknown, the USB product
   ID in sysfs (`idProduct`) does. [spec for the IDs, assumed for the
@@ -36,7 +36,7 @@ untested, from one of the projects, or contradicting between the sources,
   PT-P950NW, the same byte stream. Brother's references describe the
   commands, not the network: whether the printer answers `ESC i S` and
   reports pages over TCP is [open]; Brother's network flow (5.6) only
-  sends the data, the printer reads while it prints. Etiketto asks for the
+  sends the data, the printer reads while it prints. Tavletta asks for the
   status:
   - none comes: it prints for the label's tape without waiting for the
     printer (the status row says that the printer does not answer). The
@@ -48,7 +48,7 @@ untested, from one of the projects, or contradicting between the sources,
     printer – it did not confirm printing", not "Printed" (also when no
     status came at all; `PrintResult.unconfirmed`).
     [assumed]
-  - the printer closes the connection while Etiketto waits for a page: an
+  - the printer closes the connection while Tavletta waits for a page: an
     error, with the number of labels reported printed so far; nothing more
     is sent.
   - the DNS-SD name is matched to the host in any case, with or without a
@@ -60,21 +60,21 @@ untested, from one of the projects, or contradicting between the sources,
 - On USB the PT-P900 series prints while the data arrives ("concurrent
   printing", 5.1): it starts a page without waiting for the print command,
   and without compression a long page is 70 bytes per line, so the
-  printer may wait for data in the middle of a page. [spec] Etiketto sends
+  printer may wait for data in the middle of a page. [spec] Tavletta sends
   each page in one piece and reads the "printing completed" status before
   the next page, as in Brother's flow, so the buffers never back up.
 - Search: USB through sysfs; on the network the DNS-SD service
   `_pdl-datastream._tcp` whose name contains one of these models
   ("Brother PT-P750W"). [assumed]
 - Bluetooth (PT-P710BT, PT-D460BT, PT-P910BT, ...) is not supported:
-  Etiketto has no Bluetooth connections. These models print over USB.
+  Tavletta has no Bluetooth connections. These models print over USB.
 - Editor Lite: with the Editor Lite switch on, PT-P700, PT-P750W, PT-1230PC
   and PT-2430PC appear as a USB drive (product IDs 2064, 2065, 2030, 2031,
-  from ptouch-print) and cannot print. Etiketto finds such a drive in
+  from ptouch-print) and cannot print. Tavletta finds such a drive in
   `/sys/bus/usb/devices` (a Brother device without a printer interface),
   lists it in the search and explains how to switch Editor Lite off. The
   PT-P750W printer is 2062 (Appendix A); ptouch lists 2065 for it, which
-  ptouch-print calls its Editor Lite drive: Etiketto follows Brother and
+  ptouch-print calls its Editor Lite drive: Tavletta follows Brother and
   ptouch-print. [spec for 2062]
 
 ## Models
@@ -127,7 +127,7 @@ cut, chain printing, margin, high resolution, heat-shrink tube).
   PT-P710BT 0x76 is not in the reference [assumed]. A network printer with
   another byte is treated as a documented model with a 128-pin head, or a
   560-pin head with 36 mm tape. [assumed]
-- A USB P-touch whose model Etiketto does not know is refused ("does not
+- A USB P-touch whose model Tavletta does not know is refused ("does not
   know this printer model"); a model marked as unable to print raster
   graphics would be refused with its own message (none is at the moment).
 
@@ -136,7 +136,7 @@ cut, chain printing, margin, high resolution, heat-shrink tube).
 A raster line covers the whole head. Brother's tables (2.3.5 Raster line)
 give, per tape, the pins for the left margin, the print area and the pins
 for the right margin; the right margin is at the first byte of the line,
-the left margin at the last [spec]. Etiketto renders the label at exactly
+the left margin at the last [spec]. Tavletta renders the label at exactly
 the printable height, so the design fills the printable part of the tape;
 the outer edges of the tape stay blank.
 
@@ -154,14 +154,14 @@ the outer edges of the tape stay blank.
   the first bit of a line. ptouch-print uses the same position (centre
   at pin 272 counted from the last byte).
 - ptouch-print uses wider areas for 9, 12 and 18 mm (52, 76, 120 pins);
-  Etiketto uses Brother's numbers.
+  Tavletta uses Brother's numbers.
 - Heads of 112 and 384 pins (older models): Brother's printable width at
   the head's resolution, centred, at most the head. [assumed]
 - Heat-shrink tube (media type 0x11 for 2:1, 0x17 for 3:1): Brother's print
   area [spec]; the position from ptouch, 1 or 2 pins off Brother's
   numbers; for 560 pins ptouch took it from an analysis of Brother's own
   software, for 128 pins the source is not stated [assumed]:
-  - 128 pins (Brother left / print / right, Etiketto's first pin): 2:1
+  - 128 pins (Brother left / print / right, Tavletta's first pin): 2:1
     5.8 mm (status 6) 50/28/50, 52; 8.8 mm (9) 40/48/40, 42; 11.7 mm (12)
     31/66/31, 33; 17.7 mm (18) 11/106/11, 13; 23.6 mm (24) 0/128/0, 0; 3:1
     5.2 mm (5) 54/20/54, 56; 9.0 mm (9) 42/44/42, 44; 11.2 mm (11)
@@ -170,11 +170,11 @@ the outer edges of the tape stay blank.
     166/212/182, 183; 144/256/160, 161; 3:1 252/40/268, 269; 228/88/244,
     245; 222/100/238, 239; 152/240/168, 169; 31 mm 92/360/108, 109.
   - Not on the PT-P710BT and PT-P910BT. Tube up to 500 mm long (2.3.4).
-- In Etiketto a tube is designed on the nearest tape width (11.2 mm on
+- In Tavletta a tube is designed on the nearest tape width (11.2 mm on
   12 mm); the job uses the tube's own print area.
 - FLe labels (media 0x13, 21 x 45 mm die-cut, PT-P900/P900W/P950NW): the
   status says width 21 and length 45 (2Dh) [spec]. Brother gives no print
-  area for them; Etiketto uses that of the 21 mm tube (left 152, print 240,
+  area for them; Tavletta uses that of the 21 mm tube (left 152, print 240,
   right 168 pins) [assumed]. They show as 21 mm, so a label designed on
   another width is scaled to them after the usual warning.
 
@@ -194,7 +194,7 @@ the outer edges of the tape stay blank.
 - High resolution (ESC i K bit 6): 180 x 360 dpi on the 128-pin models,
   360 x 720 dpi on the PT-P900, P900W and P950NW, there on laminated tape
   only and with `n2 = 09h` in ESC i z; the PT-P910BT has none [spec].
-  Etiketto renders the label at twice the resolution and halves it across
+  Tavletta renders the label at twice the resolution and halves it across
   the tape, so the extra lines carry real detail; the line count and the
   margin are given in the finer dots. 2D codes are laid out for the
   halving (modules and their first row on even rows of the fine render,
@@ -270,7 +270,7 @@ per page:
 ```
 
 - ptouch-print prints one label per run, so several copies in one job are
-  Etiketto's extension of its sequence, following Brother's page
+  Tavletta's extension of its sequence, following Brother's page
   structure. [assumed]
 - No margin setting, no half cut, no high resolution on these models.
 - Models without a cutter (cutter lever) offer no cut setting.
@@ -298,7 +298,7 @@ known yet) and initialise; the printer answers
 | 19 | phase: 0x00 waiting, 0x01 printing |
 | 24, 25 | tape and text colour |
 
-- Errors and how Etiketto explains them; the first set in this order wins
+- Errors and how Tavletta explains them; the first set in this order wins
   [spec, except where noted]:
   - 2/0x10 cover open: "cover open"
   - 1/0x01 no media, 1/0x02 end of media (PT-P900 series): "no cassette"
@@ -323,7 +323,7 @@ known yet) and initialise; the printer answers
 - While printing, the documented models report each printed page (status
   type 0x01, sent before the page is really out, 5.1) or an error (0x02)
   [spec]; the PT-P910BT and PT-P710BT only after `ESC i !` [spec]. Brother
-  says not to send `ESC i S` while printing. Etiketto reads the report
+  says not to send `ESC i S` while printing. Tavletta reads the report
   after each page before it sends the next; a page may take 30 s plus its
   length at 10 mm/s (twice that at high resolution) [assumed]. An error
   then says how many labels came out. On USB no report is an error, on the
@@ -331,7 +331,7 @@ known yet) and initialise; the printer answers
 - The extended error byte (7) is read only on the PT-P900 series; the
   other reference marks it reserved. [spec]
 
-## In Etiketto
+## In Tavletta
 
 - Backend id `ptouch`, "Brother P-touch". Tape widths 3.5, 6, 9, 12, 18,
   24 and 36 mm, 12 mm for a new label; the label's height is the tape, its

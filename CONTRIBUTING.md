@@ -1,4 +1,4 @@
-# Contributing to Etiketto
+# Contributing to Tavletta
 
 Contributions are welcome: bug reports, fixes, features, translations,
 documentation and testing with other cassettes or printers.
@@ -6,9 +6,9 @@ documentation and testing with other cassettes or printers.
 ## Where
 
 Issues and pull requests are welcome on **GitHub**
-(<https://github.com/joshii-h/etiketto>); you do not need a Forgejo account.
+(<https://github.com/joshii-h/tavletta>); you do not need a Forgejo account.
 The main repository is on Forgejo
-(<https://git.joshuahirsig.xyz/joshii/etiketto>); if you have an account
+(<https://git.joshuahirsig.xyz/joshii/tavletta>); if you have an account
 there, contribute there directly.
 
 A bridge (`.github/workflows/bridge.yml`) copies GitHub pull requests and
@@ -48,7 +48,7 @@ section that applies:
 4. **How you tested it**: automated tests, manual steps, and if you printed,
    which printer, firmware and cassette width.
 5. **Screenshots** for every visible change, in light and dark mode.
-6. **Breaking changes**, e.g. to the `.etiketto` file format or settings.
+6. **Breaking changes**, e.g. to the `.tavletta` file format or settings.
 
 ## Development setup
 
@@ -56,11 +56,11 @@ You need Python 3.11+, PyGObject with GTK 4 and libadwaita, pycairo and
 gettext from your distribution (see README for package names).
 
 ```sh
-git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
-cd etiketto
+git clone https://git.joshuahirsig.xyz/joshii/tavletta.git
+cd tavletta
 uv venv --system-site-packages .venv
 uv pip install --python .venv/bin/python -e . --group dev
-.venv/bin/python -m etiketto.app
+.venv/bin/python -m tavletta.app
 ```
 
 ## Before you open a pull request
@@ -76,7 +76,7 @@ new strings, say so in the pull request and a maintainer helps. In detail:
 ```sh
 .venv/bin/ruff format .
 .venv/bin/ruff check .
-.venv/bin/python -m pytest -q --cov=etiketto --cov-report=term-missing
+.venv/bin/python -m pytest -q --cov=tavletta --cov-report=term-missing
 ```
 
 - All tests pass and total coverage stays **at or above 90 %**.
@@ -89,7 +89,7 @@ new strings, say so in the pull request and a maintainer helps. In detail:
 
 ## Adding a printer
 
-Etiketto talks to printers through backends in `etiketto/backends/`. A new
+Tavletta talks to printers through backends in `tavletta/backends/`. A new
 **network** printer is one new module there; the interface adapts to what
 the printer can do (tape widths or label sizes, modes, cutter, colour,
 length and width limits). There are two kinds:
@@ -109,12 +109,12 @@ length and width limits). There are two kinds:
 Not supported yet: printers connected by Bluetooth. That needs an
 extension of the interface first; please open an issue before you start.
 
-1. Create `etiketto/backends/<name>.py` with a subclass of
-   `etiketto.backends.base.Backend`:
+1. Create `tavletta/backends/<name>.py` with a subclass of
+   `tavletta.backends.base.Backend`:
 
    ```python
    class MyPrinter(Backend):
-       id = "myprinter"  # stored in .etiketto files, never change it
+       id = "myprinter"  # stored in .tavletta files, never change it
        name = "Maker Model"  # shown in the interface
        capabilities = Capabilities(
            tape_widths_mm=(12, 24),  # empty for die-cut printers
@@ -142,7 +142,7 @@ extension of the interface first; please open an issue before you start.
    ```
 
    - `discover` returns printers announced on the network, `[]` if there is
-     no mDNS; `etiketto.backends.mdns.browse()` does the Avahi part.
+     no mDNS; `tavletta.backends.mdns.browse()` does the Avahi part.
    - `query` returns a `PrinterInfo`; if the printer reports a problem, put
      the code of the matching `PrinterError` into `PrinterInfo.error` (e.g.
      `"cover_open"`), never the printer's own text. `base.open_session()`
@@ -209,8 +209,8 @@ extension of the interface first; please open an issue before you start.
    - A printer that takes continuous rolls and die-cut labels can be two
      backends sharing one module, one per kind (see `brother_ql.py`).
 
-2. Register it in `etiketto/backends/__init__.py` (`_load()`), or ship it as
-   a separate package with an entry point in the group `etiketto.backends`
+2. Register it in `tavletta/backends/__init__.py` (`_load()`), or ship it as
+   a separate package with an entry point in the group `tavletta.backends`
    that names the class.
 
    - Connections: printers are reached over the network and over USB. If
@@ -246,7 +246,7 @@ extension of the interface first; please open an issue before you start.
    the printer's names among the `Keywords` of the desktop file and the
    `<keywords>` of the metainfo, so a search finds it. Protocol knowledge
    from other projects goes into `THIRD_PARTY_NOTICES.md` (section 2) and
-   `PROTOCOL_SOURCES` in `etiketto/app.py` (a test keeps both in step), code
+   `PROTOCOL_SOURCES` in `tavletta/app.py` (a test keeps both in step), code
    or data you ship into section 1 and `LEGAL`. Nothing else names
    printers, so no existing sentence needs a new translation.
 
@@ -265,7 +265,7 @@ features it does not know ("needs a newer version") instead of printing the
 label wrongly; version 1 readers refuse every version 2 file as "newer". A
 label without features stays version 1 and opens everywhere.
 
-The rule: everything added after version 1 that an older Etiketto would
+The rule: everything added after version 1 that an older Tavletta would
 print wrongly, drop when it saves, call damaged or refuse with an unclear
 message is a feature, new element kinds included. A new one adds a name to
 `model.FEATURES` and a line to `Label.features()`, never a version. The
@@ -295,7 +295,7 @@ features (`model.FEATURES`):
 - `"shapes"`: a line or shape element (kind `shape`, `model.ShapeElement`);
   versions before it also refuse the unknown element kind.
 - `"free_layout"`: the free layout (`layout: "free"`, every element at its
-  own `x_mm`, `y_mm`; `etiketto/freelayout.py`) and the fields that came
+  own `x_mm`, `y_mm`; `tavletta/freelayout.py`) and the fields that came
   with it (`model.FREE_FIELDS`: a font weight, a QR code's error
   correction, a code's module size, height and turn, an image's height),
   written only when they differ from their default; older versions would
@@ -307,7 +307,7 @@ name in `model.STYLE_FIELDS` (or `LABEL_STYLE_FIELDS`), validation in
 
 ## Codes
 
-`etiketto/codes.py` encodes, `etiketto/render.py` draws. The encoders only
+`tavletta/codes.py` encodes, `tavletta/render.py` draws. The encoders only
 deliver modules (rows of `1` and `0`), never a picture: Zint's raw
 `encoded_data`, segno's matrix, python-barcode's pattern. The drawing makes
 each module a whole number of printer dots and keeps the quiet zone each
@@ -327,7 +327,7 @@ may contain round brackets.
 
 ## Label sheets
 
-The label sheets (`etiketto/sheets/templates.json`) are converted from the
+The label sheets (`tavletta/sheets/templates.json`) are converted from the
 template database of [gLabels](https://github.com/j-evins/glabels-qt) (MIT
 license, Copyright (C) 2001-2026 Jaye Evins). To update them, check out
 gLabels and run the converter on its `templates` folder:
@@ -338,18 +338,18 @@ python3 tools/glabels_templates.py /tmp/glabels-qt/templates
 ```
 
 It rewrites `templates.json` and copies the license to
-`etiketto/sheets/LICENSE.glabels`; check the number of sheets it reports
+`tavletta/sheets/LICENSE.glabels`; check the number of sheets it reports
 (and the number "over 1700 sheets" in the README and `site/docs/sheets.md`),
 keep the copyright years in the README credits, `THIRD_PARTY_NOTICES.md`
-and `LEGAL` in `etiketto/app.py` current, and
+and `LEGAL` in `tavletta/app.py` current, and
 run the tests (`tests/test_sheets.py` checks that every sheet is usable).
 A sheet that is missing or wrong belongs in gLabels, so that both projects
 profit; fixes to the converter belong here. Sheet ids (`"Avery L7160"`, brand
-and part number) are stored in `.etiketto` files: do not rename them.
+and part number) are stored in `.tavletta` files: do not rename them.
 
 ## Symbols
 
-The symbols (`etiketto/symbols/mdi.json.gz`) are converted from a release of
+The symbols (`tavletta/symbols/mdi.json.gz`) are converted from a release of
 [Material Design Icons](https://github.com/Templarian/MaterialDesign-SVG)
 (Apache-2.0, Pictogrammers). To update them, download the release from npm
 and run the converter on it:
@@ -372,10 +372,10 @@ Kept on purpose: marks of technical standards that label a port or a
 feature (bluetooth, usb, nfc, hdmi, cast, contactless payment), as a label
 on a device needs them, and the key symbols apple-keyboard-* (command,
 option, shift are standard key symbols in Unicode, not a logo). It stops if the release's license text is no longer the
-one in `etiketto/symbols/LICENSE.mdi`: then check the new license and update
+one in `tavletta/symbols/LICENSE.mdi`: then check the new license and update
 that file by hand. Update the version in the README credits,
 `THIRD_PARTY_NOTICES.md` and `LICENSE.mdi` (and the holders in `LEGAL` in
-`etiketto/app.py` if they change), check the number of icons it reports
+`tavletta/app.py` if they change), check the number of icons it reports
 and run the tests
 (`tests/test_symbols.py` counts the icons and checks that every path
 parses). The output depends only on the release (sorted, no timestamp).
@@ -384,11 +384,11 @@ A label stores a symbol by its name and a copy of its path data
 (`name`, `path`, `size_mm`, `rotation`, `color`); the copy is what is
 drawn, so a label looks the same with an icon set where the symbol was
 changed, renamed or removed, and the name is what the chooser shows.
-Icon names are therefore not renamed by Etiketto, but upstream may; a label
+Icon names are therefore not renamed by Tavletta, but upstream may; a label
 with a symbol that is no longer in the set still prints.
 
 A label with a symbol is written as format version 2 with
-`"features": ["symbols"]`. Older Etiketto versions refuse it as "needs a
+`"features": ["symbols"]`. Older Tavletta versions refuse it as "needs a
 newer version": those with format version 2 by the unknown feature, the
 ones before by the unknown element kind `symbol` (see
 `model.ELEMENT_TYPES`).
@@ -407,8 +407,8 @@ defensively: within size limits, and every malformed file raises one
 exception type with a code (the interface turns the code into a translated
 text), never a raw `KeyError`, `zipfile` or XML error.
 
-- `etiketto/model.py`: `.etiketto` label files, `LabelError`.
-- `etiketto/merge/`: data rows for serial labels from CSV, ODS and XLSX
+- `tavletta/model.py`: `.tavletta` label files, `LabelError`.
+- `tavletta/merge/`: data rows for serial labels from CSV, ODS and XLSX
   files (`read_table()`, `read_book()` with the sheet names), and the
   `{column}` placeholders in label texts (`fill()`, which never uses
   `str.format()` on user data). It raises `MergeError` with the codes
@@ -416,13 +416,13 @@ text), never a raw `KeyError`, `zipfile` or XML error.
   the file does not have) and `cancelled` (the caller set `cancel`: the window
   stops a read when another file is chosen); the limits (file size,
   number of zip entries, unpacked size of each zip member, rows, columns,
-  cells) are in `etiketto/merge/limits.py`. Only plain files are read (a
+  cells) are in `tavletta/merge/limits.py`. Only plain files are read (a
   named pipe would block). Hidden cells of merged ranges are empty in ODS
   and XLSX alike. XML parts with a document type or entity declaration are
   refused before parsing, and large parts are parsed as a stream. The
   readers use only the standard library (`csv`, `zipfile`, `xml.etree`); no
   third-party code is included or adapted, so nothing needs credit.
-- `etiketto/serial.py` fills a copy of the label from a row (texts and code
+- `tavletta/serial.py` fills a copy of the label from a row (texts and code
   contents) and prints a series: one job per row through the backend's
   `print_label`, stoppable between two labels.
 - Property tests (`tests/test_properties.py`, `tests/test_merge.py`) feed
@@ -436,7 +436,7 @@ text), never a raw `KeyError`, `zipfile` or XML error.
 - The app follows the system's light/dark mode and accent colour; do not
   hard-code colours in the interface.
 - Screenshots for the README and Flathub use the default GNOME style:
-  `ETIKETTO_SCREENSHOT=out.png ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME=prefer-dark`
+  `TAVLETTA_SCREENSHOT=out.png ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME=prefer-dark`
   with an empty `XDG_CONFIG_HOME`.
 
 ## Translations
@@ -450,7 +450,7 @@ text), never a raw `KeyError`, `zipfile` or XML error.
 German uses Swiss spelling ("ss", not "ß") on purpose, for everyone. A
 separate `de_DE` with "ß" is welcome as its own catalog.
 
-Etiketto is translated into German (`de`), French (`fr`), Italian (`it`),
+Tavletta is translated into German (`de`), French (`fr`), Italian (`it`),
 Spanish (`es`), Portuguese (`pt`, Brazil: `pt_BR`), Dutch (`nl`), Swedish
 (`sv`), Finnish (`fi`), Estonian (`et`), Polish (`pl`), Hungarian (`hu`),
 Russian (`ru`), Ukrainian (`uk`), Turkish (`tr`), Arabic (`ar`), Hindi (`hi`),
@@ -467,9 +467,9 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
-      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
-      etiketto/backends/*.py etiketto/merge/*.py etiketto/sheets/*.py \
-      etiketto/shipping/*.py etiketto/symbols/*.py etiketto/server/*.py
+      --package-name=tavletta -o po/tavletta.pot tavletta/*.py tavletta/ui/*.py \
+      tavletta/backends/*.py tavletta/merge/*.py tavletta/sheets/*.py \
+      tavletta/shipping/*.py tavletta/symbols/*.py tavletta/server/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run
@@ -480,7 +480,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 
 ## Reporting bugs
 
-Please include the Etiketto version, your distribution, how you installed
+Please include the Tavletta version, your distribution, how you installed
 it (Flatpak, install.sh), the printer firmware (shown in the printer's web
 interface) and the cassette width. For print problems a photo of the label
 helps a lot.

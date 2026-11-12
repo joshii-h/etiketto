@@ -7,10 +7,10 @@ import pytest
 from conftest import ink_bbox
 from PIL import Image
 
-from etiketto import codes
-from etiketto import render as render_module
-from etiketto.model import BARCODES, SYMBOLOGIES, CodeElement, Label, LabelError
-from etiketto.render import RenderWarning, mm_to_px, render
+from tavletta import codes
+from tavletta import render as render_module
+from tavletta.model import BARCODES, SYMBOLOGIES, CodeElement, Label, LabelError
+from tavletta.render import RenderWarning, mm_to_px, render
 
 # symbology: (content, what a scanner reads)
 SAMPLES = {
@@ -26,7 +26,7 @@ SAMPLES = {
     "gs1_128": ("(01)09501101530003(17)260101(10)AB12", "(01)09501101530003(17)260101(10)AB12"),
     "datamatrix": ("Grüße aus Zürich 123", "Grüße aus Zürich 123"),
     "gs1_datamatrix": ("(01)09501101530003(21)XYZ", "(01)09501101530003(21)XYZ"),
-    "pdf417": ("Etiketto, 8000 Zürich, PDF417", "Etiketto, 8000 Zürich, PDF417"),
+    "pdf417": ("Tavletta, 8000 Zürich, PDF417", "Tavletta, 8000 Zürich, PDF417"),
     "aztec": ("Ticket 4711 日本", "Ticket 4711 日本"),
 }
 # GS1 symbol identifiers: FNC1 in first position, as the standard asks
@@ -339,7 +339,7 @@ def test_new_types_are_saved_as_a_feature(tmp_path):
     import json
 
     label = Label(elements=[CodeElement(SAMPLES[s][0], symbology=s) for s in SYMBOLOGIES])
-    path = tmp_path / "codes.etiketto"
+    path = tmp_path / "codes.tavletta"
     label.save(path)
     data = json.loads(path.read_text(encoding="utf-8"))
     assert (data["version"], data["features"]) == (2, ["barcodes"])
@@ -351,8 +351,8 @@ def test_new_types_are_saved_as_a_feature(tmp_path):
 
 def test_older_versions_refuse_new_types(monkeypatch):
     data = Label(elements=[CodeElement("Hi", "aztec")]).to_dict()
-    # a version 1 reader: refuses format 2 as written by a newer Etiketto
-    monkeypatch.setattr("etiketto.model.FORMAT_VERSION", 1)
+    # a version 1 reader: refuses format 2 as written by a newer Tavletta
+    monkeypatch.setattr("tavletta.model.FORMAT_VERSION", 1)
     with pytest.raises(LabelError) as info:
         Label.from_dict(data)
     assert info.value.code == "newer"

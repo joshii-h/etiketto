@@ -91,7 +91,7 @@ jobs:
       - name: pytest
         working-directory: src
         # fail_under for the coverage comes from pyproject.toml
-        run: xvfb-run -a .venv/bin/python -m pytest -q --cov=etiketto --cov-report=term-missing
+        run: xvfb-run -a .venv/bin/python -m pytest -q --cov=tavletta --cov-report=term-missing
 
       - name: Translations
         working-directory: src
@@ -173,14 +173,14 @@ jobs:
       - name: bandit (security)
         working-directory: src
         # medium and high severity only; low (e.g. assert) is noise for a desktop app
-        run: .venv/bin/bandit -c pyproject.toml -r etiketto -ll
+        run: .venv/bin/bandit -c pyproject.toml -r tavletta -ll
 
       - name: xenon (complexity)
         working-directory: src
         # No function above C, every module and the project on average A.
         run: |
-          .venv/bin/radon cc -s -n C etiketto
-          .venv/bin/xenon --max-absolute C --max-modules A --max-average A etiketto
+          .venv/bin/radon cc -s -n C tavletta
+          .venv/bin/xenon --max-absolute C --max-modules A --max-average A tavletta
 
       - name: pip-audit (dependencies)
         working-directory: src

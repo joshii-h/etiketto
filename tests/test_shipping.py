@@ -34,13 +34,13 @@ from shipping_samples import (
     scanned_label,
 )
 
-from etiketto.backends import get_backend
-from etiketto.backends.base import PrintOptions
-from etiketto.model import Label, LabelError, PageElement, TextElement
-from etiketto.render import mm_to_px, render
-from etiketto.shipping import crop as cropping
-from etiketto.shipping import detect, source, targets
-from etiketto.shipping.source import SourceError
+from tavletta.backends import get_backend
+from tavletta.backends.base import PrintOptions
+from tavletta.model import Label, LabelError, PageElement, TextElement
+from tavletta.render import mm_to_px, render
+from tavletta.shipping import crop as cropping
+from tavletta.shipping import detect, source, targets
+from tavletta.shipping.source import SourceError
 
 pytest.importorskip("cairo")
 
@@ -1252,8 +1252,8 @@ def test_page_element_roundtrip(tmp_path):
     element = page_element(crop=(0.1, 0.2, 0.3, 0.4), rotation=270)
     element.fit = "fill"
     label = Label(printer="cab", elements=[element])
-    label.save(tmp_path / "x.etiketto")
-    loaded = Label.load(tmp_path / "x.etiketto").elements[0]
+    label.save(tmp_path / "x.tavletta")
+    loaded = Label.load(tmp_path / "x.tavletta").elements[0]
     assert loaded == element
 
 
@@ -1295,7 +1295,7 @@ def test_page_element_from_file(tmp_path, monkeypatch):
     path.write_bytes(b"%PDF-1.4")
     element = PageElement.from_file(path)
     assert (element.name, base64.b64decode(element.data)) == ("label.pdf", b"%PDF-1.4")
-    import etiketto.model as model
+    import tavletta.model as model
 
     monkeypatch.setattr(model, "MAX_FILE_BYTES", 3)
     with pytest.raises(LabelError):
@@ -1441,7 +1441,7 @@ def test_vector_barcode_on_a_mono_printer():
 
 
 def test_levels_of_a_scan():
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     image = Image.new("L", (100, 100), 230)  # grey paper
     ImageDraw.Draw(image).rectangle((10, 10, 40, 90), fill=60)  # grey ink
@@ -1454,7 +1454,7 @@ def test_levels_of_a_scan():
 
 
 def test_black_and_white_keeps_own_grey():
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     image = Image.new("L", (200, 200), 255)
     draw = ImageDraw.Draw(image)
@@ -1488,7 +1488,7 @@ def test_shaded_boxes_keep_their_grey():
     """Light shading is not turned solid black by a tile's own levels, grey
     stays grey (for the dithering), black text in it stays black with
     paper around it, light grey text is kept."""
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     result = mono.black_and_white(_shaded_label())
     for i, level in enumerate((217, 191, 153, 115)):
@@ -1505,7 +1505,7 @@ def test_shaded_boxes_keep_their_grey():
 def test_a_line_of_text_is_no_barcode():
     """Rows through many letters are a barcode only over a tile's height:
     grey in a line of text keeps its grey."""
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     image = Image.new("L", (1200, 1000), 255)
     draw = ImageDraw.Draw(image)
@@ -1527,7 +1527,7 @@ def test_a_line_of_text_is_no_barcode():
 def test_noise_around_the_middle_makes_no_bars():
     """A noisy grey area at the middle between black and white crosses the
     middle often; with hysteresis it crosses no bars."""
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     noise = Image.effect_noise((400, 40), 12)  # grey 128, spread around it
     assert mono.barcode_rows(noise, 70, 186) == []
@@ -1538,7 +1538,7 @@ def test_spread_is_a_min_and_max_filter():
     """The same as Pillow's rank filters, to the edges."""
     from PIL import ImageChops, ImageFilter
 
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     noise = Image.effect_noise((90, 70), 60)
     for size in (3, 5, 11, 15):
@@ -1551,7 +1551,7 @@ def test_spread_is_a_min_and_max_filter():
 def test_mono_area_is_kept_for_the_preview(monkeypatch):
     """The preview renders again on every change: the black and white of
     the page area is made once."""
-    from etiketto.shipping import mono
+    from tavletta.shipping import mono
 
     calls = []
     real = mono.black_and_white
@@ -1574,7 +1574,7 @@ def test_page_area_stays_sharp_next_to_another_element(pdf):
     element = PageElement(data=pdf, name="a.pdf", crop=list(TOP_LEFT))
     label = targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 1.5)
     label.elements.append(TextElement(text="Fragile"))
-    import etiketto.render as rendering
+    import tavletta.render as rendering
 
     dpi = 203.2
     assert render(label, dpi=dpi, safe_mm=1.5).overflow
@@ -1587,7 +1587,7 @@ def test_page_area_stays_sharp_next_to_another_element(pdf):
 
 
 def test_smaller_falls_back_to_reducing(monkeypatch):
-    import etiketto.render as rendering
+    import tavletta.render as rendering
 
     part = Image.new("RGBA", (100, 50), (0, 0, 0, 255))
 

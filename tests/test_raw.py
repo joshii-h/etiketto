@@ -17,8 +17,8 @@ import pytest
 from fake_raw import ZPL_HI, ZPL_HQES, ZPL_HS
 from PIL import Image
 
-from etiketto.backends import mdns, raw, tspl, usb, zpl
-from etiketto.backends.base import (
+from tavletta.backends import mdns, raw, tspl, usb, zpl
+from tavletta.backends.base import (
     Choice,
     FoundPrinter,
     Level,
@@ -28,10 +28,10 @@ from etiketto.backends.base import (
     PrinterTimeout,
     PrintOptions,
 )
-from etiketto.backends.dymo import Dymo
-from etiketto.backends.epl import Epl
-from etiketto.backends.escpos import EscPos
-from etiketto.ui.settings import PrinterSettings, Settings
+from tavletta.backends.dymo import Dymo
+from tavletta.backends.epl import Epl
+from tavletta.backends.escpos import EscPos
+from tavletta.ui.settings import PrinterSettings, Settings
 
 REAL_CONNECT = raw._connect  # before conftest's guard replaces it
 
@@ -247,7 +247,7 @@ def test_a_zpl_printer_on_tcp(monkeypatch):
     backend.print_label(image, "127.0.0.1", PrintOptions(copies=2))
     server.join(5)
     job = server.received.split(b"~HQES\n~HI\n", 1)[1]
-    assert job.startswith(b"~DGR:ETIKETTO.GRF,16,2,80,,::::::\n^XA\n")
+    assert job.startswith(b"~DGR:TAVLETTA.GRF,16,2,80,,::::::\n^XA\n")
     assert b"^PQ2,0,1,N\n" in job and job.endswith(b"^XZ\n")
 
 
@@ -441,7 +441,7 @@ def test_unknown_resolution_falls_back(monkeypatch):
 
 
 def test_printer_settings_hand_the_backend_settings_on(tmp_path, monkeypatch):
-    from etiketto.ui import settings as config
+    from tavletta.ui import settings as config
 
     monkeypatch.setattr(config, "CONFIG_DIR", tmp_path)
     monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "settings.json")

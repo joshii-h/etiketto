@@ -7,7 +7,7 @@ from __future__ import annotations
 import re
 from types import SimpleNamespace
 
-from etiketto.backends import raw
+from tavletta.backends import raw
 
 # realistic answers; framing and fields as the manuals describe them
 # ~HI: model, firmware, dots per mm, memory, options (5 fields)

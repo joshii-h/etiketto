@@ -31,7 +31,7 @@ section below.
 
 ### Wi-Fi setup { #wifi }
 
-Etiketto does not set up Wi-Fi. Use a phone or the printer's web interface
+Tavletta does not set up Wi-Fi. Use a phone or the printer's web interface
 once:
 
 1. Hold the Wi-Fi button until it turns from blue to white.
@@ -62,9 +62,9 @@ across its panel. Wi-Fi is the tried way.
 | CZ-1004 | 25 mm (1″) |
 | CZ-1005 | 50 mm (2″) |
 
-Etiketto shows the inserted cassette, remaining tape, printable width, lot
+Tavletta shows the inserted cassette, remaining tape, printable width, lot
 number and the presumed production date. ZINK paper ages: old paper prints
-paler and yellowish, Etiketto warns about old cassettes. Store cassettes cool
+paler and yellowish, Tavletta warns about old cassettes. Store cassettes cool
 and dry.
 
 Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.
@@ -103,7 +103,7 @@ Do it when stripes appear, or every 20 to 30 labels.
 
 ## Brother QL { #brother-ql }
 
-Etiketto prints on Brother QL label printers from the QL-500 to the
+Tavletta prints on Brother QL label printers from the QL-500 to the
 QL-1115NWB, red and black too on the QL-800, QL-810W and QL-820NWB. This
 has not been tried on a printer yet: it follows the protocol as others
 documented it. Reports of what works and what does not are very welcome.
@@ -113,14 +113,14 @@ documented it. Reports of what works and what does not are very welcome.
   long as its content or has a fixed length) and
   "Brother QL, die-cut labels" for die-cut DK labels of a fixed size.
   Both use the same printer and settings. If the printer has the other
-  kind of roll loaded, Etiketto offers to [[ui:Switch]].
+  kind of roll loaded, Tavletta offers to [[ui:Switch]].
 - Network: models with Wi-Fi or LAN are reached on port 9100.
   [[ui:Search for printers]] finds them, or enter the address.
 - USB: plug the printer in; [[ui:Search for printers]] finds it. On the
   QL-700 and the QL-800 series, switch off "Editor Lite" first (hold its
   button until the green light goes out), otherwise the printer appears
   as a USB drive.
-- Before each print Etiketto reads which roll is loaded. A continuous
+- Before each print Tavletta reads which roll is loaded. A continuous
   roll of another width is printed scaled to it after a warning
   ([[ui:Wrong roll]]); die-cut labels of another size get a warning too
   ([[ui:Different labels loaded]]).
@@ -140,7 +140,7 @@ documented it. Reports of what works and what does not are very welcome.
   62 mm continuous roll is loaded; red parts of the label print red on the
   red and black roll DK-22251. That roll needs a red and black job even
   for black labels: if the choice does not fit the loaded roll, the
-  printer refuses the job, Etiketto prints it the other way and says so.
+  printer refuses the job, Tavletta prints it the other way and says so.
   From then on the choice follows the roll.
 - Red and black: red parts stay red; images, the background and
   everything else are converted as for black-and-white printers, see
@@ -153,7 +153,7 @@ documented it. Reports of what works and what does not are very welcome.
 
 - [[ui:Reachable · the printer reports no status]]: some models
   do not answer status requests over the network. Printing works, but
-  Etiketto cannot check the roll first.
+  Tavletta cannot check the roll first.
 - "The loaded roll does not match the label": a die-cut roll is loaded
   for a label on continuous roll, or the other way round. Load the other
   roll or choose the other entry under [[ui:Printer model]].
@@ -164,16 +164,16 @@ documented it. Reports of what works and what does not are very welcome.
 
 ## cab label printers { #cab }
 
-Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5,
+Tavletta prints on cab printers with a 4 inch print head: EOS2, EOS5,
 SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 
 - Network: the printer needs an address in your network (DHCP or set on its
-  display). Etiketto uses the "RawIP" port 9100 with the JScript interpreter,
+  display). Tavletta uses the "RawIP" port 9100 with the JScript interpreter,
   both are the printer's defaults (Setup > Interfaces > Network services and
   Setup > Interpreter).
 - USB: plug the printer in; [[ui:Search for printers]] finds it. Printing
   over USB has not been tried on a printer yet.
-- Labels: die-cut labels with a gap, label sensor "Gap Sensor". Etiketto
+- Labels: die-cut labels with a gap, label sensor "Gap Sensor". Tavletta
   sets the sensor for each job. Continuous media and a cutter are not
   supported yet.
 - [[ui:Print method]]: [[ui:As set on the printer]] keeps the printer's
@@ -209,21 +209,21 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 
 ## Brother P-touch { #ptouch }
 
-Etiketto prints on Brother P-touch tape printers with TZe tape and HSe
+Tavletta prints on Brother P-touch tape printers with TZe tape and HSe
 heat-shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900
 series, the PT-D series and older models such as the PT-2430PC. Not tried
 on a printer yet.
 
 - USB: plug the printer in; [[ui:Search for printers]] finds it.
 - Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the
-  printer, or enter its address. Etiketto uses port 9100.
+  printer, or enter its address. Tavletta uses port 9100.
 - Bluetooth is not supported; models with Bluetooth print over USB.
 - Editor Lite: with the Editor Lite lamp on, the printer is a USB drive and
   cannot print. Switch Editor Lite off, then search again.
 
 ### Tape { #ptouch-tape }
 
-- Etiketto shows the inserted tape, its type (laminated, heat-shrink tube,
+- Tavletta shows the inserted tape, its type (laminated, heat-shrink tube,
   ...) and the printable width under [[ui:Printer details]].
 - The label fills the printable part of the tape. The edges of the tape
   stay blank: on 12 mm tape about 9.9 mm are printed.
@@ -254,11 +254,11 @@ on a printer yet.
   tape until it clicks.
 - Batteries low: connect the power adapter.
 - Print head too hot: wait a few minutes.
-- Model not supported: Etiketto knows the models listed above.
+- Model not supported: Tavletta knows the models listed above.
 
 ## NIIMBOT { #niimbot }
 
-Etiketto prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11,
+Tavletta prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11,
 D110, D101 and related models. It has not been tried on a printer yet;
 please report how it works.
 
@@ -279,7 +279,7 @@ please report how it works.
   Keep 1 mm or more as [[ui:Safety margin]].
 - In the printer group: [[ui:Print density]] (higher prints darker) and
   [[ui:Label sensor]] (labels with gaps, black marks, a continuous roll or
-  transparent labels, as loaded). Etiketto offers what the connected model
+  transparent labels, as loaded). Tavletta offers what the connected model
   takes and remembers the choice.
 
 ### Problems { #niimbot-problems }
@@ -292,7 +292,7 @@ please report how it works.
   or charge the printer, then [[ui:Refresh]].
 - Printing fails after some copies: the message says how many labels were
   already printed. The job is canceled, nothing prints later on its own.
-- The printer is found, but printing reports an unknown model: Etiketto
+- The printer is found, but printing reports an unknown model: Tavletta
   does not know its model number yet. Please
   [[ui:Report a problem…]], the report contains the number.
 
@@ -310,12 +310,12 @@ as one page of exactly its size, unscaled.
 - [[ui:Print on]] [[ui:Label sheet]]: several labels on a sheet of
   self-adhesive labels, see [Label sheets](sheets.md).
 - Most office printers cannot print the outer 4 to 5 mm of a page: set the
-  [[ui:Safety margin]] to 5 mm. On label sheets Etiketto warns when a
+  [[ui:Safety margin]] to 5 mm. On label sheets Tavletta warns when a
   label reaches into what the printer reports.
 
 ### Problems { #system-problems }
 
-- Out of paper, paper jam or cover open while printing: Etiketto shows it
+- Out of paper, paper jam or cover open while printing: Tavletta shows it
   and waits. Fix it at the printer within 5 minutes and printing goes on.
 - Out of toner or ink, or a problem before printing: fix it as the
   printer's display shows, then [[ui:Refresh]].
@@ -323,19 +323,19 @@ as one page of exactly its size, unscaled.
   already printed. The rest is canceled, nothing prints later on its own.
 - The label is printed smaller or moved: the printer or its driver scales
   the page. Turn off "fit to page" in the printer's setup.
-- Other jobs are printing first: Etiketto says the label was sent, and the
+- Other jobs are printing first: Tavletta says the label was sent, and the
   printer prints it when its turn comes.
 - The job is held in the queue (until it is released, or until a password
-  is entered): Etiketto cancels it. Check the queue in the system settings.
+  is entered): Tavletta cancels it. Check the queue in the system settings.
 
 ## Label printers with ZPL, EPL2, TSPL, ESC/POS or DYMO { #raw }
 
-Etiketto prints on label printers that take the label as an image in their
-own printer language. These printers have not been tried with Etiketto yet:
+Tavletta prints on label printers that take the label as an image in their
+own printer language. These printers have not been tried with Tavletta yet:
 if you have one, a report of what works and what does not helps a lot
 ([[ui:Report a problem…]]).
 
-| Printer model in Etiketto | Printers |
+| Printer model in Tavletta | Printers |
 |---|---|
 | Zebra ZPL | Zebra GK, GX, ZD, ZT and other printers with ZPL, also ZPL compatible printers of other makers |
 | Zebra EPL2 | Zebra LP/TLP 2824 and 2844, GK420 and GX420 set to EPL2 |
@@ -345,7 +345,7 @@ if you have one, a report of what works and what does not helps a lot
 
 - Connection: over the network on port 9100, or USB. Plug a USB printer in
   and use [[ui:Search for printers]]. Some low-cost shipping label printers
-  do not show up as a printer on USB; Etiketto cannot find those.
+  do not show up as a printer on USB; Tavletta cannot find those.
 - [[ui:Resolution]]: choose the resolution of the print head (203, 300 or
   600 dpi). Zebra printers report it: [[ui:As reported by the printer]].
 - [[ui:Label sensor]]: [[ui:As set on the printer]] keeps the printer's own
@@ -381,7 +381,7 @@ if you have one, a report of what works and what does not helps a lot
   [[ui:Label sensor]] does not match the roll, or the printer has to measure
   the labels again (most printers do that with a long press on Feed).
 - Nothing is printed and the printer shows no problem: check that its
-  printer language is the one chosen in Etiketto (many printers can switch
+  printer language is the one chosen in Tavletta (many printers can switch
   between ZPL and EPL2, or between TSPL and ESC/POS).
 
 ## Help

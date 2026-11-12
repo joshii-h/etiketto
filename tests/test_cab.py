@@ -17,8 +17,8 @@ import pytest
 from backend_contract import BackendContract
 from PIL import Image
 
-from etiketto.backends import cab, mdns, net, usb
-from etiketto.backends.base import (
+from tavletta.backends import cab, mdns, net, usb
+from tavletta.backends.base import (
     FoundPrinter,
     HeadOpen,
     LabelNotFound,
@@ -36,9 +36,9 @@ from etiketto.backends.base import (
     RibbonInDirectMode,
     RibbonOut,
 )
-from etiketto.backends.cab import Cab
-from etiketto.model import Label, TextElement
-from etiketto.render import mm_to_px
+from tavletta.backends.cab import Cab
+from tavletta.model import Label, TextElement
+from tavletta.render import mm_to_px
 
 REAL_CONNECT = cab._connect  # before the autouse fixture replaces it
 REAL_FETCH_SETUP = cab._fetch_setup
@@ -170,7 +170,7 @@ def _job_parts(job: bytes) -> tuple[Image.Image, list[str]]:
     text = job.decode()
     assert text.endswith("\r\n") and "\n" not in text.replace("\r\n", "")
     lines = text.split("\r\n")[:-1]
-    assert lines[:2] == ["d PNG;ETIKETTO", "<BASE64>"] and lines[3] == "</BASE64>"
+    assert lines[:2] == ["d PNG;TAVLETTA", "<BASE64>"] and lines[3] == "</BASE64>"
     image = Image.open(io.BytesIO(base64.b64decode(lines[2])))
     image.load()
     return image, lines[4:]
@@ -263,7 +263,7 @@ def test_job_places_the_image_on_a_die_cut_label():
         "m m",
         "J",
         "S l1;0,0,25,28,50",  # height, height + gap, width
-        "I:Label;0,0,0;ETIKETTO",
+        "I:Label;0,0,0;TAVLETTA",
         "A 2",
     ]
     assert png.mode == "1" and png.size == (600, 300)
@@ -344,7 +344,7 @@ def test_prepare_along_the_roll_turns_the_content(backend, png_b64):
     roll (top of the printed image), like on tape."""
     from conftest import ink_bbox
 
-    from etiketto.model import ImageElement
+    from tavletta.model import ImageElement
 
     def label(orientation):
         lab = _label(50, 25, orientation=orientation, align="start", margin_mm=0)
@@ -377,7 +377,7 @@ def test_print(backend, printer):
     assert result is None
     (job,) = printer.device.jobs
     _png, commands = _job_parts(job)
-    assert commands[2:] == ["S l1;0,0,25,27,50", "I:Label;0,0,0;ETIKETTO", "A 3"]
+    assert commands[2:] == ["S l1;0,0,25,27,50", "I:Label;0,0,0;TAVLETTA", "A 3"]
     assert [e.copy for e in events] == [1, 1, 2, 3, 3] and {e.copies for e in events} == {3}
     assert printer.device.closed == 1
     assert all(s == cab.POLL_INTERVAL for s in printer.sleeps)
@@ -738,7 +738,7 @@ def test_job_with_a_print_method(method, speed, line):
         "J",
         line,
         "S l1;0,0,25,28,50",
-        "I:Label;0,0,0;ETIKETTO",
+        "I:Label;0,0,0;TAVLETTA",
         "A 1",
     ]
 
@@ -917,7 +917,7 @@ def test_job_upside_down():
         "H 50,0,T",
         "S l1;0,0,18.58,22.58,40",
         "O R",
-        "I:Label;0,0,0;ETIKETTO",
+        "I:Label;0,0,0;TAVLETTA",
         "A 1",
     ]
 

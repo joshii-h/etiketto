@@ -4,7 +4,7 @@ capabilities and that mono output is dithered."""
 
 from __future__ import annotations
 
-from etiketto.backends.base import (
+from tavletta.backends.base import (
     Backend,
     Capabilities,
     FoundPrinter,

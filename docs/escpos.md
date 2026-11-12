@@ -1,12 +1,12 @@
 # ESC/POS: receipt printers on 58 and 80 mm rolls
 
-How Etiketto prints labels on receipt printers that speak ESC/POS: Epson's
+How Tavletta prints labels on receipt printers that speak ESC/POS: Epson's
 TM series and the many compatible receipt printers. The label is printed on
 endless paper, as long as its content. **Not yet tried on a printer**: no ESC/POS
 printer was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)
-by Michael R Sweet (Apache-2.0, `lprint-escpos.c`); Etiketto reimplements
+by Michael R Sweet (Apache-2.0, `lprint-escpos.c`); Tavletta reimplements
 them in Python, no LPrint code is included. Status and cut follow Epson's
 "ESC/POS Command Reference".
 
@@ -28,11 +28,11 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Epson's reference,
 | 58 mm | 48 mm | 384 | 344 |
 | 80 mm | 72 mm | 576 | 512 |
 
-- The print head is narrower than the paper; Etiketto renders the label at
+- The print head is narrower than the paper; Tavletta renders the label at
   the printable width. The numbers are the common ones; some models differ.
   [assumed]
 - LPrint's default is 180 dpi, many compatible printers have 203 dpi;
-  Etiketto's default is 203. [LPrint] [assumed]
+  Tavletta's default is 203. [LPrint] [assumed]
 
 ## Status
 
@@ -43,7 +43,7 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Epson's reference,
 
 - Every answer byte has bit 1 and 4 set and bit 0 and 7 clear; anything else
   is not an answer. [spec]
-- LPrint asks `ESC v` instead (paper sensor). Etiketto uses the real-time
+- LPrint asks `ESC v` instead (paper sensor). Tavletta uses the real-time
   `DLE EOT` questions, which many compatible printers answer; without an
   answer the state is "no status" and the job is sent anyway. [spec]
   [assumed]
@@ -72,19 +72,19 @@ ESC @                        1B 40
   "Print upside down" turns the label by 180°. [assumed]
 - Sending and closing on TCP as described in [zpl.md](zpl.md#transport);
   on a receipt printer a long job takes as long as printing it.
-- LPrint drops the blank rows at the start; Etiketto feeds them, as they are
+- LPrint drops the blank rows at the start; Tavletta feeds them, as they are
   the label's own spacing. [LPrint]
-- Cut: LPrint sends `ESC i`; Etiketto sends `GS V 0` (full) or `GS V 1`
+- Cut: LPrint sends `ESC i`; Tavletta sends `GS V 0` (full) or `GS V 1`
   (partial), the cut of current printers, or nothing. A printer without a
   cutter ignores it. [spec] [assumed]
 - Example from LPrint (16 dots, rows `AA AA` and `55 55`):
   `1B 40 1D 4C 00 00 1D 76 30 00 02 00 02 00 AA AA 55 55 1B 4A CB 1B 40`
-  at 203 dpi without a cut; Etiketto adds `1D 50 CB CB` after the first
+  at 203 dpi without a cut; Tavletta adds `1D 50 CB CB` after the first
   `1B 40`. At 180 dpi the feed and unit bytes are `B4`.
 - No darkness and no speed: ESC/POS has no common commands for them.
   [LPrint] [spec]
 
-## Settings in Etiketto
+## Settings in Tavletta
 
 | Setting | Values |
 |---|---|

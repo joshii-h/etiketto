@@ -1,0 +1,70 @@
+# Tavletta print server as a systemd user service (docs/server.md).
+#
+#   mkdir -p ~/.config/systemd/user ~/.config/tavletta
+#   cp packaging/systemd/tavletta.service ~/.config/systemd/user/
+#   openssl rand -hex 32 > ~/.config/tavletta/token && chmod 600 ~/.config/tavletta/token
+#   systemctl --user daemon-reload && systemctl --user enable --now tavletta
+#   journalctl --user -u tavletta -f
+#
+# Update this file together with Tavletta: Type=notify needs a version
+# that says it is ready (1.1 or newer), an older one is stopped after the
+# start timeout.
+#
+# Labels are read from ~/.local/share/tavletta/labels. Without lingering
+# (loginctl enable-linger) the service runs only while you are logged in.
+
+[Unit]
+Description=Tavletta print server (REST API and MCP)
+Documentation=https://tavletta.joshuahirsig.xyz/en/server/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# ready once it listens (sd_notify): a reload sent before is not lost
+Type=notify
+NotifyAccess=main
+# the folders, made outside the sandbox below (it cannot create them)
+ExecStartPre=+/usr/bin/env mkdir -p %h/.local/share/tavletta/labels %h/.config/tavletta
+ExecStart=%h/.local/bin/tavletta serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/tavletta/token --labels-dir %h/.local/share/tavletta/labels
+# With a printer list and named tokens (docs/server.md) instead:
+# ExecStart=%h/.local/bin/tavletta serve --host 127.0.0.1 --port 8790 --mcp --printers %h/.config/tavletta/printers.toml --tokens %h/.config/tavletta/tokens.toml --labels-dir %h/.local/share/tavletta/labels
+# SIGHUP reads tokens.toml again (it is also read again when it changes)
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+# SIGTERM: waiting jobs are canceled, a printing one finishes its label and
+# saves the counter
+TimeoutStopSec=60
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+# the home folder read-only (but the two folders below), keys out of reach
+ProtectHome=read-only
+InaccessiblePaths=-%h/.ssh -%h/.gnupg
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ReadWritePaths=-%h/.local/share/tavletta -%h/.config/tavletta
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+# network printers, CUPS and Avahi (D-Bus); netlink for name lookups
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# a label that renders large is refused at 40 megapixels; this bounds the rest
+MemoryMax=1G
+# fewer malloc arenas: threads do not each keep memory a large label used
+Environment=MALLOC_ARENA_MAX=2
+TasksMax=128
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=default.target

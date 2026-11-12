@@ -3,20 +3,20 @@ requires = ["setuptools>=77", "wheel"]  # PEP 639 license field
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "etiketto"
-dynamic = ["version"]  # etiketto.__version__
+name = "tavletta"
+dynamic = ["version"]  # tavletta.__version__
 description = "Design and print labels on label printers (GTK4/libadwaita)"
 readme = "README.md"
-# the label sheets (etiketto/sheets/templates.json) come from gLabels, MIT;
-# the symbols (etiketto/symbols/mdi.json.gz) from Material Design Icons, Apache-2.0;
-# the shipping label detection (etiketto/shipping/detect.py) follows ThermalPrint, MIT
+# the label sheets (tavletta/sheets/templates.json) come from gLabels, MIT;
+# the symbols (tavletta/symbols/mdi.json.gz) from Material Design Icons, Apache-2.0;
+# the shipping label detection (tavletta/shipping/detect.py) follows ThermalPrint, MIT
 # (all of it: THIRD_PARTY_NOTICES.md)
 license = "AGPL-3.0-or-later AND MIT AND Apache-2.0"
 license-files = [
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
-    "etiketto/sheets/LICENSE.glabels",
-    "etiketto/symbols/LICENSE.mdi",
+    "tavletta/sheets/LICENSE.glabels",
+    "tavletta/symbols/LICENSE.mdi",
 ]
 requires-python = ">=3.11"
 dependencies = [
@@ -32,19 +32,19 @@ dependencies = [
 # install with a venv that has --system-site-packages (see install.sh).
 
 [project.scripts]
-etiketto = "etiketto.launch:main"
+tavletta = "tavletta.launch:main"
 
 [tool.setuptools.packages.find]
-include = ["etiketto*"]
+include = ["tavletta*"]
 
 [tool.setuptools.package-data]
 # label sheets from gLabels, with their MIT license
-"etiketto.sheets" = ["templates.json", "LICENSE.glabels"]
+"tavletta.sheets" = ["templates.json", "LICENSE.glabels"]
 # symbols from Material Design Icons, with their Apache-2.0 license
-"etiketto.symbols" = ["mdi.json.gz", "LICENSE.mdi"]
+"tavletta.symbols" = ["mdi.json.gz", "LICENSE.mdi"]
 
 [tool.setuptools.dynamic]
-version = {attr = "etiketto.__version__"}
+version = {attr = "tavletta.__version__"}
 
 [dependency-groups]
 dev = [
@@ -79,7 +79,7 @@ ignore = [
 "tests/test_mdns.py" = ["N802"]  # the fake bus answers D-Bus methods by their names
 
 [tool.mypy]
-files = ["etiketto"]
+files = ["tavletta"]
 python_version = "3.11"
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -110,7 +110,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["etiketto"]
+source = ["tavletta"]
 
 [tool.coverage.report]
 fail_under = 90

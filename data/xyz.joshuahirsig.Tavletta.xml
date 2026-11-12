@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-tavletta">
+    <comment>Tavletta label</comment>
+    <comment xml:lang="de">Tavletta-Etikett</comment>
+    <comment xml:lang="fr">Étiquette Tavletta</comment>
+    <comment xml:lang="it">Etichetta Tavletta</comment>
+    <comment xml:lang="es">Etiqueta de Tavletta</comment>
+    <comment xml:lang="nl">Tavletta-etiket</comment>
+    <comment xml:lang="sv">Tavletta-etikett</comment>
+    <comment xml:lang="ja">Tavletta ラベル</comment>
+    <comment xml:lang="zh_TW">Tavletta 標籤</comment>
+    <comment xml:lang="zh_HK">Tavletta 標籤</comment>
+    <comment xml:lang="zh_CN">Tavletta 标签</comment>
+    <comment xml:lang="pl">Etykieta Tavletta</comment>
+    <comment xml:lang="pt">Etiqueta Tavletta</comment>
+    <comment xml:lang="pt_BR">Etiqueta do Tavletta</comment>
+    <comment xml:lang="ru">Этикетка Tavletta</comment>
+    <comment xml:lang="uk">Етикетка Tavletta</comment>
+    <comment xml:lang="tr">Tavletta etiketi</comment>
+    <comment xml:lang="ko">Tavletta 라벨</comment>
+    <comment xml:lang="fi">Tavletta-tarra</comment>
+    <comment xml:lang="hu">Tavletta-címke</comment>
+    <comment xml:lang="et">Tavletta silt</comment>
+    <comment xml:lang="id">Label Tavletta</comment>
+    <comment xml:lang="ms">Label Tavletta</comment>
+    <comment xml:lang="th">ฉลาก Tavletta</comment>
+    <comment xml:lang="vi">Nhãn Tavletta</comment>
+    <comment xml:lang="hi">Tavletta लेबल</comment>
+    <comment xml:lang="ar">ملصق Tavletta</comment>
+    <sub-class-of type="application/json"/>
+    <glob pattern="*.tavletta"/>
+  </mime-type>
+</mime-info>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn a release of Material Design Icons into etiketto/symbols/mdi.json.gz.
+"""Turn a release of Material Design Icons into tavletta/symbols/mdi.json.gz.
 
     curl -LO https://registry.npmjs.org/@mdi/svg/-/svg-7.4.47.tgz
     mkdir mdi && tar -xzf svg-7.4.47.tgz -C mdi
@@ -7,7 +7,7 @@
 
 The package (@mdi/svg, or a checkout of Templarian/MaterialDesign-SVG) has
 one SVG per icon, each a single path in a 24 × 24 view box, and meta.json
-with the names, aliases and categories ("tags"). Etiketto keeps the name,
+with the names, aliases and categories ("tags"). Tavletta keeps the name,
 the path data, the categories and the aliases of every icon, sorted by name.
 Left out: deprecated icons (they disappear in the next major release), the
 "Brand / Logo" category and further icons showing brands, trademarks or
@@ -20,7 +20,7 @@ symbols of apple-keyboard-* (command, option, shift: standard key symbols
 in Unicode, not a logo).
 
 The output depends only on the package: icons sorted by name, compact JSON,
-gzip without a timestamp. The license (etiketto/symbols/LICENSE.mdi) is kept
+gzip without a timestamp. The license (tavletta/symbols/LICENSE.mdi) is kept
 by hand; this script stops if the package's license text is not in it, so a
 change of license is noticed.
 """
@@ -34,7 +34,7 @@ import re
 import sys
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "etiketto" / "symbols"
+OUT = Path(__file__).resolve().parent.parent / "tavletta" / "symbols"
 HIDDEN = frozenset({"Brand / Logo"})
 # icons outside "Brand / Logo" that show a brand, a product or a design from
 # a game or film (fnmatch patterns)

@@ -15,8 +15,8 @@ from backend_contract import BackendContract
 from fake_backends import FakeMono
 from PIL import Image, ImageChops
 
-from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
-from etiketto.backends.base import (
+from tavletta.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
+from tavletta.backends.base import (
     CodeTooLarge,
     CoverOpen,
     FoundPrinter,
@@ -39,9 +39,9 @@ from etiketto.backends.base import (
     UnsupportedSize,
     margins_for,
 )
-from etiketto.model import CodeElement, Label, TextElement
-from etiketto.sheets import find
-from etiketto.sheets.layout import Copies, Pages, SheetJob, px
+from tavletta.model import CodeElement, Label, TextElement
+from tavletta.sheets import find
+from tavletta.sheets.layout import Copies, Pages, SheetJob, px
 
 A4 = {"x-dimension": [21000], "y-dimension": [29700]}
 CUSTOM = {"x-dimension": [(7620, 21590)], "y-dimension": [(12700, 35560)]}  # like the HP
@@ -439,7 +439,7 @@ def test_document_format(formats, mime):
     assert chosen == mime
 
 
-def test_a_raster_format_in_colour_spaces_etiketto_cannot_make_is_passed_over():
+def test_a_raster_format_in_colour_spaces_tavletta_cannot_make_is_passed_over():
     attrs = {
         "document-format-supported": ["image/pwg-raster", "image/urf", "image/jpeg"],
         "pwg-raster-document-type-supported": ["black_1"],
@@ -732,7 +732,7 @@ def test_print_sends_one_unscaled_page(fake):
     events = []
     _print(copies=3, events=events)
     _op, _uri, ops, job = next(r for r in fake.requests if r[0] == ipp.PRINT_JOB)
-    assert ops["document-format"] == ["application/pdf"] and ops["job-name"] == ["Etiketto"]
+    assert ops["document-format"] == ["application/pdf"] and ops["job-name"] == ["Tavletta"]
     assert ops["requesting-user-name"][0]  # the login name, so the queue shows it as one's own
     assert job["copies"] == [3] and job["print-scaling"] == ["none"]
     assert fake.documents[0][1].startswith(b"%PDF") and fake.printed == 3
@@ -744,7 +744,7 @@ def test_user_name_without_a_login(monkeypatch):
         raise OSError("no login")
 
     monkeypatch.setattr(system.getpass, "getuser", nobody)
-    assert system._user().values == ["etiketto"]
+    assert system._user().values == ["tavletta"]
 
 
 def test_print_without_print_scaling_or_job_id(fake, monkeypatch):
@@ -963,7 +963,7 @@ def test_a_long_job_that_makes_progress_does_not_time_out(fake, monkeypatch):
 
 
 def test_a_job_waiting_behind_others_is_left_to_print(fake):
-    fake.job_states = [3]  # pending, for longer than Etiketto waits
+    fake.job_states = [3]  # pending, for longer than Tavletta waits
     result = get_backend("system").print_label(_image(), "HP_Office", PrintOptions())
     assert result == PrintResult(queued=True)
     assert ipp.CANCEL_JOB not in fake.operations()
@@ -2089,8 +2089,8 @@ def test_pdf_pages_in_other_modes(mode, space, size):
 def _job(text, copies):
     from datetime import datetime
 
-    from etiketto.job import Job
-    from etiketto.variables import Values
+    from tavletta.job import Job
+    from tavletta.variables import Values
 
     label = Label(elements=[TextElement(text=text)])
     label.switch_printer("system")
@@ -2101,8 +2101,8 @@ def _job(text, copies):
 
 def test_a_job_counts_the_copies_the_printer_finished(fake):
     """One job with copies: the printer says how many came out."""
-    from etiketto.ui.texts import printer_error_text
-    from etiketto.units import unit_for
+    from tavletta.ui.texts import printer_error_text
+    from tavletta.units import unit_for
 
     fake.copies_supported = (1, 1)
     fake.job_states = [5, 9, 9, 8]  # two copies printed, the third aborted
@@ -2118,8 +2118,8 @@ def test_a_job_counts_the_copies_the_printer_finished(fake):
 
 def test_a_counter_job_counts_the_labels_sent_before_the_failure(fake):
     """A job per label (the counter): the error tells the whole job."""
-    from etiketto.ui.texts import printer_error_text
-    from etiketto.units import unit_for
+    from tavletta.ui.texts import printer_error_text
+    from tavletta.units import unit_for
 
     fake.job_states = [5, 9, 8]  # the first label printed, the second aborted
     job = _job("No. {=counter}", 3)
@@ -2135,9 +2135,9 @@ def test_a_counter_job_counts_the_labels_sent_before_the_failure(fake):
 def test_a_page_too_large_for_the_only_resolution_is_refused():
     """A printer that takes Apple Raster at 1200 dpi only: an A4 page would
     need 140 megapixels; refused before it is rendered, a label is fine."""
-    from etiketto.backends.base import PageTooLarge
-    from etiketto.ui.texts import code_text
-    from etiketto.units import MILLIMETRES
+    from tavletta.backends.base import PageTooLarge
+    from tavletta.ui.texts import code_text
+    from tavletta.units import MILLIMETRES
 
     assert system._resolution([1200]) == 1200
     a4 = Image.new("RGB", (10, 10))
@@ -2158,7 +2158,7 @@ def test_a_page_too_large_for_the_only_resolution_is_refused():
 def test_a_printer_that_takes_apple_raster_at_1200_dpi_only(fake):
     """A 4 x 6 in label prints at 1200 dpi (28 megapixels); an A4 page would
     not fit in memory: refused, nothing sent."""
-    from etiketto.backends.base import PageTooLarge
+    from tavletta.backends.base import PageTooLarge
 
     fake.formats, fake.sizes, fake.urf = ["image/urf"], [], ["W8", "RS1200"]
     backend = get_backend("system")
@@ -2196,7 +2196,7 @@ def test_pages_are_rendered_through_render_label(monkeypatch):
 def test_the_check_refuses_a_page_too_large_before_rendering_it(monkeypatch):
     """Rendered for the check like the print: a page too large for the only
     resolution is refused before 140 megapixels are drawn."""
-    from etiketto.backends.base import PageTooLarge, PrinterInfo
+    from tavletta.backends.base import PageTooLarge, PrinterInfo
 
     backend = get_backend("system")
     drawn = []
@@ -2216,7 +2216,7 @@ def test_the_preview_of_a_large_page_is_drawn_within_its_budget(monkeypatch):
     with a pixel budget (the preview's) it is drawn as fine as that allows
     instead of failing; without one the check and the print refuse it
     with their message, before anything is drawn."""
-    from etiketto.backends.base import PageTooLarge, PrinterInfo
+    from tavletta.backends.base import PageTooLarge, PrinterInfo
 
     assert system.fitting_dpi(297, 420) == 508  # MAX_PAGE_PIXELS
     assert system.fitting_dpi(297, 420, 16_000_000) == 287

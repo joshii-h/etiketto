@@ -6,8 +6,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from etiketto import model
-from etiketto.model import (
+from tavletta import model
+from tavletta.model import (
     FORMAT_VERSION,
     CodeElement,
     ImageElement,
@@ -45,23 +45,23 @@ def test_roundtrip(tmp_path, png_b64):
             CodeElement(data="4006381333931", symbology="ean13", color="#ff0000"),
         ],
     )
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     label.save(path)
     assert Label.load(path) == label
-    assert [p.name for p in tmp_path.iterdir()] == ["a.etiketto"]  # no temporary file left
+    assert [p.name for p in tmp_path.iterdir()] == ["a.tavletta"]  # no temporary file left
     data = json.loads(path.read_text(encoding="utf-8"))
     assert data["version"] == 1 and "features" not in data  # opens in every version
     assert [e["kind"] for e in data["elements"]] == ["text", "image", "code"]
 
 
 def test_save_keeps_umlauts_readable(tmp_path):
-    path = tmp_path / "u.etiketto"
+    path = tmp_path / "u.tavletta"
     Label(elements=[TextElement(text="Grüße")]).save(path)
     assert "Grüße" in path.read_text(encoding="utf-8")
 
 
 def test_save_is_atomic(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     path.write_text("old content")
     written = []
 
@@ -74,7 +74,7 @@ def test_save_is_atomic(tmp_path, monkeypatch):
         Label(tape_mm=12).save(path)
     assert path.read_text() == "old content"
     assert json.loads(written[0])["tape_mm"] == 12  # went to the temporary file
-    assert [p.name for p in tmp_path.iterdir()] == ["a.etiketto"]  # and that is gone
+    assert [p.name for p in tmp_path.iterdir()] == ["a.tavletta"]  # and that is gone
 
 
 def test_defaults_from_empty_dict():
@@ -185,7 +185,7 @@ def test_invalid_values_raise(data):
 
 @pytest.mark.parametrize("data", [[], "x", None, 5])
 def test_not_a_document(data):
-    with pytest.raises(LabelError, match="not an Etiketto file") as info:
+    with pytest.raises(LabelError, match="not an Tavletta file") as info:
         Label.from_dict(data)
     assert info.value.code == "not_label"
 
@@ -220,10 +220,10 @@ def test_error_codes(data, code):
 
 def test_printer_field(tmp_path):
     assert Label().printer == "vc500w"
-    path = tmp_path / "p.etiketto"
+    path = tmp_path / "p.tavletta"
     Label(tape_mm=12).save(path)
     assert json.loads(path.read_text())["printer"] == "vc500w"
-    # files of Etiketto 0.1 have no printer: they are for the VC-500W
+    # files of Tavletta 0.1 have no printer: they are for the VC-500W
     path.write_text(json.dumps({"version": 1, "tape_mm": 19, "elements": []}))
     assert Label.load(path).printer == "vc500w"
 
@@ -231,7 +231,7 @@ def test_printer_field(tmp_path):
 def test_tape_widths_come_from_the_printer(monkeypatch):
     from fake_backends import FakeMono
 
-    import etiketto.backends as registry
+    import tavletta.backends as registry
 
     registry.register(FakeMono())
     try:
@@ -263,7 +263,7 @@ def test_from_dict_does_not_modify_input():
 
 @pytest.mark.parametrize("content", [b"{", b"\xff\xfe\x00binary", b"", b"[1, 2]"])
 def test_load_rejects_what_is_not_a_label(tmp_path, content):
-    path = tmp_path / "bad.etiketto"
+    path = tmp_path / "bad.tavletta"
     path.write_bytes(content)
     with pytest.raises(LabelError) as info:
         Label.load(path)
@@ -272,7 +272,7 @@ def test_load_rejects_what_is_not_a_label(tmp_path, content):
 
 def test_load_missing_file_is_an_os_error(tmp_path):
     with pytest.raises(OSError):
-        Label.load(tmp_path / "missing.etiketto")
+        Label.load(tmp_path / "missing.tavletta")
 
 
 def test_image_from_file_and_raw(tmp_path):
@@ -304,7 +304,7 @@ def test_media_size_follows_the_orientation():
 def test_die_cut_label_round_trip(tmp_path):
     label = Label(printer="cab", orientation="across", auto_length=False, gap_mm=2)
     label.set_media_size(57.5, 32)
-    path = tmp_path / "die-cut.etiketto"
+    path = tmp_path / "die-cut.tavletta"
     label.save(path)
     loaded = Label.load(path)
     assert loaded.media_size() == (57.5, 32) and loaded.gap_mm == 2
@@ -343,7 +343,7 @@ def test_tape_labels_keep_their_rules():
     with pytest.raises(LabelError):
         Label.from_dict(dict(data, tape_mm=24))
     old = Label(tape_mm=25).to_dict()
-    del old["gap_mm"], old["orientation"]  # a file of Etiketto 1.0
+    del old["gap_mm"], old["orientation"]  # a file of Tavletta 1.0
     assert Label.from_dict(old).orientation == "along"
 
 
@@ -393,7 +393,7 @@ def test_element_kind_that_is_no_text_is_damaged(kind):
 
 
 def test_a_huge_file_is_refused_before_reading(tmp_path, monkeypatch):
-    path = tmp_path / "huge.etiketto"
+    path = tmp_path / "huge.tavletta"
     path.write_text("{}")
     monkeypatch.setattr(model, "MAX_FILE_BYTES", 1)
     with pytest.raises(LabelError) as info:
@@ -402,7 +402,7 @@ def test_a_huge_file_is_refused_before_reading(tmp_path, monkeypatch):
 
 
 def test_absurdly_nested_json_is_no_label(tmp_path):
-    path = tmp_path / "deep.etiketto"
+    path = tmp_path / "deep.tavletta"
     path.write_text("[" * 100_000 + "]" * 100_000)
     with pytest.raises(LabelError) as info:
         Label.load(path)
@@ -417,7 +417,7 @@ def test_a_label_sheet_is_saved_with_its_positions(tmp_path):
     label.sheet = SheetChoice("Avery L7160", [3, 4, 5], rotated=False)
     label.use_sheet_size()
     assert label.media_size() == (63.994, 38.1)
-    path = tmp_path / "sheet.etiketto"
+    path = tmp_path / "sheet.tavletta"
     label.save(path)
     saved = json.loads(path.read_text())
     assert saved["sheet"] == {"id": "Avery L7160", "positions": [3, 4, 5], "rotated": False}
@@ -480,11 +480,11 @@ def test_a_broken_sheet_is_damaged(sheet):
 def test_data_file_beside_the_label_is_stored_relative(tmp_path):
     (tmp_path / "data").mkdir()
     label = Label(tape_mm=25, data_file=str(tmp_path / "data" / "rows.csv"), data_sheet="Mai")
-    label.save(tmp_path / "a.etiketto")
-    stored = json.loads((tmp_path / "a.etiketto").read_text(encoding="utf-8"))
+    label.save(tmp_path / "a.tavletta")
+    stored = json.loads((tmp_path / "a.tavletta").read_text(encoding="utf-8"))
     assert (stored["data_file"], stored["data_sheet"]) == ("data/rows.csv", "Mai")
     assert label.data_file == str(tmp_path / "data" / "rows.csv")  # saving changes nothing
-    loaded = Label.load(tmp_path / "a.etiketto")
+    loaded = Label.load(tmp_path / "a.tavletta")
     assert loaded.data_file == str(tmp_path / "data" / "rows.csv")
     assert loaded.data_sheet == "Mai"
 
@@ -492,9 +492,9 @@ def test_data_file_beside_the_label_is_stored_relative(tmp_path):
 def test_moving_label_and_data_together_keeps_the_link(tmp_path):
     (tmp_path / "old").mkdir()
     label = Label(tape_mm=25, data_file=str(tmp_path / "old" / "rows.csv"))
-    label.save(tmp_path / "old" / "a.etiketto")
+    label.save(tmp_path / "old" / "a.tavletta")
     (tmp_path / "old").rename(tmp_path / "new")
-    loaded = Label.load(tmp_path / "new" / "a.etiketto")
+    loaded = Label.load(tmp_path / "new" / "a.tavletta")
     assert loaded.data_file == str(tmp_path / "new" / "rows.csv")
 
 
@@ -502,22 +502,22 @@ def test_data_file_elsewhere_is_stored_absolute(tmp_path):
     (tmp_path / "labels").mkdir()
     data_file = str(tmp_path / "rows.csv")
     label = Label(tape_mm=25, data_file=data_file)
-    label.save(tmp_path / "labels" / "a.etiketto")
-    stored = json.loads((tmp_path / "labels" / "a.etiketto").read_text(encoding="utf-8"))
+    label.save(tmp_path / "labels" / "a.tavletta")
+    stored = json.loads((tmp_path / "labels" / "a.tavletta").read_text(encoding="utf-8"))
     assert stored["data_file"] == data_file
-    assert Label.load(tmp_path / "labels" / "a.etiketto").data_file == data_file
+    assert Label.load(tmp_path / "labels" / "a.tavletta").data_file == data_file
 
 
 def test_without_data_file(tmp_path):
-    Label(tape_mm=25).save(tmp_path / "a.etiketto")
-    stored = json.loads((tmp_path / "a.etiketto").read_text(encoding="utf-8"))
+    Label(tape_mm=25).save(tmp_path / "a.tavletta")
+    stored = json.loads((tmp_path / "a.tavletta").read_text(encoding="utf-8"))
     assert (stored["data_file"], stored["data_sheet"]) == ("", "")
-    assert Label.load(tmp_path / "a.etiketto").data_file == ""
+    assert Label.load(tmp_path / "a.tavletta").data_file == ""
 
 
 def test_data_file_written_by_hand(tmp_path):
     """Relative paths may climb out of the label's folder, as written by hand."""
-    path = tmp_path / "labels" / "a.etiketto"
+    path = tmp_path / "labels" / "a.tavletta"
     path.parent.mkdir()
     path.write_text(json.dumps({"tape_mm": 25, "data_file": "../shared/./rows.csv"}))
     assert Label.load(path).data_file == str(tmp_path / "shared" / "rows.csv")
@@ -528,7 +528,7 @@ def test_data_file_written_by_hand(tmp_path):
 def test_a_data_file_is_a_feature_older_versions_refuse(tmp_path):
     """Version 1 readers refuse version 2 ("newer") instead of printing
     "{Name}" as it is; newer readers refuse features they do not know."""
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label(tape_mm=25, data_file=str(tmp_path / "rows.csv")).save(path)
     stored = json.loads(path.read_text(encoding="utf-8"))
     assert (stored["version"], stored["features"]) == (FORMAT_VERSION, ["serial"])
@@ -553,7 +553,7 @@ def test_version_2_is_never_written_without_features(data_file, sheet):
 
 
 def test_data_inside_the_label_folder(tmp_path):
-    label_file = tmp_path / "labels" / "a.etiketto"
+    label_file = tmp_path / "labels" / "a.tavletta"
     (tmp_path / "labels" / "data").mkdir(parents=True)
     assert model.data_inside(str(tmp_path / "labels" / "data" / "rows.csv"), label_file)
     assert model.data_inside(str(tmp_path / "labels" / "rows.csv"), label_file)
@@ -576,7 +576,7 @@ def test_files_of_older_versions_have_no_data_file():
 
 
 def test_a_label_with_both_features(tmp_path):
-    path = tmp_path / "both.etiketto"
+    path = tmp_path / "both.tavletta"
     label = Label(
         tape_mm=25,
         elements=[TextElement(text="{Name} {=date}")],
@@ -603,8 +603,8 @@ def test_a_label_with_both_features(tmp_path):
 
 
 def test_every_feature_at_once(tmp_path):
-    from etiketto.model import PageElement, ShapeElement
-    from etiketto.symbols import find as find_symbol
+    from tavletta.model import PageElement, ShapeElement
+    from tavletta.symbols import find as find_symbol
 
     symbol = find_symbol("printer")
     label = Label(
@@ -641,7 +641,7 @@ def test_every_feature_at_once(tmp_path):
 def test_shipping_labels_and_label_sheets_are_features_too(tmp_path):
     """The one rule: what an older version would print wrongly or refuse
     unclearly is a feature, new element kinds included."""
-    from etiketto.model import PageElement
+    from tavletta.model import PageElement
 
     page = Label(tape_mm=25, elements=[PageElement(data="eA==", name="label.pdf")])
     assert page.to_dict()["features"] == ["pages"]

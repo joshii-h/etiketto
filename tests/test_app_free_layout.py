@@ -18,11 +18,11 @@ from gi.repository import Adw, Gtk  # noqa: E402
 from test_app import find, one  # noqa: E402
 from test_app_design import element_row, open_page  # noqa: E402
 
-from etiketto import freelayout  # noqa: E402
-from etiketto.model import CodeElement, ImageElement, TextElement  # noqa: E402
-from etiketto.render import RenderWarning  # noqa: E402
-from etiketto.ui import freelayout as ui_free  # noqa: E402
-from etiketto.ui import texts  # noqa: E402
+from tavletta import freelayout  # noqa: E402
+from tavletta.model import CodeElement, ImageElement, TextElement  # noqa: E402
+from tavletta.render import RenderWarning  # noqa: E402
+from tavletta.ui import freelayout as ui_free  # noqa: E402
+from tavletta.ui import texts  # noqa: E402
 
 QR = "QR code: \u2068100001\u2069"
 BARS = "Code 128: \u206812345\u2069"

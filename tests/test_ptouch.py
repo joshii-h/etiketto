@@ -22,8 +22,8 @@ from hypothesis import strategies as st
 from packbits_ref import unpackbits
 from PIL import Image
 
-from etiketto.backends import net, ptouch, usb
-from etiketto.backends.base import (
+from tavletta.backends import net, ptouch, usb
+from tavletta.backends.base import (
     CassetteInfo,
     FoundPrinter,
     PrinterError,
@@ -32,7 +32,7 @@ from etiketto.backends.base import (
     PrintOptions,
     Progress,
 )
-from etiketto.backends.ptouch import (
+from tavletta.backends.ptouch import (
     HSE_128,
     HSE_560,
     MODELS,
@@ -49,7 +49,7 @@ from etiketto.backends.ptouch import (
     print_area,
     status_error,
 )
-from etiketto.model import Label, TextElement
+from tavletta.model import Label, TextElement
 
 REAL_CONNECT = ptouch._connect  # before conftest's guard replaces it
 ESC = b"\x1b"
@@ -77,7 +77,7 @@ def model(name: str) -> ptouch.Model:
 
 
 class FakePTouch:
-    """Parses what Etiketto sends like a printer would and records each
+    """Parses what Tavletta sends like a printer would and records each
     printed page; answers ESC i S, and after each page (if `completes`)."""
 
     def __init__(self, line_bytes=16, code=0x68, width=12, media=0x01, completes=True):
@@ -1512,12 +1512,12 @@ def test_tests_never_reach_the_network():
 def test_label_files_with_small_tape(tmp_path):
     lab = Label.new_for("ptouch", 3.5)
     assert lab.tape_mm == 3.5
-    lab.save(tmp_path / "small.etiketto")
-    assert Label.load(tmp_path / "small.etiketto").tape_mm == 3.5
+    lab.save(tmp_path / "small.tavletta")
+    assert Label.load(tmp_path / "small.tavletta").tape_mm == 3.5
     # nothing inserted: 12 mm, the most common tape (not the widest)
     assert Label.new_for("ptouch").tape_mm == 12
     assert isinstance(Label.new_for("ptouch").tape_mm, int)
-    assert Path(tmp_path / "small.etiketto").exists()
+    assert Path(tmp_path / "small.tavletta").exists()
 
 
 def test_print_on_an_older_model(fake, monkeypatch):
@@ -1585,7 +1585,7 @@ def test_high_resolution_keeps_2d_code_modules_whole(monkeypatch, symbology):
     fall on whole pins (no row is averaged with another: no grey before the
     threshold), and each module is as many pins high as it is half as many
     columns wide (360 lpi along, 180 across)."""
-    from etiketto.model import CodeElement
+    from tavletta.model import CodeElement
 
     backend = PTouch()
     monkeypatch.setattr(PTouch, "preview", lambda self, image, mode="": image)

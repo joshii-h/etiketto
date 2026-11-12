@@ -31,22 +31,22 @@ printed label shows the values of its row.
 The label file stores where the data file is, never its content. If the
 data file lies in the same folder as the label (or below it), both can be
 moved or shared together. If it is missing when the label is opened,
-Etiketto says so: choose it again or remove it.
+Tavletta says so: choose it again or remove it.
 
 A data file is read without asking only if it is a table (`.csv`, `.tsv`,
 `.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a
 hidden folder. Any other data file is read only after asking, once for
 each label file: a label from someone else could name any file.
-[[ui:Forget allowed data files]] in the main menu makes Etiketto ask again.
+[[ui:Forget allowed data files]] in the main menu makes Tavletta ask again.
 
-In the Flatpak, Etiketto sees only the files it is given: a label opened
+In the Flatpak, Tavletta sees only the files it is given: a label opened
 from the file manager or the file chooser, but not the folder around it.
 A data file beside the label is then not found: choose it with
-[[ui:Data for serial labels…]] (the file chooser gives Etiketto access to
+[[ui:Data for serial labels…]] (the file chooser gives Tavletta access to
 it).
 
 Templates
-keep the placeholders but not the data file. Older versions of Etiketto refuse labels with a
+keep the placeholders but not the data file. Older versions of Tavletta refuse labels with a
 data file instead of printing the placeholders.
 
 ## Placeholders
@@ -96,6 +96,6 @@ data file instead of printing the placeholders.
 
 ## Command line
 
-`etiketto print shelf.etiketto --data items.csv --rows 3-10` prints rows 3
+`tavletta print shelf.tavletta --data items.csv --rows 3-10` prints rows 3
 to 10 without opening a window; see [Command line](use.md#command-line).
 With `--dry-run` each line of the listing starts with the row number.

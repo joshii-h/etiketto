@@ -10,10 +10,10 @@ from test_server import call
 from test_server_config import post, write
 from test_server_mcp import request
 
-from etiketto.backends import get_backend
-from etiketto.job import Job
-from etiketto.model import Label, TextElement
-from etiketto.server.config import ConfigError, load_printers
+from tavletta.backends import get_backend
+from tavletta.job import Job
+from tavletta.model import Label, TextElement
+from tavletta.server.config import ConfigError, load_printers
 
 CAB = """
 [printers.lager-cab]
@@ -154,10 +154,10 @@ def test_mcp_prints_with_the_printer_settings(cab_server):
 def test_a_label_sheet_is_printed_as_in_the_app(server_env, tmp_path):
     """A label on a label sheet: every copy (and every row) a position of
     the sheet, the outlines as printers.toml says."""
-    from etiketto.model import SheetChoice
-    from etiketto.server.requests import LabelRequest
-    from etiketto.server.service import Service
-    from etiketto.ui.settings import Settings
+    from tavletta.model import SheetChoice
+    from tavletta.server.requests import LabelRequest
+    from tavletta.server.service import Service
+    from tavletta.ui.settings import Settings
 
     text = (
         '[printers.office]\nbackend = "system"\nhost = "ipp://office.local/ipp/print"\n'

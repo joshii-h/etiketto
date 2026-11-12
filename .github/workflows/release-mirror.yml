@@ -1,5 +1,5 @@
 # Copies a Forgejo release to GitHub (GitHub is a push mirror of
-# https://git.joshuahirsig.xyz/joshii/etiketto).
+# https://git.joshuahirsig.xyz/joshii/tavletta).
 #
 # Runs when a tag v* arrives through the mirror, waits for the Forgejo release
 # and its assets, and creates the same release here with the built-in,
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 30
     env:
-      FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/etiketto
+      FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/tavletta
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -58,7 +58,7 @@ jobs:
             case "$name" in */*|..*) echo "::error::odd asset name"; exit 1 ;; esac
             # flatpak-bundle.yml uploads the bundle here itself, and files that are
             # already here stay: replacing them raced with that workflow (v1.0.1)
-            case "$name" in Etiketto-*.flatpak|Etiketto-*.flatpak.sha256) continue ;; esac
+            case "$name" in Tavletta-*.flatpak|Tavletta-*.flatpak.sha256) continue ;; esac
             grep -qxF -- "$name" <<<"$present" && { echo "$name exists"; continue; }
             curl -sS --fail -L -o "assets/$name" "$url"
             for i in 1 2 3; do  # the GitHub API sometimes answers 500

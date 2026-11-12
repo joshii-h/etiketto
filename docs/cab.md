@@ -1,6 +1,6 @@
 # cab printers: JScript over the network
 
-How Etiketto talks to cab label printers with a 4 inch print head (EOS2,
+How Tavletta talks to cab label printers with a 4 inch print head (EOS2,
 EOS5, SQUIX 4, MACH 4S). JScript is cab's own printer language and is
 publicly documented by cab: "JScript Programming Manual" for SQUIX, MACH 4S,
 EOS2, EOS5, XC Q, XD Q, HERMES Q, PX Q, AXON 1/2, linked from
@@ -27,7 +27,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   (the default; the printer can also run ZPL there). [confirmed]
 - USB 2.0 (device port): Linux's printer class driver (usblp) makes it
   `/dev/usb/lpN`, which takes the same JScript and answers the ESC
-  commands, as the driver is bidirectional. Etiketto finds cab printers
+  commands, as the driver is bidirectional. Tavletta finds cab printers
   there by the IEEE 1284 device ID in sysfs (`MFG:cab`) and addresses them
   like CUPS: `usb://cab/EOS2%2F300?serial=...`. [manual] [assumed: not yet
   tried on a printer]
@@ -36,7 +36,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   again), at most 10 s + the job's size at 100 kB/s. A print waits up to
   45 s for a status query still using the device, a status query 5 s. On
   TCP the socket's timeout of 10 s applies as before.
-- Commands end with CR; Etiketto sends CR LF. [confirmed]
+- Commands end with CR; Tavletta sends CR LF. [confirmed]
 - ESC commands (`0x1B` + letter) are executed at once, also while a job is
   running, and answer on the same connection without a terminator unless
   stated. [manual] [confirmed]
@@ -59,7 +59,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
 
 [manual] [confirmed]
 
-- Error characters of `ESC s` that Etiketto names: `P` out of paper,
+- Error characters of `ESC s` that Tavletta names: `P` out of paper,
   `D` print head or pinch roller open, `E` synchronisation error (no label
   found), `F` out of ribbon, `R` ribbon in thermal direct mode (see "Print
   method"). Others (`B`
@@ -68,7 +68,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   raw answer. [manual]
 - After a text command such as `qv` the printer reports "interpreter
   active" (`Y-000000Y`) with no labels pending for about one second.
-  ESC commands alone do not. Etiketto therefore waits for `N` before it
+  ESC commands alone do not. Tavletta therefore waits for `N` before it
   sends a job. [confirmed]
 - `ESC l` reports the distance of the loaded labels (label height + gap)
   once the printer has synchronised, e.g. after Feed. [manual] [confirmed]
@@ -81,7 +81,7 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   `B` in `ESC s`) although the head reports "106 mm"; 105.58 mm is
   accepted. [confirmed]
 - The print head reports itself in the web interface as "106 mm 12 dots/mm"
-  on the EOS2/300; Etiketto renders at exactly 12 dots per mm (8 for /200,
+  on the EOS2/300; Tavletta renders at exactly 12 dots per mm (8 for /200,
   23.6 for /600 models), so a 100 mm label is 1200 dots. Each print asks
   `qv` first and scales the image if it was rendered for another
   resolution. [confirmed for the /300]
@@ -89,16 +89,16 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
 ## A print job
 
 ```
-d PNG;ETIKETTO
+d PNG;TAVLETTA
 <BASE64>
 iVBORw0KGgo…              (the label as 1-bit PNG, one line of base 64)
 </BASE64>
 m m                       (millimetres)
 J                         (job start)
-H 50,0,T                  (only with a print method chosen in Etiketto, see below)
+H 50,0,T                  (only with a print method chosen in Tavletta, see below)
 S l1;0,0,25,28,50         (gap sensor; 0,0 offset; height 25, height + gap 28, width 50)
 O R                       (only with "Print upside down": the label turned by 180°)
-I:Label;0,0,0;ETIKETTO    (place the image at the top left, not rotated)
+I:Label;0,0,0;TAVLETTA    (place the image at the top left, not rotated)
 A 1                       (number of labels)
 ```
 
@@ -106,7 +106,7 @@ A 1                       (number of labels)
   at most 8 characters and a new download replaces the previous image of the
   same name. [manual]
 - The image is the whole label at one pixel per dot: x across the print
-  head, y along the feed. Etiketto turns it for content
+  head, y along the feed. Tavletta turns it for content
   along the roll and dithers photos for the mono print head. [assumed:
   one pixel per dot, to be confirmed on a printout]
 - `S l1;…` selects die-cut labels with gap detection for this job; `S e`
@@ -115,24 +115,24 @@ A 1                       (number of labels)
   the setting "Print upside down" (`upside_down`, off by default), directly
   after `S` as the manual asks; no other `O` options (tear-off, backfeed):
   the printer's setup stays in charge of those. [manual]
-- Images are not erased before the download: Etiketto always uses the one
-  name `ETIKETTO`, which each download replaces, so the RAM does not fill
+- Images are not erased before the download: Tavletta always uses the one
+  name `TAVLETTA`, which each download replaces, so the RAM does not fill
   up, and images other programs left in the printer stay. [manual]
 - `A [PREVIEW]` instead of `A 1` renders the label without printing; the
   result is shown at `http://<printer>/cgi-bin/bitmap` (behind the web
   interface's password). The job above was accepted that way without a
   protocol error. [confirmed]
 - While a job runs, the label counter of `ESC s` counts down to 0 and the
-  last character goes back to `N`. Etiketto counts a job as done once it saw
+  last character goes back to `N`. Tavletta counts a job as done once it saw
   labels pending and then none, or after 3 s without any activity.
   [manual] [open: how fast it counts on a real printout]
 - On an error while sending or during a job (out of labels, head open,
-  timeout) Etiketto sends `ESC c` (cancel job), so that the remaining
+  timeout) Tavletta sends `ESC c` (cancel job), so that the remaining
   labels are not printed once the problem is solved and the user prints
   again. [manual] After a job cut off while sending, it should also drop
   the half-downloaded image, which on USB would otherwise run into the next
   job. [assumed: not tried on a printer; a printer that stalled may not
-  take `ESC c` at all, so Etiketto tries it for 1 s only and then closes]
+  take `ESC c` at all, so Tavletta tries it for 1 s only and then closes]
 - Peel-off and print on demand (the printer waits for a button or a removed
   label) are not supported: the job would time out after 180 s.
 
@@ -145,7 +145,7 @@ smeared, and the ribbon is not pulled. Seen on an EOS2/300 whose setup said
 "Transfer print: Off" while a ribbon and thermal transfer labels were
 loaded: the counters of the web interface showed 52.23 m thermal transfer
 and 0.156 m thermal direct, the Windows driver printed fine (it sends the
-method with every job), Etiketto's job did not pull the ribbon.
+method with every job), Tavletta's job did not pull the ribbon.
 [confirmed]
 
 ### The `H` command [manual]
@@ -165,7 +165,7 @@ current job:
 Examples in the manual: `H 100,0,T`, `H 150,-5,T`, `H 150,0,D,R1,B75`,
 `H 100,S1`; `H` comes after `J` and before `S`.
 
-### What Etiketto sends
+### What Tavletta sends
 
 Setting "Print method" (`method` in settings.json, per printer model):
 
@@ -175,7 +175,7 @@ Setting "Print method" (`method` in settings.json, per printer model):
 | Thermal transfer (ribbon) | `transfer` | `H <speed>,0,T` |
 | Thermal direct | `direct` | `H <speed>,0,D` |
 
-- Speed: `H` cannot leave it out. Etiketto sends the speed set on the
+- Speed: `H` cannot leave it out. Tavletta sends the speed set on the
   printer, read from the web interface's setup
   (`GET /cgi-bin/get?cmd=1`, entry `ID_PRINT_SPEED`, e.g. `"50 mm/s"`)
   just before the job. If the web interface does not answer within 2 s
@@ -210,7 +210,7 @@ Setting "Print method" (`method` in settings.json, per printer model):
   with a ribbon loaded; not asked yet]
 - The web interface's setup tells it without a password on firmware 5.47:
   `ID_TRANSFER_PRINT`, a radio button with `"options": ["Off", "On"]`,
-  `"values": ["false", "true"]` and the shown `"selection"`. Etiketto reads
+  `"values": ["false", "true"]` and the shown `"selection"`. Tavletta reads
   the value at the position of the selection (the texts follow the
   printer's language) and shows it in the printer details as "Print method
   set on the printer". Only a hint: the web interface may be off or behind
@@ -218,12 +218,12 @@ Setting "Print method" (`method` in settings.json, per printer model):
 - `/cgi-bin/get?cmd=3` (status) has the counters `thermalTransfer` and
   `thermalDirect` in metres; not used. [confirmed]
 - `ESC s` error `R` "Ribbon detected in thermal direct mode" and `F` "Out
-  of ribbon" [manual]: Etiketto reports `F` as "the printer finds no
+  of ribbon" [manual]: Tavletta reports `F` as "the printer finds no
   ribbon" (load one, or choose thermal direct) and `R` as "a ribbon is
   loaded, but the printer prints without it" (choose thermal transfer, or
   remove the ribbon), during a print and in the status. On the EOS2/300
   with a ribbon loaded and "Transfer print: Off", `ESC s` said
-  `Y-000000N` at rest, and during the print described above Etiketto's
+  `Y-000000N` at rest, and during the print described above Tavletta's
   status polls reported no error either. [confirmed] So `R` cannot be
   relied on for this mismatch; the printer seems not to notice a ribbon it
   does not drive. [assumed] `ESC z` position E "ribbon warning" is
@@ -254,10 +254,10 @@ I:Text3;2.54,8.23,0,1,1,a;13794620
 A 1
 ```
 
-| Line | Meaning [manual] | Etiketto |
+| Line | Meaning [manual] | Tavletta |
 |---|---|---|
 | `e IMG;*` | erase all images of type IMG from RAM (3.4; `*` is a wildcard) | not sent: one image name, replaced each time |
-| `d IMG;name` + `ESC .` … `ESC .` | download in GEM IMG format, binary between `ESC .` (3.3, 2.3) | `d PNG;ETIKETTO` in base 64 (3rd method of 3.3) |
+| `d IMG;name` + `ESC .` … `ESC .` | download in GEM IMG format, binary between `ESC .` (3.3, 2.3) | `d PNG;TAVLETTA` in base 64 (3rd method of 3.3) |
 | `l SG` | locale Switzerland/German: date and number formats of printer-side fields (3.8) | not needed: no printer-side fields |
 | `zO` | unslashed zero, bitmap fonts only (3.17) | not needed |
 | `J Example Clinic` | job start; the comment is obsolete from X3 on (4.10) | `J` |
@@ -268,13 +268,13 @@ A 1
 | `T`, `B`, `I` | counter, QR code and texts as printer objects | the whole label as one image |
 
 - `O R` is why cablabel's labels come out the right way round for the
-  user; Etiketto offers it as "Print upside down" per printer, off by
+  user; Tavletta offers it as "Print upside down" per printer, off by
   default (a label already printed the other way stays so). The setting
   and its translations already exist for the ZPL, TSPL, EPL2, ESC/POS and
   DYMO printers. Accepted with `A [PREVIEW]`:
   `H 50,0,T` / `S l1;0,0,18.58,22.58,40` / `O R` (no `B`). [confirmed]
 - Heat: cablabel adds +10 to the printer's heat level for this material;
-  Etiketto adds 0. If Etiketto's thermal transfer prints come out pale,
+  Tavletta adds 0. If Tavletta's thermal transfer prints come out pale,
   raise the heat level in the printer's setup (cablabel would then add its
   +10 on top). [open: compare on a printout]
 - `B0`: backfeed speed 0 mm/s; together with `O P` (no backfeed) probably
@@ -282,20 +282,20 @@ A 1
   [open]
 - `O P` keeps the label in place instead of pulling it back after the
   tear-off feed; the manual warns of a thin white line where the label
-  stood under the head. Etiketto leaves this to the setup ("Backfeed").
+  stood under the head. Tavletta leaves this to the setup ("Backfeed").
 
 ## Label start, tear-off and backfeed
 
 A print on the EOS2/300 that started in the gap or on the previous label
 and used up to three labels for two one-label jobs came from a
-hand-written test file, not from Etiketto or the printer's setup: with
+hand-written test file, not from Tavletta or the printer's setup: with
 the orientation "across", `length_mm` is the width across the head and
 `tape_mm` the height along the feed (`Label.media_size`). The file had
 `tape_mm` 40 and `length_mm` 17, so the job said `S l1;0,0,40,43,17` (40 mm
 high, a label every 43 mm) on a roll of 50 × 20 mm labels; the corrected
 file sends `S l1;0,0,18,20,48`. [confirmed] The window warns before
-printing when the distance Etiketto sends (height + gap) differs from the
-one `ESC l` reports ("Different labels loaded"); `etiketto print` says
+printing when the distance Tavletta sends (height + gap) differs from the
+one `ESC l` reports ("Different labels loaded"); `tavletta print` says
 the same on standard error and prints anyway.
 
 What the manual says about the settings around the start of a label, for
@@ -308,7 +308,7 @@ later:
   "always" for a job, which "feeds the label back and starts printing at
   the label margin"; `O P` is the "smart" mode that suppresses the backfeed
   ("a small horizontal white line" may appear where the label stopped
-  under the head). [manual] Etiketto sends neither: the setup decides.
+  under the head). [manual] Tavletta sends neither: the setup decides.
 - `O` must directly follow `S`. [manual]
 - `H` sets speed, heat, method, ribbon saver and backfeed speed; it does
   not change where a label starts. [manual]
@@ -320,5 +320,5 @@ later:
 - Continuous media (`S e`), cutter (`C` command, `qp` → `CUTTER`),
   peel-off and applicators.
 - Printers with a wider head (SQUIX 6, MACH 6?) or two heads (XC, XD).
-- Printer-side fonts, barcodes and text (`T`, `B`): Etiketto sends the
+- Printer-side fonts, barcodes and text (`T`, `B`): Tavletta sends the
   rendered label as one image, so the preview stays exact.

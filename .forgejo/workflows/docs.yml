@@ -1,5 +1,5 @@
 # Builds the user documentation (site/) and publishes it on
-# https://etiketto.joshuahirsig.xyz for every release tag v*, or manually
+# https://tavletta.joshuahirsig.xyz for every release tag v*, or manually
 # (Actions -> Docs -> Run workflow) from the selected branch.
 #
 # Screenshots are taken fresh for every documentation language: the app runs
@@ -7,7 +7,7 @@
 #
 # Deploy like the website joshuahirsig.xyz: the runner mounts the host's
 # Docker socket into the job, a short-lived helper container writes the build
-# into ~/Docker/etiketto-docs/public on the vServer, then the nginx container
+# into ~/Docker/tavletta-docs/public on the vServer, then the nginx container
 # of that stack is restarted. A smoke test rolls back on failure. No secrets.
 #
 # actions/checkout does not work on this instance (the runner reaches Forgejo
@@ -34,9 +34,9 @@ env:
   LANG: C.UTF-8
   # match the host's Docker daemon
   DOCKER_CLI_VERSION: "29.6.2"
-  SITE_DIR: /home/joshii/Docker/etiketto-docs
-  CONTAINER: etiketto-docs
-  DOCS_HOST: etiketto.joshuahirsig.xyz
+  SITE_DIR: /home/joshii/Docker/tavletta-docs
+  CONTAINER: tavletta-docs
+  DOCS_HOST: tavletta.joshuahirsig.xyz
 
 defaults:
   run:
@@ -110,7 +110,7 @@ jobs:
         working-directory: src
         run: |
           set -euo pipefail
-          HELPER=etiketto-docs-deploy
+          HELPER=tavletta-docs-deploy
           cleanup() { docker rm -f "$HELPER" > /dev/null 2>&1 || true; }
           trap cleanup EXIT
           cleanup

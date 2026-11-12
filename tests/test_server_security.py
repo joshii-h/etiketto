@@ -16,16 +16,16 @@ from PIL import Image
 from test_server import ASK, TOKEN, call, label_file, wait_for
 from test_server_mcp import ACCEPT, request
 
-from etiketto import render as render_module
-from etiketto.model import ImageElement, Label, TextElement
-from etiketto.server import http as server_http
-from etiketto.server import jobs as jobs_module
-from etiketto.server import main as server_main
-from etiketto.server import service as service_module
-from etiketto.server.mcp import LEGACY, Mcp
-from etiketto.server.openapi import spec
-from etiketto.server.service import Service, host_name, queue_key, redacted
-from etiketto.ui.settings import Settings
+from tavletta import render as render_module
+from tavletta.model import ImageElement, Label, TextElement
+from tavletta.server import http as server_http
+from tavletta.server import jobs as jobs_module
+from tavletta.server import main as server_main
+from tavletta.server import service as service_module
+from tavletta.server.mcp import LEGACY, Mcp
+from tavletta.server.openapi import spec
+from tavletta.server.service import Service, host_name, queue_key, redacted
+from tavletta.ui.settings import Settings
 
 
 def content(*elements, **fields):
@@ -252,7 +252,7 @@ def test_connections_per_address(api, monkeypatch):
 
 def test_finished_jobs_keep_no_request(make_server, server_env):
     server, base = make_server()
-    from etiketto.backends.base import PaperJam
+    from tavletta.backends.base import PaperJam
 
     _s, _r, done = call(base, "POST", "/api/v1/print", body={"label": "box", "wait": 10})
     server_env.printer.error = PaperJam("jam")
@@ -271,7 +271,7 @@ def test_finished_jobs_keep_no_request(make_server, server_env):
 
 
 def test_waiting_for_the_label_file(api, server_env, monkeypatch):
-    from etiketto.server import service as svc
+    from tavletta.server import service as svc
 
     held = threading.Lock()
     held.acquire()
@@ -340,7 +340,7 @@ def test_cors_for_allowed_origins(make_server):
 
 
 def test_the_server_binds_the_resolved_address(server_env):
-    from etiketto.server.http import Config, Server
+    from tavletta.server.http import Config, Server
 
     service = Service(server_env.labels)
     server = Server(Config("localhost", 0), service)
@@ -412,9 +412,9 @@ def test_openapi_documents_the_errors():
 
 def test_tokens_must_be_printable_ascii():
     with pytest.raises(server_main.CliError):
-        server_main.read_token(None, {"ETIKETTO_TOKEN": "geheim-token-mit-ümlaut"})
+        server_main.read_token(None, {"TAVLETTA_TOKEN": "geheim-token-mit-ümlaut"})
     with pytest.raises(server_main.CliError):
-        server_main.read_token(None, {"ETIKETTO_TOKEN": "a token with spaces in it"})
+        server_main.read_token(None, {"TAVLETTA_TOKEN": "a token with spaces in it"})
 
 
 def test_jobs_queue_clears_run_when_canceled_while_queued():
@@ -430,7 +430,7 @@ def test_jobs_queue_clears_run_when_canceled_while_queued():
 
 
 def test_label_file_kept_unchanged_by_refusals(api, server_env):
-    label_file(server_env.labels, "big.etiketto", *[TextElement(text="x") for _n in range(201)])
+    label_file(server_env.labels, "big.tavletta", *[TextElement(text="x") for _n in range(201)])
     status, _r, _b = call(api, "GET", "/api/v1/labels/big")
     assert status == 200  # describing is fine, rendering is refused
     assert call(api, "POST", "/api/v1/preview", body={"label": "big"})[0] == 413

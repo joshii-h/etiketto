@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from etiketto.backends.base import (
+from tavletta.backends.base import (
     CUT_MODES,
     Backend,
     FoundPrinter,
@@ -25,8 +25,8 @@ from etiketto.backends.base import (
     PrinterInfo,
     PrintOptions,
 )
-from etiketto.model import ImageElement, Label
-from etiketto.render import mm_to_px
+from tavletta.model import ImageElement, Label
+from tavletta.render import mm_to_px
 
 
 def _label(tape_mm, png_b64) -> Label:

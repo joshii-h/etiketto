@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from etiketto.backends import ipp, mdns
+from tavletta.backends import ipp, mdns
 
 
 def response(status: int = 0, groups: list[tuple[int, list[ipp.Attribute]]] = ()) -> bytes:

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from etiketto.history import COALESCE_SECONDS, LIMIT, History
-from etiketto.model import Label, ShapeElement, TextElement
+from tavletta.history import COALESCE_SECONDS, LIMIT, History
+from tavletta.model import Label, ShapeElement, TextElement
 
 
 class Clock:
@@ -99,7 +99,7 @@ def test_patch_and_reset():
 
 
 def test_typing_key_joins_typing_and_numbers_only():
-    from etiketto.history import typing_key
+    from tavletta.history import typing_key
 
     assert typing_key("element:0", {"text": "a"}) == "element:0:text"
     assert typing_key("label", {"margin_mm": 2.5}) == "label:margin_mm"
@@ -126,8 +126,8 @@ def test_undo_back_to_the_saved_state():
 
 
 def test_replaced_images_are_limited_by_size(monkeypatch):
-    from etiketto import history as module
-    from etiketto.model import ImageElement
+    from tavletta import history as module
+    from tavletta.model import ImageElement
 
     monkeypatch.setattr(module, "LIMIT_BYTES", 1000)
     label = Label(elements=[ImageElement(data="A" * 300)])
@@ -142,8 +142,8 @@ def test_replaced_images_are_limited_by_size(monkeypatch):
 
 
 def test_shared_images_count_once(monkeypatch):
-    from etiketto import history as module
-    from etiketto.model import ImageElement
+    from tavletta import history as module
+    from tavletta.model import ImageElement
 
     monkeypatch.setattr(module, "LIMIT_BYTES", 1000)
     label = Label(elements=[ImageElement(data="A" * 600)])
@@ -155,7 +155,7 @@ def test_shared_images_count_once(monkeypatch):
 
 
 def test_whole_number_choices_are_steps_of_their_own():
-    from etiketto.history import typing_key
+    from tavletta.history import typing_key
 
     assert typing_key("element:0", {"rotation": 90}) is None
     assert typing_key("label", {"tape_mm": 12.0}) is None  # a choice, though a float

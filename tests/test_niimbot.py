@@ -15,8 +15,8 @@ import pytest
 from backend_contract import BackendContract
 from PIL import Image, ImageDraw
 
-from etiketto.backends import get_backend, niimbot, serialport
-from etiketto.backends.base import (
+from tavletta.backends import get_backend, niimbot, serialport
+from tavletta.backends.base import (
     Choice,
     CoverOpen,
     FoundPrinter,
@@ -37,7 +37,7 @@ from etiketto.backends.base import (
     SerialPermission,
     UsbNotFound,
 )
-from etiketto.backends.niimbot import (
+from tavletta.backends.niimbot import (
     MODELS,
     Density,
     Niimbot,
@@ -48,7 +48,7 @@ from etiketto.backends.niimbot import (
     row_packet,
     row_packets,
 )
-from etiketto.model import Label
+from tavletta.model import Label
 
 
 def b(text: str) -> bytes:

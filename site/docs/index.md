@@ -1,6 +1,6 @@
-# Etiketto
+# Tavletta
 
-Etiketto designs labels under Linux and prints them over the network or
+Tavletta designs labels under Linux and prints them over the network or
 USB: on label printers with endless tape or die-cut labels, and on office
 printers, one label per page or on label sheets. It talks to each printer
 in its own language.
@@ -31,10 +31,10 @@ The supported printers and what each one can do are listed under
 Flathub is in preparation. Until then, build it yourself:
 
 ```sh
-git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto
+git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta
 flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51
 flatpak-builder --user --install --force-clean build-dir \
-    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+    build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml
 ```
 
 ### install.sh
@@ -49,21 +49,21 @@ Install the system packages, then run the script as your user (no root):
 | Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |
 
 ```sh
-git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto
+git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta
 ./install.sh
 ```
 
-Uninstall: `./install.sh --uninstall` or `flatpak uninstall xyz.joshuahirsig.Etiketto`.
+Uninstall: `./install.sh --uninstall` or `flatpak uninstall xyz.joshuahirsig.Tavletta`.
 Saved labels and templates are kept.
 
 ## First label
 
-1. Switch the printer on and choose it under [[ui:Printer model]]. Etiketto
+1. Switch the printer on and choose it under [[ui:Printer model]]. Tavletta
    finds it in the network (Bonjour) and reads what is loaded: the tape
    width or the distance between the labels.
 2. Not found? Enter the address under [[ui:Host name or IP address]], e.g.
    `printer.local` or `192.168.1.50`. New printer: connect it to the
    network first, see [Printers](printer.md).
 3. [[ui:Add]] text, an image or a code, then [[ui:Print]].
-4. [[ui:Save]] stores the label as `.etiketto` file, [[ui:Save as template…]]
+4. [[ui:Save]] stores the label as `.tavletta` file, [[ui:Save as template…]]
    adds it to [[ui:Templates]].

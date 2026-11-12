@@ -4,7 +4,7 @@
 # Runs on GitHub because Flatpak builds need a privileged container; the
 # Forgejo runner deliberately has none. Only maintainers can push tags v*,
 # so the code built here is trusted. The Forgejo upload uses FORGEJO_TOKEN of
-# the etiketto-bot user (write access to joshii/etiketto only).
+# the tavletta-bot user (write access to joshii/tavletta only).
 #
 # Forgejo also reads .github/workflows, hence the server_url guard.
 
@@ -29,7 +29,7 @@ jobs:
       options: --privileged
     env:
       TAG: ${{ github.event_name == 'push' && github.ref_name || 'test' }}
-      APP_ID: xyz.joshuahirsig.Etiketto
+      APP_ID: xyz.joshuahirsig.Tavletta
     steps:
       - name: Check the tag
         if: github.event_name == 'push'
@@ -51,8 +51,8 @@ jobs:
       - name: Build the bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3  # v6.8
         with:
-          manifest-path: build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
-          bundle: Etiketto-${{ github.event_name == 'push' && github.ref_name || 'test' }}-x86_64.flatpak
+          manifest-path: build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml
+          bundle: Tavletta-${{ github.event_name == 'push' && github.ref_name || 'test' }}-x86_64.flatpak
           cache-key: flatpak-builder-${{ github.sha }}
           upload-artifact: ${{ github.event_name != 'push' }}
 
@@ -62,7 +62,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          bundle="Etiketto-$TAG-x86_64.flatpak"
+          bundle="Tavletta-$TAG-x86_64.flatpak"
           sha256sum "$bundle" > "$bundle.sha256"
           # the release is created by release-mirror.yml from the Forgejo release
           for i in $(seq 120); do
@@ -76,10 +76,10 @@ jobs:
         if: github.event_name == 'push'
         env:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-          FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/etiketto
+          FORGEJO_API: https://git.joshuahirsig.xyz/api/v1/repos/joshii/tavletta
         run: |
           set -euo pipefail
-          bundle="Etiketto-$TAG-x86_64.flatpak"
+          bundle="Tavletta-$TAG-x86_64.flatpak"
           auth=(-H "Authorization: token $FORGEJO_TOKEN")
           release="$(curl -sS --fail "${auth[@]}" "$FORGEJO_API/releases/tags/$TAG")"
           id="$(jq -r .id <<<"$release")"

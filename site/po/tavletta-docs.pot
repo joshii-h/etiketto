@@ -1,0 +1,2682 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Tavletta contributors
+# This file is distributed under the same license as the tavletta-docs package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: tavletta-docs VERSION\n"
+"POT-Creation-Date: 2026-11-12 15:52+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/contribute.md
+#, markdown-text, no-wrap
+msgid "Contribute"
+msgstr ""
+
+#. type: Plain text
+#: docs/contribute.md
+#, markdown-text
+msgid "Code, bug reports, translations and tests with other printers, cassettes and label rolls are welcome."
+msgstr ""
+
+#. type: Plain text
+#: docs/contribute.md
+#, markdown-text
+msgid "Issues and pull requests on [GitHub](https://github.com/joshii-h/tavletta) are welcome, no Forgejo account needed. They are copied automatically to [Forgejo](https://git.joshuahirsig.xyz/joshii/tavletta), the main repository, with a link on GitHub. Review and merge happen there; your commits are kept, so GitHub shows the pull request as merged. The discussion can stay on GitHub.  With a Forgejo account you can contribute there directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/CONTRIBUTING.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**App translations**: `tools/strings_<lang>.py`, see CONTRIBUTING."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/site/README.md).  Names of buttons and settings come from the app translation automatically."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/contribute.md
+#, markdown-text
+msgid "**Other printers**: printing goes through a backend interface; a new printer is a new backend. The protocols of the supported printers are described in [docs/](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs), one file per printer."
+msgstr ""
+
+#. type: Title #
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Tavletta"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Tavletta designs labels under Linux and prints them over the network or USB: on label printers with endless tape or die-cut labels, and on office printers, one label per page or on label sheets. It talks to each printer in its own language."
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "![Main window](media/main.png#only-light)  ![Main window](media/main-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Text, images, [symbols](use.md), QR codes and barcodes of many types; backgrounds printed edge to edge"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Preview at print resolution: what you see is what is printed"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Endless tape as long as the content, or die-cut labels of any size"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file; variables such as date and counter, and a command line"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "[Label sheets](sheets.md) on office printers, and shipping labels from a carrier's PDF"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "Finds the printer in the network and on USB, reads what is loaded and explains printer problems in plain words"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "27 languages, follows the light or dark mode of the desktop"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "The supported printers and what each one can do are listed under [Printers](printer.md). Further printers can be added as a backend, see [Contribute](contribute.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Install"
+msgstr ""
+
+#. type: Title ###
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "Flatpak"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Flathub is in preparation. Until then, build it yourself:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
+"flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51\n"
+"flatpak-builder --user --install --force-clean build-dir \\\n"
+"    build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "install.sh"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Install the system packages, then run the script as your user (no root):"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid ""
+"| Distribution | Packages |\n"
+"|---|---|\n"
+"| Debian, Ubuntu | `python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-gi-cairo python3-venv gettext` |\n"
+"| Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |\n"
+"| Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |\n"
+"| Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/index.md
+#, no-wrap
+msgid ""
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
+"./install.sh\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/index.md
+#, markdown-text
+msgid "Uninstall: `./install.sh --uninstall` or `flatpak uninstall xyz.joshuahirsig.Tavletta`.  Saved labels and templates are kept."
+msgstr ""
+
+#. type: Title ##
+#: docs/index.md
+#, markdown-text, no-wrap
+msgid "First label"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/index.md
+#, markdown-text
+msgid "Switch the printer on and choose it under [[ui:Printer model]]. Tavletta finds it in the network (Bonjour) and reads what is loaded: the tape width or the distance between the labels."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/index.md
+#, markdown-text
+msgid "Not found? Enter the address under [[ui:Host name or IP address]], e.g.  `printer.local` or `192.168.1.50`. New printer: connect it to the network first, see [Printers](printer.md)."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/index.md
+#, markdown-text
+msgid "[[ui:Add]] text, an image or a code, then [[ui:Print]]."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/index.md
+#, markdown-text
+msgid "[[ui:Save]] stores the label as `.tavletta` file, [[ui:Save as template…]] adds it to [[ui:Templates]]."
+msgstr ""
+
+#. type: Title #
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Printers and troubleshooting"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Choose the printer under [[ui:Printer model]]; each one has its own section below."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "All printers { #common }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:No printer found]]: printer on and in the same network? The search needs the Avahi service (installed on most desktops, any init system); systemd-resolved alone resolves `.local` names but cannot search. Otherwise enter the address under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer not reachable]]: check the address, the printer may have a new IP. Switch the printer off and on again. On USB: check the cable and search again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No permission for the USB port: your user needs to be in the group `lp`.  Run `sudo usermod -aG lp $USER`, then log out and in again. NIIMBOT printers use another group, see [NIIMBOT](#niimbot)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB printer not found: check the cable, switch the printer on and wake it up (a sleeping printer can drop off USB), then search again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "\"The printer is busy\" on USB: only one program can use a USB printer at a time. Close other label software, or wait until the running print is done."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer needs attention]]: the printer is reachable but reports a problem, the text below says what to do. Clear it on the printer, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Content cut off at the edge or askew: increase the [[ui:Safety margin]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:content scaled down to fit]]: the content does not fit the label.  Make the label longer or larger, use [[ui:Automatic length]] on tape, or shorten the content."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother VC-500W { #vc500w }"
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Wi-Fi setup { #wifi }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta does not set up Wi-Fi. Use a phone or the printer's web interface once:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/printer.md
+#, markdown-text
+msgid "Hold the Wi-Fi button until it turns from blue to white."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/printer.md
+#, markdown-text
+msgid "Connect phone or computer to the open network \"Brother VC-500W…\"."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/printer.md
+#, markdown-text
+msgid "Open `https://192.168.0.1` (accept the certificate warning) or Brother's Color Label Editor app."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/printer.md
+#, markdown-text
+msgid "Choose your network and enter the password. Only 2.4 GHz, WPA or open."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Later, the web interface is at `https://` and the printer's address: \"Network Wi-Fi Setup\" changes the network (or \"click here\" to enter it by hand), \"AirPrint Options\" sets name, location and firmware updates."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "USB { #vc500w-usb }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Plug the printer in; [[ui:Search for printers]] finds it. Printing over USB has not been tried on a printer yet and follows the observations of others: the printer may not answer over USB at all (then the query ends with [[ui:Printer not reachable]]), and it may not cut by itself, then swipe across its panel. Wi-Fi is the tried way."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Cassettes"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid ""
+"| Cassette | Width |\n"
+"|---|---|\n"
+"| CZ-1001 | 9 mm (3/8″) |\n"
+"| CZ-1002 | 12 mm (1/2″) |\n"
+"| CZ-1003 | 19 mm (3/4″) |\n"
+"| CZ-1004 | 25 mm (1″) |\n"
+"| CZ-1005 | 50 mm (2″) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta shows the inserted cassette, remaining tape, printable width, lot number and the presumed production date. ZINK paper ages: old paper prints paler and yellowish, Tavletta warns about old cassettes. Store cassettes cool and dry."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Cleaning: insert the cleaning cassette CK-1000, cleaning starts by itself.  Do it when stripes appear, or every 20 to 30 labels."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Print options { #vc500w-print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] separates the labels. [[ui:Half cut]] cuts through the label, the backing holds them together. [[ui:No cut]]: the printer waits, swipe its panel to cut."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Colours]]: [[ui:Vivid]] for the strongest colours, [[ui:Normal]] (Brother: Standard) for softer ones, black and white (400 lpi) for text and codes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Colour correction: brightness and colour balance (red, green, blue), for this print only, not stored in the printer."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #vc500w-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Wrong cassette]]: the label was designed for another width. Change [[ui:Tape width]] or the cassette."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:No cassette inserted]] or cassette not recognised: reinsert the cassette until it clicks."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No paper: the cassette is empty, replace it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Paper jam: open the cover, remove the jammed label, reinsert the cassette."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open: close the cover."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Warming up, cooling down, cleaning: wait, printing continues by itself."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Swipe the panel to cut: the label was printed without cut, swipe across the panel."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Pale colours, yellow tint: old paper (see the cassette's age), or [[ui:Normal]] instead of [[ui:Vivid]]. With old cassettes try [[ui:Brightness]] −1 to −3 under [[ui:Colour adjustment]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Background barely visible: ZINK hardly prints very light pastel shades, choose a medium shade."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Stripes: clean with the CK-1000."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Content askew: insert the cassette straight."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother QL { #brother-ql }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta prints on Brother QL label printers from the QL-500 to the QL-1115NWB, red and black too on the QL-800, QL-810W and QL-820NWB. This has not been tried on a printer yet: it follows the protocol as others documented it. Reports of what works and what does not are very welcome."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer model]]: the QL appears twice. Choose \"Brother QL, continuous rolls\" for continuous DK rolls (the label is as long as its content or has a fixed length) and \"Brother QL, die-cut labels\" for die-cut DK labels of a fixed size.  Both use the same printer and settings. If the printer has the other kind of roll loaded, Tavletta offers to [[ui:Switch]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Network: models with Wi-Fi or LAN are reached on port 9100.  [[ui:Search for printers]] finds them, or enter the address."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it. On the QL-700 and the QL-800 series, switch off \"Editor Lite\" first (hold its button until the green light goes out), otherwise the printer appears as a USB drive."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Before each print Tavletta reads which roll is loaded. A continuous roll of another width is printed scaled to it after a warning ([[ui:Wrong roll]]); die-cut labels of another size get a warning too ([[ui:Different labels loaded]])."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Die-cut labels: choose the [[ui:Label size]] of the roll. The printer finds the labels by itself; leave the [[ui:Gap]] at 3 mm. About 1.5 mm at the sides and 3 mm at both ends of each label cannot be printed: a [[ui:Safety margin]] of 3 mm keeps content away from there."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Black and white without dithering: text and codes stay sharp, photos become hard black and white, as the preview shows."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Print options { #brother-ql-print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] after every label, [[ui:Cut after the last label]] keeps the copies together as one strip, [[ui:No cut]]. The QL-500 has no cutter and no cut option."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Colours]]: [[ui:Red and black]] appears on the QL-800 series when a 62 mm continuous roll is loaded; red parts of the label print red on the red and black roll DK-22251. That roll needs a red and black job even for black labels: if the choice does not fit the loaded roll, the printer refuses the job, Tavletta prints it the other way and says so.  From then on the choice follows the roll."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Red and black: red parts stay red; images, the background and everything else are converted as for black-and-white printers, see [Black-and-white printers](use.md#black-and-white)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Quality]]: [[ui:High resolution (600 dpi)]] doubles the resolution along the roll; printing takes longer. Offered on the QL-570, QL-580N, QL-700, QL-710W, QL-720NW, the QL-800 series and the QL-1100 series."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #brother-ql-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Reachable · the printer reports no status]]: some models do not answer status requests over the network. Printing works, but Tavletta cannot check the roll first."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "\"The loaded roll does not match the label\": a die-cut roll is loaded for a label on continuous roll, or the other way round. Load the other roll or choose the other entry under [[ui:Printer model]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of labels: load a new roll. Cover open: close it. Label jammed: open the cover and remove it, check the cutter."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Red parts print black: red and black only works on the QL-800 series with the DK-22251 roll."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "cab label printers { #cab }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta prints on cab printers with a 4 inch print head: EOS2, EOS5, SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Network: the printer needs an address in your network (DHCP or set on its display). Tavletta uses the \"RawIP\" port 9100 with the JScript interpreter, both are the printer's defaults (Setup > Interfaces > Network services and Setup > Interpreter)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it. Printing over USB has not been tried on a printer yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Labels: die-cut labels with a gap, label sensor \"Gap Sensor\". Tavletta sets the sensor for each job. Continuous media and a cutter are not supported yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Print method]]: [[ui:As set on the printer]] keeps the printer's own setting. [[ui:Thermal transfer (ribbon)]] for labels printed with a ribbon, [[ui:Thermal direct]] for labels that print without one. The printer then prints at the speed set on it, if its web interface tells it, else at 50 mm/s. [[ui:Printer details]] show the method set on the printer."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Print upside down]]: the label comes out turned by 180°, as the manufacturer's label software prints it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Heat and tear-off position stay as set on the printer."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #cab-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Different labels loaded]]: the printer measured another distance between the labels than height plus gap of your label. Check [[ui:Label size]] and [[ui:Gap]], or load the right roll. Press Feed on the printer once after changing the roll so it measures again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "A print that stopped because of a problem is cancelled, so printing again does not give extra labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of labels: load a new roll, the printer then synchronises by itself."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print head open: close the print head."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Next label not found: labels not threaded through the label sensor, or labels without gaps (continuous media is not supported yet)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal direct mode. Load or remove the ribbon, or choose the other [[ui:Print method]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Labels with a ribbon print blank or smeared, the ribbon does not move: the printer is set to thermal direct. Choose [[ui:Thermal transfer (ribbon)]] under [[ui:Print method]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Paused: resume the printer on its display."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print too pale or too dark: change the heat level in the printer's setup."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Brother P-touch { #ptouch }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta prints on Brother P-touch tape printers with TZe tape and HSe heat-shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900 series, the PT-D series and older models such as the PT-2430PC. Not tried on a printer yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in; [[ui:Search for printers]] finds it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the printer, or enter its address. Tavletta uses port 9100."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Bluetooth is not supported; models with Bluetooth print over USB."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Editor Lite: with the Editor Lite lamp on, the printer is a USB drive and cannot print. Switch Editor Lite off, then search again."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Tape { #ptouch-tape }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta shows the inserted tape, its type (laminated, heat-shrink tube, ...) and the printable width under [[ui:Printer details]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label fills the printable part of the tape. The edges of the tape stay blank: on 12 mm tape about 9.9 mm are printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Heat-shrink tube: choose the nearest [[ui:Tape width]] (12 mm for an 11.2 mm tube)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print in black: on coloured tape the tape's ink colour prints. Images are printed in black and white without dithering."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Print options { #ptouch-print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Cut]]: [[ui:Full cut]] cuts each label off. [[ui:Half cut]] cuts through the label, the backing holds the labels together. [[ui:No cut]] prints the labels as one strip. The strip is cut after the last label.  Models with a cutter lever have no cut setting."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Chain printing]]: the last label stays in the printer and comes out with the next print. Saves about 25 mm of tape per print."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:High resolution]]: finer print along the tape, slower."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm (PT-P900 series: 1 mm)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The first label after switching on starts with a blank piece: the cutter sits behind the print head."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #ptouch-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Wrong cassette]]: another tape width is inserted. The label is scaled to the tape."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open, no tape, tape not recognised: close the cover, insert the tape until it clicks."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Batteries low: connect the power adapter."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print head too hot: wait a few minutes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Model not supported: Tavletta knows the models listed above."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "NIIMBOT { #niimbot }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11, D110, D101 and related models. It has not been tried on a printer yet; please report how it works."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "USB: plug the printer in and switch it on; [[ui:Search for printers]] finds it. Otherwise enter its port, for example `/dev/ttyACM0`, under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The port belongs to the group `dialout` (Fedora, Debian, Ubuntu) or `uucp` (Arch Linux), not `lp`. Run `sudo usermod -aG dialout $USER` (on Arch Linux: `uucp`), then log out and in again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Bluetooth is not supported yet. Older B3S with a micro-USB port do not answer over USB; the B3S P with USB-C does."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Label size]]: the labels on the roll, the width across the printer.  On the D11, D110 and D101 the roll is narrow (12 mm on a D11): choose [[ui:Along the roll]] under [[ui:Content direction]] for text along the label."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "A label narrower than the print head is printed in its middle. One a little wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.  Keep 1 mm or more as [[ui:Safety margin]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "In the printer group: [[ui:Print density]] (higher prints darker) and [[ui:Label sensor]] (labels with gaps, black marks, a continuous roll or transparent labels, as loaded). Tavletta offers what the connected model takes and remembers the choice."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #niimbot-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "No permission for the serial port: add your user to the group, see above."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Printer not reachable]] right after plugging in: some systems probe new serial ports for a modem first. Wait a few seconds, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Cover open, out of labels or a low battery: close the cover, load a roll or charge the printer, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Printing fails after some copies: the message says how many labels were already printed. The job is canceled, nothing prints later on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The printer is found, but printing reports an unknown model: Tavletta does not know its model number yet. Please [[ui:Report a problem…]], the report contains the number."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "System printer (CUPS, IPP) { #system }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Prints on the printers your computer knows: printers set up in the system settings (also over USB) and printers in the network that support IPP Everywhere or AirPrint, as most office printers do. The label is printed as one page of exactly its size, unscaled."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Search for printers]] lists both. Otherwise enter the printer's address or the name of its CUPS queue under [[ui:Host name or IP address]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Label size]]: the paper size, or [[ui:Custom size]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Print on]] [[ui:Label sheet]]: several labels on a sheet of self-adhesive labels, see [Label sheets](sheets.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Most office printers cannot print the outer 4 to 5 mm of a page: set the [[ui:Safety margin]] to 5 mm. On label sheets Tavletta warns when a label reaches into what the printer reports."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #system-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of paper, paper jam or cover open while printing: Tavletta shows it and waits. Fix it at the printer within 5 minutes and printing goes on."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Out of toner or ink, or a problem before printing: fix it as the printer's display shows, then [[ui:Refresh]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Printing fails after some copies: the message says how many labels were already printed. The rest is canceled, nothing prints later on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label is printed smaller or moved: the printer or its driver scales the page. Turn off \"fit to page\" in the printer's setup."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Other jobs are printing first: Tavletta says the label was sent, and the printer prints it when its turn comes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The job is held in the queue (until it is released, or until a password is entered): Tavletta cancels it. Check the queue in the system settings."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Label printers with ZPL, EPL2, TSPL, ESC/POS or DYMO { #raw }"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Tavletta prints on label printers that take the label as an image in their own printer language. These printers have not been tried with Tavletta yet: if you have one, a report of what works and what does not helps a lot ([[ui:Report a problem…]])."
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid ""
+"| Printer model in Tavletta | Printers |\n"
+"|---|---|\n"
+"| Zebra ZPL | Zebra GK, GX, ZD, ZT and other printers with ZPL, also ZPL compatible printers of other makers |\n"
+"| Zebra EPL2 | Zebra LP/TLP 2824 and 2844, GK420 and GX420 set to EPL2 |\n"
+"| TSPL (TSC, Munbyn, iDPRT, Xprinter, Rollo) | TSC printers and most 4 × 6 in shipping label printers |\n"
+"| [[ui:Receipt printer (ESC/POS)]] | Epson TM and compatible receipt printers on 58 or 80 mm paper |\n"
+"| DYMO LabelWriter | LabelWriter 300, 400 and 450 series, 4XL (not the 550 and 5XL) |\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Connection: over the network on port 9100, or USB. Plug a USB printer in and use [[ui:Search for printers]]. Some low-cost shipping label printers do not show up as a printer on USB; Tavletta cannot find those."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Resolution]]: choose the resolution of the print head (203, 300 or 600 dpi). Zebra printers report it: [[ui:As reported by the printer]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Label sensor]]: [[ui:As set on the printer]] keeps the printer's own setting. [[ui:Gap between labels]] for die-cut labels, [[ui:Black mark]] for labels with a black mark on the back, [[ui:Continuous media]] for a roll without gaps. Set the [[ui:Label size]] and the [[ui:Gap]] (or the height of the mark) like the roll."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:After printing]]: [[ui:Tear off]], [[ui:Peel off]] or [[ui:Cut off]], if the printer has a peeler or a cutter.  [[ui:As set on the printer]] leaves the printer's own setting."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Darkness]] and [[ui:Speed]] change the printer's setting for this print; [[ui:As set on the printer]] leaves it alone."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Print upside down]]: for a printer that puts out the label the wrong way round."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Receipt printers print the label on endless paper: choose the paper width under [[ui:Tape width]]. The printable width is narrower than the paper (48 mm on 58 mm paper, 72 mm on 80 mm paper). [[ui:Cut]] in the print dialog cuts the paper after each label."
+msgstr ""
+
+#. type: Title ###
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Problems { #raw-problems }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "[[ui:Reachable · the printer reports no status]]: the printer takes jobs but answers no questions, which many of these printers do (EPL2 printers never answer). Problems such as an open cover then show on the printer only."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The printer did not report its resolution in time: choose it under [[ui:Resolution]] instead of [[ui:As reported by the printer]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label comes out upside down: switch on [[ui:Print upside down]], and please report it with the printer model; the orientation could not be tried on a printer yet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Print too pale or too dark: change [[ui:Darkness]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The printer prints several blank labels or stops between labels: the [[ui:Label sensor]] does not match the roll, or the printer has to measure the labels again (most printers do that with a long press on Feed)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "Nothing is printed and the printer shows no problem: check that its printer language is the one chosen in Tavletta (many printers can switch between ZPL and EPL2, or between TSPL and ESC/POS)."
+msgstr ""
+
+#. type: Title ##
+#: docs/printer.md
+#, markdown-text, no-wrap
+msgid "Help"
+msgstr ""
+
+#. type: Plain text
+#: docs/printer.md
+#, markdown-text
+msgid "Something else? [[ui:Report a problem…]] in the main menu (also offered with error messages) opens a prefilled issue in the browser with version, system and printer. You see everything before sending it."
+msgstr ""
+
+#. type: Title #
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Serial labels"
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "One label for each row of a table: inventory numbers, shelf labels, name badges, addresses. The label holds placeholders such as `{Name}`; each printed label shows the values of its row."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "![Serial labels](media/serial.png#only-light)  ![Serial labels](media/serial-dark.png#only-dark)"
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Data file"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Data for serial labels…]] in the main menu, [[ui:Choose…]] under [[ui:Serial labels]], or drop the file onto the window."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "CSV (comma, semicolon or tab), ODS (LibreOffice) or XLSX (Excel). The first filled row holds the column names."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "A title above the column names counts as the first row: delete it, or put the table on a sheet of its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "ODS: cells as LibreOffice shows them, dates as `2026-11-11`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "XLSX: numbers with their decimals, leading zeros and percent signs, dates as `2026-11-11`. Thousands separators and text in the number format, such as a currency, are left out. Dates in the East Asian built-in formats come out as numbers."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Empty rows are left out. The hidden cells of merged cells are empty."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Several sheets: choose one under [[ui:Sheet]]. If the sheet saved with the label is no longer there, nothing is printed until another one is chosen."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Read again]] after the file was changed in the spreadsheet program."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Up to 100 000 rows, 1000 columns, 2 000 000 cells (rows times columns, without the row of column names) and 50 MB."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "The label file stores where the data file is, never its content. If the data file lies in the same folder as the label (or below it), both can be moved or shared together. If it is missing when the label is opened, Tavletta says so: choose it again or remove it."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "A data file is read without asking only if it is a table (`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a hidden folder. Any other data file is read only after asking, once for each label file: a label from someone else could name any file.  [[ui:Forget allowed data files]] in the main menu makes Tavletta ask again."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "In the Flatpak, Tavletta sees only the files it is given: a label opened from the file manager or the file chooser, but not the folder around it.  A data file beside the label is then not found: choose it with [[ui:Data for serial labels…]] (the file chooser gives Tavletta access to it)."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "Templates keep the placeholders but not the data file. Older versions of Tavletta refuse labels with a data file instead of printing the placeholders."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Placeholders"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Insert column]] next to a text or the content of a code adds `{Column}` at the cursor; typing it works as well."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Placeholders work in texts and in QR codes and barcodes, for example `https://example.org/item/{Number}`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "With a data file `{{` and `}}` print a single brace, in every text and code: `{{Name}}` prints `{Name}`. Other braces need doubling too, for example JSON in a QR code: `{{\"id\":{Number}}}`. Without a data file texts print as typed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Values are printed as they are, even if they contain braces."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "A placeholder without a column of that name is printed as it is; the line under the preview names it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Before printing, the codes of every row are checked: an EAN-13 needs 12 or 13 digits, an empty cell gives no code. Rows that fail are named; print without them or correct the data file."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Variables such as `{=counter}` or `{=date}` work together with the placeholders; the counter goes on from row to row."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Preview"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "The buttons under the preview step through the rows: [[ui:First row]], [[ui:Previous row]], [[ui:Next row]] and [[ui:Last row]], or Alt+Page Up, Alt+Page Down, Alt+Home and Alt+End."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Rows are counted without the row of column names."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Export PNG…]] saves the row that is shown."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md docs/use.md
+#, markdown-text, no-wrap
+msgid "Print"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Print]] prints one label for each row. [[ui:From row]] and [[ui:To row]] limit the rows (all of them by default), [[ui:Copies of each label]] sets how many of each are printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Every label is a print job of its own, so this works on every printer."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Stop]] in the bar above the window ends the series after the label being printed; the first label is always printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "If the printer reports a problem, printing stops at that row; the message says how many copies of it were already printed. Solve the problem, then print again starting from that row."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "On a label sheet each position gets one label: the rows in order, the copies of a row on the positions after each other, starting at the positions chosen for the first sheet. All sheets are one print job, so [[ui:Stop]] is not offered. After a problem the message also says at which position of which sheet the row to go on from belongs."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Command line"
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "`tavletta print shelf.tavletta --data items.csv --rows 3-10` prints rows 3 to 10 without opening a window; see [Command line](use.md#command-line).  With `--dry-run` each line of the listing starts with the row number."
+msgstr ""
+
+#. type: Title #
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Print server"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Other programs and AI assistants can print labels through Tavletta without opening the window: `tavletta serve` offers a web interface for programs (REST API), `tavletta mcp` connects AI assistants such as Claude."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Start { #start }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "tavletta serve --labels-dir ~/Labels\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The server listens on `http://127.0.0.1:8790`, only on this computer."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Only label files in the labels folder (and its subfolders) can be used, with their data files. Without `--labels-dir`: `~/.local/share/tavletta/labels`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Printer address, safety margin and print settings are those set in the app."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--mcp` adds the connection for AI assistants at `/mcp`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Stop with Ctrl+C: waiting jobs are canceled, a label being printed is finished and the counter saved."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Printers { #printers }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Name the printers in a file `printers.toml` and start the server with `--printers printers.toml`. Programs then choose a printer by its name; no other printer can be used."
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.shipping]\n"
+"  backend = \"cab\"\n"
+"  host = \"cab-shipping.example.com\"\n"
+"  description = \"Shipping labels\"\n"
+"  location = \"Warehouse, gate 2\"\n"
+"  default = true\n"
+"  max_copies = 200\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`backend` is the printer model, `host` the printer's address."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The printer's settings, as in the app's printer settings, go into a table of their own; only the ones the model has:"
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  [printers.inventory]\n"
+"  backend = \"cab\"\n"
+"  host = \"printer04.example.com\"\n"
+"\n"
+"  [printers.inventory.settings]\n"
+"  method = \"transfer\"\n"
+"  upside_down = true\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`method` is the [[ui:Print method]] (`printer`, `transfer`, `direct`), `upside_down` [[ui:Print upside down]]; others are `quality`, `chain`, `high_res`, `feed_mm`, `darkness`, `media` and `outlines`, see [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md#printers)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Mistakes in the file are named when the server starts."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The list of printers shows each printer with its state."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The server searches the network for printers only when started with `--discover`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Access token { #token }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Create a token and keep it secret:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  mkdir -p ~/.config/tavletta\n"
+"  openssl rand -hex 32 > ~/.config/tavletta/token\n"
+"  chmod 600 ~/.config/tavletta/token\n"
+"  tavletta serve --token-file ~/.config/tavletta/token\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Every request then needs the header `Authorization: Bearer <token>`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To listen on another address (`--host 0.0.0.0`), a token is required.  For other computers, put a reverse proxy with HTTPS in front."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--allow-printer` limits the printer addresses, for example `--allow-printer '*.local'`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Access per device { #tokens }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Several devices or people get a token each, with a role:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  tavletta token new shipping-pc --role print --tokens ~/.config/tavletta/tokens.toml\n"
+"  tavletta serve --printers printers.toml --tokens ~/.config/tavletta/tokens.toml\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The token is shown only once; the file keeps only a fingerprint (hash)  of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`preview` only lists and shows previews, `print` also prints and follows its own jobs, `admin` sees and cancels all jobs."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`--printer shipping` limits a token to that printer, `--expires 2027-12-31` to a date."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To take a token back, delete its entry in `tokens.toml`. The server notices it at once."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Programs (REST API) { #api }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The description of all requests: `http://127.0.0.1:8790/api/v1/openapi.json`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`GET /api/v1/labels` lists the labels, `GET /api/v1/labels/<name>` shows what can be filled in: element names, variables and columns."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`POST /api/v1/preview` returns the label as a PNG image."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`POST /api/v1/print` queues a print job; `GET /api/v1/jobs/<id>` shows its state, `DELETE` cancels it between two labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Each printer prints one job after the other."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Messages come in the language of the `Accept-Language` header."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Without an access token, requests that ask printers need the header `X-Tavletta-Request: 1`, so that no web page can send them."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`set` fills in elements by their name and variables such as `{=lot}`, as on the command line."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Serial labels: `\"data_rows\": [{\"Name\": \"Tea\"}, {\"Name\": \"Rice\"}]`, or `\"data_file\"` with a table in the labels folder."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "One label from another program, for example an inventory: the fields as one data row, the printer by its name."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"  curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
+"       -H 'Content-Type: application/json' \\\n"
+"       -d '{\"label\": \"inventory\", \"printer\": \"inventory\", \"copies\": 1,\n"
+"            \"data_rows\": [{\"Inventarnummer\": \"100001\"}]}' \\\n"
+"       http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`{=counter}`: the server saves the next number in the label file. A program that keeps its own numbers sends the number in the data row or as `\"counter_start\"` with `\"no_save_counter\": true`."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "AI assistants (MCP) { #mcp }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "The assistant can list the labels and printers, show a preview, print and follow or cancel print jobs. It asks before it uses a tool, depending on its settings."
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Claude Code:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "Claude Desktop, in `claude_desktop_config.json`:"
+msgstr ""
+
+#. type: Fenced code block (json)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"{\n"
+"  \"mcpServers\": {\n"
+"    \"tavletta\": {\n"
+"      \"command\": \"tavletta\",\n"
+"      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
+"    }\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Over the network: `tavletta serve --mcp` and the address `http://127.0.0.1:8790/mcp` with the access token as `Authorization: Bearer` header."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Printing uses real labels: ask for a preview first."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Server and container { #service }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "As a service of your user: `packaging/systemd/tavletta.service` (instructions in the file)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "As a container: `packaging/docker/compose.yaml`, for printers in the network, with `printers.toml` and `tokens.toml` in the folder `config`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To find printers on the network, or for USB, add `compose.host.yaml`: `docker compose -f compose.yaml -f compose.host.yaml up -d`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Technical details and security: [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
+msgstr ""
+
+#. type: Title #
+#: docs/sheets.md
+#, markdown-text, no-wrap
+msgid "Label sheets { #sheets }"
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
+msgid "With the [[ui:System printer (CUPS, IPP)]], an office printer prints on sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels, as Avery, Zweckform, Herma and many others sell them. Tavletta knows more than 1700 of these sheets, from the template collection of gLabels."
+msgstr ""
+
+#. type: Title ##
+#: docs/sheets.md
+#, markdown-text, no-wrap
+msgid "Choose the sheet { #choose }"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Printer model]]: [[ui:System printer (CUPS, IPP)]]."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Print on]]: [[ui:Label sheet]]. The list of sheets opens."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/sheets.md
+#, markdown-text
+msgid "Search by brand and part number as printed on the package (\"Avery L7160\", \"Zweckform 3475\"), or by the size of one label in millimetres (\"70x37\", either way round). The paper size narrows the list down."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/sheets.md
+#, markdown-text
+msgid "The picture shows the sheet; [[ui:Use sheet]] takes it."
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
+msgid "The label now has the size of the sheet's labels. Round labels and CDs are designed as a rectangle, and printed only inside their shape; the preview shows them that way."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Turn the content]]: for labels read from the side, such as folder spines: the label is designed lying on its side and turned onto the sheet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Print on]]: [[ui:Single label]] prints the label as a page of its own again; choosing [[ui:Label sheet]] again brings back the last sheet."
+msgstr ""
+
+#. type: Title ##
+#: docs/sheets.md
+#, markdown-text, no-wrap
+msgid "Partly used sheets { #positions }"
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Positions]] shows the sheet. Click a label to leave it out (it is already used) or to print on it again, or set [[ui:Start at position]]: the labels are counted row by row from the top left. This only applies to the first sheet; further sheets are filled completely. The sheet and the positions are saved with the label."
+msgstr ""
+
+#. type: Title ##
+#: docs/sheets.md
+#, markdown-text, no-wrap
+msgid "Print { #print }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Labels]]: how many labels to print. At first as many as positions are chosen; more fill further sheets. The dialog shows how many sheets that takes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "[[ui:Print outlines]]: prints the outline of every label. Print a test page on plain paper first and hold it against a label sheet in front of a light: if the content sits inside the outlines, the sheet fits."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "Office printers cannot print near the paper's edges. Tavletta asks the printer for that margin and warns if the content of a label (inside the [[ui:Safety margin]]) reaches into it. Leave those positions out, or increase the [[ui:Safety margin]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+#, markdown-text
+msgid "The paper size comes from the sheet; turn off \"fit to page\" in the printer's setup, otherwise the printer may scale the sheet."
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
+msgid "Older versions of Tavletta refuse to open labels for a label sheet and say that the label needs a newer version, instead of printing them as a single page."
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
+msgid "The sheet templates come from gLabels (© Jaye Evins, MIT license)."
+msgstr ""
+
+#. type: Title #
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Design and print"
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Content"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Elements are placed one after another along the label. Order them with [[ui:Move up]] and [[ui:Move down]]."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Editing a text element](media/expand.png#only-light)  ![Editing a text element](media/expand-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills the label height, otherwise fixed in pt."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Image**: photos and graphics; drag and drop works too."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Symbol**: a pictogram from the symbol library, see below."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "**Code**: [[ui:Type]] offers 2D codes (QR code, Data Matrix, PDF417, Aztec), linear barcodes (Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A, UPC-E, ITF-14) and GS1 codes (GS1-128, GS1 DataMatrix). Below the type it says what the type is for and what it accepts."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "EAN, UPC and ITF-14: enter the digits without the check digit, it is added; with it, it is checked."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "GS1-128 and GS1 DataMatrix: application identifiers in brackets, each followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.  Tavletta checks identifiers, lengths, dates and check digits and says which identifier is wrong. GS1-128 shows the identifiers in brackets below the bars."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A GS1 value with round brackets in it: write the identifiers in square brackets, e.g. `[01]09501101530003[21]A(B)C`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "ITF-14 and GS1-128 on shipping cartons: GS1 asks for modules of at least 0.495 mm. On narrow labels they come out narrower: fine for your own scanners, too small for carton labels read in logistics."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as another character by scanners set to Full ASCII; Tavletta warns."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Content a code type cannot take is not changed silently: the element is crossed out and a warning says why."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels with a code type other than QR code, Code 128 and EAN-13 do not open in earlier versions of Tavletta: they say the label needs a newer version."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Codes print sharp on every printer: each bar and square is a whole number of printer dots, as close to the designed width as the element's space allows, with the blank margin a scanner needs. The code may come out slightly smaller than designed, centred in its space."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A code whose bars are only one printer dot wide, or without room for its blank margin, may not scan: Tavletta warns before printing, make the code larger. A code that does not fit at all is not printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a slightly different pattern."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels made with earlier versions: QR codes come out up to about a third smaller (their blank margin is now inside the element), barcodes slightly wider."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Text style { #text-style }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Text in a box and a frame, lines and a rounded border](media/design.png#only-light)  ![Text in a box and a frame, lines and a rounded border](media/design-dark.png#only-dark)"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The rows of a text element; [[ui:Spacing and fitting]], [[ui:Box and frame]] and [[ui:Outline and shadow]] open a page of their own in the sidebar, its header names the element:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Font]]: family, [[ui:Bold]], [[ui:Italic]], [[ui:Underline]], [[ui:Strikethrough]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Spacing and fitting]]: [[ui:Letter spacing]] and [[ui:Line spacing]]; [[ui:Shrink to fit]] makes the text smaller until it fits the label height and, with a fixed length, the length, never below [[ui:Smallest size]]; [[ui:Wrap width]] breaks long lines into several; [[ui:Rotation]] 90° or 270° turns the whole text, the letters lie on their side (not upright columns of Chinese or Japanese)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Letter spacing leaves out scripts whose letters join, such as Arabic or Devanagari."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Box and frame]]: [[ui:White on black]] cuts the text out of a box in the text colour; [[ui:Background box]] puts a box of another colour behind it; [[ui:Padding]], [[ui:Corner radius]] and [[ui:Frame]] shape the box."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Outline and shadow]]: a line around each letter, a shadow down and to the right."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Images { #images }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Crop…]]: drag on the image or type the area in percent."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Adjust]]: [[ui:Brightness]], [[ui:Contrast]], [[ui:Gamma]], [[ui:Invert]], [[ui:Rotation]], [[ui:Mirror]], [[ui:Flip]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Corners and border]]: rounded corners and a border around the image."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Black and white]]: how black-and-white printers print the image, see below."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Lines and shapes { #shapes }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line or shape]] in the add menu:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line]]: horizontal, vertical or diagonal, with [[ui:Arrows]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Rectangle]] (rounded with [[ui:Corner radius]]) and [[ui:Ellipse]], with a [[ui:Fill]]: solid, hatched, dotted or a grid."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Separator]]: a line across the whole label height between two elements."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Line width]] and [[ui:Line style]] (solid, dashed, dotted). Every line is at least one printer dot wide."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels with lines or shapes, or with the options on this page, do not open in earlier versions of Tavletta: they say the label needs a newer version. Labels without them open as before."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Position { #position }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Each element has [[ui:Position]]:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Vertical alignment]]: at the top, in the middle or at the bottom of the label height."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Own spacing]]: [[ui:Space after it]] instead of the label's [[ui:Spacing]]."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Free layout { #free-layout }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Layout]] at the top of [[ui:Content]] places the elements [[ui:One after another]] along the tape, or [[ui:Free]]: each one where you put it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "In the free layout every element has [[ui:Position and size]]: X and Y from the label's top left corner, to a hundredth of a millimetre."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A text is placed by the top left corner of its letters' ink, a code by its first module. The numbers of other label designers can be taken over as they are."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A text's [[ui:Size]] is the height of its font (the em) in mm, as label designers give it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A code's [[ui:Module size]] is rounded to whole printer dots: 0.67 mm at 12 dots per mm prints as 8 dots. Leave room for the quiet zone around the code. Codes can be turned ([[ui:Rotation]]), a barcode has its [[ui:Bar height]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "An image has its [[ui:Height]], a symbol its [[ui:Size]], a line or shape its width and height. A shipping label fills the label from its position to the right and bottom edge."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Switching to the free layout for the first time keeps every element where it was."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "An element that reaches beyond the label is cut off there; the preview warns about it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels in the free layout do not open in earlier versions of Tavletta."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Weight and error correction { #weight }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Weight]] chooses one of the font's own weights, such as Light or Semibold, instead of regular or bold. The bold button sets it back."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "QR codes have [[ui:Error correction]]: how much of the code may be damaged and still be read. [[ui:Standard (medium)]] keeps the code of earlier versions; the other levels choose the code's pattern as label printers do."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Labels with a weight or an error correction do not open in earlier versions of Tavletta."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Black-and-white printers { #black-and-white }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Text, codes, symbols, lines and borders print with sharp edges: text is drawn without smoothed edges, every part is converted on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]] keeps drawings and logos in one or two tones sharp, prints drawings in several flat tones as even patterns and dithers photos; [[ui:Threshold]] sets which grey still prints black."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Colour emoji in a text get a line around their shapes, so light parts stay visible."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Colours print black, or white if they are lighter than what lies behind them (the background colour or image, or a text's box); an element over a light and a dark part takes the colour that shows on most of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A warning says when an element would hardly stand out from what lies behind it; codes need more contrast than text, so that they scan."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The background colour or image is dithered on its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A shadow prints solid in the other colour, one dot apart from the letters. Outlines and shadows are at least one printer dot."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Earlier versions dithered every image; now [[ui:Automatic]] keeps drawings and logos sharp."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Undo and keyboard shortcuts { #shortcuts }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Undo]] (Ctrl+Z) and [[ui:Redo]] (Ctrl+Shift+Z); typing into a field counts as one step, also when the field has the focus. Undoing back to the saved label makes it unchanged again."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The open element (its row expanded): Ctrl+D duplicates it, Delete removes it, Alt+Up and Alt+Down move it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Ctrl+Shift+T, G, Y, B and L add text, an image, a symbol, a code or a line."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Keyboard shortcuts]] (Ctrl+?) in the main menu lists them all."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Symbols"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as arrows, warnings, recycling, tools, food or weather, from Material Design Icons. Search by name, for example \"arrow\" or \"recycle\". The names and categories come from the icon set and are English, so the search is in English too. The list next to the search shows one category; [[ui:Recently used]] shows the symbols chosen last. The \"Brand / Logo\" category and further icons showing brands or trademarks are left out."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Size]] 0 fills the label height, otherwise the symbol has this height."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Rotation]]: a quarter turn at a time, clockwise."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The colour is printed on colour and office printers. Black-and-white label printers print symbols in black, or in white if the colour is light, with sharp edges."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The label file keeps the outline of each symbol, so a label looks the same in later versions. Older versions of Tavletta cannot open labels with symbols and say that the label needs a newer version."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Texts and codes can contain [variables](#variables), e.g. a date or a running number."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Label"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Endless tape:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Automatic length]]: the label is as long as its content. Off: fixed [[ui:Length]], content aligned and scaled down if needed."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "For every label:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Spacing]]: space at the ends and between elements."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Edge spacing]]: extra space along the label edges."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Background colour]], [[ui:Background image]]: printed edge to edge."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Border]]: width, 0 = none; always inside the safety margin.  [[ui:Border style]]: [[ui:Corner radius]], [[ui:Line style]] (also double) and [[ui:Inset]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Units]]: millimetres or inches, by default from the system language."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Die-cut labels have a fixed size instead of a length:"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Die-cut label](media/die-cut.png#only-light)  ![Die-cut label](media/die-cut-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]] (across the roll) and [[ui:Height]] (along the roll), as on the label box."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before printing Tavletta compares height and gap with the distance the printer measured."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Content direction]]: [[ui:Across the roll]] for labels read with the roll running from top to bottom, [[ui:Along the roll]] like on tape."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Alignment]]: where the content sits if it is shorter than the label."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the label edges. Printers lose a little at the edges, and long labels can run slightly askew. If text is cut off at the edge, increase it."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Shipping labels"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Carriers and marketplaces send shipping labels as a PDF or an image, often an A4 page with the label in one half or quarter and a receipt or instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF dropped onto the window) opens such a file and makes a new label of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Tavletta looks for the label on the page: a large area with the shape of a label, best with a printed frame and a barcode; a page with one label filling it is taken whole. Check the selection: drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows other areas that could be the label, [[ui:Whole page]] selects all of it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Page]]: the page of a PDF with several pages."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Label size]]: 4 × 6 in (101.6 × 152.4 mm), 100 × 150 mm, 100 × 200 mm, a 62 mm roll that is as long as the label needs, or A6 and A4 paper on the system printer. Only sizes the printer can print are offered; on endless tape the label runs along the tape."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A label printed sideways on the page is turned upright for the size; [[ui:Rotate left]] and [[ui:Rotate right]] turn it by hand."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Scale]]: [[ui:Whole area, centred]] keeps all of the area, [[ui:Fill the label, edges cut off]] fills the label completely."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Create label]] replaces the open label. The area stays an element of the label: [[ui:Area]] in its row opens the selection again."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "A PDF page is drawn right at the resolution it is printed at, without smoothing: bars and text come out as whole dots, so barcodes stay readable. Lines thinner than a dot are printed at least one dot wide (sometimes two), and in black even if they are light grey or coloured; white lines thinner than a dot on black may vanish. Label printers get the label at their own resolution. The system printer gets it without loss: as PWG Raster drawn at the printer's resolution, or as a PDF drawn at 300 dpi, which a printer of another resolution scales itself (on a 203 dpi printer the edges of bars may then soften: check that the barcode scans).  Only printers that take nothing but JPEG get a compressed copy."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Images are enlarged by repeating pixels, evenly only by whole multiples (otherwise some pixels come out one dot wider than others); reduced, the pixels that fall together are averaged into grey."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "On black-and-white printers the area is looked at piece by piece. Where it is black and white but for grey edges (barcodes and text, also from a scan with grey ink on grey paper), it is cut at the middle between its own black and white, so bars keep clean edges; images are enlarged smoothly for this, so the edges fall between the pixels of the scan.  Where it has grey of its own (a grey logo, grey text down to light grey, a shaded band), the grey is printed as a dot pattern; black text on it gets a narrow edge of paper so that it stays readable. A scan or photo of a label should have at least 150 dpi; at 100 dpi only a clean one keeps all its bars."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The label file keeps the whole page the area was taken from, also outside the area (addresses, tracking numbers). Of a PDF with several pages only the chosen page is kept if it can be copied unchanged, otherwise the whole document (the dialog then says so). Unchanged is strict: a copy that differs by more than rounding anywhere, even by a few dots, is not used; pages with embedded fonts that are drawn slightly differently when copied (TeX, for example) keep the whole document. Of a TIFF with several pages only the chosen page is kept."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, otherwise install it from your distribution (see the README).  Older versions of Tavletta refuse to open labels with a shipping label and say that the label needs a newer version."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Most shipping label rolls are direct thermal labels: they need no ribbon, but the print fades in heat and sunlight within months. That is fine for a parcel on its way; for labels that must last, use thermal transfer labels with a ribbon."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "![Print dialog](media/print.png#only-light)  ![Print dialog](media/print-dark.png#only-dark)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Copies]]: number of labels."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The print dialog only shows what the printer can do; the options of each printer are listed under [Printers](printer.md). Printers without such options print with the settings made on the printer itself."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Export PNG…]] saves the label as image."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Variables { #variables }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Variables are filled in when printing, in texts and in the content of codes. [[ui:Insert variable]] next to the text or the content offers the common ones; type the others."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid ""
+"| Variable | Result |\n"
+"|---|---|\n"
+"| `{=date}` | today, as the system language writes dates |\n"
+"| `{=date:%d.%m.%Y}` | today in a format of your own, e.g. 31.12.2026 |\n"
+"| `{=date+30d}` | in 30 days, e.g. \"best before\"; also `w` (weeks), `m` (months), `y` (years), `h` (hours), combined like `{=date+1m-1d}` |\n"
+"| `{=time}`, `{=time:%H:%M}` | the time |\n"
+"| `{=counter}` | a running number |\n"
+"| `{=counter:0001}` | with leading zeros, as many digits as the pattern |\n"
+"| `{=copy}`, `{=copies}` | number of this copy and of all copies |\n"
+"| `{=id}`, `{=id:12}` | a short random ID, 8 characters by default |\n"
+"| `{=uuid}` | a random UUID |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Formats use the letters of [strftime](https://docs.python.org/3/library/datetime.html#format-codes): `%d` day, `%m` month, `%Y` year, `%H:%M` hours and minutes, `%B` the name of the month."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The counter goes up with every printed label, also from copy to copy: 5 copies get 5 numbers. Set the [[ui:Next number]] and the [[ui:Step]] in the [[ui:Counter]] group below the content; it appears once a text uses the counter. After printing the label remembers the next number: save it to keep it."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "On one label every variable has one value: a counter or an ID used in the text and in the QR code is the same number. The preview shows the values the next print uses."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without variables print exactly as typed, unless the label has a data file for [serial labels](serial.md): then `{{` and `}}` always print one brace."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Dates and times are in the computer's time zone. `+1d` keeps the time of day, also when summer time starts or ends; `+2h` counts real hours. `%z` and `%Z` give the offset and the name of the time zone."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "A label with variables or a counter needs this version of Tavletta or a newer one: older versions refuse to open it instead of printing `{=date}` as it is."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Command line { #command-line }"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "`tavletta print` prints a saved label without opening a window, also on a computer without a screen:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/use.md
+#, no-wrap
+msgid ""
+"tavletta print label.tavletta\n"
+"tavletta print label.tavletta --copies 5 --counter-start 100\n"
+"tavletta print label.tavletta --set title=\"Batch 7\" --set lot=A12\n"
+"tavletta print label.tavletta --printer system --host ipp://printer.local/ipp/print\n"
+"tavletta print label.tavletta --copies 3 --dry-run --output preview.png\n"
+"tavletta print shelf.tavletta --data items.csv --rows 3-10\n"
+"tavletta list-printers\n"
+"tavletta --version\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Without `--host` Tavletta uses the printer set in the app, or the only one it finds on the network. `tavletta list-printers` shows model, address and name of each printer found."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "`--set NAME=VALUE` replaces the text of the element with that [[ui:Name for the command line]] (in the element's settings), or fills in a variable of your own: `{=lot}` in the label, `--set lot=A12` when printing; a name may use letters of any language. Variables in a new text are filled in; `--set-literal NAME=VALUE` takes the value as it is. `--set date=2026-12-31` prints with another date."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "With a counter the next number is saved in the label file after printing, also when the printer fails half-way or the print is stopped with Ctrl+C. If the file cannot be written, nothing is printed; `--no-save-counter` prints anyway and saves nothing, so the next print repeats the numbers. The label file is locked while printing: a second `tavletta print` of the same file waits. The window reads the saved number again before printing and saving."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "It prints with the choices last made in the app for that printer model: cut, colours, quality, chain printing, high resolution, tape feed, the printer settings and [[ui:Print outlines]] on a label sheet.  `--printer-defaults` takes the model's defaults for these instead (no outlines); the printer's address and the [[ui:Safety margin]] stay as set in the app."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "`--print-method printer|transfer|direct` sets the [[ui:Print method]] of a thermal printer that has it for this print (as set on the printer, with a ribbon, thermal direct), also with `--printer-defaults`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A roll whose label distance, as the printer measured it, is not the label's height plus [[ui:Gap]] gets a hint, as in the window; the label is printed anyway."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Some printers are asked before the label is drawn, because it depends on what they report (the tape, the resolution); a printer that does not answer within 5 s (2 s for `--dry-run`) gets the label drawn without.  A question still on its way then gets up to 10 s more to end before the label is sent (Tavletta says so); an answer in that time is used.  `--no-query` skips the question."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Serial labels: one label for each row of the data file, `--copies` of each; `--data` gives the data file (by default the label's own, if it lies in the label's folder), `--sheet` the sheet, `--rows` the rows (`3-10`, `5`, `7-` to the last). The counter goes on from row to row.  A placeholder without a column or a code a row cannot make stops the print before the first label. See [Serial labels](serial.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves each label as [[ui:Export PNG…]] does: as printed, on the whole tape, at most 600 dpi like the preview (a large page coarser), with its resolution (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output). The first label is also drawn as the printer would get it. With `--output` every label is drawn, and a code that does not fit stops the dry run (exit code 4); without it the labels after the first are not drawn: their columns and codes are checked, not whether a code fits."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong arguments, 3 label file cannot be read, still locked by another print or output not written, 4 the label cannot be printed (empty, unknown or unclosed variable, date before the year 1 or after 9999, unknown column, a code a row cannot make), 5 the counter cannot be saved (nothing printed; or printed, but saving failed), 130 interrupted."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "In the Flatpak the label file has to be handed over with `--file-forwarding`, a data file too (each between `@@`; the label's own data file is only reached when handed over); write images to standard output:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/use.md
+#, no-wrap
+msgid ""
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@ --data @@ rows.csv @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print --dry-run --output - @@ label.tavletta @@ > preview.png\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "A file handed over this way is reached through the document portal. The next counter value is written there like any save, but the portal may not support locking the file: two prints of the same file at the same moment are then not kept apart. If the portal refuses to write, nothing is printed (exit code 5)."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "Writing the counter back through the document portal has not been tried yet. After the first print from the Flatpak, open the label and check that [[ui:Next number]] went on; if not, give the start with `--counter-start` on every print."
+msgstr ""

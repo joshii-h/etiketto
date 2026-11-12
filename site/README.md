@@ -1,13 +1,13 @@
 # User documentation
 
-Published at <https://etiketto.joshuahirsig.xyz> with every release
+Published at <https://tavletta.joshuahirsig.xyz> with every release
 (`.forgejo/workflows/docs.yml`), built with [Zensical](https://zensical.org).
 
 | Path | Content |
 |---|---|
 | `docs/*.md` | English pages, the source for every language |
 | `po/<lang>.po` | translations, one entry per paragraph |
-| `po/etiketto-docs.pot` | template, generated |
+| `po/tavletta-docs.pot` | template, generated |
 | `zensical.toml` | configuration, shared by all languages |
 | `overrides/`, `assets/` | language selector that stays on the page, colours |
 | `build.py` | builds everything into `build/public/` |
@@ -36,7 +36,7 @@ them the build uses the English README screenshots.
   sentence is to be translated into each language added.
 - Prefer a screenshot (add it to `tools/screenshots.list`) over a description.
 - Name buttons and settings as `[[ui:Safety margin]]` with the exact English
-  text of the app (`po/etiketto.pot`). The build inserts the app's own
+  text of the app (`po/tavletta.pot`). The build inserts the app's own
   translation, so translators skip these words.
 - Use explicit heading ids for links between pages: `## Wi-Fi setup { #wifi }`.
 - No printer names in sentences that are about every printer: what one
@@ -51,7 +51,7 @@ them the build uses the English README screenshots.
 - Existing language: translate the empty and fuzzy entries in `po/<lang>.po`
   (any PO editor, e.g. Poedit, GNOME Translation Editor), remove the `fuzzy`
   flag. Keep `[[ui:…]]`, links, `{ #id }` and code exactly as they are.
-- New language: `msginit -i site/po/etiketto-docs.pot -o site/po/<lang>.po -l <lang>`.
+- New language: `msginit -i site/po/tavletta-docs.pot -o site/po/<lang>.po -l <lang>`.
   Nothing else to register: the build, the language selector and the
   screenshots pick up every `po/*.po`. Use the same code as the app (`pt_BR`,
   `zh_TW`, …).

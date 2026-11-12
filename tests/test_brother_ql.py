@@ -24,9 +24,9 @@ from hypothesis import strategies as st
 from packbits_ref import unpackbits
 from PIL import Image
 
-from etiketto.backends import brother_ql as ql
-from etiketto.backends import mdns, net, usb
-from etiketto.backends.base import (
+from tavletta.backends import brother_ql as ql
+from tavletta.backends import mdns, net, usb
+from tavletta.backends.base import (
     CoverOpen,
     FoundPrinter,
     LabelTooLong,
@@ -43,8 +43,8 @@ from etiketto.backends.base import (
     UnsupportedSize,
     WrongMedia,
 )
-from etiketto.backends.brother_ql import BrotherQL, BrotherQLDieCut
-from etiketto.model import Label, TextElement
+from tavletta.backends.brother_ql import BrotherQL, BrotherQLDieCut
+from tavletta.model import Label, TextElement
 
 REAL_CONNECT = ql._connect  # before conftest's guard replaces it
 MAX_SLEEPS = 5000
@@ -1375,7 +1375,7 @@ def test_send_in_pieces():
 
 def test_a_printer_with_a_full_buffer_stalls():
     pipe = Pipe(read=False)
-    from etiketto.backends.base import PrinterStalled
+    from tavletta.backends.base import PrinterStalled
 
     with pytest.raises(PrinterStalled):
         net.send_all(pipe.ours, bytes(10_000_000), 0.2, ql.MIN_RATE)
@@ -1515,8 +1515,8 @@ def test_high_quality_keeps_2d_code_modules_whole_on_the_300_dpi_head(backend_id
     """Rendered at 600 dpi and halved across the head (300 dpi) when
     printed: a code's modules fall on whole pairs of pixels, so the printed
     image has no grey; the render's warnings are those of the head."""
-    from etiketto.backends import get_backend
-    from etiketto.model import CodeElement, Label
+    from tavletta.backends import get_backend
+    from tavletta.model import CodeElement, Label
 
     backend = get_backend(backend_id)
     code = CodeElement(data="https://example.org/quality", symbology="datamatrix")

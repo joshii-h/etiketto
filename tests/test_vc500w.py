@@ -14,8 +14,8 @@ from backend_contract import BackendContract
 from conftest import status
 from PIL import Image
 
-from etiketto.backends import mdns, usb, vc500w
-from etiketto.backends.base import (
+from tavletta.backends import mdns, usb, vc500w
+from tavletta.backends.base import (
     BadCassette,
     CassetteInfo,
     ColorAdjust,
@@ -36,8 +36,8 @@ from etiketto.backends.base import (
     Progress,
     Raster,
 )
-from etiketto.backends.vc500w import BW, COLOR, VC500W, VIVID
-from etiketto.model import ImageElement, Label
+from tavletta.backends.vc500w import BW, COLOR, VC500W, VIVID
+from tavletta.model import ImageElement, Label
 
 REAL_CONNECT = vc500w._connect  # before the autouse fixture replaces it
 HEAD = "<print>\n<mode>%s</mode>\n<speed>%d</speed>\n<lpi>%d</lpi>\n"
@@ -812,7 +812,7 @@ def test_the_image_goes_through_net_send_all(monkeypatch):
     progress (net.send_all), not one sendfile() under a single timeout."""
     import threading
 
-    from etiketto.backends import net
+    from tavletta.backends import net
 
     server = socket.create_server(("127.0.0.1", 0))
     got = bytearray()

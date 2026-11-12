@@ -1,19 +1,19 @@
 # Third-party notices
 
-Etiketto is licensed under the AGPL-3.0-or-later. This is the complete list
+Tavletta is licensed under the AGPL-3.0-or-later. This is the complete list
 of what it ships or derives from, with the licenses and notices. Section 1
-is code and data that are part of Etiketto or its Flatpak; section 2 the
+is code and data that are part of Tavletta or its Flatpak; section 2 the
 sources of protocol knowledge, used as facts only: no code of theirs is
 included, the protocols were written anew.
 
 In the Flatpak each component's licence is in
-`share/licenses/xyz.joshuahirsig.Etiketto/<module>/` (this file in
-`etiketto/`).
+`share/licenses/xyz.joshuahirsig.Tavletta/<module>/` (this file in
+`tavletta/`).
 
 ## Licence expressions
 
 - The Python package (sdist and wheel, `pyproject.toml`): what it contains,
-  Etiketto's code and the data and code derived from others:
+  Tavletta's code and the data and code derived from others:
   `AGPL-3.0-or-later AND MIT AND Apache-2.0`.
 - The app as the Flatpak ships it (the metainfo's `project_license`): the
   package and the libraries the Flatpak bundles for it:
@@ -23,7 +23,7 @@ In the Flatpak each component's licence is in
 
 ### ThermalPrint (MIT)
 
-The label detection for shipping labels (`etiketto/shipping/detect.py`:
+The label detection for shipping labels (`tavletta/shipping/detect.py`:
 cutting the page at blank rows and columns, choosing the block most like a
 label, the test for linear barcodes, the margin kept around the label)
 follows the ideas and algorithm of ThermalPrint's `src/detection.rs`,
@@ -63,24 +63,24 @@ labelprinter, a dependency (the fork
 <https://github.com/joshii-h/labelprinter-vc500w>, from
 <https://github.com/sgrimee/labelprinter-vc500w>; m7i.org → lenchan139 →
 sgrimee). Copyright (c) 2021 Andrea Micheloni and contributors, GNU Affero
-General Public License version 3 or later, the license of Etiketto itself.
+General Public License version 3 or later, the license of Tavletta itself.
 The protocol was reverse engineered by m7i.org
 (<https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/>).
 
 ### gLabels templates (MIT)
 
-The label sheets (`etiketto/sheets/templates.json`) are converted from the
+The label sheets (`tavletta/sheets/templates.json`) are converted from the
 template database of gLabels (<https://github.com/j-evins/glabels-qt>),
 Copyright (C) 2001-2026 Jaye Evins, MIT license. The full license text is
-in [`etiketto/sheets/LICENSE.glabels`](etiketto/sheets/LICENSE.glabels).
+in [`tavletta/sheets/LICENSE.glabels`](tavletta/sheets/LICENSE.glabels).
 
 ### Material Design Icons (Apache-2.0)
 
-The symbols (`etiketto/symbols/mdi.json.gz`) are the icons of Material
+The symbols (`tavletta/symbols/mdi.json.gz`) are the icons of Material
 Design Icons 7.4.47 by Pictogrammers (Austin Andrews and contributors,
 <https://pictogrammers.com>), Apache License 2.0; some are based on
 Google's Material Icons (Apache-2.0). Notice and license text:
-[`etiketto/symbols/LICENSE.mdi`](etiketto/symbols/LICENSE.mdi).
+[`tavletta/symbols/LICENSE.mdi`](tavletta/symbols/LICENSE.mdi).
 
 ### Zint (BSD-3-Clause)
 
@@ -89,7 +89,7 @@ Stuart and contributors, BSD-3-Clause, encodes most code types. It comes
 inside zint-bindings; its license text is in
 [`build-aux/flatpak/LICENSE.zint`](build-aux/flatpak/LICENSE.zint) (in the
 source distribution too), and the Flatpak installs it as
-`share/licenses/xyz.joshuahirsig.Etiketto/python3-zint-bindings/LICENSE.zint`.
+`share/licenses/xyz.joshuahirsig.Tavletta/python3-zint-bindings/LICENSE.zint`.
 
 ### zint-bindings (Apache-2.0)
 
@@ -166,7 +166,7 @@ Outside the Flatpak, Poppler comes from the distribution.
 - **The printer makers' manuals**: Zebra's "ZPL II Programming Guide" and
   "EPL2 Programming Guide", TSC's "TSPL/TSPL2 Programming Manual", Epson's
   "ESC/POS Command Reference" and DYMO's "LabelWriter 450 Series Technical
-  Reference Manual"; what Etiketto takes from them is marked [spec] in
+  Reference Manual"; what Tavletta takes from them is marked [spec] in
   `docs/`.
 - **Brother's Android app "Color Label Editor 2"** 1.1.6: an
   interoperability analysis for the VC-500W (permitted under Swiss URG

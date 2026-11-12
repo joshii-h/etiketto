@@ -1,5 +1,5 @@
 #!/bin/sh
-# Install Etiketto for the current user (no root needed).
+# Install Tavletta for the current user (no root needed).
 #
 #   ./install.sh            install / update
 #   ./install.sh --uninstall
@@ -10,12 +10,12 @@ set -eu
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DATA="${XDG_DATA_HOME:-$HOME/.local/share}"
-VENV="$DATA/etiketto/venv"
+VENV="$DATA/tavletta/venv"
 BIN="$HOME/.local/bin"
-APP_ID=xyz.joshuahirsig.Etiketto
+APP_ID=xyz.joshuahirsig.Tavletta
 
 if [ "${1:-}" = "--uninstall" ]; then
-    rm -rf "$DATA/etiketto/venv" "$BIN/etiketto" \
+    rm -rf "$DATA/tavletta/venv" "$BIN/tavletta" \
         "$DATA/applications/$APP_ID.desktop" \
         "$DATA/icons/hicolor/scalable/apps/$APP_ID.svg" \
         "$DATA/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" \
@@ -25,7 +25,7 @@ if [ "${1:-}" = "--uninstall" ]; then
     update-desktop-database "$DATA/applications" 2>/dev/null || true
     # a stale icon cache would still point at the removed icons
     gtk-update-icon-cache -q -t "$DATA/icons/hicolor" 2>/dev/null || true
-    echo "Etiketto removed (labels and templates in $DATA/etiketto/templates are kept)"
+    echo "Tavletta removed (labels and templates in $DATA/tavletta/templates are kept)"
     exit 0
 fi
 
@@ -45,12 +45,12 @@ trap 'rm -rf "$BUILD"' EXIT
 # the build compiles the translations into the venv (setup.py)
 # (THIRD_PARTY_NOTICES.md is one of pyproject's license-files: needed too)
 cp -r "$SRC/pyproject.toml" "$SRC/setup.py" "$SRC/MANIFEST.in" "$SRC/README.md" "$SRC/LICENSE" \
-    "$SRC/THIRD_PARTY_NOTICES.md" "$SRC/etiketto" "$SRC/data" "$SRC/po" "$BUILD/"
-rm -rf "$BUILD/etiketto/locale"  # left over from older install.sh versions
+    "$SRC/THIRD_PARTY_NOTICES.md" "$SRC/tavletta" "$SRC/data" "$SRC/po" "$BUILD/"
+rm -rf "$BUILD/tavletta/locale"  # left over from older install.sh versions
 if command -v uv >/dev/null; then
     # the system python3, which has the GTK bindings
     uv venv --quiet --allow-existing --system-site-packages --python "$PYTHON" "$VENV"
-    uv pip install --quiet --python "$VENV/bin/python" --reinstall-package etiketto "$BUILD"
+    uv pip install --quiet --python "$VENV/bin/python" --reinstall-package tavletta "$BUILD"
 else
     "$PYTHON" -m venv --system-site-packages "$VENV"
     "$VENV/bin/pip" install --quiet --upgrade "$BUILD"
@@ -58,11 +58,11 @@ fi
 
 mkdir -p "$BIN" "$DATA/applications" "$DATA/icons/hicolor/scalable/apps" \
     "$DATA/icons/hicolor/symbolic/apps" "$DATA/mime/packages" "$DATA/metainfo"
-ln -sf "$VENV/bin/etiketto" "$BIN/etiketto"
+ln -sf "$VENV/bin/tavletta" "$BIN/tavletta"
 # absolute Exec: ~/.local/bin is often not in the session PATH
 # the package installed these into the venv; make them visible to the desktop
 SHARE="$VENV/share"
-sed "s|^Exec=etiketto |Exec=$BIN/etiketto |" "$SHARE/applications/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
+sed "s|^Exec=tavletta |Exec=$BIN/tavletta |" "$SHARE/applications/$APP_ID.desktop" > "$DATA/applications/$APP_ID.desktop"
 cp "$SHARE/icons/hicolor/scalable/apps/$APP_ID.svg" "$DATA/icons/hicolor/scalable/apps/"
 cp "$SHARE/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg" "$DATA/icons/hicolor/symbolic/apps/"
 cp "$SHARE/metainfo/$APP_ID.metainfo.xml" "$DATA/metainfo/"
@@ -71,4 +71,4 @@ update-mime-database "$DATA/mime" 2>/dev/null || true
 update-desktop-database "$DATA/applications" 2>/dev/null || true
 gtk-update-icon-cache -q -t "$DATA/icons/hicolor" 2>/dev/null || true
 
-echo "Etiketto installed: $BIN/etiketto (also in the app menu)"
+echo "Tavletta installed: $BIN/tavletta (also in the app menu)"

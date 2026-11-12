@@ -14,8 +14,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from etiketto.backends import cab, usb
-from etiketto.backends.base import (
+from tavletta.backends import cab, usb
+from tavletta.backends.base import (
     FoundPrinter,
     PrinterBusy,
     PrinterError,
@@ -324,7 +324,7 @@ def test_cab_sends_a_large_job_on_a_slow_usb_port(device):
     """cab's answers wait 10 s; a job takes as long as the data keeps moving."""
     path, printer = device
     connection = usb.Connection(path, timeout=0.5)
-    job = b"d PNG;ETIKETTO\r\n" + b"A" * 6_000_000
+    job = b"d PNG;TAVLETTA\r\n" + b"A" * 6_000_000
     reader = Consumer(printer, len(job), rate=4_000_000)
     cab._Session(connection).send(job)
     reader.join(5)

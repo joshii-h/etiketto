@@ -11,8 +11,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from etiketto import model
-from etiketto.model import (
+from tavletta import model
+from tavletta.model import (
     CodeElement,
     ImageElement,
     Label,
@@ -157,7 +157,7 @@ def test_a_background_image_keeps_no_image_options(tmp_path):
     label = Label(background_image=ImageElement(data="AA==", name="bg.png"))
     data = label.to_dict()
     assert data["background_image"] == {"data": "AA==", "name": "bg.png", "kind": "image"}
-    path = tmp_path / "bg.etiketto"
+    path = tmp_path / "bg.tavletta"
     label.save(path)
     assert Label.load(path) == label
 
@@ -183,7 +183,7 @@ def test_files_of_earlier_versions_load_unchanged(tmp_path):
 
 
 def older_reader(monkeypatch):
-    """An Etiketto from before the design options: it knows neither the
+    """An Tavletta from before the design options: it knows neither the
     features nor the shape element."""
     monkeypatch.setattr(
         model, "FEATURES", frozenset({"barcodes", "symbols", "serial", "variables"})

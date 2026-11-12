@@ -3,7 +3,7 @@
 #
 # Notes come from the matching <release> in the AppStream metainfo, otherwise
 # from the tag annotation. Assets: sdist, wheel and SHA256SUMS. The tag must
-# match __version__ in etiketto/__init__.py (pyproject.toml reads it from there).
+# match __version__ in tavletta/__init__.py (pyproject.toml reads it from there).
 #
 # Manual run (Actions -> Release -> Run workflow): `tag` picks an existing tag;
 # with `dry_run` (default) everything is built and printed, nothing published.
@@ -85,13 +85,13 @@ jobs:
           import xml.etree.ElementTree as ET
 
           tag = os.environ["TAG"]
-          init = pathlib.Path("etiketto/__init__.py").read_text()
+          init = pathlib.Path("tavletta/__init__.py").read_text()
           found = re.search(r'__version__ = "([^"]+)"', init)
           if not found:
-              sys.exit("::error::no __version__ = \"…\" in etiketto/__init__.py")
+              sys.exit("::error::no __version__ = \"…\" in tavletta/__init__.py")
           version = found[1]
           if tag != f"v{version}":
-              msg = f"tag {tag} does not match the version {version} in etiketto/__init__.py"
+              msg = f"tag {tag} does not match the version {version} in tavletta/__init__.py"
               if os.environ["DRY_RUN"] != "true":
                   sys.exit(f"::error::{msg}")
               print(f"::warning::{msg}")
@@ -117,11 +117,11 @@ jobs:
               ).stdout.strip()
               if ann:
                   notes.append(ann)
-          body = "\n\n".join(notes) or f"Etiketto {version}"
+          body = "\n\n".join(notes) or f"Tavletta {version}"
 
           pathlib.Path("../release-notes.md").write_text(body + "\n")
           with open(os.environ["GITHUB_ENV"], "a") as env:
-              env.write(f"VERSION={version}\nTITLE=Etiketto {version}\n")
+              env.write(f"VERSION={version}\nTITLE=Tavletta {version}\n")
               env.write(f"PRERELEASE={'true' if '-' in tag else 'false'}\n")
           EOF
           echo "--- release notes ---"; cat ../release-notes.md
@@ -134,7 +134,7 @@ jobs:
           python3 -m venv ../buildenv
           ../buildenv/bin/pip install -q build
           ../buildenv/bin/python -m build --outdir ../dist .
-          # The Flatpak bundle (Etiketto-$TAG-x86_64.flatpak) is built on GitHub
+          # The Flatpak bundle (Tavletta-$TAG-x86_64.flatpak) is built on GitHub
           # by .github/workflows/flatpak-bundle.yml and attached to both releases.
           cd ../dist
           sha256sum -- * > SHA256SUMS

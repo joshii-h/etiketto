@@ -28,7 +28,7 @@ from fake_backends import FakeMono
 from gi.repository import Gio, GLib
 from PIL import Image, ImageChops
 
-from etiketto.backends import (
+from tavletta.backends import (
     backends,
     brother_ql,
     cab,
@@ -41,8 +41,8 @@ from etiketto.backends import (
     usb,
     vc500w,
 )
-from etiketto.backends.base import PrinterInfo, Progress
-from etiketto.model import Label, TextElement
+from tavletta.backends.base import PrinterInfo, Progress
+from tavletta.model import Label, TextElement
 
 
 def _png_b64(size=(20, 10), color="red", mode="RGB", fmt="PNG", exif=None) -> str:
@@ -323,7 +323,7 @@ def gtk_app():
     from gi.repository import Adw
 
     application = Adw.Application(
-        application_id="xyz.joshuahirsig.Etiketto.Tests",
+        application_id="xyz.joshuahirsig.Tavletta.Tests",
         flags=Gio.ApplicationFlags.NON_UNIQUE,
     )
     application.register(None)
@@ -335,7 +335,7 @@ def gui_env(monkeypatch, tmp_path):
     """The VC-500W backend with faked query/print/discover; config in tmp_path."""
     if not gtk_available():
         pytest.skip("no display for GTK")
-    from etiketto.ui import settings as config
+    from tavletta.ui import settings as config
 
     backend = get_backend("vc500w")
     env = SimpleNamespace(
@@ -379,7 +379,7 @@ def gui_env(monkeypatch, tmp_path):
     monkeypatch.setattr(config, "CONFIG_DIR", tmp_path / "config")
     monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
     monkeypatch.setattr(config, "TEMPLATE_DIR", tmp_path / "templates")
-    monkeypatch.delenv("ETIKETTO_SCREENSHOT", raising=False)
+    monkeypatch.delenv("TAVLETTA_SCREENSHOT", raising=False)
     monkeypatch.setenv("LC_ALL", "de_CH.UTF-8")  # units: automatic = mm
     return env
 
@@ -387,8 +387,8 @@ def gui_env(monkeypatch, tmp_path):
 @pytest.fixture
 def make_window(gtk_app, gui_env):
     """Factory for windows with recorded toasts; settings can be preset."""
-    from etiketto.ui import window as ui_window
-    from etiketto.ui.settings import Settings
+    from tavletta.ui import window as ui_window
+    from tavletta.ui.settings import Settings
 
     windows = []
 
@@ -408,7 +408,7 @@ def make_window(gtk_app, gui_env):
     for win in windows:
         win.printer._next_generation()  # answers still on their way are outdated
     for thread in threading.enumerate():  # the searches and queries end with the test
-        if thread.name in ("etiketto-discover", "etiketto-query"):
+        if thread.name in ("tavletta-discover", "tavletta-query"):
             thread.join(timeout=5)
     for win in windows:  # and the preview's thread, after its render
         win.preview_worker.stop()
@@ -470,8 +470,8 @@ class ServerPrinter(FakeMono):
 def server_env(monkeypatch, tmp_path):
     """A fake printer registered, the real ones unable to reach anything,
     settings and labels folder in tmp_path, a label "box" in it."""
-    from etiketto.backends import backends, register, unregister
-    from etiketto.ui import settings as config
+    from tavletta.backends import backends, register, unregister
+    from tavletta.ui import settings as config
 
     def refuse(*_args, **_kwargs):
         raise AssertionError("a real printer was contacted in a test")
@@ -490,7 +490,7 @@ def server_env(monkeypatch, tmp_path):
         printer="fake-mono",
         tape_mm=12,
         elements=[TextElement(text="Box {=counter}", name="title")],
-    ).save(labels / "box.etiketto")
+    ).save(labels / "box.tavletta")
     yield SimpleNamespace(printer=printer, labels=labels, tmp=tmp_path)
     unregister(printer.id)
 
@@ -499,9 +499,9 @@ def server_env(monkeypatch, tmp_path):
 def make_server(server_env):
     """Factory: an HTTP server on 127.0.0.1 and a free port, in a thread;
     returns (server, base URL). Stopped after the test."""
-    from etiketto.server.http import Config, Server
-    from etiketto.server.service import Service
-    from etiketto.ui.settings import Settings
+    from tavletta.server.http import Config, Server
+    from tavletta.server.service import Service
+    from tavletta.ui.settings import Settings
 
     servers = []
 

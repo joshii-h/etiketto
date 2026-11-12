@@ -1,8 +1,8 @@
-# Etiketto
+# Tavletta
 
 Label designer for the Linux desktop. Design labels with text, images,
 symbols and codes, see them exactly as they will be printed, and print them over the
-network on endless tape or on die-cut labels. Etiketto talks to each
+network on endless tape or on die-cut labels. Tavletta talks to each
 printer in its own language, finds it on the network and explains printer
 problems in plain words.
 
@@ -12,11 +12,11 @@ Estonian, Polish, Hungarian, Russian, Ukrainian, Turkish, Arabic, Hindi,
 Thai, Vietnamese, Indonesian, Malay, Korean, Japanese and Chinese
 (Traditional for Taiwan and Hong Kong, Simplified).
 
-User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
+User documentation (English, German): <https://tavletta.joshuahirsig.xyz>
 
 ## Supported printers
 
-| Printer | Labels | What Etiketto does with it | Protocol |
+| Printer | Labels | What Tavletta does with it | Protocol |
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
 | Brother QL (QL-500 to QL-1115NWB), **not yet tried on a printer** | Black on DK continuous rolls (12 to 104 mm, any length) or die-cut DK labels; red and black on the QL-800 series with DK-22251 | Reads the loaded roll and the printer's problems; full cut, cut after the last label or no cut; 600 dpi on the models that have it | Brother's raster commands on TCP port 9100 or USB ([docs/brother-ql.md](docs/brother-ql.md)) |
@@ -65,9 +65,9 @@ media and the cutter of cab printers.
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/serial-dark.png"><img src="docs/screenshots/serial.png" alt="Serial labels: placeholders filled from a CSV file"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/design-dark.png"><img src="docs/screenshots/design.png" alt="Cable label with white-on-red text, a framed text, a separator and an arrow"></picture> |
 | Serial labels: `{Name}` and `{Code}` filled from each row of a CSV file | Text in a box or frame, a dotted separator, an arrow, a dashed border with round corners |
 
-Screenshots use the default GNOME style; Etiketto follows your desktop's light or dark mode and accent colour.
+Screenshots use the default GNOME style; Tavletta follows your desktop's light or dark mode and accent colour.
 
-The labels shown are in [`docs/examples`](docs/examples); open them with Etiketto.
+The labels shown are in [`docs/examples`](docs/examples); open them with Tavletta.
 
 ## Features
 
@@ -112,7 +112,7 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   in colour, or on black-and-white label printers in black or white with
   sharp edges
 - Shipping labels: open a carrier's PDF or image (an A4 page with the label
-  in one half or quarter, receipts around it), Etiketto finds the label,
+  in one half or quarter, receipts around it), Tavletta finds the label,
   you check the area, and it is printed at 4 × 6 in, 100 × 150 mm,
   100 × 200 mm, on a 62 mm roll or on A6 or A4 paper; PDF pages are drawn
   at the resolution they are printed at, so barcodes stay sharp (the system
@@ -121,10 +121,10 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Variables in texts and codes: date with formats and "best before"
   arithmetic, time, a counter that goes up with every printed label (also
   across copies), copy number, random ID and UUID
-- Command line: `etiketto print` prints a label file without a window or
+- Command line: `tavletta print` prints a label file without a window or
   display, with copies, counter start and texts set per job
-- Print server: `etiketto serve` offers a REST API (OpenAPI 3.1) and MCP
-  for AI assistants (`etiketto mcp` for Claude Desktop and Claude Code),
+- Print server: `tavletta serve` offers a REST API (OpenAPI 3.1) and MCP
+  for AI assistants (`tavletta mcp` for Claude Desktop and Claude Code),
   with print jobs queued per printer; a Dockerfile and a systemd unit
 - Serial labels: placeholders such as `{Name}` in texts and codes, filled
   from each row of a CSV, ODS or XLSX file; step through the rows in the
@@ -133,9 +133,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
   *Report a problem* prepares an issue with all the details
-- Save labels as `.etiketto` files (images and symbols embedded; a data file
+- Save labels as `.tavletta` files (images and symbols embedded; a data file
   for serial labels is linked, not embedded) and reuse them as templates
-- Drag and drop images, data files or `.etiketto` files onto the window
+- Drag and drop images, data files or `.tavletta` files onto the window
 - Export as PNG
 
 What each printer adds is listed under [Supported printers](#supported-printers).
@@ -147,8 +147,8 @@ and libadwaita, pycairo, gettext. Everything else goes into a private
 virtual environment.
 
 ```sh
-git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
-cd etiketto
+git clone https://git.joshuahirsig.xyz/joshii/tavletta.git
+cd tavletta
 ./install.sh                # per user, no root; ./install.sh --uninstall
 ```
 
@@ -164,8 +164,8 @@ introspection (images work without it; the Flatpak brings it along):
 `gir1.2-poppler-0.18` (Debian, Ubuntu), `poppler-glib` (Fedora, Arch),
 `app-text/poppler` with `USE="cairo introspection"` (Gentoo).
 
-Then start **Etiketto** from the app menu and choose the **Printer model**.
-Etiketto looks for the printer on the network; otherwise enter its host
+Then start **Tavletta** from the app menu and choose the **Printer model**.
+Tavletta looks for the printer on the network; otherwise enter its host
 name, e.g. `VC-500W1234.local` or `EOS2.local` (needs mDNS / nss-mdns), or
 its IP address. For the VC-500W, outside Flatpak, the host is also read from
 `~/.config/labelprinter/config.json` if you use the `labelprinter` CLI.
@@ -176,8 +176,8 @@ In Flatpak, `.local` names are resolved through the system's Avahi daemon.
 ```sh
 flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51
 flatpak-builder --user --install --force-clean build-dir \
-    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
-flatpak run xyz.joshuahirsig.Etiketto
+    build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml
+flatpak run xyz.joshuahirsig.Tavletta
 ```
 
 Check it like Flathub does:
@@ -185,7 +185,7 @@ Check it like Flathub does:
 ```sh
 flatpak install --user flathub org.flatpak.Builder
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
-    manifest build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml
+    manifest build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml
 ```
 
 ## Variables and command line
@@ -209,26 +209,26 @@ label have one value, so a counter in the text and in the QR code match.
 Dates are in the system's time zone: `+1d` keeps the time of day across a
 change to summer time, `+2h` counts real hours, `%z`/`%Z` work. A label
 that uses variables or a counter is saved as format 2, which older
-Etiketto versions refuse instead of printing `{=date}` as it is. The `=` keeps variables apart from the
+Tavletta versions refuse instead of printing `{=date}` as it is. The `=` keeps variables apart from the
 `{Column}` placeholders of serial labels: a column named "Date" never
 changes what `{=date}` means.
 
 ```sh
-etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
+tavletta print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--set NAME=VALUE ...] [--set-literal NAME=VALUE ...]
                     [--counter-start N] [--no-save-counter] [--no-query]
                     [--printer-defaults] [--print-method printer|transfer|direct]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
-etiketto list-printers [--printer ID]
-etiketto serve [--host ADDR] [--port N] [--labels-dir DIR] [--mcp] [--discover]
+tavletta list-printers [--printer ID]
+tavletta serve [--host ADDR] [--port N] [--labels-dir DIR] [--mcp] [--discover]
                [--printers FILE] [--tokens FILE | --token-file FILE]
-etiketto mcp [--labels-dir DIR] [--printers FILE]
-etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
-etiketto --version | --help
+tavletta mcp [--labels-dir DIR] [--printers FILE]
+tavletta token new NAME [--role preview|print|admin] [--tokens FILE]
+tavletta --version | --help
 ```
 
-`etiketto print` needs no display. `--set` replaces the text of the
+`tavletta print` needs no display. `--set` replaces the text of the
 element with that name (set in the element's settings) or fills in
 `{=NAME}`; variables in a new text are filled in (`--set-literal` takes the
 value as it is). `--set date=2026-12-31` prints with another date.
@@ -251,7 +251,7 @@ Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
 range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO and office printers: the resolution; a dry run waits
 2 s); the label is then checked for that printer. A question still on its
-way after that gets up to 10 s more to end before printing (Etiketto says
+way after that gets up to 10 s more to end before printing (Tavletta says
 so; an answer in that time is used); what it brings later still sets the
 resolution the label is drawn at.
 `--no-query` skips the question. A label set up for a label sheet prints on it as in the
@@ -282,31 +282,31 @@ and a data file, each between `@@`; the label's own data file is only
 reached if it is handed over too:
 
 ```sh
-flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
-flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@
+flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@
+flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@ --data @@ rows.csv @@
 ```
 
 ## Print server and MCP
 
-`etiketto serve` prints for other programs, without a window or display:
+`tavletta serve` prints for other programs, without a window or display:
 a REST API under `/api/v1` (JSON; the OpenAPI description at
 `/api/v1/openapi.json`) to list printers and labels, ask a printer for its
 state, render a preview, and print with values, data rows and copies. Jobs
 are queued, one per printer at a time, and can be canceled between two
 labels; counters are saved as on the command line. `--mcp` serves the same
-as MCP tools at `/mcp`; `etiketto mcp` speaks MCP on standard input and
+as MCP tools at `/mcp`; `tavletta mcp` speaks MCP on standard input and
 output for Claude Desktop and Claude Code:
 
 ```sh
-etiketto serve --labels-dir ~/Labels --token-file ~/.config/etiketto/token --mcp
-claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
+tavletta serve --labels-dir ~/Labels --token-file ~/.config/tavletta/token --mcp
+claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels
 ```
 
 Only label and data files inside the labels folder are used. Network
 printers come first: `--printers printers.toml` names the printers clients
 may use, by name (searching the network only with `--discover`), and
 `--tokens tokens.toml` gives each device or person its own access token
-with a role (preview, print, admin), made with `etiketto token new`; the
+with a role (preview, print, admin), made with `tavletta token new`; the
 file keeps only hashes, and deleting an entry revokes it. The server
 listens on 127.0.0.1 and refuses other addresses without an access token
 (`Authorization: Bearer`). A Dockerfile, Compose files (network printers;
@@ -335,26 +335,26 @@ uv venv --system-site-packages .venv
 uv pip install --python .venv/bin/python -e . --group dev
 .venv/bin/python -m pytest
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
-LANGUAGE=de .venv/bin/python -m etiketto.app
+LANGUAGE=de .venv/bin/python -m tavletta.app
 ```
 
-Translations: `xgettext` (see CONTRIBUTING.md) → `po/etiketto.pot`, strings in
+Translations: `xgettext` (see CONTRIBUTING.md) → `po/tavletta.pot`, strings in
 `tools/strings_<lang>.py`, `python3 tools/fill_po.py` writes the
 `.po` files; `install.sh` compiles them.
 
 ## Contributing
 
 Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Issues and
-pull requests on [GitHub](https://github.com/joshii-h/etiketto) are welcome,
+pull requests on [GitHub](https://github.com/joshii-h/tavletta) are welcome,
 no Forgejo account needed: they are carried over automatically to the
-[Forgejo repository](https://git.joshuahirsig.xyz/joshii/etiketto), where
+[Forgejo repository](https://git.joshuahirsig.xyz/joshii/tavletta), where
 review and merge happen.
 
 ## Credits
 
 The Brother VC-500W protocol was reverse engineered by
 [m7i.org](https://m7i.org/projects/labelprinter-linux-python-for-vc-500w/);
-Etiketto prints through its descendant labelprinter (m7i.org → lenchan139
+Tavletta prints through its descendant labelprinter (m7i.org → lenchan139
 → [sgrimee](https://github.com/sgrimee/labelprinter-vc500w)), in a fork
 pinned to a reviewed commit until its fixes are merged:
 <https://github.com/joshii-h/labelprinter-vc500w>.
@@ -393,8 +393,8 @@ reverse engineering and no cab code are involved.
 Most code types are encoded by [Zint](https://zint.org.uk) (libzint,
 Copyright (C) 2009-2025 Robin Stuart and contributors, BSD-3-Clause) through
 [zint-bindings](https://github.com/bindreams/zint-bindings) (Anna Zhukova,
-Apache-2.0); Etiketto takes Zint's modules and draws them itself. The
-Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/python3-zint-bindings/LICENSE.zint`.
+Apache-2.0); Tavletta takes Zint's modules and draws them itself. The
+Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Tavletta/python3-zint-bindings/LICENSE.zint`.
 QR codes come from [segno](https://github.com/heuer/segno) (BSD-3-Clause),
 Code 128 and EAN-13 from
 [python-barcode](https://github.com/WhyNotHugo/python-barcode) (MIT).
@@ -404,16 +404,16 @@ Fredrik Lundh, Jeffrey 'Alex' Clark and contributors; MIT-CMU).
 The label sheet templates come from the template database of
 [gLabels](https://github.com/j-evins/glabels-qt) by Jaye Evins, MIT license,
 Copyright (C) 2001-2026 Jaye Evins
-([`etiketto/sheets/LICENSE.glabels`](etiketto/sheets/LICENSE.glabels)).
+([`tavletta/sheets/LICENSE.glabels`](tavletta/sheets/LICENSE.glabels)).
 
 The symbols are the icons of
 [Material Design Icons](https://pictogrammers.com/library/mdi/) 7.4.47 by
 [Pictogrammers](https://pictogrammers.com) (Austin Andrews and contributors),
 Apache License 2.0
-([`etiketto/symbols/LICENSE.mdi`](etiketto/symbols/LICENSE.mdi)); some are
+([`tavletta/symbols/LICENSE.mdi`](tavletta/symbols/LICENSE.mdi)); some are
 based on Google's Material Icons (Apache-2.0). The "Brand / Logo" category
 and further icons showing brands or trademarks are left out
-([`tools/mdi_symbols.py`](tools/mdi_symbols.py)). Etiketto draws the icons
+([`tools/mdi_symbols.py`](tools/mdi_symbols.py)). Tavletta draws the icons
 with its own SVG path parser.
 
 Detecting the label on a carrier's page follows
@@ -425,7 +425,7 @@ Rios-Negron (MIT License), rewritten in Python; see
 ZPL, EPL2, TSPL, ESC/POS and DYMO LabelWriter follow the byte sequences of
 [LPrint](https://github.com/michaelrsweet/lprint) by Michael R Sweet
 (Apache-2.0, Copyright 2019-2026 Michael R Sweet), reimplemented in Python;
-no LPrint code is included. Where Etiketto differs from LPrint (gap sensor,
+no LPrint code is included. Where Tavletta differs from LPrint (gap sensor,
 EPL2 blank rows, cut commands) and what comes from the vendors' manuals is
 marked in the protocol notes in `docs/`.
 
@@ -439,14 +439,14 @@ The variables (counter, date and UUID in texts and codes) were inspired by
 [labelburg](https://github.com/DL6ER/labelburg) (DL6ER, GPL-3.0); ideas
 only, no code of it is included.
 
-Everything Etiketto ships or derives from, with licenses and notices, is
+Everything Tavletta ships or derives from, with licenses and notices, is
 listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
-templates (`etiketto/sheets/templates.json`) and the parts derived from
-ThermalPrint are MIT licensed, the symbols (`etiketto/symbols/mdi.json.gz`)
+templates (`tavletta/sheets/templates.json`) and the parts derived from
+ThermalPrint are MIT licensed, the symbols (`tavletta/symbols/mdi.json.gz`)
 Apache-2.0 licensed. The Python package as a whole:
 `AGPL-3.0-or-later AND MIT AND Apache-2.0` (`pyproject.toml`); the app as
 the Flatpak ships it, with the libraries it bundles (Zint, segno, Pillow,

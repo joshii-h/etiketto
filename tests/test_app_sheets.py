@@ -19,14 +19,14 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 from test_app import find, one, respond, walk  # noqa: E402
 
-from etiketto.backends import get_backend  # noqa: E402
-from etiketto.backends.base import Margins, PrinterInfo, PrintOptions, Progress  # noqa: E402
-from etiketto.model import Label, SheetChoice, TextElement  # noqa: E402
-from etiketto.sheets import find as find_sheet  # noqa: E402
-from etiketto.sheets import search  # noqa: E402
-from etiketto.ui import sheets as ui_sheets  # noqa: E402
-from etiketto.ui.settings import Settings  # noqa: E402
-from etiketto.units import MILLIMETRES  # noqa: E402
+from tavletta.backends import get_backend  # noqa: E402
+from tavletta.backends.base import Margins, PrinterInfo, PrintOptions, Progress  # noqa: E402
+from tavletta.model import Label, SheetChoice, TextElement  # noqa: E402
+from tavletta.sheets import find as find_sheet  # noqa: E402
+from tavletta.sheets import search  # noqa: E402
+from tavletta.ui import sheets as ui_sheets  # noqa: E402
+from tavletta.ui.settings import Settings  # noqa: E402
+from tavletta.units import MILLIMETRES  # noqa: E402
 
 A4_MARGINS = Margins(6.35, 3.4, 6.35, 3.4, (210, 297))
 
@@ -473,7 +473,7 @@ def test_odd_cases_of_the_dialogs(office):
 def _code_window(make_window, system_env, dpi, length_mm=60.0):
     from dataclasses import replace
 
-    from etiketto.model import CodeElement
+    from tavletta.model import CodeElement
 
     system_env.info = replace(system_env.info, dpi=dpi)
     Settings({"printers": {"system": {"host": "HP_Office"}}}).save()
@@ -522,7 +522,7 @@ def test_a_code_that_does_not_fit_is_not_printed(make_window, system_env):
 
 
 def test_a_code_the_printer_cannot_fit_says_so(office, system_env, monkeypatch):
-    from etiketto.backends.base import CodeTooLarge
+    from tavletta.backends.base import CodeTooLarge
 
     def prepare(label, options, safe_mm):
         raise CodeTooLarge("element 1", n=1)
@@ -566,7 +566,7 @@ def test_serial_labels_on_label_sheets(office, system_env, tmp_path):
 
 
 def test_where_a_series_on_sheets_goes_on():
-    from etiketto.ui.texts import series_stop_text
+    from tavletta.ui.texts import series_stop_text
 
     assert series_stop_text(3, 1, (4, 2)) == (
         "Printing stopped at row 3. To continue, print again from row 3. "
@@ -577,9 +577,9 @@ def test_where_a_series_on_sheets_goes_on():
 def test_rows_left_out_keep_the_label_sheet(office, monkeypatch):
     """Codes of some rows cannot be made: printing the others stays on the
     label sheet."""
-    from etiketto.backends.base import PrintOptions
-    from etiketto.serial import UnprintableRows
-    from etiketto.sheets.layout import SheetJob
+    from tavletta.backends.base import PrintOptions
+    from tavletta.serial import UnprintableRows
+    from tavletta.sheets.layout import SheetJob
 
     win = office
     started = []
@@ -595,8 +595,8 @@ def test_rows_left_out_keep_the_label_sheet(office, monkeypatch):
 
 
 def test_a_series_the_printer_did_not_confirm_says_so(office):
-    from etiketto.backends.base import PrintOptions, PrintResult
-    from etiketto.serial import SeriesResult
+    from tavletta.backends.base import PrintOptions, PrintResult
+    from tavletta.serial import SeriesResult
 
     win = office
     outcome = SeriesResult(printed=[1, 2], result=PrintResult(unconfirmed=True))
@@ -605,8 +605,8 @@ def test_a_series_the_printer_did_not_confirm_says_so(office):
 
 
 def test_a_stopped_series_keeps_the_printers_remark(office):
-    from etiketto.backends.base import PrintOptions, PrintResult
-    from etiketto.serial import SeriesResult
+    from tavletta.backends.base import PrintOptions, PrintResult
+    from tavletta.serial import SeriesResult
 
     win = office
     outcome = SeriesResult(printed=[1, 2], stopped=True, result=PrintResult(queued=True))
@@ -621,9 +621,9 @@ def test_a_page_too_large_is_previewed_and_refused_when_printed(office, system_e
     megapixels; here a smaller page and smaller limits, to be quick): the
     preview is drawn within its own pixel budget, Print opens its dialog,
     and the print says the page is too large before drawing it again."""
-    from etiketto import job
-    from etiketto.backends import system
-    from etiketto.ui import window as ui_window
+    from tavletta import job
+    from tavletta.backends import system
+    from tavletta.ui import window as ui_window
 
     monkeypatch.setattr(system, "MAX_PAGE_PIXELS", 2_000_000)
     monkeypatch.setattr(job, "PREVIEW_MAX_PIXELS", 500_000)

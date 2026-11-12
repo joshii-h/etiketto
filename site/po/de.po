@@ -1,11 +1,11 @@
-# German translations for etiketto-docs package
-# Copyright (C) 2026 Etiketto contributors
-# This file is distributed under the same license as the etiketto-docs package.
+# German translations for tavletta-docs package
+# Copyright (C) 2026 Tavletta contributors
+# This file is distributed under the same license as the tavletta-docs package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: etiketto-docs VERSION\n"
+"Project-Id-Version: tavletta-docs VERSION\n"
 "POT-Creation-Date: 2026-11-12 15:52+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
@@ -34,23 +34,23 @@ msgstr ""
 #. type: Plain text
 #: docs/contribute.md
 msgid ""
-"Issues and pull requests on [GitHub](https://github.com/joshii-h/etiketto) "
+"Issues and pull requests on [GitHub](https://github.com/joshii-h/tavletta) "
 "are welcome, no Forgejo account needed. They are copied automatically to "
-"[Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), the main "
+"[Forgejo](https://git.joshuahirsig.xyz/joshii/tavletta), the main "
 "repository, with a link on GitHub. Review and merge happen there; your "
 "commits are kept, so GitHub shows the pull request as merged. The discussion "
 "can stay on GitHub.  With a Forgejo account you can contribute there "
 "directly.  Details: [CONTRIBUTING.md](https://git.joshuahirsig.xyz/joshii/"
-"etiketto/src/branch/main/CONTRIBUTING.md)."
+"tavletta/src/branch/main/CONTRIBUTING.md)."
 msgstr ""
-"Issues und Pull-Requests auf [GitHub](https://github.com/joshii-h/etiketto) "
+"Issues und Pull-Requests auf [GitHub](https://github.com/joshii-h/tavletta) "
 "sind willkommen, ein Forgejo-Konto braucht es nicht. Sie werden automatisch "
-"nach [Forgejo](https://git.joshuahirsig.xyz/joshii/etiketto), dem "
+"nach [Forgejo](https://git.joshuahirsig.xyz/joshii/tavletta), dem "
 "Hauptrepository, übertragen, mit einem Link auf GitHub. Review und Merge "
 "finden dort statt; die Commits bleiben erhalten, darum zeigt GitHub den Pull-"
 "Request danach als gemergt. Die Diskussion kann auf GitHub bleiben. Mit "
 "einem Forgejo-Konto geht es auch direkt dort. Details: [CONTRIBUTING.md]"
-"(https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/"
+"(https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/"
 "CONTRIBUTING.md)."
 
 #. type: Bullet: '- '
@@ -62,11 +62,11 @@ msgstr "**App-Übersetzungen**: `tools/strings_<lang>.py`, siehe CONTRIBUTING."
 #: docs/contribute.md
 msgid ""
 "**This documentation**: `site/po/<lang>.po`, see [site/README.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md).  Names "
+"git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/site/README.md).  Names "
 "of buttons and settings come from the app translation automatically."
 msgstr ""
 "**Diese Dokumentation**: `site/po/<lang>.po`, siehe [site/README.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/site/README.md). Namen "
+"git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/site/README.md). Namen "
 "von Knöpfen und Einstellungen kommen automatisch aus der App-Übersetzung."
 
 #. type: Bullet: '- '
@@ -74,29 +74,29 @@ msgstr ""
 msgid ""
 "**Other printers**: printing goes through a backend interface; a new printer "
 "is a new backend. The protocols of the supported printers are described in "
-"[docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs), "
+"[docs/](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs), "
 "one file per printer."
 msgstr ""
 "**Weitere Drucker**: Gedruckt wird über eine Backend-Schnittstelle; ein "
 "neuer Drucker ist ein neues Backend. Die Protokolle der unterstützten "
-"Drucker stehen in [docs/](https://git.joshuahirsig.xyz/joshii/etiketto/src/"
+"Drucker stehen in [docs/](https://git.joshuahirsig.xyz/joshii/tavletta/src/"
 "branch/main/docs), eine Datei pro Drucker."
 
 #. type: Title #
 #: docs/index.md
 #, no-wrap
-msgid "Etiketto"
-msgstr "Etiketto"
+msgid "Tavletta"
+msgstr "Tavletta"
 
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"Etiketto designs labels under Linux and prints them over the network or USB: "
+"Tavletta designs labels under Linux and prints them over the network or USB: "
 "on label printers with endless tape or die-cut labels, and on office "
 "printers, one label per page or on label sheets. It talks to each printer in "
 "its own language."
 msgstr ""
-"Etiketto gestaltet Etiketten unter Linux und druckt sie über das Netzwerk "
+"Tavletta gestaltet Etiketten unter Linux und druckt sie über das Netzwerk "
 "oder USB: auf Etikettendruckern mit Endlosband oder gestanzten Etiketten und"
 " auf Bürodruckern, ein Etikett pro Seite oder auf Etikettenbögen. Mit jedem "
 "Drucker spricht es in dessen eigener Sprache."
@@ -194,15 +194,15 @@ msgstr "Flathub ist in Vorbereitung. Bis dahin selbst bauen:"
 #: docs/index.md
 #, no-wrap
 msgid ""
-"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
 "flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51\n"
 "flatpak-builder --user --install --force-clean build-dir \\\n"
-"    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml\n"
+"    build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml\n"
 msgstr ""
-"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
 "flatpak install --user flathub org.gnome.Sdk//51 org.gnome.Platform//51\n"
 "flatpak-builder --user --install --force-clean build-dir \\\n"
-"    build-aux/flatpak/xyz.joshuahirsig.Etiketto.yml\n"
+"    build-aux/flatpak/xyz.joshuahirsig.Tavletta.yml\n"
 
 #. type: Title ###
 #: docs/index.md
@@ -240,20 +240,20 @@ msgstr ""
 #: docs/index.md
 #, no-wrap
 msgid ""
-"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
 "./install.sh\n"
 msgstr ""
-"git clone https://git.joshuahirsig.xyz/joshii/etiketto.git && cd etiketto\n"
+"git clone https://git.joshuahirsig.xyz/joshii/tavletta.git && cd tavletta\n"
 "./install.sh\n"
 
 #. type: Plain text
 #: docs/index.md
 msgid ""
 "Uninstall: `./install.sh --uninstall` or `flatpak uninstall "
-"xyz.joshuahirsig.Etiketto`.  Saved labels and templates are kept."
+"xyz.joshuahirsig.Tavletta`.  Saved labels and templates are kept."
 msgstr ""
 "Deinstallieren: `./install.sh --uninstall` oder `flatpak uninstall "
-"xyz.joshuahirsig.Etiketto`. Gespeicherte Etiketten und Vorlagen bleiben "
+"xyz.joshuahirsig.Tavletta`. Gespeicherte Etiketten und Vorlagen bleiben "
 "erhalten."
 
 #. type: Title ##
@@ -265,11 +265,11 @@ msgstr "Erstes Etikett"
 #. type: Bullet: '1. '
 #: docs/index.md
 msgid ""
-"Switch the printer on and choose it under [[ui:Printer model]]. Etiketto "
+"Switch the printer on and choose it under [[ui:Printer model]]. Tavletta "
 "finds it in the network (Bonjour) and reads what is loaded: the tape width "
 "or the distance between the labels."
 msgstr ""
-"Drucker einschalten und unter [[ui:Printer model]] wählen. Etiketto findet "
+"Drucker einschalten und unter [[ui:Printer model]] wählen. Tavletta findet "
 "ihn im Netzwerk (Bonjour) und liest aus, was eingelegt ist: die Bandbreite "
 "oder den Abstand der Etiketten."
 
@@ -292,10 +292,10 @@ msgstr "Text, Bild oder Code über [[ui:Add]] einfügen, dann [[ui:Print]]."
 #. type: Bullet: '4. '
 #: docs/index.md
 msgid ""
-"[[ui:Save]] stores the label as `.etiketto` file, [[ui:Save as template…]] "
+"[[ui:Save]] stores the label as `.tavletta` file, [[ui:Save as template…]] "
 "adds it to [[ui:Templates]]."
 msgstr ""
-"[[ui:Save]] legt das Etikett als `.etiketto`-Datei ab, [[ui:Save as "
+"[[ui:Save]] legt das Etikett als `.tavletta`-Datei ab, [[ui:Save as "
 "template…]] nimmt es in die [[ui:Templates]] auf."
 
 #. type: Title #
@@ -420,10 +420,10 @@ msgstr "WLAN einrichten { #wifi }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto does not set up Wi-Fi. Use a phone or the printer's web interface "
+"Tavletta does not set up Wi-Fi. Use a phone or the printer's web interface "
 "once:"
 msgstr ""
-"Etiketto richtet kein WLAN ein. Einmalig per Smartphone oder Weboberfläche "
+"Tavletta richtet kein WLAN ein. Einmalig per Smartphone oder Weboberfläche "
 "des Druckers:"
 
 #. type: Bullet: '1. '
@@ -514,14 +514,14 @@ msgstr ""
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto shows the inserted cassette, remaining tape, printable width, lot "
+"Tavletta shows the inserted cassette, remaining tape, printable width, lot "
 "number and the presumed production date. ZINK paper ages: old paper prints "
-"paler and yellowish, Etiketto warns about old cassettes. Store cassettes "
+"paler and yellowish, Tavletta warns about old cassettes. Store cassettes "
 "cool and dry."
 msgstr ""
-"Etiketto zeigt die eingelegte Kassette, das restliche Band, die bedruckbare "
+"Tavletta zeigt die eingelegte Kassette, das restliche Band, die bedruckbare "
 "Breite, die Chargennummer und das vermutete Herstellungsdatum. ZINK-Papier "
-"altert: Altes Papier druckt blasser und gelblich, Etiketto warnt vor alten "
+"altert: Altes Papier druckt blasser und gelblich, Tavletta warnt vor alten "
 "Kassetten. Kassetten kühl und trocken lagern."
 
 #. type: Plain text
@@ -665,12 +665,12 @@ msgstr "Brother QL { #brother-ql }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto prints on Brother QL label printers from the QL-500 to the "
+"Tavletta prints on Brother QL label printers from the QL-500 to the "
 "QL-1115NWB, red and black too on the QL-800, QL-810W and QL-820NWB. This has "
 "not been tried on a printer yet: it follows the protocol as others "
 "documented it. Reports of what works and what does not are very welcome."
 msgstr ""
-"Etiketto druckt auf Etikettendruckern Brother QL vom QL-500 bis zum "
+"Tavletta druckt auf Etikettendruckern Brother QL vom QL-500 bis zum "
 "QL-1115NWB, auf dem QL-800, QL-810W und QL-820NWB auch rot und schwarz. Das "
 "wurde noch auf keinem Drucker ausprobiert: Es folgt dem Protokoll, wie "
 "andere es beschrieben haben. Rückmeldungen, was geht und was nicht, sind "
@@ -683,14 +683,14 @@ msgid ""
 "rolls\" for continuous DK rolls (the label is as long as its content or has "
 "a fixed length) and \"Brother QL, die-cut labels\" for die-cut DK labels of "
 "a fixed size.  Both use the same printer and settings. If the printer has "
-"the other kind of roll loaded, Etiketto offers to [[ui:Switch]]."
+"the other kind of roll loaded, Tavletta offers to [[ui:Switch]]."
 msgstr ""
 "[[ui:Printer model]]: Der QL steht zweimal in der Liste. „Brother QL, "
 "Endlosrollen“ für DK-Endlosrollen (das Etikett ist so lang wie sein Inhalt "
 "oder hat eine feste Länge), „Brother QL, gestanzte Etiketten“ für gestanzte "
 "DK-Etiketten fester Grösse. Beide nutzen denselben Drucker und dieselben "
 "Einstellungen. Ist im Drucker die andere Art Rolle eingelegt, bietet "
-"Etiketto [[ui:Switch]] an."
+"Tavletta [[ui:Switch]] an."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -716,12 +716,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"Before each print Etiketto reads which roll is loaded. A continuous roll of "
+"Before each print Tavletta reads which roll is loaded. A continuous roll of "
 "another width is printed scaled to it after a warning ([[ui:Wrong roll]]); "
 "die-cut labels of another size get a warning too ([[ui:Different labels "
 "loaded]])."
 msgstr ""
-"Vor jedem Druck liest Etiketto, welche Rolle eingelegt ist. Auf eine "
+"Vor jedem Druck liest Tavletta, welche Rolle eingelegt ist. Auf eine "
 "Endlosrolle anderer Breite wird nach einer Warnung ([[ui:Wrong roll]]) "
 "passend skaliert gedruckt; gestanzte Etiketten anderer Grösse ergeben "
 "ebenfalls eine Warnung ([[ui:Different labels loaded]])."
@@ -772,14 +772,14 @@ msgid ""
 "mm continuous roll is loaded; red parts of the label print red on the red "
 "and black roll DK-22251. That roll needs a red and black job even for black "
 "labels: if the choice does not fit the loaded roll, the printer refuses the "
-"job, Etiketto prints it the other way and says so.  From then on the choice "
+"job, Tavletta prints it the other way and says so.  From then on the choice "
 "follows the roll."
 msgstr ""
 "[[ui:Colours]]: [[ui:Red and black]] erscheint bei der QL-800-Serie, wenn "
 "eine 62-mm-Endlosrolle eingelegt ist. Rote Teile des Etiketts werden auf der "
 "rot-schwarzen Rolle DK-22251 rot gedruckt. Diese Rolle braucht auch für "
 "schwarze Etiketten einen rot-schwarzen Druckauftrag: Passt die Wahl nicht "
-"zur eingelegten Rolle, lehnt der Drucker den Auftrag ab, Etiketto druckt ihn "
+"zur eingelegten Rolle, lehnt der Drucker den Auftrag ab, Tavletta druckt ihn "
 "auf die andere Art und sagt das. Danach folgt die Wahl der Rolle."
 
 #. type: Bullet: '- '
@@ -814,11 +814,11 @@ msgstr "Probleme { #brother-ql-problems }"
 #: docs/printer.md
 msgid ""
 "[[ui:Reachable · the printer reports no status]]: some models do not answer "
-"status requests over the network. Printing works, but Etiketto cannot check "
+"status requests over the network. Printing works, but Tavletta cannot check "
 "the roll first."
 msgstr ""
 "[[ui:Reachable · the printer reports no status]]: Manche Modelle beantworten "
-"über das Netzwerk keine Statusabfragen. Drucken geht, aber Etiketto kann die "
+"über das Netzwerk keine Statusabfragen. Drucken geht, aber Tavletta kann die "
 "Rolle vorher nicht prüfen."
 
 #. type: Bullet: '- '
@@ -860,22 +860,22 @@ msgstr "Etikettendrucker von cab { #cab }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto prints on cab printers with a 4 inch print head: EOS2, EOS5, SQUIX "
+"Tavletta prints on cab printers with a 4 inch print head: EOS2, EOS5, SQUIX "
 "4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300."
 msgstr ""
-"Etiketto druckt auf cab-Druckern mit 4-Zoll-Druckkopf: EOS2, EOS5, SQUIX 4 "
+"Tavletta druckt auf cab-Druckern mit 4-Zoll-Druckkopf: EOS2, EOS5, SQUIX 4 "
 "und MACH 4S, mit 203, 300 oder 600 dpi. Entwickelt mit einem EOS2/300."
 
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
 "Network: the printer needs an address in your network (DHCP or set on its "
-"display). Etiketto uses the \"RawIP\" port 9100 with the JScript "
+"display). Tavletta uses the \"RawIP\" port 9100 with the JScript "
 "interpreter, both are the printer's defaults (Setup > Interfaces > Network "
 "services and Setup > Interpreter)."
 msgstr ""
 "Netzwerk: Der Drucker braucht eine Adresse im eigenen Netz (DHCP oder am "
-"Display eingestellt). Etiketto nutzt den „RawIP“-Port 9100 mit dem JScript-"
+"Display eingestellt). Tavletta nutzt den „RawIP“-Port 9100 mit dem JScript-"
 "Interpreter, beides Standard am Drucker (im englischen Menü: Setup > "
 "Interfaces > Network services und Setup > Interpreter)."
 
@@ -891,12 +891,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"Labels: die-cut labels with a gap, label sensor \"Gap Sensor\". Etiketto "
+"Labels: die-cut labels with a gap, label sensor \"Gap Sensor\". Tavletta "
 "sets the sensor for each job. Continuous media and a cutter are not "
 "supported yet."
 msgstr ""
 "Etiketten: gestanzte Etiketten mit Lücke, Etikettensensor „Gap Sensor“. "
-"Etiketto stellt den Sensor bei jedem Auftrag ein. Endlosmaterial und "
+"Tavletta stellt den Sensor bei jedem Auftrag ein. Endlosmaterial und "
 "Schneidemesser werden noch nicht unterstützt."
 
 #. type: Bullet: '- '
@@ -1023,12 +1023,12 @@ msgstr "Brother P-touch { #ptouch }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto prints on Brother P-touch tape printers with TZe tape and HSe heat-"
+"Tavletta prints on Brother P-touch tape printers with TZe tape and HSe heat-"
 "shrink tube: the PT-P700, PT-P750W, PT-E550W, PT-P710BT, the PT-P900 series, "
 "the PT-D series and older models such as the PT-2430PC. Not tried on a "
 "printer yet."
 msgstr ""
-"Etiketto druckt auf Brother-P-touch-Banddruckern mit TZe-Band und HSe-"
+"Tavletta druckt auf Brother-P-touch-Banddruckern mit TZe-Band und HSe-"
 "Schrumpfschlauch: PT-P700, PT-P750W, PT-E550W, PT-P710BT, die Serie PT-P900, "
 "die Serie PT-D und ältere Modelle wie der PT-2430PC. Noch nicht an einem "
 "Drucker ausprobiert."
@@ -1042,10 +1042,10 @@ msgstr "USB: Den Drucker anstecken; [[ui:Search for printers]] findet ihn."
 #: docs/printer.md
 msgid ""
 "Network (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): the search finds the "
-"printer, or enter its address. Etiketto uses port 9100."
+"printer, or enter its address. Tavletta uses port 9100."
 msgstr ""
 "Netzwerk (PT-P750W, PT-E550W, PT-P900W, PT-P950NW): Die Suche findet den "
-"Drucker, oder seine Adresse eingeben. Etiketto verwendet Port 9100."
+"Drucker, oder seine Adresse eingeben. Tavletta verwendet Port 9100."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -1071,10 +1071,10 @@ msgstr "Band { #ptouch-tape }"
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"Etiketto shows the inserted tape, its type (laminated, heat-shrink "
+"Tavletta shows the inserted tape, its type (laminated, heat-shrink "
 "tube, ...) and the printable width under [[ui:Printer details]]."
 msgstr ""
-"Etiketto zeigt unter [[ui:Printer details]] das eingelegte Band, seinen Typ "
+"Tavletta zeigt unter [[ui:Printer details]] das eingelegte Band, seinen Typ "
 "(laminiert, Schrumpfschlauch, ...) und die druckbare Breite."
 
 #. type: Bullet: '- '
@@ -1192,8 +1192,8 @@ msgstr "Druckkopf zu heiss: einige Minuten warten."
 
 #. type: Bullet: '- '
 #: docs/printer.md
-msgid "Model not supported: Etiketto knows the models listed above."
-msgstr "Modell nicht unterstützt: Etiketto kennt die oben genannten Modelle."
+msgid "Model not supported: Tavletta knows the models listed above."
+msgstr "Modell nicht unterstützt: Tavletta kennt die oben genannten Modelle."
 
 #. type: Title ##
 #: docs/printer.md
@@ -1204,11 +1204,11 @@ msgstr "NIIMBOT { #niimbot }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11, "
+"Tavletta prints on NIIMBOT label printers over USB: B1, B21, B3S, B4, D11, "
 "D110, D101 and related models. It has not been tried on a printer yet; "
 "please report how it works."
 msgstr ""
-"Etiketto druckt über USB auf Etikettendrucker von NIIMBOT: B1, B21, B3S, B4, "
+"Tavletta druckt über USB auf Etikettendrucker von NIIMBOT: B1, B21, B3S, B4, "
 "D11, D110, D101 und verwandte Modelle. Mit einem Drucker ausprobiert ist das "
 "noch nicht; bitte melden, wie es klappt."
 
@@ -1273,12 +1273,12 @@ msgstr ""
 msgid ""
 "In the printer group: [[ui:Print density]] (higher prints darker) and "
 "[[ui:Label sensor]] (labels with gaps, black marks, a continuous roll or "
-"transparent labels, as loaded). Etiketto offers what the connected model "
+"transparent labels, as loaded). Tavletta offers what the connected model "
 "takes and remembers the choice."
 msgstr ""
 "In der Druckergruppe: [[ui:Print density]] (höher druckt dunkler) und "
 "[[ui:Label sensor]] (Etiketten mit Lücken, mit schwarzen Markierungen, "
-"Endlosrolle oder transparente Etiketten, wie eingelegt). Etiketto bietet an, "
+"Endlosrolle oder transparente Etiketten, wie eingelegt). Tavletta bietet an, "
 "was das angeschlossene Modell kann, und merkt sich die Wahl."
 
 #. type: Title ###
@@ -1327,12 +1327,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"The printer is found, but printing reports an unknown model: Etiketto does "
+"The printer is found, but printing reports an unknown model: Tavletta does "
 "not know its model number yet. Please [[ui:Report a problem…]], the report "
 "contains the number."
 msgstr ""
 "Der Drucker wird gefunden, aber beim Drucken heisst es, das Modell sei "
-"unbekannt: Etiketto kennt seine Modellnummer noch nicht. Bitte [[ui:Report a "
+"unbekannt: Tavletta kennt seine Modellnummer noch nicht. Bitte [[ui:Report a "
 "problem…]], der Bericht enthält die Nummer."
 
 #. type: Title ##
@@ -1382,12 +1382,12 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "Most office printers cannot print the outer 4 to 5 mm of a page: set the "
-"[[ui:Safety margin]] to 5 mm. On label sheets Etiketto warns when a label "
+"[[ui:Safety margin]] to 5 mm. On label sheets Tavletta warns when a label "
 "reaches into what the printer reports."
 msgstr ""
 "Die meisten Bürodrucker können die äussersten 4 bis 5 mm einer Seite nicht "
 "bedrucken: den [[ui:Safety margin]] auf 5 mm stellen. Auf Etikettenbögen "
-"warnt Etiketto, wenn ein Etikett in den Rand reicht, den der Drucker meldet."
+"warnt Tavletta, wenn ein Etikett in den Rand reicht, den der Drucker meldet."
 
 #. type: Title ###
 #: docs/printer.md
@@ -1398,10 +1398,10 @@ msgstr "Probleme { #system-problems }"
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"Out of paper, paper jam or cover open while printing: Etiketto shows it and "
+"Out of paper, paper jam or cover open while printing: Tavletta shows it and "
 "waits. Fix it at the printer within 5 minutes and printing goes on."
 msgstr ""
-"Kein Papier, Papierstau oder Abdeckung offen während des Druckens: Etiketto "
+"Kein Papier, Papierstau oder Abdeckung offen während des Druckens: Tavletta "
 "zeigt es an und wartet. Innerhalb von 5 Minuten am Drucker beheben, dann "
 "geht der Druck weiter."
 
@@ -1437,20 +1437,20 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"Other jobs are printing first: Etiketto says the label was sent, and the "
+"Other jobs are printing first: Tavletta says the label was sent, and the "
 "printer prints it when its turn comes."
 msgstr ""
-"Zuerst werden andere Aufträge gedruckt: Etiketto meldet, dass das Etikett "
+"Zuerst werden andere Aufträge gedruckt: Tavletta meldet, dass das Etikett "
 "gesendet wurde, und der Drucker druckt es, sobald es an der Reihe ist."
 
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
 "The job is held in the queue (until it is released, or until a password is "
-"entered): Etiketto cancels it. Check the queue in the system settings."
+"entered): Tavletta cancels it. Check the queue in the system settings."
 msgstr ""
 "Der Auftrag wird in der Warteschlange zurückgehalten (bis er freigegeben "
-"oder ein Passwort eingegeben wird): Etiketto bricht ihn ab. Die "
+"oder ein Passwort eingegeben wird): Tavletta bricht ihn ab. Die "
 "Warteschlange in den Systemeinstellungen prüfen."
 
 #. type: Title ##
@@ -1462,13 +1462,13 @@ msgstr "Etikettendrucker mit ZPL, EPL2, TSPL, ESC/POS oder DYMO { #raw }"
 #. type: Plain text
 #: docs/printer.md
 msgid ""
-"Etiketto prints on label printers that take the label as an image in their "
-"own printer language. These printers have not been tried with Etiketto yet: "
+"Tavletta prints on label printers that take the label as an image in their "
+"own printer language. These printers have not been tried with Tavletta yet: "
 "if you have one, a report of what works and what does not helps a lot "
 "([[ui:Report a problem…]])."
 msgstr ""
-"Etiketto druckt auf Etikettendrucker, die das Etikett als Bild in ihrer "
-"eigenen Druckersprache erhalten. Diese Drucker wurden mit Etiketto noch "
+"Tavletta druckt auf Etikettendrucker, die das Etikett als Bild in ihrer "
+"eigenen Druckersprache erhalten. Diese Drucker wurden mit Tavletta noch "
 "nicht ausprobiert: Wer einen hat, hilft sehr mit einer Rückmeldung, was "
 "funktioniert und was nicht ([[ui:Report a problem…]])."
 
@@ -1476,7 +1476,7 @@ msgstr ""
 #: docs/printer.md
 #, no-wrap
 msgid ""
-"| Printer model in Etiketto | Printers |\n"
+"| Printer model in Tavletta | Printers |\n"
 "|---|---|\n"
 "| Zebra ZPL | Zebra GK, GX, ZD, ZT and other printers with ZPL, also ZPL compatible printers of other makers |\n"
 "| Zebra EPL2 | Zebra LP/TLP 2824 and 2844, GK420 and GX420 set to EPL2 |\n"
@@ -1484,7 +1484,7 @@ msgid ""
 "| [[ui:Receipt printer (ESC/POS)]] | Epson TM and compatible receipt printers on 58 or 80 mm paper |\n"
 "| DYMO LabelWriter | LabelWriter 300, 400 and 450 series, 4XL (not the 550 and 5XL) |\n"
 msgstr ""
-"| Druckermodell in Etiketto | Drucker |\n"
+"| Druckermodell in Tavletta | Drucker |\n"
 "|---|---|\n"
 "| Zebra ZPL | Zebra GK, GX, ZD, ZT und andere Drucker mit ZPL, auch ZPL-kompatible Drucker anderer Hersteller |\n"
 "| Zebra EPL2 | Zebra LP/TLP 2824 und 2844, GK420 und GX420 auf EPL2 eingestellt |\n"
@@ -1497,12 +1497,12 @@ msgstr ""
 msgid ""
 "Connection: over the network on port 9100, or USB. Plug a USB printer in and "
 "use [[ui:Search for printers]]. Some low-cost shipping label printers do not "
-"show up as a printer on USB; Etiketto cannot find those."
+"show up as a printer on USB; Tavletta cannot find those."
 msgstr ""
 "Verbindung: über das Netzwerk auf Port 9100 oder über USB. Einen USB-Drucker "
 "einstecken und [[ui:Search for printers]] verwenden. Manche günstigen "
 "Versandetikettendrucker erscheinen an USB nicht als Drucker; diese findet "
-"Etiketto nicht."
+"Tavletta nicht."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -1629,11 +1629,11 @@ msgstr ""
 #: docs/printer.md
 msgid ""
 "Nothing is printed and the printer shows no problem: check that its printer "
-"language is the one chosen in Etiketto (many printers can switch between ZPL "
+"language is the one chosen in Tavletta (many printers can switch between ZPL "
 "and EPL2, or between TSPL and ESC/POS)."
 msgstr ""
 "Es wird nichts gedruckt, und der Drucker zeigt kein Problem: prüfen, ob "
-"seine Druckersprache die in Etiketto gewählte ist (viele Drucker lassen sich "
+"seine Druckersprache die in Tavletta gewählte ist (viele Drucker lassen sich "
 "zwischen ZPL und EPL2 oder zwischen TSPL und ESC/POS umschalten)."
 
 #. type: Title ##
@@ -1769,13 +1769,13 @@ msgstr ""
 msgid ""
 "The label file stores where the data file is, never its content. If the data "
 "file lies in the same folder as the label (or below it), both can be moved "
-"or shared together. If it is missing when the label is opened, Etiketto says "
+"or shared together. If it is missing when the label is opened, Tavletta says "
 "so: choose it again or remove it."
 msgstr ""
 "Die Etikettendatei speichert, wo die Datendatei liegt, nie ihren Inhalt. "
 "Liegt die Datendatei im selben Ordner wie das Etikett (oder darunter), "
 "lassen sich beide zusammen verschieben oder weitergeben. Fehlt sie beim "
-"Öffnen des Etiketts, sagt Etiketto das: sie erneut wählen oder entfernen."
+"Öffnen des Etiketts, sagt Tavletta das: sie erneut wählen oder entfernen."
 
 #. type: Plain text
 #: docs/serial.md
@@ -1784,38 +1784,38 @@ msgid ""
 "`.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a hidden "
 "folder. Any other data file is read only after asking, once for each label "
 "file: a label from someone else could name any file.  [[ui:Forget allowed "
-"data files]] in the main menu makes Etiketto ask again."
+"data files]] in the main menu makes Tavletta ask again."
 msgstr ""
 "Eine Datendatei wird nur dann ohne Rückfrage gelesen, wenn sie eine Tabelle "
 "(`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`) im Ordner des Etiketts oder "
 "darunter ist und nicht in einem versteckten Ordner liegt. Jede andere "
 "Datendatei wird erst nach einer Rückfrage gelesen, einmal für jede "
 "Etikettendatei: Ein Etikett von jemand anderem könnte jede beliebige Datei "
-"nennen. [[ui:Forget allowed data files]] im Hauptmenü lässt Etiketto wieder "
+"nennen. [[ui:Forget allowed data files]] im Hauptmenü lässt Tavletta wieder "
 "nachfragen."
 
 #. type: Plain text
 #: docs/serial.md
 msgid ""
-"In the Flatpak, Etiketto sees only the files it is given: a label opened "
+"In the Flatpak, Tavletta sees only the files it is given: a label opened "
 "from the file manager or the file chooser, but not the folder around it.  A "
 "data file beside the label is then not found: choose it with [[ui:Data for "
-"serial labels…]] (the file chooser gives Etiketto access to it)."
+"serial labels…]] (the file chooser gives Tavletta access to it)."
 msgstr ""
-"Im Flatpak sieht Etiketto nur die Dateien, die es bekommt: ein Etikett, das "
+"Im Flatpak sieht Tavletta nur die Dateien, die es bekommt: ein Etikett, das "
 "aus der Dateiverwaltung oder dem Dateiauswahldialog geöffnet wird, aber "
 "nicht den Ordner darum herum. Eine Datendatei neben dem Etikett wird dann "
 "nicht gefunden: Sie mit [[ui:Data for serial labels…]] wählen (der "
-"Dateiauswahldialog gibt Etiketto Zugriff darauf)."
+"Dateiauswahldialog gibt Tavletta Zugriff darauf)."
 
 #. type: Plain text
 #: docs/serial.md
 msgid ""
 "Templates keep the placeholders but not the data file. Older versions of "
-"Etiketto refuse labels with a data file instead of printing the placeholders."
+"Tavletta refuse labels with a data file instead of printing the placeholders."
 msgstr ""
 "Vorlagen behalten die Platzhalter, aber nicht die Datendatei. Ältere "
-"Versionen von Etiketto lehnen Etiketten mit einer Datendatei ab, statt die "
+"Versionen von Tavletta lehnen Etiketten mit einer Datendatei ab, statt die "
 "Platzhalter zu drucken."
 
 #. type: Title ##
@@ -1987,11 +1987,11 @@ msgstr "Befehlszeile"
 #. type: Plain text
 #: docs/serial.md
 msgid ""
-"`etiketto print shelf.etiketto --data items.csv --rows 3-10` prints rows 3 "
+"`tavletta print shelf.tavletta --data items.csv --rows 3-10` prints rows 3 "
 "to 10 without opening a window; see [Command line](use.md#command-line).  "
 "With `--dry-run` each line of the listing starts with the row number."
 msgstr ""
-"`etiketto print shelf.etiketto --data items.csv --rows 3-10` druckt die "
+"`tavletta print shelf.tavletta --data items.csv --rows 3-10` druckt die "
 "Zeilen 3 bis 10, ohne ein Fenster zu öffnen; siehe [Befehlszeile]"
 "(use.md#command-line). Mit `--dry-run` beginnt jede Zeile der Auflistung mit "
 "der Zeilennummer."
@@ -2005,13 +2005,13 @@ msgstr "Druckserver"
 #. type: Plain text
 #: docs/server.md
 msgid ""
-"Other programs and AI assistants can print labels through Etiketto without "
-"opening the window: `etiketto serve` offers a web interface for programs "
-"(REST API), `etiketto mcp` connects AI assistants such as Claude."
+"Other programs and AI assistants can print labels through Tavletta without "
+"opening the window: `tavletta serve` offers a web interface for programs "
+"(REST API), `tavletta mcp` connects AI assistants such as Claude."
 msgstr ""
-"Andere Programme und KI-Assistenten können über Etiketto Etiketten drucken, "
-"ohne das Fenster zu öffnen: `etiketto serve` bietet eine Web-Schnittstelle "
-"für Programme (REST API), `etiketto mcp` verbindet KI-Assistenten wie Claude."
+"Andere Programme und KI-Assistenten können über Tavletta Etiketten drucken, "
+"ohne das Fenster zu öffnen: `tavletta serve` bietet eine Web-Schnittstelle "
+"für Programme (REST API), `tavletta mcp` verbindet KI-Assistenten wie Claude."
 
 #. type: Title ##
 #: docs/server.md
@@ -2022,8 +2022,8 @@ msgstr "Starten { #start }"
 #. type: Fenced code block (sh)
 #: docs/server.md
 #, no-wrap
-msgid "etiketto serve --labels-dir ~/Labels\n"
-msgstr "etiketto serve --labels-dir ~/Labels\n"
+msgid "tavletta serve --labels-dir ~/Labels\n"
+msgstr "tavletta serve --labels-dir ~/Labels\n"
 
 #. type: Bullet: '- '
 #: docs/server.md
@@ -2035,11 +2035,11 @@ msgstr ""
 #: docs/server.md
 msgid ""
 "Only label files in the labels folder (and its subfolders) can be used, with "
-"their data files. Without `--labels-dir`: `~/.local/share/etiketto/labels`."
+"their data files. Without `--labels-dir`: `~/.local/share/tavletta/labels`."
 msgstr ""
 "Nur Etikettendateien im Etikettenordner (und seinen Unterordnern) können "
 "verwendet werden, mit ihren Datendateien. Ohne `--labels-dir`: "
-"`~/.local/share/etiketto/labels`."
+"`~/.local/share/tavletta/labels`."
 
 #. type: Bullet: '- '
 #: docs/server.md
@@ -2140,13 +2140,13 @@ msgid ""
 "`method` is the [[ui:Print method]] (`printer`, `transfer`, `direct`), "
 "`upside_down` [[ui:Print upside down]]; others are `quality`, `chain`, "
 "`high_res`, `feed_mm`, `darkness`, `media` and `outlines`, see [docs/"
-"server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/"
+"server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/"
 "server.md#printers)."
 msgstr ""
 "`method` ist die [[ui:Print method]] (`printer`, `transfer`, `direct`), "
 "`upside_down` [[ui:Print upside down]]; weitere sind `quality`, `chain`, "
 "`high_res`, `feed_mm`, `darkness`, `media` und `outlines`, siehe [docs/"
-"server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/"
+"server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/"
 "server.md#printers)."
 
 #. type: Bullet: '- '
@@ -2183,15 +2183,15 @@ msgstr "Ein Token erstellen und geheim halten:"
 #: docs/server.md
 #, no-wrap
 msgid ""
-"  mkdir -p ~/.config/etiketto\n"
-"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
-"  chmod 600 ~/.config/etiketto/token\n"
-"  etiketto serve --token-file ~/.config/etiketto/token\n"
+"  mkdir -p ~/.config/tavletta\n"
+"  openssl rand -hex 32 > ~/.config/tavletta/token\n"
+"  chmod 600 ~/.config/tavletta/token\n"
+"  tavletta serve --token-file ~/.config/tavletta/token\n"
 msgstr ""
-"  mkdir -p ~/.config/etiketto\n"
-"  openssl rand -hex 32 > ~/.config/etiketto/token\n"
-"  chmod 600 ~/.config/etiketto/token\n"
-"  etiketto serve --token-file ~/.config/etiketto/token\n"
+"  mkdir -p ~/.config/tavletta\n"
+"  openssl rand -hex 32 > ~/.config/tavletta/token\n"
+"  chmod 600 ~/.config/tavletta/token\n"
+"  tavletta serve --token-file ~/.config/tavletta/token\n"
 
 #. type: Bullet: '- '
 #: docs/server.md
@@ -2231,11 +2231,11 @@ msgstr "Mehrere Geräte oder Personen bekommen je ein Token mit einer Rolle:"
 #: docs/server.md
 #, no-wrap
 msgid ""
-"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
-"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
+"  tavletta token new shipping-pc --role print --tokens ~/.config/tavletta/tokens.toml\n"
+"  tavletta serve --printers printers.toml --tokens ~/.config/tavletta/tokens.toml\n"
 msgstr ""
-"  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml\n"
-"  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml\n"
+"  tavletta token new shipping-pc --role print --tokens ~/.config/tavletta/tokens.toml\n"
+"  tavletta serve --printers printers.toml --tokens ~/.config/tavletta/tokens.toml\n"
 
 #. type: Bullet: '- '
 #: docs/server.md
@@ -2325,21 +2325,21 @@ msgstr "Meldungen kommen in der Sprache des Headers `Accept-Language`."
 #: docs/server.md
 msgid ""
 "Without an access token, requests that ask printers need the header `X-"
-"Etiketto-Request: 1`, so that no web page can send them."
+"Tavletta-Request: 1`, so that no web page can send them."
 msgstr ""
 "Ohne Zugangstoken brauchen Anfragen, die Drucker abfragen, den Header "
-"`X-Etiketto-Request: 1`, damit keine Webseite sie senden kann."
+"`X-Tavletta-Request: 1`, damit keine Webseite sie senden kann."
 
 #. type: Fenced code block (sh)
 #: docs/server.md
 #, no-wrap
 msgid ""
-"curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "     -H 'Content-Type: application/json' \\\n"
 "     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
 "     http://127.0.0.1:8790/api/v1/print\n"
 msgstr ""
-"curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "     -H 'Content-Type: application/json' \\\n"
 "     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
 "     http://127.0.0.1:8790/api/v1/print\n"
@@ -2375,13 +2375,13 @@ msgstr ""
 #: docs/server.md
 #, no-wrap
 msgid ""
-"  curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"  curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "       -H 'Content-Type: application/json' \\\n"
 "       -d '{\"label\": \"inventory\", \"printer\": \"inventory\", \"copies\": 1,\n"
 "            \"data_rows\": [{\"Inventarnummer\": \"100001\"}]}' \\\n"
 "       http://127.0.0.1:8790/api/v1/print\n"
 msgstr ""
-"  curl -H \"Authorization: Bearer $(cat ~/.config/etiketto/token)\" \\\n"
+"  curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "       -H 'Content-Type: application/json' \\\n"
 "       -d '{\"label\": \"inventory\", \"printer\": \"inventory\", \"copies\": 1,\n"
 "            \"data_rows\": [{\"Inventarnummer\": \"100001\"}]}' \\\n"
@@ -2423,8 +2423,8 @@ msgstr "Claude Code:"
 #. type: Fenced code block (sh)
 #: docs/server.md
 #, no-wrap
-msgid "claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels\n"
-msgstr "claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels\n"
+msgid "claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels\n"
+msgstr "claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels\n"
 
 #. type: Plain text
 #: docs/server.md
@@ -2437,8 +2437,8 @@ msgstr "Claude Desktop, in `claude_desktop_config.json`:"
 msgid ""
 "{\n"
 "  \"mcpServers\": {\n"
-"    \"etiketto\": {\n"
-"      \"command\": \"etiketto\",\n"
+"    \"tavletta\": {\n"
+"      \"command\": \"tavletta\",\n"
 "      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
 "    }\n"
 "  }\n"
@@ -2446,8 +2446,8 @@ msgid ""
 msgstr ""
 "{\n"
 "  \"mcpServers\": {\n"
-"    \"etiketto\": {\n"
-"      \"command\": \"etiketto\",\n"
+"    \"tavletta\": {\n"
+"      \"command\": \"tavletta\",\n"
 "      \"args\": [\"mcp\", \"--labels-dir\", \"/home/me/Labels\"]\n"
 "    }\n"
 "  }\n"
@@ -2456,10 +2456,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 msgid ""
-"Over the network: `etiketto serve --mcp` and the address `http://"
+"Over the network: `tavletta serve --mcp` and the address `http://"
 "127.0.0.1:8790/mcp` with the access token as `Authorization: Bearer` header."
 msgstr ""
-"Über das Netzwerk: `etiketto serve --mcp` und die Adresse "
+"Über das Netzwerk: `tavletta serve --mcp` und die Adresse "
 "`http://127.0.0.1:8790/mcp` mit dem Zugangstoken als Header `Authorization: "
 "Bearer`."
 
@@ -2477,10 +2477,10 @@ msgstr "Server und Container { #service }"
 #. type: Bullet: '- '
 #: docs/server.md
 msgid ""
-"As a service of your user: `packaging/systemd/etiketto.service` "
+"As a service of your user: `packaging/systemd/tavletta.service` "
 "(instructions in the file)."
 msgstr ""
-"Als Dienst Ihres Benutzers: `packaging/systemd/etiketto.service` (Anleitung "
+"Als Dienst Ihres Benutzers: `packaging/systemd/tavletta.service` (Anleitung "
 "in der Datei)."
 
 #. type: Bullet: '- '
@@ -2505,10 +2505,10 @@ msgstr ""
 #: docs/server.md
 msgid ""
 "Technical details and security: [docs/server.md](https://"
-"git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md)."
+"git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
 msgstr ""
 "Technische Details und Sicherheit: "
-"[docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md)."
+"[docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
 
 #. type: Title #
 #: docs/sheets.md
@@ -2521,13 +2521,13 @@ msgstr "Etikettenbögen { #sheets }"
 msgid ""
 "With the [[ui:System printer (CUPS, IPP)]], an office printer prints on "
 "sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels, "
-"as Avery, Zweckform, Herma and many others sell them. Etiketto knows more "
+"as Avery, Zweckform, Herma and many others sell them. Tavletta knows more "
 "than 1700 of these sheets, from the template collection of gLabels."
 msgstr ""
 "Mit dem [[ui:System printer (CUPS, IPP)]] druckt ein Bürodrucker auf Bögen "
 "mit selbstklebenden Etiketten: A4- oder US-Letter-Seiten mit einem Raster "
 "von Etiketten, wie sie Avery, Zweckform, Herma und viele andere verkaufen. "
-"Etiketto kennt über 1700 solcher Bögen, aus der Vorlagensammlung von gLabels."
+"Tavletta kennt über 1700 solcher Bögen, aus der Vorlagensammlung von gLabels."
 
 #. type: Title ##
 #: docs/sheets.md
@@ -2646,12 +2646,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sheets.md
 msgid ""
-"Office printers cannot print near the paper's edges. Etiketto asks the "
+"Office printers cannot print near the paper's edges. Tavletta asks the "
 "printer for that margin and warns if the content of a label (inside the "
 "[[ui:Safety margin]]) reaches into it. Leave those positions out, or "
 "increase the [[ui:Safety margin]]."
 msgstr ""
-"Bürodrucker können nahe am Papierrand nicht drucken. Etiketto fragt den "
+"Bürodrucker können nahe am Papierrand nicht drucken. Tavletta fragt den "
 "Drucker nach diesem Rand und warnt, wenn der Inhalt eines Etiketts "
 "(trotz [[ui:Safety margin]]) hineinreicht. Diese Positionen "
 "auslassen oder den [[ui:Safety margin]] vergrössern."
@@ -2668,11 +2668,11 @@ msgstr ""
 #. type: Plain text
 #: docs/sheets.md
 msgid ""
-"Older versions of Etiketto refuse to open labels for a label sheet and say "
+"Older versions of Tavletta refuse to open labels for a label sheet and say "
 "that the label needs a newer version, instead of printing them as a single "
 "page."
 msgstr ""
-"Ältere Versionen von Etiketto öffnen Etiketten für einen Etikettenbogen "
+"Ältere Versionen von Tavletta öffnen Etiketten für einen Etikettenbogen "
 "nicht und sagen, dass das Etikett eine neuere Version braucht, statt sie als "
 "einzelne Seite zu drucken."
 
@@ -2757,13 +2757,13 @@ msgstr ""
 msgid ""
 "GS1-128 and GS1 DataMatrix: application identifiers in brackets, each "
 "followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.  "
-"Etiketto checks identifiers, lengths, dates and check digits and says which "
+"Tavletta checks identifiers, lengths, dates and check digits and says which "
 "identifier is wrong. GS1-128 shows the identifiers in brackets below the "
 "bars."
 msgstr ""
 "GS1-128 und GS1 DataMatrix: Datenbezeichner (Application Identifier) in "
 "Klammern, jeder gefolgt von seinem Wert, z. B. "
-"`(01)09501101530003(17)261231(10)AB12`.  Etiketto prüft Datenbezeichner, "
+"`(01)09501101530003(17)261231(10)AB12`.  Tavletta prüft Datenbezeichner, "
 "Längen, Datumsangaben und Prüfziffern und sagt, welcher Datenbezeichner "
 "falsch ist. GS1-128 zeigt die Datenbezeichner in Klammern unter den Strichen."
 
@@ -2791,10 +2791,10 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as another "
-"character by scanners set to Full ASCII; Etiketto warns."
+"character by scanners set to Full ASCII; Tavletta warns."
 msgstr ""
 "Code 39: Ein `$`, `/`, `+` oder `%` vor einem Grossbuchstaben wird von "
-"Scannern im Full-ASCII-Modus als anderes Zeichen gelesen; Etiketto warnt."
+"Scannern im Full-ASCII-Modus als anderes Zeichen gelesen; Tavletta warnt."
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -2809,10 +2809,10 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Labels with a code type other than QR code, Code 128 and EAN-13 do not open "
-"in earlier versions of Etiketto: they say the label needs a newer version."
+"in earlier versions of Tavletta: they say the label needs a newer version."
 msgstr ""
 "Etiketten mit einem anderen Codetyp als QR-Code, Code 128 und EAN-13 lassen "
-"sich in früheren Versionen von Etiketto nicht öffnen: Sie melden, dass das "
+"sich in früheren Versionen von Tavletta nicht öffnen: Sie melden, dass das "
 "Etikett eine neuere Version braucht."
 
 #. type: Bullet: '- '
@@ -2833,11 +2833,11 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "A code whose bars are only one printer dot wide, or without room for its "
-"blank margin, may not scan: Etiketto warns before printing, make the code "
+"blank margin, may not scan: Tavletta warns before printing, make the code "
 "larger. A code that does not fit at all is not printed."
 msgstr ""
 "Ein Code, dessen Striche nur einen Druckpunkt breit sind oder dessen leerer "
-"Rand keinen Platz hat, lässt sich womöglich nicht scannen: Etiketto warnt "
+"Rand keinen Platz hat, lässt sich womöglich nicht scannen: Tavletta warnt "
 "vor dem Drucken, dann den Code grösser machen. Ein Code, der gar nicht "
 "passt, wird nicht gedruckt."
 
@@ -3030,11 +3030,11 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Labels with lines or shapes, or with the options on this page, do not open "
-"in earlier versions of Etiketto: they say the label needs a newer version. "
+"in earlier versions of Tavletta: they say the label needs a newer version. "
 "Labels without them open as before."
 msgstr ""
 "Etiketten mit Linien oder Formen oder mit den Optionen auf dieser Seite "
-"lassen sich in früheren Versionen von Etiketto nicht öffnen: Sie melden, "
+"lassen sich in früheren Versionen von Tavletta nicht öffnen: Sie melden, "
 "dass das Etikett eine neuere Version braucht. Etiketten ohne sie öffnen sich "
 "wie bisher."
 
@@ -3155,9 +3155,9 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
-msgid "Labels in the free layout do not open in earlier versions of Etiketto."
+msgid "Labels in the free layout do not open in earlier versions of Tavletta."
 msgstr ""
-"Etiketten in freier Anordnung lassen sich in früheren Versionen von Etiketto "
+"Etiketten in freier Anordnung lassen sich in früheren Versionen von Tavletta "
 "nicht öffnen."
 
 #. type: Title ##
@@ -3191,10 +3191,10 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Labels with a weight or an error correction do not open in earlier versions "
-"of Etiketto."
+"of Tavletta."
 msgstr ""
 "Etiketten mit einer Schriftstärke oder einer Fehlerkorrektur lassen sich in "
-"früheren Versionen von Etiketto nicht öffnen."
+"früheren Versionen von Tavletta nicht öffnen."
 
 #. type: Title ##
 #: docs/use.md
@@ -3372,11 +3372,11 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "The label file keeps the outline of each symbol, so a label looks the same "
-"in later versions. Older versions of Etiketto cannot open labels with "
+"in later versions. Older versions of Tavletta cannot open labels with "
 "symbols and say that the label needs a newer version."
 msgstr ""
 "Die Etikettendatei enthält den Umriss jedes Symbols, darum sieht ein Etikett "
-"auch in späteren Versionen gleich aus. Ältere Versionen von Etiketto können "
+"auch in späteren Versionen gleich aus. Ältere Versionen von Tavletta können "
 "Etiketten mit Symbolen nicht öffnen und melden, dass das Etikett eine neuere "
 "Version braucht."
 
@@ -3475,11 +3475,11 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "[[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.  Before "
-"printing Etiketto compares height and gap with the distance the printer "
+"printing Tavletta compares height and gap with the distance the printer "
 "measured."
 msgstr ""
 "[[ui:Gap]]: Platz zwischen zwei Etiketten auf der Rolle, meist 2 bis 3 mm. "
-"Vor dem Druck vergleicht Etiketto Höhe und Lücke mit dem Abstand, den der "
+"Vor dem Druck vergleicht Tavletta Höhe und Lücke mit dem Abstand, den der "
 "Drucker gemessen hat."
 
 #. type: Bullet: '- '
@@ -3535,13 +3535,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"Etiketto looks for the label on the page: a large area with the shape of a "
+"Tavletta looks for the label on the page: a large area with the shape of a "
 "label, best with a printed frame and a barcode; a page with one label "
 "filling it is taken whole. Check the selection: drag it, drag its edges, or "
 "draw a new one. [[ui:Next suggestion]] shows other areas that could be the "
 "label, [[ui:Whole page]] selects all of it."
 msgstr ""
-"Etiketto sucht das Etikett auf der Seite: einen grossen Bereich mit der Form "
+"Tavletta sucht das Etikett auf der Seite: einen grossen Bereich mit der Form "
 "eines Etiketts, am besten mit gedrucktem Rahmen und Strichcode; eine Seite, "
 "die ein einziges Etikett ausfüllt, wird ganz genommen. Die Auswahl prüfen: "
 "sie verschieben, ihre Kanten ziehen oder eine neue aufziehen. [[ui:Next "
@@ -3682,12 +3682,12 @@ msgstr ""
 msgid ""
 "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, "
 "otherwise install it from your distribution (see the README).  Older "
-"versions of Etiketto refuse to open labels with a shipping label and say "
+"versions of Tavletta refuse to open labels with a shipping label and say "
 "that the label needs a newer version."
 msgstr ""
 "Zum Öffnen von PDF-Dateien braucht es Poppler (poppler-glib); das Flatpak "
 "bringt es mit, sonst aus der eigenen Distribution installieren (siehe "
-"README). Ältere Versionen von Etiketto öffnen Etiketten mit einem "
+"README). Ältere Versionen von Tavletta öffnen Etiketten mit einem "
 "Versandetikett nicht und sagen, dass das Etikett eine neuere Version braucht."
 
 #. type: Plain text
@@ -3841,12 +3841,12 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 msgid ""
-"A label with variables or a counter needs this version of Etiketto or a "
+"A label with variables or a counter needs this version of Tavletta or a "
 "newer one: older versions refuse to open it instead of printing `{=date}` as "
 "it is."
 msgstr ""
 "Ein Etikett mit Variablen oder Zähler braucht diese oder eine neuere Version "
-"von Etiketto: Ältere Versionen öffnen es nicht, statt `{=date}` unverändert "
+"von Tavletta: Ältere Versionen öffnen es nicht, statt `{=date}` unverändert "
 "zu drucken."
 
 #. type: Title ##
@@ -3858,43 +3858,43 @@ msgstr "Befehlszeile { #command-line }"
 #. type: Plain text
 #: docs/use.md
 msgid ""
-"`etiketto print` prints a saved label without opening a window, also on a "
+"`tavletta print` prints a saved label without opening a window, also on a "
 "computer without a screen:"
 msgstr ""
-"`etiketto print` druckt ein gespeichertes Etikett, ohne ein Fenster zu "
+"`tavletta print` druckt ein gespeichertes Etikett, ohne ein Fenster zu "
 "öffnen, auch auf einem Computer ohne Bildschirm:"
 
 #. type: Fenced code block (sh)
 #: docs/use.md
 #, no-wrap
 msgid ""
-"etiketto print label.etiketto\n"
-"etiketto print label.etiketto --copies 5 --counter-start 100\n"
-"etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
-"etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
-"etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
-"etiketto print shelf.etiketto --data items.csv --rows 3-10\n"
-"etiketto list-printers\n"
-"etiketto --version\n"
+"tavletta print label.tavletta\n"
+"tavletta print label.tavletta --copies 5 --counter-start 100\n"
+"tavletta print label.tavletta --set title=\"Batch 7\" --set lot=A12\n"
+"tavletta print label.tavletta --printer system --host ipp://printer.local/ipp/print\n"
+"tavletta print label.tavletta --copies 3 --dry-run --output preview.png\n"
+"tavletta print shelf.tavletta --data items.csv --rows 3-10\n"
+"tavletta list-printers\n"
+"tavletta --version\n"
 msgstr ""
-"etiketto print label.etiketto\n"
-"etiketto print label.etiketto --copies 5 --counter-start 100\n"
-"etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
-"etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
-"etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
-"etiketto print shelf.etiketto --data items.csv --rows 3-10\n"
-"etiketto list-printers\n"
-"etiketto --version\n"
+"tavletta print label.tavletta\n"
+"tavletta print label.tavletta --copies 5 --counter-start 100\n"
+"tavletta print label.tavletta --set title=\"Batch 7\" --set lot=A12\n"
+"tavletta print label.tavletta --printer system --host ipp://printer.local/ipp/print\n"
+"tavletta print label.tavletta --copies 3 --dry-run --output preview.png\n"
+"tavletta print shelf.tavletta --data items.csv --rows 3-10\n"
+"tavletta list-printers\n"
+"tavletta --version\n"
 
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"Without `--host` Etiketto uses the printer set in the app, or the only one "
-"it finds on the network. `etiketto list-printers` shows model, address and "
+"Without `--host` Tavletta uses the printer set in the app, or the only one "
+"it finds on the network. `tavletta list-printers` shows model, address and "
 "name of each printer found."
 msgstr ""
-"Ohne `--host` verwendet Etiketto den in der App eingestellten Drucker oder "
-"den einzigen, den es im Netzwerk findet. `etiketto list-printers` zeigt "
+"Ohne `--host` verwendet Tavletta den in der App eingestellten Drucker oder "
+"den einzigen, den es im Netzwerk findet. `tavletta list-printers` zeigt "
 "Modell, Adresse und Name jedes gefundenen Druckers."
 
 #. type: Bullet: '- '
@@ -3921,7 +3921,7 @@ msgid ""
 "also when the printer fails half-way or the print is stopped with Ctrl+C. If "
 "the file cannot be written, nothing is printed; `--no-save-counter` prints "
 "anyway and saves nothing, so the next print repeats the numbers. The label "
-"file is locked while printing: a second `etiketto print` of the same file "
+"file is locked while printing: a second `tavletta print` of the same file "
 "waits. The window reads the saved number again before printing and saving."
 msgstr ""
 "Mit einem Zähler wird die nächste Nummer nach dem Drucken in der "
@@ -3929,7 +3929,7 @@ msgstr ""
 "der Druck mit Ctrl+C abgebrochen wird. Lässt sich die Datei nicht schreiben, "
 "wird nichts gedruckt; `--no-save-counter` druckt trotzdem und speichert "
 "nichts, der nächste Druck wiederholt also die Nummern. Während des Druckens "
-"ist die Etikettendatei gesperrt: Ein zweites `etiketto print` derselben "
+"ist die Etikettendatei gesperrt: Ein zweites `tavletta print` derselben "
 "Datei wartet. Das Fenster liest die gespeicherte Nummer vor dem Drucken und "
 "Speichern neu."
 
@@ -3979,14 +3979,14 @@ msgid ""
 "what they report (the tape, the resolution); a printer that does not answer "
 "within 5 s (2 s for `--dry-run`) gets the label drawn without.  A question "
 "still on its way then gets up to 10 s more to end before the label is sent "
-"(Etiketto says so); an answer in that time is used.  `--no-query` skips the "
+"(Tavletta says so); an answer in that time is used.  `--no-query` skips the "
 "question."
 msgstr ""
 "Manche Drucker werden vor dem Zeichnen des Etiketts abgefragt, weil es davon"
 " abhängt, was sie melden (das Band, die Auflösung); ein Drucker, der nicht "
 "innerhalb von 5 s antwortet (2 s bei `--dry-run`), bekommt das Etikett ohne "
 "gezeichnet. Eine Abfrage, die dann noch läuft, bekommt bis zu 10 s mehr, "
-"bevor das Etikett gesendet wird (Etiketto sagt das); eine Antwort in dieser "
+"bevor das Etikett gesendet wird (Tavletta sagt das); eine Antwort in dieser "
 "Zeit wird verwendet. `--no-query` lässt die Abfrage weg."
 
 #. type: Bullet: '- '
@@ -4064,13 +4064,13 @@ msgstr ""
 #: docs/use.md
 #, no-wrap
 msgid ""
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@\n"
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@ --data @@ rows.csv @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print --dry-run --output - @@ label.tavletta @@ > preview.png\n"
 msgstr ""
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@\n"
-"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@ --data @@ rows.csv @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print --dry-run --output - @@ label.tavletta @@ > preview.png\n"
 
 #. type: Plain text
 #: docs/use.md

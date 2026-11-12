@@ -20,7 +20,7 @@ Elements are placed one after another along the label. Order them with
   added; with it, it is checked.
 - GS1-128 and GS1 DataMatrix: application identifiers in brackets, each
   followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.
-  Etiketto checks identifiers, lengths, dates and check digits and says
+  Tavletta checks identifiers, lengths, dates and check digits and says
   which identifier is wrong. GS1-128 shows the identifiers in brackets
   below the bars.
 - A GS1 value with round brackets in it: write the identifiers in square
@@ -29,18 +29,18 @@ Elements are placed one after another along the label. Order them with
   0.495 mm. On narrow labels they come out narrower: fine for your own
   scanners, too small for carton labels read in logistics.
 - Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as
-  another character by scanners set to Full ASCII; Etiketto warns.
+  another character by scanners set to Full ASCII; Tavletta warns.
 - Content a code type cannot take is not changed silently: the element is
   crossed out and a warning says why.
 - Labels with a code type other than QR code, Code 128 and EAN-13 do not
-  open in earlier versions of Etiketto: they say the label needs a newer
+  open in earlier versions of Tavletta: they say the label needs a newer
   version.
 - Codes print sharp on every printer: each bar and square is a whole
   number of printer dots, as close to the designed width as the element's
   space allows, with the blank margin a scanner needs. The code may come
   out slightly smaller than designed, centred in its space.
 - A code whose bars are only one printer dot wide, or without room for its
-  blank margin, may not scan: Etiketto warns before printing, make the
+  blank margin, may not scan: Tavletta warns before printing, make the
   code larger. A code that does not fit at all is not printed.
 - QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now
   marked as UTF-8, so scanners read them correctly. Labels made with
@@ -96,7 +96,7 @@ header names the element:
 - [[ui:Line width]] and [[ui:Line style]] (solid, dashed, dotted). Every
   line is at least one printer dot wide.
 - Labels with lines or shapes, or with the options on this page, do not
-  open in earlier versions of Etiketto: they say the label needs a newer
+  open in earlier versions of Tavletta: they say the label needs a newer
   version. Labels without them open as before.
 
 ## Position { #position }
@@ -132,7 +132,7 @@ put it.
   it was.
 - An element that reaches beyond the label is cut off there; the preview
   warns about it.
-- Labels in the free layout do not open in earlier versions of Etiketto.
+- Labels in the free layout do not open in earlier versions of Tavletta.
 
 ## Weight and error correction { #weight }
 
@@ -142,7 +142,7 @@ put it.
   and still be read. [[ui:Standard (medium)]] keeps the code of earlier
   versions; the other levels choose the code's pattern as label printers do.
 - Labels with a weight or an error correction do not open in earlier
-  versions of Etiketto.
+  versions of Tavletta.
 
 ## Black-and-white printers { #black-and-white }
 
@@ -194,7 +194,7 @@ category and further icons showing brands or trademarks are left out.
   sharp edges.
 
 The label file keeps the outline of each symbol, so a label looks the same
-in later versions. Older versions of Etiketto cannot open labels with
+in later versions. Older versions of Tavletta cannot open labels with
 symbols and say that the label needs a newer version.
 
 Texts and codes can contain [variables](#variables), e.g. a date or a
@@ -225,7 +225,7 @@ Die-cut labels have a fixed size instead of a length:
 - [[ui:Label size]]: a common size, or [[ui:Custom size]] with [[ui:Width]]
   (across the roll) and [[ui:Height]] (along the roll), as on the label box.
 - [[ui:Gap]]: space between two labels on the roll, usually 2 to 3 mm.
-  Before printing Etiketto compares height and gap with the distance the
+  Before printing Tavletta compares height and gap with the distance the
   printer measured.
 - [[ui:Content direction]]: [[ui:Across the roll]] for labels read with
   the roll running from top to bottom, [[ui:Along the roll]] like on tape.
@@ -243,7 +243,7 @@ often an A4 page with the label in one half or quarter and a receipt or
 instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF
 dropped onto the window) opens such a file and makes a new label of it.
 
-- Etiketto looks for the label on the page: a large area with the shape
+- Tavletta looks for the label on the page: a large area with the shape
   of a label, best with a printed frame and a barcode; a page with one
   label filling it is taken whole. Check the selection:
   drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows
@@ -297,7 +297,7 @@ chosen page is kept.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
 along, otherwise install it from your distribution (see the README).
-Older versions of Etiketto refuse to open labels with a shipping label and
+Older versions of Tavletta refuse to open labels with a shipping label and
 say that the label needs a newer version.
 
 Most shipping label rolls are direct thermal labels: they need no ribbon,
@@ -359,28 +359,28 @@ Dates and times are in the computer's time zone. `+1d` keeps the time of
 day, also when summer time starts or ends; `+2h` counts real hours. `%z`
 and `%Z` give the offset and the name of the time zone.
 
-A label with variables or a counter needs this version of Etiketto or a
+A label with variables or a counter needs this version of Tavletta or a
 newer one: older versions refuse to open it instead of printing `{=date}`
 as it is.
 
 ## Command line { #command-line }
 
-`etiketto print` prints a saved label without opening a window, also on a
+`tavletta print` prints a saved label without opening a window, also on a
 computer without a screen:
 
 ```sh
-etiketto print label.etiketto
-etiketto print label.etiketto --copies 5 --counter-start 100
-etiketto print label.etiketto --set title="Batch 7" --set lot=A12
-etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print
-etiketto print label.etiketto --copies 3 --dry-run --output preview.png
-etiketto print shelf.etiketto --data items.csv --rows 3-10
-etiketto list-printers
-etiketto --version
+tavletta print label.tavletta
+tavletta print label.tavletta --copies 5 --counter-start 100
+tavletta print label.tavletta --set title="Batch 7" --set lot=A12
+tavletta print label.tavletta --printer system --host ipp://printer.local/ipp/print
+tavletta print label.tavletta --copies 3 --dry-run --output preview.png
+tavletta print shelf.tavletta --data items.csv --rows 3-10
+tavletta list-printers
+tavletta --version
 ```
 
-- Without `--host` Etiketto uses the printer set in the app, or the only
-  one it finds on the network. `etiketto list-printers` shows model,
+- Without `--host` Tavletta uses the printer set in the app, or the only
+  one it finds on the network. `tavletta list-printers` shows model,
   address and name of each printer found.
 - `--set NAME=VALUE` replaces the text of the element with that
   [[ui:Name for the command line]] (in the element's settings), or fills in
@@ -393,7 +393,7 @@ etiketto --version
   with Ctrl+C. If the file cannot be written, nothing is printed;
   `--no-save-counter` prints anyway and saves nothing, so the next print
   repeats the numbers. The label file is locked while printing: a second
-  `etiketto print` of the same file waits. The window reads the saved
+  `tavletta print` of the same file waits. The window reads the saved
   number again before printing and saving.
 - It prints with the choices last made in the app for that printer
   model: cut, colours, quality, chain printing, high resolution, tape feed,
@@ -412,7 +412,7 @@ etiketto --version
   on what they report (the tape, the resolution); a printer that does not
   answer within 5 s (2 s for `--dry-run`) gets the label drawn without.
   A question still on its way then gets up to 10 s more to end before
-  the label is sent (Etiketto says so); an answer in that time is used.
+  the label is sent (Tavletta says so); an answer in that time is used.
   `--no-query` skips the question.
 - Serial labels: one label for each row of the data file, `--copies` of
   each; `--data` gives the data file (by default the label's own, if it
@@ -444,9 +444,9 @@ data file is only reached when handed over); write images to standard
 output:
 
 ```sh
-flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
-flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@
-flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png
+flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@
+flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print @@ label.tavletta @@ --data @@ rows.csv @@
+flatpak run --file-forwarding xyz.joshuahirsig.Tavletta print --dry-run --output - @@ label.tavletta @@ > preview.png
 ```
 
 A file handed over this way is reached through the document portal. The

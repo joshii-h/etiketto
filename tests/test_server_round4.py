@@ -13,14 +13,14 @@ from types import SimpleNamespace
 import pytest
 from test_server import call
 
-from etiketto import cli
-from etiketto.model import CodeElement, ImageElement, Label
-from etiketto.render import CODE128_MAX
-from etiketto.server import http as server_http
-from etiketto.server import jobs as jobs_module
-from etiketto.server import main as server_main
-from etiketto.server import service as service_module
-from etiketto.server.service import _ip_pattern, _resolved
+from tavletta import cli
+from tavletta.model import CodeElement, ImageElement, Label
+from tavletta.render import CODE128_MAX
+from tavletta.server import http as server_http
+from tavletta.server import jobs as jobs_module
+from tavletta.server import main as server_main
+from tavletta.server import service as service_module
+from tavletta.server.service import _ip_pattern, _resolved
 
 
 def run(*argv):
@@ -100,7 +100,7 @@ def test_startup_order(monkeypatch, tmp_path, server_env):
     monkeypatch.setattr(
         server_main, "_configured", lambda args: order.append("files") or real_configured(args)
     )
-    import etiketto.render as render_module
+    import tavletta.render as render_module
 
     monkeypatch.setattr(render_module, "warm_up", lambda: order.append("pango"))
     real_init = server_http.Server.__init__
@@ -120,8 +120,8 @@ def test_startup_order(monkeypatch, tmp_path, server_env):
 
 def test_mcp_warms_up_pango_too(monkeypatch, tmp_path, server_env):
     order = []
-    import etiketto.render as render_module
-    from etiketto.server import mcp as mcp_module
+    import tavletta.render as render_module
+    from tavletta.server import mcp as mcp_module
 
     monkeypatch.setattr(render_module, "warm_up", lambda: order.append("pango"))
     monkeypatch.setattr(mcp_module, "run_stdio", lambda service: order.append("stdio") or 0)

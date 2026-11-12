@@ -17,14 +17,14 @@ import cairo  # noqa: E402
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from test_app import FakeFileDialog, drop, find, one, respond  # noqa: E402
 
-from etiketto.model import Label, PageElement, TextElement  # noqa: E402
-from etiketto.shipping import detect, source  # noqa: E402
-from etiketto.shipping.detect import Detection  # noqa: E402
-from etiketto.shipping.source import SourceError  # noqa: E402
-from etiketto.shipping.targets import TARGETS, Target  # noqa: E402
-from etiketto.ui import shipping, texts  # noqa: E402
-from etiketto.ui.texts import detection_hint, target_name  # noqa: E402
-from etiketto.units import INCHES, MILLIMETRES  # noqa: E402
+from tavletta.model import Label, PageElement, TextElement  # noqa: E402
+from tavletta.shipping import detect, source  # noqa: E402
+from tavletta.shipping.detect import Detection  # noqa: E402
+from tavletta.shipping.source import SourceError  # noqa: E402
+from tavletta.shipping.targets import TARGETS, Target  # noqa: E402
+from tavletta.ui import shipping, texts  # noqa: E402
+from tavletta.ui.texts import detection_hint, target_name  # noqa: E402
+from tavletta.units import INCHES, MILLIMETRES  # noqa: E402
 
 
 def has_poppler() -> bool:
@@ -135,7 +135,7 @@ def test_page_element_texts():
     assert texts.element_title(element) == "parcel.pdf"
     assert texts.element_title(PageElement()) == "Shipping label"
     assert texts.element_icon(element) == "x-office-document-symbolic"
-    from etiketto.render import RenderWarning
+    from tavletta.render import RenderWarning
 
     assert "cannot be read" in texts.warning_text(RenderWarning("page_unreadable", {"n": 1}))
     assert "Poppler" in texts.warning_text(RenderWarning("pdf_missing", {"n": 2}))
@@ -185,7 +185,7 @@ def test_unusable_files(window, tmp_path, monkeypatch):
     def no_poppler(*_args):
         raise SourceError("no_pdf", "Poppler missing")
 
-    monkeypatch.setattr("etiketto.ui.files.page_info", no_poppler)
+    monkeypatch.setattr("tavletta.ui.files.page_info", no_poppler)
     window.files.shipping_from(tmp_path / "notes.txt")
     assert toast_titles(window) == [
         "Cannot open missing.pdf",
@@ -453,7 +453,7 @@ def test_page_that_cannot_be_drawn(cab_window, sample_pdf, monkeypatch):
 
 
 def test_shipping_file_types():
-    from etiketto.ui import files
+    from tavletta.ui import files
 
     assert "application/pdf" in files.SHIPPING_TYPES
     assert "svg" not in files.SHIPPING_SUFFIXES  # Pillow cannot read it

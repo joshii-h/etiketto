@@ -9,12 +9,12 @@ PY=.venv/bin
 echo "== ruff"
 $PY/ruff format --check .
 $PY/ruff check --output-format=full .
-echo "== tests";     $PY/python -m pytest -q --cov=etiketto --cov-report=term-missing
+echo "== tests";     $PY/python -m pytest -q --cov=tavletta --cov-report=term-missing
 echo "== mypy";      $PY/mypy
-echo "== bandit";    $PY/bandit -c pyproject.toml -r etiketto -ll
+echo "== bandit";    $PY/bandit -c pyproject.toml -r tavletta -ll
 echo "== complexity"
-$PY/radon cc -s -n C etiketto
-$PY/xenon --max-absolute C --max-modules A --max-average A etiketto
+$PY/radon cc -s -n C tavletta
+$PY/xenon --max-absolute C --max-modules A --max-average A tavletta
 echo "== dependencies"; $PY/pip-audit --progress-spinner off .
 echo "== translations"
 # the app's catalogs and the documentation's (site/po)

@@ -13,14 +13,14 @@ import pytest
 from test_server import call
 from test_server_config import write
 
-from etiketto import cli
-from etiketto.model import ImageElement, Label
-from etiketto.server import config as cfg
-from etiketto.server import http as server_http
-from etiketto.server import main as server_main
-from etiketto.server import service as service_module
-from etiketto.server.config import TokenStore
-from etiketto.server.service import host_allowed, pattern_problem
+from tavletta import cli
+from tavletta.model import ImageElement, Label
+from tavletta.server import config as cfg
+from tavletta.server import http as server_http
+from tavletta.server import main as server_main
+from tavletta.server import service as service_module
+from tavletta.server.config import TokenStore
+from tavletta.server.service import host_allowed, pattern_problem
 
 
 def run(*argv):
@@ -105,17 +105,17 @@ def test_an_id_of_another_type_is_warned_about_too(tmp_path, caplog):
 
 
 def test_the_launcher_ignores_sighup_before_anything_is_imported(monkeypatch):
-    from etiketto import launch
+    from tavletta import launch
 
     seen = []
     monkeypatch.setattr(
         launch.signal, "signal", lambda number, handler: seen.append((number, handler))
     )
-    monkeypatch.setattr(sys, "argv", ["etiketto", "serve", "--help"])
+    monkeypatch.setattr(sys, "argv", ["tavletta", "serve", "--help"])
     assert launch.main() == 0
     assert seen[0] == (signal.SIGHUP, signal.SIG_IGN)
     seen.clear()
-    monkeypatch.setattr(sys, "argv", ["etiketto", "--version"])
+    monkeypatch.setattr(sys, "argv", ["tavletta", "--version"])
     assert launch.main() == 0
     assert seen == []
 
@@ -141,7 +141,7 @@ def test_the_unit_waits_for_readiness():
     from pathlib import Path
 
     unit = (
-        Path(__file__).resolve().parent.parent / "packaging/systemd/etiketto.service"
+        Path(__file__).resolve().parent.parent / "packaging/systemd/tavletta.service"
     ).read_text()
     assert "Type=notify" in unit and "NotifyAccess=main" in unit
 

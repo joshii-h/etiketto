@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Turn the gLabels template database into etiketto/sheets/templates.json.
+"""Turn the gLabels template database into tavletta/sheets/templates.json.
 
     python3 tools/glabels_templates.py <glabels-qt checkout>/templates
 
 The database (MIT license, Copyright (C) 2001-2026 Jaye Evins) describes
 label sheets: paper size, label shape and size, and where the labels sit
-(one or more grids). Etiketto keeps what it needs for sheets, in mm, with
+(one or more grids). Tavletta keeps what it needs for sheets, in mm, with
 aliases ("equiv") resolved, and the license next to it. Rolls and labels
-with a free-form outline are left out: Etiketto prints those differently.
+with a free-form outline are left out: Tavletta prints those differently.
 So are the few templates whose labels lie off the page (typing errors in
 the database: a label more than OFF_PAGE_MM beyond the paper's edge) and
 labels smaller than a label file may be (MIN_SIZE_MM).
@@ -23,10 +23,10 @@ import sys
 import xml.etree.ElementTree as ET  # noqa: S405 - our own copy of a known source
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "etiketto" / "sheets"
+OUT = Path(__file__).resolve().parent.parent / "tavletta" / "sheets"
 UNITS = {"mm": 1.0, "cm": 10.0, "in": 25.4, "pt": 25.4 / 72, "pc": 25.4 / 6, "": 25.4 / 72}
 OFF_PAGE_MM = 1.0
-MIN_SIZE_MM = 5.0  # etiketto.model.MIN_SIZE_MM
+MIN_SIZE_MM = 5.0  # tavletta.model.MIN_SIZE_MM
 SHAPES = {
     "Label-rectangle": "rectangle",
     "Label-round": "round",

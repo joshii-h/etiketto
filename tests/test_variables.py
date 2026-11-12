@@ -11,9 +11,9 @@ from itertools import count
 
 import pytest
 
-from etiketto.model import CodeElement, ImageElement, Label, LabelError, TextElement
-from etiketto.render import RenderWarning
-from etiketto.variables import (
+from tavletta.model import CodeElement, ImageElement, Label, LabelError, TextElement
+from tavletta.render import RenderWarning
+from tavletta.variables import (
     ID_ALPHABET,
     Values,
     column_names,
@@ -251,7 +251,7 @@ def test_counter_and_names_are_saved(tmp_path):
         counter_next=17,
         counter_step=3,
     )
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     label.save(path)
     loaded = Label.load(path)
     assert (loaded.counter_next, loaded.counter_step) == (17, 3)
@@ -290,7 +290,7 @@ def test_element_name_must_be_text():
 
 
 def test_store_counter_changes_only_the_counter(tmp_path):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label(elements=[TextElement(text="{=counter}")], counter_next=5).save(path)
     before = json.loads(path.read_text())
     Label.store_counter(path, 9)
@@ -392,7 +392,7 @@ def test_a_format_may_give_nothing_on_purpose():
 
 
 def test_dates_out_of_range():
-    from etiketto.variables import problem
+    from tavletta.variables import problem
 
     assert resolve("date+9000y", values()) is None
     assert problem("date+9000y", values()) == "date_out_of_range"

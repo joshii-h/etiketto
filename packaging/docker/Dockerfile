@@ -1,7 +1,7 @@
-# Etiketto print server: REST API and MCP, no window (docs/server.md).
+# Tavletta print server: REST API and MCP, no window (docs/server.md).
 #
-#   docker build -f packaging/docker/Dockerfile -t etiketto-server .
-#   docker run -e ETIKETTO_TOKEN=... -v ./labels:/labels -p 127.0.0.1:8790:8790 etiketto-server
+#   docker build -f packaging/docker/Dockerfile -t tavletta-server .
+#   docker run -e TAVLETTA_TOKEN=... -v ./labels:/labels -p 127.0.0.1:8790:8790 tavletta-server
 #
 # Rendering needs Pango and Cairo through PyGObject, not GTK: the Debian
 # packages of the same Python are used (python3-gi is built for it), the
@@ -16,35 +16,35 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY pyproject.toml setup.py MANIFEST.in README.md LICENSE ./
-COPY etiketto ./etiketto
+COPY tavletta ./tavletta
 COPY data ./data
 COPY po ./po
 # setup.py compiles the translations (msgfmt); git fetches the VC-500W protocol library
-RUN python3 -m venv --system-site-packages /opt/etiketto \
-    && /opt/etiketto/bin/pip install --no-cache-dir . \
-    && /opt/etiketto/bin/etiketto --version
+RUN python3 -m venv --system-site-packages /opt/tavletta \
+    && /opt/tavletta/bin/pip install --no-cache-dir . \
+    && /opt/tavletta/bin/tavletta --version
 
 FROM debian:${DEBIAN}
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 python3-gi python3-gi-cairo gir1.2-pango-1.0 fontconfig fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd --system --uid 10001 --home-dir /data --create-home etiketto \
-    && install -d -o etiketto -g etiketto -m 0755 /labels /config
-COPY --from=build /opt/etiketto /opt/etiketto
+    && useradd --system --uid 10001 --home-dir /data --create-home tavletta \
+    && install -d -o tavletta -g tavletta -m 0755 /labels /config
+COPY --from=build /opt/tavletta /opt/tavletta
 # Mount the labels at /labels and printers.toml, tokens.toml (and, if
-# wanted, etiketto/settings.json of the app) at /config. Both are plain
+# wanted, tavletta/settings.json of the app) at /config. Both are plain
 # folders, no volumes: Compose (or docker run -v) says what goes there, and
 # any user id can read them (compose.yaml runs as the owner of the files).
 # MALLOC_ARENA_MAX: threads do not each keep memory a large label used.
-ENV PATH=/opt/etiketto/bin:$PATH \
+ENV PATH=/opt/tavletta/bin:$PATH \
     XDG_CONFIG_HOME=/config \
     MALLOC_ARENA_MAX=2 \
     PYTHONUNBUFFERED=1
-USER etiketto
+USER tavletta
 EXPOSE 8790
 HEALTHCHECK --interval=30s --timeout=5s \
     CMD ["python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8790/api/v1/health', timeout=4)"]
-# all interfaces of the container: refused without ETIKETTO_TOKEN (or --token-file)
-ENTRYPOINT ["etiketto", "serve", "--host", "0.0.0.0", "--port", "8790", "--labels-dir", "/labels"]
+# all interfaces of the container: refused without TAVLETTA_TOKEN (or --token-file)
+ENTRYPOINT ["tavletta", "serve", "--host", "0.0.0.0", "--port", "8790", "--labels-dir", "/labels"]
 CMD ["--mcp"]

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 15:51+0100\n"
-"Last-Translator: Etiketto contributors\n"
+"Project-Id-Version: tavletta\n"
+"PO-Revision-Date: 2026-11-12 15:59+0100\n"
+"Last-Translator: Tavletta contributors\n"
 "Language-Team: hu\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -10,93 +10,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: etiketto/app.py:143 etiketto/ui/styles.py:183
+#: tavletta/app.py:143 tavletta/ui/styles.py:183
 msgid "Box and frame"
 msgstr "Doboz és keret"
 
-#: etiketto/app.py:217 etiketto/cli.py:170
+#: tavletta/app.py:217 tavletta/cli.py:170
 msgid "Design and print labels"
 msgstr "Címkék tervezése, nyomtatása"
 
 #. translators: replace with your name to be credited in the About dialog
-#: etiketto/app.py:222
+#: tavletta/app.py:222
 msgid "translator-credits"
-msgstr "Etiketto contributors"
+msgstr "Tavletta contributors"
 
-#: etiketto/app.py:230
+#: tavletta/app.py:230
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "Ötletek a változókhoz (számláló, dátum, UUID), kód nélkül"
 
-#: etiketto/app.py:233
+#: tavletta/app.py:233
 msgid "Protocol knowledge"
 msgstr "Protokollismeret"
 
-#: etiketto/app.py:238
+#: tavletta/app.py:238
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "
 "code; see THIRD_PARTY_NOTICES.md"
 msgstr "A következőkből: %(projects)s, valamint a gyártók kézikönyveiből, újraírva a kódjuk nélkül; lásd THIRD_PARTY_NOTICES.md"
 
-#: etiketto/cli.py:115
+#: tavletta/cli.py:115
 #, python-format
 msgid "expected NAME=VALUE: %s"
 msgstr "NAME=VALUE várható: %s"
 
-#: etiketto/cli.py:131
+#: tavletta/cli.py:131
 #, python-format
 msgid "expected a whole number from %(min)d to %(max)d: %(value)s"
 msgstr "egész szám várható %(min)d és %(max)d között: %(value)s"
 
-#: etiketto/cli.py:164
+#: tavletta/cli.py:164
 #, python-format
 msgid "expected rows such as 3-10, 5 or 7-: %s"
 msgstr "sorok várhatók, pl. 3-10, 5 vagy 7-: %s"
 
-#: etiketto/cli.py:171
+#: tavletta/cli.py:171
 msgid "Without a command the application starts; label files given open in it."
 msgstr "Parancs nélkül az alkalmazás indul el; a megadott címkefájlok abban nyílnak meg."
 
-#: etiketto/cli.py:177
+#: tavletta/cli.py:177
 msgid "print a label file without opening a window"
 msgstr "címkefájl nyomtatása ablak megnyitása nélkül"
 
-#: etiketto/cli.py:178
+#: tavletta/cli.py:178
 msgid "Print a label file without opening a window."
 msgstr "Címkefájl nyomtatása ablak megnyitása nélkül."
 
-#: etiketto/cli.py:180
-msgid "the label (.etiketto)"
-msgstr "a címke (.etiketto)"
+#: tavletta/cli.py:180
+msgid "the label (.tavletta)"
+msgstr "a címke (.tavletta)"
 
-#: etiketto/cli.py:183
+#: tavletta/cli.py:183
 #, python-format
 msgid "printer model, by default the label's: %s"
 msgstr "nyomtatómodell, alapértelmezés szerint a címkéé: %s"
 
-#: etiketto/cli.py:186
+#: tavletta/cli.py:186
 msgid "printer address, by default the one set in the app"
 msgstr "nyomtató címe, alapértelmezés szerint az alkalmazásban beállított cím"
 
-#: etiketto/cli.py:189
+#: tavletta/cli.py:189
 msgid "number of copies"
 msgstr "példányszám"
 
-#: etiketto/cli.py:199
+#: tavletta/cli.py:199
 msgid ""
 "text of the element NAME, or value of the variable {=NAME}; variables in a "
 "text are filled in; repeatable"
 msgstr "a NAME elem szövege, vagy a {=NAME} változó értéke; a szövegben lévő változók kitöltődnek; ismételhető"
 
-#: etiketto/cli.py:209
+#: tavletta/cli.py:209
 msgid "like --set, but the value is used as it is: braces are no variables"
 msgstr "mint a --set, de az érték változatlanul kerül felhasználásra: a kapcsos zárójelek nem változók"
 
-#: etiketto/cli.py:215
+#: tavletta/cli.py:215
 msgid "counter of the first label, instead of the one saved in the label"
 msgstr "az első címke számlálója a címkébe mentett helyett"
 
-#: etiketto/cli.py:221
+#: tavletta/cli.py:221
 msgid ""
 "print with the printer model's defaults instead of the cut, colours, "
 "quality, extras (chain printing, high resolution, tape feed), printer "
@@ -104,351 +104,351 @@ msgid ""
 "the safety margin stay"
 msgstr "nyomtatás a nyomtatótípus alapértékeivel az alkalmazásban legutóbb választott vágás, színek, minőség, extrák (láncnyomtatás, nagy felbontás, szalagelőtolás), nyomtatóbeállítások és címkeívek körvonalai helyett; a cím és a biztonsági margó marad"
 
-#: etiketto/cli.py:230
+#: tavletta/cli.py:230
 msgid ""
 "print method of a thermal printer that has the setting: printer (as set on "
 "the printer), transfer (with a ribbon) or direct (thermal direct, no "
 "ribbon); by default the one chosen in the app, also with --printer-defaults"
 msgstr "a beállítással rendelkező hőnyomtató nyomtatási módja: printer (ahogy a nyomtatón be van állítva), transfer (festékszalaggal) vagy direct (direkt termál, festékszalag nélkül); alapértelmezés szerint az alkalmazásban választott, --printer-defaults mellett is"
 
-#: etiketto/cli.py:238
+#: tavletta/cli.py:238
 msgid ""
 "do not ask the printer before rendering (its model, tape and resolution)"
 msgstr "ne kérdezze le a nyomtatót a megjelenítés előtt (típus, szalag és felbontás)"
 
-#: etiketto/cli.py:244
+#: tavletta/cli.py:244
 msgid ""
 "do not save the next counter value in the label (a read-only file); the next "
 "print starts from the same number"
 msgstr "ne mentse a számláló következő értékét a címkébe (csak olvasható fájl); a következő nyomtatás ugyanattól a számtól indul"
 
-#: etiketto/cli.py:253
+#: tavletta/cli.py:253
 msgid ""
 "serial labels: one label for each row of this CSV, ODS or XLSX file; by "
 "default the data file of the label"
 msgstr "sorozatcímkék: egy címke a CSV-, ODS- vagy XLSX-fájl minden sorához; alapértelmezés szerint a címke adatfájlja"
 
-#: etiketto/cli.py:258
+#: tavletta/cli.py:258
 msgid "the sheet of the data file, by default the first"
 msgstr "az adatfájl munkalapja, alapértelmezés szerint az első"
 
-#: etiketto/cli.py:264
+#: tavletta/cli.py:264
 msgid "only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"
 msgstr "csak az adatfájl ezen sorai, pl. 3-10, 5 vagy 7- (1-től számolva)"
 
-#: etiketto/cli.py:267
+#: tavletta/cli.py:267
 msgid "check and render only, do not print"
 msgstr "csak ellenőrzés és megjelenítés, nincs nyomtatás"
 
-#: etiketto/cli.py:273
+#: tavletta/cli.py:273
 msgid ""
 "with --dry-run: save each label as PNG as the window exports it, at most 600 "
 "dpi (- for stdout: the first only)"
 msgstr "--dry-run esetén: minden címke mentése PNG-ként úgy, ahogy az ablak exportálja, legfeljebb 600 dpi (- a szabványos kimenethez: csak az első)"
 
-#: etiketto/cli.py:279
+#: tavletta/cli.py:279
 msgid "list the printers found on the network"
 msgstr "a hálózaton talált nyomtatók listázása"
 
-#: etiketto/cli.py:280
+#: tavletta/cli.py:280
 msgid "List the printers found on the network: model, address, name."
 msgstr "A hálózaton talált nyomtatók listázása: modell, cím, név."
 
-#: etiketto/cli.py:282
+#: tavletta/cli.py:282
 #, python-format
 msgid "only this printer model: %s"
 msgstr "csak ez a nyomtatómodell: %s"
 
-#: etiketto/cli.py:294
+#: tavletta/cli.py:294
 #, python-format
 msgid "expected an address or network such as 172.16.0.0/12: %s"
 msgstr "cím vagy hálózat várható, pl. 172.16.0.0/12: %s"
 
-#: etiketto/cli.py:304
+#: tavletta/cli.py:304
 msgid "the folder with the label files the server may use"
 msgstr "a mappa azokkal a címkefájlokkal, amelyeket a kiszolgáló használhat"
 
-#: etiketto/cli.py:311
+#: tavletta/cli.py:311
 msgid "only print on this printer address (* matches anything); repeatable"
 msgstr "nyomtatás csak erre a nyomtatócímre (a * bármire illeszkedik); ismételhető"
 
-#: etiketto/cli.py:317
+#: tavletta/cli.py:317
 msgid "printers.toml: the printers clients may use, by name"
 msgstr "printers.toml: a kliensek által használható nyomtatók, név szerint"
 
-#: etiketto/cli.py:324
+#: tavletta/cli.py:324
 msgid "most labels in one print job, copies times rows (default 10000)"
 msgstr "legfeljebb ennyi címke egy nyomtatási feladatban, példányszám szorozva a sorokkal (alapértelmezés: 10000)"
 
-#: etiketto/cli.py:329
+#: tavletta/cli.py:329
 msgid "search the network for printers (off by default)"
 msgstr "nyomtatók keresése a hálózaton (alapértelmezés szerint ki)"
 
-#: etiketto/cli.py:336
+#: tavletta/cli.py:336
 msgid "run a print server with a REST API"
 msgstr "nyomtatókiszolgáló futtatása REST API-val"
 
-#: etiketto/cli.py:337
+#: tavletta/cli.py:337
 msgid "Run a print server: a REST API and, with --mcp, MCP for AI clients."
 msgstr "Nyomtatókiszolgáló futtatása: REST API, valamint --mcp esetén MCP MI-kliensek számára."
 
-#: etiketto/cli.py:340
+#: tavletta/cli.py:340
 msgid "address to listen on (default 127.0.0.1)"
 msgstr "a figyelt cím (alapértelmezés: 127.0.0.1)"
 
-#: etiketto/cli.py:346
+#: tavletta/cli.py:346
 #, python-format
 msgid "port to listen on (default %d)"
 msgstr "a figyelt port (alapértelmezés: %d)"
 
-#: etiketto/cli.py:352
+#: tavletta/cli.py:352
 msgid ""
-"file with the access token; else the environment variable ETIKETTO_TOKEN"
-msgstr "a hozzáférési tokent tartalmazó fájl; egyébként az ETIKETTO_TOKEN környezeti változó"
+"file with the access token; else the environment variable TAVLETTA_TOKEN"
+msgstr "a hozzáférési tokent tartalmazó fájl; egyébként az TAVLETTA_TOKEN környezeti változó"
 
-#: etiketto/cli.py:358
+#: tavletta/cli.py:358
 msgid "tokens.toml: named access tokens with roles"
 msgstr "tokens.toml: elnevezett hozzáférési tokenek szerepkörökkel"
 
-#: etiketto/cli.py:360
+#: tavletta/cli.py:360
 msgid "also serve MCP at /mcp"
 msgstr "MCP kiszolgálása a /mcp címen is"
 
-#: etiketto/cli.py:366
+#: tavletta/cli.py:366
 msgid "largest request body in MB (default 4)"
 msgstr "a kérés törzsének legnagyobb mérete MB-ban (alapértelmezés: 4)"
 
-#: etiketto/cli.py:375
+#: tavletta/cli.py:375
 msgid ""
 "a reverse proxy whose X-Forwarded-For header names the client, e.g. "
 "172.16.0.0/12; repeatable"
 msgstr "fordított proxy, amelynek X-Forwarded-For fejléce megnevezi a klienst, pl. 172.16.0.0/12; ismételhető"
 
-#: etiketto/cli.py:384
+#: tavletta/cli.py:384
 msgid "allow requests from web pages of this origin; repeatable"
 msgstr "kérések engedélyezése ilyen eredetű weboldalakról; ismételhető"
 
-#: etiketto/cli.py:389
+#: tavletta/cli.py:389
 msgid "serve MCP on standard input and output"
 msgstr "MCP kiszolgálása a szabványos bemeneten és kimeneten"
 
-#: etiketto/cli.py:391
+#: tavletta/cli.py:391
 msgid ""
 "Serve MCP on standard input and output, for AI clients such as Claude "
 "Desktop."
 msgstr "MCP kiszolgálása a szabványos bemeneten és kimeneten MI-kliensek, például a Claude Desktop számára."
 
-#: etiketto/cli.py:401
+#: tavletta/cli.py:401
 msgid "manage the access tokens of the print server"
 msgstr "a nyomtatókiszolgáló hozzáférési tokenjeinek kezelése"
 
-#: etiketto/cli.py:402
+#: tavletta/cli.py:402
 msgid "Manage the access tokens of the print server."
 msgstr "A nyomtatókiszolgáló hozzáférési tokenjeinek kezelése."
 
-#: etiketto/cli.py:407
+#: tavletta/cli.py:407
 msgid "make a token and add its hash to tokens.toml"
 msgstr "token létrehozása és hash-ének hozzáadása a tokens.toml fájlhoz"
 
-#: etiketto/cli.py:408
+#: tavletta/cli.py:408
 msgid "Make a token, add its hash to tokens.toml and show the token once."
 msgstr "Token létrehozása, hash-ének hozzáadása a tokens.toml fájlhoz és a token egyszeri megjelenítése."
 
-#: etiketto/cli.py:410
+#: tavletta/cli.py:410
 msgid "name of the token, e.g. the device"
 msgstr "a token neve, pl. az eszköz"
 
-#: etiketto/cli.py:415
+#: tavletta/cli.py:415
 msgid "preview: look only; print: also print; admin: also all jobs"
 msgstr "preview: csak megtekintés; print: nyomtatás is; admin: minden feladat is"
 
-#: etiketto/cli.py:417
+#: tavletta/cli.py:417
 msgid "tokens.toml to add it to"
 msgstr "a tokens.toml, amelyhez hozzá kell adni"
 
-#: etiketto/cli.py:423
+#: tavletta/cli.py:423
 msgid "only this printer of printers.toml; repeatable"
 msgstr "csak ez a nyomtató a printers.toml fájlból; ismételhető"
 
-#: etiketto/cli.py:426
+#: tavletta/cli.py:426
 msgid "printers.toml, to check --printer"
 msgstr "printers.toml, a --printer ellenőrzéséhez"
 
-#: etiketto/cli.py:428
+#: tavletta/cli.py:428
 msgid "valid until, e.g. 2027-12-31"
 msgstr "érvényesség vége, pl. 2027-12-31"
 
-#: etiketto/cli.py:429
+#: tavletta/cli.py:429
 msgid "a note for people"
 msgstr "megjegyzés embereknek"
 
-#: etiketto/cli.py:431
+#: tavletta/cli.py:431
 msgid "store the hash with scrypt instead of SHA-256"
 msgstr "a hash tárolása scrypt használatával SHA-256 helyett"
 
-#: etiketto/cli.py:437
+#: tavletta/cli.py:437
 msgid ""
 "take a token you chose from standard input (stored with scrypt) instead of "
 "making one"
 msgstr "saját választású token beolvasása a szabványos bemenetről (scrypt használatával tárolva) új létrehozása helyett"
 
-#: etiketto/cli.py:457 etiketto/server/config.py:220
-#: etiketto/server/service.py:527
+#: tavletta/cli.py:457 tavletta/server/config.py:220
+#: tavletta/server/service.py:527
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Ismeretlen nyomtatómodell: %s"
 
-#: etiketto/cli.py:464 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:303 etiketto/ui/texts.py:640
-#: etiketto/server/service.py:675
+#: tavletta/cli.py:464 tavletta/ui/files.py:89 tavletta/ui/files.py:142
+#: tavletta/ui/texts.py:303 tavletta/ui/texts.py:640
+#: tavletta/server/service.py:675
 #, python-format
 msgid "Cannot open %s"
 msgstr "Nem nyitható meg: %s"
 
-#: etiketto/cli.py:486 etiketto/server/main.py:259
+#: tavletta/cli.py:486 tavletta/server/main.py:259
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "A(z) %s nem dátum, várható pl. 2026-12-31 vagy 2026-12-31T08:30"
 
-#: etiketto/cli.py:523
+#: tavletta/cli.py:523
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "A(z) {=%s} nyomtatáskor töltődik ki, és nem állítható be"
 
-#: etiketto/cli.py:527
+#: tavletta/cli.py:527
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "A címkén nincs %s nevű elem vagy változó"
 
-#: etiketto/cli.py:551 etiketto/ui/printing.py:123
-#: etiketto/server/service.py:963
+#: tavletta/cli.py:551 tavletta/ui/printing.py:123
+#: tavletta/server/service.py:963
 msgid "The label is empty"
 msgstr "A címke üres"
 
-#: etiketto/cli.py:588
+#: tavletta/cli.py:588
 msgid "Cannot write the output"
 msgstr "A kimenet nem írható"
 
-#: etiketto/cli.py:619
+#: tavletta/cli.py:619
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "a --output PNG-képeket ír: .png végű nevet adjon meg"
 
-#: etiketto/cli.py:644 etiketto/cli.py:853 etiketto/ui/printing.py:553
-#: etiketto/ui/printing.py:715 etiketto/server/service.py:891
-#: etiketto/server/service.py:1118 etiketto/server/service.py:1263
+#: tavletta/cli.py:644 tavletta/cli.py:853 tavletta/ui/printing.py:553
+#: tavletta/ui/printing.py:715 tavletta/server/service.py:891
+#: tavletta/server/service.py:1118 tavletta/server/service.py:1263
 msgid "The label cannot be prepared for printing."
 msgstr "A címke nem készíthető elő nyomtatásra."
 
-#: etiketto/cli.py:731
+#: tavletta/cli.py:731
 msgid "No printer found – give its address with --host"
 msgstr "Nem található nyomtató – adja meg a címét a --host kapcsolóval"
 
-#: etiketto/cli.py:733
+#: tavletta/cli.py:733
 msgid ""
-"Several printers found – choose one with --host (etiketto list-printers)"
-msgstr "Több nyomtató található – válasszon egyet a --host kapcsolóval (etiketto list-printers)"
+"Several printers found – choose one with --host (tavletta list-printers)"
+msgstr "Több nyomtató található – válasszon egyet a --host kapcsolóval (tavletta list-printers)"
 
-#: etiketto/cli.py:744 etiketto/ui/texts.py:683 etiketto/server/service.py:1253
+#: tavletta/cli.py:744 tavletta/ui/texts.py:683 tavletta/server/service.py:1253
 #, python-format
 msgid "Cannot save %s"
 msgstr "Nem menthető: %s"
 
-#: etiketto/cli.py:746 etiketto/server/service.py:1256
+#: tavletta/cli.py:746 tavletta/server/service.py:1256
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "a címkék kinyomtatva, de a számláló következő értéke nem lett mentve"
 
-#: etiketto/cli.py:761 etiketto/server/service.py:992
+#: tavletta/cli.py:761 tavletta/server/service.py:992
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "semmi sem lett kinyomtatva: a számláló következő értéke nem lenne menthető"
 
-#: etiketto/cli.py:821 etiketto/cli.py:848 etiketto/cli.py:1209
+#: tavletta/cli.py:821 tavletta/cli.py:848 tavletta/cli.py:1209
 msgid "Interrupted"
 msgstr "Megszakítva"
 
-#: etiketto/cli.py:921
+#: tavletta/cli.py:921
 #, python-format
 msgid "--print-method: this printer model has no print method setting: %s"
 msgstr "--print-method: ennek a nyomtatótípusnak nincs nyomtatási mód beállítása: %s"
 
-#: etiketto/cli.py:963
+#: tavletta/cli.py:963
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "A --sheet és a --rows adatfájlt igényel (--data)"
 
-#: etiketto/cli.py:972 etiketto/ui/printing.py:585
-#: etiketto/server/service.py:764
+#: tavletta/cli.py:972 tavletta/ui/printing.py:585
+#: tavletta/server/service.py:764
 msgid "No rows to print"
 msgstr "Nincs nyomtatandó sor"
 
-#: etiketto/cli.py:982
+#: tavletta/cli.py:982
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "A címke a mappáján kívüli adatfájlt használ: adja meg a --data kapcsolóval"
 
-#: etiketto/cli.py:1009 etiketto/ui/window.py:844
-#: etiketto/server/service.py:817
+#: tavletta/cli.py:1009 tavletta/ui/window.py:844
+#: tavletta/server/service.py:817
 #, python-format
 msgid "No such column: %s"
 msgstr "Ismeretlen oszlop: %s"
 
-#: etiketto/cli.py:1014 etiketto/ui/printing.py:664
+#: tavletta/cli.py:1014 tavletta/ui/printing.py:664
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Ezeknek a soroknak a vonalkódja vagy QR-kódja nem hozható létre az értékeikből, például betűket tartalmazó EAN-13 vagy üres cella miatt. Javítsa az adatfájlt, és olvassa be újra, vagy nyomtasson ezen sorok nélkül."
 
-#: etiketto/cli.py:1019 etiketto/ui/printing.py:669
+#: tavletta/cli.py:1019 tavletta/ui/printing.py:669
 #, python-format
 msgid "Rows: %s"
 msgstr "Sorok: %s"
 
-#: etiketto/cli.py:1027
+#: tavletta/cli.py:1027
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "Várakozás a(z) %s egy másik nyomtatásának befejezésére…"
 
-#: etiketto/cli.py:1034 etiketto/server/service.py:1112
+#: tavletta/cli.py:1034 tavletta/server/service.py:1112
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s még zárolva van egy másik nyomtatás miatt – próbálja újra később"
 
-#: etiketto/cli.py:1040
+#: tavletta/cli.py:1040
 msgid "--output needs --dry-run"
 msgstr "A --output használatához --dry-run szükséges"
 
-#: etiketto/cli.py:1057
+#: tavletta/cli.py:1057
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "A számláló következő értéke nem lesz mentve: a következő nyomtatás megismétli a számokat"
 
-#: etiketto/cli.py:1152
+#: tavletta/cli.py:1152
 msgid "Waiting for the printer's answer…"
 msgstr "Várakozás a nyomtató válaszára…"
 
-#: etiketto/cli.py:1180 etiketto/ui/printer.py:199
+#: tavletta/cli.py:1180 tavletta/ui/printer.py:199
 msgid "No printer found"
 msgstr "Nem található nyomtató"
 
-#: etiketto/ui/data.py:91
+#: tavletta/ui/data.py:91
 msgid "Tables (CSV, ODS, XLSX)"
 msgstr "Táblázatok (CSV, ODS, XLSX)"
 
-#: etiketto/ui/data.py:98
+#: tavletta/ui/data.py:98
 msgid "Choose data file"
 msgstr "Adatfájl kiválasztása"
 
-#: etiketto/ui/data.py:108 etiketto/ui/files.py:109 etiketto/ui/files.py:131
-#: etiketto/ui/files.py:212 etiketto/ui/texts.py:205
+#: tavletta/ui/data.py:108 tavletta/ui/files.py:109 tavletta/ui/files.py:131
+#: tavletta/ui/files.py:212 tavletta/ui/texts.py:205
 msgid "Only local files can be used"
 msgstr "Csak helyi fájlok használhatók"
 
-#: etiketto/ui/data.py:167
-msgid "Etiketto asks again before reading data files outside a label's folder"
-msgstr "Az Etiketto ismét rákérdez, mielőtt a címke mappáján kívüli adatfájlokat beolvasna"
+#: tavletta/ui/data.py:167
+msgid "Tavletta asks again before reading data files outside a label's folder"
+msgstr "Az Tavletta ismét rákérdez, mielőtt a címke mappáján kívüli adatfájlokat beolvasna"
 
-#: etiketto/ui/data.py:179
+#: tavletta/ui/data.py:179
 msgid "Read the data file?"
 msgstr "Beolvassa az adatfájlt?"
 
-#: etiketto/ui/data.py:181
+#: tavletta/ui/data.py:181
 #, python-format
 msgid ""
 "This label uses a data file outside its folder:\n"
@@ -458,1004 +458,1004 @@ msgid ""
 "Read it only if you know where the label comes from."
 msgstr "Ez a címke a mappáján kívüli adatfájlt használ:\n\n%s\n\nCsak akkor olvassa be, ha tudja, honnan származik a címke."
 
-#: etiketto/ui/data.py:186
+#: tavletta/ui/data.py:186
 msgid "Not now"
 msgstr "Most nem"
 
-#: etiketto/ui/data.py:187
+#: tavletta/ui/data.py:187
 msgid "Read data file"
 msgstr "Adatfájl beolvasása"
 
-#: etiketto/ui/data.py:265
+#: tavletta/ui/data.py:265
 msgid "Reading…"
 msgstr "Beolvasás…"
 
-#: etiketto/ui/data.py:267
+#: tavletta/ui/data.py:267
 msgid "Not read: outside the label's folder"
 msgstr "Nincs beolvasva: a címke mappáján kívül van"
 
-#: etiketto/ui/data.py:270
+#: tavletta/ui/data.py:270
 #, python-format
 msgid "Rows: %(rows)d · Columns: %(columns)d"
 msgstr "Sorok: %(rows)d · Oszlopok: %(columns)d"
 
-#: etiketto/ui/data.py:281 etiketto/ui/shortcuts.py:71
+#: tavletta/ui/data.py:281 tavletta/ui/shortcuts.py:71
 msgid "Serial labels"
 msgstr "Sorozatcímkék"
 
-#: etiketto/ui/data.py:283
+#: tavletta/ui/data.py:283
 msgid ""
 "One label for each row of a table. Insert columns into texts and codes; each "
 "label shows the values of its row."
 msgstr "Egy címke a táblázat minden sorához. Szúrjon be oszlopokat a szövegekbe és a kódokba; minden címke a saját sorának értékeit mutatja."
 
-#: etiketto/ui/data.py:290
+#: tavletta/ui/data.py:290
 msgid "No data file"
 msgstr "Nincs adatfájl"
 
-#: etiketto/ui/data.py:290
+#: tavletta/ui/data.py:290
 msgid "CSV, ODS or XLSX"
 msgstr "CSV, ODS vagy XLSX"
 
-#: etiketto/ui/data.py:291 etiketto/ui/elements.py:316
-#: etiketto/ui/elements.py:334 etiketto/ui/elements.py:347
+#: tavletta/ui/data.py:291 tavletta/ui/elements.py:316
+#: tavletta/ui/elements.py:334 tavletta/ui/elements.py:347
 msgid "Choose…"
 msgstr "Kiválasztás…"
 
-#: etiketto/ui/data.py:304
+#: tavletta/ui/data.py:304
 msgid "Columns"
 msgstr "Oszlopok"
 
-#: etiketto/ui/data.py:320
+#: tavletta/ui/data.py:320
 msgid "Read again"
 msgstr "Újraolvasás"
 
-#: etiketto/ui/data.py:324
+#: tavletta/ui/data.py:324
 msgid "Choose another file"
 msgstr "Másik fájl kiválasztása"
 
-#: etiketto/ui/data.py:326
+#: tavletta/ui/data.py:326
 msgid "Remove data file"
 msgstr "Adatfájl eltávolítása"
 
-#: etiketto/ui/data.py:337
+#: tavletta/ui/data.py:337
 msgid "Sheet"
 msgstr "Munkalap"
 
-#: etiketto/ui/data.py:357
+#: tavletta/ui/data.py:357
 msgid "Insert column"
 msgstr "Oszlop beszúrása"
 
-#: etiketto/ui/elements.py:83 etiketto/ui/shortcuts.py:57
+#: tavletta/ui/elements.py:83 tavletta/ui/shortcuts.py:57
 msgid "Content"
 msgstr "Tartalom"
 
-#: etiketto/ui/elements.py:93
+#: tavletta/ui/elements.py:93
 msgid "No content yet"
 msgstr "Még nincs tartalom"
 
-#: etiketto/ui/elements.py:93
+#: tavletta/ui/elements.py:93
 msgid "Add text, an image, a symbol or a code"
 msgstr "Adjon hozzá szöveget, képet, szimbólumot vagy kódot"
 
-#: etiketto/ui/elements.py:104 etiketto/ui/texts.py:243
-#: etiketto/ui/window.py:956
+#: tavletta/ui/elements.py:104 tavletta/ui/texts.py:243
+#: tavletta/ui/window.py:956
 msgid "Text"
 msgstr "Szöveg"
 
-#: etiketto/ui/elements.py:105
+#: tavletta/ui/elements.py:105
 msgid "Image…"
 msgstr "Kép…"
 
-#: etiketto/ui/elements.py:106
+#: tavletta/ui/elements.py:106
 msgid "Symbol…"
 msgstr "Szimbólum…"
 
-#: etiketto/ui/elements.py:107
+#: tavletta/ui/elements.py:107
 msgid "QR code / barcode"
 msgstr "QR-kód / vonalkód"
 
-#: etiketto/ui/elements.py:108
+#: tavletta/ui/elements.py:108
 msgid "Line or shape"
 msgstr "Vonal vagy alakzat"
 
-#: etiketto/ui/elements.py:110
+#: tavletta/ui/elements.py:110
 msgid "Add"
 msgstr "Hozzáadás"
 
-#: etiketto/ui/elements.py:204 etiketto/ui/label_group.py:145
+#: tavletta/ui/elements.py:204 tavletta/ui/label_group.py:145
 msgid "Remove"
 msgstr "Eltávolítás"
 
-#: etiketto/ui/elements.py:207
+#: tavletta/ui/elements.py:207
 msgid "Move down"
 msgstr "Mozgatás hátra"
 
-#: etiketto/ui/elements.py:208
+#: tavletta/ui/elements.py:208
 msgid "Move up"
 msgstr "Mozgatás előre"
 
-#: etiketto/ui/elements.py:226 etiketto/ui/elements.py:363
-#: etiketto/ui/freelayout.py:183
+#: tavletta/ui/elements.py:226 tavletta/ui/elements.py:363
+#: tavletta/ui/freelayout.py:183
 msgid "Size"
 msgstr "Méret"
 
-#: etiketto/ui/elements.py:233
+#: tavletta/ui/elements.py:233
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = a szalag magasságának kitöltése"
 
-#: etiketto/ui/elements.py:238
+#: tavletta/ui/elements.py:238
 msgid "Line alignment"
 msgstr "Sorigazítás"
 
-#: etiketto/ui/elements.py:246
+#: tavletta/ui/elements.py:246
 msgid "Name for the command line"
 msgstr "Név a parancssorhoz"
 
-#: etiketto/ui/elements.py:285
+#: tavletta/ui/elements.py:285
 msgid "Font"
 msgstr "Betűkészlet"
 
-#: etiketto/ui/elements.py:302 etiketto/ui/freelayout.py:207
+#: tavletta/ui/elements.py:302 tavletta/ui/freelayout.py:207
 msgid "Bold"
 msgstr "Félkövér"
 
-#: etiketto/ui/elements.py:304
+#: tavletta/ui/elements.py:304
 msgid "Italic"
 msgstr "Dőlt"
 
-#: etiketto/ui/elements.py:305
+#: tavletta/ui/elements.py:305
 msgid "Underline"
 msgstr "Aláhúzott"
 
-#: etiketto/ui/elements.py:306
+#: tavletta/ui/elements.py:306
 msgid "Strikethrough"
 msgstr "Áthúzott"
 
-#: etiketto/ui/elements.py:314
+#: tavletta/ui/elements.py:314
 msgid "Image file"
 msgstr "Képfájl"
 
-#: etiketto/ui/elements.py:315 etiketto/ui/elements.py:346
-#: etiketto/ui/label_group.py:133
+#: tavletta/ui/elements.py:315 tavletta/ui/elements.py:346
+#: tavletta/ui/label_group.py:133
 msgid "None"
 msgstr "Nincs"
 
-#: etiketto/ui/elements.py:324
+#: tavletta/ui/elements.py:324
 msgid "Crop, turn and adjustments reset for the new image"
 msgstr "A körbevágás, a forgatás és a beállítások visszaálltak az új képhez"
 
-#: etiketto/ui/elements.py:332
+#: tavletta/ui/elements.py:332
 msgid "Area"
 msgstr "Terület"
 
-#: etiketto/ui/elements.py:338 etiketto/ui/shipping.py:295
+#: tavletta/ui/elements.py:338 tavletta/ui/shipping.py:295
 msgid "Scale"
 msgstr "Méretezés"
 
-#: etiketto/ui/elements.py:344 etiketto/ui/texts.py:247
+#: tavletta/ui/elements.py:344 tavletta/ui/texts.py:247
 msgid "Symbol"
 msgstr "Szimbólum"
 
-#: etiketto/ui/elements.py:369 etiketto/ui/styles.py:513
+#: tavletta/ui/elements.py:369 tavletta/ui/styles.py:513
 #, python-format
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = a szalag magasságának kitöltése"
 
-#: etiketto/ui/elements.py:374
+#: tavletta/ui/elements.py:374
 msgid ""
 "Black-and-white printers print symbols in black, or in white if the colour "
 "is light"
 msgstr "A fekete-fehér nyomtatók feketén nyomtatják a szimbólumokat, vagy fehéren, ha a szín világos"
 
-#: etiketto/ui/elements.py:381 etiketto/ui/freelayout.py:159
-#: etiketto/ui/styles.py:113
+#: tavletta/ui/elements.py:381 tavletta/ui/freelayout.py:159
+#: tavletta/ui/styles.py:113
 msgid "Rotation"
 msgstr "Elforgatás"
 
-#: etiketto/ui/elements.py:394
+#: tavletta/ui/elements.py:394
 msgid "Type"
 msgstr "Típus"
 
-#: etiketto/ui/elements.py:398
+#: tavletta/ui/elements.py:398
 msgid "Content (link, text, number)"
 msgstr "Tartalom (hivatkozás, szöveg, szám)"
 
-#: etiketto/ui/elements.py:408 etiketto/ui/styles.py:548
+#: tavletta/ui/elements.py:408 tavletta/ui/styles.py:548
 msgid "Colour"
 msgstr "Szín"
 
-#: etiketto/ui/files.py:57
-msgid "Etiketto labels"
-msgstr "Etiketto-címkék"
+#: tavletta/ui/files.py:57
+msgid "Tavletta labels"
+msgstr "Tavletta-címkék"
 
-#: etiketto/ui/files.py:62
+#: tavletta/ui/files.py:62
 msgid "Images"
 msgstr "Képek"
 
-#: etiketto/ui/files.py:65 etiketto/ui/label_group.py:138
+#: tavletta/ui/files.py:65 tavletta/ui/label_group.py:138
 msgid "Choose image"
 msgstr "Kép kiválasztása"
 
-#: etiketto/ui/files.py:85
+#: tavletta/ui/files.py:85
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "A sablon nem nyitható meg: %(name)s"
 
-#: etiketto/ui/files.py:99
+#: tavletta/ui/files.py:99
 msgid "Open label"
 msgstr "Címke megnyitása"
 
-#: etiketto/ui/files.py:116
+#: tavletta/ui/files.py:116
 msgid "PDF documents and images"
 msgstr "PDF-dokumentumok és képek"
 
-#: etiketto/ui/files.py:121
+#: tavletta/ui/files.py:121
 msgid "Open shipping label"
 msgstr "Szállítási címke megnyitása"
 
-#: etiketto/ui/files.py:186
+#: tavletta/ui/files.py:186
 msgid "label"
 msgstr "címke"
 
-#: etiketto/ui/files.py:230
+#: tavletta/ui/files.py:230
 msgid "Save label"
 msgstr "Címke mentése"
 
-#: etiketto/ui/files.py:238 etiketto/ui/window.py:191
+#: tavletta/ui/files.py:238 tavletta/ui/window.py:191
 msgid "Save as template…"
 msgstr "Mentés sablonként…"
 
-#: etiketto/ui/files.py:247 etiketto/ui/files.py:260
+#: tavletta/ui/files.py:247 tavletta/ui/files.py:260
 #, python-format
 msgid "Saved %s"
 msgstr "Mentve: %s"
 
-#: etiketto/ui/files.py:273
+#: tavletta/ui/files.py:273
 msgid "Export PNG"
 msgstr "Exportálás PNG-ként"
 
-#: etiketto/ui/files.py:281 etiketto/ui/window.py:869
+#: tavletta/ui/files.py:281 tavletta/ui/window.py:869
 msgid "The preview cannot be drawn"
 msgstr "Az előnézet nem rajzolható meg"
 
-#: etiketto/ui/files.py:283
+#: tavletta/ui/files.py:283
 msgid "Exported"
 msgstr "Exportálva"
 
-#: etiketto/ui/files.py:293
+#: tavletta/ui/files.py:293
 msgid "No templates yet – use “Save as template…”"
 msgstr "Még nincsenek sablonok – használja a „Mentés sablonként…” lehetőséget"
 
-#: etiketto/ui/files.py:320 etiketto/ui/label_group.py:67
-#: etiketto/ui/shortcuts.py:45 etiketto/ui/window.py:71
-#: etiketto/ui/window.py:217
+#: tavletta/ui/files.py:320 tavletta/ui/label_group.py:67
+#: tavletta/ui/shortcuts.py:45 tavletta/ui/window.py:71
+#: tavletta/ui/window.py:217
 msgid "Label"
 msgstr "Címke"
 
-#: etiketto/ui/files.py:330
+#: tavletta/ui/files.py:330
 msgid "Discard changes?"
 msgstr "Elveti a módosításokat?"
 
-#: etiketto/ui/files.py:331
+#: tavletta/ui/files.py:331
 msgid "The current label has unsaved changes."
 msgstr "A jelenlegi címke mentetlen módosításokat tartalmaz."
 
-#: etiketto/ui/files.py:333
+#: tavletta/ui/files.py:333
 msgid "Discard"
 msgstr "Elvetés"
 
-#: etiketto/ui/freelayout.py:36
+#: tavletta/ui/freelayout.py:36
 msgid "One after another"
 msgstr "Egymás után"
 
-#: etiketto/ui/freelayout.py:36
+#: tavletta/ui/freelayout.py:36
 msgid "Free"
 msgstr "Szabad"
 
-#: etiketto/ui/freelayout.py:48
+#: tavletta/ui/freelayout.py:48
 msgid "Each element at its own position, from the label's top left corner"
 msgstr "Minden elem a saját helyén, a címke bal felső sarkától"
 
-#: etiketto/ui/freelayout.py:49
+#: tavletta/ui/freelayout.py:49
 msgid "Elements are placed one after another along the tape"
 msgstr "Az elemek egymás után következnek a szalag mentén"
 
-#: etiketto/ui/freelayout.py:53
+#: tavletta/ui/freelayout.py:53
 msgid "Layout"
 msgstr "Elrendezés"
 
-#: etiketto/ui/freelayout.py:100
+#: tavletta/ui/freelayout.py:100
 msgid "Position and size"
 msgstr "Hely és méret"
 
-#: etiketto/ui/freelayout.py:101
+#: tavletta/ui/freelayout.py:101
 msgid "From the label's top left corner"
 msgstr "A címke bal felső sarkától"
 
-#: etiketto/ui/freelayout.py:108
+#: tavletta/ui/freelayout.py:108
 msgid "To the top left corner of the letters' ink"
 msgstr "A betűk tintájának bal felső sarkáig"
 
-#: etiketto/ui/freelayout.py:109
+#: tavletta/ui/freelayout.py:109
 msgid "To the top left corner of the first module, without the quiet zone"
 msgstr "Az első modul bal felső sarkáig, a csendes zóna nélkül"
 
-#: etiketto/ui/freelayout.py:123 etiketto/ui/image_crop.py:82
-#: etiketto/ui/label_group.py:335 etiketto/ui/styles.py:507
+#: tavletta/ui/freelayout.py:123 tavletta/ui/image_crop.py:82
+#: tavletta/ui/label_group.py:335 tavletta/ui/styles.py:507
 msgid "Height"
 msgstr "Magasság"
 
-#: etiketto/ui/freelayout.py:136
+#: tavletta/ui/freelayout.py:136
 msgid "Module size"
 msgstr "Modulméret"
 
-#: etiketto/ui/freelayout.py:142
+#: tavletta/ui/freelayout.py:142
 #, python-format
 msgid "%(unit)s, rounded to whole printer dots"
 msgstr "%(unit)s, egész nyomtatási pontokra kerekítve"
 
-#: etiketto/ui/freelayout.py:149
+#: tavletta/ui/freelayout.py:149
 msgid "Bar height"
 msgstr "Vonalak magassága"
 
-#: etiketto/ui/freelayout.py:185
+#: tavletta/ui/freelayout.py:185
 #, python-format
 msgid "%(unit)s, the font's height"
 msgstr "%(unit)s, a betűtípus magassága (em)"
 
-#: etiketto/ui/freelayout.py:207
+#: tavletta/ui/freelayout.py:207
 msgid "Regular"
 msgstr "Normál"
 
-#: etiketto/ui/freelayout.py:216
+#: tavletta/ui/freelayout.py:216
 msgid "Weight"
 msgstr "Vastagság"
 
-#: etiketto/ui/freelayout.py:228
+#: tavletta/ui/freelayout.py:228
 msgid "As the bold button sets it"
 msgstr "Ahogy a félkövér gomb beállítja"
 
-#: etiketto/ui/freelayout.py:251
+#: tavletta/ui/freelayout.py:251
 msgid "Standard (medium)"
 msgstr "Szabványos (közepes)"
 
 #. translators: the share of a QR code that may be damaged and still read
-#: etiketto/ui/freelayout.py:253
+#: tavletta/ui/freelayout.py:253
 #, python-format
 msgid "Low (%d %%)"
 msgstr "Alacsony (%d%%)"
 
-#: etiketto/ui/freelayout.py:254
+#: tavletta/ui/freelayout.py:254
 #, python-format
 msgid "Medium (%d %%)"
 msgstr "Közepes (%d%%)"
 
-#: etiketto/ui/freelayout.py:255
+#: tavletta/ui/freelayout.py:255
 #, python-format
 msgid "Quartile (%d %%)"
 msgstr "Negyedes (%d%%)"
 
-#: etiketto/ui/freelayout.py:256
+#: tavletta/ui/freelayout.py:256
 #, python-format
 msgid "High (%d %%)"
 msgstr "Magas (%d%%)"
 
-#: etiketto/ui/freelayout.py:259
+#: tavletta/ui/freelayout.py:259
 msgid "Error correction"
 msgstr "Hibajavítás"
 
-#: etiketto/ui/freelayout.py:264
+#: tavletta/ui/freelayout.py:264
 msgid "How much of the code may be damaged and still be read"
 msgstr "A kód mekkora része sérülhet úgy, hogy még olvasható legyen"
 
 #. translators: a month and a year, e.g. "May 2018"; reorder as your language needs
-#: etiketto/ui/i18n.py:132
+#: tavletta/ui/i18n.py:132
 #, python-format
 msgid "%(month)s %(year)d"
 msgstr "%(year)d. %(month)s"
 
-#: etiketto/ui/i18n.py:137
+#: tavletta/ui/i18n.py:137
 msgctxt "month name"
 msgid "January"
 msgstr "január"
 
-#: etiketto/ui/i18n.py:138
+#: tavletta/ui/i18n.py:138
 msgctxt "month name"
 msgid "February"
 msgstr "február"
 
-#: etiketto/ui/i18n.py:139
+#: tavletta/ui/i18n.py:139
 msgctxt "month name"
 msgid "March"
 msgstr "március"
 
-#: etiketto/ui/i18n.py:140
+#: tavletta/ui/i18n.py:140
 msgctxt "month name"
 msgid "April"
 msgstr "április"
 
-#: etiketto/ui/i18n.py:141
+#: tavletta/ui/i18n.py:141
 msgctxt "month name"
 msgid "May"
 msgstr "május"
 
-#: etiketto/ui/i18n.py:142
+#: tavletta/ui/i18n.py:142
 msgctxt "month name"
 msgid "June"
 msgstr "június"
 
-#: etiketto/ui/i18n.py:143
+#: tavletta/ui/i18n.py:143
 msgctxt "month name"
 msgid "July"
 msgstr "július"
 
-#: etiketto/ui/i18n.py:144
+#: tavletta/ui/i18n.py:144
 msgctxt "month name"
 msgid "August"
 msgstr "augusztus"
 
-#: etiketto/ui/i18n.py:145
+#: tavletta/ui/i18n.py:145
 msgctxt "month name"
 msgid "September"
 msgstr "szeptember"
 
-#: etiketto/ui/i18n.py:146
+#: tavletta/ui/i18n.py:146
 msgctxt "month name"
 msgid "October"
 msgstr "október"
 
-#: etiketto/ui/i18n.py:147
+#: tavletta/ui/i18n.py:147
 msgctxt "month name"
 msgid "November"
 msgstr "november"
 
-#: etiketto/ui/i18n.py:148
+#: tavletta/ui/i18n.py:148
 msgctxt "month name"
 msgid "December"
 msgstr "december"
 
-#: etiketto/ui/image_crop.py:32 etiketto/ui/styles.py:396
+#: tavletta/ui/image_crop.py:32 tavletta/ui/styles.py:396
 msgid "Whole image"
 msgstr "Teljes kép"
 
-#: etiketto/ui/image_crop.py:33
+#: tavletta/ui/image_crop.py:33
 #, python-format
 msgid "%(width)d × %(height)d %%, from %(left)d %%, %(top)d %%"
 msgstr "%(width)d × %(height)d %%, kezdete: %(left)d %%, %(top)d %%"
 
-#: etiketto/ui/image_crop.py:45
+#: tavletta/ui/image_crop.py:45
 msgid "Crop image"
 msgstr "Kép körbevágása"
 
-#: etiketto/ui/image_crop.py:57
+#: tavletta/ui/image_crop.py:57
 msgid "Drag to choose the part of the image to keep"
 msgstr "Húzással válassza ki a kép megtartandó részét"
 
-#: etiketto/ui/image_crop.py:64 etiketto/ui/printer.py:233
-#: etiketto/ui/printing.py:431 etiketto/ui/printing.py:673
-#: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:885
+#: tavletta/ui/image_crop.py:64 tavletta/ui/printer.py:233
+#: tavletta/ui/printing.py:431 tavletta/ui/printing.py:673
+#: tavletta/ui/sheets.py:206 tavletta/ui/sheets.py:365
+#: tavletta/ui/symbols.py:79 tavletta/ui/window.py:885
 msgid "Cancel"
 msgstr "Mégse"
 
-#: etiketto/ui/image_crop.py:67 etiketto/ui/sheets.py:366
-#: etiketto/ui/shipping.py:230
+#: tavletta/ui/image_crop.py:67 tavletta/ui/sheets.py:366
+#: tavletta/ui/shipping.py:230
 msgid "Apply"
 msgstr "Alkalmaz"
 
-#: etiketto/ui/image_crop.py:82 etiketto/ui/texts.py:109
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:109
 msgid "Left"
 msgstr "Balra"
 
-#: etiketto/ui/image_crop.py:82 etiketto/ui/texts.py:160
+#: tavletta/ui/image_crop.py:82 tavletta/ui/texts.py:160
 msgid "Top"
 msgstr "Felül"
 
-#: etiketto/ui/image_crop.py:82 etiketto/ui/label_group.py:326
+#: tavletta/ui/image_crop.py:82 tavletta/ui/label_group.py:326
 msgid "Width"
 msgstr "Szélesség"
 
-#: etiketto/ui/label_group.py:93
+#: tavletta/ui/label_group.py:93
 msgid "Tape width"
 msgstr "Szalagszélesség"
 
-#: etiketto/ui/label_group.py:105
+#: tavletta/ui/label_group.py:105
 msgid "Spacing"
 msgstr "Térköz"
 
-#: etiketto/ui/label_group.py:111
+#: tavletta/ui/label_group.py:111
 #, python-format
 msgid "%(unit)s at the ends and between elements"
 msgstr "Térköz a végeken és az elemek között (%(unit)s)"
 
-#: etiketto/ui/label_group.py:116
+#: tavletta/ui/label_group.py:116
 msgid "Edge spacing"
 msgstr "Szélső térköz"
 
-#: etiketto/ui/label_group.py:122
+#: tavletta/ui/label_group.py:122
 #, python-format
 msgid "extra %(unit)s along the tape edges"
 msgstr "További hely a szalag szélei mentén (%(unit)s)"
 
-#: etiketto/ui/label_group.py:128
+#: tavletta/ui/label_group.py:128
 msgid "Background colour"
 msgstr "Háttérszín"
 
-#: etiketto/ui/label_group.py:132
+#: tavletta/ui/label_group.py:132
 msgid "Background image"
 msgstr "Háttérkép"
 
-#: etiketto/ui/label_group.py:158 etiketto/ui/styles.py:455
+#: tavletta/ui/label_group.py:158 tavletta/ui/styles.py:455
 msgid "Border"
 msgstr "Keret"
 
-#: etiketto/ui/label_group.py:164 etiketto/ui/styles.py:310
-#: etiketto/ui/styles.py:340 etiketto/ui/styles.py:461
+#: tavletta/ui/label_group.py:164 tavletta/ui/styles.py:310
+#: tavletta/ui/styles.py:340 tavletta/ui/styles.py:461
 #, python-format
 msgid "%(unit)s, 0 = none"
 msgstr "%(unit)s, 0 = nincs"
 
-#: etiketto/ui/label_group.py:168
+#: tavletta/ui/label_group.py:168
 msgid "Border style"
 msgstr "Keretstílus"
 
-#: etiketto/ui/label_group.py:168 etiketto/ui/label_group.py:206
+#: tavletta/ui/label_group.py:168 tavletta/ui/label_group.py:206
 msgid "Corners, line and distance from the edge"
 msgstr "Sarkok, vonal és távolság a széltől"
 
-#: etiketto/ui/label_group.py:171 etiketto/ui/styles.py:288
-#: etiketto/ui/styles.py:445 etiketto/ui/styles.py:521
+#: tavletta/ui/label_group.py:171 tavletta/ui/styles.py:288
+#: tavletta/ui/styles.py:445 tavletta/ui/styles.py:521
 msgid "Corner radius"
 msgstr "Saroksugár"
 
-#: etiketto/ui/label_group.py:181 etiketto/ui/styles.py:516
+#: tavletta/ui/label_group.py:181 tavletta/ui/styles.py:516
 msgid "Line style"
 msgstr "Vonalstílus"
 
-#: etiketto/ui/label_group.py:189
+#: tavletta/ui/label_group.py:189
 msgid "Inset"
 msgstr "Behúzás"
 
-#: etiketto/ui/label_group.py:195
+#: tavletta/ui/label_group.py:195
 #, python-format
 msgid "extra %(unit)s inside the safety margin"
 msgstr "további térköz a biztonsági margón belül (%(unit)s)"
 
-#: etiketto/ui/label_group.py:208
+#: tavletta/ui/label_group.py:208
 msgid "Set a border width first"
 msgstr "Előbb adja meg a keret vastagságát"
 
-#: etiketto/ui/label_group.py:215
+#: tavletta/ui/label_group.py:215
 msgid "Automatic length"
 msgstr "Automatikus hossz"
 
-#: etiketto/ui/label_group.py:215
+#: tavletta/ui/label_group.py:215
 msgid "As long as the content"
 msgstr "Olyan hosszú, mint a tartalom"
 
-#: etiketto/ui/label_group.py:224 etiketto/ui/styles.py:503
+#: tavletta/ui/label_group.py:224 tavletta/ui/styles.py:503
 msgid "Length"
 msgstr "Hossz"
 
-#: etiketto/ui/label_group.py:226 etiketto/ui/label_group.py:255
+#: tavletta/ui/label_group.py:226 tavletta/ui/label_group.py:255
 msgid "Alignment"
 msgstr "Igazítás"
 
-#: etiketto/ui/label_group.py:250
+#: tavletta/ui/label_group.py:250
 msgid "Print on"
 msgstr "Nyomtatás erre"
 
-#: etiketto/ui/label_group.py:263
+#: tavletta/ui/label_group.py:263
 msgid "Custom size"
 msgstr "Egyéni méret"
 
-#: etiketto/ui/label_group.py:265 etiketto/ui/shipping.py:294
+#: tavletta/ui/label_group.py:265 tavletta/ui/shipping.py:294
 msgid "Label size"
 msgstr "Címkeméret"
 
-#: etiketto/ui/label_group.py:297
+#: tavletta/ui/label_group.py:297
 msgid "Not in the list of sheets of this version"
 msgstr "Nem szerepel ennek a verziónak az ívlistájában"
 
-#: etiketto/ui/label_group.py:306 etiketto/ui/sheets.py:358
+#: tavletta/ui/label_group.py:306 tavletta/ui/sheets.py:358
 msgid "Positions"
 msgstr "Pozíciók"
 
-#: etiketto/ui/label_group.py:315
+#: tavletta/ui/label_group.py:315
 msgid "Turn the content"
 msgstr "Tartalom elforgatása"
 
-#: etiketto/ui/label_group.py:315
+#: tavletta/ui/label_group.py:315
 msgid "Read the label from its side"
 msgstr "A címke oldalról olvasható"
 
-#: etiketto/ui/label_group.py:332
+#: tavletta/ui/label_group.py:332
 #, python-format
 msgid "%(unit)s across the roll"
 msgstr "%(unit)s a tekercs szélessége mentén"
 
-#: etiketto/ui/label_group.py:341
+#: tavletta/ui/label_group.py:341
 #, python-format
 msgid "%(unit)s along the roll"
 msgstr "%(unit)s a tekercs hossza mentén"
 
-#: etiketto/ui/label_group.py:350
+#: tavletta/ui/label_group.py:350
 msgid "Gap"
 msgstr "Hézag"
 
-#: etiketto/ui/label_group.py:356
+#: tavletta/ui/label_group.py:356
 #, python-format
 msgid "%(unit)s between two labels on the roll"
 msgstr "%(unit)s két címke között a tekercsen"
 
-#: etiketto/ui/label_group.py:360
+#: tavletta/ui/label_group.py:360
 msgid "Content direction"
 msgstr "Tartalom iránya"
 
-#: etiketto/ui/preview.py:65
+#: tavletta/ui/preview.py:65
 msgid "Fit to window"
 msgstr "Igazítás az ablakhoz"
 
-#: etiketto/ui/preview.py:68
+#: tavletta/ui/preview.py:68
 msgid "Zoom out"
 msgstr "Kicsinyítés"
 
-#: etiketto/ui/preview.py:72
+#: tavletta/ui/preview.py:72
 msgid "Zoom in"
 msgstr "Nagyítás"
 
-#: etiketto/ui/preview.py:81 etiketto/ui/shortcuts.py:73
+#: tavletta/ui/preview.py:81 tavletta/ui/shortcuts.py:73
 msgid "First row"
 msgstr "Első sor"
 
-#: etiketto/ui/preview.py:82 etiketto/ui/shortcuts.py:74
+#: tavletta/ui/preview.py:82 tavletta/ui/shortcuts.py:74
 msgid "Previous row"
 msgstr "Előző sor"
 
-#: etiketto/ui/preview.py:83 etiketto/ui/shortcuts.py:75
+#: tavletta/ui/preview.py:83 tavletta/ui/shortcuts.py:75
 msgid "Next row"
 msgstr "Következő sor"
 
-#: etiketto/ui/preview.py:84 etiketto/ui/shortcuts.py:76
+#: tavletta/ui/preview.py:84 tavletta/ui/shortcuts.py:76
 msgid "Last row"
 msgstr "Utolsó sor"
 
-#: etiketto/ui/preview.py:98
+#: tavletta/ui/preview.py:98
 #, python-format
 msgid "Row %(n)d of %(total)d"
 msgstr "%(n)d. sor / %(total)d"
 
-#: etiketto/ui/printer.py:66
+#: tavletta/ui/printer.py:66
 msgid "Printer"
 msgstr "Nyomtató"
 
-#: etiketto/ui/printer.py:71
+#: tavletta/ui/printer.py:71
 msgid "Host name or IP address"
 msgstr "Gépnév vagy IP-cím"
 
-#: etiketto/ui/printer.py:85
+#: tavletta/ui/printer.py:85
 msgid "Safety margin"
 msgstr "Biztonsági margó"
 
-#: etiketto/ui/printer.py:92
+#: tavletta/ui/printer.py:92
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "Szabadon hagyott hely a tartalomnak és a keretnek (%(unit)s); a háttér szegély nélkül nyomtatódik"
 
-#: etiketto/ui/printer.py:97 etiketto/ui/printer.py:103
+#: tavletta/ui/printer.py:97 tavletta/ui/printer.py:103
 msgid "Millimetres"
 msgstr "Milliméter"
 
-#: etiketto/ui/printer.py:97 etiketto/ui/printer.py:104
+#: tavletta/ui/printer.py:97 tavletta/ui/printer.py:104
 msgid "Inches"
 msgstr "Hüvelyk"
 
-#: etiketto/ui/printer.py:100
+#: tavletta/ui/printer.py:100
 msgid "Units"
 msgstr "Mértékegység"
 
-#: etiketto/ui/printer.py:102
+#: tavletta/ui/printer.py:102
 #, python-format
 msgid "Automatic (%s)"
 msgstr "Automatikus (%s)"
 
-#: etiketto/ui/printer.py:115
+#: tavletta/ui/printer.py:115
 msgid "Printer model"
 msgstr "Nyomtatómodell"
 
-#: etiketto/ui/printer.py:149 etiketto/ui/printer.py:375
+#: tavletta/ui/printer.py:149 tavletta/ui/printer.py:375
 msgid "Searching…"
 msgstr "Keresés…"
 
-#: etiketto/ui/printer.py:152 etiketto/ui/printer.py:477
+#: tavletta/ui/printer.py:152 tavletta/ui/printer.py:477
 msgid "Printer details"
 msgstr "Nyomtató részletei"
 
-#: etiketto/ui/printer.py:155
+#: tavletta/ui/printer.py:155
 msgid "Refresh"
 msgstr "Frissítés"
 
-#: etiketto/ui/printer.py:159
+#: tavletta/ui/printer.py:159
 msgid "Search for printers"
 msgstr "Nyomtatók keresése"
 
-#: etiketto/ui/printer.py:185
+#: tavletta/ui/printer.py:185
 msgid "Searching for printers…"
 msgstr "Nyomtatók keresése…"
 
-#: etiketto/ui/printer.py:201
+#: tavletta/ui/printer.py:201
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "Ellenőrizze, hogy a nyomtató be van-e kapcsolva és ugyanazon a hálózaton van-e, vagy adja meg alább a címét"
 
-#: etiketto/ui/printer.py:207
+#: tavletta/ui/printer.py:207
 #, python-format
 msgid "Found %s"
 msgstr "Megtalálva: %s"
 
-#: etiketto/ui/printer.py:215 etiketto/ui/printer.py:229
+#: tavletta/ui/printer.py:215 tavletta/ui/printer.py:229
 msgid "Choose a printer"
 msgstr "Nyomtató kiválasztása"
 
-#: etiketto/ui/printer.py:257
+#: tavletta/ui/printer.py:257
 msgid "Connecting…"
 msgstr "Kapcsolódás…"
 
-#: etiketto/ui/printer.py:318
+#: tavletta/ui/printer.py:318
 #, python-format
 msgid "The loaded roll is for “%s”"
 msgstr "A betöltött tekercs ehhez illik: „%s”"
 
-#: etiketto/ui/printer.py:319
+#: tavletta/ui/printer.py:319
 msgid "Switch"
 msgstr "Váltás"
 
-#: etiketto/ui/printer.py:357
+#: tavletta/ui/printer.py:357
 msgid "Printer not reachable"
 msgstr "A nyomtató nem érhető el"
 
-#: etiketto/ui/printer.py:359 etiketto/ui/printer.py:373
+#: tavletta/ui/printer.py:359 tavletta/ui/printer.py:373
 msgid "Printer needs attention"
 msgstr "A nyomtató figyelmet igényel"
 
-#: etiketto/ui/printer.py:388
+#: tavletta/ui/printer.py:388
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "Hátralévő: %(left)s / %(total)s"
 
-#: etiketto/ui/printer.py:399
+#: tavletta/ui/printer.py:399
 msgid "Reachable · the printer reports no status"
 msgstr "Elérhető · a nyomtató nem jelez állapotot"
 
-#: etiketto/ui/printer.py:402
+#: tavletta/ui/printer.py:402
 msgid "Printing"
 msgstr "Nyomtatás"
 
-#: etiketto/ui/printer.py:404
+#: tavletta/ui/printer.py:404
 #, python-format
 msgid "Ready · a label every %s"
 msgstr "Kész · címketávolság %s"
 
-#: etiketto/ui/printer.py:405
+#: tavletta/ui/printer.py:405
 msgid "Ready"
 msgstr "Kész"
 
-#: etiketto/ui/printer.py:408
+#: tavletta/ui/printer.py:408
 msgid "No roll loaded"
 msgstr "Nincs betöltött tekercs"
 
-#: etiketto/ui/printer.py:408
+#: tavletta/ui/printer.py:408
 msgid "No cassette inserted"
 msgstr "Nincs behelyezett kazetta"
 
-#: etiketto/ui/printer.py:410
+#: tavletta/ui/printer.py:410
 #, python-format
 msgid "%s roll"
 msgstr "%s tekercs"
 
-#: etiketto/ui/printer.py:410
+#: tavletta/ui/printer.py:410
 #, python-format
 msgid "%s cassette"
 msgstr "Kazetta: %s"
 
-#: etiketto/ui/printer.py:429
+#: tavletta/ui/printer.py:429
 msgid "Model"
 msgstr "Modell"
 
-#: etiketto/ui/printer.py:430
+#: tavletta/ui/printer.py:430
 msgid "Address"
 msgstr "Cím"
 
-#: etiketto/ui/printer.py:431
+#: tavletta/ui/printer.py:431
 msgid "Firmware"
 msgstr "Firmware"
 
-#: etiketto/ui/printer.py:433
+#: tavletta/ui/printer.py:433
 msgid "Label distance"
 msgstr "Címketávolság"
 
-#: etiketto/ui/printer.py:436
+#: tavletta/ui/printer.py:436
 msgid "Print method set on the printer"
 msgstr "A nyomtatón beállított nyomtatási mód"
 
-#: etiketto/ui/printer.py:439
+#: tavletta/ui/printer.py:439
 msgid "Remaining tape"
 msgstr "Hátralévő szalag"
 
-#: etiketto/ui/printer.py:446 etiketto/ui/printer.py:449
+#: tavletta/ui/printer.py:446 tavletta/ui/printer.py:449
 msgid "Roll"
 msgstr "Tekercs"
 
-#: etiketto/ui/printer.py:450
+#: tavletta/ui/printer.py:450
 msgid "Cassette"
 msgstr "Kazetta"
 
-#: etiketto/ui/printer.py:459
+#: tavletta/ui/printer.py:459
 msgid "Tape type"
 msgstr "Szalag típusa"
 
-#: etiketto/ui/printer.py:460
+#: tavletta/ui/printer.py:460
 msgid "Printable width"
 msgstr "Nyomtatható szélesség"
 
-#: etiketto/ui/printer.py:461
+#: tavletta/ui/printer.py:461
 msgid "Lot number"
 msgstr "Gyártási tételszám"
 
-#: etiketto/ui/printer.py:462
+#: tavletta/ui/printer.py:462
 msgid "Serial number"
 msgstr "Sorozatszám"
 
-#: etiketto/ui/printer.py:464
+#: tavletta/ui/printer.py:464
 msgid "Probably made"
 msgstr "Valószínű gyártás"
 
-#: etiketto/ui/printer.py:478 etiketto/ui/printing.py:771
+#: tavletta/ui/printer.py:478 tavletta/ui/printing.py:771
 msgid "Close"
 msgstr "Bezárás"
 
-#: etiketto/ui/printing.py:125
+#: tavletta/ui/printing.py:125
 msgid "This label sheet is unknown to this version – choose another one"
 msgstr "Ezt a címkeívet ez a verzió nem ismeri – válasszon másikat"
 
-#: etiketto/ui/printing.py:141
+#: tavletta/ui/printing.py:141
 msgid "The data file is still being read. Try again in a moment."
 msgstr "Az adatfájl beolvasása még tart. Próbálja újra egy pillanat múlva."
 
-#: etiketto/ui/printing.py:148 etiketto/ui/printing.py:496
-#: etiketto/ui/printing.py:521
+#: tavletta/ui/printing.py:148 tavletta/ui/printing.py:496
+#: tavletta/ui/printing.py:521
 msgid "Print anyway"
 msgstr "Nyomtatás mégis"
 
-#: etiketto/ui/printing.py:154
+#: tavletta/ui/printing.py:154
 msgid "Wrong roll"
 msgstr "Rossz tekercs"
 
-#: etiketto/ui/printing.py:156
+#: tavletta/ui/printing.py:156
 #, python-format
 msgid ""
 "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. "
 "The label would be scaled to the roll."
 msgstr "A címke %(label)s tekercsre készült, de %(tape)s tekercs van betöltve. A címke a tekercshez lenne méretezve."
 
-#: etiketto/ui/printing.py:166
+#: tavletta/ui/printing.py:166
 msgid "Wrong cassette"
 msgstr "Nem megfelelő kazetta"
 
-#: etiketto/ui/printing.py:168
+#: tavletta/ui/printing.py:168
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "A címke szalagszélessége %(label)s, de a behelyezett kazettáé %(tape)s. A nyomtató a szalaghoz méretezné."
 
-#: etiketto/ui/printing.py:180 etiketto/ui/printing.py:194
+#: tavletta/ui/printing.py:180 tavletta/ui/printing.py:194
 msgid "Different labels loaded"
 msgstr "Más címkék vannak betöltve"
 
-#: etiketto/ui/printing.py:182
+#: tavletta/ui/printing.py:182
 #, python-format
 msgid ""
 "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label "
 "size, or load the matching roll."
 msgstr "A címke mérete %(size)s, de %(loaded)s címkék vannak betöltve. Ellenőrizze a címkeméretet, vagy töltse be a megfelelő tekercset."
 
-#: etiketto/ui/printing.py:245
+#: tavletta/ui/printing.py:245
 msgid "Labels"
 msgstr "Címkék"
 
-#: etiketto/ui/printing.py:257
+#: tavletta/ui/printing.py:257
 msgid "Print outlines"
 msgstr "Körvonalak nyomtatása"
 
-#: etiketto/ui/printing.py:257
+#: tavletta/ui/printing.py:257
 msgid "To test on plain paper"
 msgstr "Próbához sima papíron"
 
-#: etiketto/ui/printing.py:284
+#: tavletta/ui/printing.py:284
 #, python-format
 msgid "Sheets: %d"
 msgstr "Ívek: %d"
 
-#: etiketto/ui/printing.py:305
+#: tavletta/ui/printing.py:305
 msgid "Copies of each label"
 msgstr "Példányszám címkénként"
 
-#: etiketto/ui/printing.py:305
+#: tavletta/ui/printing.py:305
 msgid "Copies"
 msgstr "Példányszám"
 
-#: etiketto/ui/printing.py:316
+#: tavletta/ui/printing.py:316
 msgid "Cut"
 msgstr "Vágás"
 
-#: etiketto/ui/printing.py:322
+#: tavletta/ui/printing.py:322
 msgid "Colours"
 msgstr "Színek"
 
-#: etiketto/ui/printing.py:330
+#: tavletta/ui/printing.py:330
 msgid "Quality"
 msgstr "Minőség"
 
-#: etiketto/ui/printing.py:341
+#: tavletta/ui/printing.py:341
 msgid "From row"
 msgstr "Ettől a sortól"
 
-#: etiketto/ui/printing.py:342
+#: tavletta/ui/printing.py:342
 msgid "To row"
 msgstr "Eddig a sorig"
 
-#: etiketto/ui/printing.py:373
+#: tavletta/ui/printing.py:373
 msgid "Tape feed"
 msgstr "Szalagtovábbítás"
 
-#: etiketto/ui/printing.py:379
+#: tavletta/ui/printing.py:379
 #, python-format
 msgid "%(unit)s of blank tape before and after each label"
 msgstr "%(unit)s üres szalag minden címke előtt és után"
 
-#: etiketto/ui/printing.py:386
+#: tavletta/ui/printing.py:386
 msgid "Colour adjustment"
 msgstr "Színbeállítás"
 
-#: etiketto/ui/printing.py:389
+#: tavletta/ui/printing.py:389
 msgid "Reset"
 msgstr "Visszaállítás"
 
-#: etiketto/ui/printing.py:415
+#: tavletta/ui/printing.py:415
 msgid "Not adjusted"
 msgstr "Nincs módosítva"
 
-#: etiketto/ui/printing.py:415
+#: tavletta/ui/printing.py:415
 msgid "Adjusted"
 msgstr "Módosítva"
 
-#: etiketto/ui/printing.py:428
+#: tavletta/ui/printing.py:428
 msgid "Print serial labels"
 msgstr "Sorozatcímkék nyomtatása"
 
-#: etiketto/ui/printing.py:428
+#: tavletta/ui/printing.py:428
 msgid "Print label"
 msgstr "Címke nyomtatása"
 
-#: etiketto/ui/printing.py:432 etiketto/ui/printing.py:758
-#: etiketto/ui/shortcuts.py:51 etiketto/ui/window.py:179
+#: tavletta/ui/printing.py:432 tavletta/ui/printing.py:758
+#: tavletta/ui/shortcuts.py:51 tavletta/ui/window.py:179
 msgid "Print"
 msgstr "Nyomtatás"
 
-#: etiketto/ui/printing.py:493
+#: tavletta/ui/printing.py:493
 msgid "Codes may not scan"
 msgstr "Lehet, hogy a kódok nem olvashatók be"
 
-#: etiketto/ui/printing.py:513
+#: tavletta/ui/printing.py:513
 msgid "Labels in the printer's margin"
 msgstr "Címkék a nyomtató margójában"
 
-#: etiketto/ui/printing.py:515
+#: tavletta/ui/printing.py:515
 #, python-format
 msgid ""
 "The printer cannot print near the edges of the paper. The content of labels "
@@ -1463,1259 +1463,1259 @@ msgid ""
 "safety margin, or leave these positions out."
 msgstr "A nyomtató nem tud a papír széleihez közel nyomtatni. A következő címkék tartalma belelóg ebbe a margóba, és levágódna: %(positions)s. Növelje a biztonsági margót, vagy hagyja ki ezeket a pozíciókat."
 
-#: etiketto/ui/printing.py:533
+#: tavletta/ui/printing.py:533
 msgid "No printer yet – search for one or enter its address"
 msgstr "Még nincs nyomtató – keressen egyet, vagy adja meg a címét"
 
-#: etiketto/ui/printing.py:537
+#: tavletta/ui/printing.py:537
 msgid "Printing…"
 msgstr "Nyomtatás…"
 
-#: etiketto/ui/printing.py:604 etiketto/ui/printing.py:643
+#: tavletta/ui/printing.py:604 tavletta/ui/printing.py:643
 msgid "Printing serial labels"
 msgstr "Sorozatcímkék nyomtatása folyamatban"
 
-#: etiketto/ui/printing.py:605
+#: tavletta/ui/printing.py:605
 msgid "Stop"
 msgstr "Leállítás"
 
-#: etiketto/ui/printing.py:633
+#: tavletta/ui/printing.py:633
 msgid "Stopping after this label…"
 msgstr "Leállás ezután a címke után…"
 
-#: etiketto/ui/printing.py:640 etiketto/ui/printing.py:726
+#: tavletta/ui/printing.py:640 tavletta/ui/printing.py:726
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Nyomtatás: %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:672
+#: tavletta/ui/printing.py:672
 msgid "Rows that cannot be printed"
 msgstr "Nem nyomtatható sorok"
 
-#: etiketto/ui/printing.py:675
+#: tavletta/ui/printing.py:675
 msgid "Print without these rows"
 msgstr "Nyomtatás ezen sorok nélkül"
 
-#: etiketto/ui/printing.py:700
+#: tavletta/ui/printing.py:700
 #, python-format
 msgid "Stopped after row %(row)d"
 msgstr "Leállítva a(z) %(row)d. sor után"
 
-#: etiketto/ui/printing.py:705
+#: tavletta/ui/printing.py:705
 #, python-format
 msgid "Printed row %(row)d"
 msgstr "A(z) %(row)d. sor kinyomtatva"
 
-#: etiketto/ui/printing.py:707
+#: tavletta/ui/printing.py:707
 #, python-format
 msgid "Printed rows %(first)d to %(last)d"
 msgstr "A(z) %(first)d–%(last)d. sor kinyomtatva"
 
-#: etiketto/ui/printing.py:766
+#: tavletta/ui/printing.py:766
 msgid "Printing failed"
 msgstr "A nyomtatás sikertelen"
 
-#: etiketto/ui/printing.py:767
+#: tavletta/ui/printing.py:767
 msgid "Details"
 msgstr "Részletek"
 
-#: etiketto/ui/printing.py:770 etiketto/ui/window.py:909
+#: tavletta/ui/printing.py:770 tavletta/ui/window.py:909
 msgid "Report"
 msgstr "Jelentés"
 
-#: etiketto/ui/sheets.py:38
+#: tavletta/ui/sheets.py:38
 #, python-format
 msgid "%(size)s · %(count)d per sheet · %(paper)s"
 msgstr "%(size)s · %(count)d ívenként · %(paper)s"
 
-#: etiketto/ui/sheets.py:49
+#: tavletta/ui/sheets.py:49
 #, python-format
 msgid "All (%d)"
 msgstr "Mind (%d)"
 
-#: etiketto/ui/sheets.py:51
+#: tavletta/ui/sheets.py:51
 #, python-format
 msgid "From position %(n)d of %(total)d"
 msgstr "Kezdés: %(n)d. pozíció (összesen %(total)d)"
 
-#: etiketto/ui/sheets.py:52
+#: tavletta/ui/sheets.py:52
 #, python-format
 msgid "%(n)d of %(total)d positions"
 msgstr "%(n)d / %(total)d pozíció"
 
-#: etiketto/ui/sheets.py:202
+#: tavletta/ui/sheets.py:202
 msgid "Label sheets"
 msgstr "Címkeívek"
 
-#: etiketto/ui/sheets.py:203
+#: tavletta/ui/sheets.py:203
 msgid "Use sheet"
 msgstr "Ív használata"
 
-#: etiketto/ui/sheets.py:222
+#: tavletta/ui/sheets.py:222
 msgid "Brand, part number or size, e.g. 70x37"
 msgstr "Márka, cikkszám vagy méret, pl. 70x37"
 
-#: etiketto/ui/sheets.py:226
+#: tavletta/ui/sheets.py:226
 msgid "All paper sizes"
 msgstr "Minden papírméret"
 
-#: etiketto/ui/sheets.py:226
+#: tavletta/ui/sheets.py:226
 msgid "Other paper sizes"
 msgstr "Egyéb papírméretek"
 
-#: etiketto/ui/sheets.py:273
+#: tavletta/ui/sheets.py:273
 #, python-format
 msgid "%(shown)d of %(total)d sheets shown – refine the search"
 msgstr "%(shown)d / %(total)d ív látható – pontosítsa a keresést"
 
-#: etiketto/ui/sheets.py:280
+#: tavletta/ui/sheets.py:280
 msgid "No sheet found"
 msgstr "Nem található ív"
 
-#: etiketto/ui/sheets.py:340
+#: tavletta/ui/sheets.py:340
 msgid "Start at position"
 msgstr "Kezdő pozíció"
 
-#: etiketto/ui/sheets.py:347
+#: tavletta/ui/sheets.py:347
 msgid "Select all"
 msgstr "Összes kijelölése"
 
-#: etiketto/ui/sheets.py:348
+#: tavletta/ui/sheets.py:348
 msgid "Select none"
 msgstr "Kijelölés megszüntetése"
 
-#: etiketto/ui/sheets.py:360
+#: tavletta/ui/sheets.py:360
 msgid ""
 "Click a label to leave it out or to print on it again. Only the first sheet "
 "is affected: the sheets after it are filled completely."
 msgstr "Kattintson egy címkére a kihagyásához vagy az újbóli nyomtatáshoz. Csak az első ívre vonatkozik: az utána következő ívek teljesen megtelnek."
 
 #. translators: %s is a list of position numbers on the sheet, e.g. "1, 2, 3"
-#: etiketto/ui/sheets.py:405
+#: tavletta/ui/sheets.py:405
 #, python-format
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s"
 
-#: etiketto/ui/shipping.py:199 etiketto/ui/texts.py:260
+#: tavletta/ui/shipping.py:199 tavletta/ui/texts.py:260
 msgid "Shipping label"
 msgstr "Szállítási címke"
 
-#: etiketto/ui/shipping.py:230
+#: tavletta/ui/shipping.py:230
 msgid "Create label"
 msgstr "Címke létrehozása"
 
-#: etiketto/ui/shipping.py:254
+#: tavletta/ui/shipping.py:254
 msgid "The whole document is stored in the label file, not only this page."
 msgstr "A címkefájlba a teljes dokumentum kerül, nem csak ez az oldal."
 
-#: etiketto/ui/shipping.py:270
+#: tavletta/ui/shipping.py:270
 msgid "Rotate left"
 msgstr "Forgatás balra"
 
-#: etiketto/ui/shipping.py:271
+#: tavletta/ui/shipping.py:271
 msgid "Rotate right"
 msgstr "Forgatás jobbra"
 
-#: etiketto/ui/shipping.py:272
+#: tavletta/ui/shipping.py:272
 msgid "Find the label"
 msgstr "Címke keresése"
 
-#: etiketto/ui/shipping.py:273
+#: tavletta/ui/shipping.py:273
 msgid "Whole page"
 msgstr "Teljes oldal"
 
-#: etiketto/ui/shipping.py:274
+#: tavletta/ui/shipping.py:274
 msgid "Next suggestion"
 msgstr "Következő javaslat"
 
-#: etiketto/ui/shipping.py:284
+#: tavletta/ui/shipping.py:284
 msgid "Page"
 msgstr "Oldal"
 
-#: etiketto/ui/shortcuts.py:47 etiketto/ui/window.py:188
+#: tavletta/ui/shortcuts.py:47 tavletta/ui/window.py:188
 msgid "New label"
 msgstr "Új címke"
 
-#: etiketto/ui/shortcuts.py:48 etiketto/ui/window.py:151
+#: tavletta/ui/shortcuts.py:48 tavletta/ui/window.py:151
 msgid "Open"
 msgstr "Megnyitás"
 
-#: etiketto/ui/shortcuts.py:49 etiketto/ui/window.py:164
+#: tavletta/ui/shortcuts.py:49 tavletta/ui/window.py:164
 msgid "Save"
 msgstr "Mentés"
 
-#: etiketto/ui/shortcuts.py:50 etiketto/ui/window.py:190
+#: tavletta/ui/shortcuts.py:50 tavletta/ui/window.py:190
 msgid "Save as…"
 msgstr "Mentés másként…"
 
-#: etiketto/ui/shortcuts.py:52 etiketto/ui/window.py:169
+#: tavletta/ui/shortcuts.py:52 tavletta/ui/window.py:169
 msgid "Undo"
 msgstr "Visszavonás"
 
-#: etiketto/ui/shortcuts.py:53 etiketto/ui/window.py:170
+#: tavletta/ui/shortcuts.py:53 tavletta/ui/window.py:170
 msgid "Redo"
 msgstr "Újra"
 
-#: etiketto/ui/shortcuts.py:59
+#: tavletta/ui/shortcuts.py:59
 msgid "Add text"
 msgstr "Szöveg hozzáadása"
 
-#: etiketto/ui/shortcuts.py:60
+#: tavletta/ui/shortcuts.py:60
 msgid "Add an image"
 msgstr "Kép hozzáadása"
 
-#: etiketto/ui/shortcuts.py:61
+#: tavletta/ui/shortcuts.py:61
 msgid "Add a symbol"
 msgstr "Szimbólum hozzáadása"
 
-#: etiketto/ui/shortcuts.py:62
+#: tavletta/ui/shortcuts.py:62
 msgid "Add a code"
 msgstr "Kód hozzáadása"
 
-#: etiketto/ui/shortcuts.py:63
+#: tavletta/ui/shortcuts.py:63
 msgid "Add a line or shape"
 msgstr "Vonal vagy alakzat hozzáadása"
 
-#: etiketto/ui/shortcuts.py:64
+#: tavletta/ui/shortcuts.py:64
 msgid "Duplicate the open element"
 msgstr "A megnyitott elem kettőzése"
 
-#: etiketto/ui/shortcuts.py:65
+#: tavletta/ui/shortcuts.py:65
 msgid "Remove the open element"
 msgstr "A megnyitott elem eltávolítása"
 
-#: etiketto/ui/shortcuts.py:66
+#: tavletta/ui/shortcuts.py:66
 msgid "Move the open element up"
 msgstr "A megnyitott elem mozgatása előre"
 
-#: etiketto/ui/shortcuts.py:67
+#: tavletta/ui/shortcuts.py:67
 msgid "Move the open element down"
 msgstr "A megnyitott elem mozgatása hátra"
 
-#: etiketto/ui/shortcuts.py:80
+#: tavletta/ui/shortcuts.py:80
 msgid "General"
 msgstr "Általános"
 
-#: etiketto/ui/shortcuts.py:82 etiketto/ui/window.py:196
+#: tavletta/ui/shortcuts.py:82 tavletta/ui/window.py:196
 msgid "Keyboard shortcuts"
 msgstr "Gyorsbillentyűk"
 
-#: etiketto/ui/shortcuts.py:83 etiketto/ui/window.py:197
+#: tavletta/ui/shortcuts.py:83 tavletta/ui/window.py:197
 msgid "Help"
 msgstr "Súgó"
 
-#: etiketto/ui/styles.py:134
+#: tavletta/ui/styles.py:134
 msgid "Position"
 msgstr "Elhelyezés"
 
-#: etiketto/ui/styles.py:135
+#: tavletta/ui/styles.py:135
 msgid "Across the tape and the space after it"
 msgstr "A szalagon keresztül és az utána következő térköz"
 
-#: etiketto/ui/styles.py:143
+#: tavletta/ui/styles.py:143
 msgid "Vertical alignment"
 msgstr "Függőleges igazítás"
 
-#: etiketto/ui/styles.py:147
+#: tavletta/ui/styles.py:147
 msgid "Space after it"
 msgstr "Térköz utána"
 
-#: etiketto/ui/styles.py:164
+#: tavletta/ui/styles.py:164
 msgid "Own spacing"
 msgstr "Saját térköz"
 
-#: etiketto/ui/styles.py:167
+#: tavletta/ui/styles.py:167
 msgid "Instead of the label's spacing between elements"
 msgstr "A címke elemek közötti térköze helyett"
 
-#: etiketto/ui/styles.py:179
+#: tavletta/ui/styles.py:179
 msgid "Spacing and fitting"
 msgstr "Térköz és illesztés"
 
-#: etiketto/ui/styles.py:180
+#: tavletta/ui/styles.py:180
 msgid "Letter and line spacing, shrinking, wrapping, rotation"
 msgstr "Betű- és sorköz, zsugorítás, tördelés, forgatás"
 
-#: etiketto/ui/styles.py:183
+#: tavletta/ui/styles.py:183
 msgid "White on black, a box behind the text, a frame"
 msgstr "Fehér feketén, doboz a szöveg mögött, keret"
 
-#: etiketto/ui/styles.py:185
+#: tavletta/ui/styles.py:185
 msgid "Outline and shadow"
 msgstr "Körvonal és árnyék"
 
-#: etiketto/ui/styles.py:186
+#: tavletta/ui/styles.py:186
 msgid ""
 "At least one printer dot; black-and-white printers print the shadow solid"
 msgstr "Legalább egy nyomtatási pont; a fekete-fehér nyomtatók tömören nyomtatják az árnyékot"
 
-#: etiketto/ui/styles.py:204
+#: tavletta/ui/styles.py:204
 msgid "Letter spacing"
 msgstr "Betűköz"
 
-#: etiketto/ui/styles.py:211
+#: tavletta/ui/styles.py:211
 msgid "percent of the font size"
 msgstr "a betűméret százalékában"
 
-#: etiketto/ui/styles.py:216
+#: tavletta/ui/styles.py:216
 msgid "Line spacing"
 msgstr "Sorköz"
 
-#: etiketto/ui/styles.py:223
+#: tavletta/ui/styles.py:223
 msgid "times the normal line height"
 msgstr "a normál sormagasság szorzója"
 
-#: etiketto/ui/styles.py:228
+#: tavletta/ui/styles.py:228
 msgid "Shrink to fit"
 msgstr "Zsugorítás, hogy elférjen"
 
-#: etiketto/ui/styles.py:231
+#: tavletta/ui/styles.py:231
 msgid "Smaller until it fits the tape height and the label length"
 msgstr "Kisebb, amíg el nem fér a szalag magasságában és a címke hosszában"
 
-#: etiketto/ui/styles.py:235
+#: tavletta/ui/styles.py:235
 msgid "Smallest size"
 msgstr "Legkisebb méret"
 
-#: etiketto/ui/styles.py:242
+#: tavletta/ui/styles.py:242
 msgid "pt, when shrinking"
 msgstr "pt, zsugorításkor"
 
-#: etiketto/ui/styles.py:248
+#: tavletta/ui/styles.py:248
 msgid "Wrap width"
 msgstr "Tördelési szélesség"
 
-#: etiketto/ui/styles.py:254
+#: tavletta/ui/styles.py:254
 #, python-format
 msgid "%(unit)s, 0 = only at line breaks"
 msgstr "%(unit)s, 0 = csak sortöréseknél"
 
-#: etiketto/ui/styles.py:264
+#: tavletta/ui/styles.py:264
 msgid "White on black"
 msgstr "Fehér feketén"
 
-#: etiketto/ui/styles.py:267
+#: tavletta/ui/styles.py:267
 msgid "The text cut out of a box in the text colour"
 msgstr "A szöveg kivágva egy szövegszínű dobozból"
 
-#: etiketto/ui/styles.py:270 etiketto/ui/styles.py:275
+#: tavletta/ui/styles.py:270 tavletta/ui/styles.py:275
 msgid "Background box"
 msgstr "Háttérdoboz"
 
-#: etiketto/ui/styles.py:270
+#: tavletta/ui/styles.py:270
 msgid "A box behind the text"
 msgstr "Doboz a szöveg mögött"
 
-#: etiketto/ui/styles.py:272
+#: tavletta/ui/styles.py:272
 msgid "Colour of the background box"
 msgstr "A háttérdoboz színe"
 
-#: etiketto/ui/styles.py:287
+#: tavletta/ui/styles.py:287
 msgid "Padding"
 msgstr "Belső margó"
 
-#: etiketto/ui/styles.py:298
+#: tavletta/ui/styles.py:298
 #, python-format
 msgid "%(unit)s, with a box or frame"
 msgstr "%(unit)s, dobozzal vagy kerettel"
 
-#: etiketto/ui/styles.py:304
+#: tavletta/ui/styles.py:304
 msgid "Frame"
 msgstr "Keret"
 
-#: etiketto/ui/styles.py:318
+#: tavletta/ui/styles.py:318
 msgid "Outline"
 msgstr "Körvonal"
 
-#: etiketto/ui/styles.py:321
+#: tavletta/ui/styles.py:321
 msgid "Colour of the outline"
 msgstr "A körvonal színe"
 
-#: etiketto/ui/styles.py:322 etiketto/ui/styles.py:466
+#: tavletta/ui/styles.py:322 tavletta/ui/styles.py:466
 msgid "Choose a width first"
 msgstr "Előbb adja meg a vastagságot"
 
-#: etiketto/ui/styles.py:325
+#: tavletta/ui/styles.py:325
 msgid "Shadow"
 msgstr "Árnyék"
 
-#: etiketto/ui/styles.py:328
+#: tavletta/ui/styles.py:328
 msgid "Colour of the shadow"
 msgstr "Az árnyék színe"
 
-#: etiketto/ui/styles.py:329
+#: tavletta/ui/styles.py:329
 msgid "Choose an offset first"
 msgstr "Előbb adja meg az eltolást"
 
-#: etiketto/ui/styles.py:355
+#: tavletta/ui/styles.py:355
 msgid "Adjust"
 msgstr "Beállítás"
 
-#: etiketto/ui/styles.py:355
+#: tavletta/ui/styles.py:355
 msgid "Brightness, contrast, turning and mirroring"
 msgstr "Fényerő, kontraszt, forgatás és tükrözés"
 
-#: etiketto/ui/styles.py:356
+#: tavletta/ui/styles.py:356
 msgid "Black and white"
 msgstr "Fekete-fehér"
 
-#: etiketto/ui/styles.py:356
+#: tavletta/ui/styles.py:356
 msgid "How black-and-white printers print the image"
 msgstr "Hogyan nyomtatják a képet a fekete-fehér nyomtatók"
 
-#: etiketto/ui/styles.py:358
+#: tavletta/ui/styles.py:358
 msgid "Corners and border"
 msgstr "Sarkok és keret"
 
-#: etiketto/ui/styles.py:359
+#: tavletta/ui/styles.py:359
 msgid "Rounded corners and a border around the image"
 msgstr "Lekerekített sarkok és keret a kép körül"
 
-#: etiketto/ui/styles.py:377
+#: tavletta/ui/styles.py:377
 msgid "Crop"
 msgstr "Körbevágás"
 
-#: etiketto/ui/styles.py:387
+#: tavletta/ui/styles.py:387
 msgid "The image cannot be read"
 msgstr "A kép nem olvasható"
 
-#: etiketto/ui/styles.py:391
+#: tavletta/ui/styles.py:391
 msgid "Crop…"
 msgstr "Körbevágás…"
 
-#: etiketto/ui/styles.py:403 etiketto/ui/texts.py:67
+#: tavletta/ui/styles.py:403 tavletta/ui/texts.py:67
 msgid "Brightness"
 msgstr "Fényerő"
 
-#: etiketto/ui/styles.py:404
+#: tavletta/ui/styles.py:404
 msgid "Contrast"
 msgstr "Kontraszt"
 
-#: etiketto/ui/styles.py:405
+#: tavletta/ui/styles.py:405
 msgid "Gamma"
 msgstr "Gamma"
 
-#: etiketto/ui/styles.py:418
+#: tavletta/ui/styles.py:418
 msgid "Invert"
 msgstr "Invertálás"
 
-#: etiketto/ui/styles.py:421
+#: tavletta/ui/styles.py:421
 msgid "Mirror"
 msgstr "Tükrözés"
 
-#: etiketto/ui/styles.py:421
+#: tavletta/ui/styles.py:421
 msgid "Left and right"
 msgstr "Bal és jobb"
 
-#: etiketto/ui/styles.py:423
+#: tavletta/ui/styles.py:423
 msgid "Flip"
 msgstr "Átfordítás"
 
-#: etiketto/ui/styles.py:423
+#: tavletta/ui/styles.py:423
 msgid "Top and bottom"
 msgstr "Fent és lent"
 
-#: etiketto/ui/styles.py:428
+#: tavletta/ui/styles.py:428
 msgid "Threshold"
 msgstr "Küszöb"
 
-#: etiketto/ui/styles.py:435
+#: tavletta/ui/styles.py:435
 msgid "Lighter pixels print white"
 msgstr "A világosabb képpontok fehérek lesznek"
 
-#: etiketto/ui/styles.py:437
+#: tavletta/ui/styles.py:437
 msgid "Method"
 msgstr "Módszer"
 
-#: etiketto/ui/styles.py:438
+#: tavletta/ui/styles.py:438
 msgid "Only for the method Threshold"
 msgstr "Csak a Küszöb módszerhez"
 
-#: etiketto/ui/styles.py:466
+#: tavletta/ui/styles.py:466
 msgid "Colour of the border"
 msgstr "A keret színe"
 
-#: etiketto/ui/styles.py:500
+#: tavletta/ui/styles.py:500
 msgid "Direction"
 msgstr "Irány"
 
-#: etiketto/ui/styles.py:518
+#: tavletta/ui/styles.py:518
 msgid "Arrows"
 msgstr "Nyilak"
 
-#: etiketto/ui/styles.py:528
+#: tavletta/ui/styles.py:528
 msgid "Fill"
 msgstr "Kitöltés"
 
-#: etiketto/ui/styles.py:537
+#: tavletta/ui/styles.py:537
 msgid "Shape"
 msgstr "Alakzat"
 
-#: etiketto/ui/styles.py:540
+#: tavletta/ui/styles.py:540
 msgid "Line width"
 msgstr "Vonalvastagság"
 
-#: etiketto/ui/styles.py:546
+#: tavletta/ui/styles.py:546
 #, python-format
 msgid "%(unit)s, at least one printer dot"
 msgstr "%(unit)s, legalább egy nyomtatási pont"
 
-#: etiketto/ui/symbols.py:74
+#: tavletta/ui/symbols.py:74
 msgid "Symbols"
 msgstr "Szimbólumok"
 
-#: etiketto/ui/symbols.py:76
+#: tavletta/ui/symbols.py:76
 msgid "Use symbol"
 msgstr "Szimbólum használata"
 
-#: etiketto/ui/symbols.py:97
+#: tavletta/ui/symbols.py:97
 msgid "Search in English, e.g. arrow or recycle"
 msgstr "Keresés angolul, pl. arrow vagy recycle"
 
-#: etiketto/ui/symbols.py:102
+#: tavletta/ui/symbols.py:102
 msgid "All symbols"
 msgstr "Minden szimbólum"
 
-#: etiketto/ui/symbols.py:102
+#: tavletta/ui/symbols.py:102
 msgid "Recently used"
 msgstr "Legutóbb használt"
 
-#: etiketto/ui/symbols.py:123
+#: tavletta/ui/symbols.py:123
 msgid "No symbol found"
 msgstr "Nem található szimbólum"
 
-#: etiketto/ui/texts.py:32
+#: tavletta/ui/texts.py:32
 msgid "Full cut"
 msgstr "Teljes vágás"
 
-#: etiketto/ui/texts.py:33
+#: tavletta/ui/texts.py:33
 msgid "Half cut"
 msgstr "Félvágás"
 
-#: etiketto/ui/texts.py:34
+#: tavletta/ui/texts.py:34
 msgid "Cut after the last label"
 msgstr "Vágás az utolsó címke után"
 
-#: etiketto/ui/texts.py:35
+#: tavletta/ui/texts.py:35
 msgid "No cut"
 msgstr "Nincs vágás"
 
-#: etiketto/ui/texts.py:41
+#: tavletta/ui/texts.py:41
 msgid "Chain printing"
 msgstr "Láncnyomtatás"
 
-#: etiketto/ui/texts.py:42
+#: tavletta/ui/texts.py:42
 msgid "Saves tape: the last label stays in the printer until the next print"
 msgstr "Szalagot takarít meg: az utolsó címke a következő nyomtatásig a nyomtatóban marad"
 
-#: etiketto/ui/texts.py:44
+#: tavletta/ui/texts.py:44
 msgid "High resolution"
 msgstr "Nagy felbontás"
 
-#: etiketto/ui/texts.py:44
+#: tavletta/ui/texts.py:44
 msgid "Twice as fine along the tape, prints more slowly"
 msgstr "Kétszer finomabb a szalag mentén, lassabban nyomtat"
 
-#: etiketto/ui/texts.py:48
+#: tavletta/ui/texts.py:48
 msgid "Laminated tape"
 msgstr "Laminált szalag"
 
-#: etiketto/ui/texts.py:49
+#: tavletta/ui/texts.py:49
 msgid "Non-laminated tape"
 msgstr "Nem laminált szalag"
 
-#: etiketto/ui/texts.py:50
+#: tavletta/ui/texts.py:50
 msgid "Fabric tape"
 msgstr "Textilszalag"
 
-#: etiketto/ui/texts.py:51
+#: tavletta/ui/texts.py:51
 msgid "FLe tape"
 msgstr "FLe szalag"
 
-#: etiketto/ui/texts.py:52
+#: tavletta/ui/texts.py:52
 msgid "Flexible ID tape"
 msgstr "Rugalmas azonosítószalag"
 
-#: etiketto/ui/texts.py:53
+#: tavletta/ui/texts.py:53
 msgid "Satin tape"
 msgstr "Szatén szalag"
 
-#: etiketto/ui/texts.py:54
+#: tavletta/ui/texts.py:54
 msgid "Heat-shrink tube 2:1"
 msgstr "Zsugorcső 2:1"
 
-#: etiketto/ui/texts.py:55
+#: tavletta/ui/texts.py:55
 msgid "Heat-shrink tube 3:1"
 msgstr "Zsugorcső 3:1"
 
-#: etiketto/ui/texts.py:59
+#: tavletta/ui/texts.py:59
 msgid "Vivid"
 msgstr "Élénk"
 
-#: etiketto/ui/texts.py:60
+#: tavletta/ui/texts.py:60
 msgid "Normal"
 msgstr "Normál"
 
-#: etiketto/ui/texts.py:61
+#: tavletta/ui/texts.py:61
 msgid "Black and white (sharper)"
 msgstr "Fekete-fehér (élesebb)"
 
-#: etiketto/ui/texts.py:62
+#: tavletta/ui/texts.py:62
 msgid "Black"
 msgstr "Fekete"
 
-#: etiketto/ui/texts.py:63
+#: tavletta/ui/texts.py:63
 msgid "Red and black"
 msgstr "Piros és fekete"
 
-#: etiketto/ui/texts.py:65
+#: tavletta/ui/texts.py:65
 msgid "Standard"
 msgstr "Normál"
 
-#: etiketto/ui/texts.py:65
+#: tavletta/ui/texts.py:65
 msgid "High resolution (600 dpi)"
 msgstr "Nagy felbontás (600 dpi)"
 
-#: etiketto/ui/texts.py:68
+#: tavletta/ui/texts.py:68
 msgid "Red"
 msgstr "Vörös"
 
-#: etiketto/ui/texts.py:69
+#: tavletta/ui/texts.py:69
 msgid "Green"
 msgstr "Zöld"
 
-#: etiketto/ui/texts.py:70
+#: tavletta/ui/texts.py:70
 msgid "Blue"
 msgstr "Kék"
 
-#: etiketto/ui/texts.py:72
+#: tavletta/ui/texts.py:72
 msgid "Start"
 msgstr "Eleje"
 
-#: etiketto/ui/texts.py:72 etiketto/ui/texts.py:109
+#: tavletta/ui/texts.py:72 tavletta/ui/texts.py:109
 msgid "Centre"
 msgstr "Közép"
 
-#: etiketto/ui/texts.py:72
+#: tavletta/ui/texts.py:72
 msgid "End"
 msgstr "Vége"
 
-#: etiketto/ui/texts.py:73
+#: tavletta/ui/texts.py:73
 msgid "Across the roll"
 msgstr "A tekercs szélessége mentén"
 
-#: etiketto/ui/texts.py:73
+#: tavletta/ui/texts.py:73
 msgid "Along the roll"
 msgstr "A tekercs hossza mentén"
 
-#: etiketto/ui/texts.py:75
+#: tavletta/ui/texts.py:75
 msgid "Single label"
 msgstr "Egyedi címke"
 
-#: etiketto/ui/texts.py:75
+#: tavletta/ui/texts.py:75
 msgid "Label sheet"
 msgstr "Címkeív"
 
-#: etiketto/ui/texts.py:78
+#: tavletta/ui/texts.py:78
 msgid "Resolution"
 msgstr "Felbontás"
 
-#: etiketto/ui/texts.py:79
+#: tavletta/ui/texts.py:79
 msgid "Label sensor"
 msgstr "Címkeérzékelő"
 
-#: etiketto/ui/texts.py:80
+#: tavletta/ui/texts.py:80
 msgid "After printing"
 msgstr "Nyomtatás után"
 
-#: etiketto/ui/texts.py:81
+#: tavletta/ui/texts.py:81
 msgid "Darkness"
 msgstr "Sötétség"
 
-#: etiketto/ui/texts.py:82
+#: tavletta/ui/texts.py:82
 msgid "Print density"
 msgstr "Nyomtatási sűrűség"
 
-#: etiketto/ui/texts.py:83
+#: tavletta/ui/texts.py:83
 msgid "Speed"
 msgstr "Sebesség"
 
-#: etiketto/ui/texts.py:84
+#: tavletta/ui/texts.py:84
 msgid "Print upside down"
 msgstr "Fejjel lefelé nyomtatás"
 
-#: etiketto/ui/texts.py:85
+#: tavletta/ui/texts.py:85
 msgid "Print method"
 msgstr "Nyomtatási mód"
 
-#: etiketto/ui/texts.py:89
+#: tavletta/ui/texts.py:89
 msgid "As reported by the printer"
 msgstr "Ahogy a nyomtató jelzi"
 
-#: etiketto/ui/texts.py:90
+#: tavletta/ui/texts.py:90
 msgid "As set on the printer"
 msgstr "Ahogy a nyomtatón be van állítva"
 
-#: etiketto/ui/texts.py:91
+#: tavletta/ui/texts.py:91
 msgid "Gap between labels"
 msgstr "Hézag a címkék között"
 
-#: etiketto/ui/texts.py:92
+#: tavletta/ui/texts.py:92
 msgid "Black mark"
 msgstr "Fekete jel"
 
-#: etiketto/ui/texts.py:93
+#: tavletta/ui/texts.py:93
 msgid "Continuous media"
 msgstr "Folyamatos anyag"
 
-#: etiketto/ui/texts.py:94
+#: tavletta/ui/texts.py:94
 msgid "Transparent labels"
 msgstr "Átlátszó címkék"
 
-#: etiketto/ui/texts.py:95
+#: tavletta/ui/texts.py:95
 msgid "Tear off"
 msgstr "Letépés"
 
-#: etiketto/ui/texts.py:96
+#: tavletta/ui/texts.py:96
 msgid "Peel off"
 msgstr "Leválasztás"
 
-#: etiketto/ui/texts.py:97
+#: tavletta/ui/texts.py:97
 msgid "Cut off"
 msgstr "Levágás"
 
-#: etiketto/ui/texts.py:98
+#: tavletta/ui/texts.py:98
 msgid "Thermal transfer (ribbon)"
 msgstr "Hőtranszfer (festékszalag)"
 
-#: etiketto/ui/texts.py:99
+#: tavletta/ui/texts.py:99
 msgid "Thermal direct"
 msgstr "Direkt termál"
 
-#: etiketto/ui/texts.py:109
+#: tavletta/ui/texts.py:109
 msgid "Right"
 msgstr "Jobbra"
 
-#: etiketto/ui/texts.py:114
+#: tavletta/ui/texts.py:114
 msgid "2D codes"
 msgstr "2D kódok"
 
-#: etiketto/ui/texts.py:116
+#: tavletta/ui/texts.py:116
 msgid "QR code"
 msgstr "QR-kód"
 
-#: etiketto/ui/texts.py:123
+#: tavletta/ui/texts.py:123
 msgid "Linear barcodes"
 msgstr "Lineáris vonalkódok"
 
-#: etiketto/ui/texts.py:138
+#: tavletta/ui/texts.py:138
 msgid ""
 "Application identifiers in brackets, e.g. "
 "(01)09501101530003(17)261231(10)AB12"
 msgstr "Alkalmazás-azonosítók zárójelben, pl. (01)09501101530003(17)261231(10)AB12"
 
-#: etiketto/ui/texts.py:141
+#: tavletta/ui/texts.py:141
 msgid "Links, text, Wi-Fi access; phones read it"
 msgstr "Linkek, szöveg, Wi-Fi-hozzáférés; telefonnal olvasható"
 
-#: etiketto/ui/texts.py:142
+#: tavletta/ui/texts.py:142
 msgid "Text or numbers in little space, e.g. on small parts"
 msgstr "Szöveg vagy számok kis helyen, pl. apró alkatrészeken"
 
-#: etiketto/ui/texts.py:143
+#: tavletta/ui/texts.py:143
 msgid "Much text, e.g. an address or a document number"
 msgstr "Sok szöveg, pl. cím vagy dokumentumszám"
 
-#: etiketto/ui/texts.py:144
+#: tavletta/ui/texts.py:144
 msgid "Text or numbers; needs no blank margin, e.g. on tickets"
 msgstr "Szöveg vagy számok; nem kell hozzá üres szegély, pl. jegyeken"
 
-#: etiketto/ui/texts.py:145
+#: tavletta/ui/texts.py:145
 msgid "Latin letters, digits and punctuation"
 msgstr "Latin betűk, számjegyek és írásjelek"
 
-#: etiketto/ui/texts.py:146
+#: tavletta/ui/texts.py:146
 msgid "Capital letters, digits, spaces and - . $ / + %"
 msgstr "Nagybetűk, számjegyek, szóközök és - . $ / + %"
 
-#: etiketto/ui/texts.py:147
+#: tavletta/ui/texts.py:147
 msgid "Latin letters, digits and punctuation; shorter than Code 39"
 msgstr "Latin betűk, számjegyek és írásjelek; rövidebb, mint a Code 39"
 
-#: etiketto/ui/texts.py:148
+#: tavletta/ui/texts.py:148
 msgid "12 digits, the check digit is added (or 13 with it)"
 msgstr "12 számjegy, az ellenőrző számjegy hozzáadódik (vagy 13 azzal együtt)"
 
-#: etiketto/ui/texts.py:149
+#: tavletta/ui/texts.py:149
 msgid "7 digits, the check digit is added (or 8 with it)"
 msgstr "7 számjegy, az ellenőrző számjegy hozzáadódik (vagy 8 azzal együtt)"
 
-#: etiketto/ui/texts.py:150
+#: tavletta/ui/texts.py:150
 msgid "11 digits, the check digit is added (or 12 with it)"
 msgstr "11 számjegy, az ellenőrző számjegy hozzáadódik (vagy 12 azzal együtt)"
 
-#: etiketto/ui/texts.py:151
+#: tavletta/ui/texts.py:151
 msgid "7 digits starting with 0 or 1, the check digit is added (or 8 with it)"
 msgstr "7 számjegy 0-val vagy 1-gyel kezdve, az ellenőrző számjegy hozzáadódik (vagy 8 azzal együtt)"
 
-#: etiketto/ui/texts.py:152
+#: tavletta/ui/texts.py:152
 msgid ""
 "13 digits of a shipping carton's GTIN, the check digit is added (or 14 with "
 "it)"
 msgstr "Egy gyűjtőkarton GTIN-jének 13 számjegye, az ellenőrző számjegy hozzáadódik (vagy 14 azzal együtt)"
 
-#: etiketto/ui/texts.py:158
+#: tavletta/ui/texts.py:158
 msgid "Whole area, centred"
 msgstr "Teljes terület, középre"
 
-#: etiketto/ui/texts.py:158
+#: tavletta/ui/texts.py:158
 msgid "Fill the label, edges cut off"
 msgstr "Címke kitöltése, a szélek levágva"
 
-#: etiketto/ui/texts.py:160
+#: tavletta/ui/texts.py:160
 msgid "Middle"
 msgstr "Középen"
 
-#: etiketto/ui/texts.py:160
+#: tavletta/ui/texts.py:160
 msgid "Bottom"
 msgstr "Alul"
 
-#: etiketto/ui/texts.py:162
+#: tavletta/ui/texts.py:162
 msgid "Automatic"
 msgstr "Automatikus"
 
-#: etiketto/ui/texts.py:163
+#: tavletta/ui/texts.py:163
 msgid "Threshold (drawings, logos)"
 msgstr "Küszöb (rajzok, logók)"
 
-#: etiketto/ui/texts.py:164
+#: tavletta/ui/texts.py:164
 msgid "Dithering (photos)"
 msgstr "Raszterezés (fényképek)"
 
-#: etiketto/ui/texts.py:165
+#: tavletta/ui/texts.py:165
 msgid "Ordered pattern"
 msgstr "Rendezett minta"
 
-#: etiketto/ui/texts.py:168
+#: tavletta/ui/texts.py:168
 msgctxt "line style"
 msgid "Solid"
 msgstr "Folytonos"
 
-#: etiketto/ui/texts.py:169
+#: tavletta/ui/texts.py:169
 msgid "Dashed"
 msgstr "Szaggatott"
 
-#: etiketto/ui/texts.py:170 etiketto/ui/texts.py:195
+#: tavletta/ui/texts.py:170 tavletta/ui/texts.py:195
 msgid "Dotted"
 msgstr "Pontozott"
 
-#: etiketto/ui/texts.py:172
+#: tavletta/ui/texts.py:172
 msgid "Double"
 msgstr "Dupla"
 
-#: etiketto/ui/texts.py:174
+#: tavletta/ui/texts.py:174
 msgid "Line"
 msgstr "Vonal"
 
-#: etiketto/ui/texts.py:175
+#: tavletta/ui/texts.py:175
 msgid "Rectangle"
 msgstr "Téglalap"
 
-#: etiketto/ui/texts.py:176
+#: tavletta/ui/texts.py:176
 msgid "Ellipse"
 msgstr "Ellipszis"
 
-#: etiketto/ui/texts.py:177
+#: tavletta/ui/texts.py:177
 msgid "Separator"
 msgstr "Elválasztó"
 
-#: etiketto/ui/texts.py:180
+#: tavletta/ui/texts.py:180
 msgid "Horizontal"
 msgstr "Vízszintes"
 
-#: etiketto/ui/texts.py:181
+#: tavletta/ui/texts.py:181
 msgid "Vertical"
 msgstr "Függőleges"
 
-#: etiketto/ui/texts.py:182
+#: tavletta/ui/texts.py:182
 msgid "Diagonal, rising"
 msgstr "Átlós, emelkedő"
 
-#: etiketto/ui/texts.py:183
+#: tavletta/ui/texts.py:183
 msgid "Diagonal, falling"
 msgstr "Átlós, csökkenő"
 
-#: etiketto/ui/texts.py:186
+#: tavletta/ui/texts.py:186
 msgctxt "arrows"
 msgid "None"
 msgstr "Nincs"
 
-#: etiketto/ui/texts.py:187
+#: tavletta/ui/texts.py:187
 msgid "At the start"
 msgstr "Az elején"
 
-#: etiketto/ui/texts.py:188
+#: tavletta/ui/texts.py:188
 msgid "At the end"
 msgstr "A végén"
 
-#: etiketto/ui/texts.py:189
+#: tavletta/ui/texts.py:189
 msgid "At both ends"
 msgstr "Mindkét végén"
 
-#: etiketto/ui/texts.py:192
+#: tavletta/ui/texts.py:192
 msgctxt "fill"
 msgid "None"
 msgstr "Nincs"
 
-#: etiketto/ui/texts.py:193
+#: tavletta/ui/texts.py:193
 msgctxt "fill"
 msgid "Solid"
 msgstr "Tömör"
 
-#: etiketto/ui/texts.py:194
+#: tavletta/ui/texts.py:194
 msgid "Hatched"
 msgstr "Vonalkázott"
 
-#: etiketto/ui/texts.py:196
+#: tavletta/ui/texts.py:196
 msgid "Grid"
 msgstr "Rács"
 
-#: etiketto/ui/texts.py:211
+#: tavletta/ui/texts.py:211
 #, python-format
 msgid "Not an image: %s"
 msgstr "Nem kép: %s"
 
 #. translators: the print density a NIIMBOT model uses by default
-#: etiketto/ui/texts.py:229
+#: tavletta/ui/texts.py:229
 msgctxt "print density"
 msgid "Default"
 msgstr "Alapértelmezett"
 
-#: etiketto/ui/texts.py:233
+#: tavletta/ui/texts.py:233
 #, python-format
 msgid "%d %%"
 msgstr "%d%%"
 
 #. translators: print speed in inches per second, as label printers state it
-#: etiketto/ui/texts.py:236
+#: tavletta/ui/texts.py:236
 #, python-format
 msgid "%d in/s"
 msgstr "%d hüvelyk/s"
 
-#: etiketto/ui/texts.py:245
+#: tavletta/ui/texts.py:245
 msgid "Image"
 msgstr "Kép"
 
-#: etiketto/ui/texts.py:280
+#: tavletta/ui/texts.py:280
 #, python-format
 msgid "Endless, %(width)s wide"
 msgstr "Folyamatos, %(width)s széles"
 
-#: etiketto/ui/texts.py:290
+#: tavletta/ui/texts.py:290
 msgid ""
 "Check that all of the label is inside the selection. Drag to move it or its "
 "edges, or draw a new one."
 msgstr "Ellenőrizze, hogy a teljes címke a kijelölésen belül van-e. Húzással mozgathatja a kijelölést vagy a széleit, vagy rajzolhat újat."
 
-#: etiketto/ui/texts.py:294
+#: tavletta/ui/texts.py:294
 msgid ""
 "Several areas could be the label. Check the selection or try the next one."
 msgstr "Több terület is lehet a címke. Ellenőrizze a kijelölést, vagy próbálja a következőt."
 
-#: etiketto/ui/texts.py:296
+#: tavletta/ui/texts.py:296
 msgid "Everything printed on the page is selected. Drag to choose the label."
 msgstr "Az oldalon minden nyomtatott tartalom ki van jelölve. Húzással válassza ki a címkét."
 
-#: etiketto/ui/texts.py:297
+#: tavletta/ui/texts.py:297
 msgid "Nothing is printed on this page."
 msgstr "Ezen az oldalon nincs semmi nyomtatva."
 
-#: etiketto/ui/texts.py:302
+#: tavletta/ui/texts.py:302
 msgid "PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "A PDF-fájlokhoz Poppler (poppler-glib) kell, amely nincs telepítve"
 
-#: etiketto/ui/texts.py:313
+#: tavletta/ui/texts.py:313
 msgid "System printer (CUPS, IPP)"
 msgstr "Rendszernyomtató (CUPS, IPP)"
 
-#: etiketto/ui/texts.py:314
+#: tavletta/ui/texts.py:314
 msgid "Receipt printer (ESC/POS)"
 msgstr "Blokknyomtató (ESC/POS)"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: etiketto/ui/texts.py:316
+#: tavletta/ui/texts.py:316
 #, python-format
 msgid "%s, continuous rolls"
 msgstr "%s, folyamatos tekercsek"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: etiketto/ui/texts.py:318
+#: tavletta/ui/texts.py:318
 #, python-format
 msgid "%s, die-cut labels"
 msgstr "%s, stancolt címkék"
 
-#: etiketto/ui/texts.py:325
+#: tavletta/ui/texts.py:325
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "%(n)d. elem: a kód üres"
 
-#: etiketto/ui/texts.py:326
+#: tavletta/ui/texts.py:326
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "%(n)d. elem: az EAN-13 pontosan 12 számjegyet igényel"
 
-#: etiketto/ui/texts.py:327
+#: tavletta/ui/texts.py:327
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "%(n)d. elem: az EAN-13 ellenőrző számjegye hibás"
 
-#: etiketto/ui/texts.py:328
+#: tavletta/ui/texts.py:328
 #, python-format
 msgid "Element %(n)d: Code 128 holds at most %(max)d characters"
 msgstr "%(n)d. elem: a Code 128 legfeljebb %(max)d karaktert tartalmazhat"
 
-#: etiketto/ui/texts.py:330
+#: tavletta/ui/texts.py:330
 #, python-format
 msgid ""
 "Element %(n)d: the bars are too thin to scan reliably – use a longer or "
 "larger label, or shorter content"
 msgstr "%(n)d. elem: a vonalak túl vékonyak a megbízható beolvasáshoz – használjon hosszabb vagy nagyobb címkét, vagy rövidebb tartalmat"
 
-#: etiketto/ui/texts.py:334
+#: tavletta/ui/texts.py:334
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "%(n)d. elem: a Code 128 csak latin betűket, számjegyeket és írásjeleket fogad el"
 
-#: etiketto/ui/texts.py:336
+#: tavletta/ui/texts.py:336
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "%(n)d. elem: az EAN-8 7 számjegyet igényel, vagy 8-at az ellenőrző számjeggyel"
 
-#: etiketto/ui/texts.py:337
+#: tavletta/ui/texts.py:337
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "%(n)d. elem: az UPC-A 11 számjegyet igényel, vagy 12-t az ellenőrző számjeggyel"
 
-#: etiketto/ui/texts.py:339
+#: tavletta/ui/texts.py:339
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "%(n)d. elem: az UPC-E 7, 0-val vagy 1-gyel kezdődő számjegyet igényel, vagy 8-at az ellenőrző számjeggyel"
 
-#: etiketto/ui/texts.py:341
+#: tavletta/ui/texts.py:341
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "%(n)d. elem: az ITF-14 13 számjegyet igényel, vagy 14-et az ellenőrző számjeggyel"
 
-#: etiketto/ui/texts.py:342
+#: tavletta/ui/texts.py:342
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "%(n)d. elem: az ellenőrző számjegy hibás"
 
-#: etiketto/ui/texts.py:344
+#: tavletta/ui/texts.py:344
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "%(n)d. elem: a Code 39 csak nagybetűket, számjegyeket, szóközöket és - . $ / + %% jeleket fogad el"
 
-#: etiketto/ui/texts.py:347
+#: tavletta/ui/texts.py:347
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "%(n)d. elem: a Code 93 csak latin betűket, számjegyeket és írásjeleket fogad el"
 
-#: etiketto/ui/texts.py:350
+#: tavletta/ui/texts.py:350
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "%(n)d. elem: a GS1-adatok csak latin betűket, számjegyeket és írásjeleket fogadnak el"
 
-#: etiketto/ui/texts.py:353
+#: tavletta/ui/texts.py:353
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "%(n)d. elem: a GS1-adatoknak zárójeles alkalmazás-azonosítókból kell állniuk, mindegyik után az értékével, pl. (01)09501101530003(10)AB12"
 
-#: etiketto/ui/texts.py:356
+#: tavletta/ui/texts.py:356
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "%(n)d. elem: (%(ai)s) nem GS1 alkalmazás-azonosító"
 
-#: etiketto/ui/texts.py:358
+#: tavletta/ui/texts.py:358
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "%(n)d. elem: az alkalmazás-azonosító (%(ai)s) értékének hossza hibás"
 
-#: etiketto/ui/texts.py:361
+#: tavletta/ui/texts.py:361
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "%(n)d. elem: az alkalmazás-azonosító (%(ai)s) ellenőrző számjegye hibás"
 
-#: etiketto/ui/texts.py:364
+#: tavletta/ui/texts.py:364
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "%(n)d. elem: az alkalmazás-azonosító (%(ai)s) értéke érvénytelen: olyan dátum, szám vagy karakter, amelyet nem enged meg"
 
-#: etiketto/ui/texts.py:368
+#: tavletta/ui/texts.py:368
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "%(n)d. elem: egyetlen UPC-A szám sem rövidül ezekre az UPC-E számjegyekre – ellenőrizze őket, vagy használjon UPC-A-t"
 
-#: etiketto/ui/texts.py:372
+#: tavletta/ui/texts.py:372
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "%(n)d. elem: a Full ASCII módra állított olvasók a nagybetű előtti $, /, + vagy %% jelet más karakterként olvassák"
 
-#: etiketto/ui/texts.py:375
+#: tavletta/ui/texts.py:375
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "%(n)d. elem: a tartalom túl hosszú ehhez a kódtípushoz"
 
-#: etiketto/ui/texts.py:376
+#: tavletta/ui/texts.py:376
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "%(n)d. elem: a tartalom nem kódolható ebben a kódtípusban"
 
-#: etiketto/ui/texts.py:378
+#: tavletta/ui/texts.py:378
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "%(n)d. elem: ehhez a kódtípushoz a Zint könyvtár (zint-bindings) szükséges, amely nincs telepítve"
 
-#: etiketto/ui/texts.py:381
+#: tavletta/ui/texts.py:381
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "%(n)d. elem: a kép nem olvasható"
 
-#: etiketto/ui/texts.py:382
+#: tavletta/ui/texts.py:382
 #, python-format
 msgid "Element %(n)d: this symbol is not in the symbol library"
 msgstr "%(n)d. elem: ez a szimbólum nincs a szimbólumtárban"
 
-#: etiketto/ui/texts.py:383
+#: tavletta/ui/texts.py:383
 #, python-format
 msgid "Element %(n)d: the document cannot be read"
 msgstr "%(n)d. elem: a dokumentum nem olvasható"
 
-#: etiketto/ui/texts.py:385
+#: tavletta/ui/texts.py:385
 #, python-format
 msgid ""
 "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "%(n)d. elem: a PDF-fájlokhoz Poppler (poppler-glib) kell, amely nincs telepítve"
 
-#: etiketto/ui/texts.py:387
+#: tavletta/ui/texts.py:387
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "%(n)d. elem: nem rajzolható meg"
 
-#: etiketto/ui/texts.py:389
+#: tavletta/ui/texts.py:389
 msgid ""
 "Safety margin, border, its inset and edge spacing leave no room – reduce them"
 msgstr "A biztonsági margó, a keret, annak behúzása és a szélső térköz nem hagy helyet – csökkentse őket"
 
-#: etiketto/ui/texts.py:391
+#: tavletta/ui/texts.py:391
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "A rögzített hossz rövidebb a térköznél – növelje"
 
-#: etiketto/ui/texts.py:392
+#: tavletta/ui/texts.py:392
 msgid "The background image cannot be read"
 msgstr "A háttérkép nem olvasható"
 
-#: etiketto/ui/texts.py:394
+#: tavletta/ui/texts.py:394
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "%(n)d. elem: a kód moduljai csak egy nyomtatási pont szélesek, ezért lehet, hogy nem olvashatók be – nagyítsa a kódot"
 
-#: etiketto/ui/texts.py:398
+#: tavletta/ui/texts.py:398
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "%(n)d. elem: a kód körül szükséges üres hely nem fér el – nagyítsa a kódot"
 
-#: etiketto/ui/texts.py:402
+#: tavletta/ui/texts.py:402
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "%(n)d. elem: a kód modulonként egy nyomtatási ponttal sem fér el a helyén – nagyítsa a címkét vagy rövidítse a tartalmat"
 
-#: etiketto/ui/texts.py:405
+#: tavletta/ui/texts.py:405
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "%(n)d. elem: a(z) %(name)s nem ismert változó"
 
-#: etiketto/ui/texts.py:407
+#: tavletta/ui/texts.py:407
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "%(n)d. elem: a(z) %(name)s dátuma az 1. év előtti vagy 9999 utáni"
 
-#: etiketto/ui/texts.py:410
+#: tavletta/ui/texts.py:410
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "%(n)d. elem: a(z) %(name)s… változó nincs lezárva – zárja le ezzel: }"
 
-#: etiketto/ui/texts.py:413
+#: tavletta/ui/texts.py:413
 #, python-format
 msgid ""
 "Element %(n)d: on a black-and-white printer it hardly stands out from what "
 "lies behind it, as a whole or in part – choose another colour or move it"
 msgstr "%(n)d. elem: fekete-fehér nyomtatón alig válik el attól, ami mögötte van, egészben vagy részben – válasszon más színt, vagy helyezze át"
 
-#: etiketto/ui/texts.py:416
+#: tavletta/ui/texts.py:416
 #, python-format
 msgid "Element %(n)d: the shape has neither a line nor a fill"
 msgstr "%(n)d. elem: az alakzatnak nincs se vonala, se kitöltése"
 
-#: etiketto/ui/texts.py:418
+#: tavletta/ui/texts.py:418
 #, python-format
 msgid ""
 "Element %(n)d reaches beyond the edge of the label and is cut off there – "
 "move it or make it smaller"
 msgstr "A(z) %(n)d. elem túlnyúlik a címke szélén, és ott levágódik – mozgassa el vagy kicsinyítse"
 
-#: etiketto/ui/texts.py:422
+#: tavletta/ui/texts.py:422
 #, python-format
 msgid ""
 "Element %(n)d: the padding, frame, outline or shadow leave no room for the "
 "text – make them smaller"
 msgstr "%(n)d. elem: a belső margó, a keret, a körvonal vagy az árnyék nem hagy helyet a szövegnek – csökkentse őket"
 
-#: etiketto/ui/texts.py:437
+#: tavletta/ui/texts.py:437
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Már kinyomtatott ívek: %(n)d / %(total)d."
 
-#: etiketto/ui/texts.py:439
+#: tavletta/ui/texts.py:439
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Már kinyomtatott címkék: %(n)d / %(total)d."
 
-#: etiketto/ui/texts.py:443
+#: tavletta/ui/texts.py:443
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "A sorban még várakozó ívek nyomtatása megszakadt."
 
-#: etiketto/ui/texts.py:445
+#: tavletta/ui/texts.py:445
 msgid "The labels still waiting in the queue were canceled."
 msgstr "A sorban még várakozó címkék nyomtatása megszakadt."
 
-#: etiketto/ui/texts.py:452
+#: tavletta/ui/texts.py:452
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -2723,92 +2723,92 @@ msgid ""
 "size and the gap."
 msgstr "A címke %(size)s, a hézag %(gap)s, így %(pitch)s távolságonként kezdődik új címke. A nyomtató %(measured)s címketávolságot mért. Ellenőrizze a címkeméretet és a hézagot."
 
-#: etiketto/ui/texts.py:468
+#: tavletta/ui/texts.py:468
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "A nyomtató nem található. Ellenőrizze, hogy be van-e kapcsolva és ugyanazon a hálózaton van-e, vagy adja meg az IP-címét."
 
-#: etiketto/ui/texts.py:472
+#: tavletta/ui/texts.py:472
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "A nyomtató nem található USB-n. Ellenőrizze a kábelt, és hogy a nyomtató be van-e kapcsolva és nem alszik-e, majd keressen újra."
 
-#: etiketto/ui/texts.py:475
+#: tavletta/ui/texts.py:475
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "A nyomtató nem válaszol. Ellenőrizze, hogy be van-e kapcsolva, és nem alszik-e."
 
-#: etiketto/ui/texts.py:477
+#: tavletta/ui/texts.py:477
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "A nyomtató nem fogad több adatot. Ellenőrizze, hogy jelez-e hibát, például kifogyott címkéket vagy nyitott fedelet, majd próbálja újra."
 
-#: etiketto/ui/texts.py:481
+#: tavletta/ui/texts.py:481
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "A nyomtató elutasítja a kapcsolatot. Kapcsolja ki, majd újra be. Ha a webes felületén van „Port 9100” beállítás, kapcsolja be."
 
-#: etiketto/ui/texts.py:484
+#: tavletta/ui/texts.py:484
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Nincs behelyezett kazetta. Helyezzen be egyet, és próbálja újra."
 
-#: etiketto/ui/texts.py:485
+#: tavletta/ui/texts.py:485
 msgid "The printer's cover is open. Close it and try again."
 msgstr "A nyomtató fedele nyitva van. Csukja be, és próbálja újra."
 
-#: etiketto/ui/texts.py:486
+#: tavletta/ui/texts.py:486
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "A címke elakadt. Nyissa ki a fedelet, vegye ki a címkét, és próbálja újra."
 
-#: etiketto/ui/texts.py:487
+#: tavletta/ui/texts.py:487
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "A kazetta nem ismerhető fel. Helyezze be újra, vagy próbáljon egy másikat."
 
-#: etiketto/ui/texts.py:488
+#: tavletta/ui/texts.py:488
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "A nyomtató foglalt. Várjon egy kicsit, és próbálja újra."
 
-#: etiketto/ui/texts.py:489
+#: tavletta/ui/texts.py:489
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "A címke túl hosszú ehhez a nyomtatóhoz: legfeljebb %(max)s."
 
-#: etiketto/ui/texts.py:490
+#: tavletta/ui/texts.py:490
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "A címke túl széles ehhez a nyomtatóhoz: legfeljebb %(max)s."
 
-#: etiketto/ui/texts.py:491
+#: tavletta/ui/texts.py:491
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "A nyomtatóból kifogyott a címke. Töltsön be új tekercset, és próbálja újra."
 
-#: etiketto/ui/texts.py:492
+#: tavletta/ui/texts.py:492
 msgid "The print head is open. Close it and try again."
 msgstr "A nyomtatófej nyitva van. Zárja le, és próbálja újra."
 
-#: etiketto/ui/texts.py:494
+#: tavletta/ui/texts.py:494
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "A nyomtató nem találja a következő címkét. Ellenőrizze, hogy a címkék megfelelően vannak-e betöltve, és áthaladnak-e a címkeérzékelőn."
 
-#: etiketto/ui/texts.py:498
+#: tavletta/ui/texts.py:498
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Probléma van a festékszalaggal. Ellenőrizze, hogy megfelelően van-e behelyezve, és megfelel-e a nyomtatón beállított nyomtatási módnak."
 
-#: etiketto/ui/texts.py:504
+#: tavletta/ui/texts.py:504
 #, python-format
 msgid ""
 "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
 "without one need “%(direct)s” under “%(method)s”."
 msgstr "A nyomtató nem talál festékszalagot. Helyezzen be festékszalagot, és próbálja újra. A festékszalag nélkül nyomtatott címkékhez a(z) „%(method)s” beállításnál „%(direct)s” kell."
 
-#: etiketto/ui/texts.py:511
+#: tavletta/ui/texts.py:511
 #, python-format
 msgid ""
 "A ribbon is loaded, but the printer prints without it (thermal direct). For "
@@ -2816,729 +2816,729 @@ msgid ""
 "remove the ribbon."
 msgstr "Festékszalag van behelyezve, de a nyomtató nélküle nyomtat (direkt termál). A festékszalagot igénylő címkékhez válassza a(z) „%(method)s” beállításnál ezt: „%(transfer)s”, vagy vegye ki a festékszalagot."
 
-#: etiketto/ui/texts.py:516
+#: tavletta/ui/texts.py:516
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "A nyomtató szünetel. Folytassa a kijelzőjén, és próbálja újra."
 
-#: etiketto/ui/texts.py:517
+#: tavletta/ui/texts.py:517
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "A nyomtatóból kifogyott a papír. Töltsön be papírt, és próbálja újra."
 
-#: etiketto/ui/texts.py:519
+#: tavletta/ui/texts.py:519
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Elakadt a papír. Távolítsa el a nyomtató kijelzőjén látható módon, és próbálja újra."
 
-#: etiketto/ui/texts.py:521
+#: tavletta/ui/texts.py:521
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "A nyomtatóból kifogyott a toner vagy a tinta. Cserélje ki, és próbálja újra."
 
-#: etiketto/ui/texts.py:522
+#: tavletta/ui/texts.py:522
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "A nyomtató nem tudja kinyomtatni ezt a méretet. Válasszon olyan papírméretet, amelyet kínál."
 
-#: etiketto/ui/texts.py:524
+#: tavletta/ui/texts.py:524
 msgid ""
-"The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
+"The printer takes none of the formats Tavletta can send (PDF, PWG Raster, "
 "JPEG)."
-msgstr "A nyomtató az Etiketto által küldhető formátumok egyikét sem fogadja el (PDF, PWG Raster, JPEG)."
+msgstr "A nyomtató az Tavletta által küldhető formátumok egyikét sem fogadja el (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:527
+#: tavletta/ui/texts.py:527
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "A nyomtató várólistája szünetel. Folytassa a rendszer nyomtatóbeállításaiban, és próbálja újra."
 
-#: etiketto/ui/texts.py:531
+#: tavletta/ui/texts.py:531
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "A nyomtatási feladatot visszatartotta a várólista, például amíg fel nem oldják, vagy meg nem adnak egy jelszót. Ellenőrizze a várólistát a rendszer nyomtatóbeállításaiban, és próbálja újra."
 
-#: etiketto/ui/texts.py:535
+#: tavletta/ui/texts.py:535
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "A nyomtatási feladatot a nyomtatón vagy a várólistában megszakították."
 
-#: etiketto/ui/texts.py:536
+#: tavletta/ui/texts.py:536
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "A nyomtató nem jelezte időben a felbontását. Válassza ki itt: „%s”."
 
-#: etiketto/ui/texts.py:539
+#: tavletta/ui/texts.py:539
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "A betöltött tekercs nem illik a címkéhez. Töltsön be megfelelő tekercset, vagy válassza ki a betöltött tekercs címkeméretét vagy nyomtatómodelljét."
 
-#: etiketto/ui/texts.py:542
+#: tavletta/ui/texts.py:542
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "A nyomtató akkumulátora lemerülőben van – töltse fel, vagy csatlakoztassa a hálózati adaptert."
 
-#: etiketto/ui/texts.py:543
+#: tavletta/ui/texts.py:543
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "A nyomtatófej túl forró. Várja meg, amíg lehűl, majd próbálja újra."
 
-#: etiketto/ui/texts.py:545
+#: tavletta/ui/texts.py:545
 msgid ""
-"Etiketto cannot print on this printer model: it does not take the raster "
-"images Etiketto sends."
-msgstr "Az Etiketto nem tud nyomtatni ezen a nyomtatótípuson: nem fogadja az Etiketto által küldött raszterképeket."
+"Tavletta cannot print on this printer model: it does not take the raster "
+"images Tavletta sends."
+msgstr "Az Tavletta nem tud nyomtatni ezen a nyomtatótípuson: nem fogadja az Tavletta által küldött raszterképeket."
 
-#: etiketto/ui/texts.py:549
-msgid "Etiketto does not know this printer model and cannot print on it yet."
-msgstr "Az Etiketto nem ismeri ezt a nyomtatótípust, és még nem tud nyomtatni rajta."
+#: tavletta/ui/texts.py:549
+msgid "Tavletta does not know this printer model and cannot print on it yet."
+msgstr "Az Tavletta nem ismeri ezt a nyomtatótípust, és még nem tud nyomtatni rajta."
 
-#: etiketto/ui/texts.py:552
+#: tavletta/ui/texts.py:552
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "A nyomtató Editor Lite módban van, és USB-meghajtóként jelenik meg. Kapcsolja ki az Editor Lite módot a nyomtatón (a lámpája kialszik), majd keressen újra."
 
-#: etiketto/ui/texts.py:556
+#: tavletta/ui/texts.py:556
 msgid ""
-"Etiketto is not allowed to use the printer's USB port. Add your user to the "
+"Tavletta is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
-msgstr "Az Etiketto nem használhatja a nyomtató USB-portját. Adja hozzá a felhasználóját az „lp” csoporthoz (sudo usermod -aG lp $USER), majd jelentkezzen ki, és jelentkezzen be újra."
+msgstr "Az Tavletta nem használhatja a nyomtató USB-portját. Adja hozzá a felhasználóját az „lp” csoporthoz (sudo usermod -aG lp $USER), majd jelentkezzen ki, és jelentkezzen be újra."
 
-#: etiketto/ui/texts.py:560
+#: tavletta/ui/texts.py:560
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "Az oldal túl nagy ahhoz, hogy a nyomtató által elfogadott felbontásban elkészüljön. Válasszon kisebb papírméretet, vagy nyomtasson PDF-et elfogadó nyomtatóra."
 
-#: etiketto/ui/texts.py:564
+#: tavletta/ui/texts.py:564
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Ennek a nyomtatónak a felbontásán egy kód nem fér el a címkén, és levágódna. Nagyítsa a címkét vagy rövidítse a kód tartalmát."
 
-#: etiketto/ui/texts.py:568
+#: tavletta/ui/texts.py:568
 msgid ""
-"Etiketto is not allowed to use the printer's serial port. Add your user to "
+"Tavletta is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
-msgstr "Az Etiketto nem használhatja a nyomtató soros portját. Adja hozzá a felhasználóját a „dialout” csoporthoz (sudo usermod -aG dialout $USER; Arch Linuxon a csoport neve „uucp”), majd jelentkezzen ki, és jelentkezzen be újra."
+msgstr "Az Tavletta nem használhatja a nyomtató soros portját. Adja hozzá a felhasználóját a „dialout” csoporthoz (sudo usermod -aG dialout $USER; Arch Linuxon a csoport neve „uucp”), majd jelentkezzen ki, és jelentkezzen be újra."
 
-#: etiketto/ui/texts.py:573
+#: tavletta/ui/texts.py:573
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "A nyomtató hibát jelzett. Kapcsolja ki, majd újra be, és próbálja meg még egyszer."
 
-#: etiketto/ui/texts.py:584
+#: tavletta/ui/texts.py:584
 msgid "Printed"
 msgstr "Kinyomtatva"
 
-#: etiketto/ui/texts.py:590
+#: tavletta/ui/texts.py:590
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Elküldve a nyomtatónak – akkor nyomtatja, amikor sorra kerül"
 
-#: etiketto/ui/texts.py:592
+#: tavletta/ui/texts.py:592
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "Elküldve a nyomtatónak – nem igazolta vissza a nyomtatást"
 
-#: etiketto/ui/texts.py:596
+#: tavletta/ui/texts.py:596
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Nyomtatva ezzel: „%(used)s”, mert a betöltött tekercs ezt igényli"
 
-#: etiketto/ui/texts.py:600
+#: tavletta/ui/texts.py:600
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "„%(wanted)s” színmód nem érhető el ezen a nyomtatón, helyette: „%(used)s”"
 
-#: etiketto/ui/texts.py:610
+#: tavletta/ui/texts.py:610
 msgid "Warming up…"
 msgstr "Bemelegítés…"
 
-#: etiketto/ui/texts.py:611
+#: tavletta/ui/texts.py:611
 msgid "Cooling down…"
 msgstr "Lehűlés…"
 
-#: etiketto/ui/texts.py:612
+#: tavletta/ui/texts.py:612
 msgid "Cleaning…"
 msgstr "Tisztítás…"
 
-#: etiketto/ui/texts.py:613
+#: tavletta/ui/texts.py:613
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Húzzon végig a nyomtató paneljén a címke levágásához"
 
-#: etiketto/ui/texts.py:615
+#: tavletta/ui/texts.py:615
 msgid "Out of paper – load paper to continue"
 msgstr "Kifogyott a papír – a folytatáshoz töltsön be papírt"
 
-#: etiketto/ui/texts.py:616
+#: tavletta/ui/texts.py:616
 msgid "Cover open – close it to continue"
 msgstr "A fedél nyitva – a folytatáshoz csukja be"
 
-#: etiketto/ui/texts.py:617
+#: tavletta/ui/texts.py:617
 msgid "Paper jammed – remove it to continue"
 msgstr "Elakadt a papír – a folytatáshoz távolítsa el"
 
-#: etiketto/ui/texts.py:628
-msgid "This label needs a newer version of Etiketto"
-msgstr "Ehhez a címkéhez az Etiketto újabb verziója szükséges"
+#: tavletta/ui/texts.py:628
+msgid "This label needs a newer version of Tavletta"
+msgstr "Ehhez a címkéhez az Tavletta újabb verziója szükséges"
 
-#: etiketto/ui/texts.py:630
+#: tavletta/ui/texts.py:630
 #, python-format
-msgid "%s is not an Etiketto label"
-msgstr "%s nem Etiketto-címke"
+msgid "%s is not an Tavletta label"
+msgstr "%s nem Tavletta-címke"
 
-#: etiketto/ui/texts.py:631 etiketto/ui/texts.py:651
-#: etiketto/server/service.py:686
+#: tavletta/ui/texts.py:631 tavletta/ui/texts.py:651
+#: tavletta/server/service.py:686
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "A fájl sérült: %s"
 
-#: etiketto/ui/texts.py:638
+#: tavletta/ui/texts.py:638
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "A(z) %s adatfájl már nem létezik. Válassza ki újra, vagy távolítsa el."
 
-#: etiketto/ui/texts.py:642
+#: tavletta/ui/texts.py:642
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "A(z) %(file)s fájlban nincs %(sheet)s nevű munkalap"
 
-#: etiketto/ui/texts.py:644
+#: tavletta/ui/texts.py:644
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "A(z) %s nem táblázat. Használjon CSV-, ODS- vagy XLSX-fájlt."
 
-#: etiketto/ui/texts.py:646
+#: tavletta/ui/texts.py:646
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "A(z) %s túl nagy a sorozatcímkékhez. Ossza fel kisebb fájlokra, vagy távolítsa el a felesleges sorokat és oszlopokat."
 
-#: etiketto/ui/texts.py:649
+#: tavletta/ui/texts.py:649
 #, python-format
 msgid "%s contains no data."
 msgstr "A(z) %s nem tartalmaz adatot."
 
-#: etiketto/ui/texts.py:660
+#: tavletta/ui/texts.py:660
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "A nyomtatás a(z) %(row)d. sornál leállt. A folytatáshoz nyomtasson újra a(z) %(row)d. sortól."
 
-#: etiketto/ui/texts.py:664
+#: tavletta/ui/texts.py:664
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "A(z) %(row)d. sor már kinyomtatott példányai: %(copies)d."
 
-#: etiketto/ui/texts.py:669
+#: tavletta/ui/texts.py:669
 #, python-format
 msgid "Row %(row)d goes at position %(position)d of sheet %(sheet)d."
 msgstr "A(z) %(row)d. sor a(z) %(sheet)d. ív %(position)d. helyére kerül."
 
-#: etiketto/ui/texts.py:680
+#: tavletta/ui/texts.py:680
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Nem menthető: %s (nincs írási jogosultság)"
 
-#: etiketto/ui/texts.py:682
+#: tavletta/ui/texts.py:682
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Nem menthető: %s (a lemez megtelt)"
 
-#: etiketto/ui/texts.py:692
+#: tavletta/ui/texts.py:692
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "A kazetta valószínű gyártási ideje: %(month)s %(year)d. A régi ZINK-papír halványabb színekkel nyomtat."
 
-#: etiketto/ui/variables.py:24
+#: tavletta/ui/variables.py:24
 msgid "Date"
 msgstr "Dátum"
 
-#: etiketto/ui/variables.py:25
+#: tavletta/ui/variables.py:25
 msgid "Best before (in 30 days)"
 msgstr "Szavatossági idő (30 nap múlva)"
 
-#: etiketto/ui/variables.py:26
+#: tavletta/ui/variables.py:26
 msgid "Time"
 msgstr "Idő"
 
-#: etiketto/ui/variables.py:27 etiketto/ui/variables.py:113
+#: tavletta/ui/variables.py:27 tavletta/ui/variables.py:113
 msgid "Counter"
 msgstr "Számláló"
 
-#: etiketto/ui/variables.py:28
+#: tavletta/ui/variables.py:28
 msgid "Counter with leading zeros"
 msgstr "Számláló vezető nullákkal"
 
-#: etiketto/ui/variables.py:29
+#: tavletta/ui/variables.py:29
 msgid "Copy number"
 msgstr "Példány sorszáma"
 
-#: etiketto/ui/variables.py:30
+#: tavletta/ui/variables.py:30
 msgid "Number of copies"
 msgstr "Példányszám"
 
-#: etiketto/ui/variables.py:31
+#: tavletta/ui/variables.py:31
 msgid "Random ID"
 msgstr "Véletlen azonosító"
 
-#: etiketto/ui/variables.py:41
+#: tavletta/ui/variables.py:41
 msgid "Insert variable"
 msgstr "Változó beszúrása"
 
-#: etiketto/ui/variables.py:67
+#: tavletta/ui/variables.py:67
 msgid ""
 "Variables are filled in when printing. Every printed label gets the next "
 "counter value, also from copy to copy. The preview shows the values of the "
 "next print."
 msgstr "A változók nyomtatáskor töltődnek ki. Minden kinyomtatott címke a számláló következő értékét kapja, példányról példányra is. Az előnézet a következő nyomtatás értékeit mutatja."
 
-#: etiketto/ui/variables.py:77
+#: tavletta/ui/variables.py:77
 msgid "More about variables"
 msgstr "További információ a változókról"
 
-#: etiketto/ui/variables.py:113
+#: tavletta/ui/variables.py:113
 msgid "Goes up with every printed label, by the step"
 msgstr "Minden kinyomtatott címkével nő a lépésközzel"
 
-#: etiketto/ui/variables.py:119
+#: tavletta/ui/variables.py:119
 msgid "Next number"
 msgstr "Következő szám"
 
-#: etiketto/ui/variables.py:122
+#: tavletta/ui/variables.py:122
 msgid "Step"
 msgstr "Lépésköz"
 
-#: etiketto/ui/window.py:158
+#: tavletta/ui/window.py:158
 msgid "Templates"
 msgstr "Sablonok"
 
-#: etiketto/ui/window.py:189
+#: tavletta/ui/window.py:189
 msgid "Shipping label…"
 msgstr "Szállítási címke…"
 
-#: etiketto/ui/window.py:192
+#: tavletta/ui/window.py:192
 msgid "Data for serial labels…"
 msgstr "Sorozatcímkék adatai…"
 
-#: etiketto/ui/window.py:193
+#: tavletta/ui/window.py:193
 msgid "Forget allowed data files"
 msgstr "Engedélyezett adatfájlok elfelejtése"
 
-#: etiketto/ui/window.py:194
+#: tavletta/ui/window.py:194
 msgid "Export PNG…"
 msgstr "Exportálás PNG-ként…"
 
-#: etiketto/ui/window.py:198
+#: tavletta/ui/window.py:198
 msgid "Report a problem…"
 msgstr "Probléma jelentése…"
 
-#: etiketto/ui/window.py:199
-msgid "About Etiketto"
-msgstr "Az Etiketto névjegye"
+#: tavletta/ui/window.py:199
+msgid "About Tavletta"
+msgstr "Az Tavletta névjegye"
 
-#: etiketto/ui/window.py:678
+#: tavletta/ui/window.py:678
 msgid "Unsaved label"
 msgstr "Mentetlen címke"
 
-#: etiketto/ui/window.py:837
+#: tavletta/ui/window.py:837
 msgid "content scaled down to fit"
 msgstr "a tartalom kicsinyítve, hogy elférjen"
 
-#: etiketto/ui/window.py:841
+#: tavletta/ui/window.py:841
 #, python-format
 msgid "Problem: %s"
 msgstr "Probléma: %s"
 
-#: etiketto/ui/window.py:860
+#: tavletta/ui/window.py:860
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Túl hosszú ehhez a nyomtatóhoz: legfeljebb %s"
 
-#: etiketto/ui/window.py:864
+#: tavletta/ui/window.py:864
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Túl széles ehhez a nyomtatóhoz: legfeljebb %s"
 
-#: etiketto/ui/window.py:936
+#: tavletta/ui/window.py:936
 msgid "The browser cannot be opened"
 msgstr "A böngésző nem nyitható meg"
 
-#: etiketto/ui/window.py:938
+#: tavletta/ui/window.py:938
 msgid "Copy link"
 msgstr "Hivatkozás másolása"
 
-#: etiketto/ui/window.py:1009
+#: tavletta/ui/window.py:1009
 msgid "Only local files can be dropped"
 msgstr "Csak helyi fájlok húzhatók ide"
 
-#: etiketto/ui/window.py:1047
+#: tavletta/ui/window.py:1047
 msgid "Please wait until printing has finished"
 msgstr "Várjon, amíg a nyomtatás befejeződik"
 
-#: etiketto/server/config.py:79
+#: tavletta/server/config.py:79
 #, python-format
 msgid "%(file)s: %(key)s: %(problem)s"
 msgstr "%(file)s: %(key)s: %(problem)s"
 
-#: etiketto/server/config.py:89 etiketto/server/config.py:93
-#: etiketto/server/config.py:99 etiketto/server/main.py:341
+#: tavletta/server/config.py:89 tavletta/server/config.py:93
+#: tavletta/server/config.py:99 tavletta/server/main.py:341
 #, python-format
 msgid "Cannot read %(file)s: %(reason)s"
 msgstr "A(z) %(file)s nem olvasható: %(reason)s"
 
-#: etiketto/server/config.py:109
+#: tavletta/server/config.py:109
 msgid "expected a table"
 msgstr "tábla várható"
 
-#: etiketto/server/config.py:119 etiketto/server/config.py:446
+#: tavletta/server/config.py:119 tavletta/server/config.py:446
 msgid "missing"
 msgstr "hiányzik"
 
-#: etiketto/server/config.py:122
+#: tavletta/server/config.py:122
 msgid "expected text"
 msgstr "szöveg várható"
 
-#: etiketto/server/config.py:124
+#: tavletta/server/config.py:124
 msgid "control characters are not allowed"
 msgstr "vezérlőkarakterek nem engedélyezettek"
 
-#: etiketto/server/config.py:130
+#: tavletta/server/config.py:130
 msgid "expected true or false"
 msgstr "true vagy false várható"
 
-#: etiketto/server/config.py:141
+#: tavletta/server/config.py:141
 #, python-format
 msgid "expected a number from %(min)s to %(max)s"
 msgstr "szám várható %(min)s és %(max)s között"
 
-#: etiketto/server/config.py:148
+#: tavletta/server/config.py:148
 #, python-format
 msgid "expected one of: %s"
 msgstr "a következők egyike várható: %s"
 
-#: etiketto/server/config.py:153 etiketto/server/config.py:159
+#: tavletta/server/config.py:153 tavletta/server/config.py:159
 msgid "unknown key"
 msgstr "ismeretlen kulcs"
 
-#: etiketto/server/config.py:162
+#: tavletta/server/config.py:162
 msgid "nothing defined"
 msgstr "nincs semmi megadva"
 
-#: etiketto/server/config.py:168
+#: tavletta/server/config.py:168
 msgid "not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "érvénytelen név: betűk, számjegyek, . _ - (legfeljebb 64)"
 
-#: etiketto/server/config.py:209
+#: tavletta/server/config.py:209
 msgid "only one printer can be the default"
 msgstr "csak egy nyomtató lehet az alapértelmezett"
 
-#: etiketto/server/config.py:223
+#: tavletta/server/config.py:223
 msgid "not a valid printer address"
 msgstr "érvénytelen nyomtatócím"
 
-#: etiketto/server/config.py:245
+#: tavletta/server/config.py:245
 msgid "this printer model does not cut"
 msgstr "ez a nyomtatómodell nem vág"
 
-#: etiketto/server/config.py:247
+#: tavletta/server/config.py:247
 msgid "this printer model has no colour settings"
 msgstr "ennek a nyomtatómodellnek nincsenek színbeállításai"
 
-#: etiketto/server/config.py:406
+#: tavletta/server/config.py:406
 msgid "expected a date such as 2027-12-31"
 msgstr "dátum várható, pl. 2027-12-31"
 
-#: etiketto/server/config.py:420
+#: tavletta/server/config.py:420
 msgid "the same token twice"
 msgstr "ugyanaz a token kétszer"
 
-#: etiketto/server/config.py:433
+#: tavletta/server/config.py:433
 #, python-format
 msgid "%s can be changed by every user of this computer: chmod 600 it"
 msgstr "%s fájlt a számítógép bármely felhasználója módosíthatja: futtassa rá a chmod 600 parancsot"
 
-#: etiketto/server/config.py:443
+#: tavletta/server/config.py:443
 msgid "not a token hash: expected sha256:… or scrypt:…"
 msgstr "nem token-hash: sha256:… vagy scrypt:… várható"
 
-#: etiketto/server/config.py:469
+#: tavletta/server/config.py:469
 msgid "expected a list of printer names"
 msgstr "nyomtatónevek listája várható"
 
-#: etiketto/server/config.py:471
+#: tavletta/server/config.py:471
 msgid "printers can only be limited with --printers"
 msgstr "a nyomtatók csak a --printers kapcsolóval korlátozhatók"
 
-#: etiketto/server/config.py:473 etiketto/server/service.py:466
+#: tavletta/server/config.py:473 tavletta/server/service.py:466
 #, python-format
 msgid "Unknown printer: %s"
 msgstr "Ismeretlen nyomtató: %s"
 
-#: etiketto/server/errors.py:29
+#: tavletta/server/errors.py:29
 #, python-format
 msgid "Invalid value for %s"
 msgstr "Érvénytelen érték ehhez: %s"
 
-#: etiketto/server/http.py:464 etiketto/server/http.py:513
+#: tavletta/server/http.py:464 tavletta/server/http.py:513
 msgid "The request took too long"
 msgstr "A kérés túl sokáig tartott"
 
-#: etiketto/server/http.py:473 etiketto/server/service.py:1174
+#: tavletta/server/http.py:473 tavletta/server/service.py:1174
 msgid "The server is busy – try again later"
 msgstr "A kiszolgáló foglalt – próbálja újra később"
 
-#: etiketto/server/http.py:516
+#: tavletta/server/http.py:516
 msgid "Internal error"
 msgstr "Belső hiba"
 
-#: etiketto/server/http.py:521
+#: tavletta/server/http.py:521
 msgid "This server only answers on its local address"
 msgstr "Ez a kiszolgáló csak a helyi címén válaszol"
 
-#: etiketto/server/http.py:525
+#: tavletta/server/http.py:525
 msgid "Requests from this web page are not allowed"
 msgstr "Erről a weboldalról nem engedélyezettek a kérések"
 
-#: etiketto/server/http.py:543
+#: tavletta/server/http.py:543
 msgid "Too many requests – try again later"
 msgstr "Túl sok kérés – próbálja újra később"
 
-#: etiketto/server/http.py:545
+#: tavletta/server/http.py:545
 msgid "Access token missing or wrong"
 msgstr "A hozzáférési token hiányzik vagy hibás"
 
-#: etiketto/server/http.py:586 etiketto/server/http.py:591
+#: tavletta/server/http.py:586 tavletta/server/http.py:591
 msgid "The request needs a Content-Length"
 msgstr "A kéréshez Content-Length szükséges"
 
-#: etiketto/server/http.py:588
+#: tavletta/server/http.py:588
 msgid "The request has more than one Content-Length"
 msgstr "A kérésben több Content-Length is szerepel"
 
-#: etiketto/server/http.py:594
+#: tavletta/server/http.py:594
 msgid "The request is too large"
 msgstr "A kérés túl nagy"
 
-#: etiketto/server/http.py:599
+#: tavletta/server/http.py:599
 msgid "The request body is incomplete"
 msgstr "A kérés törzse hiányos"
 
-#: etiketto/server/http.py:606
+#: tavletta/server/http.py:606
 msgid "Send the request as application/json"
 msgstr "A kérést application/json formátumban küldje"
 
-#: etiketto/server/http.py:635 etiketto/server/http.py:645
+#: tavletta/server/http.py:635 tavletta/server/http.py:645
 msgid "Not found"
 msgstr "Nem található"
 
-#: etiketto/server/http.py:644
+#: tavletta/server/http.py:644
 msgid "Method not allowed"
 msgstr "A metódus nem engedélyezett"
 
-#: etiketto/server/http.py:661
+#: tavletta/server/http.py:661
 #, python-format
 msgid "Send the header %s with this request"
 msgstr "Küldje el a(z) %s fejlécet ezzel a kéréssel"
 
-#: etiketto/server/http.py:805
+#: tavletta/server/http.py:805
 msgid "The request is not valid JSON"
 msgstr "A kérés nem érvényes JSON"
 
-#: etiketto/server/main.py:35
+#: tavletta/server/main.py:35
 #, python-format
 msgid "The labels folder %s does not exist"
 msgstr "A(z) %s címkemappa nem létezik"
 
-#: etiketto/server/main.py:48
+#: tavletta/server/main.py:48
 #, python-format
 msgid "Cannot read the token file %s"
 msgstr "A(z) %s tokenfájl nem olvasható"
 
-#: etiketto/server/main.py:54 etiketto/server/main.py:312
+#: tavletta/server/main.py:54 tavletta/server/main.py:312
 msgid ""
 "The access token may only contain printable ASCII characters without spaces"
 msgstr "A hozzáférési token csak nyomtatható ASCII-karaktereket tartalmazhat, szóközök nélkül"
 
-#: etiketto/server/main.py:59 etiketto/server/main.py:317
+#: tavletta/server/main.py:59 tavletta/server/main.py:317
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "A hozzáférési tokennek legalább %d karakter hosszúnak kell lennie"
 
-#: etiketto/server/main.py:75
+#: tavletta/server/main.py:75
 msgid "Use either --printers or --allow-printer"
 msgstr "Vagy a --printers, vagy az --allow-printer kapcsolót használja"
 
-#: etiketto/server/main.py:77
+#: tavletta/server/main.py:77
 msgid "Use either --tokens or --token-file"
 msgstr "Vagy a --tokens, vagy a --token-file kapcsolót használja"
 
-#: etiketto/server/main.py:91
+#: tavletta/server/main.py:91
 #, python-format
 msgid "Not a valid printer address pattern: %s"
 msgstr "Érvénytelen nyomtatócím-minta: %s"
 
-#: etiketto/server/main.py:116
+#: tavletta/server/main.py:116
 #, python-format
 msgid ""
-"Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
+"Refusing to listen on %s without an access token: set TAVLETTA_TOKEN or use "
 "--token-file"
-msgstr "Hozzáférési token nélkül nem figyelek a(z) %s címen: állítsa be az ETIKETTO_TOKEN változót, vagy használja a --token-file kapcsolót"
+msgstr "Hozzáférési token nélkül nem figyelek a(z) %s címen: állítsa be az TAVLETTA_TOKEN változót, vagy használja a --token-file kapcsolót"
 
-#: etiketto/server/main.py:139
+#: tavletta/server/main.py:139
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "Nem lehet figyelni a(z) %(address)s címen: %(reason)s"
 
-#: etiketto/server/main.py:271
+#: tavletta/server/main.py:271
 msgid "Not a valid name: letters, digits, . _ - (up to 64)"
 msgstr "Érvénytelen név: betűk, számjegyek, . _ - (legfeljebb 64)"
 
-#: etiketto/server/main.py:282
+#: tavletta/server/main.py:282
 #, python-format
 msgid "%s is in use by another program – try again later"
 msgstr "%s fájlt egy másik program használja – próbálja újra később"
 
-#: etiketto/server/main.py:289
+#: tavletta/server/main.py:289
 #, python-format
 msgid "The token %(name)s was added to %(file)s."
 msgstr "A(z) %(name)s token hozzáadva ehhez: %(file)s."
 
-#: etiketto/server/main.py:296
+#: tavletta/server/main.py:296
 #, python-format
 msgid "The token is shown only this once; %s keeps only its hash."
 msgstr "A token csak most, egyetlen alkalommal jelenik meg; a(z) %s csak a hash-ét tárolja."
 
-#: etiketto/server/main.py:307
+#: tavletta/server/main.py:307
 msgid "Access token: "
 msgstr "Hozzáférési token: "
 
-#: etiketto/server/main.py:322
+#: tavletta/server/main.py:322
 msgid "A chosen token must not look like a made one (etk_…)"
 msgstr "A választott token nem hasonlíthat egy létrehozottra (etk_…)"
 
-#: etiketto/server/main.py:366
+#: tavletta/server/main.py:366
 #, python-format
 msgid "A token named %s exists already"
 msgstr "Már létezik %s nevű token"
 
-#: etiketto/server/main.py:393
+#: tavletta/server/main.py:393
 #, python-format
 msgid "This token is in the file already, as %s"
 msgstr "Ez a token már szerepel a fájlban, %s néven"
 
-#: etiketto/server/paths.py:39
+#: tavletta/server/paths.py:39
 #, python-format
 msgid "No such label: %s"
 msgstr "Nincs ilyen címke: %s"
 
-#: etiketto/server/paths.py:46
+#: tavletta/server/paths.py:46
 #, python-format
 msgid "No such data file: %s"
 msgstr "Nincs ilyen adatfájl: %s"
 
-#: etiketto/server/requests.py:95
+#: tavletta/server/requests.py:95
 msgid "The request must be a JSON object"
 msgstr "A kérésnek JSON-objektumnak kell lennie"
 
-#: etiketto/server/requests.py:97
+#: tavletta/server/requests.py:97
 #, python-format
 msgid "Unknown field: %s"
 msgstr "Ismeretlen mező: %s"
 
-#: etiketto/server/requests.py:104
+#: tavletta/server/requests.py:104
 msgid "Give the label either by name or as content"
 msgstr "A címkét vagy név szerint, vagy tartalomként adja meg"
 
-#: etiketto/server/requests.py:109
+#: tavletta/server/requests.py:109
 msgid "Give data rows or a data file, not both"
 msgstr "Adatsorokat vagy adatfájlt adjon meg, ne mindkettőt"
 
-#: etiketto/server/requests.py:196
+#: tavletta/server/requests.py:196
 #, python-format
 msgid "Too many data rows: at most %d"
 msgstr "Túl sok adatsor: legfeljebb %d"
 
-#: etiketto/server/requests.py:204
+#: tavletta/server/requests.py:204
 #, python-format
 msgid "Too many columns: at most %d"
 msgstr "Túl sok oszlop: legfeljebb %d"
 
-#: etiketto/server/requests.py:207
+#: tavletta/server/requests.py:207
 #, python-format
 msgid "Too many cells: at most %d"
 msgstr "Túl sok cella: legfeljebb %d"
 
-#: etiketto/server/service.py:478
+#: tavletta/server/service.py:478
 msgid "Choose a printer by its name"
 msgstr "Válasszon nyomtatót a neve alapján"
 
-#: etiketto/server/service.py:542 etiketto/server/service.py:1153
+#: tavletta/server/service.py:542 tavletta/server/service.py:1153
 msgid "This access token may not do this"
 msgstr "Ez a hozzáférési token ezt nem teheti meg"
 
-#: etiketto/server/service.py:590
+#: tavletta/server/service.py:590
 msgid "No printer address: give it as host"
 msgstr "Nincs nyomtatócím: adja meg a host mezőben"
 
-#: etiketto/server/service.py:599
+#: tavletta/server/service.py:599
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "Ez a nyomtatócím nem engedélyezett: %s"
 
-#: etiketto/server/service.py:772
+#: tavletta/server/service.py:772
 msgid "A sheet needs a data file"
 msgstr "A munkalaphoz adatfájl szükséges"
 
-#: etiketto/server/service.py:778
+#: tavletta/server/service.py:778
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "A címke a címkemappán kívüli adatfájlt használ: küldje el vele a sorait is"
 
-#: etiketto/server/service.py:912
+#: tavletta/server/service.py:912
 #, python-format
 msgid "At most %d labels in one print job"
 msgstr "Egy nyomtatási feladatban legfeljebb %d címke"
 
-#: etiketto/server/service.py:939
+#: tavletta/server/service.py:939
 msgid "Too many print jobs are waiting – try again later"
 msgstr "Túl sok nyomtatási feladat várakozik – próbálja újra később"
 
-#: etiketto/server/service.py:1134
+#: tavletta/server/service.py:1134
 #, python-format
 msgid "No such print job: %s"
 msgstr "Nincs ilyen nyomtatási feladat: %s"
 
-#: etiketto/server/service.py:1146
+#: tavletta/server/service.py:1146
 msgid "The print job has already finished"
 msgstr "A nyomtatási feladat már befejeződött"
 
-#: etiketto/server/service.py:1178
+#: tavletta/server/service.py:1178
 msgid "The label is too large to render"
 msgstr "A címke túl nagy a megjelenítéshez"
 
-#: etiketto/server/service.py:1192
+#: tavletta/server/service.py:1192
 #, python-format
 msgid "The label is too large: at most %d images and codes"
 msgstr "A címke túl nagy: legfeljebb %d kép és kód"
 
-#: etiketto/server/service.py:1215
+#: tavletta/server/service.py:1215
 #, python-format
 msgid ""
 "The label is too large: at most %(elements)d elements and %(chars)d "
 "characters in a text"
 msgstr "A címke túl nagy: legfeljebb %(elements)d elem és szövegenként %(chars)d karakter"
 
-#: etiketto/server/service.py:1234
+#: tavletta/server/service.py:1234
 #, python-format
 msgid "At most %d copies on this printer"
 msgstr "Ezen a nyomtatón legfeljebb %d példány"
 
-#: etiketto/server/service.py:1239
+#: tavletta/server/service.py:1239
 msgid "Printers are chosen by name: leave out host"
 msgstr "A nyomtatókat név szerint kell választani: hagyja el a host mezőt"

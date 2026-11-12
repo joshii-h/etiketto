@@ -1,6 +1,6 @@
 # System printer: IPP to CUPS or to the printer
 
-How Etiketto prints on printers the operating system knows. Everything goes
+How Tavletta prints on printers the operating system knows. Everything goes
 through IPP (Internet Printing Protocol, RFC 8010 and RFC 8011), the
 protocol CUPS itself speaks and that every IPP Everywhere printer
 understands; AirPrint printers that only take Apple Raster (`image/urf`)
@@ -18,13 +18,13 @@ Markers as in [cab.md](cab.md): **[spec]** from the RFCs or PWG standards,
   printer. [spec] [confirmed]
 - **IPP printers on the network**, found by mDNS (`_ipp._tcp`,
   `_ipps._tcp`; the TXT key `rp` gives the path, usually `ipp/print`).
-  Etiketto talks to them directly, no CUPS queue needed. [spec] [confirmed]
+  Tavletta talks to them directly, no CUPS queue needed. [spec] [confirmed]
 - Printers that CUPS only creates on demand ("temporary queues" for network
   printers) are not in `CUPS-Get-Printers`, but the mDNS search finds the
   printer itself. [confirmed]
 - USB printers with IPP-over-USB (`ipp-usb`) appear as IPP printers on
   `localhost`. [assumed]
-- CUPS is reached over TCP at `localhost:631`, CUPS's default; Etiketto
+- CUPS is reached over TCP at `localhost:631`, CUPS's default; Tavletta
   has no client for CUPS's Unix socket (`/run/cups/cups.sock`), so a CUPS
   set up to listen only there is not found. The Flatpak therefore does not
   ask for `--socket=cups` (it would only give access to that socket);
@@ -48,7 +48,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   29700 hundredths of mm). A listed size up to 1 mm off counts, and the
   listed size is what `media-col` asks for (the nearest one; in a custom
   range, the label's own size). If the printer does not list it, the page
-  is turned to portrait when that size is listed; otherwise Etiketto says
+  is turned to portrait when that size is listed; otherwise Tavletta says
   so before sending anything, instead of the printer silently using its
   default paper. [spec] [confirmed with an HP LaserJet Pro 4002: 50 × 30
   mm is below its range]
@@ -73,7 +73,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   Everywhere printer must take (`srgb_8`, else `sgray_8` from
   `pwg-raster-document-type-supported`); Apple Raster (URF, AirPrint, see
   below: `SRGB24`, else `W8`); JPEG (quality 95 without chroma
-  subsampling). A raster format whose colour spaces Etiketto cannot make
+  subsampling). A raster format whose colour spaces Tavletta cannot make
   (only `black_1`, only `DEVCMYK32` …) is passed over; if nothing is
   left, the message "no format" comes before anything is sent, with the
   formats and colour spaces in the details. `media-col`
@@ -101,7 +101,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   cannot be rendered again stays at 300 dpi. Dots per cm count too (8
   dots/mm is 203 dpi); below 100 dpi it is not believed. [confirmed with a CUPS queue with the CUPS sample
   Zebra driver (default 203 dpi) in front of `ippeveprinter`: CUPS
-  reports `printer-resolution-default` 203 dpi, Etiketto sends 812 × 1218
+  reports `printer-resolution-default` 203 dpi, Tavletta sends 812 × 1218
   pixels for 4 × 6 inches; through the queue's filter chain (`cupsfilter`
   with its PPD: pdftopdf, Ghostscript, 1-bit raster at 203 dpi) 60 of 60
   one-pixel hairlines arrive, where the 300 dpi PDF lost 27 of them, and
@@ -139,7 +139,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   from 300 dpi, at most 600 dpi): modules one dot wide (may not scan); a quiet zone that
   does not fit even at one dot (may not scan); a code that does not fit
   its box even at one dot per module (taller than the label, or squeezed
-  by a fixed length). Such a code would be cut off: Etiketto does not
+  by a fixed length). Such a code would be cut off: Tavletta does not
   print it ("A code does not fit on the label …"), also when only the
   printer's own resolution shows it, before anything is sent.
 - PWG Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi
@@ -201,7 +201,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
     `door-open`, `cover-open`, `interlock-open` while the job prints, or
     as the reason of a processing-stopped job or a stopped printer. The
     interface shows it while printing ("Out of paper – load paper to
-    continue") and Etiketto waits up to 5 minutes for each kind of
+    continue") and Tavletta waits up to 5 minutes for each kind of
     problem (out of paper, cover open, jam: other keywords for the same
     kind keep its time) and up to 15 minutes for all of them together,
     both counted since the last page that came out. A page that comes out
@@ -221,7 +221,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   - pending while the printer or queue is stopped (`printer-state` 5, or
     `printer-stopped` in `job-state-reasons`) for three answers: canceled
     as paused;
-  - processing while the printer reports another problem Etiketto knows
+  - processing while the printer reports another problem Tavletta knows
     (the table below, without a suffix or with `-error`) or is stopped,
     for three answers: canceled with that problem. Unknown keywords do
     not stop a printing job;
@@ -232,7 +232,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
     (`ippeveprinter` does), gets 5 minutes plus 30 seconds per label for
     the whole job instead;
   - pending (waiting behind other jobs) for 30 seconds, counted from when
-    the job last became pending: Etiketto stops watching and says the
+    the job last became pending: Tavletta stops watching and says the
     label was sent and prints when its turn comes; the job stays. Further
     jobs are then sent without waiting.
   While a job prints, CUPS reports `connecting-to-device` and
@@ -243,7 +243,7 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   refused connection or a name that does not resolve is a missed answer,
   never "printed". [spec] [confirmed through a CUPS queue to
   ippeveprinter, also a job canceled with `cancel` in the queue]
-- `ipps://` printers bring self-signed certificates. Etiketto does not
+- `ipps://` printers bring self-signed certificates. Tavletta does not
   check them at all (CUPS remembers a printer's certificate the first time
   and warns if it changes); the risk is someone in the same network
   pretending to be the printer and reading the label. [confirmed]
@@ -266,7 +266,7 @@ writer and reader; `tools/ippeveprinter.c`), PAPPL
 (`pappl/printer-driver.c`, `printer-infra.c`) and libcupsfilters
 (`cupsfilters/raster.c`), all Apache-2.0, Copyright OpenPrinting, Apple
 Inc., Easy Software Products, Michael R Sweet and Till Kamppeter.
-`etiketto/backends/urf.py` follows their byte layout; it is written anew,
+`tavletta/backends/urf.py` follows their byte layout; it is written anew,
 no code is copied. [spec: from these sources]
 
 - File: `UNIRAST\0`, then the number of pages (32 bit, big endian).
@@ -286,7 +286,7 @@ no code is copied. [spec: from these sources]
   as libcups writes it. 0x80 (the rest of the line white) is never
   written, the decoder takes it. sGray is 0 black, 255 white; there is no
   1-bit depth.
-- `urf-supported` keywords Etiketto uses (also from one comma-joined
+- `urf-supported` keywords Tavletta uses (also from one comma-joined
   value): `SRGB24` or `W8` (colour space; every AirPrint printer must
   take `W8`, so a printer that lists no colour space at all gets it),
   `RS<dpi>` and `RS<dpi>-<dpi>` (a list of resolutions, not a range),
@@ -304,7 +304,7 @@ no code is copied. [spec: from these sources]
 ## Label sheets
 
 Several labels on one sheet of paper (A4, US Letter, others), placed as
-the gLabels template database says (`etiketto/sheets`, see below).
+the gLabels template database says (`tavletta/sheets`, see below).
 
 - Each page is composed at 300 dpi (PWG Raster, Apple Raster, and PDF for
   a printer below 300 dpi such as 203: at the printer's resolution, the
@@ -339,7 +339,7 @@ the gLabels template database says (`etiketto/sheets`, see below).
   `media-*-margin-supported` lists. The entry for the sheet's paper size
   counts (loaded paper first); else the smallest margin the printer
   supports for any paper, without 0 (borderless, only when asked for).
-  Borderless entries (all margins 0) are skipped. Etiketto never asks for
+  Borderless entries (all margins 0) are skipped. Tavletta never asks for
   other margins, it warns: if the content of a label (the label inset by
   the safety margin) reaches into the margin, the status line says which
   positions, and printing asks first. [spec] [confirmed with ippeveprinter:
@@ -349,9 +349,9 @@ the gLabels template database says (`etiketto/sheets`, see below).
 
 ### The template database
 
-`etiketto/sheets/templates.json` is converted from gLabels' template files
+`tavletta/sheets/templates.json` is converted from gLabels' template files
 (`templates/*-templates.xml`, MIT license, Copyright (C) 2001-2026 Jaye
-Evins; license in `etiketto/sheets/LICENSE.glabels`) by
+Evins; license in `tavletta/sheets/LICENSE.glabels`) by
 `tools/glabels_templates.py`: lengths in mm (also written with an
 exponent, `3.93386e-16pt`), aliases (`equiv`) resolved, paper sizes from
 `paper-sizes.xml`, 1750 sheets from 35 files. Some files use the XML
@@ -376,7 +376,7 @@ error (RFC 8011 5.4.12). Keywords ending in `-low` (`toner-low`,
 `media-low`, `marker-supply-low`) are warnings even without a suffix.
 [spec]
 
-| Keyword | Etiketto's message |
+| Keyword | Tavletta's message |
 |---|---|
 | `media-empty`, `media-needed` | out of paper (waits while printing) |
 | `media-jam` | paper jammed (waits while printing) |

@@ -8,7 +8,7 @@ import json
 import logging
 import os
 import socket
-import subprocess  # nosec B404 - two `etiketto token new` at once
+import subprocess  # nosec B404 - two `tavletta token new` at once
 import sys
 import threading
 import time
@@ -20,15 +20,15 @@ from test_server import ASK, call, wait_for
 from test_server_config import PRINTERS, TOKENS, token, tokens_text, write
 from test_server_mcp import ACCEPT, request
 
-from etiketto import cli
-from etiketto.server import config as cfg
-from etiketto.server import http as server_http
-from etiketto.server import jobs as jobs_module
-from etiketto.server import main as server_main
-from etiketto.server import mcp as mcp_module
-from etiketto.server import service as service_module
-from etiketto.server.config import Caller, ConfigError, TokenStore, load_printers, load_tokens
-from etiketto.server.service import Service, host_allowed, queue_key
+from tavletta import cli
+from tavletta.server import config as cfg
+from tavletta.server import http as server_http
+from tavletta.server import jobs as jobs_module
+from tavletta.server import main as server_main
+from tavletta.server import mcp as mcp_module
+from tavletta.server import service as service_module
+from tavletta.server.config import Caller, ConfigError, TokenStore, load_printers, load_tokens
+from tavletta.server.service import Service, host_allowed, queue_key
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -308,7 +308,7 @@ def test_serve_always_handles_sighup(monkeypatch, tmp_path, server_env):
 
 
 def test_systemd_unit_is_sandboxed():
-    unit = (ROOT / "packaging/systemd/etiketto.service").read_text()
+    unit = (ROOT / "packaging/systemd/tavletta.service").read_text()
     for line in (
         "ProtectHome=read-only",
         "InaccessiblePaths=-%h/.ssh -%h/.gnupg",
@@ -389,13 +389,13 @@ def test_warnings_at_startup(monkeypatch, tmp_path, server_env, caplog):
         server_http.Server, "serve_forever", lambda self: (_ for _ in ()).throw(KeyboardInterrupt)
     )
     monkeypatch.setattr(server_main.signal, "signal", lambda n, h: None)
-    monkeypatch.setenv("ETIKETTO_TOKEN", "an-ignored-token-0123")
+    monkeypatch.setenv("TAVLETTA_TOKEN", "an-ignored-token-0123")
     path = write(tmp_path / "t.toml", tokens_text(boss=TOKENS["boss"]))
     os.chmod(path, 0o600)
     labels = tmp_path / "served"
     labels.mkdir()
     assert run("serve", "--port", "0", "--labels-dir", labels, "--tokens", path) == cli.EXIT_OK
-    assert "ETIKETTO_TOKEN is ignored" in caplog.text
+    assert "TAVLETTA_TOKEN is ignored" in caplog.text
     assert "--tokens without --printers" in caplog.text
 
 
@@ -536,13 +536,13 @@ def test_role_is_required_and_tokens_are_unique(tmp_path):
         load_tokens(path, None)
 
 
-# --- 17, 18, 19, 35: etiketto token new -----------------------------------------------------
+# --- 17, 18, 19, 35: tavletta token new -----------------------------------------------------
 
 
 def test_token_new_twice_at_once_keeps_both(tmp_path):
     path = tmp_path / "tokens.toml"
     env = dict(os.environ, XDG_CONFIG_HOME=str(tmp_path / "config"), PYTHONPATH=str(ROOT))
-    command = [sys.executable, "-m", "etiketto.cli", "token", "new"]
+    command = [sys.executable, "-m", "tavletta.cli", "token", "new"]
     started = [
         subprocess.Popen(  # nosec B603 - this checkout, fixed arguments
             command + ["device%d" % n, "--tokens", str(path)],
@@ -599,7 +599,7 @@ def test_token_from_stdin(tmp_path, capsys, monkeypatch):
 
 
 def test_token_file_locked_elsewhere(tmp_path, monkeypatch, capsys):
-    from etiketto import model
+    from tavletta import model
 
     def busy(path, waiting=None, timeout=60.0):
         raise model.LockTimeout(11, "locked")
@@ -660,7 +660,7 @@ def test_cancelled_with_an_odd_id_is_ignored(server_env):
 
 
 def test_openapi_has_the_remaining_errors():
-    from etiketto.server.openapi import spec
+    from tavletta.server.openapi import spec
 
     answers = spec()["paths"]["/labels"]["get"]["responses"]
     for code in ("405", "500", "501"):

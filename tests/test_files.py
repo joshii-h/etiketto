@@ -10,26 +10,26 @@ import stat
 
 import pytest
 
-from etiketto import model
-from etiketto.model import FORMAT_VERSION, CodeElement, Label, LabelError, TextElement
+from tavletta import model
+from tavletta.model import FORMAT_VERSION, CodeElement, Label, LabelError, TextElement
 
 
 def test_save_through_a_symbolic_link_replaces_the_file_it_points_to(tmp_path):
     real = tmp_path / "real"
     real.mkdir()
-    (real / "a.etiketto").write_text("{}")
-    link = tmp_path / "link.etiketto"
-    link.symlink_to(real / "a.etiketto")
+    (real / "a.tavletta").write_text("{}")
+    link = tmp_path / "link.tavletta"
+    link.symlink_to(real / "a.tavletta")
     Label(tape_mm=12).save(link)
     assert link.is_symlink()
-    assert Label.load(real / "a.etiketto").tape_mm == 12
+    assert Label.load(real / "a.tavletta").tape_mm == 12
     Label.store_counter(link, 9)
-    assert link.is_symlink() and Label.load(real / "a.etiketto").counter_next == 9
-    assert sorted(p.name for p in real.iterdir()) == ["a.etiketto"]
+    assert link.is_symlink() and Label.load(real / "a.tavletta").counter_next == 9
+    assert sorted(p.name for p in real.iterdir()) == ["a.tavletta"]
 
 
 def test_save_keeps_the_permissions(tmp_path):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     path.chmod(0o600)
     Label(tape_mm=12).save(path)
@@ -42,14 +42,14 @@ def test_save_keeps_the_permissions(tmp_path):
 def test_a_new_file_gets_the_usual_permissions(tmp_path):
     old = os.umask(0o022)
     try:
-        Label().save(tmp_path / "new.etiketto")
+        Label().save(tmp_path / "new.tavletta")
     finally:
         os.umask(old)
-    assert stat.S_IMODE((tmp_path / "new.etiketto").stat().st_mode) == 0o644
+    assert stat.S_IMODE((tmp_path / "new.tavletta").stat().st_mode) == 0o644
 
 
 def test_the_owner_is_kept_where_allowed(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     calls = []
     monkeypatch.setattr(model.os, "getuid", lambda: os.stat(path).st_uid + 1)  # someone else's
@@ -62,9 +62,9 @@ def test_the_owner_is_kept_where_allowed(tmp_path, monkeypatch):
 def test_a_planted_link_at_a_temporary_name_is_not_followed(tmp_path, monkeypatch):
     victim = tmp_path / "victim.txt"
     victim.write_text("precious")
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
-    (tmp_path / "a.etiketto.tmp").symlink_to(victim)  # the name earlier versions used
+    (tmp_path / "a.tavletta.tmp").symlink_to(victim)  # the name earlier versions used
     Label(tape_mm=12).save(path)
     Label.store_counter(path, 5)
     assert victim.read_text() == "precious"
@@ -72,14 +72,14 @@ def test_a_planted_link_at_a_temporary_name_is_not_followed(tmp_path, monkeypatc
     # even a link at the random name itself is not followed: a new name is drawn
     names = iter(["planted", "fresh"])
     monkeypatch.setattr(model.secrets, "token_hex", lambda _n: next(names))
-    (tmp_path / ".a.etiketto.planted.tmp").symlink_to(victim)
+    (tmp_path / ".a.tavletta.planted.tmp").symlink_to(victim)
     Label(tape_mm=25).save(path)
     assert victim.read_text() == "precious"
     assert Label.load(path).tape_mm == 25
 
 
 def test_store_counter_clamps_and_marks_the_version(tmp_path):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     Label.store_counter(path, model.MAX_COUNTER + 10)
     data = json.loads(path.read_text())
@@ -104,14 +104,14 @@ def test_store_counter_clamps_and_marks_the_version(tmp_path):
     ],
 )
 def test_variables_and_counters_need_format_2(label):
-    """An older Etiketto refuses such a file instead of printing "{=date}"."""
+    """An older Tavletta refuses such a file instead of printing "{=date}"."""
     assert label.to_dict()["version"] == 2 == FORMAT_VERSION
     assert Label.from_dict(label.to_dict()) == label
 
 
 def test_reading_stops_at_the_size_limit(tmp_path, monkeypatch):
     monkeypatch.setattr(model, "MAX_FILE_BYTES", 10)
-    path = tmp_path / "big.etiketto"
+    path = tmp_path / "big.tavletta"
     path.write_text("x" * 11)
     with pytest.raises(LabelError) as e:
         Label.load(path)
@@ -138,7 +138,7 @@ def test_only_regular_files_are_read(tmp_path, special):
 
 
 def test_a_lock_on_the_label_file(tmp_path):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     with model.locked(path):
         fd = os.open(path, os.O_RDONLY)
@@ -153,7 +153,7 @@ def test_a_lock_on_the_label_file(tmp_path):
 
 
 def test_a_waiting_lock_follows_the_replaced_file(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     real_flock = fcntl.flock
     calls = []
@@ -171,7 +171,7 @@ def test_a_waiting_lock_follows_the_replaced_file(tmp_path, monkeypatch):
 
 
 def test_without_flock_it_goes_on(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
 
     def unsupported(*_args):
@@ -183,7 +183,7 @@ def test_without_flock_it_goes_on(tmp_path, monkeypatch):
 
 
 def test_a_read_only_file_is_not_replaced(tmp_path):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     path.chmod(0o444)
     try:
@@ -193,11 +193,11 @@ def test_a_read_only_file_is_not_replaced(tmp_path):
     finally:
         path.chmod(0o644)
     assert Label.load(path).tape_mm == 50
-    assert model.writable(path) and model.writable(tmp_path / "new.etiketto")
+    assert model.writable(path) and model.writable(tmp_path / "new.tavletta")
 
 
 def test_a_lock_on_a_file_removed_meanwhile(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     real_flock = fcntl.flock
 
@@ -223,7 +223,7 @@ def test_the_file_lists_the_features_it_needs(tmp_path):
     with pytest.raises(LabelError) as e:
         Label.from_dict(dict(data, features="variables"))
     assert e.value.code == "damaged"
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     path.write_text('{"version": 1, "features": ["other"]}')
     with pytest.raises(LabelError):  # an unknown feature is refused in any version
         Label.load(path)
@@ -237,7 +237,7 @@ def test_the_file_lists_the_features_it_needs(tmp_path):
 
 def test_mode_and_fsync_are_best_effort(tmp_path, monkeypatch):
     """vfat or NTFS: fixed owner and mode, fsync maybe refused; saving works."""
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
 
     def refuse(*_args):
@@ -254,7 +254,7 @@ def test_mode_and_fsync_are_best_effort(tmp_path, monkeypatch):
 
 
 def test_the_lock_opens_for_writing_where_it_can(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     opened = []
     real_open = os.open
@@ -278,7 +278,7 @@ def test_the_lock_opens_for_writing_where_it_can(tmp_path, monkeypatch):
 
 
 def test_the_lock_gives_up_after_the_timeout(tmp_path, monkeypatch):
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     waited = []
     monkeypatch.setattr(model.time, "sleep", lambda _s: None)
@@ -302,7 +302,7 @@ def test_reading_a_folder_leaves_no_open_file(tmp_path):
 def test_a_read_only_file_system_is_locked_for_reading(tmp_path, monkeypatch):
     import errno
 
-    path = tmp_path / "a.etiketto"
+    path = tmp_path / "a.tavletta"
     Label().save(path)
     real_open = os.open
     opened = []

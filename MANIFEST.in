@@ -1,9 +1,9 @@
 # sources the build needs when it starts from the sdist (see setup.py)
-include data/xyz.joshuahirsig.Etiketto.desktop
-include data/xyz.joshuahirsig.Etiketto.metainfo.xml
-include data/xyz.joshuahirsig.Etiketto.svg
-include data/xyz.joshuahirsig.Etiketto-symbolic.svg
-include data/xyz.joshuahirsig.Etiketto.xml
+include data/xyz.joshuahirsig.Tavletta.desktop
+include data/xyz.joshuahirsig.Tavletta.metainfo.xml
+include data/xyz.joshuahirsig.Tavletta.svg
+include data/xyz.joshuahirsig.Tavletta-symbolic.svg
+include data/xyz.joshuahirsig.Tavletta.xml
 include po/*.po
 include THIRD_PARTY_NOTICES.md
 # Zint's license, which the notices link to

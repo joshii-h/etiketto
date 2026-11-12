@@ -3,7 +3,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from etiketto import __version__, report
+from tavletta import __version__, report
 
 
 @pytest.fixture
@@ -57,7 +57,7 @@ def test_issue_url_with_problem(root):
     assert title == "Problem: Printing failed: jam"
     assert "**Error message**" in body
     assert "```\nPrinting failed: jam\nmore\n```" in body
-    assert "- Etiketto %s (install.sh / pip)" % __version__ in body
+    assert "- Tavletta %s (install.sh / pip)" % __version__ in body
     assert "- Test OS, Python %s, GTK 4.20" % platform.python_version() in body
     assert "- Printer: VC-500W, 25 mm" in body
 

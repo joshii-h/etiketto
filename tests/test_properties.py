@@ -12,8 +12,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from etiketto.model import Label, LabelError
-from etiketto.units import INCHES, MILLIMETRES
+from tavletta.model import Label, LabelError
+from tavletta.units import INCHES, MILLIMETRES
 
 # JSON as json.loads() can return it
 json_values = st.recursive(

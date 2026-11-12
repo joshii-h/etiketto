@@ -1,19 +1,19 @@
 # Print server
 
-Other programs and AI assistants can print labels through Etiketto without
-opening the window: `etiketto serve` offers a web interface for programs
-(REST API), `etiketto mcp` connects AI assistants such as Claude.
+Other programs and AI assistants can print labels through Tavletta without
+opening the window: `tavletta serve` offers a web interface for programs
+(REST API), `tavletta mcp` connects AI assistants such as Claude.
 
 ## Start { #start }
 
 ```sh
-etiketto serve --labels-dir ~/Labels
+tavletta serve --labels-dir ~/Labels
 ```
 
 - The server listens on `http://127.0.0.1:8790`, only on this computer.
 - Only label files in the labels folder (and its subfolders) can be used,
   with their data files. Without `--labels-dir`:
-  `~/.local/share/etiketto/labels`.
+  `~/.local/share/tavletta/labels`.
 - Printer address, safety margin and print settings are those set in the
   app.
 - `--mcp` adds the connection for AI assistants at `/mcp`.
@@ -53,7 +53,7 @@ etiketto serve --labels-dir ~/Labels
 - `method` is the [[ui:Print method]] (`printer`, `transfer`, `direct`),
   `upside_down` [[ui:Print upside down]]; others are `quality`, `chain`,
   `high_res`, `feed_mm`, `darkness`, `media` and `outlines`, see
-  [docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md#printers).
+  [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md#printers).
 - Mistakes in the file are named when the server starts.
 - The list of printers shows each printer with its state.
 - The server searches the network for printers only when started with
@@ -64,10 +64,10 @@ etiketto serve --labels-dir ~/Labels
 - Create a token and keep it secret:
 
   ```sh
-  mkdir -p ~/.config/etiketto
-  openssl rand -hex 32 > ~/.config/etiketto/token
-  chmod 600 ~/.config/etiketto/token
-  etiketto serve --token-file ~/.config/etiketto/token
+  mkdir -p ~/.config/tavletta
+  openssl rand -hex 32 > ~/.config/tavletta/token
+  chmod 600 ~/.config/tavletta/token
+  tavletta serve --token-file ~/.config/tavletta/token
   ```
 
 - Every request then needs the header `Authorization: Bearer <token>`.
@@ -81,8 +81,8 @@ etiketto serve --labels-dir ~/Labels
 - Several devices or people get a token each, with a role:
 
   ```sh
-  etiketto token new shipping-pc --role print --tokens ~/.config/etiketto/tokens.toml
-  etiketto serve --printers printers.toml --tokens ~/.config/etiketto/tokens.toml
+  tavletta token new shipping-pc --role print --tokens ~/.config/tavletta/tokens.toml
+  tavletta serve --printers printers.toml --tokens ~/.config/tavletta/tokens.toml
   ```
 
 - The token is shown only once; the file keeps only a fingerprint (hash)
@@ -105,10 +105,10 @@ etiketto serve --labels-dir ~/Labels
 - Each printer prints one job after the other.
 - Messages come in the language of the `Accept-Language` header.
 - Without an access token, requests that ask printers need the header
-  `X-Etiketto-Request: 1`, so that no web page can send them.
+  `X-Tavletta-Request: 1`, so that no web page can send them.
 
 ```sh
-curl -H "Authorization: Bearer $(cat ~/.config/etiketto/token)" \
+curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
      -H 'Content-Type: application/json' \
      -d '{"label": "shelf", "set": {"title": "Flour"}, "copies": 2}' \
      http://127.0.0.1:8790/api/v1/print
@@ -122,7 +122,7 @@ curl -H "Authorization: Bearer $(cat ~/.config/etiketto/token)" \
   as one data row, the printer by its name.
 
   ```sh
-  curl -H "Authorization: Bearer $(cat ~/.config/etiketto/token)" \
+  curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
        -H 'Content-Type: application/json' \
        -d '{"label": "inventory", "printer": "inventory", "copies": 1,
             "data_rows": [{"Inventarnummer": "100001"}]}' \
@@ -142,7 +142,7 @@ its settings.
 Claude Code:
 
 ```sh
-claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
+claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels
 ```
 
 Claude Desktop, in `claude_desktop_config.json`:
@@ -150,26 +150,26 @@ Claude Desktop, in `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "etiketto": {
-      "command": "etiketto",
+    "tavletta": {
+      "command": "tavletta",
       "args": ["mcp", "--labels-dir", "/home/me/Labels"]
     }
   }
 }
 ```
 
-- Over the network: `etiketto serve --mcp` and the address
+- Over the network: `tavletta serve --mcp` and the address
   `http://127.0.0.1:8790/mcp` with the access token as
   `Authorization: Bearer` header.
 - Printing uses real labels: ask for a preview first.
 
 ## Server and container { #service }
 
-- As a service of your user: `packaging/systemd/etiketto.service`
+- As a service of your user: `packaging/systemd/tavletta.service`
   (instructions in the file).
 - As a container: `packaging/docker/compose.yaml`, for printers in the
   network, with `printers.toml` and `tokens.toml` in the folder `config`.
 - To find printers on the network, or for USB, add `compose.host.yaml`:
   `docker compose -f compose.yaml -f compose.host.yaml up -d`.
 - Technical details and security:
-  [docs/server.md](https://git.joshuahirsig.xyz/joshii/etiketto/src/branch/main/docs/server.md).
+  [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md).

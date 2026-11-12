@@ -4,7 +4,7 @@
     python3 site/check_translations.py [--strict] [LANG ...]
 
 Errors (exit code 1):
-- [[ui:…]] placeholders whose text is not a msgid of the app (po/etiketto.pot)
+- [[ui:…]] placeholders whose text is not a msgid of the app (po/tavletta.pot)
 - translations that drop, add or change [[ui:…]] placeholders
 - code blocks that are fuzzy (changed in English, the translation not) or
   whose translation has another number of lines than the English

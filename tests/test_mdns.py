@@ -5,8 +5,8 @@ import socket
 import pytest
 from gi.repository import Gio, GLib
 
-from etiketto.backends import mdns
-from etiketto.backends.base import FoundPrinter
+from tavletta.backends import mdns
+from tavletta.backends.base import FoundPrinter
 
 # Avahi's D-Bus API: method -> (argument signature, reply signature)
 SIGNATURES = {

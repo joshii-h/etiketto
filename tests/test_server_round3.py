@@ -18,16 +18,16 @@ from test_server import ASK, call
 from test_server_config import PRINTERS, TOKENS, tokens_text, write
 from test_server_mcp import ACCEPT, request
 
-from etiketto import cli
-from etiketto.backends.base import PaperJam
-from etiketto.server import config as cfg
-from etiketto.server import http as server_http
-from etiketto.server import jobs as jobs_module
-from etiketto.server import main as server_main
-from etiketto.server import service as service_module
-from etiketto.server.config import TokenStore, load_printers
-from etiketto.server.service import host_allowed, with_address
-from etiketto.ui import i18n
+from tavletta import cli
+from tavletta.backends.base import PaperJam
+from tavletta.server import config as cfg
+from tavletta.server import http as server_http
+from tavletta.server import jobs as jobs_module
+from tavletta.server import main as server_main
+from tavletta.server import service as service_module
+from tavletta.server.config import TokenStore, load_printers
+from tavletta.server.service import host_allowed, with_address
+from tavletta.ui import i18n
 
 
 def run(*argv):
@@ -324,7 +324,7 @@ def test_large_mcp_bodies_are_parsed_in_a_render_slot(make_server, monkeypatch):
     server, base = make_server()
     monkeypatch.setattr(server_http, "LARGE_BODY", 10)
     held = []
-    from etiketto.server import mcp as mcp_module
+    from tavletta.server import mcp as mcp_module
 
     real = mcp_module.HttpTransport.post
 

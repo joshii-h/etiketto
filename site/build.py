@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Etiketto documentation in every language.
+"""Build the Tavletta documentation in every language.
 
     python3 site/build.py                 build all languages into site/build/public
     python3 site/build.py --update-po     first update site/po/*.po from the English pages
@@ -38,7 +38,7 @@ APP_PO = REPO / "po"
 BUILD = SITE / "build"
 PUBLIC = BUILD / "public"
 SCREENSHOTS = BUILD / "screenshots"
-BASE_URL = "https://etiketto.joshuahirsig.xyz/"
+BASE_URL = "https://tavletta.joshuahirsig.xyz/"
 
 UI_RE = re.compile(r"\[\[ui:([^\]]+)\]\]")
 MEDIA_RE = re.compile(r"\(media/([A-Za-z0-9_.-]+\.png)(?:#[a-z-]+)?\)")
@@ -153,7 +153,7 @@ def catalog(path: Path) -> dict[str, str]:
 
 
 def app_msgids() -> set[str]:
-    return {e["msgid"] for e in read_po(APP_PO / "etiketto.pot") if e["msgid"]}
+    return {e["msgid"] for e in read_po(APP_PO / "tavletta.pot") if e["msgid"]}
 
 
 def resolve_ui(text: str, lang: str) -> str:
@@ -188,7 +188,7 @@ def po4a(langs: list[str], update: bool, po_dir: Path = DOC_PO, out: Path = BUIL
 
     lines = [
         "[po4a_langs] " + " ".join(langs),
-        "[po4a_paths] %s $lang:%s/$lang.po" % (rel(po_dir / "etiketto-docs.pot"), rel(po_dir)),
+        "[po4a_paths] %s $lang:%s/$lang.po" % (rel(po_dir / "tavletta-docs.pot"), rel(po_dir)),
         '[options] opt:"-o markdown"',
     ]
     lines += [
@@ -206,9 +206,9 @@ def po4a(langs: list[str], update: bool, po_dir: Path = DOC_PO, out: Path = BUIL
         "--wrap-po",
         "newlines",
         "--package-name",
-        "etiketto-docs",
+        "tavletta-docs",
         "--copyright-holder",
-        "Etiketto contributors",
+        "Tavletta contributors",
         "--master-charset",
         "UTF-8",
         "--localized-charset",
@@ -239,7 +239,7 @@ def stage(lang: str) -> Path:
     shutil.copytree(SITE / "overrides", root / "overrides")
     (docs / "assets").mkdir(exist_ok=True)
     shutil.copy(SITE / "assets" / "extra.css", docs / "assets" / "extra.css")
-    shutil.copy(REPO / "data" / "xyz.joshuahirsig.Etiketto.svg", docs / "assets" / "logo.svg")
+    shutil.copy(REPO / "data" / "xyz.joshuahirsig.Tavletta.svg", docs / "assets" / "logo.svg")
 
     media = docs / "media"
     media.mkdir(exist_ok=True)
@@ -288,7 +288,7 @@ def landing(langs: list[str]) -> None:
     (PUBLIC / "index.html").write_text(
         """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Etiketto</title>
+<title>Tavletta</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="en/assets/logo.svg">
 <noscript><meta http-equiv="refresh" content="0; url=en/"></noscript>

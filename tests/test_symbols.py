@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from etiketto import symbols
-from etiketto.symbols import path as symbol_path
+from tavletta import symbols
+from tavletta.symbols import path as symbol_path
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -185,7 +185,7 @@ def _package(folder: Path, license_text="Upstream license text") -> Path:
     return folder
 
 
-def test_the_converter_keeps_what_etiketto_needs(tool, tmp_path, capsys):
+def test_the_converter_keeps_what_tavletta_needs(tool, tmp_path, capsys):
     package = _package(tmp_path / "pkg")
     assert tool.main(["mdi_symbols.py", str(package)]) == 0
     target = tool.OUT / "mdi.json.gz"
@@ -223,12 +223,12 @@ def test_the_converter_stops_on_a_new_license_or_odd_svg(tool, tmp_path):
 
 def test_the_icon_data_and_its_license_are_packaged():
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    data = project["tool"]["setuptools"]["package-data"]["etiketto.symbols"]
+    data = project["tool"]["setuptools"]["package-data"]["tavletta.symbols"]
     assert set(data) == {"mdi.json.gz", "LICENSE.mdi"}
-    assert "etiketto/symbols/LICENSE.mdi" in project["project"]["license-files"]
+    assert "tavletta/symbols/LICENSE.mdi" in project["project"]["license-files"]
     assert "Apache-2.0" in project["project"]["license"]
     for name in data:
-        assert (ROOT / "etiketto" / "symbols" / name).is_file()
-    license_text = (ROOT / "etiketto" / "symbols" / "LICENSE.mdi").read_text()
+        assert (ROOT / "tavletta" / "symbols" / name).is_file()
+    license_text = (ROOT / "tavletta" / "symbols" / "LICENSE.mdi").read_text()
     assert "Pictogrammers Free License" in license_text
     assert "Apache License" in license_text and "Version 2.0, January 2004" in license_text

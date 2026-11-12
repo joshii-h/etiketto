@@ -4,7 +4,7 @@
 
 Please report security problems privately, not in a public issue: on GitHub
 use **Security → Report a vulnerability** in
-[joshii-h/etiketto](https://github.com/joshii-h/etiketto/security/advisories/new).
+[joshii-h/tavletta](https://github.com/joshii-h/tavletta/security/advisories/new).
 Only the maintainers see the report.
 
 Describe what is affected and how to reproduce it. You get an answer within
@@ -17,6 +17,6 @@ Only the latest release receives fixes.
 
 ## Scope
 
-Etiketto itself: the app, its Flatpak, the installer and the CI workflows in
+Tavletta itself: the app, its Flatpak, the installer and the CI workflows in
 this repository. Problems in a printer's firmware or in its manufacturer's
 software cannot be fixed here; please report those to the manufacturer.

@@ -21,16 +21,16 @@ from gi.repository import Adw, Gtk  # noqa: E402
 from PIL import Image  # noqa: E402
 from test_app import find, one  # noqa: E402
 
-from etiketto.model import (  # noqa: E402
+from tavletta.model import (  # noqa: E402
     CodeElement,
     ImageElement,
     Label,
     ShapeElement,
     TextElement,
 )
-from etiketto.render import RenderWarning  # noqa: E402
-from etiketto.ui import shortcuts, texts  # noqa: E402
-from etiketto.ui.image_crop import CropDialog, crop_text  # noqa: E402
+from tavletta.render import RenderWarning  # noqa: E402
+from tavletta.ui import shortcuts, texts  # noqa: E402
+from tavletta.ui.image_crop import CropDialog, crop_text  # noqa: E402
 
 
 def png(size=(40, 20), color="red") -> str:
@@ -337,7 +337,7 @@ def test_switches_and_choices_are_steps_of_their_own(window):
 
 
 def test_undo_back_to_the_saved_state_is_clean(window, tmp_path):
-    path = tmp_path / "saved.etiketto"
+    path = tmp_path / "saved.tavletta"
     window.files.write(path)
     assert not window.dirty
     window.change(margin_mm=5)
@@ -579,7 +579,7 @@ def test_undo_stays_on_the_open_page(window):
 
 
 def test_a_printed_counter_keeps_the_label_unsaved(window, tmp_path):
-    window.files.write(tmp_path / "a.etiketto")
+    window.files.write(tmp_path / "a.tavletta")
     window.change(margin_mm=5)
     window.set_counter_next(9)
     activate(window, "undo")
@@ -679,7 +679,7 @@ def test_removing_the_open_element_closes_its_page(window):
 
 
 def test_a_duplicate_is_another_element(window):
-    from etiketto.model import element_id
+    from tavletta.model import element_id
 
     window.expand_index = 0
     activate(window, "duplicate-element")
@@ -753,7 +753,7 @@ def test_focus_on_a_colour_button_stays_on_it(window):
 
 
 def test_counter_and_label_size_spin_into_one_step(window):
-    from etiketto.ui.variables import CounterGroup
+    from tavletta.ui.variables import CounterGroup
 
     window.label.elements[0].text = "{=counter}"
     window.rebuild_sidebar()
@@ -789,7 +789,7 @@ def test_the_shadow_colour_asks_for_an_offset(window):
 
 
 def test_a_hint_gives_back_what_the_row_shows_now(window):
-    from etiketto.ui import styles
+    from tavletta.ui import styles
 
     element = window.label.elements[0]
     row = Adw.ActionRow(title="x", subtitle="first")

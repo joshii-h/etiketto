@@ -11,7 +11,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from PIL import Image
 
-from etiketto.backends import urf
+from tavletta.backends import urf
 
 # one 8 × 2 white sGray page at 300 dpi, as libcups writes it
 GOLDEN = bytes.fromhex(

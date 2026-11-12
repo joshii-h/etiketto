@@ -11,7 +11,7 @@
 # - /dev/usb: for printer backends that talk to USB devices themselves.
 
 services:
-  etiketto:
+  tavletta:
     network_mode: host
     ports: !reset []
     command:

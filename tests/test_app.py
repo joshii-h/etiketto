@@ -28,8 +28,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto import app, model  # noqa: E402
-from etiketto.backends.base import (  # noqa: E402
+from tavletta import app, model  # noqa: E402
+from tavletta.backends.base import (  # noqa: E402
     BadCassette,
     CassetteInfo,
     ColorAdjust,
@@ -52,14 +52,14 @@ from etiketto.backends.base import (  # noqa: E402
     RibbonOut,
     UsbNotFound,
 )
-from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
-from etiketto.render import mm_to_px  # noqa: E402
-from etiketto.serial import SeriesProgress  # noqa: E402
-from etiketto.ui import i18n, preview, texts, widgets  # noqa: E402
-from etiketto.ui import settings as config  # noqa: E402
-from etiketto.ui import window as ui_window  # noqa: E402
-from etiketto.ui.settings import Settings  # noqa: E402
-from etiketto.units import INCHES, MILLIMETRES  # noqa: E402
+from tavletta.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
+from tavletta.render import mm_to_px  # noqa: E402
+from tavletta.serial import SeriesProgress  # noqa: E402
+from tavletta.ui import i18n, preview, texts, widgets  # noqa: E402
+from tavletta.ui import settings as config  # noqa: E402
+from tavletta.ui import window as ui_window  # noqa: E402
+from tavletta.ui.settings import Settings  # noqa: E402
+from tavletta.units import INCHES, MILLIMETRES  # noqa: E402
 
 # --- helpers -------------------------------------------------------------------
 
@@ -245,7 +245,7 @@ def test_settings_roundtrip(gui_env):
     assert Settings.load().data == {}
 
 
-def test_settings_of_etiketto_0_1_are_migrated(gui_env):
+def test_settings_of_tavletta_0_1_are_migrated(gui_env):
     Settings({"host": "p", "safe_mm": 1.0, "cut": "half", "mode": "normal", "units": "mm"}).save()
     assert Settings.load().data == {
         "units": "mm",
@@ -266,7 +266,7 @@ def test_locale_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(i18n, "__file__", str(tmp_path / "pkg" / "ui" / "i18n.py"))
     monkeypatch.setattr(i18n.sys, "prefix", str(tmp_path / "prefix"))
     assert i18n._locale_dir() == tmp_path / "pkg" / "locale"  # nothing found: package dir
-    mo = tmp_path / "prefix" / "share" / "locale" / "de" / "LC_MESSAGES" / "etiketto.mo"
+    mo = tmp_path / "prefix" / "share" / "locale" / "de" / "LC_MESSAGES" / "tavletta.mo"
     mo.parent.mkdir(parents=True)
     mo.write_bytes(b"")
     assert i18n._locale_dir() == tmp_path / "prefix" / "share" / "locale"
@@ -292,20 +292,20 @@ def test_dirty_tracking_and_title(window, tmp_path):
     assert window.label.margin_mm == 3.0
     assert window.dirty and subtitle(window) == "• Unsaved label"
     assert window._render_source
-    path = tmp_path / "kabel.etiketto"
+    path = tmp_path / "kabel.tavletta"
     window.files.write(path)
-    assert not window.dirty and subtitle(window) == "kabel.etiketto"
-    assert toast_titles(window) == ["Saved kabel.etiketto"]
+    assert not window.dirty and subtitle(window) == "kabel.tavletta"
+    assert toast_titles(window) == ["Saved kabel.tavletta"]
     assert Label.load(path) == window.label
     window.mark_changed()
-    assert subtitle(window) == "• kabel.etiketto"
+    assert subtitle(window) == "• kabel.tavletta"
 
 
 def test_write_failure_keeps_dirty(window, tmp_path):
     window.change(tape_mm=12)
-    window.files.write(tmp_path / "missing" / "x.etiketto")
+    window.files.write(tmp_path / "missing" / "x.tavletta")
     assert window.dirty and window.path is None
-    assert toast_titles(window) == ["Cannot save x.etiketto"]  # no path, no errno
+    assert toast_titles(window) == ["Cannot save x.tavletta"]  # no path, no errno
     assert window.toast_log[0].get_button_label() == "Report"
 
 
@@ -639,7 +639,7 @@ def test_printer_found_keeps_changed_or_saved_label(window, tmp_path, state):
     if state == "dirty":
         window.change(margin_mm=1.0)
     elif state == "path":
-        window.path = tmp_path / "x.etiketto"
+        window.path = tmp_path / "x.tavletta"
     else:  # a template is a new label, but its tape was chosen on purpose
         window.set_label(Label(tape_mm=50), None)
     window.printer.found(PrinterInfo("Wedge", 12, None, None, "IDLE"))
@@ -805,7 +805,7 @@ def test_print_guards(ready):
 
 
 def test_print_refuses_a_code_128_too_long(ready):
-    from etiketto.render import CODE128_MAX
+    from tavletta.render import CODE128_MAX
 
     long_code = CodeElement(data="A" * (CODE128_MAX + 1), symbology="code128")
     ready.set_label(Label(tape_mm=25, elements=[long_code]), None)
@@ -816,7 +816,7 @@ def test_print_refuses_a_code_128_too_long(ready):
 
 
 def test_print_decides_on_what_is_typed_not_the_last_render(ready):
-    from etiketto.render import CODE128_MAX
+    from tavletta.render import CODE128_MAX
 
     code = CodeElement(data="A" * CODE128_MAX, symbology="code128")
     ready.set_label(Label(tape_mm=25, elements=[code]), None)
@@ -938,7 +938,7 @@ def test_print_error_dialog_with_details_and_report(ready, gui_env, launched):
 def test_report_problem(window, launched):
     window.activate_action("win.report", None)
     url = launched[0]
-    assert url.startswith("https://git.joshuahirsig.xyz/joshii/etiketto/issues/new?")
+    assert url.startswith("https://git.joshuahirsig.xyz/joshii/tavletta/issues/new?")
     query = parse_qs(urlparse(url).query, keep_blank_values=True)
     assert query["title"] == [""]
     body = query["body"][0]
@@ -965,7 +965,7 @@ def test_report_problem(window, launched):
 
 @pytest.fixture
 def saved(tmp_path):
-    path = tmp_path / "saved.etiketto"
+    path = tmp_path / "saved.tavletta"
     Label(tape_mm=19, elements=[CodeElement(data="42")]).save(path)
     return path
 
@@ -974,22 +974,22 @@ def test_open_file(window, saved):
     window.change(margin_mm=5.0)
     window.files.open_file(saved)
     assert window.label.tape_mm == 19 and window.path == saved
-    assert not window.dirty and subtitle(window) == "saved.etiketto"
+    assert not window.dirty and subtitle(window) == "saved.tavletta"
     assert window.expand_index == -1
 
 
 def test_open_broken_file(window, tmp_path):
-    for name, content in (("bad.etiketto", "{"), ("wide.etiketto", json.dumps({"tape_mm": 7}))):
+    for name, content in (("bad.tavletta", "{"), ("wide.tavletta", json.dumps({"tape_mm": 7}))):
         (tmp_path / name).write_text(content)
         window.files.open_file(tmp_path / name)
-    (tmp_path / "new.etiketto").write_text(json.dumps({"version": 99}))
-    window.files.open_file(tmp_path / "new.etiketto")
-    window.files.open_file(tmp_path / "missing.etiketto")
+    (tmp_path / "new.tavletta").write_text(json.dumps({"version": 99}))
+    window.files.open_file(tmp_path / "new.tavletta")
+    window.files.open_file(tmp_path / "missing.tavletta")
     assert toast_titles(window) == [
-        "bad.etiketto is not an Etiketto label",
-        "The file is damaged: wide.etiketto",
-        "This label needs a newer version of Etiketto",
-        "Cannot open missing.etiketto",
+        "bad.tavletta is not an Tavletta label",
+        "The file is damaged: wide.tavletta",
+        "This label needs a newer version of Tavletta",
+        "Cannot open missing.tavletta",
     ]
     assert window.path is None
 
@@ -1003,7 +1003,7 @@ def test_on_open(window, file_dialog, saved):
     assert window.path == saved
     assert file_dialog.instances[-1].method == "open"
     filters = file_dialog.instances[-1].kwargs["filters"]
-    assert filters.get_item(0).get_name() == "Etiketto labels"
+    assert filters.get_item(0).get_name() == "Tavletta labels"
 
 
 def test_on_open_asks_before_discarding(window, file_dialog, saved):
@@ -1023,25 +1023,25 @@ def test_on_open_asks_before_discarding(window, file_dialog, saved):
 def test_save_and_save_as(window, file_dialog, tmp_path):
     file_dialog.result = cancelled()
     window.activate_action("win.save", None)  # no path yet: save as
-    assert file_dialog.instances[-1].initial_name == "label.etiketto"
+    assert file_dialog.instances[-1].initial_name == "label.tavletta"
     assert window.path is None
     file_dialog.result = tmp_path / "Regal 1.2"
     window.files.save()
-    assert window.path == tmp_path / "Regal 1.2.etiketto"  # the ".2" stays in the name
+    assert window.path == tmp_path / "Regal 1.2.tavletta"  # the ".2" stays in the name
     file_dialog.result = tmp_path / "neu"
     window.files.save_as()
-    assert window.path == tmp_path / "neu.etiketto" and window.path.exists()
-    file_dialog.result = tmp_path / "GROSS.ETIKETTO"
+    assert window.path == tmp_path / "neu.tavletta" and window.path.exists()
+    file_dialog.result = tmp_path / "GROSS.TAVLETTA"
     window.files.save_as()
-    assert window.path == tmp_path / "GROSS.etiketto"  # what the template menu lists
-    window.path = tmp_path / "neu.etiketto"
+    assert window.path == tmp_path / "GROSS.tavletta"  # what the template menu lists
+    window.path = tmp_path / "neu.tavletta"
     window.change(tape_mm=9)
     window.files.save()  # known path: no dialog
     assert len(file_dialog.instances) == 4
-    assert Label.load(tmp_path / "neu.etiketto").tape_mm == 9
+    assert Label.load(tmp_path / "neu.tavletta").tape_mm == 9
     file_dialog.result = cancelled()
     window.activate_action("win.save-as", None)
-    assert file_dialog.instances[-1].initial_name == "neu.etiketto"
+    assert file_dialog.instances[-1].initial_name == "neu.tavletta"
 
 
 def test_files_that_are_not_local_are_refused(window, file_dialog):
@@ -1053,25 +1053,25 @@ def test_files_that_are_not_local_are_refused(window, file_dialog):
 
 
 def test_save_as_does_not_ask_twice_for_the_same_file(window, file_dialog, tmp_path):
-    # a file system that ignores case: X.ETIKETTO and X.etiketto are one file
-    (tmp_path / "x.etiketto").write_text("{}")
-    (tmp_path / "x.ETIKETTO").hardlink_to(tmp_path / "x.etiketto")
-    file_dialog.result = [tmp_path / "x.ETIKETTO"]  # overwriting it was confirmed
+    # a file system that ignores case: X.TAVLETTA and X.tavletta are one file
+    (tmp_path / "x.tavletta").write_text("{}")
+    (tmp_path / "x.TAVLETTA").hardlink_to(tmp_path / "x.tavletta")
+    file_dialog.result = [tmp_path / "x.TAVLETTA"]  # overwriting it was confirmed
     window.files.save_as()
-    assert window.path == tmp_path / "x.etiketto" and len(file_dialog.instances) == 1
+    assert window.path == tmp_path / "x.tavletta" and len(file_dialog.instances) == 1
 
 
 def test_save_as_asks_again_before_overwriting_the_completed_name(window, file_dialog, tmp_path):
-    (tmp_path / "taken.etiketto").write_text("{}")
-    # typed "taken": the dialog had nothing to overwrite, but taken.etiketto exists
+    (tmp_path / "taken.tavletta").write_text("{}")
+    # typed "taken": the dialog had nothing to overwrite, but taken.tavletta exists
     file_dialog.result = [tmp_path / "taken", cancelled()]
     window.files.save_as()
     again = file_dialog.instances[-1]
-    assert again.initial_name == "taken.etiketto" and again.initial_folder == str(tmp_path)
-    assert window.path is None and (tmp_path / "taken.etiketto").read_text() == "{}"
-    file_dialog.result = [tmp_path / "taken.etiketto"]  # confirmed in the dialog
+    assert again.initial_name == "taken.tavletta" and again.initial_folder == str(tmp_path)
+    assert window.path is None and (tmp_path / "taken.tavletta").read_text() == "{}"
+    file_dialog.result = [tmp_path / "taken.tavletta"]  # confirmed in the dialog
     window.files.save_as()
-    assert window.path == tmp_path / "taken.etiketto"
+    assert window.path == tmp_path / "taken.tavletta"
 
 
 def test_save_template(window, file_dialog, gui_env):
@@ -1083,12 +1083,12 @@ def test_save_template(window, file_dialog, gui_env):
     assert file_dialog.instances[-1].kwargs["title"] == "Save as template…"
     file_dialog.result = config.TEMPLATE_DIR / "Kabel"
     window.files.save_template()
-    assert Label.load(config.TEMPLATE_DIR / "Kabel.etiketto").tape_mm == 12
-    assert toast_titles(window) == ["Saved Kabel.etiketto"]
+    assert Label.load(config.TEMPLATE_DIR / "Kabel.tavletta").tape_mm == 12
+    assert toast_titles(window) == ["Saved Kabel.tavletta"]
     assert window.path is None and window.dirty  # the open label is unchanged
-    file_dialog.result = gui_env.tmp / "missing" / "x.etiketto"
+    file_dialog.result = gui_env.tmp / "missing" / "x.tavletta"
     window.files.save_template()
-    assert toast_titles(window)[-1] == "Cannot save x.etiketto"
+    assert toast_titles(window)[-1] == "Cannot save x.tavletta"
 
 
 def test_export_png(window, file_dialog, tmp_path):
@@ -1126,7 +1126,7 @@ def test_templates_menu(window, gui_env):
     assert label.startswith("No templates yet")
     config.TEMPLATE_DIR.mkdir(parents=True)
     for name in ("b", "a"):
-        Label(tape_mm=9).save(config.TEMPLATE_DIR / ("%s.etiketto" % name))
+        Label(tape_mm=9).save(config.TEMPLATE_DIR / ("%s.tavletta" % name))
     (config.TEMPLATE_DIR / "ignored.txt").write_text("")
     templates = [b for b in find(window, Gtk.MenuButton) if b.get_tooltip_text() == "Templates"]
     templates[0].set_active(True)  # opening the menu fills it
@@ -1138,13 +1138,13 @@ def test_templates_menu(window, gui_env):
     ]
     assert labels == ["a", "b"]
     target = menu.get_item_attribute_value(1, "target", GLib.VariantType("s")).get_string()
-    assert target == str(config.TEMPLATE_DIR / "b.etiketto")
+    assert target == str(config.TEMPLATE_DIR / "b.tavletta")
 
 
 def test_open_template_starts_unsaved_label(window, gui_env, tmp_path):
-    path = tmp_path / "t.etiketto"
+    path = tmp_path / "t.tavletta"
     Label(tape_mm=9, elements=[TextElement(text="Vorlage")]).save(path)
-    window.path = tmp_path / "current.etiketto"
+    window.path = tmp_path / "current.tavletta"
     window.activate_action("win.open-template", GLib.Variant.new_string(str(path)))
     assert window.label.tape_mm == 9 and window.path is None and not window.dirty
     window.activate_action("win.open-template", GLib.Variant.new_string(str(tmp_path / "no")))
@@ -1272,7 +1272,7 @@ def test_app_open_file(application, saved):
     application.do_open([Gio.File.new_for_path(str(saved))], 1, "")
     win = application.get_active_window()
     assert win.path == saved and win.label.tape_mm == 19
-    application.do_open([Gio.File.new_for_uri("https://example.org/a.etiketto")], 1, "")
+    application.do_open([Gio.File.new_for_uri("https://example.org/a.tavletta")], 1, "")
     assert application.get_active_window() is win and win.path == saved
     application.do_open([], 0, "")
     assert len(application.get_windows()) == 1
@@ -1283,7 +1283,7 @@ def test_about_dialog(application):
     application.activate_action("about", None)
     dialog = application.get_active_window().get_visible_dialog()
     assert isinstance(dialog, Adw.AboutDialog)
-    assert dialog.get_application_name() == "Etiketto"
+    assert dialog.get_application_name() == "Tavletta"
     assert dialog.get_version() == app.__version__
     assert dialog.get_license_type() == Gtk.License.AGPL_3_0
 
@@ -1309,7 +1309,7 @@ I = "⁨%s⁩"  # noqa: E741 - isolated text, as in the interface
 
 
 def test_warning_texts():
-    from etiketto.render import RenderWarning
+    from tavletta.render import RenderWarning
 
     expected = {
         "code_empty": "Element 2: the code is empty",
@@ -1340,8 +1340,8 @@ def test_warning_texts():
 
 
 def test_every_code_problem_has_a_text_and_every_type_help():
-    from etiketto import codes, model
-    from etiketto.render import RenderWarning
+    from tavletta import codes, model
+    from tavletta.render import RenderWarning
 
     keys = {key for _length, key in codes.DIGITS.values()}
     keys |= {key for _chars, key in codes.CHARSETS.values()}
@@ -1396,16 +1396,16 @@ def test_stage_texts():
 
 
 def test_label_and_save_error_texts():
-    from etiketto.model import LabelError
+    from tavletta.model import LabelError
 
-    assert texts.label_error_text(LabelError("not_label", "x"), "a.etiketto") == (
-        "a.etiketto is not an Etiketto label"
+    assert texts.label_error_text(LabelError("not_label", "x"), "a.tavletta") == (
+        "a.tavletta is not an Tavletta label"
     )
-    assert texts.label_error_text(LabelError("newer", "x"), "a.etiketto") == (
-        "This label needs a newer version of Etiketto"
+    assert texts.label_error_text(LabelError("newer", "x"), "a.tavletta") == (
+        "This label needs a newer version of Tavletta"
     )
-    assert texts.label_error_text(LabelError("damaged", "x"), "a.etiketto") == (
-        "The file is damaged: a.etiketto"
+    assert texts.label_error_text(LabelError("damaged", "x"), "a.tavletta") == (
+        "The file is damaged: a.tavletta"
     )
     for code in (errno.EACCES, errno.EPERM, errno.EROFS):
         assert texts.save_error_text(OSError(code, "x"), "a") == (
@@ -1755,7 +1755,7 @@ def test_length_rows_do_not_change_on_focus(window):
 def mono(gui_env):
     from fake_backends import FakeMono
 
-    import etiketto.backends as registry
+    import tavletta.backends as registry
 
     backend = FakeMono()
     registry.register(backend)
@@ -1835,7 +1835,7 @@ def test_no_length_rows_for_die_cut_printers(make_window, mono, monkeypatch):
 def cab_env(gui_env, monkeypatch):
     """The cab backend with faked query/print/discover; a 50 × 25 mm roll with
     3 mm gaps (a label every 28 mm) in the printer."""
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     backend = get_backend("cab")
     env = SimpleNamespace(
@@ -2001,7 +2001,7 @@ def test_cab_too_wide(cab_window):
 
 
 def test_cab_printer_states(make_window, cab_env):
-    from etiketto.backends.base import HeadOpen
+    from tavletta.backends.base import HeadOpen
 
     win = make_window()
     win.set_backend("cab")
@@ -2186,11 +2186,11 @@ def test_docs_url_follows_the_interface_language():
         def info(self):
             return {"language": self._language}
 
-    assert i18n.docs_url(Catalog("de")) == "https://etiketto.joshuahirsig.xyz/de/"
-    assert i18n.docs_url(Catalog("de_CH")) == "https://etiketto.joshuahirsig.xyz/de/"
+    assert i18n.docs_url(Catalog("de")) == "https://tavletta.joshuahirsig.xyz/de/"
+    assert i18n.docs_url(Catalog("de_CH")) == "https://tavletta.joshuahirsig.xyz/de/"
     # no documentation in that language yet: English
-    assert i18n.docs_url(Catalog("ja")) == "https://etiketto.joshuahirsig.xyz/en/"
-    assert i18n.docs_url(object()) == "https://etiketto.joshuahirsig.xyz/en/"
+    assert i18n.docs_url(Catalog("ja")) == "https://tavletta.joshuahirsig.xyz/en/"
+    assert i18n.docs_url(object()) == "https://tavletta.joshuahirsig.xyz/en/"
 
 
 def test_month_year_is_one_translatable_pattern():
@@ -2213,7 +2213,7 @@ def test_too_long_fixed_length_from_a_file_is_clamped_consistently(make_window):
 
 
 def test_system_printer_has_a_translated_name_and_paper_texts():
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     assert texts.backend_name(get_backend("system")) == "System printer (CUPS, IPP)"
     assert texts.backend_name(get_backend("cab")) == get_backend("cab").name
@@ -2289,7 +2289,7 @@ def test_a_usb_printer_not_found_gets_usb_advice():
 
 
 def test_a_printer_that_stopped_taking_data_needs_attention():
-    from etiketto.backends.base import PrinterStalled
+    from tavletta.backends.base import PrinterStalled
 
     text = texts.printer_error_text(PrinterStalled("stopped taking data"), MILLIMETRES)
     assert text.startswith("The printer stopped taking data.")
@@ -2351,7 +2351,7 @@ def test_the_preview_shows_the_values_of_the_next_print(window):
 
 
 def render_warning(key, params):
-    from etiketto.render import RenderWarning
+    from tavletta.render import RenderWarning
 
     return RenderWarning(key, params)
 
@@ -2427,11 +2427,11 @@ def test_a_label_opened_while_printing_keeps_its_counter(ready, gui_env):
 
 
 def test_printing_goes_on_from_a_counter_the_command_line_moved_on(ready, gui_env, tmp_path):
-    path = tmp_path / "serial.etiketto"
+    path = tmp_path / "serial.tavletta"
     ready.label.elements[0].text = "{=counter}"
     ready.label.counter_next = 5
     ready.files.write(path)
-    Label.store_counter(path, 20)  # `etiketto print` printed 5 to 19 meanwhile
+    Label.store_counter(path, 20)  # `tavletta print` printed 5 to 19 meanwhile
     ready.print_flow.start(PrintOptions(copies=2))
     assert pump(lambda: not ready.print_flow.busy)
     assert ready.label.counter_next == 22
@@ -2440,7 +2440,7 @@ def test_printing_goes_on_from_a_counter_the_command_line_moved_on(ready, gui_en
 
 
 def test_a_counter_set_back_on_purpose_stays(ready, gui_env, tmp_path):
-    path = tmp_path / "serial.etiketto"
+    path = tmp_path / "serial.tavletta"
     ready.label.elements[0].text = "{=counter}"
     ready.label.counter_next = 50
     ready.files.write(path)
@@ -2453,14 +2453,14 @@ def test_a_counter_set_back_on_purpose_stays(ready, gui_env, tmp_path):
 
 
 def test_saving_keeps_a_counter_the_command_line_moved_on(window, tmp_path):
-    path = tmp_path / "serial.etiketto"
+    path = tmp_path / "serial.tavletta"
     window.label.elements[0].text = "{=counter}"
     window.files.write(path)
     Label.store_counter(path, 9)
     window.change(margin_mm=3.0)
     window.files.write(path)
     assert Label.load(path).counter_next == 9 and window.label.counter_next == 9
-    other = tmp_path / "copy.etiketto"
+    other = tmp_path / "copy.tavletta"
     Label.store_counter(path, 30)
     window.files.write(other)  # another file: nothing to go on from
     assert Label.load(other).counter_next == 9
@@ -2479,7 +2479,7 @@ def test_the_preview_counts_the_copies_of_the_print_dialog(ready):
 
 
 def test_a_next_number_typed_in_wins_over_the_file(ready, gui_env, tmp_path, monkeypatch):
-    path = tmp_path / "serial.etiketto"
+    path = tmp_path / "serial.tavletta"
     ready.label.elements[0].text = "{=counter}"
     ready.label.counter_next = 5
     ready.files.write(path)
@@ -2494,7 +2494,7 @@ def test_a_next_number_typed_in_wins_over_the_file(ready, gui_env, tmp_path, mon
 
 
 def test_the_file_is_read_only_when_it_changed(window, tmp_path, monkeypatch):
-    path = tmp_path / "serial.etiketto"
+    path = tmp_path / "serial.tavletta"
     window.label.elements[0].text = "{=counter}"
     window.files.write(path)
     reads = []
@@ -2512,17 +2512,17 @@ def test_the_file_is_read_only_when_it_changed(window, tmp_path, monkeypatch):
 
 
 def test_a_read_only_label_is_not_saved_over(window, tmp_path):
-    path = tmp_path / "locked.etiketto"
+    path = tmp_path / "locked.tavletta"
     window.files.write(path)
     path.chmod(0o444)
     try:
         window.change(margin_mm=3.0)
         window.files.write(path)
         assert window.dirty
-        assert toast_titles(window)[-1].startswith("Cannot save locked.etiketto")
+        assert toast_titles(window)[-1].startswith("Cannot save locked.tavletta")
         assert Label.load(path).margin_mm == 2.0
-        window.files.write(tmp_path / "copy.etiketto")  # Save as: works
-        assert not window.dirty and window.path == tmp_path / "copy.etiketto"
+        window.files.write(tmp_path / "copy.tavletta")  # Save as: works
+        assert not window.dirty and window.path == tmp_path / "copy.tavletta"
     finally:
         path.chmod(0o644)
 
@@ -2747,7 +2747,7 @@ def test_data_files_that_cannot_be_used(window, tmp_path, content, text, report)
 
 
 def test_too_large_data_file(window, rows_csv, monkeypatch):
-    from etiketto.merge import limits
+    from tavletta.merge import limits
 
     monkeypatch.setattr(limits, "MAX_ROWS", 2)
     attach(window, rows_csv)
@@ -2757,14 +2757,14 @@ def test_too_large_data_file(window, rows_csv, monkeypatch):
 def test_data_file_is_saved_with_the_label_and_read_on_open(window, rows_csv, tmp_path):
     window.label.elements[0].text = "{Code}"
     attach(window, rows_csv)
-    window.files.write(tmp_path / "shelf.etiketto")
-    stored = json.loads((tmp_path / "shelf.etiketto").read_text(encoding="utf-8"))
+    window.files.write(tmp_path / "shelf.tavletta")
+    stored = json.loads((tmp_path / "shelf.tavletta").read_text(encoding="utf-8"))
     assert stored["data_file"] == "rows.csv"
-    assert "Screws" not in (tmp_path / "shelf.etiketto").read_text()  # never the data
+    assert "Screws" not in (tmp_path / "shelf.tavletta").read_text()  # never the data
 
     window.files.new()
     assert window.data.state == "none" and window.data.path is None
-    window.files.open_file(tmp_path / "shelf.etiketto")
+    window.files.open_file(tmp_path / "shelf.tavletta")
     assert loaded(window)
     assert window.data.state == "ready" and preview_text(window) == "B-1"
     assert not window.dirty
@@ -2772,9 +2772,9 @@ def test_data_file_is_saved_with_the_label_and_read_on_open(window, rows_csv, tm
 
 def test_missing_data_file_on_open_is_said_gently(window, rows_csv, tmp_path):
     attach(window, rows_csv)
-    window.files.write(tmp_path / "shelf.etiketto")
+    window.files.write(tmp_path / "shelf.tavletta")
     rows_csv.unlink()
-    window.files.open_file(tmp_path / "shelf.etiketto")
+    window.files.open_file(tmp_path / "shelf.tavletta")
     assert loaded(window)
     toast = window.toast_log[-1]
     assert toast.get_title() == (
@@ -2965,7 +2965,7 @@ def test_no_printing_while_the_data_file_cannot_be_used(ready, rows_csv, tmp_pat
 
 
 def test_data_error_texts():
-    from etiketto.merge import MergeError
+    from tavletta.merge import MergeError
 
     assert texts.data_error_text(PermissionError("no"), "a.csv") == "Cannot open a.csv"
     assert texts.data_error_text(MergeError("other", ""), "a.csv") == "The file is damaged: a.csv"
@@ -3010,8 +3010,8 @@ def foreign_label(tmp_path, data_file: str):
     folder.mkdir()
     data = Label(elements=[TextElement(text="{Name}")]).to_dict()
     data["data_file"] = data_file
-    (folder / "x.etiketto").write_text(json.dumps(data))
-    return folder / "x.etiketto"
+    (folder / "x.tavletta").write_text(json.dumps(data))
+    return folder / "x.tavletta"
 
 
 def test_data_file_outside_the_label_folder_is_read_only_when_agreed(ready, tmp_path):
@@ -3044,8 +3044,8 @@ def test_agreeing_late_does_not_read_for_another_label(window, tmp_path):
 
 def test_template_has_no_data_file(window, rows_csv, tmp_path):
     attach(window, rows_csv)
-    window.files._save_template(tmp_path / "t.etiketto")
-    stored = json.loads((tmp_path / "t.etiketto").read_text(encoding="utf-8"))
+    window.files._save_template(tmp_path / "t.tavletta")
+    stored = json.loads((tmp_path / "t.tavletta").read_text(encoding="utf-8"))
     assert (stored["data_file"], stored["data_sheet"]) == ("", "")
     assert window.label.data_file == str(rows_csv)  # the open label keeps it
 
@@ -3073,7 +3073,7 @@ def test_rows_whose_codes_cannot_be_drawn_are_named_before_printing(ean_series, 
 
 
 def test_only_unprintable_rows_offer_no_skipping(ean_series, gui_env, monkeypatch):
-    from etiketto.ui import printing
+    from tavletta.ui import printing
 
     monkeypatch.setattr(printing, "ROWS_LISTED", 1)
     ean_series.print_flow.start_series(PrintOptions(), range(1, 3))
@@ -3089,7 +3089,7 @@ def test_an_empty_row_range_prints_nothing(series, gui_env):
     series.print_flow.start_series(PrintOptions(), range(0))
     assert toast_titles(series)[-1] == "No rows to print"
     assert not series.print_flow.busy and gui_env.prints == []
-    from etiketto.serial import SeriesResult
+    from tavletta.serial import SeriesResult
 
     assert series.print_flow.series_done(SeriesResult([]), PrintOptions()) is False
 
@@ -3103,8 +3103,8 @@ def test_only_tables_in_visible_folders_are_read_without_asking(window, tmp_path
     label = Label(elements=[TextElement(text="{Name}")])
     for name, state in (("ok.txt", "ready"), (".hidden/a.csv", "unread"), ("notes.md", "unread")):
         label.data_file = str(folder / name)
-        label.save(folder / "x.etiketto")
-        window.files.open_file(folder / "x.etiketto")
+        label.save(folder / "x.tavletta")
+        window.files.open_file(folder / "x.tavletta")
         assert loaded(window) and window.data.state == state, name
 
 
@@ -3115,8 +3115,8 @@ def test_a_link_shows_where_it_leads(window, tmp_path):
     folder.mkdir()
     (folder / "data.csv").symlink_to(secret)
     label = Label(elements=[TextElement(text="{Name}")], data_file=str(folder / "data.csv"))
-    label.save(folder / "x.etiketto")
-    window.files.open_file(folder / "x.etiketto")
+    label.save(folder / "x.tavletta")
+    window.files.open_file(folder / "x.tavletta")
     assert window.data.state == "unread"
     assert "%s\n→ %s" % (folder / "data.csv", secret) in window.last_dialog.get_body()
 
@@ -3145,7 +3145,7 @@ def test_rows_that_are_gone_are_not_printed(series, gui_env):
 
 
 def test_an_unexpected_error_ends_the_series(series, gui_env, monkeypatch):
-    from etiketto.ui import printing
+    from tavletta.ui import printing
 
     def broken(*args, **kwargs):
         raise KeyError("bug")
@@ -3173,7 +3173,7 @@ def test_forget_allowed_data_files(window, tmp_path):
     assert loaded(window) and action.get_enabled()
     window.activate_action("win.forget-data", None)
     assert not action.get_enabled()
-    assert toast_titles(window)[-1].startswith("Etiketto asks again")
+    assert toast_titles(window)[-1].startswith("Tavletta asks again")
     assert "trusted_data" not in json.loads(config.SETTINGS_FILE.read_text())
     window.files.open_file(path)
     assert window.data.state == "unread"
@@ -3248,7 +3248,7 @@ def test_series_stop_text():
 @pytest.fixture
 def raw_env(gui_env, monkeypatch):
     """ZPL and ESC/POS with faked query/print/discover."""
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     env = SimpleNamespace(
         info=PrinterInfo("ZD621-203dpi", None, None, None, "IDLE", firmware="V93"),
@@ -3374,8 +3374,8 @@ def test_setting_names():
 
 
 def test_a_print_is_rendered_again_for_another_resolution(make_window, raw_env, monkeypatch):
-    from etiketto.backends import get_backend
-    from etiketto.backends.base import RenderAgain
+    from tavletta.backends import get_backend
+    from tavletta.backends.base import RenderAgain
 
     backend = get_backend("zpl")
     win = _raw_window(make_window, "zpl")
@@ -3413,8 +3413,8 @@ def test_a_print_is_rendered_again_for_another_resolution(make_window, raw_env, 
 def ql_env(gui_env, monkeypatch):
     """Both QL backends with faked query/print/discover: a QL-820NWB with the
     red and black 62 mm roll."""
-    from etiketto.backends import get_backend
-    from etiketto.backends.brother_ql import BLACK, QUALITIES, RED
+    from tavletta.backends import get_backend
+    from tavletta.backends.brother_ql import BLACK, QUALITIES, RED
 
     env = SimpleNamespace(
         info=PrinterInfo(
@@ -3495,7 +3495,7 @@ def test_ql_print_dialog_offers_cut_colours_and_quality(ql_window, ql_env):
 
 
 def test_ql_without_two_colours_or_high_resolution(ql_window, ql_env):
-    from etiketto.backends.brother_ql import BLACK
+    from tavletta.backends.brother_ql import BLACK
 
     win = ql_window
     # what the backend reports for a QL-500 (no 600 dpi)
@@ -3632,7 +3632,7 @@ def test_ql_says_when_the_roll_decided_the_colours(ql_window, ql_env, monkeypatc
 def ptouch_env(gui_env, monkeypatch):
     """The P-touch backend with faked query/print/discover: a PT-P710BT with
     heat-shrink tube (as if; that model takes none) for the details."""
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     backend = get_backend("ptouch")
     env = SimpleNamespace(
@@ -3732,7 +3732,7 @@ def test_ptouch_feed_setting_is_checked(make_window, ptouch_env):
 
 
 def test_ptouch_texts():
-    from etiketto.ui.texts import MEDIA_NAMES, code_text
+    from tavletta.ui.texts import MEDIA_NAMES, code_text
 
     assert set(MEDIA_NAMES) >= {"laminated", "heat_shrink_2", "heat_shrink_3"}
     for code in ("battery", "overheat", "unsupported_model", "editor_lite"):
@@ -3745,7 +3745,7 @@ def test_ptouch_texts():
 @pytest.fixture
 def niimbot_env(gui_env, monkeypatch):
     """The NIIMBOT backend with faked query/print; a D110 on USB serial."""
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     backend = get_backend("niimbot")
     env = SimpleNamespace(info=PrinterInfo("D110", None, None, None, "IDLE"), prints=[])
@@ -3854,7 +3854,7 @@ def test_poppler_is_credited_where_it_is_shipped(monkeypatch, tmp_path):
     monkeypatch.delenv("FLATPAK_ID", raising=False)
     monkeypatch.setattr(app, "Path", lambda _p: tmp_path / "no-flatpak-info")
     assert app.legal_sections() == app.LEGAL
-    monkeypatch.setenv("FLATPAK_ID", "xyz.joshuahirsig.Etiketto")
+    monkeypatch.setenv("FLATPAK_ID", "xyz.joshuahirsig.Tavletta")
     assert app.legal_sections() == app.LEGAL + app.FLATPAK_LEGAL
 
 
@@ -3864,7 +3864,7 @@ def test_the_preview_follows_a_resolution_the_printer_reports_later(
     """A ZPL printer set to "as reported": the preview (and its code
     warnings) is first at the default resolution; once the printer has
     reported 300 dpi it is rendered again at that one."""
-    from etiketto.backends import get_backend
+    from tavletta.backends import get_backend
 
     backend = get_backend("zpl")
     monkeypatch.setattr(backend, "reported", {})
@@ -3986,7 +3986,7 @@ def test_the_preview_renders_in_its_thread_and_ends_with_the_latest(window):
     window.label.elements[0].text = "third"
     window.render_preview()
     assert pump(lambda: window.preview_current, timeout=5)
-    assert window.preview_worker.thread is thread and thread.name == "etiketto-preview"
+    assert window.preview_worker.thread is thread and thread.name == "tavletta-preview"
 
 
 def test_a_failed_render_in_the_thread_is_shown(window, monkeypatch):
@@ -4001,7 +4001,7 @@ def test_a_failed_render_in_the_thread_is_shown(window, monkeypatch):
 def test_the_preview_worker_takes_only_the_latest_request():
     import threading
 
-    from etiketto.ui.window import PreviewWorker
+    from tavletta.ui.window import PreviewWorker
 
     started = threading.Event()
     release = threading.Event()
@@ -4065,7 +4065,7 @@ def _blocking_render(win, monkeypatch):
     real = win.backend.render_label
 
     def slow(*args, **kwargs):
-        if threading.current_thread().name == "etiketto-preview" and not release.is_set():
+        if threading.current_thread().name == "tavletta-preview" and not release.is_set():
             started.set()
             release.wait(5)
         return real(*args, **kwargs)
@@ -4130,7 +4130,7 @@ def test_a_closed_window_shows_no_render_still_running(make_window, monkeypatch)
     import time
 
     def preview_threads():
-        return [t for t in threading.enumerate() if t.name == "etiketto-preview"]
+        return [t for t in threading.enumerate() if t.name == "tavletta-preview"]
 
     win = make_window()
     win.present()
@@ -4169,7 +4169,7 @@ def test_a_closed_window_shows_no_render_still_running(make_window, monkeypatch)
 def test_the_preview_worker_starts_again_after_stop_or_a_fatal_error():
     """A request after stop() (a close that did not happen) or after the
     thread ended on a BaseException is rendered by a new thread."""
-    from etiketto.ui.window import PreviewWorker
+    from tavletta.ui.window import PreviewWorker
 
     shown = []
     worker = PreviewWorker(
@@ -4204,7 +4204,7 @@ def test_the_preview_thread_drops_the_documents_of_the_label_before(window):
     import gc
     import weakref
 
-    from etiketto.shipping import source
+    from tavletta.shipping import source
 
     class Document:
         pass
@@ -4312,7 +4312,7 @@ def test_a_document_reopened_by_a_running_render_is_dropped_too(window):
     import weakref
     from unittest import mock
 
-    from etiketto.shipping import source
+    from tavletta.shipping import source
 
     opened = []
 

@@ -1,7 +1,7 @@
 """The VC-500W on USB: the same XML protocol as on TCP, on the printer's
 USB device file (/dev/usb/lpN). What we know of its USB behaviour comes
 from barnguard's notes (see docs/vc500w.md); these tests pin down the
-results Etiketto must give, against a fake device that answers through the
+results Tavletta must give, against a fake device that answers through the
 same simulated printer as the TCP tests."""
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from types import SimpleNamespace
 import pytest
 from conftest import XML_HEAD, FakeConnection, FakeVC500W
 
-from etiketto.backends import usb, vc500w
-from etiketto.backends.base import FoundPrinter, PrinterTimeout, PrintOptions, UsbPermission
-from etiketto.backends.vc500w import VC500W
+from tavletta.backends import usb, vc500w
+from tavletta.backends.base import FoundPrinter, PrinterTimeout, PrintOptions, UsbPermission
+from tavletta.backends.vc500w import VC500W
 
 REAL_CONNECT = vc500w._connect  # before conftest's guard replaces it
 USB_HOST = "usb://Brother/VC-500W?serial=E78123"

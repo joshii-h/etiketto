@@ -1,5 +1,5 @@
 """printers.toml and tokens.toml: strict reading, roles, printers per token,
-revocation, `etiketto token new`, and printers chosen by name."""
+revocation, `tavletta token new`, and printers chosen by name."""
 
 from __future__ import annotations
 
@@ -12,12 +12,12 @@ import pytest
 from test_server import call, label_file, wait_for
 from test_server_mcp import ACCEPT, request
 
-from etiketto import cli
-from etiketto.backends.base import PaperJam, PrinterInfo
-from etiketto.model import TextElement
-from etiketto.server import config as cfg
-from etiketto.server import main as server_main
-from etiketto.server.config import Caller, ConfigError, TokenStore, load_printers, load_tokens
+from tavletta import cli
+from tavletta.backends.base import PaperJam, PrinterInfo
+from tavletta.model import TextElement
+from tavletta.server import config as cfg
+from tavletta.server import main as server_main
+from tavletta.server.config import Caller, ConfigError, TokenStore, load_printers, load_tokens
 
 PRINTERS = """
 [printers.lager]
@@ -302,7 +302,7 @@ def test_printers_of_a_token(secured, server_env):
 
 
 def test_named_printers_list_and_status(secured, server_env, monkeypatch):
-    from etiketto.server import service as service_module
+    from tavletta.server import service as service_module
 
     monkeypatch.setattr(service_module, "STATUS_SECONDS", 0)  # asked anew every time
     boss = token("boss")
@@ -505,7 +505,7 @@ def test_token_new_refuses_a_broken_file(tmp_path, capsys):
 
 
 def test_default_tokens_file():
-    assert server_main.default_tokens_file().parts[-2:] == ("etiketto", "tokens.toml")
+    assert server_main.default_tokens_file().parts[-2:] == ("tavletta", "tokens.toml")
 
 
 def test_serve_options(monkeypatch, tmp_path, capsys, server_env, printers_file):
@@ -515,14 +515,14 @@ def test_serve_options(monkeypatch, tmp_path, capsys, server_env, printers_file)
         started["server"] = self
         raise KeyboardInterrupt
 
-    from etiketto.server import http as server_http
+    from tavletta.server import http as server_http
 
     handlers = {}
     monkeypatch.setattr(server_http.Server, "serve_forever", serve_forever)
     monkeypatch.setattr(
         server_main.signal, "signal", lambda number, handler: handlers.setdefault(number, handler)
     )
-    monkeypatch.delenv("ETIKETTO_TOKEN", raising=False)
+    monkeypatch.delenv("TAVLETTA_TOKEN", raising=False)
     tokens = write(tmp_path / "tokens.toml", tokens_text(**TOKENS))
     labels = tmp_path / "labels"
     labels.mkdir(exist_ok=True)
@@ -541,7 +541,7 @@ def test_serve_options(monkeypatch, tmp_path, capsys, server_env, printers_file)
 
 def test_mcp_command_takes_a_printers_file(monkeypatch, tmp_path, server_env, printers_file):
     seen = {}
-    from etiketto.server import mcp as mcp_module
+    from tavletta.server import mcp as mcp_module
 
     monkeypatch.setattr(
         mcp_module, "run_stdio", lambda service: seen.setdefault("s", service) and 0
@@ -556,7 +556,7 @@ def test_jobs_are_logged_with_the_token_name(secured, caplog, server_env):
     import logging
 
     caplog.set_level(logging.INFO)
-    label_file(server_env.labels, "named.etiketto", TextElement(text="x"))
+    label_file(server_env.labels, "named.tavletta", TextElement(text="x"))
     call(
         secured,
         "POST",

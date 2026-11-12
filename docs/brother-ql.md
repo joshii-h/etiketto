@@ -1,6 +1,6 @@
 # Brother QL: raster commands over the network and USB
 
-How Etiketto talks to Brother QL label printers (QL-500 to QL-1115NWB,
+How Tavletta talks to Brother QL label printers (QL-500 to QL-1115NWB,
 including the red and black QL-800, QL-810W and QL-820NWB). **Not yet
 tried on a printer**: no QL printer was available while this was written. The sources are Brother's public
 "Raster Command Reference" documents (QL-500/550/560/570/580N/650TD/700/
@@ -8,7 +8,7 @@ tried on a printer**: no QL printer was available while this was written. The so
 and the source code of [brother_ql](https://github.com/pklaus/brother_ql)
 by Philipp Klaus and its fork
 [brother-ql-next](https://github.com/LunarEclipse363/brother_ql) by
-LunarEclipse (both GPL-3.0). Etiketto's code is written anew; no code is
+LunarEclipse (both GPL-3.0). Tavletta's code is written anew; no code is
 copied.
 
 Markers: **[ref]** in Brother's command references, **[spec]** in
@@ -17,9 +17,9 @@ a printer, **[open]** unknown.
 
 ## Two backends, one printer
 
-Etiketto designs continuous tape and die-cut labels differently, so the
+Tavletta designs continuous tape and die-cut labels differently, so the
 QL appears twice in the list of printer models; both share
-`etiketto/backends/brother_ql.py`:
+`tavletta/backends/brother_ql.py`:
 
 - `brother_ql`, "Brother QL, continuous rolls": DK continuous rolls of 12,
   18, 29, 38, 50, 54, 62, 90, 102 and 104 mm; the label grows with its
@@ -38,7 +38,7 @@ notice offers to switch to the other entry.
 
 - TCP port 9100 and USB take the same bytes. [ref] [spec]
 - USB: the kernel's printer class driver (usblp) makes the printer
-  `/dev/usb/lpN`; the status can be read through it. [spec] Etiketto
+  `/dev/usb/lpN`; the status can be read through it. [spec] Tavletta
   finds QL printers by the IEEE 1284 device ID in sysfs (`MFG:Brother`,
   `MDL:QL-…`) and addresses them like CUPS:
   `usb://Brother/QL-820NWB?serial=...`. [spec: LPrint shows
@@ -53,7 +53,7 @@ notice offers to switch to the other entry.
   every piece the printer takes, so a printer whose buffer is full for a
   while does not fail a long job (on USB, `usb.Connection` does the same).
   [assumed: the printer stops reading while its buffer is full]
-- brother_ql does not read the status over the network. Etiketto asks
+- brother_ql does not read the status over the network. Tavletta asks
   anyway and waits 3 s; a printer that does not answer is shown as
   connected without a status, and jobs are sent without checking the
   loaded roll. [ref: the references describe the status for USB, serial
@@ -88,10 +88,10 @@ the QL-500, which has no cutter (no cut commands, no cut row), unless the
 USB device ID or the network name says QL-550. The QL-600 and QL-1100NWB
 are known only from the fork's model list.
 
-Errors and what Etiketto makes of them [ref for the bits, the mapping is
-Etiketto's]:
+Errors and what Tavletta makes of them [ref for the bits, the mapping is
+Tavletta's]:
 
-| Bit | Meaning | Etiketto error |
+| Bit | Meaning | Tavletta error |
 |---|---|---|
 | 1.0, 1.1 | no media, end of media (die-cut) | out of labels |
 | 1.2 | cutter jam | label jammed |
@@ -181,14 +181,14 @@ pins on the 720 and the 1296 pin head, and the feed margin of `ESC i d`.
 
 - The references give 1050 and 1100 tables that differ by a pin in places
   (23 × 23: 84 or 85) and contain sums that do not add up to 1296 (62 mm
-  on the QL-1100: 544 + 696 + 44); Etiketto takes the values that add up.
+  on the QL-1100: 544 + 696 + 44); Tavletta takes the values that add up.
 - Feed margin of 12 mm round labels: 35 dots on the QL-500, QL-550,
   QL-560, QL-570, QL-580N and QL-700, 0 on the others. [ref]
 - The 90 mm continuous roll appears only in the QL-1100 status table,
-  without a print area: Etiketto assumes 1.5 mm unprintable on both sides
+  without a print area: Tavletta assumes 1.5 mm unprintable on both sides
   like the other rolls. [assumed]
 - Brother restricts some wide rolls to some models (the QL-1115NWB takes
-  no 103 mm); Etiketto does not, the printer holds only what fits.
+  no 103 mm); Tavletta does not, the printer holds only what fits.
 
 ## A print job
 
@@ -243,7 +243,7 @@ lines               67 00 n data, or 77 01 n black + 77 02 n red per line
 On DK-22251 every job has to be a two-colour job, even one with black
 content only [spec: brother_ql's command line help], and a two-colour
 job on a plain roll fails [assumed]. Brother's status does not tell the
-rolls apart, so Etiketto:
+rolls apart, so Tavletta:
 
 - takes the roll it remembers for this printer, else what the print
   dialog says (Colours: Black, or Red and black). If bit 7 of status byte
@@ -296,16 +296,16 @@ rolls apart, so Etiketto:
 
 The printer reports each page: phase change to printing, printing
 completed, and after the last page a phase change to waiting. [ref]
-Etiketto counts the "printing completed" packets for the progress; an
+Tavletta counts the "printing completed" packets for the progress; an
 error packet stops the job with the number of labels printed so far.
 
 - A printer that sends no notice within 10 s (answers to `ESC i S` do not
   count) is taken as one that does not report on this connection: the job
   was sent. [spec: brother_ql waits up to 10 s] [assumed: the same on TCP]
-- If the notices stop after the first one (60 s without one), Etiketto
+- If the notices stop after the first one (60 s without one), Tavletta
   asks `ESC i S` once: waiting to receive without an error means the job
   is done, anything else a timeout with the labels printed so far.
-- While another job prints (phase 1), Etiketto asks `ESC i S` every 0.5 s,
+- While another job prints (phase 1), Tavletta asks `ESC i S` every 0.5 s,
   without NULs, for up to 180 s. [assumed]
 
 ## To try on a printer

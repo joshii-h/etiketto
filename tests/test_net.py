@@ -14,8 +14,8 @@ import pytest
 from fake_raw import ZPL_HS
 from PIL import Image
 
-from etiketto.backends import net, raw, zpl
-from etiketto.backends.base import PrinterStalled, PrintOptions
+from tavletta.backends import net, raw, zpl
+from tavletta.backends.base import PrinterStalled, PrintOptions
 
 REAL_CONNECT = raw._connect  # before conftest's guard replaces it
 BUFFER = 4096

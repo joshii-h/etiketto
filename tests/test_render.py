@@ -12,9 +12,9 @@ import pytest
 from conftest import ink_bbox
 from PIL import Image, ImageChops
 
-from etiketto import render as render_module
-from etiketto.model import CodeElement, ImageElement, Label, TextElement
-from etiketto.render import (
+from tavletta import render as render_module
+from tavletta.model import CodeElement, ImageElement, Label, TextElement
+from tavletta.render import (
     RenderWarning,
     mm_to_px,
     px_to_mm,
@@ -520,7 +520,7 @@ def test_barcode_modules_are_whole_pixels(symbology, data, dpi):
 @pytest.mark.parametrize("dpi", [203, 300, 600])
 def test_qr_modules_are_whole_square_pixels(dpi):
     height = mm_to_px(12, dpi)
-    part = render_module.render_code(CodeElement("https://example.org/etiketto"), height)
+    part = render_module.render_code(CodeElement("https://example.org/tavletta"), height)
     assert part.size == (height, height)  # the element keeps its size
     page = _on_white(part)
     assert set(pixels(page)) == {0, 255}
@@ -767,8 +767,8 @@ def test_tiny_ean13_digits_all_one_size():
 def test_across_step_puts_2d_code_modules_on_whole_rows(step):
     """render(across_step=n): the caller reduces the image across by n; a
     2D code's modules and first row are multiples of n."""
-    from etiketto.model import CodeElement
-    from etiketto.render import render_code
+    from tavletta.model import CodeElement
+    from tavletta.render import render_code
 
     code = CodeElement(data="across step", symbology="datamatrix")
     part = render_code(code, 101, steps=(1, step))
@@ -786,8 +786,8 @@ def test_along_step_puts_linear_code_modules_on_whole_pairs():
     QL die-cut label across the roll in high quality): a barcode's modules
     and its first bar are on pairs of pixels; the label is a whole number
     of pairs long."""
-    from etiketto.model import CodeElement
-    from etiketto.render import render_code
+    from tavletta.model import CodeElement
+    from tavletta.render import render_code
 
     code = CodeElement(data="ALONG-123", symbology="code128")
     part = render_code(code, 120, steps=(2, 1))
@@ -925,7 +925,7 @@ def test_code128_has_a_length_limit(make_label):
     rendered = render(make_label(elements=[long_code]))
     warning = rendered.warnings[0]
     assert warning.key == "code128_long" and warning.params["max"] == render_module.CODE128_MAX
-    from etiketto.ui.texts import warning_text
+    from tavletta.ui.texts import warning_text
 
     assert str(render_module.CODE128_MAX) in warning_text(warning)
 
@@ -966,7 +966,7 @@ def test_thin_bars_are_judged_by_their_width_on_paper(dpi, module, key):
 
 
 def test_the_thin_bars_warning_fits_die_cut_labels_too():
-    from etiketto.ui.texts import warning_text
+    from tavletta.ui.texts import warning_text
 
     text = warning_text(render_module.RenderWarning("barcode_narrow", {"n": 1}))
     assert "longer or larger label" in text

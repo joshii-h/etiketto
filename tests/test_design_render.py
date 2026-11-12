@@ -11,9 +11,9 @@ import pytest
 from conftest import ink_bbox
 from PIL import Image, ImageChops, ImageDraw
 
-from etiketto import imagefx, shapes
-from etiketto import render as render_module
-from etiketto.model import (
+from tavletta import imagefx, shapes
+from tavletta import render as render_module
+from tavletta.model import (
     CodeElement,
     ImageElement,
     Label,
@@ -21,7 +21,7 @@ from etiketto.model import (
     SymbolElement,
     TextElement,
 )
-from etiketto.render import mm_to_px, render, render_image, render_text
+from tavletta.render import mm_to_px, render, render_image, render_text
 
 WHITE = (255, 255, 255)
 SQUARE = "M0,0H24V24H0Z"
@@ -127,7 +127,7 @@ def test_light_colours_print_white_on_mono():
 def test_the_backend_conversion_leaves_mono_parts_unchanged():
     """The preview's own dithering (apply_color_model) finds nothing left
     to change: what render made is what is printed."""
-    from etiketto.backends.base import apply_color_model
+    from tavletta.backends.base import apply_color_model
 
     image = render(every_option_label(), dpi=203, mono=True).image
     assert ImageChops.difference(apply_color_model(image, "mono"), image).getbbox() is None
@@ -787,8 +787,8 @@ def test_red_mode_keeps_red_and_converts_the_rest():
 
 
 def test_the_red_mode_of_a_brother_ql_honours_the_image_method():
-    from etiketto.backends.base import PrintOptions
-    from etiketto.backends.brother_ql import BrotherQL
+    from tavletta.backends.base import PrintOptions
+    from tavletta.backends.brother_ql import BrotherQL
 
     backend = BrotherQL()
     label = Label.new_for(backend.id)
@@ -807,7 +807,7 @@ def test_letter_spacing_leaves_joined_scripts_alone():
     plain = render_text(arabic, 1000, 300)
     arabic.letter_spacing = 50
     assert render_text(arabic, 1000, 300).size == plain.size
-    from etiketto.typeset import spaced_runs
+    from tavletta.typeset import spaced_runs
 
     assert spaced_runs("ab") == [(0, 2)]
     assert spaced_runs("aسb") == [(0, 1), (3, 4)]
@@ -861,7 +861,7 @@ def test_patterns_repeat_with_their_period():
 
 
 def test_a_converted_render_is_not_dithered_again(monkeypatch):
-    from etiketto.backends.base import apply_color_model
+    from tavletta.backends.base import apply_color_model
 
     image = render(every_option_label(), dpi=203, mono=True).image
     assert image.info.get("black_and_white")
@@ -1327,7 +1327,7 @@ def test_local_inks_and_lost_share_edge_cases():
 def example(name: str) -> Label:
     from pathlib import Path
 
-    return Label.load(Path(__file__).parent.parent / "docs" / "examples" / (name + ".etiketto"))
+    return Label.load(Path(__file__).parent.parent / "docs" / "examples" / (name + ".tavletta"))
 
 
 def test_photos_and_gradients_are_no_drawings():
@@ -1419,7 +1419,7 @@ def test_a_wrapped_text_keeps_its_lines_when_reduced():
     mono = ink_bbox(render(label, dpi=300, safe_mm=1, mono=True).image, WHITE)
     colour_w, mono_w = colour[2] - colour[0], mono[2] - mono[0]
     assert mono_w > 0.85 * colour_w
-    from etiketto import typeset
+    from tavletta import typeset
 
     lines = typeset.wrapped_lines(TextElement(text="aa bb cc"), 40, True, 80)
     assert len(lines) > 1 and " ".join(lines) == "aa bb cc"

@@ -19,11 +19,11 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 from test_app import one, walk  # noqa: E402
 
-from etiketto import symbols  # noqa: E402
-from etiketto.model import SymbolElement  # noqa: E402
-from etiketto.ui import symbols as ui_symbols  # noqa: E402
-from etiketto.ui import texts  # noqa: E402
-from etiketto.ui.settings import Settings  # noqa: E402
+from tavletta import symbols  # noqa: E402
+from tavletta.model import SymbolElement  # noqa: E402
+from tavletta.ui import symbols as ui_symbols  # noqa: E402
+from tavletta.ui import texts  # noqa: E402
+from tavletta.ui.settings import Settings  # noqa: E402
 
 
 def _chooser(win) -> ui_symbols.SymbolChooser:

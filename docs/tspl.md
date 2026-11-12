@@ -1,13 +1,13 @@
 # TSPL: TSC and 4 × 6 in shipping label printers
 
-How Etiketto talks to printers that speak TSPL or TSPL2: TSC's printers and
+How Tavletta talks to printers that speak TSPL or TSPL2: TSC's printers and
 the many low-cost shipping label printers built on the same language
 (Munbyn, iDPRT, Xprinter, Rollo, Phomemo, Marklife, …). **Not yet tried
 on a printer**: no TSPL printer was available while this was written.
 
 The byte sequences follow [LPrint](https://github.com/michaelrsweet/lprint)
 by Michael R Sweet (Apache-2.0, `lprint-tspl.c`), which prints on several of
-these printers; Etiketto reimplements them in Python, no LPrint code is
+these printers; Tavletta reimplements them in Python, no LPrint code is
 included. The status and model questions come from TSC's "TSPL/TSPL2
 Programming Manual".
 
@@ -18,7 +18,7 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from TSC's manual,
 
 - TCP port 9100 (TSC's network models), or USB (`/dev/usb/lpN`). Many of
   the low-cost printers are USB only; some show up as a USB serial or vendor
-  device instead of a printer, and Etiketto does not find those. [spec]
+  device instead of a printer, and Tavletta does not find those. [spec]
   [assumed]
 - Found on USB when the IEEE 1284 command set names `TSPL`, `TSPL2` or
   `XPP`/`XL`, the tag several compatible printers use (LPrint's examples:
@@ -35,7 +35,7 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from TSC's manual,
 
 - LPrint asks nothing (its status function is empty). The two questions
   come from TSC's manual; many compatible printers answer neither.
-  Etiketto waits 1 s for each: no answer means "no status", not an error,
+  Tavletta waits 1 s for each: no answer means "no status", not an error,
   and the job is sent anyway. It asks `~!T` only from a printer that
   answered `ESC !?`. [spec] [assumed]
 - Before a job, a printer that reports a problem gets no job.
@@ -60,12 +60,12 @@ BITMAP 0,0,2,8,1,<16 raw bytes>PRINT 1,1
   last comma of `BITMAP x,y,bytes per row,height,mode` and `PRINT` follows
   the data without a separator (its length is known). [LPrint]
 - Raster polarity: 0 = black, 1 = white. [LPrint]
-- `GAP`: LPrint always sends 3 mm; Etiketto sends the label's gap. `BLINE`
+- `GAP`: LPrint always sends 3 mm; Tavletta sends the label's gap. `BLINE`
   for black marks and `GAP 0 mm,0 mm` for continuous media; nothing with
   "As set on the printer", the default. [LPrint] [spec]
 - `DIRECTION 0,0` as LPrint sends it for labels upright, `DIRECTION 1,0`
   ("Print upside down") turns the label by 180°. The printer keeps the
-  direction in its memory, so Etiketto always sends one. Which way round
+  direction in its memory, so Tavletta always sends one. Which way round
   the label comes out has not been seen on a printer. [LPrint] [spec]
   [open]
 - Density is (per cent × 15 + 50) / 100. [LPrint]
@@ -80,7 +80,7 @@ BITMAP 0,0,2,8,1,<16 raw bytes>PRINT 1,1
   dots per mm, gap sensor chosen: `SIZE 2 mm,1 mm\nGAP 3 mm,0 mm\nDIRECTION 0,0\nCLS\nBITMAP 0,0,2,8,1,` then
   `00 FF` eight times, then `PRINT 1,1\n`.
 
-## Settings in Etiketto
+## Settings in Tavletta
 
 | Setting | Values | Command |
 |---|---|---|

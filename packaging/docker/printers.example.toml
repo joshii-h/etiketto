@@ -1,6 +1,6 @@
 # printers.toml: the printers the server prints on, by name (docs/server.md).
 # Clients choose one with "printer": "<name>"; no other printer can be used.
-# The models: etiketto list-printers, or GET /api/v1/printers without this file.
+# The models: tavletta list-printers, or GET /api/v1/printers without this file.
 
 [printers.shipping]
 backend = "cab"                      # cab EOS, SQUIX, MACH

@@ -21,9 +21,9 @@ def test_license_files_exist_and_install_sh_copies_them():
 def test_the_sdist_carries_what_the_notices_link_to():
     manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     notices = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
-    for link in re.findall(r"\]\(((?:build-aux|etiketto)/[^)]+)\)", notices):
+    for link in re.findall(r"\]\(((?:build-aux|tavletta)/[^)]+)\)", notices):
         assert (ROOT / link).is_file(), link
-        assert link.startswith("etiketto/") or link in manifest, link
+        assert link.startswith("tavletta/") or link in manifest, link
 
 
 def test_check_sh_runs_what_the_ci_runs():
@@ -33,11 +33,11 @@ def test_check_sh_runs_what_the_ci_runs():
     for command in (
         "ruff format --check .",
         "ruff check --output-format=full .",
-        "pytest -q --cov=etiketto --cov-report=term-missing",
+        "pytest -q --cov=tavletta --cov-report=term-missing",
         "mypy",
-        "bandit -c pyproject.toml -r etiketto -ll",
-        "radon cc -s -n C etiketto",
-        "xenon --max-absolute C --max-modules A --max-average A etiketto",
+        "bandit -c pyproject.toml -r tavletta -ll",
+        "radon cc -s -n C tavletta",
+        "xenon --max-absolute C --max-modules A --max-average A tavletta",
         "pip-audit --progress-spinner off .",
         "msgfmt --check",
         "appstreamcli validate --no-net --explain data/*.metainfo.xml",
@@ -59,7 +59,7 @@ def test_check_sh_runs_what_the_ci_runs():
 def test_the_flatpak_ships_every_licence_once():
     """One layout: share/licenses/<app id>/<module>/, where flatpak-builder
     copies a module's own LICENSE*/COPYING* by itself; installed by hand
-    only what it does not find (licences inside wheels, Etiketto's notices
+    only what it does not find (licences inside wheels, Tavletta's notices
     and data licences), into the same folder, never a second copy at the
     top. What the app does not use is cleaned up; every downloaded source
     can be checked for updates."""
@@ -67,7 +67,7 @@ def test_the_flatpak_ships_every_licence_once():
 
     import yaml  # in the dev dependency group: the test runs, never skips
 
-    path = ROOT / "build-aux" / "flatpak" / "xyz.joshuahirsig.Etiketto.yml"
+    path = ROOT / "build-aux" / "flatpak" / "xyz.joshuahirsig.Tavletta.yml"
     manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
     target = "${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/"
     by_hand: dict[str, str] = {}
@@ -83,10 +83,10 @@ def test_the_flatpak_ships_every_licence_once():
         "python3-zint-bindings",
         "poppler-data",
         "poppler",
-        "etiketto",
+        "tavletta",
     }
-    assert "THIRD_PARTY_NOTICES.md" in by_hand["etiketto"]
-    assert "LICENSE.glabels" in by_hand["etiketto"] and "LICENSE.mdi" in by_hand["etiketto"]
+    assert "THIRD_PARTY_NOTICES.md" in by_hand["tavletta"]
+    assert "LICENSE.glabels" in by_hand["tavletta"] and "LICENSE.mdi" in by_hand["tavletta"]
     assert "LICENSE.zint" not in "".join(by_hand.values())  # a source: copied by itself
     zint = next(m for m in manifest["modules"] if m["name"] == "python3-zint-bindings")
     assert {"type": "file", "path": "LICENSE.zint"} in zint["sources"]

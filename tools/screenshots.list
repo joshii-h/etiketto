@@ -1,8 +1,8 @@
 # Screenshots, read by tools/screenshots.sh (locally and in the docs workflow).
 # Every image is taken light and dark: <name>.png and <name>-dark.png.
 #
-# name      example file from docs/examples, without .etiketto
-# state     ETIKETTO_SCREENSHOT_STATE: - (main window), expand, styles (expand
+# name      example file from docs/examples, without .tavletta
+# state     TAVLETTA_SCREENSHOT_STATE: - (main window), expand, styles (expand
 #           with the box and frame options open), print
 # targets   readme      README and Flathub, English: docs/screenshots/
 #           readme:LL   README in language LL: docs/screenshots/

@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from etiketto import sheets
-from etiketto.sheets import Sheet, find, search
+from tavletta import sheets
+from tavletta.sheets import Sheet, find, search
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -57,7 +57,7 @@ def test_every_sheet_is_usable():
 
 
 def test_the_license_comes_with_the_data():
-    text = (ROOT / "etiketto" / "sheets" / "LICENSE.glabels").read_text()
+    text = (ROOT / "tavletta" / "sheets" / "LICENSE.glabels").read_text()
     assert "Jaye Evins" in text and "Permission is hereby granted" in text
 
 

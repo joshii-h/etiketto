@@ -1,4 +1,4 @@
-"""The free layout (etiketto.freelayout): the model and its file format,
+"""The free layout (tavletta.freelayout): the model and its file format,
 where elements land in printer dots, a QR code's modules on whole dots and
 its error correction, the counter in a text and a code, the command line,
 and the label made after a cablabel template."""
@@ -11,9 +11,9 @@ from dataclasses import replace
 import pytest
 from PIL import Image
 
-from etiketto import codes, freelayout, typeset
-from etiketto import render as flow
-from etiketto.model import (
+from tavletta import codes, freelayout, typeset
+from tavletta import render as flow
+from tavletta.model import (
     CodeElement,
     ImageElement,
     Label,
@@ -23,8 +23,8 @@ from etiketto.model import (
     SymbolElement,
     TextElement,
 )
-from etiketto.render import RenderWarning, render
-from etiketto.variables import Values, expand_label
+from tavletta.render import RenderWarning, render
+from tavletta.variables import Values, expand_label
 
 DPI = 12 * 25.4  # a cab printer at 300 dpi: 12 dots per mm
 FONT = "Source Sans 3"
@@ -91,7 +91,7 @@ def test_free_fields_round_trip(tmp_path):
         SymbolElement(path=SQUARE, size_mm=5, x_mm=30),
         ShapeElement(width_mm=5, height_mm=2, y_mm=1),
     )
-    path = tmp_path / "free.etiketto"
+    path = tmp_path / "free.tavletta"
     label.save(path)
     stored = json.loads(path.read_text())
     assert stored["layout"] == "free" and "free_layout" in stored["features"]
@@ -119,7 +119,7 @@ def test_options_of_the_free_layout_are_a_feature_in_the_flow_too():
 
 
 def test_older_versions_refuse_the_free_layout():
-    """What an Etiketto without the feature does with such a file: refuse it
+    """What an Tavletta without the feature does with such a file: refuse it
     as one of a newer version, never print it one element after another."""
     data = cab_label(TextElement()).to_dict()
     data["features"].append("free_layout_2")
@@ -321,8 +321,8 @@ def test_on_a_background_image_the_inks_follow_what_lies_under(png_b64):
 
 def test_the_print_image_is_the_label(tmp_path):
     """What the cab backend gets: 40 × 18.6 mm at 12 dots/mm, black and white."""
-    from etiketto.backends import get_backend
-    from etiketto.backends.base import PrintOptions
+    from tavletta.backends import get_backend
+    from tavletta.backends.base import PrintOptions
 
     image = get_backend("cab").prepare(cab_label(TextElement(x_mm=1)), PrintOptions())
     assert image.size == (480, 223) and image.info["black_and_white"]
@@ -431,14 +431,14 @@ def test_adopt_keeps_the_places(png_b64):
 
 
 def test_the_command_line_prints_the_free_layout(tmp_path, capsys):
-    from etiketto import cli
+    from tavletta import cli
 
     label = cab_label(
         TextElement(text="{=counter}", size_pt=12, x_mm=2, y_mm=2),
         CodeElement(data="{=counter}", error_correction="L", module_mm=0.67, x_mm=20, y_mm=2),
         counter_next=100001,
     )
-    path = tmp_path / "free.etiketto"
+    path = tmp_path / "free.tavletta"
     label.save(path)
     out = tmp_path / "out.png"
     code = cli.main(

@@ -3,12 +3,12 @@
 # the site_url and the language selector; do not build this file directly.
 
 [project]
-site_name = "Etiketto"
+site_name = "Tavletta"
 site_description = "Design and print labels"
-site_url = "https://etiketto.joshuahirsig.xyz/"
-repo_url = "https://git.joshuahirsig.xyz/joshii/etiketto"
-repo_name = "joshii/etiketto"
-copyright = "Etiketto · AGPL-3.0-or-later · Not affiliated with any printer manufacturer"
+site_url = "https://tavletta.joshuahirsig.xyz/"
+repo_url = "https://git.joshuahirsig.xyz/joshii/tavletta"
+repo_name = "joshii/tavletta"
+copyright = "Tavletta · AGPL-3.0-or-later · Not affiliated with any printer manufacturer"
 docs_dir = "docs"
 site_dir = "site"
 extra_css = ["assets/extra.css"]

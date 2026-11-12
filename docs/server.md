@@ -1,8 +1,8 @@
 # Print server: REST API and MCP
 
-`etiketto serve` prints labels without a window, for other programs and
+`tavletta serve` prints labels without a window, for other programs and
 for AI clients. It renders with Pango and Cairo like the command line and
-needs no display and no GTK. The code is in `etiketto/server/`; the user
+needs no display and no GTK. The code is in `tavletta/server/`; the user
 guide is `site/docs/server.md`.
 
 The server is built for network printers first: a printer list
@@ -11,13 +11,13 @@ access tokens with roles (`tokens.toml`) say who may do what. Finding
 printers on the network (mDNS) and USB are optional.
 
 ```sh
-etiketto serve [--host 127.0.0.1] [--port 8790] [--labels-dir DIR] [--mcp]
+tavletta serve [--host 127.0.0.1] [--port 8790] [--labels-dir DIR] [--mcp]
                [--printers printers.toml | --allow-printer ADDR] [--discover]
                [--tokens tokens.toml | --token-file FILE] [--allow-origin URL]
                [--max-body MB] [--max-labels N] [--trusted-proxy CIDR]
-etiketto mcp [--labels-dir DIR] [--printers printers.toml | --allow-printer ADDR]
+tavletta mcp [--labels-dir DIR] [--printers printers.toml | --allow-printer ADDR]
              [--discover] [--max-labels N]
-etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
+tavletta token new NAME [--role preview|print|admin] [--tokens FILE]
                         [--printer NAME ... --printers FILE] [--expires DATE]
                         [--description TEXT] [--scrypt | --from-stdin]
 ```
@@ -29,8 +29,8 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--printers` | `printers.toml`: the printers clients may use, by name; nothing else can be printed on. Not with `--allow-printer` |
 | `--discover` | search the network for printers (mDNS); off by default |
 | `--tokens` | `tokens.toml`: named access tokens with roles. Not with `--token-file` |
-| `--token-file` | one access token for everything (role admin); else the variable `ETIKETTO_TOKEN`; at least 16 characters |
-| `--labels-dir` | the only folder label and data files are read from; `~/.local/share/etiketto/labels` by default (made if missing) |
+| `--token-file` | one access token for everything (role admin); else the variable `TAVLETTA_TOKEN`; at least 16 characters |
+| `--labels-dir` | the only folder label and data files are read from; `~/.local/share/tavletta/labels` by default (made if missing) |
 | `--mcp` | MCP (Streamable HTTP) at `/mcp` as well |
 | `--allow-origin` | web origin whose pages may call the server (`https://app.example`): CORS preflights are answered and the answers carry `Access-Control-Allow-Origin`; repeatable |
 | `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A pattern of only digits, dots and `*` is an address pattern: four IPv4 parts, `*` standing for whole parts (`192.168.1.*`, `10.*`, `*.5`, `*.*`); a network as Python's ipaddress reads it (`192.168.1.0/24`, `2001:db8::/32`) is one too. Address patterns match IP addresses only, a host name if every address it resolves to matches one of them (so `192.168.1.evil.example` is not in `192.168.1.*`, and `*.*` matches `printer.local` only by the addresses it resolves to, not by its name). Any other pattern is a name pattern (`*.local`, `cups.example.com`) and matches host names. The server then prints on the first address the resolver gives (only that one; there is no trying the others), not on the name (a name looked up again could point elsewhere; an `ipps` printer must then accept its IP address). `*` alone allows everything without a lookup. A pattern that can never match is refused at startup: a network that is none (`10.0.0.0/33`), an address pattern with a part over 255 or a leading zero (`010.1.1.1`), a `*` within a part (`10*`), more than four parts, or fewer than four without a `*` (`1.2.3`, `10`); repeatable |
@@ -39,7 +39,7 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--trusted-proxy` | a reverse proxy, best its own address (`172.30.0.10/32`), whose `X-Forwarded-For` names the client: the rate limit, the 8 requests per client and the log use that address (all header lines together, ports taken off; anything that is no address stops the search at the proxy), the proxy itself is not held to 8 connections. `0.0.0.0/0` or `::/0` (everyone) is warned about. With a proxy, publish the server's port nowhere else; repeatable |
 
 Without `printers.toml`, printer settings (address, safety margin, cut,
-mode, colour) come from the app's `settings.json`, as for `etiketto print`,
+mode, colour) come from the app's `settings.json`, as for `tavletta print`,
 and a request may name any address (limited by `--allow-printer`).
 
 ## Printers (printers.toml) { #printers }
@@ -126,7 +126,7 @@ description = "PC at gate 2"
 | `print` | as `preview`, and print; see and cancel its own jobs |
 | `admin` | as `print`, and see and cancel every job |
 
-- `etiketto token new shipping-pc --role print --tokens tokens.toml`
+- `tavletta token new shipping-pc --role print --tokens tokens.toml`
   makes a random token, `etk_<id>_<secret>` (12 hex digits, 43 random
   characters), adds its SHA-256 hash and the id to the file and prints
   the token once. The file is made with mode 600 if new and locked while
@@ -142,7 +142,7 @@ description = "PC at gate 2"
   no entry has) and keeps it as an scrypt
   hash, which slows down guessing a chosen token;
   `--scrypt` does that for a made one too (random tokens need no slow
-  hash). The default file is `~/.config/etiketto/tokens.toml`.
+  hash). The default file is `~/.config/tavletta/tokens.toml`.
 - The file is read strictly: the role is required, the same hash (also an
   scrypt hash copied with its salt) or id under two names is refused (the
   same chosen token hashed twice cannot be seen in the file; `token new`
@@ -178,14 +178,14 @@ description = "PC at gate 2"
   startup: `print` tokens can then print on any address.
 - Each job keeps the name of its token (`owner`); the log names the token
   with every request and job, never the token itself.
-- `--token-file` (or `ETIKETTO_TOKEN`) stays for simple setups: one token,
+- `--token-file` (or `TAVLETTA_TOKEN`) stays for simple setups: one token,
   role admin, named `token`. Without any token (loopback only) requests
   count as `local`, role admin.
 
 ## REST API
 
 JSON in and out under `/api/v1`. The full description is served at
-`/api/v1/openapi.json` (OpenAPI 3.1, `etiketto/server/openapi.py`).
+`/api/v1/openapi.json` (OpenAPI 3.1, `tavletta/server/openapi.py`).
 
 | Request | Answer |
 |---|---|
@@ -196,7 +196,7 @@ JSON in and out under `/api/v1`. The full description is served at
 | `GET /printers/{name}/status` | the printer's state: `state`, `error` (code and message), `dpi`, `modes`, `media` (tape, remaining, label pitch, cassette). Without a printer list `{id}` is a model and `?host=` the address (default: set in the app). 502 if the printer cannot be reached |
 | `GET /labels` | label files in the labels folder and below: `name`, `bytes`, `modified` |
 | `GET /labels/{name}` | elements with their names (what `set` fills in), `variables`, `builtin_variables`, `columns` of the placeholders, `data_file` (if usable), size, counter, features |
-| `POST /preview` | PNG of the label filled in; `"format": "json"` gives width, height, warnings and the PNG in base64; `"view": "printer"` the image as the printer gets it. Warning codes also in `X-Etiketto-Warnings` |
+| `POST /preview` | PNG of the label filled in; `"format": "json"` gives width, height, warnings and the PNG in base64; `"view": "printer"` the image as the printer gets it. Warning codes also in `X-Tavletta-Warnings` |
 | `POST /print` | 202 and the job (`Location: /api/v1/jobs/{id}`); 200 if it finished within `wait` seconds |
 | `GET /jobs/{id}` | `state` (`queued`, `waiting` for the label file, `printing`, `done`, `failed`, `canceled`), `printed` of `total` labels, `rows_printed`, `printer_name`, `owner`, `error` (code, message), `remark`, `warnings`, times |
 | `DELETE /jobs/{id}` | cancel: a waiting job at once, a printing one after the label being printed. 409 if it has finished |
@@ -205,8 +205,8 @@ Fields of `POST /preview` and `POST /print` (unknown fields are refused):
 
 | Field | |
 |---|---|
-| `label` | name in the labels folder, `.etiketto` may be left out; subfolders with `/` |
-| `label_content` | or the label itself: the JSON of an `.etiketto` file, checked like a file that is opened. Its data file is ignored, its counter never saved |
+| `label` | name in the labels folder, `.tavletta` may be left out; subfolders with `/` |
+| `label_content` | or the label itself: the JSON of an `.tavletta` file, checked like a file that is opened. Its data file is ignored, its counter never saved |
 | `printer` | with `printers.toml` the printer's name; else a printer model id, if not the label's own (the label is fitted as in the app) |
 | `set`, `set_literal` | `{"name": "value"}` as `--set` and `--set-literal`: element names, variables, `date` |
 | `counter_start` | counter of the first label |
@@ -221,7 +221,7 @@ the message is translated into the language of `Accept-Language` (the
 first one there is a catalog for; English ends the list). A failed job
 keeps its cause, so `GET /jobs/{id}` translates it for each request.
 
-Checks are those of `etiketto print`: an empty label, unknown or unclosed
+Checks are those of `tavletta print`: an empty label, unknown or unclosed
 variables, dates out of range, elements or images that cannot be drawn,
 placeholders without a column and codes a row cannot make are refused
 (422) before anything is queued; other warnings are returned with the job.
@@ -229,7 +229,7 @@ placeholders without a column and codes a row cannot make are refused
 Example:
 
 ```sh
-TOKEN=$(cat ~/.config/etiketto/token)
+TOKEN=$(cat ~/.config/tavletta/token)
 curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8790/api/v1/labels/shelf
 curl -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
      -d '{"label": "shelf", "set": {"title": "Flour"}}' \
@@ -309,7 +309,7 @@ act with the request's token: `tools/list` leaves out `print_label`,
 to the token that opened it (another token gets 404). stdio counts as
 `local` (admin); `--printers` works there too.
 
-Protocol (`etiketto/server/mcp.py`, no dependency):
+Protocol (`tavletta/server/mcp.py`, no dependency):
 
 - JSON-RPC 2.0, one message per request (no batches).
 - Both eras of the protocol: `2026-07-28` (stateless: `_meta` carries
@@ -322,9 +322,9 @@ Protocol (`etiketto/server/mcp.py`, no dependency):
   accepted, `notifications/cancelled` ends the wait of `print_label` or
   `job_status` (the job goes on; `cancel_job` stops it). No resources,
   prompts or sampling.
-- **stdio** (`etiketto mcp`): one JSON message per line; logs on stderr,
+- **stdio** (`tavletta mcp`): one JSON message per line; logs on stderr,
   stdout carries nothing else. Tool calls run in up to four threads.
-- **Streamable HTTP** (`etiketto serve --mcp`, `/mcp`): POST answers with
+- **Streamable HTTP** (`tavletta serve --mcp`, `/mcp`): POST answers with
   `application/json` (no SSE stream), notifications with 202. GET is 405.
   Handshake clients get an `Mcp-Session-Id` (24 random bytes) with the
   initialize answer and must send it afterwards (400 without, 404 for an
@@ -343,10 +343,10 @@ dependencies those of the app.
 ### Claude Code
 
 ```sh
-claude mcp add etiketto -- etiketto mcp --labels-dir ~/Labels
-# or over HTTP, to a running `etiketto serve --mcp`:
-claude mcp add --transport http etiketto http://127.0.0.1:8790/mcp \
-    --header "Authorization: Bearer $(cat ~/.config/etiketto/token)"
+claude mcp add tavletta -- tavletta mcp --labels-dir ~/Labels
+# or over HTTP, to a running `tavletta serve --mcp`:
+claude mcp add --transport http tavletta http://127.0.0.1:8790/mcp \
+    --header "Authorization: Bearer $(cat ~/.config/tavletta/token)"
 ```
 
 ### Claude Desktop
@@ -356,8 +356,8 @@ claude mcp add --transport http etiketto http://127.0.0.1:8790/mcp \
 ```json
 {
   "mcpServers": {
-    "etiketto": {
-      "command": "etiketto",
+    "tavletta": {
+      "command": "tavletta",
       "args": ["mcp", "--labels-dir", "/home/me/Labels"]
     }
   }
@@ -365,7 +365,7 @@ claude mcp add --transport http etiketto http://127.0.0.1:8790/mcp \
 ```
 
 With the Flatpak: `"command": "flatpak"`, `"args": ["run",
-"--command=etiketto", "xyz.joshuahirsig.Etiketto", "mcp", "--labels-dir",
+"--command=tavletta", "xyz.joshuahirsig.Tavletta", "mcp", "--labels-dir",
 "/home/me/Labels"]` (the folder must be visible in the sandbox).
 
 ## Security
@@ -396,7 +396,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   a page cannot send one without a CORS preflight, which is answered only
   for allowed origins. Without a token, a page could still make the
   browser load `GET /printers/{id}/status` as an image, so requests that
-  contact printers need the header `X-Etiketto-Request` (any value; 403
+  contact printers need the header `X-Tavletta-Request` (any value; 403
   without), which a page cannot add.
 - **Printers on the network (SSRF)**: the server connects to printer
   addresses, which is its job. Without `printers.toml`, a client with
@@ -408,7 +408,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 - **Files**: names are relative to the labels folder; absolute paths,
   `..`, hidden files and folders, backslashes and NUL are refused, and the
   real path (links followed) must lie inside the folder, so a link to a
-  file elsewhere is "not found". Label files end in `.etiketto`, data files
+  file elsewhere is "not found". Label files end in `.tavletta`, data files
   are tables (`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`). A label's own data
   file is used only if it lies beside the label inside the folder; a label
   sent as content never reads a file.
@@ -416,7 +416,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   most 4 MB (`--max-body`; no chunked bodies), bodies over 512 KB are
   parsed two at a time; labels are checked by the model (`Label.from_dict`,
   sizes clamped); data rows and data files keep the limits of
-  `etiketto/merge/limits.py` (100 000 rows, 1000 columns, 2 000 000 cells);
+  `tavletta/merge/limits.py` (100 000 rows, 1000 columns, 2 000 000 cells);
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
 - **Image files**: only PNG, JPEG, GIF, BMP, WebP and TIFF are read (EPS
   would run Ghostscript, ICO and ICNS are decoded before their size is
@@ -475,7 +475,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   body over 512 KB is parsed in a render slot too; a smaller one within
   the two-at-a-time parse limit, its tool takes a slot when it renders;
   `print_label` and `job_status` give the slot back while they wait for
-  the job. stdio (`etiketto mcp`) has one client, the process's own: its
+  the job. stdio (`tavletta mcp`) has one client, the process's own: its
   lines are parsed as they come. With eight requests waiting, the next
   one gets 503 (`busy`) at once, as one that waits 20 s. The server draws
   a small text in its main thread before it serves: PyGObject sets up
@@ -528,15 +528,15 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 ## Server build
 
 - `packaging/docker/Dockerfile`: Debian slim with Python, PyGObject,
-  Pango and Cairo (no GTK), the app in a venv, user `etiketto` (uid
+  Pango and Cairo (no GTK), the app in a venv, user `tavletta` (uid
   10001), `MALLOC_ARENA_MAX=2`. No volumes: mount the labels at
   `/labels` and `printers.toml`, `tokens.toml` (and, if wanted,
-  `etiketto/settings.json`) at `/config` (`XDG_CONFIG_HOME`), readable by
+  `tavletta/settings.json`) at `/config` (`XDG_CONFIG_HOME`), readable by
   whatever user the container runs as. It listens on all interfaces of
   the container, so it does not start without a token.
 - `packaging/docker/compose.yaml`: network printers, running as the
-  owner of `config/` and `labels/` (`user:`, `ETIKETTO_UID` and
-  `ETIKETTO_GID`, 1000 by default), 1 GB memory, 128 processes. `config/` with
+  owner of `config/` and `labels/` (`user:`, `TAVLETTA_UID` and
+  `TAVLETTA_GID`, 1000 by default), 1 GB memory, 128 processes. `config/` with
   `printers.toml` and `tokens.toml` mounted read-only as a folder (a single
   mounted file would keep showing the old file after `token new` replaced
   it), port on `127.0.0.1` only, read-only file system, no capabilities,
@@ -548,7 +548,7 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   talk USB themselves, with the groups `lp` and `dialout`. CUPS queues of the host (USB printers set up there
   too) are at `ipp://localhost:631/printers/<queue>`; name them in
   `printers.toml`.
-- `packaging/systemd/etiketto.service`: a user service on `127.0.0.1:8790`
+- `packaging/systemd/tavletta.service`: a user service on `127.0.0.1:8790`
   with MCP and a token file; it makes the labels and config folders,
   then runs sandboxed: the system read-only (`ProtectSystem=strict`), the
   home folder read-only (`ProtectHome=read-only`) but for those two
@@ -557,23 +557,23 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   settings, modules, logs, clock, host name and cgroups protected, other
   processes invisible, no namespaces, only Internet, Unix and netlink
   sockets, `MemoryMax=1G`, `TasksMax=128`, `MALLOC_ARENA_MAX=2`.
-  `systemctl --user reload etiketto` reads tokens.toml again (without
+  `systemctl --user reload tavletta` reads tokens.toml again (without
   tokens.toml the reload does nothing, the server goes on). The unit is
   `Type=notify`: the server tells systemd it is ready once it listens, so
-  a reload is not sent while it starts; `etiketto serve` also ignores
-  SIGHUP before it imports anything (the first thing the `etiketto`
+  a reload is not sent while it starts; `tavletta serve` also ignores
+  SIGHUP before it imports anything (the first thing the `tavletta`
   launcher does) until its handler is installed. The unit and the
   package must be updated together: a unit of `Type=notify` with an
-  older Etiketto that never says it is ready is stopped after the start
-  timeout, and an older unit with a newer Etiketto loses the readiness
+  older Tavletta that never says it is ready is stopped after the start
+  timeout, and an older unit with a newer Tavletta loses the readiness
   (the notification is ignored, nothing breaks).
 
 ```sh
 cd packaging/docker
 mkdir -p config labels && cp printers.example.toml config/printers.toml
 docker compose build
-docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint etiketto \
-    etiketto-server token new shipping-pc --role print \
+docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint tavletta \
+    tavletta-server token new shipping-pc --role print \
     --tokens /config/tokens.toml --printers /config/printers.toml
 docker compose up -d
 ```
@@ -581,8 +581,8 @@ docker compose up -d
 For a quick try without files:
 
 ```sh
-docker run -e ETIKETTO_TOKEN="$(openssl rand -hex 32)" \
-    -v ~/Labels:/labels -p 127.0.0.1:8790:8790 etiketto-server
+docker run -e TAVLETTA_TOKEN="$(openssl rand -hex 32)" \
+    -v ~/Labels:/labels -p 127.0.0.1:8790:8790 tavletta-server
 ```
 
 ## Roadmap

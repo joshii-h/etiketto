@@ -1,7 +1,7 @@
 # NIIMBOT label printers: USB serial protocol
 
-How Etiketto talks to NIIMBOT label printers (B1, B21, B3S, B4, D11, D110,
-D101 and related models). NIIMBOT does not publish the protocol. Etiketto's
+How Tavletta talks to NIIMBOT label printers (B1, B21, B3S, B4, D11, D110,
+D101 and related models). NIIMBOT does not publish the protocol. Tavletta's
 implementation is written anew from protocol notes taken from two open
 source projects:
 
@@ -25,12 +25,12 @@ the sources and untested, **[open]** unknown.
 
 - USB: the printer is a CDC ACM device, `/dev/ttyACMn` on Linux. 115200
   baud, 8N1, no flow control, DTR and RTS asserted. [spec]
-- Etiketto sets the port raw with termios, asserts DTR and RTS with
+- Tavletta sets the port raw with termios, asserts DTR and RTS with
   `TIOCMBIS` and opens it in exclusive mode (`TIOCEXCL`) while a session
   runs, so that a second `open()` by another program fails. Standard
   library only, no pyserial.
 - Permissions: the node belongs to `dialout` (Fedora, Debian, Ubuntu) or
-  `uucp` (Arch). Without the group Etiketto says which one to join
+  `uucp` (Arch). Without the group Tavletta says which one to join
   (`serial_permission`). [spec]
 - Flatpak: `--device=all` exposes `/dev/ttyACM*` and `/dev/serial/by-id`;
   sysfs (`/sys/class`, `/sys/devices`) is always visible in the sandbox.
@@ -42,11 +42,11 @@ the sources and untested, **[open]** unknown.
   `/etc/udev/rules.d/77-niimbot.rules`. [assumed]
 - Old B3S with micro-USB (ids 256, 260, 262) are silent on USB serial
   (and on SPP); only the current USB-C B3S P was seen answering. [spec:
-  Thermalith] Etiketto keeps the model in its table for later Bluetooth
+  Thermalith] Tavletta keeps the model in its table for later Bluetooth
   support, but it cannot reach it over USB.
 - Bluetooth (BLE GATT service `e7810a71-73ae-499d-8c15-faa9aef0c3f2`, and
   RFCOMM on some models) carries the same packets. **Not implemented**;
-  planned once Etiketto's interface has a place for Bluetooth printers.
+  planned once Tavletta's interface has a place for Bluetooth printers.
   [spec for BLE]
 
 ### Finding the printer
@@ -84,7 +84,7 @@ the sources and untested, **[open]** unknown.
 - Answers have their own ids (below). `0xDB` (one byte: error code) or
   `0x00` (not supported) can come instead of the expected answer.
 - Reads are a byte stream: several packets in one read, a packet split
-  over reads. Etiketto re-assembles them; bytes that are no valid packet
+  over reads. Tavletta re-assembles them; bytes that are no valid packet
   (wrong checksum or tail) are skipped one at a time. A header followed by
   a length that never completes is dropped as soon as a complete packet
   follows it.
@@ -140,13 +140,13 @@ inserted:
 - These models report the lid the other way round: 512, 513, 514, 1792,
   2304, 2560, 3584, 3840, 4352, 5120, 272, 273, 274. [spec]
 - Battery: 0 to 4 are steps of 25 %, larger values percent. [spec]
-- Etiketto shows an open lid as "cover open", missing paper as "out of
+- Tavletta shows an open lid as "cover open", missing paper as "out of
   labels" and a charge of 10 % or less as "battery low" in the status row.
   A charge of 0 is ignored: printers without a battery may report it.
   [assumed: the threshold and the meaning of 0]
 - Other lengths, or no answer, tell nothing; the query does not fail.
 - Paper info (`59` → `69`: gap, label length, width) is not used, so
-  Etiketto shows no measured label distance. [open]
+  Tavletta shows no measured label distance. [open]
 
 ## Rows [spec]
 
@@ -176,7 +176,7 @@ inserted:
 
 ### Geometry
 
-- Etiketto renders die-cut labels in printer orientation: x across the
+- Tavletta renders die-cut labels in printer orientation: x across the
   head, y along the feed. That is what the printer takes for both of
   NIIMBOT's print directions: "top" models (B1, B21, B3S, B4) take the
   image as it is; for "left" models (D11, D110, D101) the NIIMBOT app turns
@@ -231,21 +231,21 @@ label type first).
   the last job's: a finished status counts once the job was seen
   unfinished, or when the next poll says the same. [assumed]
 - Then `F3`. After a good print an answer to `F3` that comes late or not at
-  all is not an error. [assumed: Etiketto's choice, as the labels are out;
+  all is not an error. [assumed: Tavletta's choice, as the labels are out;
   niimbluelib and Thermalith (after 2 s) fail then]
 - Timeouts: 1 s per answer, 5 s per status poll and between two `E0`, 10 s
   for the answer after the rows of a page and for a check line; a job fails
   when the status did not change for 60 s. The B21's `F3` answers carry no
   progress: there a job may take 60 s per label. [spec, the 60 s assumed]
-- Copies: up to 65535 per job; Etiketto reports each label as it comes
+- Copies: up to 65535 per job; Tavletta reports each label as it comes
   out. A job that fails says how many labels were already printed.
-- After a failure Etiketto sends Cancel (`DA`). [assumed]
+- After a failure Tavletta sends Cancel (`DA`). [assumed]
 
 ## Errors [spec]
 
 Codes in `0xDB` answers and in byte 6 of the 10 byte print status:
 
-| Code | Meaning | Etiketto |
+| Code | Meaning | Tavletta |
 |---|---|---|
 | 1 | cover open | CoverOpen |
 | 2, 8 | no paper | OutOfLabels |
@@ -266,7 +266,7 @@ In the status query an error answer is shown as the printer's state
 
 From niimbluelib's `printer_models.ts`, generated from NIIMBOT's
 `devices.json`; widest label from Thermalith's `printers.json`. Only these
-models are known to Etiketto; another model id is shown as "model N" and
+models are known to Tavletta; another model id is shown as "model N" and
 printing on it is refused.
 
 | Model | Ids | dpi | Head px | Widest label | Label types | Density |
@@ -298,7 +298,7 @@ printing on it is refused.
 The printer group offers the density range and label types of the
 connected model as printer settings ("Print density", "Label sensor";
 `Backend.settings(info)`, rebuilt when another model answers; "Default" is
-the model's own density, which Etiketto sends). Both are saved once per
+the model's own density, which Tavletta sends). Both are saved once per
 printer family, not per model (`settings.json`, `printers.niimbot`): a
 saved density outside the connected model's range is clamped into it (5
 on a D11 becomes 3), a label type the model does not take falls back to

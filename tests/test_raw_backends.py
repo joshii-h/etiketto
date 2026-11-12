@@ -23,8 +23,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 from PIL import Image
 
-from etiketto.backends import dymo, epl, escpos, get_backend, raw, tspl, zpl
-from etiketto.backends.base import (
+from tavletta.backends import dymo, epl, escpos, get_backend, raw, tspl, zpl
+from tavletta.backends.base import (
     CoverOpen,
     HeadOpen,
     LabelNotFound,
@@ -41,8 +41,8 @@ from etiketto.backends.base import (
     ResolutionUnknown,
     RibbonError,
 )
-from etiketto.backends.raw import Bitmap
-from etiketto.model import Label
+from tavletta.backends.raw import Bitmap
+from tavletta.model import Label
 
 ESC = b"\x1b"
 
@@ -134,10 +134,10 @@ def test_zpl_long_runs_roundtrip():
 def test_zpl_job():
     image = bits(b"\xff\xf0", b"\xff\xf0", b"\x00\x00", width=12)
     assert zpl.build_job(image) == (
-        b"~DGR:ETIKETTO.GRF,6,2,IF0:,\n"
+        b"~DGR:TAVLETTA.GRF,6,2,IF0:,\n"
         b"^XA\n^PON\n^PW12\n^LH0,0\n^LL3\n^PQ1,0,1,N\n"
-        b"^FO0,0^XGR:ETIKETTO.GRF,1,1^FS\n^XZ\n"
-        b"^XA^IDR:ETIKETTO.GRF^FS^XZ\n"
+        b"^FO0,0^XGR:TAVLETTA.GRF,1,1^FS\n^XZ\n"
+        b"^XA^IDR:TAVLETTA.GRF^FS^XZ\n"
     )
 
 
@@ -145,7 +145,7 @@ def test_zpl_job_with_settings():
     job = zpl.build_job(
         bits(b"\x80"), copies=3, media="mark", finish="peel", darkness=50, speed=4
     ).decode()
-    assert job.startswith("~SD15\n~DGR:ETIKETTO.GRF,1,1,80\n^XA\n^MMP,N\n^PR4,4,4\n^PON\n")
+    assert job.startswith("~SD15\n~DGR:TAVLETTA.GRF,1,1,80\n^XA\n^MMP,N\n^PR4,4,4\n^PON\n")
     assert "^MNM\n^PQ3,0,1,N\n" in job
     assert "^MNY" in zpl.build_job(bits(b"\x80"), media="gap").decode()
     assert "^MN" not in zpl.build_job(bits(b"\x80"), media="printer").decode()
@@ -184,7 +184,7 @@ def test_zpl_host_status():
 
 
 def _hs(line1: str, line2: str) -> bytes:
-    """A ~HS answer from the fields Etiketto reads; the rest padded to the
+    """A ~HS answer from the fields Tavletta reads; the rest padded to the
     manual's 12 and 11 fields."""
     one, two = line1 + ",0,0,0,000,0,0,0", line2 + ",1,000"
     return b"\x02%s\x03\r\n\x02%s\x03\r\n\x021234,0\x03\r\n" % (one.encode(), two.encode())
@@ -383,7 +383,7 @@ def test_tspl_model(answer, model):
 
 def test_escpos_job_matches_lprint():
     # docs/escpos.md: 16 dots, rows AA AA and 55 55, no margin. LPrint feeds
-    # one inch (the byte is the dpi) and cuts with ESC i; Etiketto sets the
+    # one inch (the byte is the dpi) and cuts with ESC i; Tavletta sets the
     # motion units to dots first (GS P), cuts with GS V and only when asked to.
     image = bits(b"\xaa\xaa", b"\x55\x55")
     assert escpos.build_job(image, raw.DPI["203"]) == bytes.fromhex(
@@ -534,7 +534,7 @@ def test_dymo_query(monkeypatch):
 
 
 def test_dymo_4xl_on_the_network(monkeypatch):
-    from etiketto.backends import mdns
+    from tavletta.backends import mdns
 
     install(monkeypatch, FakePrinter())
     searches = []

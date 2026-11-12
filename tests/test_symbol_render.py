@@ -10,12 +10,12 @@ import pytest
 from conftest import ink_bbox
 from PIL import Image, ImageChops
 
-from etiketto import model
-from etiketto.backends import get_backend
-from etiketto.backends.base import PrintOptions
-from etiketto.model import CodeElement, Label, LabelError, SymbolElement
-from etiketto.render import mm_to_px, render, render_symbol
-from etiketto.symbols import find
+from tavletta import model
+from tavletta.backends import get_backend
+from tavletta.backends.base import PrintOptions
+from tavletta.model import CodeElement, Label, LabelError, SymbolElement
+from tavletta.render import mm_to_px, render, render_symbol
+from tavletta.symbols import find
 
 SQUARE = "M0,0H24V24H0Z"  # fills the whole symbol
 # the left half of the square: shows which way a symbol is turned
@@ -146,7 +146,7 @@ def test_unknown_or_damaged_symbols_warn():
 
 def test_symbols_are_saved_and_loaded(tmp_path):
     label = Label(tape_mm=25, elements=[printer_symbol(size_mm=12.5, rotation=90)])
-    path = tmp_path / "label.etiketto"
+    path = tmp_path / "label.tavletta"
     label.save(path)
     data = json.loads(path.read_text())
     # older versions refuse it: by the feature, or before it by the unknown kind
@@ -187,7 +187,7 @@ def test_symbol_fields_are_checked():
 
 
 def test_versions_without_symbols_refuse_them_as_newer(monkeypatch):
-    """What an Etiketto from before the symbol library does with such a
+    """What an Tavletta from before the symbol library does with such a
     file: the unknown kind of element makes it "newer", nothing is dropped."""
     data = Label(tape_mm=25, elements=[printer_symbol()]).to_dict()
     monkeypatch.delitem(model.ELEMENT_TYPES, "symbol")
