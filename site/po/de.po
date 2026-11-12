@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 17:22+0100\n"
+"POT-Creation-Date: 2026-11-12 17:27+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -3968,8 +3968,12 @@ msgstr "Voraussetzungen { #requirements }"
 
 #. type: Bullet: '- '
 #: docs/server-install.md
-msgid "A Linux server on x86-64 (a virtual machine is enough)."
-msgstr "Ein Linux-Server auf x86-64 (eine virtuelle Maschine genügt)."
+msgid ""
+"A Linux server on x86-64 or ARM64 (a virtual machine or a Raspberry Pi 4/5 "
+"is enough)."
+msgstr ""
+"Ein Linux-Server auf x86-64 oder ARM64 (eine virtuelle Maschine oder ein "
+"Raspberry Pi 4/5 genügt)."
 
 #. type: Bullet: '- '
 #: docs/server-install.md
@@ -4042,8 +4046,8 @@ msgstr "Variante A: Docker Compose { #docker }"
 #. type: Title ###
 #: docs/server-install.md
 #, no-wrap
-msgid "1. Get Tavletta and build the image { #docker-build }"
-msgstr "1. Tavletta holen und das Image bauen { #docker-build }"
+msgid "1. Get the files and the image { #docker-build }"
+msgstr "1. Dateien und Image holen { #docker-build }"
 
 #. type: Fenced code block (sh)
 #: docs/server-install.md
@@ -4053,21 +4057,24 @@ msgid ""
 "cd /opt/tavletta\n"
 "sudo git checkout v1.1.0      # the release to run: git tag lists them\n"
 "cd packaging/docker\n"
-"sudo docker compose build\n"
+"sudo docker compose pull      # ghcr.io/joshii-h/tavletta:1.1, for x86-64 and ARM64\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/server-install.md
 msgid ""
-"The image (about 200 MB) contains Tavletta, Python, Pango and Cairo, the "
-"fonts DejaVu, Source Sans 3, Liberation (metrics of Arial, Times New Roman "
-"and Courier New) and Carlito (metrics of Calibri). It runs as an "
-"unprivileged user, read-only, without capabilities."
+"The image (about 230 MB), built and tested by the project's CI and signed "
+"(see [Server and container](server.md#container)), contains Tavletta, "
+"Python, Pango and Cairo, the fonts DejaVu, Source Sans 3, Liberation "
+"(metrics of Arial, Times New Roman and Courier New) and Carlito (metrics of "
+"Calibri). It runs as an unprivileged user, read-only, without capabilities."
 msgstr ""
-"Das Image (etwa 200 MB) enthält Tavletta, Python, Pango und Cairo, die "
-"Schriften DejaVu, Source Sans 3, Liberation (Masse von Arial, Times New "
-"Roman und Courier New) und Carlito (Masse von Calibri). Es läuft als "
-"Benutzer ohne Rechte, schreibgeschützt, ohne Capabilities."
+"Das Image (etwa 230 MB), gebaut und getestet von der CI des Projekts und "
+"signiert (siehe [Server und Container](server.md#container)), enthält "
+"Tavletta, Python, Pango und Cairo, die Schriften DejaVu, Source Sans 3, "
+"Liberation (Masse von Arial, Times New Roman und Courier New) und Carlito "
+"(Masse von Calibri). Es läuft als Benutzer ohne Rechte, schreibgeschützt, "
+"ohne Capabilities."
 
 #. type: Title ###
 #: docs/server-install.md
@@ -4231,7 +4238,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "sudo docker run --rm --user 1000:1000 -v ./config:/config --entrypoint tavletta \\\n"
-"    tavletta-server token new inventory-tool --role print --printer it-cab \\\n"
+"    ghcr.io/joshii-h/tavletta:1.1 token new inventory-tool --role print --printer it-cab \\\n"
 "    --description \"Inventory tool\" \\\n"
 "    --tokens /config/tokens.toml --printers /config/printers.toml\n"
 msgstr ""
@@ -4451,7 +4458,7 @@ msgid ""
 "sudo git fetch --tags\n"
 "sudo git checkout v1.2.0         # the new release\n"
 "cd packaging/docker\n"
-"sudo docker compose build --pull\n"
+"sudo docker compose pull\n"
 "sudo docker compose up -d\n"
 msgstr ""
 
@@ -4477,13 +4484,13 @@ msgstr "Sicherung { #docker-backup }"
 msgid ""
 "Back up the three folders: `config/` (the printer list, the token hashes), "
 "`labels/` (the labels and their counters: the next number of each label with "
-"`{=counter}` is saved in its file) and `fonts/`. The image can be built "
+"`{=counter}` is saved in its file) and `fonts/`. The image can be pulled "
 "again at any time."
 msgstr ""
 "Sichern Sie die drei Ordner: `config/` (die Druckerliste, die Token-Hashes), "
 "`labels/` (die Etiketten und ihre Zähler: Die nächste Nummer jedes Etiketts "
 "mit `{=counter}` steht in seiner Datei) und `fonts/`. Das Image lässt sich "
-"jederzeit neu bauen."
+"jederzeit neu herunterladen."
 
 #. type: Title ###
 #: docs/server-install.md
@@ -4497,7 +4504,7 @@ msgstr "Deinstallieren { #docker-uninstall }"
 msgid ""
 "cd /opt/tavletta/packaging/docker\n"
 "sudo docker compose down\n"
-"sudo docker image rm tavletta-server\n"
+"sudo docker image rm ghcr.io/joshii-h/tavletta:1.1\n"
 "sudo rm -r /opt/tavletta     # also deletes config, labels and fonts\n"
 msgstr ""
 
@@ -4655,7 +4662,8 @@ msgstr ""
 #: docs/server-install.md
 #, no-wrap
 msgid ""
-"sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/\n"
+"sudo curl -fsSLo /etc/systemd/system/tavletta-server.service \\\n"
+"    https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/packaging/systemd/tavletta-server.service\n"
 "sudo systemctl daemon-reload\n"
 "sudo systemctl enable --now tavletta-server\n"
 "systemctl status tavletta-server\n"
@@ -4710,7 +4718,8 @@ msgstr "Aktualisieren { #native-update }"
 #, no-wrap
 msgid ""
 "sudo /opt/tavletta/bin/pip install --upgrade \"git+https://git.joshuahirsig.xyz/joshii/tavletta.git@v1.2.0\"\n"
-"sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/   # of the new release\n"
+"sudo curl -fsSLo /etc/systemd/system/tavletta-server.service \\\n"
+"    https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.2.0/packaging/systemd/tavletta-server.service\n"
 "sudo systemctl daemon-reload\n"
 "sudo systemctl restart tavletta-server\n"
 msgstr ""
@@ -4924,16 +4933,19 @@ msgstr ""
 msgid ""
 "Docker: the image has DejaVu, Source Sans 3, Liberation and Carlito.  Copy "
 "other fonts (`.ttf`, `.otf`, e.g. the corporate font) into `fonts/` and "
-"restart: `sudo docker compose restart`. More Debian font packages: `sudo "
-"docker compose build --build-arg FONTS=\"fonts-dejavu-core fonts-adobe-"
-"sourcesans3 fonts-liberation fonts-crosextra-carlito fonts-noto-core\"`."
+"restart: `sudo docker compose restart`. More Debian font packages: build the "
+"image yourself, `sudo docker compose -f compose.yaml -f compose.build.yaml "
+"build --build-arg FONTS=\"fonts-dejavu-core fonts-adobe-sourcesans3 fonts-"
+"liberation fonts-crosextra-carlito fonts-noto-core\"`, then `up -d` with the "
+"same two files."
 msgstr ""
 "Docker: Das Image hat DejaVu, Source Sans 3, Liberation und Carlito. "
 "Kopieren Sie andere Schriften (`.ttf`, `.otf`, z. B. die Hausschrift) nach "
 "`fonts/` und starten Sie neu: `sudo docker compose restart`. Weitere "
-"Schriftpakete von Debian: `sudo docker compose build --build-arg "
-"FONTS=\"fonts-dejavu-core fonts-adobe-sourcesans3 fonts-liberation fonts-"
-"crosextra-carlito fonts-noto-core\"`."
+"Schriftpakete von Debian: das Image selbst bauen, `sudo docker compose -f "
+"compose.yaml -f compose.build.yaml build --build-arg FONTS=\"fonts-dejavu-"
+"core fonts-adobe-sourcesans3 fonts-liberation fonts-crosextra-carlito fonts-"
+"noto-core\"`, danach `up -d` mit denselben zwei Dateien."
 
 #. type: Bullet: '- '
 #: docs/server-install.md
@@ -5019,13 +5031,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server-install.md
 msgid ""
-"Updates: watch the releases and update within weeks; the image also brings "
-"Debian's security updates when it is built again (`docker compose build --"
-"pull`)."
+"Updates: watch the releases and update within weeks; the image of each "
+"release brings Debian's security updates of its day (`docker compose pull`)."
 msgstr ""
 "Aktualisierungen: die Versionen verfolgen und innert Wochen aktualisieren; "
-"das Image bringt beim Neubauen auch die Sicherheitsaktualisierungen von "
-"Debian mit (`docker compose build --pull`)."
+"das Image jeder Version bringt die Sicherheitsaktualisierungen von Debian "
+"ihres Tages mit (`docker compose pull`)."
 
 #. type: Bullet: '- '
 #: docs/server-install.md

@@ -21,7 +21,7 @@ through it over the network. What the server does and how programs use it:
 
 ## Requirements { #requirements }
 
-- A Linux server on x86-64 (a virtual machine is enough).
+- A Linux server on x86-64 or ARM64 (a virtual machine or a Raspberry Pi 4/5 is enough).
 - Either Docker Engine with the Compose plugin (option A, recommended),
   or Python 3.11 or newer with PyGObject, Pango and Cairo from the
   distribution (option B).
@@ -44,17 +44,18 @@ through it over the network. What the server does and how programs use it:
 
 ## Option A: Docker Compose { #docker }
 
-### 1. Get Tavletta and build the image { #docker-build }
+### 1. Get the files and the image { #docker-build }
 
 ```sh
 sudo git clone https://git.joshuahirsig.xyz/joshii/tavletta.git /opt/tavletta
 cd /opt/tavletta
 sudo git checkout v1.1.0      # the release to run: git tag lists them
 cd packaging/docker
-sudo docker compose build
+sudo docker compose pull      # ghcr.io/joshii-h/tavletta:1.1, for x86-64 and ARM64
 ```
 
-The image (about 200 MB) contains Tavletta, Python, Pango and Cairo,
+The image (about 230 MB), built and tested by the project's CI and
+signed (see [Server and container](server.md#container)), contains Tavletta, Python, Pango and Cairo,
 the fonts DejaVu, Source Sans 3, Liberation (metrics of Arial, Times New
 Roman and Courier New) and Carlito (metrics of Calibri). It runs as an
 unprivileged user, read-only, without capabilities.
@@ -140,7 +141,7 @@ file keeps only its hash.
 
 ```sh
 sudo docker run --rm --user 1000:1000 -v ./config:/config --entrypoint tavletta \
-    tavletta-server token new inventory-tool --role print --printer it-cab \
+    ghcr.io/joshii-h/tavletta:1.1 token new inventory-tool --role print --printer it-cab \
     --description "Inventory tool" \
     --tokens /config/tokens.toml --printers /config/printers.toml
 ```
@@ -230,7 +231,7 @@ cd /opt/tavletta
 sudo git fetch --tags
 sudo git checkout v1.2.0         # the new release
 cd packaging/docker
-sudo docker compose build --pull
+sudo docker compose pull
 sudo docker compose up -d
 ```
 
@@ -243,14 +244,14 @@ stops; a label being printed is finished. `config/`, `labels/` and
 Back up the three folders: `config/` (the printer list, the token
 hashes), `labels/` (the labels and their counters: the next number of
 each label with `{=counter}` is saved in its file) and `fonts/`. The
-image can be built again at any time.
+image can be pulled again at any time.
 
 ### Uninstalling { #docker-uninstall }
 
 ```sh
 cd /opt/tavletta/packaging/docker
 sudo docker compose down
-sudo docker image rm tavletta-server
+sudo docker image rm ghcr.io/joshii-h/tavletta:1.1
 sudo rm -r /opt/tavletta     # also deletes config, labels and fonts
 ```
 
@@ -320,7 +321,8 @@ about one that others may read.
 capabilities, 1 GB memory):
 
 ```sh
-sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/
+sudo curl -fsSLo /etc/systemd/system/tavletta-server.service \
+    https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.1.0/packaging/systemd/tavletta-server.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now tavletta-server
 systemctl status tavletta-server
@@ -341,7 +343,8 @@ For a single user on a desktop there is the user service
 
 ```sh
 sudo /opt/tavletta/bin/pip install --upgrade "git+https://git.joshuahirsig.xyz/joshii/tavletta.git@v1.2.0"
-sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/   # of the new release
+sudo curl -fsSLo /etc/systemd/system/tavletta-server.service \
+    https://git.joshuahirsig.xyz/joshii/tavletta/raw/tag/v1.2.0/packaging/systemd/tavletta-server.service
 sudo systemctl daemon-reload
 sudo systemctl restart tavletta-server
 ```
@@ -448,9 +451,10 @@ used`).
 - Docker: the image has DejaVu, Source Sans 3, Liberation and Carlito.
   Copy other fonts (`.ttf`, `.otf`, e.g. the corporate font) into
   `fonts/` and restart: `sudo docker compose restart`. More Debian font
-  packages: `sudo docker compose build --build-arg FONTS="fonts-dejavu-core
+  packages: build the image yourself, `sudo docker compose -f compose.yaml
+  -f compose.build.yaml build --build-arg FONTS="fonts-dejavu-core
   fonts-adobe-sourcesans3 fonts-liberation fonts-crosextra-carlito
-  fonts-noto-core"`.
+  fonts-noto-core"`, then `up -d` with the same two files.
 - Native: install the distribution's font packages (Debian, Ubuntu:
   `fonts-adobe-sourcesans3`; Fedora: `adobe-source-sans-pro-fonts`) or
   copy the font files to `/usr/local/share/fonts/`, then
@@ -472,8 +476,8 @@ used`).
   networks that need it; never from the internet.
 - `--trusted-proxy` set to the proxy's own address, nothing wider.
 - Updates: watch the releases and update within weeks; the image
-  also brings Debian's security updates when it is built again
-  (`docker compose build --pull`).
+  of each release brings Debian's security updates of its day
+  (`docker compose pull`).
 - Backup of `config/` (or `/etc/tavletta`) and the labels.
 
 The details of every protection (limits, rate limit, file access, web
