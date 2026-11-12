@@ -12,6 +12,7 @@ language notes; the byte sequences follow LPrint by Michael R Sweet
 
 from __future__ import annotations
 
+import math
 import socket
 import time
 from abc import abstractmethod
@@ -22,7 +23,7 @@ from urllib.parse import unquote, urlsplit
 
 from PIL import Image
 
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     FoundPrinter,
@@ -35,6 +36,7 @@ from etiketto.backends.base import (
     PrintResult,
     ProgressCallback,
     Raster,
+    ResolutionUnknown,
     check_length,
     check_width,
     error_text,
@@ -46,7 +48,10 @@ from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM
 
 DEFAULT_PORT = 9100
-SOCKET_TIMEOUT = 10.0  # connecting and sending; on USB also for each write
+SOCKET_TIMEOUT = 10.0  # connecting; sending: without progress (net.send_all)
+# bytes per second a job averages at least: these printers take data at
+# printing pace (a receipt printer at 25 mm/s takes about 15 kB/s)
+MIN_RATE = 8_000
 ANSWER_TIMEOUT = 1.0  # a status answer: silence after this means "unknown"
 SERVICE = "_pdl-datastream._tcp"  # raw printing on port 9100, announced by mDNS
 DPI_INFO = "etiketto_dpi"  # image.info: the resolution prepare() rendered for
@@ -147,7 +152,9 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
     """TCP to the raw port, or the printer's USB device: the same language.
     `wait`: on USB, how long to wait while another session uses it."""
     if usb.is_usb(host):
-        return usb.connect(host, SOCKET_TIMEOUT, wait)
+        connection = usb.connect(host, SOCKET_TIMEOUT, wait)
+        connection.min_rate = MIN_RATE
+        return connection
     return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
 
 
@@ -166,11 +173,22 @@ def map_error(error: Exception) -> PrinterError:
 class Session:
     """A connection to the printer: send a job, ask short questions."""
 
-    def __init__(self, connection):
+    def __init__(self, connection, host: str = ""):
         self.connection = connection
+        self.host = host
 
     def send(self, data: bytes) -> None:
-        self.connection.sendall(data)
+        """All of data; the timeout counts from the last progress."""
+        if isinstance(self.connection, socket.socket):
+            net.send_all(self.connection, data, SOCKET_TIMEOUT, MIN_RATE)
+        else:  # USB: usb.Connection.sendall does the same
+            self.connection.sendall(data)
+
+    def finish(self) -> None:
+        """After a job: on TCP wait until the printer has taken it, so that
+        closing does not cut it off (net.finish). On USB closing waits."""
+        if isinstance(self.connection, socket.socket):
+            net.finish(self.connection, SOCKET_TIMEOUT)
 
     def ask(
         self,
@@ -206,7 +224,7 @@ class Session:
 def session(
     host: str, port: int = DEFAULT_PORT, wait: float = usb.BUSY_WAIT
 ) -> AbstractContextManager[Session]:
-    return open_session(lambda: _connect(host, port, wait), Session, map_error)
+    return open_session(lambda: _connect(host, port, wait), lambda c: Session(c, host), map_error)
 
 
 def ends_with(terminator: bytes) -> Callable[[bytes], bool]:
@@ -227,6 +245,15 @@ def state(answered: bool, error: PrinterError | None, busy: bool = False) -> str
     if error:
         return "PAUSED" if isinstance(error, PrinterPaused) else "ERROR"
     return "BUSY" if busy else "IDLE"
+
+
+def rescale(image: Image.Image, factor: float) -> Image.Image:
+    """Made for another resolution: scale the black and white image
+    instead of failing; the next prepare() renders right."""
+    size = (max(1, round(image.width * factor)), max(1, round(image.height * factor)))
+    resized = image.resize(size, Image.Resampling.NEAREST)
+    resized.info.update(image.info)
+    return resized
 
 
 def usb_model(host: str) -> str:
@@ -252,12 +279,19 @@ class RawBackend(Backend):
     # command set; empty: only the command set counts
     makers: tuple[str, ...] = ()
     default_dpi = "203"
+    # "Print upside down" is a command of the language, not a turned image
+    turns_itself = False
 
     def __init__(self, port: int | None = None):
         if port is not None:
             self.port = port
-        # the resolution the printer reported last (where it can), for "auto"
+        # resolutions the printers reported (where they can), by address,
+        # and the last one: prepare() renders for it with "auto"
+        self.reported: dict[str, float] = {}
         self.reported_dpi: float | None = None
+
+    def report_dpi(self, host: str, dpi: float) -> None:
+        self.reported[host] = self.reported_dpi = dpi
 
     # --- finding the printer
 
@@ -283,7 +317,9 @@ class RawBackend(Backend):
 
     def _announced(self, name: str, txt: dict[str, str]) -> bool:
         commands = tuple(c.strip().upper() for c in txt.get("usb_cmd", "").split(",") if c.strip())
-        return self.speaks(txt.get("usb_mfg", "") or name, txt.get("usb_mdl", ""), commands)
+        return self.speaks(
+            txt.get("usb_mfg", "") or name, txt.get("usb_mdl", "") or name, commands
+        )
 
     # --- settings
 
@@ -292,7 +328,13 @@ class RawBackend(Backend):
 
     def level(self, options: PrintOptions, key: str) -> int | None:
         value = self.setting(options, key)
-        return value if isinstance(value, int) else None
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+    def has_setting(self, key: str) -> bool:
+        return any(setting.key == key for setting in self.capabilities.settings)
+
+    def upside_down(self, options: PrintOptions) -> bool:
+        return self.has_setting("upside_down") and self.setting(options, "upside_down") is True
 
     # --- rendering
 
@@ -300,7 +342,7 @@ class RawBackend(Backend):
         """The resolution of a job: the setting, or what the printer
         reported ("auto"), else the default. Without a dpi setting the
         printer has one resolution, capabilities.dpi."""
-        if not any(setting.key == "dpi" for setting in self.capabilities.settings):
+        if not self.has_setting("dpi"):
             return self.capabilities.dpi
         choice = self.setting(options, "dpi")
         if choice == "auto":
@@ -342,6 +384,22 @@ class RawBackend(Backend):
         """A problem the printer reports before a job, None if none or unknown."""
         return None
 
+    def printer_dpi(self, s: Session) -> float | None:
+        """The resolution the printer reports now, if the language can ask."""
+        return None
+
+    def job_dpi(self, s: Session, options: PrintOptions, rendered: float) -> float:
+        """The resolution to print at: the chosen one, or with "auto" the
+        printer's own (asked now, else as it reported before). A printer
+        that never told it is refused: guessing could print the label at
+        two thirds or one and a half of its size."""
+        if not self.has_setting("dpi") or self.setting(options, "dpi") != "auto":
+            return rendered
+        dpi = self.printer_dpi(s) or self.reported.get(s.host)
+        if dpi is None:
+            raise ResolutionUnknown("the printer does not report its resolution")
+        return dpi
+
     def check(self, image: Image.Image, dpi: float, host: str) -> None:
         """Refuse a label the printer cannot take, before connecting."""
         check_width(image.width / dpi * 25.4, self.capabilities)
@@ -360,15 +418,21 @@ class RawBackend(Backend):
     ) -> PrintResult | None:
         """Send the job once the printer reports no problem. These printers
         do not report when a job is done: progress ends when it is sent."""
-        dpi = float(image.info.get(DPI_INFO) or self.dpi(options))
-        self.check(image, dpi, host)
+        rendered = float(image.info.get(DPI_INFO) or self.dpi(options))
+        self.check(image, rendered, host)
         copies = max(1, options.copies)
-        job = self.build_job(image, dpi, replace(options, copies=copies), host)
+        options = replace(options, copies=copies)
+        if self.upside_down(options) and not self.turns_itself:
+            image = image.rotate(180)
         with session(host, self.port, usb.PRINT_WAIT) as s:
             report_progress(progress, 1, copies)
             problem = self.problem(s)
             if problem:
                 raise problem
-            s.send(job)
+            dpi = self.job_dpi(s, options, rendered)
+            if not math.isclose(dpi, rendered):
+                image = rescale(image, dpi / rendered)
+            s.send(self.build_job(image, dpi, options, host))
+            s.finish()
             report_progress(progress, copies, copies)
         return None

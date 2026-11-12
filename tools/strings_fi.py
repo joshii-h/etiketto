@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d %%",
     "%d in/s": "%d tuumaa/s",
     "Receipt printer (ESC/POS)": "Kuittitulostin (ESC/POS)",
+    "Print upside down": "Tulosta ylösalaisin",
+    "The printer does not report its resolution. Choose it under “%s”.": "Tulostin ei ilmoita tarkkuuttaan. Valitse se kohdassa ”%s”.",
 }

@@ -22,6 +22,7 @@ from etiketto.backends.base import (
     PrintMode,
     PrintOptions,
     Raster,
+    Toggle,
     check_length,
 )
 from etiketto.backends.raw import (
@@ -83,9 +84,12 @@ def page(image: Bitmap, dpi: float, cut: str = "none") -> bytes:
 
 
 def build_job(image: Bitmap, dpi: float, copies: int = 1, cut: str = "none") -> bytes:
-    """Reset (ESC @), no left margin (GS L 0), each copy, reset again."""
+    """Reset (ESC @), motion units of one dot (GS P: else ESC J counts in
+    1/180 in on some printers, 1/203 in on others), no left margin
+    (GS L 0), each copy, reset again."""
+    units = bytes([min(255, round(dpi))]) * 2
     body = page(image, dpi, cut) * max(1, copies)
-    return ESC + b"@" + GS + b"L\x00\x00" + body + ESC + b"@"
+    return ESC + b"@" + GS + b"P" + units + GS + b"L\x00\x00" + body + ESC + b"@"
 
 
 def parse_status(raw: bytes) -> int | None:
@@ -123,7 +127,7 @@ class EscPos(RawBackend):
         continuous=True,
         cassettes=False,
         data_formats=("escpos",),
-        settings=(Choice("dpi", ("203", "180")),),
+        settings=(Choice("dpi", ("203", "180")), Toggle("upside_down")),
     )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:

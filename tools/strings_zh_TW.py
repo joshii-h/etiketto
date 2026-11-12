@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d%%",
     "%d in/s": "%d 英寸/秒",
     "Receipt printer (ESC/POS)": "收據印表機 (ESC/POS)",
+    "Print upside down": "上下顛倒列印",
+    "The printer does not report its resolution. Choose it under “%s”.": "印表機未回報解析度，請在「%s」中選擇。",
 }

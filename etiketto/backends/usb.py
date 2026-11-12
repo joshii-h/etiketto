@@ -184,6 +184,8 @@ class Connection:
     def __init__(self, device: Path, timeout: float, wait: float | None = None):
         self.device = device
         self.timeout = timeout
+        # bytes per second a job may average at least (see sendall)
+        self.min_rate: float = MIN_RATE
         self.fd = -1
         wait = BUSY_WAIT if wait is None else wait
         self.lock = _device_lock(device)
@@ -200,9 +202,9 @@ class Connection:
         data (paper out, buffer full): PrinterStalled once it took nothing
         for the timeout. Every write that gets bytes through starts the
         timeout again, so a large job on a slow port goes through; one that
-        trickles still ends after timeout + len(data) / MIN_RATE."""
+        trickles still ends after timeout + len(data) / min_rate."""
         start = time.monotonic()
-        end = start + self.timeout + len(data) / MIN_RATE
+        end = start + self.timeout + len(data) / self.min_rate
         idle = start + self.timeout
         view = memoryview(data)
         while view:

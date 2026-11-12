@@ -13,7 +13,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from etiketto.backends import backends  # noqa: E402
-from etiketto.backends.base import Choice, PrinterInfo, Setting  # noqa: E402
+from etiketto.backends.base import Choice, PrinterInfo, Setting, Toggle  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
@@ -112,9 +112,13 @@ class Printer:
             _("Printer model"), items, self.window.backend.id, self.window.set_backend
         )
 
-    def _setting_row(self, setting: Setting) -> Adw.ComboRow:
+    def _setting_row(self, setting: Setting) -> Adw.PreferencesRow:
         """A row for one of the backend's own settings, kept in settings.json."""
         key, stored = setting.key, self.window.printer_settings.get(setting.key)
+        if isinstance(setting, Toggle):
+            row = Adw.SwitchRow(title=setting_title(key), active=setting.value(stored))
+            row.connect("notify::active", lambda r, _p: self._on_setting(key, r.get_active()))
+            return row
         if isinstance(setting, Choice):
             items = [(value, choice_name(value)) for value in setting.choices]
             current = setting.value(stored)
@@ -122,8 +126,9 @@ class Printer:
                 setting_title(key), items, current, lambda v: self._on_setting(key, v)
             )
         level = setting.value(stored)
-        steps = [("", level_name(key, None))]
-        steps += [(str(v), level_name(key, v)) for v in setting.steps()]
+        values = sorted(set(setting.steps()) | ({level} if level is not None else set()))
+        # a value off the steps (settings.json edited by hand) is shown as it is
+        steps = [("", level_name(key, None))] + [(str(v), level_name(key, v)) for v in values]
         return combo_row(
             setting_title(key),
             steps,

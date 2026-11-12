@@ -37,6 +37,7 @@ from etiketto.backends.base import (
     PrinterInfo,
     PrinterPaused,
     PrintOptions,
+    ResolutionUnknown,
     RibbonError,
 )
 from etiketto.backends.raw import Bitmap
@@ -133,7 +134,7 @@ def test_zpl_job():
     image = bits(b"\xff\xf0", b"\xff\xf0", b"\x00\x00", width=12)
     assert zpl.build_job(image) == (
         b"~DGR:ETIKETTO.GRF,6,2,IF0:,\n"
-        b"^XA\n^POI\n^PW12\n^LH0,0\n^LL3\n^MNY\n^PQ1,0,1,N\n"
+        b"^XA\n^PON\n^PW12\n^LH0,0\n^LL3\n^PQ1,0,1,N\n"
         b"^FO0,0^XGR:ETIKETTO.GRF,1,1^FS\n^XZ\n"
         b"^XA^IDR:ETIKETTO.GRF^FS^XZ\n"
     )
@@ -143,8 +144,10 @@ def test_zpl_job_with_settings():
     job = zpl.build_job(
         bits(b"\x80"), copies=3, media="mark", finish="peel", darkness=50, speed=4
     ).decode()
-    assert job.startswith("~SD15\n~DGR:ETIKETTO.GRF,1,1,80\n^XA\n^MMP,N\n^PR4,4,4\n^POI\n")
+    assert job.startswith("~SD15\n~DGR:ETIKETTO.GRF,1,1,80\n^XA\n^MMP,N\n^PR4,4,4\n^PON\n")
     assert "^MNM\n^PQ3,0,1,N\n" in job
+    assert "^MNY" in zpl.build_job(bits(b"\x80"), media="gap").decode()
+    assert "^MN" not in zpl.build_job(bits(b"\x80"), media="printer").decode()
     assert "^MMC,Y" in zpl.build_job(bits(b"\x80"), finish="cut").decode()
     assert "^MNN" in zpl.build_job(bits(b"\x80"), media="continuous").decode()
     assert "~SD30" in zpl.build_job(bits(b"\x80"), darkness=100).decode()
@@ -159,7 +162,7 @@ def test_zpl_job_with_settings():
         (b"\x02GX430t,V61.17,12,2104KB\x03", ("GX430t", "V61.17", "300")),
         (b"\x02ZT610,V1,24,\x03", ("ZT610", "V1", "600")),
         (b"\x02ZT610,V1,9,\x03", ("ZT610", "V1", "")),  # no known resolution
-        (b"\x02ZT610,V1,x\x03", ("ZT610", "V1", "")),
+        (b"\x02ZT610,V1,x\x03", ("", "", "")),  # not a ~HI frame
         (b"\x02only,two\x03", ("", "", "")),
         (b"ZD621-203dpi,V93,8", ("", "", "")),  # no frame
         (b"", ("", "", "")),
@@ -179,6 +182,13 @@ def test_zpl_host_status():
     assert isinstance(zpl.host_status_error(out), OutOfLabels)
 
 
+def _hs(line1: str, line2: str) -> bytes:
+    """A ~HS answer from the fields Etiketto reads; the rest padded to the
+    manual's 12 and 11 fields."""
+    one, two = line1 + ",0,0,0,000,0,0,0", line2 + ",1,000"
+    return b"\x02%s\x03\r\n\x02%s\x03\r\n\x021234,0\x03\r\n" % (one.encode(), two.encode())
+
+
 @pytest.mark.parametrize(
     "line1, line2, cls",
     [
@@ -189,9 +199,7 @@ def test_zpl_host_status():
     ],
 )
 def test_zpl_host_status_problems(line1, line2, cls):
-    status = zpl.parse_host_status(
-        b"\x02%s\x03\r\n\x02%s\x03\r\n" % (line1.encode(), line2.encode())
-    )
+    status = zpl.parse_host_status(_hs(line1, line2))
     assert status is not None
     error = zpl.host_status_error(status)
     assert type(error) is cls and error.details.startswith("~HS: ")
@@ -206,8 +214,16 @@ def test_zpl_host_status_problems(line1, line2, cls):
     ],
 )
 def test_zpl_busy(line1, line2, busy):
-    status = zpl.parse_host_status(b"\x02%s\x03\x02%s\x03" % (line1.encode(), line2.encode()))
+    status = zpl.parse_host_status(_hs(line1, line2))
     assert status is not None and status.busy is busy
+
+
+def test_zpl_frames_are_found_behind_a_late_answer():
+    # ~HI answered late: its frame comes first in the answer to ~HS
+    status = zpl.parse_host_status(ZPL_HI + ZPL_HS_PAPER_OUT)
+    assert status is not None and status.paper_out
+    assert zpl.parse_identity(ZPL_HS + ZPL_HI).model == "ZD621-203dpi"
+    assert zpl.parse_identity(ZPL_HS) == zpl.Identity()
 
 
 @pytest.mark.parametrize(
@@ -216,8 +232,8 @@ def test_zpl_busy(line1, line2, busy):
         b"",
         b"garbage",
         b"\x02030,0,0,1245,000\x03",  # one frame only
-        b"\x02030,0\x03\x02000,0,0,0,1,2,6,0,0\x03",  # first frame too short
-        b"\x02030,0,0,1245,000\x03\x02000,0,0\x03",  # second frame too short
+        b"\x02030,0\x03\x02000,0,0,0,1,2,6,0,0,1,000\x03",  # first frame too short
+        b"\x02030,0,0,1245,000,0,0,0,000,0,0,0\x03\x02000,0,0\x03",  # second too short
     ],
 )
 def test_zpl_host_status_garbage(answer):
@@ -257,9 +273,11 @@ def test_zpl_extended_status_garbage():
 def test_epl_job():
     # 12 black dots in two rows, a blank row: 0 = black, the blank row is not sent
     image = raw.bitmap(_black_rows(16, [(0, 12), (0, 12), None]), black_is_one=False)
-    assert epl.build_job(image) == (
+    assert epl.build_job(image, media="gap") == (
         b"\nN\nq16\nQ3,24\nGW0,0,2,1\n\x00\x0f\nGW0,1,2,1\n\x00\x0f\nP1\n"
     )
+    # the printer's own sensor setting: no Q
+    assert epl.build_job(image).startswith(b"\nN\nq16\nGW0,0,2,1\n")
 
 
 def test_epl_job_with_settings():
@@ -283,10 +301,12 @@ def test_tspl_job():
     image = raw.bitmap(_black_rows(16, [(0, 8)] * 8), black_is_one=False)
     data = b"\x00\xff" * 8
     assert (
-        tspl.build_job(image, 8.0)
+        tspl.build_job(image, 8.0, media="gap")
         == (b"SIZE 2 mm,1 mm\nGAP 3 mm,0 mm\nDIRECTION 0,0\nCLS\nBITMAP 0,0,2,8,1," + data)
         + b"PRINT 1,1\n"
     )
+    assert tspl.build_job(image, 8.0).startswith(b"SIZE 2 mm,1 mm\nDIRECTION 0,0\nCLS\n")
+    assert b"DIRECTION 1,0\n" in tspl.build_job(image, 8.0, upside_down=True)
 
 
 def test_tspl_job_with_settings():
@@ -302,12 +322,17 @@ def test_tspl_job_with_settings():
     )
     assert job == (
         b"SIZE 0.67 mm,0.08 mm\nBLINE 2.5 mm,0 mm\nDIRECTION 0,0\nDENSITY 8\nSPEED 3\n"
-        b"SET CUTTER 1\nCLS\nBITMAP 0,0,1,1,1,\x0fPRINT 4,1\n"
+        b"SET PEEL OFF\nSET TEAR OFF\nSET CUTTER 1\nCLS\nBITMAP 0,0,1,1,1,\x0fPRINT 4,1\n"
     )
     plain = bits(b"\x0f", black_is_one=False)
     assert b"GAP 0 mm,0 mm" in tspl.build_job(plain, 8.0, media="continuous")
-    assert b"SET TEAR ON" in tspl.build_job(plain, 8.0, finish="tear")
-    assert b"SET PEEL ON" in tspl.build_job(plain, 8.0, finish="peel")
+    # the printer keeps the mode: each one switches the other two off
+    assert b"SET CUTTER OFF\nSET PEEL OFF\nSET TEAR ON\n" in tspl.build_job(
+        plain, 8.0, finish="tear"
+    )
+    assert b"SET CUTTER OFF\nSET TEAR OFF\nSET PEEL ON\n" in tspl.build_job(
+        plain, 8.0, finish="peel"
+    )
     assert b"SET " not in tspl.build_job(plain, 8.0, finish="printer")
 
 
@@ -357,14 +382,14 @@ def test_tspl_model(answer, model):
 
 def test_escpos_job_matches_lprint():
     # docs/escpos.md: 16 dots, rows AA AA and 55 55, no margin. LPrint feeds
-    # one inch (the byte is the dpi) and cuts with ESC i; Etiketto cuts with
-    # GS V and only when asked to.
+    # one inch (the byte is the dpi) and cuts with ESC i; Etiketto sets the
+    # motion units to dots first (GS P), cuts with GS V and only when asked to.
     image = bits(b"\xaa\xaa", b"\x55\x55")
     assert escpos.build_job(image, raw.DPI["203"]) == bytes.fromhex(
-        "1b40 1d4c0000 1d7630000200 0200 aaaa5555 1b4acb 1b40"
+        "1b40 1d50cbcb 1d4c0000 1d7630000200 0200 aaaa5555 1b4acb 1b40"
     )
     assert escpos.build_job(image, 180.0, cut="full") == bytes.fromhex(
-        "1b40 1d4c0000 1d7630000200 0200 aaaa5555 1b4ab4 1d5600 1b40"
+        "1b40 1d50b4b4 1d4c0000 1d7630000200 0200 aaaa5555 1b4ab4 1d5600 1b40"
     )
     assert escpos.build_job(image, 180.0, cut="half").endswith(bytes.fromhex("1d5601 1b40"))
 
@@ -449,11 +474,14 @@ def test_escpos_rotates_the_label_into_rows(monkeypatch):
 
 
 def test_dymo_job_matches_lprint():
-    # docs/dymo.md: rows FF 00, blank, 00 FF; darkness 50 % = ESC d
+    # docs/dymo.md: rows FF 00, blank, 00 FF; darkness 50 % = ESC d. LPrint
+    # selects the roll with a binary 1; DYMO's manual wants ASCII "1" (31)
     image = bits(b"\xff\x00", b"\x00\x00", b"\x00\xff")
     assert dymo.build_job(image, darkness=50) == ESC * 200 + bytes.fromhex(
-        "1b40 1b510000 1b4200 1b4c0003 1b4402 1b7101 1b6416ff00 1b660101 1600ff 1b45"
+        "1b40 1b510000 1b4200 1b4c0003 1b4402 1b7131 1b6416ff00 1b660101 1600ff 1b45"
     )
+    # a little longer than the label: the printer searches the next sense hole
+    assert b"\x1bL\x01\x2c" in dymo.build_job(image, length=300)
 
 
 def test_dymo_skips_blank_rows():
@@ -468,14 +496,60 @@ def test_dymo_skips_blank_rows():
 def test_dymo_density(darkness, code):
     page = dymo.page(bits(b"\x01"), darkness)
     assert ESC + code + b"\x16" in page
-    assert b"\x1bq\x01\x16" in dymo.page(bits(b"\x01"))  # not set: the printer's own
+    assert b"\x1bq1\x16" in dymo.page(bits(b"\x01"))  # not set: the printer's own
 
 
 def test_dymo_copies_and_head():
     assert dymo.build_job(bits(b"\x01"), copies=2).count(b"\x1bE") == 2
-    assert dymo.head_dots("usb://DYMO/LabelWriter%204XL") == 1248
-    assert dymo.head_dots("usb://DYMO/LabelWriter%20450") == 672
-    assert dymo.head_dots("labelwriter.local") == 672
+    assert dymo.head_dots("LabelWriter 4XL") == 1248
+    assert dymo.head_dots("LabelWriter 450") == 672
+    assert dymo.head_dots("") == 672
+
+
+@pytest.mark.parametrize(
+    "answer, cls",
+    [(b"\xa0", OutOfLabels), (b"\xc0", PaperJam), (b"\x81", PrinterError), (b"\x03", type(None))],
+)
+def test_dymo_status(answer, cls):
+    assert type(dymo.status_error(dymo.parse_status(answer))) is cls
+
+
+@pytest.mark.parametrize("answer", [b"", b"\x07", b"\x03\x03"])
+def test_dymo_status_garbage(answer):
+    assert dymo.parse_status(answer) is None
+
+
+def test_dymo_query(monkeypatch):
+    printer = FakePrinter({ESC + b"A": b"\x03"})
+    install(monkeypatch, printer)
+    backend = dymo.Dymo()
+    assert backend.query("usb://DYMO/LabelWriter%20450").state == "IDLE"
+    printer.answers[ESC + b"A"] = b"\xa0"
+    info = backend.query("usb://DYMO/LabelWriter%20450")
+    assert (info.state, info.error) == ("ERROR", "out_of_labels")
+    with pytest.raises(OutOfLabels):
+        backend.print_label(Image.new("RGB", (100, 40)), "usb://x/LabelWriter", PrintOptions())
+    assert printer.jobs == []
+
+
+def test_dymo_4xl_on_the_network(monkeypatch):
+    from etiketto.backends import mdns
+
+    install(monkeypatch, FakePrinter())
+    searches = []
+    service = mdns.Service("DYMO LabelWriter 4XL", "lw.local", "192.0.2.5", 9100, {})
+
+    def browse(service_type, match, timeout):
+        searches.append(timeout)
+        return [service]
+
+    monkeypatch.setattr(raw, "_browse", browse)
+    backend = dymo.Dymo()
+    info = backend.query("lw.local")  # the model from its announcement
+    assert info.model == "DYMO LabelWriter 4XL" and searches == [1.0]
+    backend.query("lw.local")
+    assert searches == [1.0]  # known now
+    backend.print_label(Image.new("RGB", (1200, 40), "white"), "lw.local", PrintOptions())
 
 
 def test_dymo_wide_labels(monkeypatch):
@@ -553,14 +627,39 @@ def test_zpl_silent_printer_is_unknown_not_an_error(monkeypatch):
     info = backend.query("zebra.invalid")
     assert (info.state, info.error) == ("UNKNOWN", "")
     assert backend.raster(25, PrintOptions()).dpi == raw.DPI["203"]  # nothing reported
+    # "As reported by the printer" from a printer that never told: refused
+    with pytest.raises(ResolutionUnknown):
+        backend.print_label(Image.new("RGB", (16, 8), "white"), "zebra.invalid", PrintOptions())
+    assert printer.jobs == []
     # a printer that ignores ~HS is not asked ~HQES either; the job goes out
-    backend.print_label(Image.new("RGB", (16, 8), "white"), "zebra.invalid", PrintOptions())
-    assert len(printer.jobs) == 1 and printer.requests == [b"~HI\n", b"~HS\n", b"~HS\n"]
+    printer.requests.clear()
+    chosen = PrintOptions(settings={"dpi": "203"})
+    backend.print_label(Image.new("RGB", (16, 8), "white"), "zebra.invalid", chosen)
+    assert len(printer.jobs) == 1 and printer.requests == [b"~HS\n"]
+
+
+def test_zpl_auto_resolution_per_printer(monkeypatch):
+    backend = zpl.Zpl()
+    printer = FakePrinter({b"~HI\n": ZPL_HI.replace(b",8,", b",12,"), b"~HS\n": ZPL_HS})
+    install(monkeypatch, printer)
+    backend.query("a.invalid")  # 300 dpi
+    assert backend.reported == {"a.invalid": raw.DPI["300"]}
+    # rendered at 203 dpi for another printer, this one answers 300 dpi now
+    image = Image.new("RGB", (16, 8), "white")
+    image.info[raw.DPI_INFO] = raw.DPI["203"]
+    backend.print_label(image, "a.invalid", PrintOptions())
+    assert b"^PW24\n" in printer.jobs[-1]  # scaled: 16 dots at 8 per mm = 24 at 12
+    # no answer now: what it reported before
+    del printer.answers[b"~HI\n"]
+    backend.print_label(image, "a.invalid", PrintOptions())
+    assert b"^PW24\n" in printer.jobs[-1]
+    with pytest.raises(ResolutionUnknown):
+        backend.print_label(image, "b.invalid", PrintOptions())
 
 
 def test_zpl_print_uses_settings(monkeypatch):
     backend = zpl.Zpl()
-    printer = FakePrinter({b"~HS\n": ZPL_HS, b"~HQES\n": ZPL_HQES})
+    printer = FakePrinter({b"~HI\n": ZPL_HI, b"~HS\n": ZPL_HS, b"~HQES\n": ZPL_HQES})
     install(monkeypatch, printer)
     options = PrintOptions(
         copies=2,
@@ -602,14 +701,14 @@ def test_escpos_query(monkeypatch):
     assert backend.query("pos.invalid").state == "UNKNOWN"
 
 
-@pytest.mark.parametrize("backend_id", ["epl", "dymo"])
-def test_no_status_languages(monkeypatch, backend_id):
-    backend = get_backend(backend_id)
+@pytest.mark.parametrize("backend_id, asked", [("epl", []), ("dymo", [b"\x1bA"])])
+def test_silent_printers(monkeypatch, backend_id, asked):
+    backend = type(get_backend(backend_id))()
     printer = FakePrinter()
     install(monkeypatch, printer)
     info = backend.query("printer.invalid")
     assert (info.state, info.error, info.model) == ("UNKNOWN", "", "")
-    assert printer.jobs == printer.requests == []  # nothing sent to ask
+    assert printer.jobs == [] and printer.requests == asked
     printer.refuse = True
     with pytest.raises(PortClosed):
         backend.query("printer.invalid")
@@ -644,7 +743,7 @@ def test_print_renders_at_the_chosen_resolution(monkeypatch):
     backend = epl.Epl()
     printer = FakePrinter()
     install(monkeypatch, printer)
-    options = PrintOptions(settings={"dpi": "300"}, gap_mm=2.0)
+    options = PrintOptions(settings={"dpi": "300", "media": "gap"}, gap_mm=2.0)
     label = _sample_label(backend)
     image = backend.prepare(label, options)
     assert image.size == (1200, 600)  # 100 × 50 mm at 12 dots per mm
@@ -741,3 +840,37 @@ def test_states_without_status_show_as_unknown():
     assert raw.state(True, None, busy=True) == "BUSY"
     assert raw.state(True, None) == "IDLE"
     assert isinstance(PrinterInfo("", None, None, None, raw.state(False, None)), PrinterInfo)
+
+
+@pytest.mark.parametrize("backend_id", ["zpl", "epl", "escpos", "dymo"])
+def test_upside_down_turns_the_image(monkeypatch, backend_id):
+    printer = FakePrinter()
+    install(monkeypatch, printer)
+    backend = type(get_backend(backend_id))()
+    image = Image.new("RGB", (64, 32), "white")
+    image.putpixel((0, 0), (0, 0, 0))
+    settings = {"upside_down": True, "dpi": "203"}
+    jobs = []
+    for options in (PrintOptions(settings={"dpi": "203"}), PrintOptions(settings=settings)):
+        expected = backend.build_job(
+            image.rotate(180) if options.settings.get("upside_down") else image,
+            backend.dpi(options),
+            options,
+            "printer.invalid",
+        )
+        backend.print_label(image, "printer.invalid", options)
+        assert printer.jobs[-1] == expected
+        jobs.append(expected)
+    assert jobs[0] != jobs[1]
+
+
+def test_tspl_turns_by_command(monkeypatch):
+    printer = FakePrinter()
+    install(monkeypatch, printer)
+    image = Image.new("RGB", (64, 32), "white")
+    tspl.Tspl().print_label(image, "x", PrintOptions(settings={"upside_down": True}))
+    assert b"DIRECTION 1,0\n" in printer.jobs[0]
+
+
+def test_languages_without_a_resolution_question():
+    assert raw.RawBackend.printer_dpi(epl.Epl(), raw.Session(None)) is None

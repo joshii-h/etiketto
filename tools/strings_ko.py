@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d%%",
     "%d in/s": "%d인치/초",
     "Receipt printer (ESC/POS)": "영수증 프린터(ESC/POS)",
+    "Print upside down": "거꾸로 인쇄",
+    "The printer does not report its resolution. Choose it under “%s”.": "프린터가 해상도를 알리지 않습니다. “%s”에서 선택하십시오.",
 }

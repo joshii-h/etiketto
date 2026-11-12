@@ -11,14 +11,16 @@ from __future__ import annotations
 
 from PIL import Image
 
-from etiketto.backends.base import Capabilities, Choice, Level, PrintMode, PrintOptions
+from etiketto.backends.base import Capabilities, Choice, Level, PrintMode, PrintOptions, Toggle
 from etiketto.backends.raw import DPI, Bitmap, RawBackend, bitmap, percent_to
 from etiketto.backends.zpl import LABEL_SIZES, MAX_WIDTH_MM
 
 
-def media_command(media: str, height: int, gap: int) -> str:
+def media_command(media: str, height: int, gap: int) -> str | None:
     """Q: label length and the gap (or black mark, B) in dots; 0 for
-    continuous media. LPrint sends none and trusts the printer's setup."""
+    continuous media. None keeps the printer's setup, as LPrint does."""
+    if media not in ("gap", "mark", "continuous"):
+        return None
     if media == "continuous":
         return "Q%d,0" % height
     if media == "mark":
@@ -41,7 +43,7 @@ def rows(image: Bitmap) -> bytes:
 def build_job(
     image: Bitmap,
     copies: int = 1,
-    media: str = "gap",
+    media: str = "printer",
     gap: int = 24,
     darkness: int | None = None,
 ) -> bytes:
@@ -50,7 +52,10 @@ def build_job(
     head = ["", "N"]  # the job begins with "\nN\n", which marks it as EPL2
     if darkness is not None:
         head.append("D%d" % percent_to(darkness, 15))
-    head += ["q%d" % (image.bpr * 8), media_command(media, image.height, gap)]
+    head.append("q%d" % (image.bpr * 8))
+    sensor = media_command(media, image.height, gap)
+    if sensor:
+        head.append(sensor)
     start = "".join(line + "\n" for line in head).encode()
     return start + rows(image) + b"P%d\n" % max(1, copies)
 
@@ -71,8 +76,9 @@ class Epl(RawBackend):
         data_formats=("epl2",),
         settings=(
             Choice("dpi", ("203", "300")),
-            Choice("media", ("gap", "mark", "continuous")),
+            Choice("media", ("printer", "gap", "mark", "continuous")),
             Level("darkness", 0, 100, 10),
+            Toggle("upside_down"),
         ),
     )
 

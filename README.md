@@ -25,7 +25,7 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 | Zebra EPL2 printers (LP/TLP 2824, 2844 and others), **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 104 mm wide, 203 or 300 dpi | Label sensor and darkness; no status | EPL2 on TCP port 9100 or USB ([docs/epl.md](docs/epl.md)) |
 | TSPL printers: TSC, Munbyn, iDPRT, Xprinter, Rollo and other 4 × 6 in shipping label printers, **untested on hardware** | Black on die-cut labels, black marks or continuous media up to 108 mm wide, 203 or 300 dpi | Reports head open, paper and ribbon problems where the printer answers; label sensor, tear-off, peel-off or cutter, darkness and speed | TSPL on TCP port 9100 or USB ([docs/tspl.md](docs/tspl.md)) |
 | Receipt printers with ESC/POS (Epson TM and compatibles), **untested on hardware** | Black on 58 or 80 mm paper rolls, as long as the content | Reports cover open and paper end where the printer answers; full, partial or no cut | ESC/POS on TCP port 9100 or USB ([docs/escpos.md](docs/escpos.md)) |
-| DYMO LabelWriter 300, 400 and 450 series, 4XL, **untested on hardware** | Black on DYMO die-cut labels, 300 dpi | Darkness; no status | DYMO's raster commands on USB ([docs/dymo.md](docs/dymo.md)) |
+| DYMO LabelWriter 300, 400 and 450 series, 4XL, **untested on hardware** | Black on DYMO die-cut labels, 300 dpi | Reports no paper and paper jam where the printer answers; darkness | DYMO's raster commands on USB ([docs/dymo.md](docs/dymo.md)) |
 
 Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
 kernel's printer driver: cab printers, the VC-500W and the ZPL, EPL2, TSPL,

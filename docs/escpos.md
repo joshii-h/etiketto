@@ -52,6 +52,7 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Epson's reference,
 
 ```
 ESC @                        1B 40               reset
+GS P x y                     1D 50 CB CB         motion units: one dot (here 203 dpi)
 GS L 0 0                     1D 4C 00 00         no left margin
 per label:
   ESC J n                    1B 4A n             feed blank rows (n up to 255 dots)
@@ -61,11 +62,16 @@ per label:
 ESC @                        1B 40
 ```
 
+- `GS P`: Epson's printers count `ESC J` in 1/180 in, many compatible ones
+  in 1/203 in; setting the motion units to the resolution makes the feeds
+  dots on both. LPrint does not send it. [spec] [assumed]
 - Raster polarity 1 = black, rows MSB first. A raster image carries at most
   32768 bytes; longer labels are sent in several. [LPrint]
 - The label's start leaves the printer first: the label (x along the
   paper) is turned so that its top edge is at the right end of the head.
-  [assumed]
+  "Print upside down" turns the label by 180°. [assumed]
+- Sending and closing on TCP as described in [zpl.md](zpl.md#transport);
+  on a receipt printer a long job takes as long as printing it.
 - LPrint drops the blank rows at the start; Etiketto feeds them, as they are
   the label's own spacing. [LPrint]
 - Cut: LPrint sends `ESC i`; Etiketto sends `GS V 0` (full) or `GS V 1`
@@ -73,7 +79,8 @@ ESC @                        1B 40
   cutter ignores it. [spec] [assumed]
 - Example from LPrint (16 dots, rows `AA AA` and `55 55`):
   `1B 40 1D 4C 00 00 1D 76 30 00 02 00 02 00 AA AA 55 55 1B 4A CB 1B 40`
-  at 203 dpi without a cut; at 180 dpi the feed byte is `B4`.
+  at 203 dpi without a cut; Etiketto adds `1D 50 CB CB` after the first
+  `1B 40`. At 180 dpi the feed and unit bytes are `B4`.
 - No darkness and no speed: ESC/POS has no common commands for them.
   [LPrint] [spec]
 
@@ -84,3 +91,4 @@ ESC @                        1B 40
 | Resolution | 203, 180 dpi |
 | Paper width (tape width) | 58, 80 mm |
 | Cut (print dialog) | full, partial, none |
+| Print upside down | off, on |

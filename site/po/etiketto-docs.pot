@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:58+0100\n"
+"POT-Creation-Date: 2026-11-12 07:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -657,7 +657,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Label sensor]]: [[ui:Gap between labels]] for die-cut labels, [[ui:Black mark]] for labels with a black mark on the back, [[ui:Continuous media]] for a roll without gaps. Set the [[ui:Label size]] and the [[ui:Gap]] (or the height of the mark) like the roll."
+msgid "[[ui:Label sensor]]: [[ui:As set on the printer]] keeps the printer's own setting. [[ui:Gap between labels]] for die-cut labels, [[ui:Black mark]] for labels with a black mark on the back, [[ui:Continuous media]] for a roll without gaps. Set the [[ui:Label size]] and the [[ui:Gap]] (or the height of the mark) like the roll."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -675,6 +675,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
+msgid "[[ui:Print upside down]]: for a printer that puts out the label the wrong way round."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
 msgid "Receipt printers print the label on endless paper: choose the paper width under [[ui:Tape width]]. The printable width is narrower than the paper (48 mm on 58 mm paper, 72 mm on 80 mm paper). [[ui:Cut]] in the print dialog cuts the paper after each label."
 msgstr ""
 
@@ -687,13 +693,19 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Reachable · the printer reports no status]]: the printer takes jobs but answers no questions, which many of these printers do (EPL2 and DYMO never answer). Problems such as an open cover then show on the printer only."
+msgid "[[ui:Reachable · the printer reports no status]]: the printer takes jobs but answers no questions, which many of these printers do (EPL2 printers never answer). Problems such as an open cover then show on the printer only."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "The label comes out upside down or turned: please report it, with the printer model; the orientation could not be tried on a printer yet."
+msgid "The printer does not report its resolution: choose it under [[ui:Resolution]] instead of [[ui:As reported by the printer]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/printer.md
+#, markdown-text
+msgid "The label comes out upside down: switch on [[ui:Print upside down]], and please report it with the printer model; the orientation could not be tried on a printer yet."
 msgstr ""
 
 #. type: Bullet: '- '

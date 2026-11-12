@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d%%",
     "%d in/s": "%d hüvelyk/s",
     "Receipt printer (ESC/POS)": "Blokknyomtató (ESC/POS)",
+    "Print upside down": "Fejjel lefelé nyomtatás",
+    "The printer does not report its resolution. Choose it under “%s”.": "A nyomtató nem jelzi a felbontását. Válassza ki itt: „%s”.",
 }

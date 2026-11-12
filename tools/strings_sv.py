@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d %%",
     "%d in/s": "%d tum/s",
     "Receipt printer (ESC/POS)": "Kvittoskrivare (ESC/POS)",
+    "Print upside down": "Skriv ut upp och ner",
+    "The printer does not report its resolution. Choose it under “%s”.": "Skrivaren rapporterar inte sin upplösning. Välj den under ”%s”.",
 }

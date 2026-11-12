@@ -10,7 +10,8 @@ from types import SimpleNamespace
 from etiketto.backends import raw
 
 # realistic answers; framing and fields as the manuals describe them
-ZPL_HI = b"\x02ZD621-203dpi,V93.21.18Z,8,8192KB\x03\r\n"
+# ~HI: model, firmware, dots per mm, memory, options (5 fields)
+ZPL_HI = b"\x02ZD621-203dpi,V93.21.18Z,8,8192KB,\x03\r\n"
 ZPL_HS = (
     b"\x02030,0,0,1245,000,0,0,0,000,0,0,0\x03\r\n"
     b"\x02000,0,0,0,1,2,6,0,00000000,1,000\x03\r\n"
@@ -33,6 +34,7 @@ QUESTIONS = {
     b"~!T\r\n",
     b"\x10\x04\x02",
     b"\x10\x04\x04",
+    b"\x1bA",
 }
 
 

@@ -27,6 +27,16 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
 - Questions are answered on the same connection; Etiketto waits 1 s for
   each and treats silence as "no status" (state UNKNOWN), not as an error.
   [assumed]
+- An answer that comes after its 1 s ends up in front of the next answer:
+  the frames are told apart by their number of fields (`~HI` 5, `~HS` 12,
+  11 and 2), not by their place.
+- Sending: the timeout of 10 s counts from the last bytes the printer took,
+  so a large job on a slow printer goes through; a job may take 10 s plus
+  its size at 8 kB/s at most. After the job Etiketto closes its sending
+  side and waits until the printer closes the connection or has taken
+  everything (then 1 s of quiet), reading and dropping what it still says:
+  closing with an unread answer would reset the connection and cut the job
+  off.
 
 ## Status and identification
 
@@ -50,7 +60,10 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   reports a problem; a printer that does not answer gets the job anyway.
 - Answers that do not have this shape (garbage, half an answer) count as no
   answer. The resolution "As reported by the printer" uses `~HI`; without an
-  answer, 203 dpi.
+  answer: with "As reported by the printer" each print asks `~HI` again
+  (resolutions are kept per printer address) and scales the label if it
+  was rendered for another resolution; a printer that never answered `~HI`
+  gets no job, Etiketto asks to choose the resolution instead of guessing.
 
 ## A print job
 
@@ -60,11 +73,11 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
 ^XA
 ^MMT,Y                               (after printing, only if set: T tear, P peel, C cut)
 ^PR4,4,4                             (speed in inches per second, only if set)
-^POI                                 (turned by 180°, as LPrint does)
+^PON                                 (not turned: the first row leaves first)
 ^PW16                                (print width in dots)
 ^LH0,0
 ^LL3                                 (label length in dots)
-^MNY                                 (sensor: Y gap, M black mark, N continuous)
+^MNY                                 (sensor, only if set: Y gap, M black mark, N continuous)
 ^PQ1,0,1,N                           (number of labels)
 ^FO0,0^XGR:ETIKETTO.GRF,1,1^FS       (place the graphic)
 ^XZ
@@ -80,11 +93,14 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   number of zeros leaves one `0` first). Example, 16 dots, rows `FF F0`,
   `FF F0`, `00 00`: `~DGR:LPRINT.GRF,6,2,IF0:,`. Etiketto's tests check
   this example byte for byte and decode random rows again. [LPrint] [spec]
-- `^POI` turns the label by 180°, as LPrint sends it with every page; which
-  way round the label comes out has not been seen on a printer. [LPrint]
-  [open]
+- `^PON`: the first row of the image leaves the printer first, as in the
+  other raw languages. LPrint sends `^POI` (turned by 180°). Which way
+  round the label comes out has not been seen on a printer; "Print upside
+  down" turns the image by 180° for a printer where it comes out the wrong
+  way. [spec] [open]
 - `^MN`: LPrint sends `^MNM` (black mark) for gap labels too; by the manual
-  gap labels are `^MNY` ("web"), and Etiketto sends that. [spec]
+  gap labels are `^MNY` ("web"), and Etiketto sends that. By default
+  ("As set on the printer") it sends no `^MN` at all. [spec]
 - `^LL`: LPrint sends the length only for continuous media; Etiketto sends
   it always, so the first label is right before the printer has calibrated.
   [assumed]
@@ -100,10 +116,11 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
 | Setting | Values | Command |
 |---|---|---|
 | Resolution | As reported by the printer, 203, 300, 600 dpi | renders at 8, 12 or 24 dots per mm |
-| Label sensor | gap, black mark, continuous | `^MNY`, `^MNM`, `^MNN` |
+| Label sensor | as set on the printer, gap, black mark, continuous | none, `^MNY`, `^MNM`, `^MNN` |
 | After printing | as set on the printer, tear off, peel off, cut | none, `^MMT,Y`, `^MMP,N`, `^MMC,Y` |
 | Darkness | as set on the printer, 0 to 100 % | `~SD00` to `~SD30` |
 | Speed | as set on the printer, 1 to 12 in/s | `^PR` |
+| Print upside down | off, on | the image turned by 180° |
 
 Widest label: 104 mm, the 832 dots of a 4 inch head at 203 dpi. [spec]
 

@@ -11,6 +11,7 @@ import socket
 import threading
 import tty
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from fake_raw import ZPL_HI, ZPL_HQES, ZPL_HS
@@ -172,11 +173,15 @@ def test_an_unplugged_printer_is_an_error():
 
 def test_connect_uses_usb_for_usb_addresses(monkeypatch):
     calls = []
-    monkeypatch.setattr(
-        usb, "connect", lambda host, timeout, wait=None: calls.append((host, timeout, wait)) or 1
-    )
-    assert REAL_CONNECT("usb://Zebra/ZD621", 9100) == 1
-    assert REAL_CONNECT("usb://Zebra/ZD621", 9100, usb.PRINT_WAIT) == 1
+
+    def connect(host, timeout, wait=None):
+        calls.append((host, timeout, wait))
+        return SimpleNamespace(min_rate=usb.MIN_RATE)
+
+    monkeypatch.setattr(usb, "connect", connect)
+    # these printers take data at printing pace: a lower least rate than usb's
+    assert REAL_CONNECT("usb://Zebra/ZD621", 9100).min_rate == raw.MIN_RATE < usb.MIN_RATE
+    REAL_CONNECT("usb://Zebra/ZD621", 9100, usb.PRINT_WAIT)
     assert calls == [
         ("usb://Zebra/ZD621", raw.SOCKET_TIMEOUT, usb.BUSY_WAIT),
         ("usb://Zebra/ZD621", raw.SOCKET_TIMEOUT, usb.PRINT_WAIT),
@@ -241,7 +246,7 @@ def test_a_zpl_printer_on_tcp(monkeypatch):
     image = _image(16, 8, black=[(0, 0)])
     backend.print_label(image, "127.0.0.1", PrintOptions(copies=2))
     server.join(5)
-    job = server.received.split(b"~HQES\n", 1)[1]
+    job = server.received.split(b"~HQES\n~HI\n", 1)[1]
     assert job.startswith(b"~DGR:ETIKETTO.GRF,16,2,80,,::::::\n^XA\n")
     assert b"^PQ2,0,1,N\n" in job and job.endswith(b"^XZ\n")
 

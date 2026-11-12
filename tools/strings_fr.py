@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d %%",
     "%d in/s": "%d po/s",
     "Receipt printer (ESC/POS)": "Imprimante de tickets (ESC/POS)",
+    "Print upside down": "Imprimer à l’envers",
+    "The printer does not report its resolution. Choose it under “%s”.": "L’imprimante n’indique pas sa résolution. Choisissez-la sous « %s ».",
 }

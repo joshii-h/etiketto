@@ -2197,14 +2197,19 @@ def test_raw_printer_settings_rows(make_window, raw_env):
     resolution = one(win.sidebar, Adw.ComboRow, title="Resolution")
     assert _items(resolution) == ["As reported by the printer", "203 dpi", "300 dpi", "600 dpi"]
     sensor = one(win.sidebar, Adw.ComboRow, title="Label sensor")
-    assert _items(sensor) == ["Gap between labels", "Black mark", "Continuous media"]
+    assert _items(sensor) == [
+        "As set on the printer",
+        "Gap between labels",
+        "Black mark",
+        "Continuous media",
+    ]
     finish = one(win.sidebar, Adw.ComboRow, title="After printing")
     assert _items(finish) == ["As set on the printer", "Tear off", "Peel off", "Cut off"]
     darkness = one(win.sidebar, Adw.ComboRow, title="Darkness")
     assert _items(darkness)[:3] == ["As set on the printer", "0 %", "10 %"]
     speed = one(win.sidebar, Adw.ComboRow, title="Speed")
     assert _items(speed)[1] == "1 in/s" and len(_items(speed)) == 13
-    sensor.set_selected(1)
+    sensor.set_selected(2)
     darkness.set_selected(6)  # 50 %
     stored = Settings.load().data["printers"]["zpl"]
     assert stored["media"] == "mark" and stored["darkness"] == 50
@@ -2217,16 +2222,36 @@ def test_raw_printer_settings_rows(make_window, raw_env):
     assert pump(lambda: not win.print_flow.busy)
     options = raw_env.prints[0][2]
     assert options.settings == {"media": "mark", "darkness": 20}
+    upside_down = one(win.sidebar, Adw.SwitchRow, title="Print upside down")
+    assert not upside_down.get_active()
+    upside_down.set_active(True)
+    assert Settings.load().data["printers"]["zpl"]["upside_down"] is True
 
 
 def test_raw_printer_settings_are_shown_as_stored(make_window, raw_env):
     win = make_window(
-        {"printers": {"zpl": {"host": "zebra.local", "dpi": "300", "speed": 4, "media": 7}}}
+        {
+            "printers": {
+                "zpl": {
+                    "host": "zebra.local",
+                    "dpi": "300",
+                    "speed": 4,
+                    "media": 7,
+                    "darkness": 55,  # off the steps of 10 %: shown as it is
+                    "upside_down": True,
+                }
+            }
+        }
     )
     win.set_backend("zpl")
     assert _selected(one(win.sidebar, Adw.ComboRow, title="Resolution")) == "300 dpi"
     assert _selected(one(win.sidebar, Adw.ComboRow, title="Speed")) == "4 in/s"
-    assert _selected(one(win.sidebar, Adw.ComboRow, title="Label sensor")) == "Gap between labels"
+    darkness = one(win.sidebar, Adw.ComboRow, title="Darkness")
+    assert _selected(darkness) == "55 %" and "60 %" in _items(darkness)
+    assert one(win.sidebar, Adw.SwitchRow, title="Print upside down").get_active()
+    assert _selected(one(win.sidebar, Adw.ComboRow, title="Label sensor")) == (
+        "As set on the printer"
+    )
     win.set_backend("vc500w")
     assert not find(win.sidebar, Adw.ComboRow, title="Resolution")
 

@@ -26,6 +26,7 @@ from etiketto.backends.base import (
     PrintMode,
     PrintOptions,
     RibbonError,
+    Toggle,
 )
 from etiketto.backends.raw import (
     DPI,
@@ -51,8 +52,13 @@ LABEL_SIZES = (
     LabelSize(50, 30),
     LabelSize(40, 30),
 )
-# what to do after a label; "printer" sends nothing
-FINISH = {"tear": "SET TEAR ON", "peel": "SET PEEL ON", "cut": "SET CUTTER 1"}
+# what to do after a label; "printer" sends nothing. The printer keeps these
+# in its memory: each mode switches the other two off
+FINISH = {
+    "tear": ("SET CUTTER OFF", "SET PEEL OFF", "SET TEAR ON"),
+    "peel": ("SET CUTTER OFF", "SET TEAR OFF", "SET PEEL ON"),
+    "cut": ("SET PEEL OFF", "SET TEAR OFF", "SET CUTTER 1"),
+}
 
 # ESC !? answers one byte; the bits combine (TSC's manual)
 STATUS_BITS: tuple[tuple[int, type[PrinterError], str], ...] = (
@@ -67,9 +73,12 @@ PRINTING = 0x20
 ESC = b"\x1b"
 
 
-def media_command(media: str, gap_mm: float) -> str:
+def media_command(media: str, gap_mm: float) -> str | None:
     """GAP for labels with gaps, BLINE for black marks, GAP 0 for
-    continuous media. LPrint always sends 3 mm; this is the label's gap."""
+    continuous media; None keeps the printer's setting. LPrint always sends
+    GAP 3 mm; this is the label's gap."""
+    if media not in ("gap", "mark", "continuous"):
+        return None
     if media == "continuous":
         return "GAP 0 mm,0 mm"
     keyword = "BLINE" if media == "mark" else "GAP"
@@ -80,27 +89,30 @@ def build_job(
     image: Bitmap,
     dots_per_mm: float,
     copies: int = 1,
-    media: str = "gap",
+    media: str = "printer",
     gap_mm: float = 3.0,
     finish: str = "printer",
     darkness: int | None = None,
     speed: int | None = None,
+    upside_down: bool = False,
 ) -> bytes:
     """SIZE in mm, the sensor, the label as BITMAP x,y,bytes per row,
     height,mode 1 and its raw bytes, then PRINT copies,1. The bytes follow
-    the last comma; their number is known, PRINT follows them directly."""
+    the last comma; their number is known, PRINT follows them directly.
+    DIRECTION 0 as LPrint sends it, 1 turns the label by 180°."""
     lines = [
         "SIZE %s mm,%s mm"
-        % (mm_text(image.width / dots_per_mm), mm_text(image.height / dots_per_mm)),
-        media_command(media, gap_mm),
-        "DIRECTION 0,0",
+        % (mm_text(image.width / dots_per_mm), mm_text(image.height / dots_per_mm))
     ]
+    sensor = media_command(media, gap_mm)
+    if sensor:
+        lines.append(sensor)
+    lines.append("DIRECTION %d,0" % (1 if upside_down else 0))
     if darkness is not None:
         lines.append("DENSITY %d" % ((darkness * 15 + 50) // 100))
     if speed is not None:
         lines.append("SPEED %d" % speed)
-    if finish in FINISH:
-        lines.append(FINISH[finish])
+    lines += FINISH.get(finish, ())
     lines += ["CLS", "BITMAP 0,0,%d,%d,1," % (image.bpr, image.height)]
     text = "\n".join(lines).encode()
     return text + image.data() + b"PRINT %d,1\n" % max(1, copies)
@@ -131,6 +143,7 @@ class Tspl(RawBackend):
     # "XPP,XL" is what several of the compatible printers name (LPrint's list)
     command_sets = ("TSPL", "TSPL2", "XPP", "XL")
     makers = ("TSC",)
+    turns_itself = True  # DIRECTION 1
     capabilities = Capabilities(
         tape_widths_mm=(),
         dpi=DPI["203"],
@@ -143,10 +156,11 @@ class Tspl(RawBackend):
         data_formats=("tspl",),
         settings=(
             Choice("dpi", ("203", "300")),
-            Choice("media", ("gap", "mark", "continuous")),
+            Choice("media", ("printer", "gap", "mark", "continuous")),
             Choice("finish", ("printer", "tear", "peel", "cut")),
             Level("darkness", 0, 100, 10),
             Level("speed", 1, 12),
+            Toggle("upside_down"),
         ),
     )
 
@@ -185,4 +199,5 @@ class Tspl(RawBackend):
             finish=self.choice(options, "finish"),
             darkness=self.level(options, "darkness"),
             speed=self.level(options, "speed"),
+            upside_down=self.upside_down(options),
         )

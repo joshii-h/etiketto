@@ -29,6 +29,7 @@ from etiketto.backends.base import (
     PrintMode,
     PrintOptions,
     RibbonError,
+    Toggle,
 )
 from etiketto.backends.raw import (
     DPI,
@@ -142,16 +143,18 @@ def download(image: Bitmap, name: str = GRAPHIC) -> bytes:
 def build_job(
     image: Bitmap,
     copies: int = 1,
-    media: str = "gap",
+    media: str = "printer",
     finish: str = "printer",
     darkness: int | None = None,
     speed: int | None = None,
 ) -> bytes:
     """Download the label, print it `copies` times, delete it again.
 
-    ^POI turns the label by 180°, as LPrint sends it (the first row leaves
-    the printer last). Darkness (per cent) and speed (inches per second)
-    are only sent when set; otherwise the printer's setup applies."""
+    ^PON: the first row leaves the printer first, like in the other
+    languages (LPrint sends ^POI, turned by 180°; "Print upside down" turns
+    the image instead). Sensor, finish, darkness (per cent) and speed
+    (inches per second) are only sent when set; otherwise the printer's
+    setup applies."""
     head = []
     if darkness is not None:
         head.append("~SD%02d" % percent_to(darkness, 30))
@@ -161,11 +164,14 @@ def build_job(
     if speed is not None:
         fmt.append("^PR%d,%d,%d" % (speed, speed, speed))
     fmt += [
-        "^POI",
+        "^PON",
         "^PW%d" % image.width,
         "^LH0,0",
         "^LL%d" % image.height,  # LPrint only for continuous: harmless, right before calibrating
-        "^MN" + MEDIA.get(media, MEDIA["gap"]),
+    ]
+    if media in MEDIA:
+        fmt.append("^MN" + MEDIA[media])
+    fmt += [
         "^PQ%d,0,1,N" % max(1, copies),
         "^FO0,0^XG%s,1,1^FS" % GRAPHIC,
         "^XZ",
@@ -207,10 +213,15 @@ class Identity:
 
 
 def parse_identity(raw: bytes) -> Identity:
-    frames = _frames(raw)
-    if not frames or len(frames[0]) < 3:
+    """The ~HI frame of an answer: 3 to 6 fields, the third a number. It
+    may come late, behind the next question: frames of ~HS (12, 11 and 2
+    fields) are not it."""
+    for frame in _frames(raw):
+        if 3 <= len(frame) <= 6 and frame[2].strip().isdigit():
+            break
+    else:
         return Identity()
-    model, firmware, dpmm = (field.strip() for field in frames[0][:3])
+    model, firmware, dpmm = (field.strip() for field in frame[:3])
     dpi = DOTS_PER_MM.get(int(dpmm), "") if dpmm.isdigit() else ""
     return Identity(model, firmware, dpi)
 
@@ -231,11 +242,15 @@ class HostStatus:
 
 
 def parse_host_status(raw: bytes) -> HostStatus | None:
-    """None for an answer that is not a status (nothing, garbage)."""
+    """None for an answer that is not a status (nothing, garbage). The two
+    frames are found by their number of fields (12 and 11), not by their
+    place: a late answer to an earlier question may come first."""
     frames = _frames(raw)
-    if len(frames) < 2 or len(frames[0]) < 5 or len(frames[1]) < 9:
+    pairs = zip(frames, frames[1:], strict=False)
+    found = next(((a, b) for a, b in pairs if len(a) >= 12 and len(b) >= 11), None)
+    if found is None:
         return None
-    one, two = frames[0], frames[1]
+    one, two = found
     return HostStatus(
         paper_out=_flag(one, 1),
         paused=_flag(one, 2),
@@ -294,10 +309,11 @@ class Zpl(RawBackend):
         data_formats=("zpl",),
         settings=(
             Choice("dpi", ("auto", "203", "300", "600")),
-            Choice("media", ("gap", "mark", "continuous")),
+            Choice("media", ("printer", "gap", "mark", "continuous")),
             Choice("finish", ("printer", "tear", "peel", "cut")),
             Level("darkness", 0, 100, 10),
             Level("speed", 1, 12),
+            Toggle("upside_down"),
         ),
     )
 
@@ -305,21 +321,32 @@ class Zpl(RawBackend):
         """The model the printer names in ~HI, e.g. "ZD621-203dpi"."""
         return info.model if info and info.model else self.name
 
-    def _status(self, s: Session) -> tuple[HostStatus | None, PrinterError | None]:
-        status = parse_host_status(s.ask(b"~HS\n", frames_done(3)))
+    def _status(self, s: Session) -> tuple[HostStatus | None, PrinterError | None, bytes]:
+        """~HS, then ~HQES if ~HS showed no problem; and the ~HS answer."""
+        answer = s.ask(b"~HS\n", frames_done(3))
+        status = parse_host_status(answer)
         if status is None:  # no status at all: nothing more to ask
-            return None, None
+            return None, None, answer
         error = host_status_error(status)
         if error is None:
             bits = parse_errors(s.ask(b"~HQES\n", frames_done(1)))
             error = errors_error(bits) if bits else None
-        return status, error
+        return status, error, answer
+
+    def _identity(self, s: Session, answer: bytes) -> Identity:
+        identity = parse_identity(answer)
+        if identity.dpi:
+            self.report_dpi(s.host, DPI[identity.dpi])
+        return identity
+
+    def printer_dpi(self, s: Session) -> float | None:
+        identity = self._identity(s, s.ask(b"~HI\n", frames_done(1)))
+        return DPI[identity.dpi] if identity.dpi else None
 
     def ask_status(self, s: Session) -> PrinterInfo:
-        identity = parse_identity(s.ask(b"~HI\n", frames_done(1)))
-        if identity.dpi:
-            self.reported_dpi = DPI[identity.dpi]
-        status, error = self._status(s)
+        answer = s.ask(b"~HI\n", frames_done(1))
+        status, error, more = self._status(s)
+        identity = self._identity(s, answer + more)  # a late ~HI answer comes with ~HS
         return PrinterInfo(
             identity.model,
             None,

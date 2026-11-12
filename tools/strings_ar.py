@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "%d %%": "%d%%",
     "%d in/s": "%d بوصة/ث",
     "Receipt printer (ESC/POS)": "طابعة إيصالات (ESC/POS)",
+    "Print upside down": "الطباعة مقلوبة",
+    "The printer does not report its resolution. Choose it under “%s”.": "لا تُبلغ الطابعة عن دقتها. اخترها من «%s».",
 }

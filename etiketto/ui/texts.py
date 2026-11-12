@@ -39,6 +39,7 @@ SETTING_TITLES = {
     "finish": _("After printing"),
     "darkness": _("Darkness"),
     "speed": _("Speed"),
+    "upside_down": _("Print upside down"),
 }
 # their values by protocol name; resolutions are shown as "203 dpi"
 CHOICE_NAMES = {
@@ -216,6 +217,8 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "resolution": _("The printer does not report its resolution. Choose it under “%s”.")
+        % SETTING_TITLES["dpi"],
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."

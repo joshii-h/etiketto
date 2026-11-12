@@ -8,6 +8,7 @@ printer means adding one module (see CONTRIBUTING.md).
 
 from __future__ import annotations
 
+import math
 import socket
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterator, Mapping
@@ -72,7 +73,7 @@ class Level:
 
     def value(self, raw: object) -> int | None:
         """A stored value, clamped to the range; junk is None."""
-        if isinstance(raw, bool) or not isinstance(raw, (int, float)) or raw != raw:
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)) or not math.isfinite(raw):
             return None
         return int(max(self.lower, min(self.upper, round(raw))))
 
@@ -80,7 +81,17 @@ class Level:
         return range(self.lower, self.upper + 1, self.step)
 
 
-Setting = Choice | Level
+@dataclass(frozen=True)
+class Toggle:
+    """A printer setting that is on or off; off by default."""
+
+    key: str
+
+    def value(self, raw: object) -> bool:
+        return raw is True
+
+
+Setting = Choice | Level | Toggle
 
 
 @dataclass(frozen=True)
@@ -357,6 +368,12 @@ class JobCanceled(PrinterError):
     code = "job_canceled"
 
 
+class ResolutionUnknown(PrinterError):
+    """The resolution is to be taken from the printer, which does not tell it."""
+
+    code = "resolution"
+
+
 class UsbNotFound(PrinterNotFound):
     """No such printer on USB, or it went away (unplugged, switched off,
     asleep): the advice differs from a printer in the network."""
@@ -452,7 +469,7 @@ class Backend(ABC):
         """The connected printer's name for the interface; the model family by default."""
         return self.name
 
-    def setting(self, options: PrintOptions, key: str) -> str | int | None:
+    def setting(self, options: PrintOptions, key: str) -> str | int | bool | None:
         """The value of one of capabilities.settings for a job: what the
         options carry if valid, else the default. KeyError for other keys."""
         for setting in self.capabilities.settings:
