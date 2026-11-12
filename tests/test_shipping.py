@@ -17,9 +17,12 @@ import pytest
 from PIL import Image, ImageDraw
 from shipping_samples import (
     A4,
+    CODE_RUNS,
+    CODE_Y,
     LABEL,
     _text,
     a4_pdf,
+    code_label,
     draw_label,
     drawn_page,
     encode,
@@ -28,6 +31,7 @@ from shipping_samples import (
     page_image,
     page_pdf,
     raw_pdf,
+    scanned_label,
 )
 
 from etiketto.backends import get_backend
@@ -516,6 +520,75 @@ def test_only_the_page_of_a_ghostscript_pdf(tmp_path):
     assert copy is not data and source.page_info(copy).pages == 1
 
 
+def _page_of(raw: bytes):
+    return source._pdf_page(source._open_pdf(raw), 0)[0]
+
+
+def _label_page(extra):
+    def draw(c, _index):
+        draw_label(c, 30, 30, LW, LH)
+        _text(c, 360, 40, 30, 8, 30)
+        extra(c)
+
+    return page_pdf(draw)
+
+
+def _digits(text):
+    def draw(c):
+        c.select_font_face("Sans")
+        c.set_font_size(12)
+        c.move_to(300, 400)
+        c.show_text(text)
+
+    return draw
+
+
+def _small_code(c):
+    for i in range(6):  # a 6 mm square code
+        for j in range(6):
+            if (i + j) % 2:
+                c.rectangle(400 + i * 2.8, 400 + j * 2.8, 2.8, 2.8)
+    c.fill()
+
+
+def _hairline(c):
+    c.set_line_width(0.3)
+    c.move_to(40, 450)
+    c.line_to(460, 450)
+    c.stroke()
+
+
+@needs_poppler
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        (_digits("PLZ 8004"), _digits("PLZ 8001")),
+        (lambda c: None, _small_code),
+        (lambda c: None, _hairline),
+    ],
+    ids=["another digit", "a missing small code", "a missing thin line"],
+)
+def test_small_changes_in_one_place_are_no_copy(first, second):
+    """Differences in one small place are caught by tiles, however few
+    pixels they are on the whole page."""
+    a, b = _page_of(_label_page(first)), _page_of(_label_page(second))
+    assert source._same_drawing(a, a)
+    assert not source._same_drawing(a, b)
+
+
+def test_shifted_pixels_are_rounding():
+    a = Image.new("L", (128, 128), 255)
+    ImageDraw.Draw(a).rectangle((20, 20, 60, 100), fill=0)
+    shifted = Image.new("L", (128, 128), 255)
+    ImageDraw.Draw(shifted).rectangle((21, 20, 61, 100), fill=0)  # one pixel over
+    assert source._unexplained(a.convert("RGB"), shifted.convert("RGB"), 0).getbbox() is None
+    missing = shifted.copy()
+    ImageDraw.Draw(missing).rectangle((90, 90, 93, 93), fill=0)  # a dot more
+    mask = source._unexplained(a.convert("RGB"), missing.convert("RGB"), 0)
+    assert source._changed_tile(mask)
+    assert not source._changed_tile(Image.new("L", (10, 10), 0))
+
+
 def test_differing_pixels():
     a = Image.new("RGB", (10, 10), "white")
     b = a.copy()
@@ -828,11 +901,154 @@ def test_framed_label_with_divider_lines_is_found_whole():
     assert covers(found.crop, frac(30, 30, w, h), slack=0.02)
 
 
-def test_section_of_a_frame():
-    frame = detect.Box(0, 0, 100, 200)
-    assert detect._section(detect.Box(0, 100, 100, 200), frame, 2)  # below a divider
-    assert not detect._section(detect.Box(20, 20, 80, 80), frame, 2)  # a box inside
-    assert not detect._section(frame, frame, 2)
+def box(c, x, y, w, h):
+    c.set_line_width(1.5)
+    c.rectangle(x, y, w, h)
+    c.stroke()
+
+
+def detect_on(draw):
+    return detect.detect(drawn_page(draw), width_mm=210)
+
+
+def receipt(c, x=380):
+    _text(c, x, 40, 25, 8, 28)
+
+
+@pytest.mark.parametrize("x, y", [(40, 30), (10, 10)], ids=["inside", "in its corner"])
+def test_label_in_a_larger_frame(x, y):
+    """A framed label in a frame of more than half the sheet (with a
+    receipt): the label, the large frame only later."""
+
+    def draw(c):
+        box(c, 10, 10, A4[0] - 20, A4[1] * 0.55)
+        draw_label(c, x, y, LW, LH)
+        receipt(c)
+        instructions(c, 520)
+
+    found = detect_on(draw)
+    assert covers(found.crop, frac(x, y, LW, LH), slack=0.02)
+    large = frac(10, 10, A4[0] - 20, A4[1] * 0.55)
+    assert any(covers(crop, large, slack=0.02) for crop in found.candidates[1:])
+
+
+def test_frameless_label_in_a_larger_frame():
+    def draw(c):
+        box(c, 10, 10, A4[0] - 20, A4[1] * 0.55)
+        draw_label(c, 40, 30, LW, LH, False)
+        receipt(c)
+        instructions(c, 520)
+
+    found = detect_on(draw)
+    assert covers(found.crop, plain(40, 30, LW, LH), slack=0.03)
+
+
+def both_offered(found, first, second, slack=0.02):
+    """Two alike labels: not certain, each among the first suggestions."""
+    assert not found.certain
+    best = found.candidates[:2]
+    for label in (first, second):
+        assert any(covers(crop, label, slack=slack) for crop in best), label
+
+
+def test_labels_sharing_a_side():
+    def draw(c):
+        draw_label(c, 20, 20, LW, LH)
+        draw_label(c, 20 + LW, 20, LW - 30, LH)
+        instructions(c)
+
+    both_offered(detect_on(draw), frac(20, 20, LW, LH), frac(20 + LW, 20, LW - 30, LH))
+
+
+def test_two_labels_in_a_common_frame():
+    def draw(c):
+        box(c, 10, 10, A4[0] - 20, LH + 40)
+        draw_label(c, 25, 30, LW - 20, LH)
+        draw_label(c, 25 + LW, 30, LW - 20, LH)
+        instructions(c, 520)
+
+    found = detect_on(draw)
+    both_offered(found, frac(25, 30, LW - 20, LH), frac(25 + LW, 30, LW - 20, LH))
+
+
+def test_stacked_labels_sharing_a_line():
+    height = A4[1] / 2 - 15
+
+    def draw(c):
+        draw_label(c, 15, 15, A4[0] - 30, height)
+        draw_label(c, 15, A4[1] / 2, A4[0] - 30, height)
+
+    found = detect_on(draw)
+    both_offered(found, frac(15, 15, A4[0] - 30, height), frac(15, A4[1] / 2, A4[0] - 30, height))
+
+
+def test_grid_of_labels_sharing_lines():
+    """2 × 2 labels whose lines are shared: cut into the four cells."""
+    w, h = (A4[0] - 40) / 2, (A4[1] - 40) / 2
+
+    def draw(c):
+        for i in range(2):
+            for j in range(2):
+                draw_label(c, 20 + i * w, 20 + j * h, w, h)
+
+    found = detect_on(draw)
+    assert found.how == "frame" and not found.certain
+    cells = [frac(20 + i * w, 20 + j * h, w, h) for i in range(2) for j in range(2)]
+    assert any(covers(found.crop, cell, slack=0.02) for cell in cells)
+    others = [cell for cell in cells if not covers(found.crop, cell, slack=0.02)]
+    assert any(covers(crop, cell, 0.02) for crop in found.candidates[1:3] for cell in others)
+
+
+def test_box_to_cut_along_offers_the_label_next():
+    """A label in a box a little larger (to cut along): the box, then the
+    label itself, and the user should check."""
+
+    def draw(c):
+        box(c, 20, 20, LW + 24, LH + 24)
+        draw_label(c, 32, 32, LW, LH)
+        receipt(c)
+        instructions(c, 520)
+
+    found = detect_on(draw)
+    assert not found.certain
+    assert covers(found.crop, frac(20, 20, LW + 24, LH + 24), slack=0.02)
+    assert covers(found.candidates[1], frac(32, 32, LW, LH), slack=0.02)
+
+
+def test_boxes_and_dividers_inside_a_label():
+    """A label with a vertical divider and an address box: the label, not
+    a part of it."""
+
+    def draw(c):
+        draw_label(c, 30, 30, LW, LH)
+        c.set_line_width(1.5)
+        c.move_to(30 + LW * 0.6, 30 + LH * 0.5)
+        c.line_to(30 + LW * 0.6, 30 + LH)
+        c.stroke()
+        box(c, 40, 30 + LH * 0.22, LW * 0.5, LH * 0.25)
+        receipt(c, 360)
+        instructions(c)
+
+    found = detect_on(draw)
+    assert found.how == "frame" and found.certain
+    assert covers(found.crop, TOP_LEFT, slack=0.02)
+
+
+@pytest.mark.parametrize("frame", [True, False])
+def test_label_beside_a_stub_in_one_frame(frame):
+    """A band across the page, divided into the label and a stub."""
+
+    def draw(c):
+        box(c, 20, 20, A4[0] - 40, LH)
+        c.move_to(20 + LW, 20)
+        c.line_to(20 + LW, 20 + LH)
+        c.stroke()
+        draw_label(c, 20, 20, LW, LH, frame)
+        _text(c, 30 + LW, 40, 30, 8, 30)
+        instructions(c, 500)
+
+    found = detect_on(draw)
+    assert covers(found.crop, frac(20, 20, LW, LH), slack=0.02)
 
 
 def test_only_small_blocks_fall_back_to_the_content():
@@ -1149,16 +1365,80 @@ def test_grey_content_is_dithered_not_lost():
     assert 0.05 < black < 0.5  # dithered dots, not blank paper and not solid black
 
 
-def test_bilevel():
-    from etiketto.render import bilevel
+def runs(row: bytes) -> int:
+    """Runs of black and white between the first and the last change."""
+    changes = sum(1 for a, b in zip(row, row[1:], strict=False) if (a < 128) != (b < 128))
+    return max(0, changes - 1)
 
-    edges = Image.new("L", (100, 100), 255)
-    ImageDraw.Draw(edges).rectangle((10, 10, 50, 90), fill=0)
-    edges.putpixel((51, 50), 128)  # a smoothed edge
-    assert bilevel(edges)
-    band = edges.copy()
-    ImageDraw.Draw(band).rectangle((60, 10, 90, 90), fill=100)
-    assert not bilevel(band)
+
+def code_runs(raw: bytes, name: str) -> list[int]:
+    """The bars and spaces of code_label() as a black and white printer
+    prints them (cab, 12 dots/mm), counted on four rows."""
+    backend = get_backend("cab")
+    element = PageElement(data=b64(raw), name=name)
+    label = targets.make_label(backend, element, targets.TARGETS[0], 0)
+    printed = backend.prepare(label, PrintOptions(), 0).convert("L")
+    scale = printed.width / LABEL[0]
+    left, right = round(8 * scale), round((LABEL[0] - 4) * scale)
+    rows = (round((CODE_Y + k) * scale) for k in (10, 25, 40, 55))
+    return [runs(printed.crop((left, y, right, y + 1)).tobytes()) for y in rows]
+
+
+@pytest.mark.parametrize("dpi", [100, 150, 200, 300])
+@pytest.mark.parametrize("kind", ["png", "jpeg", "soft", "real"])
+def test_scanned_barcode_keeps_its_bars_on_a_mono_printer(kind, dpi):
+    """A clean, a JPEG, a soft and a noisy scan at 100 to 300 dpi: every bar
+    and space comes out (not dithered into ragged dots)."""
+    raw = scanned_label(dpi, kind)
+    assert code_runs(raw, "label.png") == [CODE_RUNS] * 4
+
+
+@pytest.mark.parametrize("logo", [0, 20, 60, 90])
+def test_grey_logo_does_not_dither_the_barcode(logo):
+    """A grey logo (up to 5 % of the label) keeps its grey; the bars next
+    to it are still thresholded."""
+    raw = scanned_label(300, "png", logo)
+    assert code_runs(raw, "label.png") == [CODE_RUNS] * 4
+    if logo:
+        element = PageElement(data=b64(raw), name="label.png")
+        label = targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 0)
+        image = render(label, dpi=304.8, safe_mm=0, mono=True).image.convert("L")
+        scale = image.width / LABEL[0]
+        middle = round((20 + logo / 2) * scale), round((30 + logo / 2) * scale)
+        assert 0 < image.getpixel(middle[::-1]) < 255  # grey, for the dithering
+
+
+@needs_poppler
+def test_vector_barcode_on_a_mono_printer():
+    data = page_pdf(lambda c, _i: code_label(c, 60, grey_text=True), LABEL)
+    assert code_runs(data, "label.pdf") == [CODE_RUNS] * 4
+
+
+def test_levels_of_a_scan():
+    from etiketto.shipping import mono
+
+    image = Image.new("L", (100, 100), 230)  # grey paper
+    ImageDraw.Draw(image).rectangle((10, 10, 40, 90), fill=60)  # grey ink
+    assert mono.levels(image) == (60, 230)
+    # a large grey area is not the black of the image
+    ImageDraw.Draw(image).rectangle((50, 0, 99, 99), fill=150)
+    assert mono.levels(image)[0] == 60
+    assert mono.neighbourhood(1) == 5 and mono.neighbourhood(3) == 11
+    assert mono.neighbourhood(30) == mono.MAX_NEAR
+
+
+def test_black_and_white_keeps_own_grey():
+    from etiketto.shipping import mono
+
+    image = Image.new("L", (200, 200), 255)
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((10, 10, 60, 190), fill=0)  # black
+    draw.rectangle((120, 10, 190, 190), fill=150)  # a grey band
+    result = mono.black_and_white(image)
+    assert result.getpixel((30, 100)) == 0 and result.getpixel((90, 100)) == 255
+    assert result.getpixel((150, 100)) == 150  # left for the dithering
+    flat = Image.new("L", (50, 50), 200)  # no black and white to tell apart
+    assert set(mono.black_and_white(flat).tobytes()) == {255}
 
 
 @needs_poppler

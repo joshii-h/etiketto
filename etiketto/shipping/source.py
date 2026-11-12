@@ -51,6 +51,10 @@ ORIENTATION = 0x0112  # EXIF tag: how the image is to be turned
 SHARP_SHARE = 0.0005
 SMOOTH_SHARE = 0.001
 SMOOTH_LEVELS = 2
+# and in no TILE_PX square more than TILE_CHANGES pixels differ by more
+# than a shift of one pixel: a changed digit or a missing code is not rounding
+TILE_PX = 64
+TILE_CHANGES = 4
 
 
 class SourceError(ValueError):
@@ -423,7 +427,9 @@ TRANSPOSE = {
 }
 
 
-def _draw_image(image: Image.Image, region, rotation: int, size, scale: float) -> Image.Image:
+def _draw_image(
+    image: Image.Image, region, rotation: int, size, scale: float, sharp: bool = True
+) -> Image.Image:
     x, y, w, h = region
     box = (
         math.floor(x),
@@ -431,7 +437,7 @@ def _draw_image(image: Image.Image, region, rotation: int, size, scale: float) -
         min(image.width, math.ceil(x + w)),
         min(image.height, math.ceil(y + h)),
     )
-    if image.mode == "1" and scale < 1:  # averaging needs grey
+    if image.mode == "1" and (scale < 1 or not sharp):  # averaging needs grey
         image = image.crop(box).convert("L")
         box = (0, 0, image.width, image.height)
     # the size before turning; at least the size: the whole pixels of the
@@ -443,7 +449,12 @@ def _draw_image(image: Image.Image, region, rotation: int, size, scale: float) -
     # enlarging: whole pixels, bars stay sharp; reducing: the average of the
     # pixels that fall together (no ringing around bars as with Lanczos).
     # Resized straight from the area of the image: no copy of all of it.
-    resample = Image.Resampling.NEAREST if scale >= 1 else Image.Resampling.BOX
+    # Smooth (not sharp): enlarged with interpolation, for a threshold
+    # that finds the edges between the pixels (see shipping.mono).
+    if scale < 1:
+        resample = Image.Resampling.BOX
+    else:
+        resample = Image.Resampling.NEAREST if sharp else Image.Resampling.BICUBIC
     part = image.resize(scaled, resample, box=box)
     if rotation:
         part = part.transpose(TRANSPOSE[rotation])
@@ -480,7 +491,8 @@ def draw(
         pdf_page, _count = _pdf_page(_pdf(data), page)
         image = _draw_pdf(pdf_page, region, rotation, (width, height), scale, sharp)
     else:
-        image = _draw_image(_picture(data, page).image, region, rotation, (width, height), scale)
+        picture = _picture(data, page).image
+        image = _draw_image(picture, region, rotation, (width, height), scale, sharp)
     if _image_bytes(image) <= CACHE_ITEM_BYTES:
         _drawings.put(key, image)
     return image
@@ -528,6 +540,8 @@ def _same_drawing(page_a, page_b) -> bool:
         levels, share = (SMOOTH_LEVELS, SMOOTH_SHARE) if smooth else (0, SHARP_SHARE)
         if _differing(a, b, levels) > share * size[0] * size[1]:
             return False
+        if _changed_tile(_unexplained(a, b, levels)):
+            return False
     return True
 
 
@@ -536,6 +550,37 @@ def _differing(a: Image.Image, b: Image.Image, levels: int) -> int:
     red, green, blue = ImageChops.difference(a, b).split()
     most = ImageChops.lighter(ImageChops.lighter(red, green), blue)
     return sum(most.histogram()[levels + 1 :])
+
+
+def _outside(a: Image.Image, b: Image.Image, levels: int) -> Image.Image:
+    """255 where b is darker or lighter (by more than levels) than all of a
+    around the pixel: not a pixel of a moved by one."""
+    lowest, highest = a.filter(ImageFilter.MinFilter(3)), a.filter(ImageFilter.MaxFilter(3))
+    darker = ImageChops.subtract(lowest, b).point(lambda v: 255 if v > levels else 0)
+    lighter = ImageChops.subtract(b, highest).point(lambda v: 255 if v > levels else 0)
+    return ImageChops.lighter(darker, lighter)
+
+
+def _unexplained(a: Image.Image, b: Image.Image, levels: int) -> Image.Image:
+    """Where a and b differ by more than a shift of one pixel (rounding):
+    something drawn in one and not in the other (in grey: a change of
+    colour alone is rare on a label and caught by _differing())."""
+    grey_a, grey_b = a.convert("L"), b.convert("L")
+    return ImageChops.lighter(_outside(grey_a, grey_b, levels), _outside(grey_b, grey_a, levels))
+
+
+def _changed_tile(mask: Image.Image) -> bool:
+    """Whether a tile of mask holds more than a few marked pixels: small
+    changes in one place (a missing code, another digit, a missing line)
+    count, rounding scattered over the page does not."""
+    if mask.getbbox() is None:
+        return False
+    for top in range(0, mask.height, TILE_PX):
+        for left in range(0, mask.width, TILE_PX):
+            tile = mask.crop((left, top, left + TILE_PX, top + TILE_PX))
+            if tile.histogram()[255] > TILE_CHANGES:
+                return True
+    return False
 
 
 def only_page(data: str, page: int) -> tuple[str, int]:

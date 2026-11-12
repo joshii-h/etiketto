@@ -100,51 +100,65 @@ def test_another_resolution_is_scaled_to_the_label():
     assert ink_bbox(page, "white") == (0, px(0.5, DPI), px(70, DPI), px(0.5, DPI) + px(37, DPI))
 
 
-def _renders_again(calls, exact=True):
+def _renders_again(calls, size_mm=(70, 37), wrong=(70, 37)):
     """A label image of the wrong size that renders itself again at a dpi,
-    like the system printer's prepare() (info["render_at"])."""
+    like the system printer's prepare() (info["render_at"], info["size_mm"])."""
 
     def render_at(dpi):
         calls.append(dpi)
-        size = (px(70, dpi), px(37, dpi))
-        if not exact:  # a pixel short in each direction
-            size = (size[0] - 1, size[1] - 1)
-        again = Image.new("RGB", size, "black")
-        again.info["render_at"] = render_at
+        again = Image.new("RGB", (px(size_mm[0], dpi), px(size_mm[1], dpi)), "black")
+        again.info.update(render_at=render_at, size_mm=size_mm)
         return again
 
-    image = Image.new("RGB", (70, 37), "black")
-    image.info["render_at"] = render_at
+    image = Image.new("RGB", wrong, "black")
+    image.info.update(render_at=render_at, size_mm=size_mm)
     return image
 
 
-@pytest.mark.parametrize("exact", [True, False])
-def test_another_resolution_is_rendered_again_not_blurred(exact):
+def test_another_resolution_is_rendered_again_not_blurred():
     """A label with a page area (a shipping label) or a barcode: drawn
-    again at the size of its place, no smooth resize."""
+    again once, at the size of its place, no smooth resize."""
     sheet, calls = _sheet(), []
-    label = _renders_again(calls, exact)
+    label = _renders_again(calls)
     page = compose_page(sheet, [(0, label), (1, label)], DPI)
-    assert calls == [DPI]  # once for all positions of the same label
+    assert calls == [pytest.approx(DPI, rel=1e-3)]  # once for all positions of the same label
     assert set(page.convert("L").tobytes()) == {0, 255}  # no grey of a resize
-    left, top = 0, px(0.5, DPI)
-    assert page.getpixel((left + 5, top + 5)) == (0, 0, 0)
+    assert page.getpixel((5, px(0.5, DPI) + 5)) == (0, 0, 0)
 
 
-def test_label_of_another_size_is_rendered_at_the_size_of_its_place():
+def test_label_of_another_shape_is_fitted_not_cut():
+    """A label narrower than the sheet's: drawn once at the size that fits,
+    centred, white beside it (nothing cut off)."""
     calls = []
-
-    def render_at(dpi):  # a label 10 % smaller than the sheet's
-        calls.append(dpi)
-        again = Image.new("RGB", (px(63, dpi), px(33.3, dpi)), "black")
-        again.info["render_at"] = render_at
-        return again
-
-    image = Image.new("RGB", (63, 33), "black")
-    image.info["render_at"] = render_at
-    page = compose_page(_sheet(), [(0, image)], DPI)
-    assert calls[0] == DPI and calls[1] == pytest.approx(DPI / 0.9, rel=0.01)
+    label = _renders_again(calls, size_mm=(35, 37))  # half as wide
+    page = compose_page(_sheet(), [(0, label)], DPI)
+    assert calls == [pytest.approx(DPI, rel=1e-3)]
+    top = px(0.5, DPI)
+    left = (px(70, DPI) - px(35, DPI)) // 2
+    assert page.getpixel((5, top + 5)) == (255, 255, 255)  # white beside it
+    assert page.getpixel((left + 5, top + 5)) == (0, 0, 0)
     assert set(page.convert("L").tobytes()) == {0, 255}
+
+
+def test_without_render_at_the_shape_is_kept_too():
+    tall = Image.new("RGB", (35, 74), "black")  # twice as high for its width
+    page = compose_page(_sheet(), [(0, tall)], DPI)
+    top, height = px(0.5, DPI), px(37, DPI)
+    width = round(35 * height / 74)
+    left = (px(70, DPI) - width) // 2
+    assert page.getpixel((5, top + 5)) == (255, 255, 255)
+    assert page.getpixel((left + width // 2, top + height // 2)) == (0, 0, 0)
+
+
+def test_a_job_fits_its_label_once():
+    calls = []
+    label = _renders_again(calls)
+    job = SheetJob(_sheet(), 30)  # two pages
+    pages = Pages(job, lambda _n: label, DPI)
+    assert len(pages) == 2
+    for page in pages:
+        assert page.getpixel((5, px(0.5, DPI) + 5)) == (0, 0, 0)
+    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("shape", ["round", "ellipse"])

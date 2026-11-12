@@ -567,7 +567,6 @@ class SystemPrinter(Backend):
             dpi=dpi,
             safe_mm=safe_mm,
             min_length_mm=self.capabilities.min_length_mm,
-            mono=self.capabilities.color_model == "mono",
         ).image
         image = self.preview(image, options.mode)
         if label.orientation == "along":

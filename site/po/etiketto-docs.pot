@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 03:11+0100\n"
+"POT-Creation-Date: 2026-11-12 07:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -902,7 +902,13 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Images are enlarged by repeating pixels, evenly only by whole multiples (otherwise some pixels come out one dot wider than others); reduced, the pixels that fall together are averaged into grey. A scan or photo of a label should have at least the printer's resolution (200 to 300 dpi). On black-and-white printers an area that is black and white but for grey edges is printed in pure black and white, without a dot pattern; an area with grey of its own (grey text, shaded bands) keeps it as a dot pattern."
+msgid "Images are enlarged by repeating pixels, evenly only by whole multiples (otherwise some pixels come out one dot wider than others); reduced, the pixels that fall together are averaged into grey."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "On black-and-white printers the area is looked at piece by piece. Where it is black and white but for grey edges (barcodes and text, also from a scan with grey ink on grey paper), it is cut at the middle between its own black and white, so bars keep clean edges; images are enlarged smoothly for this, so the edges fall between the pixels of the scan.  Where it has grey of its own (a grey logo, grey text, a shaded band), the grey is printed as a dot pattern. A scan or photo of a label should have at least 150 dpi; at 100 dpi only a clean one keeps all its bars."
 msgstr ""
 
 #. type: Plain text

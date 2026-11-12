@@ -32,13 +32,16 @@ import re
 from dataclasses import dataclass, field
 from itertools import pairwise
 
-from PIL import Image, ImageChops, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
+
+from etiketto.shipping.framing import Lines, Tests, crossing, sort_frames
 
 INK_LEVEL = 200  # darker than this is ink: grey scanner paper is not
 # a pixel stays ink only with this many ink pixels in its 5 × 5
 # neighbourhood: a 1 pixel line keeps 5, scanner dust (up to 2 × 2) has fewer
 NEIGHBOURS = 5
 LINE_RUN = 0.12  # a frame line is at least this part of the page's side
+MAX_FRAMES = 400  # the largest frames looked at (a table makes many)
 MIN_AREA = 0.025  # areas smaller than this part of the page are not labels
 GAP = 0.02  # blank rows (columns) this part of the page's side separate blocks
 PAD = 0.01  # blank paper kept around a block, as part of the page's shorter side
@@ -187,42 +190,51 @@ def _overlap(a: Line, b: Line) -> float:
     return common / max(1, min(a.end - a.start, b.end - b.start))
 
 
-def _near(a: int, b: int, tolerance: int) -> bool:
-    return abs(a - b) <= tolerance
-
-
-def _has_side(verticals: list[Line], x: int, top: int, bottom: int, tol: int) -> bool:
-    """A vertical line at x that runs (almost) from top to bottom."""
-    return any(
-        v.pos - tol <= x <= v.last + tol and v.start <= top + tol and v.end >= bottom - tol
-        for v in verticals
-    )
-
-
-def frames(mask: Image.Image) -> list[Box]:
-    """Rectangles drawn with lines: two horizontal lines of the same span
-    joined by vertical lines at both ends. Largest first."""
+def frame_lines(mask: Image.Image) -> Lines:
+    """The long horizontal and vertical lines of the page."""
     w, h = mask.size
     horizontal = long_lines(_rows(mask), round(w * LINE_RUN))[:200]
     vertical = long_lines(_columns(mask), round(h * LINE_RUN))[:200]
-    tol = max(2, round(min(w, h) * 0.006))
-    found = []
-    for i, top in enumerate(horizontal):
-        for bottom in horizontal[i + 1 :]:
-            box = _frame_between(top, bottom, vertical, tol)
-            if box and box.area >= MIN_AREA * w * h:
-                found.append(box)
-    return sorted(set(found), key=lambda b: b.area, reverse=True)
+    return Lines(horizontal, vertical, max(2, round(min(w, h) * 0.006)))
 
 
-def _frame_between(top: Line, bottom: Line, vertical: list[Line], tol: int) -> Box | None:
-    if not (_near(top.start, bottom.start, tol) and _near(top.end, bottom.end, tol)):
-        return None
-    left, right = min(top.start, bottom.start), max(top.end, bottom.end)
-    sides = _has_side(vertical, left, top.pos, bottom.last, tol) and _has_side(
-        vertical, right - 1, top.pos, bottom.last, tol
+def frames(mask: Image.Image, lines: Lines | None = None) -> list[Box]:
+    """Rectangles drawn with lines: two horizontal lines joined by vertical
+    lines at both ends. Lines may be shared: labels side by side or in a
+    grid give a frame for each label (and for each group of them). Largest
+    first."""
+    w, h = mask.size
+    lines = lines or frame_lines(mask)
+    found: set[Box] = set()
+    for i, top in enumerate(lines.horizontal):
+        for bottom in lines.horizontal[i + 1 :]:
+            for box in _frames_between(top, bottom, lines.vertical, lines.tol):
+                if box.area >= MIN_AREA * w * h:
+                    found.add(box)
+    return sorted(found, key=lambda b: b.area, reverse=True)[:MAX_FRAMES]
+
+
+def _frames_between(top: Line, bottom: Line, vertical: list[Line], tol: int) -> list[Box]:
+    """The rectangles between two horizontal lines, closed by vertical
+    lines that run from one to the other, within the span both lines have."""
+    start, end = max(top.start, bottom.start), min(top.end, bottom.end)
+    sides = sorted(
+        (
+            v
+            for v in vertical
+            if v.start <= top.pos + tol
+            and v.end >= bottom.last - tol
+            and start - tol <= v.pos
+            and v.last <= end + tol
+        ),
+        key=lambda v: v.pos,
     )
-    return Box(left, top.pos, right, bottom.last + 1) if sides else None
+    return [
+        Box(left.pos, top.pos, right.last + 1, bottom.last + 1)
+        for i, left in enumerate(sides)
+        for right in sides[i + 1 :]
+        if right.pos - left.last > tol
+    ]
 
 
 # --- blocks --------------------------------------------------------------------------
@@ -307,7 +319,9 @@ def blocks(mask: Image.Image, box: Box, depth: int = 5) -> list[Block]:
         return []
     found: dict[Block, None] = {}
     _blocks(mask, own, depth, found, set())
-    return list(found)
+    # an area found both as a run and cut again holds what the cut showed
+    beside = {b.box for b in found if b.beside}
+    return list(dict.fromkeys(Block(b.box, b.box in beside) for b in found))
 
 
 def _groups(parts: list[Box], beside: bool) -> list[tuple[int, int]]:
@@ -346,6 +360,10 @@ def _blocks(mask: Image.Image, own: Box, depth: int, found: dict, seen: set) -> 
             run = parts[first:last]
             large = sum(p.area >= large_area for p in run)
             found.setdefault(Block(_union(run), beside and large > 1))
+            # cut again the other way: a label beside a receipt that ends
+            # before the label's footer is a column of this run
+            if (union := tight(mask, _union(run))) is not None:
+                _blocks(mask, union, depth - 1, found, seen)
         for part in parts:
             _blocks(mask, part, depth - 1, found, seen)
 
@@ -402,13 +420,15 @@ def detect(page: Image.Image, width_mm: float | None = None) -> Detection:
     whole = content.grown(pad, size).fractions(size)
     if not is_sheet(size, width_mm):  # the page is the label
         return Detection(whole, "content", [whole])
-    lines = frames(mask)
-    ranked = _ranked(mask, content, lines)
-    one = _one_label(mask, content, lines)
+    lines = frame_lines(mask)
+    boxes = frames(mask, lines)
+    found = _ranked(mask, content, boxes, lines)
+    ranked = found.all()
+    one = _one_label(mask, content, boxes)
     # an image printed all over is likely the label itself (an A6 label has
     # the shape of A4); a PDF page of sheet size rarely is
     share = ONE_IMAGE if width_mm is None and _fills(content, size) else ONE_LABEL
-    if one and (not ranked or ranked[0].score < share * one.score):
+    if one and (not found.main or found.main[0].score < share * one.score):
         # all of the page is one label: in a frame around everything, or
         # nothing on it looks like a label of its own
         crop = one.crop(pad, size) if one.how == "frame" else whole
@@ -416,8 +436,9 @@ def detect(page: Image.Image, width_mm: float | None = None) -> Detection:
         return Detection(crop, one.how, [crop, *others], one.how == "frame")
     if not ranked:
         return Detection(whole, "content", [whole])
-    candidates = [c.crop(pad, size) for c in ranked[:4]]
-    return Detection(candidates[0], ranked[0].how, [*candidates, whole], _certain(ranked))
+    candidates = [c.crop(pad, size) for c in ranked[:5]]
+    certain = _certain(found.main or ranked) and ranked[0].box not in found.doubtful
+    return Detection(candidates[0], ranked[0].how, [*candidates, whole], certain)
 
 
 FILLS = 0.8  # content over this part of the page's width and height fills it
@@ -466,15 +487,6 @@ def _inside(a: Box, b: Box) -> bool:
     return b.area > a.area and _inside_share(a, b) >= SAME
 
 
-def _section(a: Box, b: Box, tol: int) -> bool:
-    """a is a part of frame b cut off by divider lines: inside it and on
-    at least two of its sides."""
-    if not _inside(a, b):
-        return False
-    sides = (a.x0 - b.x0, b.x1 - a.x1, a.y0 - b.y0, b.y1 - a.y1)
-    return sum(abs(d) <= tol for d in sides) >= 2
-
-
 def _certain(ranked: list[Candidate]) -> bool:
     """The best area scores clearly more than the next one that is not a
     part of it (a part of the label is no other label)."""
@@ -503,28 +515,103 @@ def _label_like(box: Box, size: tuple[int, int], most: float = MAX_AREA) -> bool
     return MIN_AREA * page <= box.area <= most * page
 
 
-def _ranked(mask: Image.Image, content: Box, lines: list[Box]) -> list[Candidate]:
-    """Frames and blocks that could be the label, scored alike, best first;
-    of areas that are about the same only the best is kept."""
+@dataclass
+class Ranked:
+    main: list[Candidate]  # may be the label, best first
+    later: list[Candidate]  # parts and containers, offered after them
+    doubtful: dict[Box, Box]  # a box to cut along: the label filling it
+
+    def all(self) -> list[Candidate]:
+        """Best first; a box filled by a label (to cut along) is followed
+        by the label in it."""
+        ranked = _distinct(self.main + self.later)
+        inner = self.doubtful.get(ranked[0].box) if ranked else None
+        if inner is not None:
+            label = next((c for c in ranked if c.box == inner), None)
+            if label is not None:
+                ranked.remove(label)
+                ranked.insert(1, label)
+        return ranked
+
+
+def _ranked(mask: Image.Image, content: Box, boxes: list[Box], lines: Lines) -> Ranked:
+    """Frames and blocks that could be the label, scored alike, best first,
+    then the frames to offer later (see framing); of areas that are about
+    the same only the best is kept."""
     size = mask.size
-    framed = [b for b in lines if b.ratio() <= 2.6 and _label_like(b, size, MAX_FRAME_AREA)]
-    # a frame inside a label's frame is a part of it (a section between
-    # divider lines, a box), and so is a block inside it; a section shares
-    # sides with any frame it is in, also one too large to be a candidate
-    tol = max(2, round(min(size) * 0.006))
-    outer = [
-        b
-        for b in framed
-        if not any(_inside(b, other) for other in framed)
-        and not any(_section(b, other, tol) for other in lines)
-    ]
-    found = [Candidate(b, "frame", score(mask, Block(b)) * FRAME_BONUS) for b in outer]
+    tests = Tests(
+        lambda b: _label_like(b, size, MAX_FRAME_AREA),
+        lambda b: has_barcode(mask, b),
+        _aspect_weight,
+    )
+    sorted_frames = sort_frames(boxes, lines, tests)
+    plain = without_lines(mask, lines)  # a line between labels does not join them
+    main, later = _holding_side_by_side(plain, sorted_frames.main, sorted_frames.later)
+    found = [_frame_candidate(mask, b) for b in main]
+    # a block in a label's frame is a part of it, one across a frame
+    # (text of two labels whose lines between them are left out) none
     found += [
         Candidate(b.box, "block", score(mask, b))
-        for b in set(blocks(mask, content))
-        if _label_like(b.box, size) and not any(_inside(b.box, f) for f in outer)
+        for b in set(blocks(plain, content))
+        if _label_like(b.box, size)
+        and not any(_inside(b.box, f) or crossing(b.box, f) for f in main)
     ]
-    found.sort(key=lambda c: (c.score, c.how == "frame"), reverse=True)
+    later_found = [_frame_candidate(mask, b) for b in later]
+    return Ranked(_distinct(_best_first(found)), _best_first(later_found), sorted_frames.doubtful)
+
+
+def _holding_side_by_side(
+    plain: Image.Image, main: list[Box], later: list[Box]
+) -> tuple[list[Box], list[Box]]:
+    """A frame around large parts side by side (a frameless label next to
+    a receipt, in one box) holds them rather than being a label: offered
+    later, so that the blocks in it count."""
+    size = plain.size
+    gaps = (max(3, round(size[0] * GAP)), max(3, round(size[1] * GAP)))
+    large = MIN_AREA * size[0] * size[1]
+    holding = []
+    for box in main:
+        inner = tight(plain, box)
+        if not inner:
+            continue
+        for parts, beside in _cuts(plain, inner, gaps):
+            if beside and sum(1 for p in parts if (t := tight(plain, p)) and t.area >= large) > 1:
+                holding.append(box)
+    return [b for b in main if b not in holding], later + holding
+
+
+def without_lines(mask: Image.Image, lines: Lines) -> Image.Image:
+    """The ink without the long thin lines (frames, dividers, lines to cut
+    along); bars and bands of a label stay."""
+    plain = mask.copy()
+    draw = ImageDraw.Draw(plain)
+    for line in _lone(lines.horizontal, lines.tol, round(mask.height * GAP)):
+        draw.rectangle((line.start, line.pos, line.end - 1, line.last), fill=0)
+    for line in _lone(lines.vertical, lines.tol, round(mask.width * GAP)):
+        draw.rectangle((line.pos, line.start, line.last, line.end - 1), fill=0)
+    return plain
+
+
+def _lone(lines: list[Line], tol: int, gap: int) -> list[Line]:
+    """Thin lines with no other line near: not the bars of a barcode."""
+    found = []
+    for line in lines:
+        if line.last - line.pos > 2 * tol:
+            continue
+        if not any(o is not line and abs(o.pos - line.pos) < gap for o in lines):
+            found.append(line)
+    return found
+
+
+def _frame_candidate(mask: Image.Image, box: Box) -> Candidate:
+    return Candidate(box, "frame", score(mask, Block(box)) * FRAME_BONUS)
+
+
+def _best_first(found: list[Candidate]) -> list[Candidate]:
+    return sorted(found, key=lambda c: (c.score, c.how == "frame"), reverse=True)
+
+
+def _distinct(found: list[Candidate]) -> list[Candidate]:
     kept: list[Candidate] = []
     for candidate in found:
         if all(_overlap_share(candidate.box, k.box) < SAME for k in kept):

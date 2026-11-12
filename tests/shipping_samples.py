@@ -8,7 +8,7 @@ import io
 import random
 
 import cairo
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 A4 = (595.28, 841.89)  # points
 MM = 72 / 25.4
@@ -213,3 +213,64 @@ def raw_pdf(pages: int = 2, media=(0, 0, 595.32, 841.92), rotate: int = 0, crop=
         xref,
     )
     return bytes(out)
+
+
+MODULE = 0.33 * MM  # narrowest bar of the sample code
+
+
+def code_bars(ctx, x: float, y: float, height: float, n: int = 60, seed: int = 4) -> None:
+    """n bars of 1 to 4 modules with spaces of 1 to 4 (beyond a label's
+    edge if they do not fit)."""
+    rng = random.Random(seed)
+    pos = x
+    for _ in range(n):
+        width = rng.randint(1, 4) * MODULE
+        ctx.rectangle(pos, y, width, height)
+        pos += width + rng.randint(1, 4) * MODULE
+    ctx.fill()
+
+
+CODE_Y, CODE_H = 260, 70  # where the bars of code_label() are, in points
+CODE_RUNS = 115  # bars and spaces of code_bars() left of the label's right edge
+
+
+def code_label(ctx, logo: float = 0, grey_text: bool = False) -> None:
+    """A 4 × 6 in label: an address, bars, a grey logo of logo points if
+    asked, grey small print if asked."""
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.select_font_face("Sans")
+    ctx.set_font_size(11)
+    for i in range(6):
+        ctx.move_to(12, 150 + i * 14)
+        ctx.show_text("Erika Mustermann Heidestrasse %d" % i)
+    code_bars(ctx, 14, CODE_Y, CODE_H)
+    if logo:
+        ctx.set_source_rgb(0.6, 0.6, 0.6)
+        ctx.arc(30 + logo / 2, 20 + logo / 2, logo / 2, 0, 6.3)
+        ctx.fill()
+    if grey_text:
+        ctx.set_source_rgb(0.5, 0.5, 0.5)
+        ctx.set_font_size(7)
+        for i in range(3):
+            ctx.move_to(12, 400 + i * 9)
+            ctx.show_text("Terms and conditions apply, see the carrier's website")
+
+
+def scanned_label(dpi: float, kind: str = "png", logo: float = 0) -> bytes:
+    """code_label() as an image file at dpi: "png" (clean), "jpeg" (quality
+    75), "soft" (blurred, ink 25, paper 245) or "real" (blurred, ink 55,
+    paper 235, noise)."""
+    image = drawn_page(lambda c: code_label(c, logo), LABEL, dpi)
+    if kind in ("soft", "real"):
+        ink, paper = (25, 245) if kind == "soft" else (55, 235)
+        grey = image.convert("L").filter(ImageFilter.GaussianBlur(0.6))
+        image = grey.point(lambda v: ink + v * (paper - ink) / 255)
+        if kind == "real":
+            noise = Image.effect_noise(image.size, 4)  # around 128
+            image = ImageChops.add(image, noise, 1, -128)
+    buf = io.BytesIO()
+    if kind == "jpeg":
+        image.save(buf, format="JPEG", quality=75, dpi=(dpi, dpi))
+    else:
+        image.save(buf, format="PNG", dpi=(dpi, dpi))
+    return buf.getvalue()

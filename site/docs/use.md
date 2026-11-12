@@ -84,11 +84,16 @@ Only printers that take nothing but JPEG get a compressed copy.
 
 Images are enlarged by repeating pixels, evenly only by whole multiples
 (otherwise some pixels come out one dot wider than others); reduced, the
-pixels that fall together are averaged into grey. A scan or photo of a
-label should have at least the printer's resolution (200 to 300 dpi). On
-black-and-white printers an area that is black and white but for grey
-edges is printed in pure black and white, without a dot pattern; an area
-with grey of its own (grey text, shaded bands) keeps it as a dot pattern.
+pixels that fall together are averaged into grey.
+
+On black-and-white printers the area is looked at piece by piece. Where
+it is black and white but for grey edges (barcodes and text, also from a
+scan with grey ink on grey paper), it is cut at the middle between its
+own black and white, so bars keep clean edges; images are enlarged
+smoothly for this, so the edges fall between the pixels of the scan.
+Where it has grey of its own (a grey logo, grey text, a shaded band),
+the grey is printed as a dot pattern. A scan or photo of a label should
+have at least 150 dpi; at 100 dpi only a clean one keeps all its bars.
 
 The label file keeps the whole page the area was taken from, also outside
 the area (addresses, tracking numbers). Of a PDF with several pages only
