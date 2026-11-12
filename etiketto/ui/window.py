@@ -558,6 +558,7 @@ class Window(Adw.ApplicationWindow):
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
             mono=backend.renders_mono(self.print_flow.mode),
+            red=backend.renders_red(self.print_flow.mode),
         )
         rendered.warnings[:0] = warnings
         image = backend.preview(rendered.image, self.print_flow.mode)

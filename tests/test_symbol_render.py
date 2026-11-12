@@ -45,12 +45,24 @@ def test_mono_symbols_are_pure_black_and_white(dpi):
 
 
 @pytest.mark.parametrize(
-    ("color", "ink"),
-    [("#ffffff", 255), ("#ffff66", 255), ("#808080", 255), ("#7f7f7f", 0), ("#0000ff", 0)],
+    ("background", "color", "ink"),
+    [
+        ("#000000", "#ffffff", 255),
+        ("#000000", "#ffff66", 255),
+        ("#000000", "#7f7f7f", 255),
+        ("#000000", "#0000ff", 255),  # lighter than black: white
+        ("#000000", "#000000", 0),
+        ("#ffffff", "#ffff66", 0),  # a light colour on white stays visible
+        ("#ffffff", "#e0e0e0", 0),
+        ("#ffffff", "#ffffff", 255),
+        ("#808080", "#c0c0c0", 255),
+        ("#808080", "#404040", 0),
+    ],
 )
-def test_mono_symbols_are_black_or_white_by_brightness(color, ink):
-    """A white symbol on a black label stays white on a mono printer."""
-    label = Label(tape_mm=25, margin_mm=0, background="#000000")
+def test_mono_symbols_are_black_or_white_against_the_background(background, color, ink):
+    """White only where the colour is lighter than the background: a white
+    symbol on a black label stays white, a yellow one on white paper black."""
+    label = Label(tape_mm=25, margin_mm=0, background=background)
     label.elements = [SymbolElement(path=SQUARE, color=color)]
     image = render(label, dpi=203, safe_mm=0, mono=True).image
     size = image.height

@@ -385,6 +385,11 @@ def warning_text(warning: RenderWarning) -> str:
         "unclosed_variable": _(
             "Element %(n)d: the variable %(name)s… is not closed – end it with }"
         ),
+        "no_contrast": _(
+            "Element %(n)d: a black-and-white printer prints it in the colour of the "
+            "background – choose a darker or lighter colour"
+        ),
+        "shape_invisible": _("Element %(n)d: the shape has neither a line nor a fill"),
     }
     return texts.get(warning.key, warning.key) % warning.params
 

@@ -4,8 +4,9 @@ around the letters (an outline, a shadow, a box or a frame, the text cut
 out of its box when inverted). Fitting the size: etiketto.render.
 
 Black-and-white printers get no anti-aliasing at all (crisp 1-bit text),
-an outline and a shadow at least one printer dot wide, and a shadow in
-solid black (see mono_text()).
+an outline and a shadow at least one printer dot wide, a solid shadow
+kept apart from the letters by one dot (see mono_text()). Letter spacing
+leaves out scripts whose letters join (CURSIVE).
 """
 
 from __future__ import annotations
@@ -17,44 +18,76 @@ import gi
 
 gi.require_version("Pango", "1.0")
 gi.require_version("PangoCairo", "1.0")
-from gi.repository import Pango, PangoCairo  # noqa: E402
-from PIL import Image, ImageColor  # noqa: E402
+from gi.repository import GLib, Pango, PangoCairo  # noqa: E402
+from PIL import Image  # noqa: E402
 
+from etiketto import imagefx  # noqa: E402
 from etiketto.model import TextElement  # noqa: E402
 from etiketto.shapes import px, rounded_rect  # noqa: E402
 
-# a shadow on a black-and-white printer is solid: black, unless its colour
-# is almost white (then white, e.g. on a black label)
-MONO_SHADOW_LIGHT = 224
+# scripts whose letters join: letter spacing would tear them apart, so it
+# is left out for their runs
+CURSIVE = frozenset(
+    GLib.UnicodeScript(value)
+    for value in (
+        GLib.UnicodeScript.ARABIC,
+        GLib.UnicodeScript.SYRIAC,
+        GLib.UnicodeScript.NKO,
+        GLib.UnicodeScript.MONGOLIAN,
+        GLib.UnicodeScript.MANDAIC,
+        GLib.UnicodeScript.DEVANAGARI,
+        GLib.UnicodeScript.BENGALI,
+        GLib.UnicodeScript.GURMUKHI,
+        GLib.UnicodeScript.GUJARATI,
+        GLib.UnicodeScript.ORIYA,
+        GLib.UnicodeScript.TAMIL,
+        GLib.UnicodeScript.TELUGU,
+        GLib.UnicodeScript.KANNADA,
+        GLib.UnicodeScript.MALAYALAM,
+        GLib.UnicodeScript.SINHALA,
+        GLib.UnicodeScript.TIBETAN,
+    )
+)
+
+
+NEUTRAL = frozenset(
+    GLib.UnicodeScript(value)
+    for value in (GLib.UnicodeScript.COMMON, GLib.UnicodeScript.INHERITED)
+)
 
 
 def _rgb(value: str, fallback: str = "#000000") -> tuple[float, float, float]:
-    try:
-        r, g, b = ImageColor.getrgb(value)[:3]
-    except ValueError:
-        r, g, b = ImageColor.getrgb(fallback)[:3]
+    r, g, b = imagefx.rgb(value, fallback)
     return r / 255, g / 255, b / 255
 
 
-def _luma(value: str) -> float:
-    r, g, b = _rgb(value)
-    return (r * 299 + g * 587 + b * 114) / 1000 * 255
+def _hex(rgb: tuple[int, int, int]) -> str:
+    return "#%02x%02x%02x" % rgb
 
 
-def _mono(value: str) -> str:
-    return "#ffffff" if _luma(value) >= 128 else "#000000"
-
-
-def mono_text(element: TextElement) -> TextElement:
-    """The element as a black-and-white printer prints it: each colour
-    black or white by its brightness, the shadow solid."""
-    shadow = "#ffffff" if _luma(element.shadow_color) >= MONO_SHADOW_LIGHT else "#000000"
+def mono_text(element: TextElement, background: float = 255.0, red: bool = False) -> TextElement:
+    """The element as a black-and-white printer prints it on a background
+    of that brightness: each colour black or white against what lies behind
+    it (imagefx.mono_ink), an outline always the other ink than the
+    letters, the shadow solid in the other ink than what lies behind."""
+    behind = background
+    box = ""
+    if element.inverted or element.box_color:
+        box_rgb = imagefx.mono_ink(
+            imagefx.rgb(element.color if element.inverted else element.box_color), background, red
+        )
+        box, behind = _hex(box_rgb), imagefx.luma(box_rgb)
+    text = imagefx.mono_ink(imagefx.rgb(element.color), behind, red)
+    outline = imagefx.mono_ink(imagefx.rgb(element.outline_color, "#ffffff"), behind, red)
+    if outline == text:
+        outline = imagefx.opposite(text)
+    shadow = imagefx.opposite((255, 255, 255) if behind >= 128 else (0, 0, 0))
     return replace(
         element,
-        color=_mono(element.color),
-        outline_color=_mono(element.outline_color),
-        box_color=_mono(element.box_color) if element.box_color else "",
-        shadow_color=shadow,
+        color=box if element.inverted else _hex(text),
+        outline_color=_hex(outline),
+        box_color=box if element.box_color else "",
+        shadow_color=_hex(shadow),
     )
 
 
@@ -120,8 +153,7 @@ def layout(
     if wrap_px:
         text.set_width(max(1, wrap_px) * Pango.SCALE)
         text.set_wrap(Pango.WrapMode.WORD_CHAR)
-    # a trailing newline (easy to type) would add an empty line and halve the text
-    text.set_text(element.text.rstrip("\n") or " ", -1)
+    text.set_text(_shown(element), -1)
     return text
 
 
@@ -133,13 +165,42 @@ def _attributes(element: TextElement, size_px: float) -> Pango.AttrList | None:
         found.append(Pango.attr_strikethrough_new(True))
     if element.letter_spacing:
         spacing = round(size_px * element.letter_spacing / 100 * Pango.SCALE)
-        found.append(Pango.attr_letter_spacing_new(spacing))
+        for start, end in spaced_runs(_shown(element)):
+            attribute = Pango.attr_letter_spacing_new(spacing)
+            attribute.start_index, attribute.end_index = start, end
+            found.append(attribute)
     if not found:
         return None
     attributes = Pango.AttrList()
     for attribute in found:
         attributes.insert(attribute)
     return attributes
+
+
+def _shown(element: TextElement) -> str:
+    # a trailing newline (easy to type) would add an empty line and halve the text
+    return element.text.rstrip("\n") or " "
+
+
+def spaced_runs(text: str) -> list[tuple[int, int]]:
+    """Byte ranges (UTF-8, as Pango counts) of the text outside cursive
+    scripts: only these get letter spacing."""
+    runs: list[tuple[int, int]] = []
+    start = position = 0
+    cursive = False
+    for char in text:
+        size = len(char.encode())
+        script = GLib.unichar_get_script(char)
+        if script not in NEUTRAL:  # spaces and marks go with the letters before
+            cursive = script in CURSIVE
+        if cursive:
+            if position > start:
+                runs.append((start, position))
+            start = position + size
+        position += size
+    if position > start:
+        runs.append((start, position))
+    return runs
 
 
 def size_of(element: TextElement, size_px: float, dpi: float, antialias: bool, wrap_px) -> tuple:
@@ -172,6 +233,8 @@ def block(
     origin = (extra.pad - logical.x, extra.pad - logical.y)
     if extra.any():
         _decorate(ctx, text, element, extra, (width, height), origin)
+        if extra.shadow and not extra.outline and not antialias:
+            _gap(ctx, text, element, origin)
     ctx.set_source_rgb(*_rgb(element.color))
     if element.inverted:  # cut out of the box: the label shows through
         ctx.set_operator(cairo.OPERATOR_CLEAR)
@@ -183,6 +246,23 @@ def block(
         "RGBA", (width, height), bytes(surface.get_data()), "raw", "BGRa", surface.get_stride(), 1
     ).copy()
     return _turned(img, element.rotation)
+
+
+def _gap(ctx, text, element: TextElement, origin) -> None:
+    """Black and white: one dot of what lies behind between the letters and
+    their solid shadow, so the letters do not look fatter."""
+    ctx.save()
+    behind = element.color if element.inverted else element.box_color
+    if behind:
+        ctx.set_source_rgb(*_rgb(behind))
+    else:  # the label shows through
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+    ctx.move_to(*origin)
+    PangoCairo.layout_path(ctx, text)
+    ctx.set_line_width(2)  # one dot outside the letters
+    ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+    ctx.stroke()
+    ctx.restore()
 
 
 def _turned(img: Image.Image, rotation: int) -> Image.Image:

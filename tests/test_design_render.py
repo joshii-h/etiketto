@@ -564,3 +564,314 @@ def test_border_in_colour_is_anti_aliased_when_round():
     label = Label(tape_mm=12, border_mm=0.5, border_radius_mm=2, border_color="#0000ff")
     image = render(label, dpi=254).image
     assert greys(image) > 0
+
+
+# --- review: light colours, inks against the background -------------------------------
+
+
+@pytest.mark.parametrize("dpi", [203, 300])
+def test_light_colours_stay_visible_on_white(dpi):
+    label = Label(
+        tape_mm=12,
+        elements=[
+            TextElement(text="Yellow", color="#ffee00"),
+            SymbolElement(path=SQUARE, color="#e0e0e0", size_mm=4),
+            CodeElement(data="ABC", color="#ffff80"),
+            ShapeElement(shape="rectangle", fill="solid", line_mm=0, color="#f0f0a0"),
+        ],
+    )
+    rendered = render(label, dpi=dpi, mono=True)
+    assert rendered.warnings == []
+    image = rendered.image.convert("L")
+    assert greys(image) == 0
+    assert image.histogram()[0] > 0.1 * image.width * image.height / 4
+
+
+def test_white_on_white_warns_on_mono():
+    label = Label(tape_mm=12, elements=[CodeElement(data="ABC", color="#ffffff")])
+    keys = [w.key for w in render(label, dpi=203, mono=True).warnings]
+    assert keys == ["no_contrast"]
+    assert [w.key for w in render(label, dpi=203).warnings] == []
+
+
+def test_inks_follow_a_background_image():
+    dark = b64(Image.new("RGB", (8, 8), (20, 20, 20)))
+    label = Label(tape_mm=12, margin_mm=0, background_image=ImageElement(data=dark))
+    label.elements = [SymbolElement(path=SQUARE, color="#808080")]
+    image = render(label, dpi=203, safe_mm=0, mono=True).image
+    assert image.getpixel((image.height // 2, image.height // 2)) == (255, 255, 255)
+
+
+def test_inverted_and_boxed_text_use_the_other_ink():
+    """White text on a yellow box on white paper: the box prints black, the
+    letters white on it; an outline is never the letters' own ink."""
+    element = TextElement(
+        text="HH", size_pt=20, color="#ffffff", box_color="#ffdd00", padding_mm=1
+    )
+    img = render_text(element, 1000, 203, mono=True)
+    colours = {p[:3] for p in pixels(img) if p[3]}
+    assert colours == {(0, 0, 0), (255, 255, 255)}
+    assert img.getpixel((1, 1))[:3] == (0, 0, 0)  # the box
+    outlined = TextElement(text="HH", size_pt=20, outline_mm=0.3, outline_color="#202020")
+    img = render_text(outlined, 1000, 203, mono=True)
+    assert (255, 255, 255) in {p[:3] for p in pixels(img) if p[3]}
+
+
+def test_light_drawing_keeps_its_ink_in_auto_mode():
+    logo = Image.new("RGB", (60, 30), "white")
+    ImageDraw.Draw(logo).rectangle((10, 5, 50, 25), fill=(250, 230, 60))
+    out = imagefx.black_and_white(logo.convert("RGBA"), "auto")
+    histogram = out.convert("L").histogram()
+    assert histogram[0] == 41 * 21  # the yellow rectangle, all black
+    assert histogram[1:255] == [0] * 254
+
+
+def test_a_drawing_without_two_tones_is_dithered():
+    flat = Image.new("RGBA", (40, 40), (240, 240, 120, 255))  # all one light colour
+    out = imagefx.black_and_white(flat, "auto")
+    share = out.convert("L").histogram()[0] / (40 * 40)
+    assert 0.05 < share < 0.3
+
+
+def test_otsu_splits_between_the_tones():
+    histogram = [0] * 256
+    histogram[200], histogram[255] = 100, 300
+    assert 200 < imagefx.otsu(histogram) <= 255
+    assert imagefx.otsu([0] * 255 + [10]) == 128
+
+
+# --- review: the border's inset and the frame -----------------------------------------
+
+
+def test_the_inset_border_keeps_clear_of_the_content(png_b64):
+    def inner_box(inset):
+        label = Label(
+            tape_mm=12,
+            border_mm=0.5,
+            border_inset_mm=inset,
+            border_color="#0000ff",
+            margin_mm=0,
+            elements=[ImageElement(data=png_b64((10, 10), "red"))],
+        )
+        image = render(label, dpi=254, safe_mm=1).image
+        reds = Image.eval(image.convert("RGB").split()[0], lambda v: 255 if v > 200 else 0)
+        blue = image.convert("RGB").split()[2]
+        return ink_bbox(image, WHITE), reds, blue, image
+
+    plain = inner_box(0)[0]
+    bbox, _reds, _blue, image = inner_box(1)
+    assert bbox[0] == 20 and bbox[1] == 20  # the border, 1 mm inside the safety margin
+    red_part = [p for p in pixels(image.convert("RGB")) if p == (255, 0, 0)]
+    assert len(red_part) == (120 - 2 * (10 + 10 + 5)) ** 2  # smaller by the inset
+    assert plain[1] == 10  # without inset: the border on the safety margin
+
+
+def test_no_room_draws_the_border_as_before():
+    """A border too wide for the tape: on the safety margin, as before the
+    inset existed, and the warning."""
+    label = Label(tape_mm=9, border_mm=5, border_inset_mm=3, elements=[TextElement(text="x")])
+    rendered = render(label, dpi=254, safe_mm=1)
+    assert "no_room" in [w.key for w in rendered.warnings]
+    assert rendered.image.getpixel((5, 10)) == WHITE  # the safety margin
+    assert rendered.image.getpixel((12, 12)) == (0, 0, 0)  # the border starts on it
+
+
+def test_double_border_stays_within_its_width():
+    img = border(border_style="double", border_mm=0.5)  # 5 dots
+    column = img.crop((img.width // 2, 0, img.width // 2 + 1, 30)).tobytes()
+    inked = [i for i, v in enumerate(column) if v == 0]
+    assert inked and min(inked) == 10 and max(inked) == 14  # within the 5 dots
+    assert 255 in column[10:15]  # with a gap
+    narrow = border(border_style="double", border_mm=0.2)  # 2 dots: one line
+    column = narrow.crop((narrow.width // 2, 0, narrow.width // 2 + 1, 30)).tobytes()
+    assert [i for i, v in enumerate(column) if v == 0] == [10, 11]
+
+
+# --- review: fitting decorated text ----------------------------------------------------
+
+
+def test_boxed_text_fills_the_height():
+    element = TextElement(text="Hg", inverted=True, padding_mm=3, frame_mm=0.3)
+    img = render_text(element, 300, 300)
+    assert 0.9 * 300 <= img.height <= 300
+
+
+def test_huge_padding_does_not_stall():
+    import time
+
+    element = TextElement(text="Hg", box_color="#ff0000", padding_mm=20)
+    started = time.monotonic()
+    img = render_text(element, 100, 300)
+    assert time.monotonic() - started < 2
+    assert img.height > 100  # cannot fit: the smallest size, render() scales it
+
+
+# --- review: reduced to a fixed length -------------------------------------------------
+
+
+def test_shapes_and_mono_text_are_drawn_again_when_reduced():
+    label = Label(
+        tape_mm=12,
+        auto_length=False,
+        length_mm=20,
+        elements=[
+            ShapeElement(shape="rectangle", width_mm=30, height_mm=6, fill="hatched", line_mm=0),
+            TextElement(text="Long text here"),
+        ],
+    )
+    colour = render(label, dpi=300, safe_mm=0)
+    assert colour.overflow
+    shape_area = colour.image.crop((0, 0, colour.image.width // 3, colour.image.height))
+    assert greys(shape_area) == 0  # the pattern drawn again, not resampled
+    assert "redraw" in render_text(TextElement(text="x"), 100, 300, mono=True).info
+    assert "redraw" not in render_text(TextElement(text="x"), 100, 300).info
+    mono = render(label, dpi=300, safe_mm=0, mono=True)
+    assert greys(mono.image) == 0
+
+
+def test_redrawn_shape_keeps_lines_at_least_one_dot():
+    part = render_module.render_shape(ShapeElement(shape="separator", line_mm=0.2), 100, 203)
+    smaller = render_module._resize(part, 1, 30)
+    assert smaller.size == (1, 30) and smaller.getchannel("A").getextrema() == (255, 255)
+
+
+# --- review: images on mono ------------------------------------------------------------
+
+
+def test_mono_image_border_is_solid_after_dithering():
+    element = ImageElement(data=gradient((100, 100)), mode="dither", border_mm=0.5)
+    label = Label(tape_mm=12, margin_mm=0, elements=[element])
+    image = render(label, dpi=254, safe_mm=0, mono=True).image.convert("L")
+    top = image.crop((10, 0, image.width - 10, 5)).tobytes()
+    assert set(top) == {0}  # the border: not dithered
+    assert greys(image) == 0
+
+
+def test_colour_image_corners_and_border_are_smooth():
+    data = b64(Image.new("RGB", (100, 100), "red"))
+    img = render_image(ImageElement(data=data, corner_mm=2, border_mm=0.3), 100, 254)
+    alphas = set(img.getchannel("A").histogram()[1:255])
+    assert alphas != {0}  # anti-aliased edge of the corners
+
+
+def test_large_images_are_adjusted_at_the_label_size(monkeypatch):
+    sizes = []
+    original = imagefx.adjusted
+
+    def recording(img, *args, **kwargs):
+        sizes.append(img.size)
+        return original(img, *args, **kwargs)
+
+    monkeypatch.setattr(imagefx, "adjusted", recording)
+    data = b64(Image.new("RGB", (1600, 1200), "grey"))
+    render_image(ImageElement(data=data, brightness=10), 60)
+    assert sizes == [(80, 60)]
+
+
+# --- review: black and red ------------------------------------------------------------
+
+
+def test_red_mode_keeps_red_and_converts_the_rest():
+    label = Label(
+        tape_mm=12,
+        background="#e0e0e0",
+        elements=[
+            TextElement(text="Red", color="#d00000"),
+            ImageElement(data=gradient(), mode="ordered"),
+            TextElement(text="Black"),
+        ],
+    )
+    image = render(label, dpi=300, mono=True, red=True).image
+    colours = {c for _n, c in image.getcolors(1 << 24)}
+    assert colours == {(0, 0, 0), (255, 255, 255), (255, 0, 0)}
+
+
+def test_the_red_mode_of_a_brother_ql_honours_the_image_method():
+    from etiketto.backends.base import PrintOptions
+    from etiketto.backends.brother_ql import BrotherQL
+
+    backend = BrotherQL()
+    label = Label.new_for(backend.id)
+    label.elements = [ImageElement(data=gradient(), mode="threshold", threshold=40)]
+    threshold = backend.prepare(label, PrintOptions(mode="red")).convert("L")
+    label.elements[0].threshold = 220
+    darker = backend.prepare(label, PrintOptions(mode="red")).convert("L")
+    assert darker.histogram()[0] > threshold.histogram()[0]
+
+
+# --- review: letter spacing, shadows, shapes ----------------------------------------------
+
+
+def test_letter_spacing_leaves_joined_scripts_alone():
+    arabic = TextElement(text="سلام عليكم", size_pt=20)
+    plain = render_text(arabic, 1000, 300)
+    arabic.letter_spacing = 50
+    assert render_text(arabic, 1000, 300).size == plain.size
+    from etiketto.typeset import spaced_runs
+
+    assert spaced_runs("ab") == [(0, 2)]
+    assert spaced_runs("aسb") == [(0, 1), (3, 4)]
+    assert spaced_runs("a b") == [(0, 3)]
+    assert spaced_runs("س b") == [(3, 4)]  # the space goes with the Arabic
+    assert spaced_runs("नमस्ते") == []
+
+
+def test_mono_shadow_is_kept_apart_from_the_letters():
+    element = TextElement(text="I", size_pt=30, bold=True, shadow_mm=0.6)
+    img = render_text(element, 1000, 300, mono=True)
+    alpha = img.getchannel("A")
+    row = alpha.crop((0, img.height // 2, img.width, img.height // 2 + 1)).tobytes()
+    runs = [k for k, (a, b) in enumerate(zip(row, row[1:], strict=False)) if a != b]
+    assert len(runs) >= 4  # letter, gap, shadow
+
+
+def test_invisible_shapes_warn():
+    label = Label(elements=[ShapeElement(shape="rectangle", line_mm=0)])
+    assert [w.key for w in render(label).warnings] == ["shape_invisible"]
+    assert [w.key for w in render(label, dpi=203, mono=True).warnings] == ["shape_invisible"]
+
+
+def test_arrow_heads_have_a_smallest_size_and_short_lines_work():
+    thin = ShapeElement(shape="line", width_mm=10, line_mm=0.05, arrows="end")
+    img = render_module.render_shape(thin, 100, 203, mono=True)
+    assert img.height >= shapes.px(shapes.ARROW_MM, 203)
+    short = ShapeElement(shape="line", width_mm=0.5, line_mm=0.3, arrows="both")
+    img = render_module.render_shape(short, 100, 300, mono=True)
+    assert img.getchannel("A").getbbox()
+
+
+# --- review: speed ----------------------------------------------------------------------
+
+
+def test_tiling_matches_pasting():
+    tile = Image.new("L", (3, 2))
+    tile.putdata([1, 2, 3, 4, 5, 6])
+    tiled = imagefx.tiled(tile, (7, 5))
+    for y in range(5):
+        for x in range(7):
+            assert tiled.getpixel((x, y)) == tile.getpixel((x % 3, y % 2))
+
+
+def test_patterns_repeat_with_their_period():
+    period = max(3, shapes.px(shapes.PATTERN_MM, 203))
+    for fill in ("hatched", "dotted", "grid"):
+        img = shapes.pattern(fill, (4 * period, 4 * period), 203)
+        first = img.crop((0, 0, period, period)).tobytes()
+        assert img.crop((period, 2 * period, 2 * period, 3 * period)).tobytes() == first
+
+
+def test_a_converted_render_is_not_dithered_again(monkeypatch):
+    from etiketto.backends.base import apply_color_model
+
+    image = render(every_option_label(), dpi=203, mono=True).image
+    assert image.info.get("black_and_white")
+    calls = []
+    original = Image.Image.convert
+
+    def counting(self, mode=None, *args, **kwargs):
+        calls.append(mode)
+        return original(self, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Image.Image, "convert", counting)
+    apply_color_model(image, "mono")
+    assert "1" not in calls

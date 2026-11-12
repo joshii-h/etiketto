@@ -703,6 +703,7 @@ class SystemPrinter(Backend):
             safe_mm=safe_mm,
             min_length_mm=self.capabilities.min_length_mm,
             mono=self.renders_mono(options.mode),
+            red=self.renders_red(options.mode),
         )
         check_codes(rendered.warnings)  # at the resolution it is printed at
         image = rendered.image

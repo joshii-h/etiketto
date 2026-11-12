@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageOps
+from PIL import Image, ImageChops, ImageColor, ImageEnhance, ImageOps
 
 # the ordered dithering's threshold map (Bayer, 8 × 8): a regular pattern
 # that stays the same from label to label, unlike error diffusion
@@ -39,12 +39,15 @@ def _bayer_tile() -> Image.Image:
     return tile
 
 
-def _tiled(tile: Image.Image, size: tuple[int, int]) -> Image.Image:
-    out = Image.new("L", size)
-    for y in range(0, size[1], tile.height):
-        for x in range(0, size[0], tile.width):
-            out.paste(tile, (x, y))
-    return out
+def tiled(tile: Image.Image, size: tuple[int, int]) -> Image.Image:
+    """A grey image of size filled with copies of tile, built row by row
+    from bytes (no paste per copy)."""
+    w, h = size
+    tw, th = tile.size
+    data = tile.tobytes()
+    repeat = -(-w // tw)
+    rows = [(data[y * tw : (y + 1) * tw] * repeat)[:w] for y in range(th)]
+    return Image.frombytes("L", (w, h), b"".join(rows[y % th] for y in range(h)))
 
 
 # --- adjustments ------------------------------------------------------------
@@ -111,30 +114,33 @@ def adjusted(
     return rgb
 
 
-def rounded(img: Image.Image, radius: int) -> Image.Image:
-    """Corners cut round with radius pixels (hard edged: no grey for mono)."""
-    if radius <= 0:
+def framed(
+    img: Image.Image, radius: int, border: int, color, antialias: bool = True
+) -> Image.Image:
+    """Corners cut round with radius pixels and a border of border pixels
+    on the image's edge (inside it, so the size stays) in color. Smooth on
+    colour printers; hard edged for black-and-white ones (antialias
+    False: no grey)."""
+    if radius <= 0 and border <= 0:
         return img
-    img = img.convert("RGBA")
-    mask = Image.new("L", img.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        (0, 0, img.width - 1, img.height - 1), radius=radius, fill=255
-    )
-    img.putalpha(ImageChops.multiply(img.getchannel("A"), mask))
-    return img
+    from etiketto.shapes import mask_surface, rounded_rect, surface_mask
 
-
-def bordered(img: Image.Image, width: int, color, radius: int = 0) -> Image.Image:
-    """A border of width pixels drawn on the image's edge (inside it, so the
-    size stays), following rounded corners."""
-    if width <= 0:
-        return img
     img = img.convert("RGBA")
-    ring = Image.new("L", img.size, 0)
-    ImageDraw.Draw(ring).rounded_rectangle(
-        (0, 0, img.width - 1, img.height - 1), radius=radius, outline=255, width=width
-    )
-    img.paste(Image.new("RGBA", img.size, (*color, 255)), (0, 0), ring)
+    if radius > 0:
+        surface, ctx = mask_surface(img.size, antialias)
+        rounded_rect(ctx, 0, 0, img.width, img.height, radius)
+        ctx.fill()
+        img.putalpha(ImageChops.multiply(img.getchannel("A"), surface_mask(surface)))
+    if border > 0:
+        surface, ctx = mask_surface(img.size, antialias)
+        half = border / 2
+        rounded_rect(
+            ctx, half, half, img.width - border, img.height - border, max(0, radius - half)
+        )
+        ctx.set_line_width(border)
+        ctx.stroke()
+        ring = surface_mask(surface)
+        img.paste(Image.new("RGBA", img.size, (*color, 255)), (0, 0), ring)
     return img
 
 
@@ -165,7 +171,7 @@ def floyd_steinberg(grey: Image.Image) -> Image.Image:
 
 def ordered(grey: Image.Image) -> Image.Image:
     """Ordered (Bayer) dithering: white where the grey is above the map."""
-    above = ImageChops.subtract(grey, _tiled(_bayer_tile(), grey.size))
+    above = ImageChops.subtract(grey, tiled(_bayer_tile(), grey.size))
     return above.point(lambda v: 255 if v > 0 else 0)
 
 
@@ -178,29 +184,133 @@ def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
     return sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE
 
 
-def black_and_white(img: Image.Image, mode: str = "auto", level: int = 128) -> Image.Image:
+def otsu(histogram: list[int]) -> int:
+    """The level that best splits a histogram into two classes (Otsu): a
+    light yellow logo on white is split between yellow and white, not at
+    the middle grey (which would leave it white). 128 for a single class."""
+    total = sum(histogram)
+    weighted = sum(i * n for i, n in enumerate(histogram))
+    below = below_weighted = 0
+    best, level = -1.0, 128
+    for i, n in enumerate(histogram[:-1]):
+        below += n
+        below_weighted += i * n
+        above = total - below
+        if not below or not above:
+            continue
+        mean_below = below_weighted / below
+        mean_above = (weighted - below_weighted) / above
+        spread = below * above * (mean_below - mean_above) ** 2
+        if spread > best:
+            best, level = spread, i + 1
+    return level
+
+
+# thresholding a drawing that leaves less ink than this share of the
+# pixels that are not white falls back to dithering
+MIN_INK_SHARE = 0.05
+NOT_WHITE = 250
+
+
+def _drawing(grey: Image.Image, alpha: Image.Image) -> Image.Image:
+    """A drawing: thresholded between its own two tones (otsu), dithered
+    if that would leave almost no ink."""
+    histogram = grey.histogram(alpha)
+    bw = threshold(grey, otsu(histogram))
+    coloured = sum(histogram[:NOT_WHITE])
+    if coloured:
+        ink = bw.histogram(alpha)[0]
+        if ink < MIN_INK_SHARE * coloured:
+            return floyd_steinberg(grey)
+    return bw
+
+
+def _converted(grey: Image.Image, alpha: Image.Image, mode: str, level: int) -> Image.Image:
+    if mode == "auto":
+        return _drawing(grey, alpha) if is_drawing(grey, alpha) else floyd_steinberg(grey)
+    if mode == "dither":
+        return floyd_steinberg(grey)
+    if mode == "ordered":
+        return ordered(grey)
+    return threshold(grey, level)
+
+
+# the red of black-and-red printers: what brother_ql's red_mask() takes as red
+RED = (255, 0, 0)
+
+
+def red_mask(img: Image.Image) -> Image.Image:
+    """Red-ish pixels (hue, saturation and value as a black-and-red
+    printer splits them), 255 where red."""
+    hue, saturation, value = img.convert("RGB").convert("HSV").split()
+    red = ImageChops.multiply(
+        hue.point(lambda v: 255 if v < 40 or v > 210 else 0),
+        saturation.point(lambda v: 255 if v > 100 else 0),
+    )
+    return ImageChops.multiply(red, value.point(lambda v: 255 if v > 80 else 0))
+
+
+def black_and_white(
+    img: Image.Image, mode: str = "auto", level: int = 128, red: bool = False
+) -> Image.Image:
     """The image (RGBA) as a black-and-white printer prints it: pure black
     and white, hard edged transparency. mode: "threshold" at level,
-    "dither" (Floyd-Steinberg), "ordered" (Bayer) or "auto" (threshold for
-    drawings, Floyd-Steinberg for photos)."""
-    grey = _on_white(img)
+    "dither" (Floyd-Steinberg), "ordered" (Bayer) or "auto" (drawings
+    thresholded between their own tones, photos dithered). red: a black
+    and red printer; red pixels stay pure red."""
+    img = img.convert("RGBA")
     alpha = _hard_alpha(img)
-    if mode == "auto":
-        mode = "threshold" if is_drawing(grey, alpha) else "dither"
-    if mode == "dither":
-        bw = floyd_steinberg(grey)
-    elif mode == "ordered":
-        bw = ordered(grey)
-    else:
-        bw = threshold(grey, level)
-    out = bw.convert("RGBA")
+    reds = red_mask(img) if red else None
+    grey = _on_white(img)
+    if reds is not None:  # the red parts are left out of the grey
+        grey.paste(255, (0, 0), reds)
+    out = _converted(grey, alpha, mode, level).convert("RGBA")
+    if reds is not None:
+        out.paste(RED + (255,), (0, 0), reds)
     out.putalpha(alpha)
     return out
 
 
-def hard(img: Image.Image) -> Image.Image:
-    """A part drawn in colours (text, a code, a symbol, a line) for a
-    black-and-white printer: each pixel black or white by its brightness
-    (a light colour stays white on a dark background), transparency hard
-    edged. Anti-aliased edges become whole dots, not dithered noise."""
-    return black_and_white(img.convert("RGBA"), "threshold")
+def hard(img: Image.Image, red: bool = False) -> Image.Image:
+    """A part drawn in black and white (text, a code, a symbol, a line,
+    their colours already mapped by mono_ink()) for a black-and-white
+    printer: anti-aliased edges become whole dots, not dithered noise;
+    transparency hard edged."""
+    return black_and_white(img, "threshold", 128, red)
+
+
+# --- inks -------------------------------------------------------------------------
+
+
+def rgb(value: str, fallback: str = "#000000") -> tuple[int, int, int]:
+    """A colour of the label file as RGB; the fallback if it is not one."""
+    try:
+        return ImageColor.getrgb(value)[:3]
+    except ValueError:
+        return ImageColor.getrgb(fallback)[:3]
+
+
+def luma(rgb: tuple[int, int, int]) -> float:
+    """Brightness 0-255 of a colour (ITU-R BT.601)."""
+    r, g, b = rgb[:3]
+    return (r * 299 + g * 587 + b * 114) / 1000
+
+
+def mono_ink(
+    rgb: tuple[int, int, int], background: float = 255.0, red: bool = False
+) -> tuple[int, int, int]:
+    """What a black-and-white printer prints for a colour on a background
+    of the given brightness: white only if the colour is lighter than the
+    background (a light symbol on a dark label), else black, so a light
+    colour on white paper stays visible. red: a black and red printer
+    keeps red."""
+    if red and red_mask(Image.new("RGB", (1, 1), rgb[:3])).getpixel((0, 0)):
+        return RED
+    own = luma(rgb)
+    lighter = own > background or (own == background and own >= 128)
+    return (255, 255, 255) if lighter else (0, 0, 0)
+
+
+def opposite(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
+    """The other ink of black and white."""
+    return (0, 0, 0) if luma(rgb) >= 128 else (255, 255, 255)

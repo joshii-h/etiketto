@@ -14,10 +14,12 @@ import math
 import cairo
 from PIL import Image, ImageChops, ImageDraw
 
+from etiketto import imagefx
 from etiketto.model import ShapeElement
 
 # patterns of the fills, in printer dots per mm (period about 0.6 mm)
 PATTERN_MM = 0.6
+ARROW_MM = 1.2  # the smallest arrow head, long and wide
 
 
 def px(mm: float, dpi: float) -> int:
@@ -76,28 +78,29 @@ def colored(mask: Image.Image, color: tuple[int, int, int]) -> Image.Image:
 
 
 def pattern(fill: str, size: tuple[int, int], dpi: float) -> Image.Image:
-    """A 1-bit fill pattern (255 = ink) of the given size."""
+    """A 1-bit fill pattern (255 = ink) of the given size: one period drawn,
+    then repeated (imagefx.tiled)."""
     if fill == "solid":
         return Image.new("L", size, 255)
     period = max(3, px(PATTERN_MM, dpi))
+    return imagefx.tiled(_pattern_tile(fill, period), size)
+
+
+def _pattern_tile(fill: str, period: int) -> Image.Image:
     line = max(1, period // 3)
-    img = Image.new("L", size, 0)
-    draw = ImageDraw.Draw(img)
-    w, h = size
-    if fill == "hatched":
-        for start in range(-h, w + h, period):
-            draw.line((start, h, start + h, 0), fill=255, width=line)
+    tile = Image.new("L", (period, period), 0)
+    draw = ImageDraw.Draw(tile)
+    if fill == "hatched":  # x + y = const: repeats with the period both ways
+        for x in range(period):
+            for k in range(line):
+                tile.putpixel((x, (period - 1 - x + k) % period), 255)
     elif fill == "dotted":
         dot = (period + 1) // 2
-        for y in range(0, h, period):
-            for x in range(0, w, period):
-                draw.rectangle((x, y, x + dot - 1, y + dot - 1), fill=255)
+        draw.rectangle((0, 0, dot - 1, dot - 1), fill=255)
     elif fill == "grid":
-        for x in range(0, w, period):
-            draw.rectangle((x, 0, x + line - 1, h), fill=255)
-        for y in range(0, h, period):
-            draw.rectangle((0, y, w, y + line - 1), fill=255)
-    return img
+        draw.rectangle((0, 0, line - 1, period - 1), fill=255)
+        draw.rectangle((0, 0, period - 1, line - 1), fill=255)
+    return tile
 
 
 # --- shape elements --------------------------------------------------------------
@@ -105,35 +108,51 @@ def pattern(fill: str, size: tuple[int, int], dpi: float) -> Image.Image:
 
 def shape_size(element: ShapeElement, height: int, dpi: float) -> tuple[int, int]:
     """The element's size in dots: a separator as wide as its line; a
-    horizontal line as high as its line; else width × height (0 = all of
-    the content height)."""
+    horizontal line as high as its line (or its arrow heads); else width ×
+    height (0 = all of the content height)."""
     line = max(1, px(element.line_mm, dpi))
     tall = height if element.height_mm <= 0 else min(height, px(element.height_mm, dpi))
     if element.shape == "separator":
         return line, height
     wide = px(element.width_mm, dpi)
-    if element.shape == "line":
-        if element.direction == "horizontal":
-            return wide, max(line, _arrow(line) if element.arrows != "none" else line)
-        if element.direction == "vertical":
-            return max(line, _arrow(line) if element.arrows != "none" else line), tall
+    thick = max(line, arrow_size(line, dpi)) if _heads(element) else line
+    if element.shape == "line" and element.direction == "horizontal":
+        return wide, min(thick, height)
+    if element.shape == "line" and element.direction == "vertical":
+        return thick, tall
     return wide, tall
 
 
-def _arrow(line: int) -> int:
-    """The width of an arrow head (and its length) for a line."""
-    return max(3, 4 * line)
+def arrow_size(line: int, dpi: float) -> int:
+    """The length and width of an arrow head: four times the line, at least
+    ARROW_MM."""
+    return max(3, 4 * line, px(ARROW_MM, dpi))
 
 
-def render_shape(element: ShapeElement, height: int, dpi: float, color, mono: bool):
-    """The shape in its colour on transparent."""
-    w, h = shape_size(element, height, dpi)
-    line = px(element.line_mm, dpi)
+def render_shape(
+    element: ShapeElement,
+    height: int,
+    dpi: float,
+    color,
+    mono: bool,
+    size: tuple[int, int] | None = None,
+) -> Image.Image:
+    """The shape in its colour on transparent; size: drawn at that size
+    instead (reduced to fit a fixed length, lines thinner in proportion
+    but at least one dot)."""
+    natural = shape_size(element, height, dpi)
+    w, h = size or natural
+    scale = min(1.0, h / max(1, natural[1]), w / max(1, natural[0]))
+    line = round(px(element.line_mm, dpi) * scale) if element.line_mm > 0 else 0
     if element.shape in ("line", "separator"):
-        mask = _line_mask(element, (w, h), max(1, line), not mono)
+        mask = _line_mask(element, (w, h), max(1, line), dpi * scale, not mono)
     else:
-        mask = _area_mask(element, (w, h), line, dpi, not mono)
-    return colored(mask, color)
+        mask = _area_mask(element, (w, h), max(1, line) if line else 0, dpi * scale, not mono)
+    img = colored(mask, color)
+    img.info["redraw"] = lambda width, tall: render_shape(
+        element, height, dpi, color, mono, (width, tall)
+    )
+    return img
 
 
 def _line_ends(element: ShapeElement, size: tuple[int, int], line: int):
@@ -148,12 +167,13 @@ def _line_ends(element: ShapeElement, size: tuple[int, int], line: int):
     return (half, half), (w - half, h - half)
 
 
-def _line_mask(element: ShapeElement, size, line: int, antialias: bool) -> Image.Image:
+def _line_mask(element: ShapeElement, size, line: int, dpi: float, antialias: bool):
     surface, ctx = mask_surface(size, antialias)
     start, end = _line_ends(element, size, line)
     heads = _heads(element)
     length = math.dist(start, end)
-    head = _arrow(line) if heads else 0
+    # a short line: the heads share its length, the line between them goes
+    head = min(arrow_size(line, dpi), length / max(1, len(heads))) if heads else 0
     unit = ((end[0] - start[0]) / max(length, 1e-6), (end[1] - start[1]) / max(length, 1e-6))
     # the line stops where an arrow head begins, so its end stays pointed
     a = _along(start, unit, head if "start" in heads else 0)
@@ -179,7 +199,7 @@ def _along(point, unit, distance: float):
     return (point[0] + unit[0] * distance, point[1] + unit[1] * distance)
 
 
-def _arrow_head(ctx: cairo.Context, tip, unit, size: int) -> None:
+def _arrow_head(ctx: cairo.Context, tip, unit, size: float) -> None:
     """A filled triangle with its tip at tip, pointing against unit."""
     base = _along(tip, unit, size)
     normal = (-unit[1] * size / 2, unit[0] * size / 2)
@@ -229,17 +249,18 @@ def _area_mask(element: ShapeElement, size, line: int, dpi: float, antialias: bo
 def border_mask(size, box, width: int, radius: int, style: str, antialias: bool) -> Image.Image:
     """The border (255 = ink) of an image of size: its outer edge on box
     (x0, y0, x1, y1, inclusive), width dots wide. "double": two lines of a
-    third of the width each, a third apart (each at least one dot)."""
+    third of the width each, a third apart, all within the width; narrower
+    than three dots: one solid line)."""
     surface, ctx = mask_surface(size, antialias)
     x0, y0, x1, y1 = box
-    if style == "double":
-        thin = max(1, round(width / 3))
-        for inset in (0, 2 * thin):
+    if style == "double" and width >= 3:
+        thin = width // 3
+        for inset in (0, width - thin):
             _border_line(
                 ctx, (x0 + inset, y0 + inset, x1 - inset, y1 - inset), thin, radius - inset
             )
     else:
-        ctx.set_dash(dashes(style, width))
+        ctx.set_dash(dashes("solid" if style == "double" else style, width))
         _border_line(ctx, box, width, radius)
     return surface_mask(surface)
 

@@ -602,6 +602,8 @@ def apply_color_model(image: Image.Image, model: ColorModel) -> Image.Image:
     dithered black and white, so the preview shows the real result (page
     areas are black and white already, see render(mono=True))."""
     if model == "mono":
+        if image.info.get("black_and_white"):  # render(mono=True) converted it already
+            return image.convert("RGB")
         return image.convert("1", dither=Image.Dither.FLOYDSTEINBERG).convert("RGB")
     return image
 
@@ -675,9 +677,13 @@ class Backend(ABC):
 
     def renders_mono(self, mode: str = "") -> bool:
         """Whether a label for the given print mode is rendered in black and
-        white (render(mono=True)): a mono printer, unless a mode prints in
-        colour (the Brother QL's red and black)."""
+        white (render(mono=True)): a mono printer."""
         return self.capabilities.color_model == "mono"
+
+    def renders_red(self, mode: str = "") -> bool:
+        """Whether a mono printer prints red too in this mode (the Brother
+        QL's red and black): render(red=True) keeps red parts red."""
+        return False
 
     def preview(self, image: Image.Image, mode: str = "") -> Image.Image:
         """What the printer makes of the image in the given print mode."""
@@ -696,6 +702,7 @@ class Backend(ABC):
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
             mono=self.renders_mono(options.mode),
+            red=self.renders_red(options.mode),
         )
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image

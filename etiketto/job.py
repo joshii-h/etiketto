@@ -108,6 +108,7 @@ class Job:
             safe_mm=self.safe_mm,
             min_length_mm=caps.min_length_mm,
             mono=self.backend.renders_mono(self.options.mode),
+            red=self.backend.renders_red(self.options.mode),
         )
         return warnings + rendered.warnings
 

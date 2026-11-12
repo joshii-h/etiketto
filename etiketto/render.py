@@ -16,7 +16,7 @@ from functools import lru_cache, partial
 from types import MappingProxyType
 from typing import NamedTuple
 
-from PIL import Image, ImageColor, ImageDraw, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageStat
 
 from etiketto import codes, imagefx, shapes, typeset
 from etiketto.codes import CodeError
@@ -46,7 +46,7 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: image_unreadable, page_unreadable,
     pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
-    background_unreadable; codes that cannot be encoded: see
+    background_unreadable, no_contrast, shape_invisible; codes that cannot be encoded: see
     etiketto.codes.CodeError; codes that may not scan or do not fit:
     code_thin, code_quiet, code_too_big)."""
 
@@ -81,11 +81,23 @@ def px_to_mm(px: int, dpi: float = PRINT_DPI) -> float:
     return px / dpi * 25.4
 
 
-def _color(value: str, fallback: str = "#000000") -> tuple[int, int, int]:
-    try:
-        return ImageColor.getrgb(value)[:3]
-    except ValueError:
-        return ImageColor.getrgb(fallback)[:3]
+_color = imagefx.rgb
+
+
+@dataclass(frozen=True)
+class Inks:
+    """How colours are printed: as they are, or (mono) black or white
+    against the brightness of the label's background (imagefx.mono_ink),
+    with red kept on black-and-red printers (red)."""
+
+    mono: bool = False
+    red: bool = False
+    background: float = 255.0
+
+    def color(self, value: str) -> str:
+        if not self.mono:
+            return value
+        return "#%02x%02x%02x" % imagefx.mono_ink(_color(value), self.background, self.red)
 
 
 # --- elements ---------------------------------------------------------------
@@ -113,22 +125,50 @@ def render_text(
     dpi: float,
     mono: bool = False,
     room: int | None = None,
+    inks: Inks | None = None,
 ) -> Image.Image:
     """The text block: at its size, or (size 0) filling the content height.
     mono: no anti-aliasing, black and white (typeset.mono_text). room: the
     space along a label of fixed length, which shrink fits the text into."""
-    antialias = not mono
-    if mono:
-        element = typeset.mono_text(element)
+    inks = inks or Inks(mono)
+    antialias = not inks.mono
+    if inks.mono:
+        element = typeset.mono_text(element, inks.background, inks.red)
     wrap = mm_to_px(element.max_width_mm, dpi) if element.max_width_mm > 0 else None
     draw = partial(_text_block, element, antialias=antialias, dpi=dpi, wrap_px=wrap)
     if element.size_pt > 0 and not element.shrink:
-        return draw(element.size_pt / 72 * dpi)
-    if not (element.shrink or wrap or element.rotation in (90, 270)):
-        return _fill_height(draw, height)
-    measure = partial(typeset.size_of, element, dpi=dpi, antialias=antialias, wrap_px=wrap)
-    limits = (_width_limit(element, room, wrap), height)
-    return draw(_fitted_size(element, measure, limits, dpi))
+        size = element.size_pt / 72 * dpi
+    elif not _needs_fitting(element, wrap):
+        block = _fill_height(draw, height)
+        return _redrawable(block, draw, block.info["size"], inks.mono)
+    else:
+        measure = partial(typeset.size_of, element, dpi=dpi, antialias=antialias, wrap_px=wrap)
+        limits = (_width_limit(element, room, wrap), height)
+        size = _fitted_size(element, measure, limits, dpi)
+    return _redrawable(draw(size), draw, size, inks.mono)
+
+
+def _needs_fitting(element: TextElement, wrap: int | None) -> bool:
+    """Whether the size is found by measuring (shrinking, wrapping,
+    vertical, or a box, frame, outline or shadow that does not grow with
+    the letters) instead of scaling a probe (_fill_height)."""
+    if element.shrink or wrap or element.rotation in (90, 270):
+        return True
+    return bool(
+        element.inverted
+        or element.box_color
+        or element.frame_mm > 0
+        or element.outline_mm > 0
+        or element.shadow_mm > 0
+    )
+
+
+def _redrawable(block: Image.Image, draw, size: float, mono: bool) -> Image.Image:
+    """Black and white: a text reduced to fit a fixed length is laid out
+    again at the smaller size, not resampled (see _resize)."""
+    if mono:
+        block.info["redraw"] = lambda _w, h: draw(size * h / max(1, block.height))
+    return block
 
 
 def _fill_height(draw, height: int) -> Image.Image:
@@ -139,6 +179,7 @@ def _fill_height(draw, height: int) -> Image.Image:
     while block.height > height and size > 1:
         size *= 0.97
         block = draw(size)
+    block.info["size"] = size
     return block
 
 
@@ -160,9 +201,8 @@ def _fitted_size(element: TextElement, measure, limits, dpi: float) -> float:
         highest = element.size_pt / 72 * dpi
     else:
         highest = MAX_TEXT_PT / 72 * dpi
-        probe_h = measure(TEXT_PROBE, wrap_px=None)[1]
         if element.rotation in (0, 180) or not element.max_width_mm:
-            highest = min(highest, TEXT_PROBE * height / max(1, probe_h) * 1.05)
+            highest = min(highest, _height_estimate(measure, height))
 
     def fits(size: float) -> bool:
         w, h = measure(size)
@@ -171,13 +211,26 @@ def _fitted_size(element: TextElement, measure, limits, dpi: float) -> float:
     return _largest(fits, lowest, max(lowest, highest))
 
 
+def _height_estimate(measure, height: int) -> float:
+    """The size at which the unwrapped block is about as high as height
+    (a bit above: an upper bound for the bisection). The height grows
+    linearly with the size plus what does not grow (padding, a frame):
+    two measurements give both."""
+    first = measure(TEXT_PROBE, wrap_px=None)[1]
+    second = measure(2 * TEXT_PROBE, wrap_px=None)[1]
+    growth = max(1e-6, (second - first) / TEXT_PROBE)
+    fixed = first - growth * TEXT_PROBE
+    return max(1.0, (height - fixed) / growth * 1.05)
+
+
 def _largest(fits, low: float, high: float) -> float:
-    """The largest size in [low, high] that fits (bisection), low if none."""
+    """The largest size in [low, high] that fits (bisection to half a
+    pixel), low if none."""
     if fits(high):
         return high
     if not fits(low):
         return low
-    for _step in range(14):
+    while high - low > 0.5:
         middle = (low + high) / 2
         if fits(middle):
             low = middle
@@ -204,50 +257,39 @@ def _scaled(data: str, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
-def _image_options(element: ImageElement) -> tuple:
-    """What changes the image itself (hashable, for the caches)."""
-    return (
-        tuple(element.crop),
-        element.rotation,
-        element.mirror,
-        element.flip,
-        element.brightness,
-        element.contrast,
-        element.gamma,
-        element.invert,
-    )
+# a large photo: cropped and turned once (cheap), then scaled to the label,
+# then adjusted at that size, not at its own
+@lru_cache(maxsize=2)
+def _cut(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) -> Image.Image:
+    return imagefx.turned(imagefx.cropped(_decoded(data), crop), rotation, mirror, flip)
 
 
-PLAIN_IMAGE = (0.0, 0.0, 1.0, 1.0), 0, False, False, 0.0, 0.0, 1.0, False
-
-
-@lru_cache(maxsize=8)
-def _prepared(data: str, options: tuple) -> Image.Image:
-    crop, rotation, mirror, flip, brightness, contrast, gamma, invert = options
-    img = imagefx.cropped(_decoded(data), crop)
-    img = imagefx.turned(img, rotation, mirror, flip)
-    return imagefx.adjusted(img, brightness, contrast, gamma, invert)
-
-
-@lru_cache(maxsize=16)
-def _scaled_prepared(data: str, options: tuple, height: int) -> Image.Image:
-    img = _prepared(data, options)
+@lru_cache(maxsize=2)
+def _scaled_cut(data: str, cut: tuple, adjust: tuple, height: int) -> Image.Image:
+    img = _cut(data, *cut)
     width = max(1, round(img.width * height / img.height))
-    return img.resize((width, height), Image.Resampling.LANCZOS)
+    return imagefx.adjusted(img.resize((width, height), Image.Resampling.LANCZOS), *adjust)
 
 
-def render_image(element: ImageElement, height: int, dpi: float = PRINT_DPI) -> Image.Image:
-    """The image at the content height, with its options. On black-and-white
-    printers render() converts it by its mode afterwards, at its final size."""
-    options = _image_options(element)
-    if options == PLAIN_IMAGE:
+def render_image(
+    element: ImageElement, height: int, dpi: float = PRINT_DPI, mono: bool = False
+) -> Image.Image:
+    """The image at the content height, with its options. Black and white:
+    render() converts it by its mode afterwards, at its final size, and
+    only then draws corners and border (_mono_part)."""
+    cut = (tuple(element.crop), element.rotation, element.mirror, element.flip)
+    adjust = (element.brightness, element.contrast, element.gamma, element.invert)
+    if cut == ((0.0, 0.0, 1.0, 1.0), 0, False, False) and adjust == (0.0, 0.0, 1.0, False):
         img = _scaled(element.data, height).copy()
     else:
-        img = _scaled_prepared(element.data, options, height).copy()
-    radius = shapes.px(element.corner_mm, dpi)
-    img = imagefx.rounded(img, radius)
-    return imagefx.bordered(
-        img, shapes.px(element.border_mm, dpi), _color(element.border_color), radius
+        img = _scaled_cut(element.data, cut, adjust, height).copy()
+    if mono:
+        return img
+    return imagefx.framed(
+        img,
+        shapes.px(element.corner_mm, dpi),
+        shapes.px(element.border_mm, dpi),
+        _color(element.border_color),
     )
 
 
@@ -567,15 +609,8 @@ def _draw_symbol(path: str, rotation: int, color: str, mono: bool, size: int) ->
     return img
 
 
-def _mono_ink(color: str) -> str:
-    """What a black-and-white printer makes of a colour: white for light
-    colours (a white symbol on a dark background stays visible), else black."""
-    r, g, b = _color(color)
-    return "#ffffff" if (r * 299 + g * 587 + b * 114) / 1000 >= 128 else "#000000"
-
-
 def render_symbol(
-    element: SymbolElement, height: int, dpi: float, mono: bool = False
+    element: SymbolElement, height: int, dpi: float, mono: bool = False, inks: Inks | None = None
 ) -> Image.Image:
     """The symbol as a square: its size, at most the height. The path saved
     with the label is drawn; without one the name is looked up."""
@@ -586,11 +621,11 @@ def render_symbol(
             raise ElementError("symbol_unknown")
         path = found.path
     size = height if element.size_mm <= 0 else min(height, mm_to_px(element.size_mm, dpi))
-    color = _mono_ink(element.color) if mono else element.color
-    draw = partial(_draw_symbol, path, element.rotation, color, mono)
+    inks = inks or Inks(mono)
+    draw = partial(_draw_symbol, path, element.rotation, inks.color(element.color), inks.mono)
     img = draw(size)
     # scaled down to fit a fixed length: drawn again, as sharp as before
-    img.info["redraw"] = draw
+    img.info["redraw"] = lambda _w, h: draw(h)
     return img
 
 
@@ -630,9 +665,11 @@ def _mono_page(element: PageElement, args) -> Image.Image:
     return black_and_white(image.convert("L"), scale)
 
 
-def render_shape(element: ShapeElement, height: int, dpi: float, mono: bool = False):
-    color = _mono_ink(element.color) if mono else element.color
-    return shapes.render_shape(element, height, dpi, _color(color), mono)
+def render_shape(
+    element: ShapeElement, height: int, dpi: float, mono: bool = False, inks: Inks | None = None
+) -> Image.Image:
+    inks = inks or Inks(mono)
+    return shapes.render_shape(element, height, dpi, _color(inks.color(element.color)), inks.mono)
 
 
 def render_element(
@@ -642,44 +679,69 @@ def render_element(
     width: int | None = None,
     mono: bool = False,
     step: int = 1,
+    inks: Inks | None = None,
 ) -> Image.Image:
     """width: the room along the label (fixed length), None if it grows;
-    mono: the printer prints only black and white (see render_page());
-    step: the image is reduced across by this factor later (render())."""
+    mono: the printer prints only black and white (see render_page()),
+    inks: and against which background (Inks); step: the image is reduced
+    across by this factor later (render())."""
+    inks = inks or Inks(mono)
     if isinstance(element, TextElement):
-        return render_text(element, height, dpi, mono, width)
+        return render_text(element, height, dpi, room=width, inks=inks)
     if isinstance(element, ImageElement):
-        return render_image(element, height, dpi)
+        return render_image(element, height, dpi, inks.mono)
     if isinstance(element, SymbolElement):
-        return render_symbol(element, height, dpi, mono)
+        return render_symbol(element, height, dpi, inks=inks)
     if isinstance(element, PageElement):
-        return render_page(element, width, height, mono)
+        return render_page(element, width, height, inks.mono)
     if isinstance(element, ShapeElement):
-        return render_shape(element, height, dpi, mono)
+        return render_shape(element, height, dpi, inks=inks)
+    if inks.mono:
+        element = replace(element, color=inks.color(element.color))
     return render_code(element, height, step=step)
 
 
-def _mono_part(element: Element, part: Image.Image) -> Image.Image:
+def _mono_part(element: Element, part: Image.Image, inks: Inks, dpi: float) -> Image.Image:
     """A part at its final size for a black-and-white printer: an image by
-    its mode, a page area as it is (shipping.mono), everything else hard
-    black and white, so the printer's own conversion changes nothing."""
+    its method, then its corners and border; a page area as it is
+    (shipping.mono); everything else hard black and white (its colours
+    are black and white already), so the printer's own conversion changes
+    nothing."""
     if isinstance(element, PageElement):
         return part
     if isinstance(element, ImageElement):
-        hard = imagefx.black_and_white(part, element.mode, element.threshold)
+        hard = imagefx.black_and_white(part, element.mode, element.threshold, inks.red)
+        border = _color(inks.color(element.border_color))
+        radius, width = shapes.px(element.corner_mm, dpi), shapes.px(element.border_mm, dpi)
+        hard = imagefx.framed(hard, radius, width, border, antialias=False)
     else:
-        hard = imagefx.hard(part)
+        hard = imagefx.hard(part, inks.red)
     for name in ("code_row0", "code_module", "code_problems"):  # what _place needs
         if hasattr(part, name):
             setattr(hard, name, getattr(part, name))
     return hard
 
 
+def _visible(part: Image.Image, background: float) -> bool:
+    """Whether a black-and-white part shows on a plain background of that
+    brightness: some ink of the other colour (or red)."""
+    alpha = part.getchannel("A")
+    if not alpha.getbbox():
+        return False
+    if 5 < background < 250:  # a dithered grey: either ink shows
+        return True
+    other = 0 if background >= 250 else 255
+    grey = part.convert("RGB").convert("L")
+    reds = ImageChops.multiply(imagefx.red_mask(part), alpha)
+    return grey.histogram(alpha)[other] > 0 or bool(reds.getbbox())
+
+
 def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
-    """A part in another size: drawn again if it can be (symbols), else resampled."""
+    """A part in another size: drawn again if it can be (symbols, shapes,
+    black-and-white text), else resampled."""
     redraw = part.info.get("redraw")
     if redraw is not None:
-        return redraw(max(1, height))
+        return redraw(max(1, width), max(1, height))
     return part.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
 
 
@@ -707,8 +769,9 @@ class _Frame:
     margin: int  # spacing at the ends and between elements
     safe: int
     border: int
-    frame: int  # kept free of content on every side (safety margin + border)
+    frame: int  # kept free of content on every side (safety margin + inset + border)
     inner: int  # content height
+    inset: int = 0  # the border this far inside the safety margin
 
 
 def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings) -> _Frame:
@@ -717,13 +780,15 @@ def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings
     margin = mm_to_px(label.margin_mm, dpi) if label.margin_mm > 0 else 0
     border = mm_to_px(label.border_mm, dpi) if label.border_mm > 0 else 0
     safe = mm_to_px(safe_mm, dpi) if safe_mm > 0 else 0
-    frame = safe + border
+    inset = mm_to_px(label.border_inset_mm, dpi) if border and label.border_inset_mm > 0 else 0
+    frame = safe + inset + border
     inner = tape - 2 * (edge + frame)
     if inner < mm_to_px(2, dpi):
         warnings.append(RenderWarning("no_room"))
-        frame = min(frame, max(0, tape // 2 - edge - 1))
+        inset = 0  # as without an inset: the border on the safety margin
+        frame = min(safe + border, max(0, tape // 2 - edge - 1))
         inner = max(1, tape - 2 * (edge + frame))
-    return _Frame(tape, max(0, bleed_px), margin, safe, border, frame, inner)
+    return _Frame(tape, max(0, bleed_px), margin, safe, border, frame, inner, inset)
 
 
 def _element_warning(element: Element, index: int, error: Exception) -> RenderWarning:
@@ -746,12 +811,12 @@ def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | No
 
 
 def _parts(
-    label: Label, f: _Frame, dpi: float, warnings, room: int | None, mono: bool, step: int = 1
+    label: Label, f: _Frame, dpi: float, warnings, room: int | None, inks: Inks, step: int = 1
 ) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi, room, mono, step)
+            part = render_element(element, f.inner, dpi, room, step=step, inks=inks)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
@@ -827,7 +892,7 @@ def _fit_length(
     return length, parts, gaps, False
 
 
-def _background(label: Label, size: tuple[int, int], warnings, mono: bool) -> Image.Image:
+def _background(label: Label, size: tuple[int, int], warnings, inks: Inks) -> Image.Image:
     img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
@@ -835,9 +900,22 @@ def _background(label: Label, size: tuple[int, int], warnings, mono: bool) -> Im
             img.paste(_cover(bg, img.size), (0, 0))
         except Exception:  # noqa: BLE001
             warnings.append(RenderWarning("background_unreadable"))
-    if mono:  # dithered on its own: no error spreads into the crisp elements
-        img = imagefx.floyd_steinberg(img.convert("L")).convert("RGB")
+    if inks.mono:  # dithered on its own: no error spreads into the crisp elements
+        img = imagefx.black_and_white(img, "dither", red=inks.red).convert("RGB")
     return img
+
+
+def background_brightness(label: Label) -> float:
+    """How bright the label's background is (0-255): its colour, or the
+    average of its background image. Black-and-white inks are chosen
+    against it (Inks)."""
+    if label.background_image and label.background_image.data:
+        try:
+            small = _decoded(label.background_image.data).convert("RGB").resize((16, 16))
+            return imagefx.luma(ImageStat.Stat(small).mean)  # type: ignore[arg-type]
+        except Exception:  # noqa: BLE001 - render() warns about it
+            pass
+    return imagefx.luma(_color(label.background, "#ffffff"))
 
 
 def _top(element: Element, part: Image.Image, f: _Frame) -> int:
@@ -871,25 +949,20 @@ def _place(
         x += part.width + gap
 
 
-def _draw_border(img: Image.Image, label: Label, f: _Frame, dpi: float, mono: bool) -> None:
+def _draw_border(img: Image.Image, label: Label, f: _Frame, dpi: float, inks: Inks) -> None:
     if not f.border:
         return
-    color = _color(_mono_ink(label.border_color) if mono else label.border_color)
-    # inside the safety margin so it is never cut off
-    inset = f.safe + (mm_to_px(label.border_inset_mm, dpi) if label.border_inset_mm > 0 else 0)
-    inset = min(inset, max(0, f.tape // 2 - f.border))
+    color = _color(inks.color(label.border_color))
+    # inside the safety margin (and the inset) so it is never cut off; the
+    # content keeps clear of it (_frame)
+    inset = f.safe + f.inset
     top, bottom = f.bleed + inset, f.bleed + f.tape - 1 - inset
     box = (inset, top, img.width - 1 - inset, bottom)
-    room = min(box[2] - box[0], box[3] - box[1])
-    if room < 2 * f.border:  # no room inside: a block, or nothing at all
-        if room >= 0:
-            ImageDraw.Draw(img).rectangle(box, fill=color)
-        return
     if (label.border_style, label.border_radius_mm) == ("solid", 0):
         ImageDraw.Draw(img).rectangle(box, outline=color, width=f.border)
         return
     radius = shapes.px(label.border_radius_mm, dpi)
-    mask = shapes.border_mask(img.size, box, f.border, radius, label.border_style, not mono)
+    mask = shapes.border_mask(img.size, box, f.border, radius, label.border_style, not inks.mono)
     img.paste(Image.new("RGB", img.size, color), (0, 0), mask)
 
 
@@ -902,6 +975,7 @@ def render(
     min_length_mm: float = 0.0,
     mono: bool = False,
     across_step: int = 1,
+    red: bool = False,
 ) -> Rendered:
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
@@ -909,27 +983,69 @@ def render(
     mono: the printer prints only black and white (Capabilities.color_model):
     every part converted on its own at its final size (text without
     anti-aliasing, codes, symbols and shapes hard black and white, images
-    by their mode, page areas see shipping.mono), the background dithered;
+    by their mode, page areas see shipping.mono), the background dithered,
+    colours black or white against the background (Inks); red: with mono,
+    a black-and-red printer: red stays red;
     across_step: the caller reduces the image across the tape by this whole
     factor (a resolution finer along the tape than across it, like the
     P-touch's high resolution): 2D codes then get modules and rows on
     multiples of it, so their modules stay whole pixels after the reduction."""
     warnings: list[RenderWarning] = []
     step = across_step
+    inks = Inks(mono, mono and red, background_brightness(label) if mono else 255.0)
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono, step)
+    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), inks, step)
     length, parts, gaps, overflow = _fit_length(
         label, parts, f, dpi, warnings, min_length_mm, mono, step
     )
-    warnings += [
+    warnings += _code_warnings(label, parts) + _shape_warnings(label)
+    if mono:  # each part on its own, at its final size
+        parts = [_mono_part(e, p, inks, dpi) for e, p in zip(label.elements, parts, strict=True)]
+        warnings += _ink_warnings(label, parts, inks)
+    img = _background(label, (length, f.tape + 2 * f.bleed), warnings, inks)
+    _place(img, label, parts, gaps, f, step)
+    _draw_border(img, label, f, dpi, inks)
+    # nothing left for apply_color_model to do (a page area keeps its greys)
+    img.info["black_and_white"] = mono and not any(
+        isinstance(e, PageElement) for e in label.elements
+    )
+    return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
+
+
+def _code_warnings(label: Label, parts) -> list[RenderWarning]:
+    return [
         RenderWarning(key, {"n": index})
         for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)
         if isinstance(element, CodeElement)
         for key in code_problems(part)
     ]
-    if mono:  # each part on its own, at its final size
-        parts = [_mono_part(e, p) for e, p in zip(label.elements, parts, strict=True)]
-    img = _background(label, (length, f.tape + 2 * f.bleed), warnings, mono)
-    _place(img, label, parts, gaps, f, step)
-    _draw_border(img, label, f, dpi, mono)
-    return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
+
+
+def _shape_warnings(label: Label) -> list[RenderWarning]:
+    """A rectangle or ellipse without outline and fill draws nothing."""
+    return [
+        RenderWarning("shape_invisible", {"n": index})
+        for index, e in enumerate(label.elements, 1)
+        if _invisible_shape(e)
+    ]
+
+
+def _invisible_shape(element: Element) -> bool:
+    return (
+        isinstance(element, ShapeElement)
+        and element.shape in ("rectangle", "ellipse")
+        and element.line_mm <= 0
+        and element.fill == "none"
+    )
+
+
+def _ink_warnings(label: Label, parts, inks: Inks) -> list[RenderWarning]:
+    """Black and white: an element that ends up with no ink against the
+    background (a white code on white paper) is not printed at all."""
+    return [
+        RenderWarning("no_contrast", {"n": index})
+        for index, (e, part) in enumerate(zip(label.elements, parts, strict=True), 1)
+        if not isinstance(e, PageElement)
+        and not _invisible_shape(e)
+        and not _visible(part, inks.background)
+    ]
