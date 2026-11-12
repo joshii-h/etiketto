@@ -39,6 +39,7 @@ from etiketto.ui.texts import (
     error_details,
     printed_text,
     printer_error_text,
+    series_stop_text,
     stage_text,
 )
 from etiketto.ui.widgets import combo_row, list_dialog, spin_row
@@ -467,8 +468,8 @@ class PrintFlow:
             message = _("The label cannot be prepared for printing.")
         else:
             message = printer_error_text(error.error, self.window.unit)
-        where = _("Printing stopped at row %(row)d. To continue, print again from row %(row)d.")
-        self.failed(error.error, message + "\n\n" + where % {"row": error.row})
+        where = series_stop_text(error.row, error.copies_printed)
+        self.failed(error.error, message + "\n\n" + where)
         return False
 
     def progress(self, event: Progress) -> bool:

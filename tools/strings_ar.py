@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "يستخدم الملصق ملف بيانات خارج مجلده: حدّده باستخدام --data",
     "--sheet and --rows need a data file (--data)": "يتطلب --sheet و--rows ملف بيانات (--data)",
     "%(file)s has no sheet named %(sheet)s": "لا يحتوي %(file)s على ورقة باسم %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "النسخ المطبوعة بالفعل من الصف %(row)d: %(copies)d.",
 }

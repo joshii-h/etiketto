@@ -149,9 +149,11 @@ class SeriesError(Exception):
         error: Exception,
         preparing: bool,
         outcome: SeriesResult | None = None,
+        copies_printed: int = 0,
     ):
         super().__init__(str(error))
         self.row = row
+        self.copies_printed = copies_printed  # of the failed row, before the problem
         self.printed = printed
         self.error = error
         self.preparing = preparing  # the label could not be rendered
@@ -190,16 +192,23 @@ def unprintable_rows(
     renderer would print a crossed-out box instead. Only codes with column
     placeholders are checked; the others are the same for every row and
     the preview already shows their problem. Variables are filled in with
-    `values` (those of the first label are enough to tell)."""
+    `values` (those of the first label), the counter as it will be on the
+    first copy of each row; the other copies of a row differ only in
+    numbers that grow (a code that takes the first takes them too, except
+    an EAN-13 whose digits a counter would overflow)."""
     codes = [e for e in label.elements if isinstance(e, CodeElement) and column_names(e.data)]
     if not codes:
         return []
-    values = values or Values(datetime.now())
-
-    def fails(code: CodeElement, row: Mapping[str, str]) -> bool:
-        return _code_fails(replace(code, data=expand(code.data, values, row)[0]))
-
-    return [index + 1 for index in indexes if any(fails(code, rows[index]) for code in codes)]
+    first = values or Values(datetime.now())
+    bad = []
+    for position, index in enumerate(indexes):
+        row_values = replace(first, counter=first.counter + first.step * first.copies * position)
+        if any(
+            _code_fails(replace(code, data=expand(code.data, row_values, rows[index])[0]))
+            for code in codes
+        ):
+            bad.append(index + 1)
+    return bad
 
 
 @dataclass(frozen=True)
@@ -226,14 +235,16 @@ def print_series(
     progress: Callable[[SeriesProgress], None] | None = None,
     stop: threading.Event | None = None,
     outcome: SeriesResult | None = None,
+    check: bool = True,
 ) -> SeriesResult:
     """Print one label per row, `options.copies` of each, as a print job per
     row. `stop` is looked at between two rows: the row being printed is
     always finished, the first one too. Raises UnprintableRows before the
     first label if any row's codes cannot be drawn, SeriesError when a
-    label fails. `outcome` (returned) is kept up to date while printing."""
+    label fails. `outcome` (returned) is kept up to date while printing.
+    `check` False: the caller has run unprintable_rows() already."""
     values = series.first_values()
-    if bad := unprintable_rows(series.label, series.rows, series.indexes, values):
+    if check and (bad := unprintable_rows(series.label, series.rows, series.indexes, values)):
         raise UnprintableRows(bad)
     outcome = outcome if outcome is not None else SeriesResult()
     counting = uses_counter(series.label)
@@ -256,9 +267,9 @@ def print_series(
             outcome.result = job.run(host, report) or outcome.result
         except PrepareFailed as e:
             cause = e.__cause__ if isinstance(e.__cause__, Exception) else e
-            raise SeriesError(row, list(outcome.printed), cause, True, outcome) from e
+            raise SeriesError(row, list(outcome.printed), cause, True, outcome, job.printed) from e
         except Exception as e:  # noqa: BLE001 - the interface maps PrinterError codes
-            raise SeriesError(row, list(outcome.printed), e, False, outcome) from e
+            raise SeriesError(row, list(outcome.printed), e, False, outcome, job.printed) from e
         finally:  # also after Ctrl+C: the labels sent used their numbers
             outcome.labels += job.printed
             if counting:

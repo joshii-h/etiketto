@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Label menggunakan berkas data di luar foldernya: berikan dengan --data",
     "--sheet and --rows need a data file (--data)": "--sheet dan --rows memerlukan berkas data (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s tidak memiliki lembar bernama %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Salinan baris %(row)d yang sudah dicetak: %(copies)d.",
 }

@@ -248,6 +248,20 @@ def data_error_text(error: Exception, name: str) -> str:
     return texts.get(error.code, _("The file is damaged: %s")) % name
 
 
+def series_stop_text(row: int, copies_printed: int = 0) -> str:
+    """Where a series stopped and how to go on; with the copies of that row
+    the printer had already printed, so none is printed twice by mistake."""
+    text = _("Printing stopped at row %(row)d. To continue, print again from row %(row)d.") % {
+        "row": row
+    }
+    if copies_printed:
+        text += " " + _("Copies of row %(row)d already printed: %(copies)d.") % {
+            "row": row,
+            "copies": copies_printed,
+        }
+    return text
+
+
 def save_error_text(error: OSError, name: str) -> str:
     # PermissionError covers EACCES and EPERM; a read-only disk has no class
     if isinstance(error, PermissionError) or error.errno == errno.EROFS:

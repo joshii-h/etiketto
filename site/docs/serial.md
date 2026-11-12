@@ -77,7 +77,8 @@ data file instead of printing the placeholders.
 - Every label is a print job of its own, so this works on every printer.
 - [[ui:Stop]] in the bar above the window ends the series after the label
   being printed; the first label is always printed.
-- If the printer reports a problem, printing stops at that row. Solve the
+- If the printer reports a problem, printing stops at that row; the
+  message says how many copies of it were already printed. Solve the
   problem, then print again starting from that row.
 
 ## Command line

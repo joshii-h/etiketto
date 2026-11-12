@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Silt kasutab andmefaili väljaspool oma kausta: anna see võtmega --data",
     "--sheet and --rows need a data file (--data)": "--sheet ja --rows vajavad andmefaili (--data)",
     "%(file)s has no sheet named %(sheet)s": "Failis %(file)s pole lehte nimega %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Rea %(row)d juba prinditud koopiad: %(copies)d.",
 }

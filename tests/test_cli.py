@@ -945,3 +945,21 @@ def test_set_literal_with_a_data_file(mono, label_file, rows_csv, capsys):
     argv = ["print", path, "--dry-run", "--data", rows_csv, "--set-literal", 't={"a":1} {Name}']
     assert run(*argv) == 0
     assert capsys.readouterr().out == '1\t1\t{"a":1} {Name}\tA\n'
+
+
+def test_serial_stop_names_the_copies_of_the_row_printed(
+    mono, label_file, rows_csv, monkeypatch, capsys
+):
+    rows_csv.write_text("Name\nA\nB\n")
+    path = label_file(TextElement(text="{=counter} {Name}"))
+
+    def jam():
+        raise PaperJam("jam")
+
+    interrupt_at(mono, monkeypatch, 4, jam)  # row 2, its second copy
+    assert run("print", path, "--host", "h", "--data", rows_csv, "--copies", "2") == 1
+    assert err(capsys).endswith(
+        "Printing stopped at row 2. To continue, print again from row 2."
+        " Copies of row 2 already printed: 1.\n"
+    )
+    assert Label.load(path).counter_next == 4

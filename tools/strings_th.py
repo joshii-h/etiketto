@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "ฉลากใช้ไฟล์ข้อมูลที่อยู่นอกโฟลเดอร์ของฉลาก: ระบุด้วย --data",
     "--sheet and --rows need a data file (--data)": "--sheet และ --rows ต้องใช้ไฟล์ข้อมูล (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s ไม่มีชีตชื่อ %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "สำเนาของแถว %(row)d ที่พิมพ์แล้ว: %(copies)d",
 }

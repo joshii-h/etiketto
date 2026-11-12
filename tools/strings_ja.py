@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "ラベルはフォルダーの外にあるデータファイルを使っています: --data で指定してください",
     "--sheet and --rows need a data file (--data)": "--sheet と --rows にはデータファイル (--data) が必要です",
     "%(file)s has no sheet named %(sheet)s": "%(file)s に %(sheet)s という名前のシートはありません",
+    "Copies of row %(row)d already printed: %(copies)d.": "%(row)d 行目で印刷済みの部数: %(copies)d。",
 }

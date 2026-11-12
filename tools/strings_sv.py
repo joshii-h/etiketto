@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Etiketten använder en datafil utanför sin mapp: ange den med --data",
     "--sheet and --rows need a data file (--data)": "--sheet och --rows kräver en datafil (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s har inget blad som heter %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Redan utskrivna kopior av rad %(row)d: %(copies)d.",
 }

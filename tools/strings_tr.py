@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Etiket, klasörünün dışındaki bir veri dosyasını kullanıyor: --data ile belirtin",
     "--sheet and --rows need a data file (--data)": "--sheet ve --rows bir veri dosyası gerektirir (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s içinde %(sheet)s adlı sayfa yok",
+    "Copies of row %(row)d already printed: %(copies)d.": "%(row)d. satırın zaten yazdırılan kopyaları: %(copies)d.",
 }

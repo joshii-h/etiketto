@@ -1115,11 +1115,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/serial.md
 msgid ""
-"If the printer reports a problem, printing stops at that row. Solve the "
-"problem, then print again starting from that row."
+"If the printer reports a problem, printing stops at that row; the message "
+"says how many copies of it were already printed. Solve the problem, then "
+"print again starting from that row."
 msgstr ""
-"Meldet der Drucker ein Problem, hält der Druck bei dieser Zeile an. Das "
-"Problem beheben, dann ab dieser Zeile erneut drucken."
+"Meldet der Drucker ein Problem, hält der Druck bei dieser Zeile an; die "
+"Meldung sagt, wie viele Exemplare davon schon gedruckt sind. Das Problem "
+"beheben, dann ab dieser Zeile erneut drucken."
 
 #. type: Title ##
 #: docs/serial.md

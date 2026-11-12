@@ -3056,3 +3056,10 @@ def test_a_saved_sheet_that_is_gone_is_not_replaced(ready, tmp_path):
     sheet.set_selected(0)  # the first one, chosen on purpose
     assert loaded(ready) and ready.data.state == "ready"
     assert ready.label.data_sheet == "Mai" and preview_text(ready) == "Anna"
+
+
+def test_series_stop_text():
+    assert texts.series_stop_text(3) == (
+        "Printing stopped at row 3. To continue, print again from row 3."
+    )
+    assert texts.series_stop_text(3, 2).endswith(" Copies of row 3 already printed: 2.")

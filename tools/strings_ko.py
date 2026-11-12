@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "라벨이 폴더 밖에 있는 데이터 파일을 사용합니다: --data로 지정하십시오",
     "--sheet and --rows need a data file (--data)": "--sheet와 --rows에는 데이터 파일(--data)이 필요합니다",
     "%(file)s has no sheet named %(sheet)s": "%(file)s에 %(sheet)s 시트가 없습니다",
+    "Copies of row %(row)d already printed: %(copies)d.": "%(row)d행에서 이미 인쇄된 매수: %(copies)d.",
 }

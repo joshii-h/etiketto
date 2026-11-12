@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Nhãn dùng một tệp dữ liệu nằm ngoài thư mục của nó: hãy chỉ định bằng --data",
     "--sheet and --rows need a data file (--data)": "--sheet và --rows cần một tệp dữ liệu (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s không có trang tính nào tên %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Số bản của hàng %(row)d đã in: %(copies)d.",
 }

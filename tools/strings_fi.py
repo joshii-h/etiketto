@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "Tarra käyttää kansionsa ulkopuolista datatiedostoa: anna se valitsimella --data",
     "--sheet and --rows need a data file (--data)": "--sheet ja --rows vaativat datatiedoston (--data)",
     "%(file)s has no sheet named %(sheet)s": "Tiedostossa %(file)s ei ole taulukkoa nimeltä %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Rivin %(row)d jo tulostetut kopiot: %(copies)d.",
 }

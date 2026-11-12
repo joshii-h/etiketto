@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "A címke a mappáján kívüli adatfájlt használ: adja meg a --data kapcsolóval",
     "--sheet and --rows need a data file (--data)": "A --sheet és a --rows adatfájlt igényel (--data)",
     "%(file)s has no sheet named %(sheet)s": "A(z) %(file)s fájlban nincs %(sheet)s nevű munkalap",
+    "Copies of row %(row)d already printed: %(copies)d.": "A(z) %(row)d. sor már kinyomtatott példányai: %(copies)d.",
 }

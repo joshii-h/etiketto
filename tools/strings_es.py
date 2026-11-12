@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "La etiqueta usa un archivo de datos fuera de su carpeta: indíquelo con --data",
     "--sheet and --rows need a data file (--data)": "--sheet y --rows requieren un archivo de datos (--data)",
     "%(file)s has no sheet named %(sheet)s": "%(file)s no tiene ninguna hoja llamada %(sheet)s",
+    "Copies of row %(row)d already printed: %(copies)d.": "Copias de la fila %(row)d ya impresas: %(copies)d.",
 }

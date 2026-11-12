@@ -313,3 +313,15 @@ def test_a_failed_row_counts_the_labels_the_printer_reports():
 def test_without_a_counter_there_is_none_to_save():
     outcome = print_series(Recorder(), "host", series())
     assert outcome.counter is None and outcome.labels == 3
+
+
+def test_codes_are_checked_with_the_counter_of_each_row():
+    """The counter grows from row to row: a code it makes too long is found."""
+    label = Label(
+        tape_mm=12,
+        printer="fake-mono",
+        elements=[CodeElement(data="{Prefix}{=counter:00}", symbology="ean13")],
+    )
+    rows = [{"Prefix": "4006381333"}] * 3
+    values = Values(datetime(2026, 1, 1), counter=98, copies=1)
+    assert unprintable_rows(label, rows, range(3), values) == [3]  # 100: 13 digits

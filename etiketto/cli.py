@@ -67,6 +67,7 @@ from etiketto.ui.texts import (
     printed_remark,
     printer_error_text,
     save_error_text,
+    series_stop_text,
     warning_text,
 )
 from etiketto.units import unit_for
@@ -448,29 +449,32 @@ def _dry_run(job: Job, output: str | None) -> int:
 
 def _dry_run_series(series: Series, output: str | None) -> int:
     """As _dry_run(), for each row: the listing starts with the row number,
-    --output saves one image per label in turn (name-1.png, name-2.png …)."""
+    --output saves one image per label in turn (name-1.png, name-2.png …).
+    A job is made for one row at a time, never for all of them at once."""
     backend = series_backend(series)
     values = series.first_values()
-    jobs, labels = [], 0
-    for index in series.indexes:
-        start = replace(values, counter=values.counter + values.step * labels)
-        job = Job(backend, series.label, series.options, series.safe_mm, start, series.rows[index])
-        jobs.append((index + 1, job))
-        labels += series.options.copies
+
+    def job(position: int, index: int) -> Job:
+        start = replace(values, counter=values.counter + values.step * position * values.copies)
+        return Job(
+            backend, series.label, series.options, series.safe_mm, start, series.rows[index]
+        )
+
     try:
         if output == "-":
-            _copy, label = next(jobs[0][1].labels())
-            _write_png(jobs[0][1].image(label), "-")
+            first = job(0, series.indexes[0])
+            _write_png(first.image(next(first.labels())[1]), "-")
             return EXIT_OK
-        renders = sum(job.renders for _row, job in jobs)
+        renders = job(0, series.indexes[0]).renders * len(series.indexes)  # the same for each row
         targets = _output_paths(output, renders) if output else None
-        for row, job in jobs:
-            for copy, label in job.labels():
+        for position, index in enumerate(series.indexes):
+            row_job = job(position, index)
+            for copy, label in row_job.labels():
                 if targets:
-                    _write_png(job.image(label), next(targets))
-                elif copy == 1 and row == jobs[0][0]:
-                    job.image(label)
-                fields = [str(row), str(copy)] + [_one_line(t) for t in _contents(label)]
+                    _write_png(row_job.image(label), next(targets))
+                elif copy == 1 and position == 0:
+                    row_job.image(label)
+                fields = [str(index + 1), str(copy)] + [_one_line(t) for t in _contents(label)]
                 _out("\t".join(fields))
     except PrepareFailed:
         raise CliError(_("The label cannot be prepared for printing."), EXIT_LABEL) from None
@@ -614,7 +618,8 @@ def _send_series(args, series: Series, host: str, unit) -> int:
     outcome = SeriesResult()
     with _interruptible():
         try:
-            print_series(series_backend(series), host, series, outcome=outcome)
+            # the codes were checked before the file was locked for printing
+            print_series(series_backend(series), host, series, outcome=outcome, check=False)
         except KeyboardInterrupt:
             raise CliError(_("Interrupted"), EXIT_INTERRUPTED) from None
         except SeriesError as e:
@@ -622,10 +627,8 @@ def _send_series(args, series: Series, host: str, unit) -> int:
                 message, code = _("The label cannot be prepared for printing."), EXIT_LABEL
             else:
                 message, code = printer_error_text(e.error, unit), EXIT_PRINTER
-            where = _(
-                "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
-            )
-            raise CliError(message + " " + where % {"row": e.row}, code) from None
+            where = series_stop_text(e.row, e.copies_printed)
+            raise CliError(message + " " + where, code) from None
         finally:
             with _uninterrupted():
                 saved = (

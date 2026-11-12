@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "此標籤使用其資料夾以外的資料檔案：請用 --data 指定",
     "--sheet and --rows need a data file (--data)": "--sheet 和 --rows 需要資料檔案（--data）",
     "%(file)s has no sheet named %(sheet)s": "%(file)s 中沒有名為 %(sheet)s 的工作表",
+    "Copies of row %(row)d already printed: %(copies)d.": "第 %(row)d 列已列印的份數：%(copies)d。",
 }

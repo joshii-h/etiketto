@@ -340,4 +340,5 @@ TRANSLATIONS = {
     "The label uses a data file outside its folder: give it with --data": "लेबल अपने फ़ोल्डर के बाहर की डेटा फ़ाइल का उपयोग करता है: उसे --data से दें",
     "--sheet and --rows need a data file (--data)": "--sheet और --rows के लिए डेटा फ़ाइल (--data) चाहिए",
     "%(file)s has no sheet named %(sheet)s": "%(file)s में %(sheet)s नाम की कोई शीट नहीं है",
+    "Copies of row %(row)d already printed: %(copies)d.": "पंक्ति %(row)d की पहले से प्रिंट हुई प्रतियाँ: %(copies)d।",
 }
