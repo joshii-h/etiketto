@@ -8,6 +8,8 @@ import json
 from dataclasses import fields
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from etiketto import model
 from etiketto.model import (
@@ -301,11 +303,38 @@ def test_positional_arguments_keep_their_meaning():
         ImageElement(border_color="#ff0000"),
     ],
 )
-def test_fields_without_effect_are_not_written(item):
+def test_fields_without_effect_are_kept_but_no_feature(item):
+    """Written, so they survive saving and opening, but no reason to refuse
+    the file in earlier versions (which ignore fields they do not know)."""
     label = Label(elements=[item])
-    data = label.to_dict()
-    assert "features" not in data
-    assert data["elements"][0].keys().isdisjoint(model.STYLE_FIELDS[type(item)])
+    data = json.loads(json.dumps(label.to_dict()))
+    assert "features" not in data and data["version"] == 1
+    assert Label.from_dict(data) == label
+
+
+def test_earlier_versions_ignore_fields_they_do_not_know(monkeypatch):
+    data = Label(elements=[TextElement(text="x", outline_color="#ff0000")]).to_dict()
+    known = {
+        "text",
+        "font",
+        "bold",
+        "italic",
+        "size_pt",
+        "color",
+        "align",
+        "name",
+        "kind",
+    }
+    monkeypatch.setattr(
+        model,
+        "_known_fields",
+        lambda cls, d: (
+            {k: v for k, v in d.items() if k in known}
+            if cls is TextElement
+            else {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
+        ),
+    )
+    assert Label.from_dict(data).elements[0].outline_color == "#ffffff"  # dropped, no error
 
 
 def test_fields_with_effect_are_written():
@@ -315,6 +344,36 @@ def test_fields_with_effect_are_written():
     assert Label(elements=[image]).to_dict()["elements"][0]["threshold"] == 50
 
 
-def test_label_border_shape_without_border_is_not_written():
-    data = Label(border_radius_mm=3, border_style="dotted").to_dict()
-    assert "features" not in data and "border_style" not in data
+def test_label_border_shape_without_border_is_no_feature():
+    label = Label(border_radius_mm=3, border_style="dotted")
+    data = label.to_dict()
+    assert "features" not in data and data["border_style"] == "dotted"
+    assert Label.from_dict(data) == label
+
+
+style_values = {
+    "underline": st.booleans(),
+    "letter_spacing": st.floats(-50, 200, allow_nan=False),
+    "line_spacing": st.floats(0.5, 3, allow_nan=False),
+    "shrink": st.booleans(),
+    "min_size_pt": st.floats(0, 300, allow_nan=False),
+    "rotation": st.sampled_from(model.ROTATIONS),
+    "inverted": st.booleans(),
+    "box_color": st.sampled_from(["", "#ff0000"]),
+    "padding_mm": st.floats(0, 20, allow_nan=False),
+    "outline_mm": st.floats(0, 5, allow_nan=False),
+    "outline_color": st.sampled_from(["#ffffff", "#000000"]),
+    "shadow_color": st.sampled_from(["#808080", "#123456"]),
+    "valign": st.sampled_from(model.VALIGNS),
+    "gap_mm": st.one_of(st.none(), st.floats(0, 50, allow_nan=False)),
+}
+
+
+@settings(max_examples=150, deadline=None)
+@given(st.fixed_dictionaries({}, optional=style_values))
+def test_saving_and_opening_keeps_every_design_field(values):
+    label = Label(elements=[TextElement(text="x", **values)])
+    data = json.loads(json.dumps(label.to_dict()))
+    again = Label.from_dict(data)
+    assert again == label
+    assert again.to_dict() == data

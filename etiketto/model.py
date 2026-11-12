@@ -368,9 +368,12 @@ def styled(item, names: tuple[str, ...]) -> bool:
 
 
 def _compact(item, data: dict, names: tuple[str, ...]) -> dict:
-    """data without the fields that have their default value or no effect."""
+    """data without the fields that have their default value. A field
+    without effect (an outline colour without an outline) is still written,
+    so it comes back when the file is opened, but it is no feature: earlier
+    versions ignore fields they do not know."""
     for name in names:
-        if not _matters(item, name):
+        if getattr(item, name) == default_of(type(item), name):
             data.pop(name, None)
     return data
 
