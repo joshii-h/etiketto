@@ -998,7 +998,6 @@ paths:
               printer: it-cab
               data_rows:
               - AssetNumber: '100001'
-                Description: Laptop
               format: png
   /print:
     post:
@@ -1187,7 +1186,6 @@ paths:
                   printer: it-cab
                   data_rows:
                   - AssetNumber: '100001'
-                    Description: Laptop
                   wait: 30
               series:
                 summary: A series, one label per row
@@ -1740,7 +1738,6 @@ components:
             rows, 1000 columns, 2000000 cells, 100000 characters a value.'
           examples:
           - - AssetNumber: '100001'
-              Description: Laptop
         data_file: &id012
           type: string
           description: Or a CSV, TSV, ODS or XLSX file in the labels folder. Without data_rows and data_file,

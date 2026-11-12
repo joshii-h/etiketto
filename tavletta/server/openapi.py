@@ -146,7 +146,7 @@ LABEL_FIELDS: dict[str, Any] = {
         "label's {Column} placeholders take the values. Numbers are taken as text, null "
         "as an empty cell. At most %d rows, %d columns, %d cells, %d characters a value."
         % (limits.MAX_ROWS, limits.MAX_COLUMNS, limits.MAX_CELLS, MAX_VALUE),
-        "examples": [[{"AssetNumber": "100001", "Description": "Laptop"}]],
+        "examples": [[{"AssetNumber": "100001"}]],
     },
     "data_file": {
         "type": "string",
@@ -562,7 +562,7 @@ def _operation(summary: str, role: str | None, responses: dict, **extra) -> dict
 _ONE_ASSET = {
     "label": "asset-tag",
     "printer": "it-cab",
-    "data_rows": [{"AssetNumber": "100001", "Description": "Laptop"}],
+    "data_rows": [{"AssetNumber": "100001"}],
     "wait": 30,
 }
 _SERIES = {
@@ -770,7 +770,7 @@ def _print_paths() -> dict:
                             "example": {
                                 "label": "asset-tag",
                                 "printer": "it-cab",
-                                "data_rows": [{"AssetNumber": "100001", "Description": "Laptop"}],
+                                "data_rows": [{"AssetNumber": "100001"}],
                                 "format": "png",
                             },
                         }

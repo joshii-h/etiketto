@@ -294,7 +294,7 @@ Body fields:
 ```sh
 curl -H "Authorization: Bearer $TOKEN" \
      -H 'Content-Type: application/json' \
-     -d '{"label": "asset-tag", "printer": "it-cab", "data_rows": [{"AssetNumber": "100001", "Description": "Laptop"}], "format": "png"}' \
+     -d '{"label": "asset-tag", "printer": "it-cab", "data_rows": [{"AssetNumber": "100001"}], "format": "png"}' \
      -o preview.png \
      "$TAVLETTA/preview"
 ```
@@ -338,7 +338,7 @@ Body fields:
 ```sh
 curl -H "Authorization: Bearer $TOKEN" \
      -H 'Content-Type: application/json' \
-     -d '{"label": "asset-tag", "printer": "it-cab", "data_rows": [{"AssetNumber": "100001", "Description": "Laptop"}], "wait": 30}' \
+     -d '{"label": "asset-tag", "printer": "it-cab", "data_rows": [{"AssetNumber": "100001"}], "wait": 30}' \
      "$TAVLETTA/print"
 ```
 
