@@ -20,6 +20,7 @@ from etiketto.model import CodeElement, Label, SheetChoice, SymbolElement, TextE
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
+from etiketto.shipping.source import clear_caches  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
 from etiketto.ui.i18n import _, docs_url  # noqa: E402
@@ -117,6 +118,7 @@ class Window(Adw.ApplicationWindow):
     def _main_menu() -> Gio.Menu:
         menu = Gio.Menu()
         menu.append(_("New label"), "win.new")
+        menu.append(_("Shipping label…"), "win.shipping")
         menu.append(_("Save as…"), "win.save-as")
         menu.append(_("Save as template…"), "win.save-template")
         menu.append(_("Export PNG…"), "win.export")
@@ -242,6 +244,7 @@ class Window(Adw.ApplicationWindow):
         printer_changed = label.printer != self.label.printer
         self.label = label
         self._last_sheet = None  # another label (new, opened): not its sheet
+        clear_caches()  # decoded documents of the label before
         self.adopts_tape = adopts_tape
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
@@ -497,6 +500,7 @@ class Window(Adw.ApplicationWindow):
             "help": lambda *_a: self.open_url(docs_url()),
             "print": self.print_flow.on_print,
             "new": self.files.new,
+            "shipping": self.files.open_shipping,
             "add-text": lambda *_a: self.add_element(TextElement(text=_("Text"))),
             "add-image": lambda *_a: self.files.choose_image(self.add_element),
             "add-code": lambda *_a: self.add_element(CodeElement()),
@@ -530,6 +534,9 @@ class Window(Adw.ApplicationWindow):
         path = Path(file.get_path())
         if path.suffix == ".etiketto":
             self.files.confirm_discard(lambda: self.files.open_file(path))
+            return True
+        if path.suffix.lower() == ".pdf":  # a carrier's label
+            self.files.confirm_discard(lambda: self.files.shipping_from(path))
             return True
         try:
             self.add_element(image_from_path(path))

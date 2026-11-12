@@ -11,7 +11,7 @@ import base64
 import io
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache, partial
 from types import MappingProxyType
 from typing import NamedTuple
@@ -25,6 +25,7 @@ from etiketto.model import (
     Element,
     ImageElement,
     Label,
+    PageElement,
     SymbolElement,
     TextElement,
 )
@@ -42,10 +43,11 @@ DEFAULT_SAFE_MM = 1.5
 
 class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
-    translated message (keys: image_unreadable, symbol_unknown,
-    element_failed, no_room, fixed_too_short, background_unreadable; codes
-    that cannot be encoded: see etiketto.codes.CodeError; codes that may not
-    scan or do not fit: code_thin, code_quiet, code_too_big)."""
+    translated message (keys: image_unreadable, page_unreadable,
+    pdf_missing, symbol_unknown, element_failed, no_room, fixed_too_short,
+    background_unreadable; codes that cannot be encoded: see
+    etiketto.codes.CodeError; codes that may not scan or do not fit:
+    code_thin, code_quiet, code_too_big)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
@@ -505,13 +507,55 @@ def render_symbol(
     return img
 
 
-def render_element(element: Element, height: int, dpi: float, mono: bool = False) -> Image.Image:
+def render_page(
+    element: PageElement, width: int | None, height: int, mono: bool = False
+) -> Image.Image:
+    """The area of the page drawn right at its size on the label: no scaling
+    afterwards, so barcodes keep whole printer dots. width None: as wide as
+    the area needs at the height (endless tape). mono: for a black and
+    white printer (see shipping.mono): edges thresholded, grey of its own
+    kept for the printer's dithering."""
+    from etiketto.shipping import source
+
+    crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
+    box = (width, height)
+    args = (element.data, element.page, crop, element.rotation, box, element.fit)
+    if not mono:
+        return source.draw(*args).convert("RGBA")
+    # kept: the preview renders again on every change of the label
+    return source.cached(("mono", *args), lambda: _mono_page(element, args)).convert("RGBA")
+
+
+def _mono_page(element: PageElement, args) -> Image.Image:
+    from etiketto.shipping import source
+    from etiketto.shipping.mono import black_and_white
+
+    info = source.page_info(element.data, element.page)
+    # an image is enlarged smoothly here: the threshold then finds its
+    # edges between the pixels instead of on the steps of whole pixels
+    data, page, crop, rotation, box, fit = args
+    image = source.draw(data, page, crop, rotation, box, fit, sharp=info.pdf)
+    scale = 1.0
+    if not info.pdf:
+        _x, _y, w, h = source.area(crop, info.width, info.height)
+        turned_w, turned_h = source.turned(w, h, element.rotation)
+        scale = max(image.width / turned_w, image.height / turned_h)
+    return black_and_white(image.convert("L"), scale)
+
+
+def render_element(
+    element: Element, height: int, dpi: float, width: int | None = None, mono: bool = False
+) -> Image.Image:
+    """width: the room along the label (fixed length), None if it grows;
+    mono: the printer prints only black and white (see render_page())."""
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
         return render_image(element, height)
     if isinstance(element, SymbolElement):
         return render_symbol(element, height, dpi, mono)
+    if isinstance(element, PageElement):
+        return render_page(element, width, height, mono)
     return render_code(element, height)
 
 
@@ -571,14 +615,27 @@ def _element_warning(element: Element, index: int, error: Exception) -> RenderWa
         return RenderWarning(error.key, {"n": index, **error.params})
     if isinstance(element, ImageElement):
         return RenderWarning("image_unreadable", {"n": index})
+    if isinstance(element, PageElement):
+        missing = getattr(error, "code", "") == "no_pdf"
+        return RenderWarning("pdf_missing" if missing else "page_unreadable", {"n": index})
     return RenderWarning("element_failed", {"n": index})
 
 
-def _parts(label: Label, f: _Frame, dpi: float, warnings, mono: bool) -> list[Image.Image]:
+def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | None:
+    """The room for content along a label of fixed length; None if it grows."""
+    if label.auto_length:
+        return None
+    length = max(math.ceil(min_length_mm / 25.4 * dpi), mm_to_px(label.length_mm, dpi))
+    return max(1, length - 2 * (f.margin + f.frame))
+
+
+def _parts(
+    label: Label, f: _Frame, dpi: float, warnings, room: int | None, mono: bool
+) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi, mono)
+            part = render_element(element, f.inner, dpi, room, mono)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
@@ -590,23 +647,33 @@ def _parts(label: Label, f: _Frame, dpi: float, warnings, mono: bool) -> list[Im
     return parts
 
 
-def _smaller(element: Element, part: Image.Image, scale: float) -> Image.Image:
-    """The part scaled down; a code (or a symbol) drawn again at the smaller
-    size, so its modules stay whole pixels (its outline stays sharp)."""
+def _content_width(parts: list[Image.Image], gap: int) -> int:
+    return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
+
+
+def _smaller(element: Element, part: Image.Image, scale: float, mono: bool) -> Image.Image:
+    """A part reduced to fit a label of fixed length. A code, a page area or
+    a symbol is drawn again at the smaller size (not reduced: that would
+    blur bars, or a code's modules would no longer be whole pixels)."""
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
     if isinstance(element, CodeElement):
         try:
             return render_code(element, size[1], size[0])
         except Exception:  # noqa: BLE001 - the placeholder of a code that failed
             pass
+    if isinstance(element, PageElement):
+        try:
+            drawn = render_page(replace(element, fit="fill"), size[0], size[1], mono)
+            if drawn.size == size:
+                return drawn
+        except Exception:  # noqa: BLE001 - it was drawn before: reduce that instead
+            pass
     return _resize(part, *size)
 
 
-def _content_width(parts: list[Image.Image], gap: int) -> int:
-    return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
-
-
-def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float):
+def _fit_length(
+    label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float, mono: bool
+):
     """Label length, the (possibly scaled) parts and the gap between them."""
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     content_w = _content_width(parts, f.margin)
@@ -618,7 +685,10 @@ def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length
         warnings.append(RenderWarning("fixed_too_short"))
     elif parts and content_w > room:
         scale = room / content_w
-        parts = [_smaller(e, p, scale) for e, p in zip(label.elements, parts, strict=True)]
+        parts = [
+            _smaller(element, p, scale, mono)
+            for element, p in zip(label.elements, parts, strict=True)
+        ]
         return length, parts, round(f.margin * scale), True
     return length, parts, f.margin, False
 
@@ -673,12 +743,12 @@ def render(
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
     min_length_mm is the printer's shortest label (Capabilities.min_length_mm);
-    mono: for a black-and-white printer (symbols black or white, without
-    grey edges)."""
+    mono: the printer prints only black and white (Capabilities.color_model):
+    symbols black or white without grey edges, page areas thresholded."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings, mono)
-    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
+    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono)
+    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm, mono)
     warnings += [
         RenderWarning(key, {"n": index})
         for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)

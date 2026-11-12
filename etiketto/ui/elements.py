@@ -12,10 +12,11 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto.model import ImageElement, SymbolElement, TextElement  # noqa: E402
+from etiketto.model import ImageElement, PageElement, SymbolElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.symbols import SymbolChooser, SymbolIcon  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
+    FITS,
     ROTATIONS,
     SYMBOLOGY_GROUPS,
     SYMBOLOGY_HELP,
@@ -94,6 +95,8 @@ class ElementsGroup(Adw.PreferencesGroup):
         elif isinstance(element, SymbolElement):
             assert prefix
             self._symbol_rows(row, element, set_attr, prefix)
+        elif isinstance(element, PageElement):
+            self._page_rows(row, element, set_attr)
         else:
             self._code_rows(row, element, set_attr)
         return row
@@ -186,6 +189,15 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)
         row.add_row(image_row)
+
+    def _page_rows(self, row: Adw.ExpanderRow, element: PageElement, set_attr) -> None:
+        area = Adw.ActionRow(title=_("Area"))
+        area.set_subtitle(GLib.markup_escape_text(element.name))
+        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
+        choose.connect("clicked", lambda _b: self.window.files.edit_area(element))
+        area.add_suffix(choose)
+        row.add_row(area)
+        row.add_row(combo_row(_("Scale"), FITS, element.fit, lambda v: set_attr(fit=v)))
 
     def _symbol_rows(
         self, row: Adw.ExpanderRow, element: SymbolElement, set_attr, prefix: SymbolIcon

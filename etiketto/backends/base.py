@@ -435,7 +435,8 @@ def check_width(width_mm: float, capabilities: Capabilities) -> None:
 
 def apply_color_model(image: Image.Image, model: ColorModel) -> Image.Image:
     """What the printer can reproduce: mono printers get Floyd-Steinberg
-    dithered black and white, so the preview shows the real result."""
+    dithered black and white, so the preview shows the real result (page
+    areas are black and white already, see render(mono=True))."""
     if model == "mono":
         return image.convert("1", dither=Image.Dither.FLOYDSTEINBERG).convert("RGB")
     return image

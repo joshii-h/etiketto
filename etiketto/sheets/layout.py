@@ -91,6 +91,7 @@ class Pages(Sequence[Image.Image]):
         self._slots = job.slots()
         self._first = [sum(len(s) for s in self._slots[:i]) for i in range(len(self._slots))]
         self._last: tuple[int, Image.Image] | None = None
+        self._fitted = FittedLabels()  # for the whole job: rendered again once
 
     def __len__(self) -> int:
         return len(self._slots)
@@ -118,7 +119,7 @@ class Pages(Sequence[Image.Image]):
         n = self._first[index]
         placed = [(slot, self.label_at(n + i)) for i, slot in enumerate(slots)]
         job = self.job
-        page = compose_page(job.sheet, placed, self.dpi, job.outlines, job.rotated)
+        page = compose_page(job.sheet, placed, self.dpi, job.outlines, job.rotated, self._fitted)
         self._last = (index, page)
         return page
 
@@ -129,17 +130,21 @@ def compose_page(
     dpi: float,
     outlines: bool = False,
     rotated: bool = False,
+    fitted: FittedLabels | None = None,
 ) -> Image.Image:
     """One page: each (position, label image) at its place, exact to the
     pixel at dpi; round labels and CDs clipped to their shape. The page's
-    size in mm travels with it (info["size_mm"])."""
+    size in mm travels with it (info["size_mm"]). fitted: the labels made
+    to fit before (in a job of several pages)."""
     page = Image.new("RGB", (px(sheet.paper[0], dpi), px(sheet.paper[1], dpi)), "white")
     masks: dict[tuple[int, int], Image.Image | None] = {}
+    size = (px(sheet.width, dpi), px(sheet.height, dpi))
+    # the label as designed: turned on its side when the job is rotated
+    designed = (size[1], size[0]) if rotated else size
+    fitted = fitted if fitted is not None else FittedLabels()
     for position, label in placed:
-        image = label.rotate(90, expand=True) if rotated else label
-        size = (px(sheet.width, dpi), px(sheet.height, dpi))
-        if abs(image.width - size[0]) > 2 or abs(image.height - size[1]) > 2:
-            image = image.resize(size, Image.Resampling.LANCZOS)  # another resolution
+        image = fitted.get(label, designed, dpi)
+        image = image.rotate(90, expand=True) if rotated else image
         if image.size not in masks:
             masks[image.size] = shape_mask(sheet, image.size)
         left, top, _right, _bottom = sheet.rect(position)
@@ -148,6 +153,54 @@ def compose_page(
         draw_outlines(page, sheet, dpi)
     page.info["size_mm"] = sheet.paper
     return page
+
+
+class FittedLabels:
+    """The label images of a job made to fit their places, each once (the
+    same image at every position when copies are printed). Only the last
+    few are kept: a mail merge brings another image for every label."""
+
+    KEEP = 4
+
+    def __init__(self):
+        self._done: list[tuple[Image.Image, tuple[int, int], Image.Image]] = []
+
+    def get(self, label: Image.Image, size: tuple[int, int], dpi: float) -> Image.Image:
+        for image, at, fitted in self._done:
+            if image is label and at == size:
+                return fitted
+        fitted = fit_label(label, size, dpi)
+        self._done = [*self._done[-(self.KEEP - 1) :], (label, size, fitted)]
+        return fitted
+
+
+def fit_label(label: Image.Image, size: tuple[int, int], dpi: float) -> Image.Image:
+    """The label image in a box of size pixels, its shape kept (another
+    shape: centred, white around it). A label of another size is rendered
+    again if the image says how (info["render_at"]), once, at the
+    resolution at which its size in mm (info["size_mm"]) fits the box:
+    areas of a PDF page and barcodes stay whole dots that a smooth resize
+    would blur. Without that it is resized smoothly."""
+    if abs(label.width - size[0]) <= 2 and abs(label.height - size[1]) <= 2:
+        return label
+    render_at, size_mm = label.info.get("render_at"), label.info.get("size_mm")
+    if callable(render_at) and size_mm:
+        width_in, height_in = size_mm[0] / 25.4, size_mm[1] / 25.4
+        image = render_at(min(size[0] / width_in, size[1] / height_in))
+    else:
+        scale = min(size[0] / label.width, size[1] / label.height)
+        shape = (max(1, round(label.width * scale)), max(1, round(label.height * scale)))
+        image = label.resize(shape, Image.Resampling.LANCZOS)  # another resolution
+    if image.size == size:
+        return image
+    fitted = Image.new(image.mode, size, "white")
+    left, top = (size[0] - image.width) // 2, (size[1] - image.height) // 2
+    fitted.paste(
+        image.crop((max(0, -left), max(0, -top), image.width, image.height)),
+        (max(0, left), max(0, top)),
+    )
+    fitted.info.update(image.info)
+    return fitted
 
 
 def shape_mask(sheet: Sheet, size: tuple[int, int]) -> Image.Image | None:

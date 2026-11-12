@@ -79,6 +79,13 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   recently used ones at hand; drawn as vectors at the printer's resolution,
   in colour, or on black-and-white label printers in black or white with
   sharp edges
+- Shipping labels: open a carrier's PDF or image (an A4 page with the label
+  in one half or quarter, receipts around it), Etiketto finds the label,
+  you check the area, and it is printed at 4 × 6 in, 100 × 150 mm,
+  100 × 200 mm, on a 62 mm roll or on A6 or A4 paper; PDF pages are drawn
+  at the resolution they are printed at, so barcodes stay sharp (the system
+  printer gets them without loss, as PWG Raster at its resolution or as a
+  PDF at 300 dpi). The label file keeps the page the label was taken from
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
@@ -107,6 +114,11 @@ cd etiketto
 | Fedora | `python3-gobject gtk4 libadwaita python3-cairo gettext` |
 | Arch | `python-gobject gtk4 libadwaita python-cairo gettext` |
 | Gentoo | `dev-python/pygobject gui-libs/gtk:4 gui-libs/libadwaita dev-python/pycairo sys-devel/gettext` |
+
+For shipping labels from PDF files also Poppler's GLib library with GObject
+introspection (images work without it; the Flatpak brings it along):
+`gir1.2-poppler-0.18` (Debian, Ubuntu), `poppler-glib` (Fedora, Arch),
+`app-text/poppler` with `USE="cairo introspection"` (Gentoo).
 
 Then start **Etiketto** from the app menu and choose the **Printer model**.
 Etiketto looks for the printer on the network; otherwise enter its host
@@ -213,6 +225,12 @@ based on Google's Material Icons (Apache-2.0). The "Brand / Logo" category
 and further icons showing brands or trademarks are left out
 ([`tools/mdi_symbols.py`](tools/mdi_symbols.py)). Etiketto draws the icons
 with its own SVG path parser.
+
+Detecting the label on a carrier's page follows
+[ThermalPrint](https://github.com/arios4k/thermalprint) by Alexis
+Rios-Negron (MIT License), rewritten in Python; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). PDF pages are drawn by
+[Poppler](https://poppler.freedesktop.org).
 
 ## License
 

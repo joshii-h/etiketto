@@ -2,18 +2,41 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gi.repository import Gio, GLib, Gtk
 
-from etiketto.model import Label, LabelError, TextElement
+from etiketto.model import Label, LabelError, PageElement, TextElement
+from etiketto.shipping.source import SourceError, page_info
+from etiketto.shipping.targets import Target, make_label
 from etiketto.ui import settings as config
 from etiketto.ui.i18n import _
-from etiketto.ui.texts import error_details, image_from_path, label_error_text, save_error_text
+from etiketto.ui.shipping import ShippingDialog
+from etiketto.ui.texts import (
+    error_details,
+    image_from_path,
+    label_error_text,
+    save_error_text,
+    source_error_text,
+)
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
+
+
+# shipping labels: PDF and the image formats Pillow reads
+SHIPPING_TYPES = (
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/bmp",
+    "image/tiff",
+    "image/webp",
+)
+SHIPPING_SUFFIXES = ("pdf", "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp")
 
 
 def _filters(flt: Gtk.FileFilter) -> Gio.ListStore:
@@ -85,6 +108,75 @@ class Files:
                 self.window.toast(_("Only local files can be used"))
 
         self.confirm_discard(lambda: dialog.open(self.window, None, done))
+
+    # --- shipping labels ---------------------------------------------------------
+
+    def open_shipping(self, *_args) -> None:
+        flt = Gtk.FileFilter(name=_("PDF documents and images"))
+        for mime in SHIPPING_TYPES:
+            flt.add_mime_type(mime)
+        for suffix in SHIPPING_SUFFIXES:
+            flt.add_suffix(suffix)
+        dialog = Gtk.FileDialog(title=_("Open shipping label"), filters=_filters(flt))
+
+        def done(d, result):
+            try:
+                path = d.open_finish(result).get_path()
+            except GLib.Error:  # cancelled
+                return
+            if path:
+                self.shipping_from(Path(path))
+            else:
+                self.window.toast(_("Only local files can be used"))
+
+        self.confirm_discard(lambda: dialog.open(self.window, None, done))
+
+    def shipping_from(self, path: Path) -> None:
+        """Choose the area of a carrier's PDF or image, then make a new label of it."""
+        window = self.window
+        try:
+            element = PageElement.from_file(path)
+            page_info(element.data)  # a PDF or an image at all?
+        except (OSError, LabelError) as e:
+            window.error(_("Cannot open %s") % path.name, str(e))
+            return
+        except SourceError as e:
+            window.error(source_error_text(e, path.name), str(e))
+            return
+        window.present_dialog(
+            ShippingDialog(window, element, self._new_shipping_label, self._use_shipping_label)
+        )
+
+    def _new_shipping_label(self, element: PageElement, target: Target | None) -> Label:
+        window = self.window
+        assert target is not None
+        return make_label(window.backend, element, target, window.printer_settings.safe_mm)
+
+    def _use_shipping_label(self, element: PageElement, target: Target | None) -> None:
+        self.window.set_label(self._new_shipping_label(element, target), None)
+        self.window.dirty = True  # nothing saved yet
+        self.window.update_title()
+
+    def edit_area(self, element: PageElement) -> None:
+        """Choose the area of a page already on the label again."""
+        window = self.window
+
+        def preview(new: PageElement, _target) -> Label:
+            elements = [new if e is element else e for e in window.label.elements]
+            return replace(window.label, elements=elements)
+
+        def apply(new: PageElement, _target) -> None:
+            element.data, element.page, element.crop = new.data, new.page, new.crop
+            element.rotation, element.fit = new.rotation, new.fit
+            window.rebuild_sidebar()
+            window.mark_changed()
+
+        try:
+            dialog = ShippingDialog(window, element, preview, apply, edit=True)
+        except SourceError as e:
+            window.error(source_error_text(e, element.name), str(e))
+            return
+        window.present_dialog(dialog)
 
     # --- saving ------------------------------------------------------------------
 

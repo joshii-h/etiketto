@@ -123,7 +123,45 @@ class SymbolElement:
     kind: Literal["symbol"] = "symbol"
 
 
-Element = TextElement | ImageElement | CodeElement | SymbolElement
+FITS = ("fit", "fill")
+
+
+@dataclass
+class PageElement:
+    """A page of a PDF or an image file, cropped to one area and printed at
+    the label's size: a shipping label. The file is kept (of a PDF with
+    several pages only the chosen page where it can be copied unchanged,
+    see shipping.source.only_page()), so the area is drawn at the printer's
+    resolution, never scaled up blurrily. All of the page is kept, also
+    outside the area."""
+
+    data: str = ""  # base64 encoded PDF or image file
+    name: str = ""  # original file name, for display only
+    page: int = 0  # 0-based
+    # area of the page (before rotation) as fractions: x, y, width, height
+    crop: list[float] = field(default_factory=lambda: [0.0, 0.0, 1.0, 1.0])
+    rotation: int = 0  # clockwise, in degrees: one of ROTATIONS
+    fit: Literal["fit", "fill"] = "fit"  # keep all of the area, or fill the label
+    kind: Literal["page"] = "page"
+
+    @classmethod
+    def from_file(cls, path: str | Path) -> PageElement:
+        """OSError if unreadable, LabelError if absurdly large."""
+        path = Path(path)
+        if path.stat().st_size > MAX_FILE_BYTES:
+            raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
+        return cls(data=base64.b64encode(path.read_bytes()).decode(), name=path.name)
+
+
+Element = TextElement | ImageElement | CodeElement | SymbolElement | PageElement
+# an Etiketto that does not know a kind refuses the file as "newer"
+ELEMENT_TYPES = {
+    "text": TextElement,
+    "image": ImageElement,
+    "code": CodeElement,
+    "symbol": SymbolElement,
+    "page": PageElement,
+}
 
 
 @dataclass
@@ -155,16 +193,6 @@ class SheetChoice:
         if not isinstance(choice.rotated, bool):  # bool("false") would be True
             raise _damaged("sheet rotated must be true or false")
         return choice
-
-
-# an Etiketto that does not know a kind refuses the file as "newer": symbols
-# need no format version or feature of their own
-ELEMENT_TYPES = {
-    "text": TextElement,
-    "image": ImageElement,
-    "code": CodeElement,
-    "symbol": SymbolElement,
-}
 
 
 @dataclass
@@ -457,6 +485,8 @@ def _element_from_dict(item) -> Element:
         element.name = _str(element.name, "image name")
     elif isinstance(element, SymbolElement):
         _validate_symbol(element)
+    elif isinstance(element, PageElement):
+        _validate_page(element)
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
@@ -479,3 +509,21 @@ def _validate_symbol(element: SymbolElement) -> None:
     if isinstance(rotation, bool) or rotation not in ROTATIONS:
         raise _damaged("invalid rotation %r" % (rotation,))
     element.rotation = ROTATIONS[ROTATIONS.index(rotation)]  # 90, not 90.0
+
+
+def _validate_page(element: PageElement) -> None:
+    element.data = _str(element.data, "page data")
+    element.name = _str(element.name, "page name")
+    if isinstance(element.page, bool) or not isinstance(element.page, int):
+        raise _damaged("page must be a whole number")
+    element.page = max(0, element.page)
+    if isinstance(element.rotation, bool):
+        raise _damaged("invalid rotation")
+    element.rotation = int(_choice(element.rotation, ROTATIONS, "rotation"))  # 90, not 90.0
+    element.fit = _choice(element.fit, FITS, "fit")
+    crop = element.crop
+    if not isinstance(crop, list) or len(crop) != 4:
+        raise _damaged("crop must be a list of four numbers")
+    x, y, w, h = (_clamp(v, 0, 1, "crop") for v in crop)
+    x, y = min(x, 0.99), min(y, 0.99)
+    element.crop = [x, y, max(0.01, min(w, 1 - x)), max(0.01, min(h, 1 - y))]

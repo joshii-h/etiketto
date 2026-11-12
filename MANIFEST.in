@@ -5,3 +5,4 @@ include data/xyz.joshuahirsig.Etiketto.svg
 include data/xyz.joshuahirsig.Etiketto-symbolic.svg
 include data/xyz.joshuahirsig.Etiketto.xml
 include po/*.po
+include THIRD_PARTY_NOTICES.md

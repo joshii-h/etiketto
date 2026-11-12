@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 09:55+0100\n"
+"POT-Creation-Date: 2026-11-12 09:59+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1409,6 +1409,194 @@ msgstr ""
 "Rahmen halten diesen Abstand zu den Etikettenkanten. Drucker verlieren an "
 "den Kanten etwas, und lange Etiketten können leicht schief laufen. Wird Text "
 "am Rand abgeschnitten, den Wert erhöhen."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Shipping labels"
+msgstr "Versandetiketten"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Carriers and marketplaces send shipping labels as a PDF or an image, often "
+"an A4 page with the label in one half or quarter and a receipt or "
+"instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF "
+"dropped onto the window) opens such a file and makes a new label of it."
+msgstr ""
+"Paketdienste und Marktplätze schicken Versandetiketten als PDF oder Bild, "
+"oft als A4-Seite mit dem Etikett in einer Hälfte oder einem Viertel und "
+"einer Quittung oder Anleitung daneben. [[ui:Shipping label…]] im Hauptmenü "
+"(oder ein PDF, das auf das Fenster gezogen wird) öffnet eine solche Datei "
+"und macht daraus ein neues Etikett."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Etiketto looks for the label on the page: a large area with the shape of a "
+"label, best with a printed frame and a barcode; a page with one label "
+"filling it is taken whole. Check the selection: drag it, drag its edges, or "
+"draw a new one. [[ui:Next suggestion]] shows other areas that could be the "
+"label, [[ui:Whole page]] selects all of it."
+msgstr ""
+"Etiketto sucht das Etikett auf der Seite: einen grossen Bereich mit der Form "
+"eines Etiketts, am besten mit gedrucktem Rahmen und Strichcode; eine Seite, "
+"die ein einziges Etikett ausfüllt, wird ganz genommen. Die Auswahl prüfen: "
+"sie verschieben, ihre Kanten ziehen oder eine neue aufziehen. [[ui:Next "
+"suggestion]] zeigt weitere Bereiche, die das Etikett sein könnten, "
+"[[ui:Whole page]] wählt die ganze Seite."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Page]]: the page of a PDF with several pages."
+msgstr "[[ui:Page]]: die Seite eines PDFs mit mehreren Seiten."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Label size]]: 4 × 6 in (101.6 × 152.4 mm), 100 × 150 mm, 100 × 200 mm, "
+"a 62 mm roll that is as long as the label needs, or A6 and A4 paper on the "
+"system printer. Only sizes the printer can print are offered; on endless "
+"tape the label runs along the tape."
+msgstr ""
+"[[ui:Label size]]: 4 × 6 Zoll (101,6 × 152,4 mm), 100 × 150 mm, 100 × 200 "
+"mm, eine 62-mm-Rolle, die so lang wird, wie das Etikett es braucht, oder A6- "
+"und A4-Papier auf dem Systemdrucker. Angeboten werden nur Grössen, die der "
+"Drucker drucken kann; auf Endlosband läuft das Etikett entlang des Bands."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A label printed sideways on the page is turned upright for the size; "
+"[[ui:Rotate left]] and [[ui:Rotate right]] turn it by hand."
+msgstr ""
+"Ein quer auf die Seite gedrucktes Etikett wird für die Grösse aufgerichtet; "
+"[[ui:Rotate left]] und [[ui:Rotate right]] drehen es von Hand."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Scale]]: [[ui:Whole area, centred]] keeps all of the area, [[ui:Fill "
+"the label, edges cut off]] fills the label completely."
+msgstr ""
+"[[ui:Scale]]: [[ui:Whole area, centred]] behält den ganzen Bereich, "
+"[[ui:Fill the label, edges cut off]] füllt das Etikett vollständig."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Create label]] replaces the open label. The area stays an element of "
+"the label: [[ui:Area]] in its row opens the selection again."
+msgstr ""
+"[[ui:Create label]] ersetzt das offene Etikett. Der Bereich bleibt ein "
+"Element des Etiketts: [[ui:Area]] in seiner Zeile öffnet die Auswahl wieder."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"A PDF page is drawn right at the resolution it is printed at, without "
+"smoothing: bars and text come out as whole dots, so barcodes stay readable. "
+"Lines thinner than a dot are printed at least one dot wide (sometimes two), "
+"and in black even if they are light grey or coloured; white lines thinner "
+"than a dot on black may vanish. Label printers get the label at their own "
+"resolution. The system printer gets it without loss: as PWG Raster drawn at "
+"the printer's resolution, or as a PDF drawn at 300 dpi, which a printer of "
+"another resolution scales itself (on a 203 dpi printer the edges of bars may "
+"then soften: check that the barcode scans).  Only printers that take nothing "
+"but JPEG get a compressed copy."
+msgstr ""
+"Eine PDF-Seite wird direkt in der Auflösung gezeichnet, in der sie gedruckt "
+"wird, ohne Glättung: Striche und Text bestehen aus ganzen Punkten, so bleiben"
+" Strichcodes lesbar. Linien, die dünner als ein Punkt sind, werden mindestens"
+" einen Punkt breit gedruckt (manchmal zwei), und schwarz, auch wenn sie "
+"hellgrau oder farbig sind; weisse Linien auf Schwarz, die dünner als ein "
+"Punkt sind, können verschwinden. Etikettendrucker erhalten das Etikett in "
+"ihrer eigenen Auflösung. Der Systemdrucker erhält es verlustfrei: als PWG "
+"Raster, in der Auflösung des Druckers gezeichnet, oder als PDF, mit 300 dpi "
+"gezeichnet, das ein Drucker mit anderer Auflösung selbst skaliert (auf einem "
+"Drucker mit 203 dpi können die Kanten von Strichen dann weicher werden: "
+"prüfen, ob sich der Strichcode scannen lässt). Nur Drucker, die "
+"ausschliesslich JPEG annehmen, erhalten eine komprimierte Kopie."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Images are enlarged by repeating pixels, evenly only by whole multiples "
+"(otherwise some pixels come out one dot wider than others); reduced, the "
+"pixels that fall together are averaged into grey."
+msgstr ""
+"Bilder werden vergrössert, indem Pixel wiederholt werden, gleichmässig nur um"
+" ganze Vielfache (sonst werden manche Pixel einen Punkt breiter als andere); "
+"verkleinert werden die Pixel, die zusammenfallen, zu Grau gemittelt."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"On black-and-white printers the area is looked at piece by piece. Where it is"
+" black and white but for grey edges (barcodes and text, also from a scan with"
+" grey ink on grey paper), it is cut at the middle between its own black and "
+"white, so bars keep clean edges; images are enlarged smoothly for this, so "
+"the edges fall between the pixels of the scan.  Where it has grey of its own "
+"(a grey logo, grey text down to light grey, a shaded band), the grey is "
+"printed as a dot pattern; black text on it gets a narrow edge of paper so "
+"that it stays readable. A scan or photo of a label should have at least 150 "
+"dpi; at 100 dpi only a clean one keeps all its bars."
+msgstr ""
+"Auf Schwarzweissdruckern wird der Bereich Stück für Stück betrachtet. Wo er "
+"bis auf graue Kanten schwarz und weiss ist (Strichcodes und Text, auch aus "
+"einem Scan mit grauer Tinte auf grauem Papier), wird er in der Mitte zwischen"
+" seinem eigenen Schwarz und Weiss geteilt, so behalten Striche saubere "
+"Kanten; Bilder werden dafür weich vergrössert, damit die Kanten zwischen die "
+"Pixel des Scans fallen. Wo er eigenes Grau hat (ein graues Logo, graue "
+"Schrift bis hin zu hellgrauer, ein schattierter Balken), wird das Grau als "
+"Punktmuster gedruckt; schwarze Schrift darauf erhält einen schmalen Rand aus "
+"Papier, damit sie lesbar bleibt. Ein Scan oder Foto eines Etiketts sollte "
+"mindestens 150 dpi haben; bei 100 dpi behält nur ein sauberer alle Striche."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"The label file keeps the whole page the area was taken from, also outside the"
+" area (addresses, tracking numbers). Of a PDF with several pages only the "
+"chosen page is kept if it can be copied unchanged, otherwise the whole "
+"document (the dialog then says so). Unchanged is strict: a copy that differs "
+"by more than rounding anywhere, even by a few dots, is not used; pages with "
+"embedded fonts that are drawn slightly differently when copied (TeX, for "
+"example) keep the whole document. Of a TIFF with several pages only the "
+"chosen page is kept."
+msgstr ""
+"Die Etikettendatei enthält die ganze Seite, aus der der Bereich stammt, auch "
+"ausserhalb des Bereichs (Adressen, Sendungsnummern). Von einem PDF mit "
+"mehreren Seiten wird nur die gewählte Seite behalten, wenn sie sich "
+"unverändert kopieren lässt, sonst das ganze Dokument (der Dialog weist dann "
+"darauf hin). Unverändert ist streng gemeint: Eine Kopie, die irgendwo um mehr"
+" als Rundung abweicht, auch nur um wenige Punkte, wird nicht verwendet; "
+"Seiten mit eingebetteten Schriften, die beim Kopieren leicht anders "
+"gezeichnet werden (zum Beispiel aus TeX), behalten das ganze Dokument. Von "
+"einem TIFF mit mehreren Seiten wird nur die gewählte Seite behalten."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, "
+"otherwise install it from your distribution (see the README)."
+msgstr ""
+"Zum Öffnen von PDF-Dateien braucht es Poppler (poppler-glib); das Flatpak "
+"bringt es mit, sonst aus der eigenen Distribution installieren (siehe "
+"README)."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"Most shipping label rolls are direct thermal labels: they need no ribbon, "
+"but the print fades in heat and sunlight within months. That is fine for a "
+"parcel on its way; for labels that must last, use thermal transfer labels "
+"with a ribbon."
+msgstr ""
+"Die meisten Rollen für Versandetiketten sind Thermodirekt-Etiketten: Sie "
+"brauchen kein Farbband, aber der Druck verblasst bei Wärme und Sonnenlicht "
+"innert Monaten. Für ein Paket unterwegs genügt das; für Etiketten, die "
+"halten müssen, Thermotransfer-Etiketten mit Farbband verwenden."
 
 #. type: Title ##
 #: docs/use.md

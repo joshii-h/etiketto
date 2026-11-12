@@ -104,6 +104,73 @@ keep this distance from the label edges. Printers lose a little at the
 edges, and long labels can run slightly askew. If text is cut off at the
 edge, increase it.
 
+## Shipping labels
+
+Carriers and marketplaces send shipping labels as a PDF or an image,
+often an A4 page with the label in one half or quarter and a receipt or
+instructions next to it. [[ui:Shipping label…]] in the main menu (or a PDF
+dropped onto the window) opens such a file and makes a new label of it.
+
+- Etiketto looks for the label on the page: a large area with the shape
+  of a label, best with a printed frame and a barcode; a page with one
+  label filling it is taken whole. Check the selection:
+  drag it, drag its edges, or draw a new one. [[ui:Next suggestion]] shows
+  other areas that could be the label, [[ui:Whole page]] selects all of it.
+- [[ui:Page]]: the page of a PDF with several pages.
+- [[ui:Label size]]: 4 × 6 in (101.6 × 152.4 mm), 100 × 150 mm,
+  100 × 200 mm, a 62 mm roll that is as long as the label needs, or A6 and
+  A4 paper on the system printer. Only sizes the printer can print are
+  offered; on endless tape the label runs along the tape.
+- A label printed sideways on the page is turned upright for the size;
+  [[ui:Rotate left]] and [[ui:Rotate right]] turn it by hand.
+- [[ui:Scale]]: [[ui:Whole area, centred]] keeps all of the area,
+  [[ui:Fill the label, edges cut off]] fills the label completely.
+- [[ui:Create label]] replaces the open label. The area stays an element
+  of the label: [[ui:Area]] in its row opens the selection again.
+
+A PDF page is drawn right at the resolution it is printed at, without
+smoothing: bars and text come out as whole dots, so barcodes stay
+readable. Lines thinner than a dot are printed at least one dot wide
+(sometimes two), and in black even if they are light grey or coloured;
+white lines thinner than a dot on black may vanish. Label printers get the
+label at their own resolution. The system printer gets it without loss:
+as PWG Raster drawn at the printer's resolution, or as a PDF drawn at
+300 dpi, which a printer of another resolution scales itself (on a 203 dpi
+printer the edges of bars may then soften: check that the barcode scans).
+Only printers that take nothing but JPEG get a compressed copy.
+
+Images are enlarged by repeating pixels, evenly only by whole multiples
+(otherwise some pixels come out one dot wider than others); reduced, the
+pixels that fall together are averaged into grey.
+
+On black-and-white printers the area is looked at piece by piece. Where
+it is black and white but for grey edges (barcodes and text, also from a
+scan with grey ink on grey paper), it is cut at the middle between its
+own black and white, so bars keep clean edges; images are enlarged
+smoothly for this, so the edges fall between the pixels of the scan.
+Where it has grey of its own (a grey logo, grey text down to light grey,
+a shaded band), the grey is printed as a dot pattern; black text on it
+gets a narrow edge of paper so that it stays readable. A scan or photo of
+a label should have at least 150 dpi; at 100 dpi only a clean one keeps
+all its bars.
+
+The label file keeps the whole page the area was taken from, also outside
+the area (addresses, tracking numbers). Of a PDF with several pages only
+the chosen page is kept if it can be copied unchanged, otherwise the whole
+document (the dialog then says so). Unchanged is strict: a copy that differs
+by more than rounding anywhere, even by a few dots, is not used; pages with
+embedded fonts that are drawn slightly differently when copied (TeX, for
+example) keep the whole document. Of a TIFF with several pages only the
+chosen page is kept.
+
+Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
+along, otherwise install it from your distribution (see the README).
+
+Most shipping label rolls are direct thermal labels: they need no ribbon,
+but the print fades in heat and sunlight within months. That is fine for
+a parcel on its way; for labels that must last, use thermal transfer
+labels with a ribbon.
+
 ## Print
 
 ![Print dialog](media/print.png#only-light)
