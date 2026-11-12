@@ -158,6 +158,8 @@ def test_whole_number_choices_are_steps_of_their_own():
     from etiketto.history import typing_key
 
     assert typing_key("element:0", {"rotation": 90}) is None
+    assert typing_key("label", {"tape_mm": 12.0}) is None  # a choice, though a float
+    assert typing_key("element:0", {"gap_mm": None}) is None  # a switch
     assert typing_key("element:0", {"threshold": 100}) == "element:0:threshold"
     assert typing_key("label", {"margin_mm": 2.0}) == "label:margin_mm"
 

@@ -7,6 +7,7 @@ import contextlib
 import copy
 import errno
 import fcntl
+import itertools
 import json
 import os
 import secrets
@@ -83,6 +84,25 @@ class Placed:
 
     valign: Literal["top", "center", "bottom"] = "center"
     gap_mm: float | None = None
+
+    def __post_init__(self) -> None:
+        # who it is while the label is edited (not a field: not in the file,
+        # not compared); a deep copy (undo) keeps it, a new element gets one
+        self.__dict__["_id"] = next(_ELEMENT_IDS)
+
+
+_ELEMENT_IDS = itertools.count(1)
+
+
+def element_id(element) -> int:
+    """An element's identity while the label is edited, the same in copies
+    of the label (undo history); 0 for an element without one."""
+    return element.__dict__.get("_id", 0)
+
+
+def new_id(element) -> None:
+    """Give a copied element an identity of its own (duplicating)."""
+    element.__dict__["_id"] = next(_ELEMENT_IDS)
 
 
 @dataclass

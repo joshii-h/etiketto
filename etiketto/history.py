@@ -19,15 +19,47 @@ LIMIT = 200
 LIMIT_BYTES = 256 * 2**20
 COALESCE_SECONDS = 1.5
 TYPED = frozenset({"text", "data", "name"})  # fields typed into
-SPUN = frozenset({"threshold"})  # whole numbers from a spin button
+# fields set from spin buttons (a choice of the same type, like the tape
+# width, is not among them)
+SPUN = frozenset(
+    {
+        "threshold",
+        "size_pt",
+        "size_mm",
+        "letter_spacing",
+        "line_spacing",
+        "min_size_pt",
+        "max_width_mm",
+        "padding_mm",
+        "corner_mm",
+        "frame_mm",
+        "outline_mm",
+        "shadow_mm",
+        "brightness",
+        "contrast",
+        "gamma",
+        "border_mm",
+        "width_mm",
+        "height_mm",
+        "line_mm",
+        "gap_mm",
+        "margin_mm",
+        "edge_mm",
+        "length_mm",
+        "border_radius_mm",
+        "border_inset_mm",
+    }
+)
 
 
 def typing_key(prefix: str, changes: dict) -> str | None:
     """The key that joins a change with the one before: typing into a text
-    field or changing a number in a spin button (a float, or a field in
-    SPUN); None (a step of its own) for switches, choices (also whole
-    numbers like a rotation) and colours."""
-    spun = all(isinstance(v, float) for v in changes.values()) or set(changes) <= SPUN
+    field or turning a spin button (by the field, SPUN); None (a step of
+    its own) for switches, choices of any type (the tape width too) and
+    colours."""
+    spun = set(changes) <= SPUN and all(
+        isinstance(v, (int, float)) and not isinstance(v, bool) for v in changes.values()
+    )
     if not changes or not (spun or set(changes) <= TYPED):
         return None
     return prefix + ":" + ",".join(sorted(changes))
