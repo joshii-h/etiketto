@@ -17,13 +17,21 @@ from etiketto.units import Unit
 # cassettes older than this get a hint: old ZINK paper prints paler
 OLD_CASSETTE_DAYS = 2 * 365
 
-CUT_MODES = [("full", _("Full cut")), ("half", _("Half cut")), ("none", _("No cut"))]
+CUT_MODES = [
+    ("full", _("Full cut")),
+    ("half", _("Half cut")),
+    ("end", _("Cut after the last label")),
+    ("none", _("No cut")),
+]
 # print modes by protocol name; unknown modes are shown by their name
 MODE_NAMES = {
     "vivid": _("Vivid"),
     "color": _("Normal"),
     "bw": _("Black and white (sharper)"),
+    "black": _("Black"),
+    "red": _("Red and black"),
 }
+QUALITY_NAMES = {"standard": _("Standard"), "high": _("High resolution (600 dpi)")}
 COLOR_ADJUST_ROWS = [
     ("brightness", _("Brightness")),
     ("red", _("Red")),
@@ -77,7 +85,13 @@ def element_icon(element) -> str:
 
 def backend_name(backend) -> str:
     """The name of a printer model in the list; brand names stay as they are."""
-    names = {"system": _("System printer (CUPS, IPP)")}
+    names = {
+        "system": _("System printer (CUPS, IPP)"),
+        # translators: %s is a printer model, e.g. "Brother QL"
+        "brother_ql": _("%s, continuous rolls") % backend.name,
+        # translators: %s is a printer model, e.g. "Brother QL"
+        "brother_ql_diecut": _("%s, die-cut labels") % backend.name,
+    }
     return names.get(backend.id, backend.name)
 
 
@@ -172,6 +186,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "again."
         ),
         "job_canceled": _("The print job was canceled at the printer or in the queue."),
+        "wrong_media": _(
+            "The loaded roll does not match the label. Load a matching roll, or choose "
+            "the label size or printer model of the roll that is loaded."
+        ),
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."

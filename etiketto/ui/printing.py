@@ -21,6 +21,7 @@ from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     MODE_NAMES,
+    QUALITY_NAMES,
     error_details,
     printer_error_text,
     stage_text,
@@ -47,6 +48,12 @@ class PrintFlow:
         ids = [m.id for m in self._modes()]
         saved = self.window.printer_settings.get("mode")
         return saved if saved in ids else ids[0]
+
+    def _quality(self) -> str:
+        """The quality of the last print, if the printer offers one."""
+        ids = self.window.backend.qualities(self.window.printer.info)
+        saved = self.window.printer_settings.get("quality")
+        return saved if saved in ids else (ids or ("",))[0]
 
     def _cut(self) -> str:
         cut_modes = self.window.backend.capabilities.cut_modes
@@ -111,8 +118,8 @@ class PrintFlow:
         self.window.schedule_render()  # black and white shows grey
 
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print."""
-        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        """Copies, cut, mode and quality for the print dialog, from the last print."""
+        return {"copies": 1, "cut": self._cut(), "mode": self.mode, "quality": self._quality()}
 
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
@@ -129,6 +136,14 @@ class PrintFlow:
             rows.append(
                 combo_row(
                     _("Colours"), modes, choices["mode"], lambda v: self._on_print_mode(choices, v)
+                )
+            )
+        qualities = self.window.backend.qualities(self.window.printer.info)
+        if len(qualities) > 1:
+            names = [(q, QUALITY_NAMES.get(q, q)) for q in qualities]
+            rows.append(
+                combo_row(
+                    _("Quality"), names, choices["quality"], lambda v: choices.update(quality=v)
                 )
             )
         if caps.supports_color_adjust:
@@ -194,6 +209,8 @@ class PrintFlow:
         window = self.window
         settings = window.printer_settings
         settings.update(cut=choices["cut"], mode=choices["mode"])
+        if choices["quality"]:
+            settings.update(quality=choices["quality"])
         self.start(
             PrintOptions(
                 copies=choices["copies"],
@@ -202,6 +219,7 @@ class PrintFlow:
                 color=settings.color_adjust,
                 data_format=settings.data_format,
                 gap_mm=window.label.gap_mm,
+                quality=choices["quality"],
             )
         )
 

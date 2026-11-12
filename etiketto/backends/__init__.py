@@ -36,12 +36,15 @@ def _load() -> None:
     if _loaded:
         return
     _loaded = True
+    from etiketto.backends.brother_ql import BrotherQL, BrotherQLDieCut
     from etiketto.backends.cab import Cab
     from etiketto.backends.system import SystemPrinter
     from etiketto.backends.vc500w import VC500W
 
     register(VC500W())
     register(Cab())
+    register(BrotherQL())
+    register(BrotherQLDieCut())
     register(SystemPrinter())
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:

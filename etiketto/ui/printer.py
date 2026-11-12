@@ -315,6 +315,8 @@ class Printer:
         unit = self.window.unit
         if info.error:
             return code_text(info.error, unit)
+        if info.state == "UNKNOWN":  # reachable, but it tells nothing about itself
+            return _("Connected, the printer does not report its state")
         if not self.window.backend.capabilities.continuous:
             if info.state == "BUSY":
                 return _("Printing")

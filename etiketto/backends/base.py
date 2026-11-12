@@ -24,7 +24,10 @@ from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, render
 ColorModel = Literal["color", "mono", "two-color"]
 # rounding in unit conversions must not make a label "too long" or "too wide"
 LIMIT_SLACK_MM = 0.01
-CUT_MODES = ("full", "half", "none")
+# every cut mode a backend may offer; "end": one cut after the last label of
+# a job, the copies stay together
+CUT_MODES = ("full", "half", "end", "none")
+DEFAULT_CUT_MODES = ("full", "half", "none")
 
 
 # --- what a printer can do --------------------------------------------------
@@ -52,7 +55,7 @@ class Capabilities:
     dpi: float  # resolution across the tape the preview is rendered at
     modes: tuple[PrintMode, ...]  # fallback when the printer does not report its modes
     color_model: ColorModel = "color"
-    cut_modes: tuple[str, ...] = CUT_MODES  # empty: the printer does not cut
+    cut_modes: tuple[str, ...] = DEFAULT_CUT_MODES  # empty: the printer does not cut
     reports_remaining: bool = False  # remaining tape in the status
     supports_color_adjust: bool = False  # brightness / colour balance per job
     # endless tape: the label grows with its content. False: die-cut labels
@@ -66,6 +69,8 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
+    # print qualities ("standard", "high"); empty or one: the interface offers no choice
+    qualities: tuple[str, ...] = ()
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -122,6 +127,7 @@ class PrinterInfo:
     firmware: str = ""
     cassette: CassetteInfo | None = None
     pitch_mm: float | None = None  # die-cut: measured distance from label to label
+    qualities: tuple[str, ...] = ()  # print qualities of the connected model; empty = unknown
 
 
 # --- a print job ------------------------------------------------------------
@@ -167,6 +173,7 @@ class PrintOptions:
     color: ColorAdjust = field(default_factory=ColorAdjust)
     data_format: str = "rawrgb"  # backends fall back to their own default
     gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
+    quality: str = ""  # one of Capabilities.qualities; empty = the first
 
 
 @dataclass(frozen=True)
@@ -313,6 +320,13 @@ class JobCanceled(PrinterError):
     code = "job_canceled"
 
 
+class WrongMedia(PrinterError):
+    """The loaded roll is of another kind or size than the label (a
+    continuous roll for a die-cut label or the other way round)."""
+
+    code = "wrong_media"
+
+
 class UsbNotFound(PrinterNotFound):
     """No such printer on USB, or it went away (unplugged, switched off,
     asleep): the advice differs from a printer in the network."""
@@ -411,6 +425,10 @@ class Backend(ABC):
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
+
+    def qualities(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Print qualities of the connected printer, else the documented ones."""
+        return (info.qualities if info else ()) or self.capabilities.qualities
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)
