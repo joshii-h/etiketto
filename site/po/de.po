@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:45+0100\n"
+"POT-Creation-Date: 2026-11-12 15:04+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2445,6 +2445,135 @@ msgid ""
 msgstr ""
 "[[ui:Own spacing]]: [[ui:Space after it]] statt des [[ui:Spacing]] des "
 "Etiketts."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Free layout { #free-layout }"
+msgstr "Freie Anordnung { #free-layout }"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"[[ui:Layout]] at the top of [[ui:Content]] places the elements [[ui:One "
+"after another]] along the tape, or [[ui:Free]]: each one where you put it."
+msgstr ""
+"[[ui:Layout]] oben im Bereich [[ui:Content]] setzt die Elemente [[ui:One "
+"after another]] entlang des Bands oder [[ui:Free]]: jedes dorthin, wo man es "
+"hinsetzt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"In the free layout every element has [[ui:Position and size]]: X and Y from "
+"the label's top left corner, to a hundredth of a millimetre."
+msgstr ""
+"In der freien Anordnung hat jedes Element [[ui:Position and size]]: X und Y "
+"ab der oberen linken Ecke des Etiketts, auf einen Hundertstelmillimeter "
+"genau."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A text is placed by the top left corner of its letters' ink, a code by its "
+"first module. The numbers of other label designers can be taken over as they "
+"are."
+msgstr ""
+"Ein Text wird an der oberen linken Ecke der Tinte seiner Buchstaben "
+"platziert, ein Code an seinem ersten Modul. Die Zahlen anderer "
+"Etikettenprogramme lassen sich unverändert übernehmen."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A text's [[ui:Size]] is the height of its font (the em) in mm, as label "
+"designers give it."
+msgstr ""
+"Die [[ui:Size]] eines Texts ist die Höhe seiner Schrift (das Geviert) in mm, "
+"wie Etikettenprogramme sie angeben."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A code's [[ui:Module size]] is rounded to whole printer dots: 0.67 mm at 12 "
+"dots per mm prints as 8 dots. Leave room for the quiet zone around the code. "
+"Codes can be turned ([[ui:Rotation]]), a barcode has its [[ui:Bar height]]."
+msgstr ""
+"Die [[ui:Module size]] eines Codes wird auf ganze Druckpunkte gerundet: 0,67 "
+"mm bei 12 Punkten pro mm werden als 8 Punkte gedruckt. Um den Code herum "
+"Platz für die Ruhezone lassen. Codes lassen sich drehen ([[ui:Rotation]]), "
+"ein Barcode hat seine [[ui:Bar height]]."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"An image has its [[ui:Height]], a symbol its [[ui:Size]], a line or shape "
+"its width and height. A shipping label fills the label from its position to "
+"the right and bottom edge."
+msgstr ""
+"Ein Bild hat seine [[ui:Height]], ein Symbol seine [[ui:Size]], eine Linie "
+"oder Form ihre Breite und Höhe. Ein Versandetikett füllt das Etikett von "
+"seiner Position bis zum rechten und unteren Rand."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Switching to the free layout for the first time keeps every element where it "
+"was."
+msgstr ""
+"Beim ersten Wechsel zur freien Anordnung bleibt jedes Element, wo es war."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"An element that reaches beyond the label is cut off there; the preview warns "
+"about it."
+msgstr ""
+"Ein Element, das über das Etikett hinausreicht, wird dort abgeschnitten; die "
+"Vorschau warnt davor."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "Labels in the free layout do not open in earlier versions of Etiketto."
+msgstr ""
+"Etiketten in freier Anordnung lassen sich in früheren Versionen von Etiketto "
+"nicht öffnen."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Weight and error correction { #weight }"
+msgstr "Schriftstärke und Fehlerkorrektur { #weight }"
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Weight]] chooses one of the font's own weights, such as Light or "
+"Semibold, instead of regular or bold. The bold button sets it back."
+msgstr ""
+"[[ui:Weight]] wählt eine der eigenen Stärken der Schrift, etwa Light oder "
+"Semibold, statt normal oder fett. Die Fett-Taste setzt sie zurück."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"QR codes have [[ui:Error correction]]: how much of the code may be damaged "
+"and still be read. [[ui:Standard (medium)]] keeps the code of earlier "
+"versions; the other levels choose the code's pattern as label printers do."
+msgstr ""
+"QR-Codes haben eine [[ui:Error correction]]: wie viel des Codes beschädigt "
+"sein darf und trotzdem gelesen wird. [[ui:Standard (medium)]] behält den "
+"Code früherer Versionen; die anderen Stufen wählen das Muster des Codes so, "
+"wie es Etikettendrucker tun."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Labels with a weight or an error correction do not open in earlier versions "
+"of Etiketto."
+msgstr ""
+"Etiketten mit einer Schriftstärke oder einer Fehlerkorrektur lassen sich in "
+"früheren Versionen von Etiketto nicht öffnen."
 
 #. type: Title ##
 #: docs/use.md
