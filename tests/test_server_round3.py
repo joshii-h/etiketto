@@ -208,7 +208,7 @@ def test_entries_with_an_id_are_only_tried_for_their_token(tmp_path, monkeypatch
     assert store.find("a-chosen-token-123").name == "chosen"
     assert len(checked) == 1  # the entry with an id was not tried
     checked.clear()
-    unknown = "etk_%s_%s" % ("0" * 12, "x" * 43)  # an id no entry has
+    unknown = "tav_%s_%s" % ("0" * 12, "x" * 43)  # an id no entry has
     assert store.find(unknown) is None
     # one dummy as slow as the id entries (scrypt here), the id-less one not tried
     assert len(checked) == 1 and checked[0].startswith("scrypt:")

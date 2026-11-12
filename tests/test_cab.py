@@ -523,7 +523,9 @@ def test_print_keeps_the_resolution_if_the_printer_does_not_say(backend, printer
     assert image.width == 1267  # the widest label, not rounded up beyond it
     backend.print_label(image, "h", PrintOptions())
     png, commands = _job_parts(printer.device.jobs[0])
-    assert png.size == (1267, 300) and commands[2] == "S l1;0,0,25,28,105.58"
+    assert (
+        png.size == (1267, 300) and commands[2] == "S l1;0,0,25,28,105.6"
+    )  # the label's size, as cablabel sends it
 
 
 def test_query_keeps_the_status_if_text_commands_time_out(backend, printer, monkeypatch):

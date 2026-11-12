@@ -229,7 +229,8 @@ def parser() -> argparse.ArgumentParser:
         help=_(
             "print method of a thermal printer that has the setting: printer (as set on the "
             "printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by "
-            "default the one chosen in the app, also with --printer-defaults"
+            "default the one chosen in the app, with --printer-defaults the one set on the "
+            "printer"
         ),
     )
     print_.add_argument(
@@ -546,6 +547,8 @@ REFUSED = frozenset(
         "date_out_of_range",
         "element_failed",
         "image_unreadable",
+        "page_unreadable",
+        "pdf_missing",  # a document page drawn without Poppler: an empty spot
         "background_unreadable",
         "code128_long",  # wider than any label; refused for serial labels too
     }

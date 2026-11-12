@@ -320,7 +320,7 @@ def _chosen_token() -> tuple[str, str]:
     from tavletta.server.config import TOKEN_ID
 
     if TOKEN_ID.match(token):  # it would only be looked for by its id, which it has none of
-        raise CliError(_("A chosen token must not look like a made one (etk_…)"), EXIT_USAGE)
+        raise CliError(_("A chosen token must not look like a made one (tav_…)"), EXIT_USAGE)
     return token, ""
 
 
@@ -362,6 +362,12 @@ def _add(args, path: Path, printers, token: str, ident: str) -> None:
         ident,
     )
     _check_file_mode(path)
+    if args.printer and printers is None:  # the new entry's names must be checked
+        from tavletta.server.config import _problem
+
+        problem = _("printers can only be limited with --printers")
+        key = "tokens.%s.printers" % args.name
+        raise CliError(str(_problem(path, key, problem)), EXIT_FILE)
     entries = _entries(path, printers) if old.strip() else []
     if any(e.caller.name == args.name for e in entries):
         raise CliError(_("A token named %s exists already") % args.name, EXIT_USAGE)
@@ -405,10 +411,12 @@ def _printers_file(path: Path | None):
 
 
 def _entries(path: Path, printers):
+    """The entries of the file; without printers.toml the printers they
+    name are not checked (only the new entry's would be: it names none)."""
     from tavletta.server.config import ConfigError, load_tokens
 
     try:
-        return load_tokens(path, printers)
+        return load_tokens(path, printers, unchecked=printers is None)
     except ConfigError as e:
         raise CliError(str(e), EXIT_FILE) from None
 
@@ -424,6 +432,6 @@ def _check_new(path: Path, text: str, printers) -> None:
         trial.write_text(text, encoding="utf-8")
         trial.chmod(0o600)
         try:
-            load_tokens(trial, printers)
+            load_tokens(trial, printers, unchecked=printers is None)
         except ConfigError as e:
             raise CliError(str(e).replace(str(trial), str(path)), EXIT_FILE) from None

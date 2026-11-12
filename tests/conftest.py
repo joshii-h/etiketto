@@ -100,6 +100,7 @@ def _no_network(request, monkeypatch):
     monkeypatch.setattr(vc500w, "_connect", refusal("printer"))
     monkeypatch.setattr(cab, "_connect", refusal("printer"))
     monkeypatch.setattr(cab, "_fetch_setup", refusal("printer"))  # nor its web interface
+    monkeypatch.setattr(cab, "_setups", {})  # nor remember one of another test
     monkeypatch.setattr(brother_ql, "_connect", refusal("printer"))
     monkeypatch.setattr(ptouch, "_connect", refusal("printer"))
     monkeypatch.setattr(ptouch, "_browse", refusal("mDNS"))  # nor search the network

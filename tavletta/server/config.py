@@ -11,11 +11,10 @@ chooses a printer by name and nothing else can be printed on:
     media = "100 x 50 mm"           # what is loaded, for people
     default = true                  # used when a request names no printer
     max_copies = 100
-    cut = "full"                    # settings as in the app
-    mode = "standard"
+    mode = "standard"               # settings as in the app
     safe_mm = 1.5
-    data_format = "jpeg"
-    color = { brightness = 0, red = 0, green = 0, blue = 0 }
+    # models that have them also take cut = "full", data_format = "jpeg"
+    # and color = { brightness = 0, red = 0, green = 0, blue = 0 }
 
     [printers.lager-cab.settings]   # the printer settings of the app
     method = "transfer"             # cab: print method (printer, transfer, direct)
@@ -65,7 +64,7 @@ NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}\Z")
 ROLES = ("preview", "print", "admin")
 MAX_FILE = 1024 * 1024  # bytes of a configuration file
 MAX_COPIES = 9999
-TOKEN_PREFIX = "etk_"
+TOKEN_PREFIX = "tav_"
 # scrypt for tokens chosen by people; random tokens need no slow hash
 SCRYPT = {"n": 2**14, "r": 8, "p": 1}
 
@@ -322,7 +321,7 @@ class TokenEntry:
     caller: Caller
     hash: str
     expires: dt.datetime | None = None
-    id: str = ""  # the id in the token (etk_<id>_<secret>): found without trying all
+    id: str = ""  # the id in the token (tav_<id>_<secret>): found without trying all
 
     def valid(self, now: dt.datetime) -> bool:
         return self.expires is None or now < self.expires
@@ -330,7 +329,7 @@ class TokenEntry:
 
 # what scrypt may take: 128 * n * r * p bytes of memory
 SCRYPT_MAXMEM = 2**28
-TOKEN_ID = re.compile(r"etk_([0-9a-f]{12})_[A-Za-z0-9_-]{16,}\Z")
+TOKEN_ID = re.compile(re.escape(TOKEN_PREFIX) + r"([0-9a-f]{12})_[A-Za-z0-9_-]{16,}\Z")
 
 
 def hash_token(token: str, method: str = "sha256") -> str:
@@ -406,10 +405,15 @@ def _expiry(table: _Table) -> dt.datetime | None:
     raise table.fail("expires", _("expected a date such as 2027-12-31"))
 
 
-def load_tokens(path: Path, printers: Mapping[str, NamedPrinter] | None) -> list[TokenEntry]:
+def load_tokens(
+    path: Path, printers: Mapping[str, NamedPrinter] | None, unchecked: bool = False
+) -> list[TokenEntry]:
+    """unchecked: the printers the entries name are taken as they are
+    (`token new` without printers.toml cannot check them); else without
+    `printers` an entry may not limit them at all."""
     _check_mode(path)
     entries = _tables(path, read_toml(path), "tokens")
-    tokens = [_token(path, name, data, printers) for name, data in entries.items()]
+    tokens = [_token(path, name, data, printers, unchecked) for name, data in entries.items()]
     seen: set[str] = set()
     for token in tokens:
         # one token under two names (and maybe two roles): which one counts?
@@ -436,7 +440,7 @@ def _check_mode(path: Path) -> None:
         log.warning("%s can be read or changed by others than its owner: chmod 600 it", path)
 
 
-def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
+def _token(path: Path, name: str, data: object, printers, unchecked: bool) -> TokenEntry:
     table = _Table(path, "tokens." + name, data)
     stored = table.text("hash", required=True)
     if not _parse_hash(stored):
@@ -454,19 +458,21 @@ def _token(path: Path, name: str, data: object, printers) -> TokenEntry:
         )
         ident = ""
     ident = ident or ""
-    chosen = _token_printers(table, printers)
+    chosen = _token_printers(table, printers, unchecked)
     expires = _expiry(table)
     table.text("description")
     table.done()
     return TokenEntry(Caller(name, role, chosen, named=True), stored, expires, ident)
 
 
-def _token_printers(table: _Table, printers) -> frozenset[str] | None:
+def _token_printers(table: _Table, printers, unchecked: bool = False) -> frozenset[str] | None:
     allowed = table.data.pop("printers", None)
     if allowed is None:
         return None
     if not isinstance(allowed, list) or not all(isinstance(p, str) for p in allowed):
         raise table.fail("printers", _("expected a list of printer names"))
+    if printers is None and unchecked:
+        return frozenset(allowed)
     if printers is None:
         raise table.fail("printers", _("printers can only be limited with --printers"))
     if unknown := [p for p in allowed if p not in printers]:
@@ -594,7 +600,7 @@ def _fast(entry: TokenEntry) -> bool:
 
 
 def new_token() -> tuple[str, str]:
-    """A random token and its id: etk_<id>_<secret>."""
+    """A random token and its id: tav_<id>_<secret>."""
     ident = secrets.token_hex(6)
     return "%s%s_%s" % (TOKEN_PREFIX, ident, secrets.token_urlsafe(32)), ident
 

@@ -1,6 +1,6 @@
 # Tavletta print server as a systemd user service (docs/server.md).
 #
-#   mkdir -p ~/.config/systemd/user ~/.config/tavletta
+#   mkdir -p ~/.config/systemd/user ~/.config/tavletta ~/.local/share/tavletta/labels
 #   cp packaging/systemd/tavletta.service ~/.config/systemd/user/
 #   openssl rand -hex 32 > ~/.config/tavletta/token && chmod 600 ~/.config/tavletta/token
 #   systemctl --user daemon-reload && systemctl --user enable --now tavletta
@@ -10,8 +10,11 @@
 # that says it is ready (1.1 or newer), an older one is stopped after the
 # start timeout.
 #
-# Labels are read from ~/.local/share/tavletta/labels. Without lingering
-# (loginctl enable-linger) the service runs only while you are logged in.
+# Labels are read from ~/.local/share/tavletta/labels; both folders must
+# exist before the start (made above): the sandbox below cannot create them,
+# and in a user service ExecStartPre=+ does not lift it.
+# Without lingering (loginctl enable-linger) the service runs only while
+# you are logged in.
 
 [Unit]
 Description=Tavletta print server (REST API and MCP)
@@ -23,8 +26,6 @@ Wants=network-online.target
 # ready once it listens (sd_notify): a reload sent before is not lost
 Type=notify
 NotifyAccess=main
-# the folders, made outside the sandbox below (it cannot create them)
-ExecStartPre=+/usr/bin/env mkdir -p %h/.local/share/tavletta/labels %h/.config/tavletta
 ExecStart=%h/.local/bin/tavletta serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/tavletta/token --labels-dir %h/.local/share/tavletta/labels
 # With a printer list and named tokens (docs/server.md) instead:
 # ExecStart=%h/.local/bin/tavletta serve --host 127.0.0.1 --port 8790 --mcp --printers %h/.config/tavletta/printers.toml --tokens %h/.config/tavletta/tokens.toml --labels-dir %h/.local/share/tavletta/labels

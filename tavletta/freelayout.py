@@ -284,7 +284,9 @@ def _inks(label: Label, mono: bool, red: bool) -> Inks:
     """The first choice of inks, as render.render() makes it."""
     inks = Inks(mono, mono and red, flow.background_brightness(label) if mono else 255.0)
     if inks.red:
-        red_bg = imagefx.red_mask(Image.new("RGB", (1, 1), flow._color(label.background)))
+        red_bg = imagefx.red_mask(
+            Image.new("RGB", (1, 1), flow._color(label.background, "#ffffff"))
+        )
         inks = replace(inks, behind_red=bool(red_bg.getpixel((0, 0))))
     return inks
 
