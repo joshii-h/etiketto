@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Ota käyttöön",
     "Labels %s reach into the margin the printer cannot print on": "Tarrat %s ulottuvat marginaaliin, johon tulostin ei voi tulostaa",
     "Sheets already printed: %(n)d of %(total)d.": "Jo tulostetut arkit: %(n)d/%(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Jonossa vielä odottaneet arkit peruttiin.",
 }

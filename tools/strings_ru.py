@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Применить",
     "Labels %s reach into the margin the printer cannot print on": "Этикетки %s заходят в поле, на котором принтер не может печатать",
     "Sheets already printed: %(n)d of %(total)d.": "Уже напечатано листов: %(n)d из %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Листы, ещё ожидавшие в очереди, отменены.",
 }

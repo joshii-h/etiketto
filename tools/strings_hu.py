@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Alkalmaz",
     "Labels %s reach into the margin the printer cannot print on": "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s",
     "Sheets already printed: %(n)d of %(total)d.": "Már kinyomtatott ívek: %(n)d / %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "A sorban még várakozó ívek nyomtatása megszakadt.",
 }

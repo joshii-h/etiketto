@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Terapkan",
     "Labels %s reach into the margin the printer cannot print on": "Label %s masuk ke dalam jidar yang tidak dapat dicetak oleh pencetak",
     "Sheets already printed: %(n)d of %(total)d.": "Helaian yang sudah dicetak: %(n)d daripada %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Helaian yang masih menunggu dalam baris gilir telah dibatalkan.",
 }

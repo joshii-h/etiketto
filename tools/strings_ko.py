@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "적용",
     "Labels %s reach into the margin the printer cannot print on": "라벨 %s이(가) 프린터가 인쇄할 수 없는 여백에 걸칩니다",
     "Sheets already printed: %(n)d of %(total)d.": "이미 인쇄된 시트: %(total)d장 중 %(n)d장.",
+    "The sheets still waiting in the queue were canceled.": "대기열에서 기다리던 시트는 취소되었습니다.",
 }

@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Appliquer",
     "Labels %s reach into the margin the printer cannot print on": "Les étiquettes %s empiètent sur la marge où l’imprimante ne peut pas imprimer",
     "Sheets already printed: %(n)d of %(total)d.": "Planches déjà imprimées : %(n)d sur %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Les planches encore en attente dans la file ont été annulées.",
 }

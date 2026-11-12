@@ -2115,6 +2115,14 @@ def test_a_busy_printer_with_canceled_queued_labels():
     )
 
 
+def test_canceled_queued_sheets_are_called_sheets():
+    error = PrinterBusy("0x0507", printed=1, copies=4, pages=True, queue_canceled=True)
+    assert texts.printer_error_text(error, MILLIMETRES) == (
+        "The printer is busy. Wait a moment and try again. Sheets already printed: 1 of 4. "
+        "The sheets still waiting in the queue were canceled."
+    )
+
+
 def test_switching_to_a_page_printer_turns_the_content_across(window):
     window.set_backend("cab")
     window.label.set_orientation("along")  # chosen on the cab: content along the roll

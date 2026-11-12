@@ -1657,6 +1657,15 @@ def test_a_failed_sheet_job_cancels_the_rest_and_counts_sheets(fake):
     assert fake.canceled == [13]  # the one waiting in the queue: it must not print later
 
 
+def test_queued_sheets_canceled_before_any_printed_are_sheets(fake):
+    fake.job_states = [(3, 0)]  # the first job waits in the queue
+    fake.print_errors = [0, 0x0500]  # the second is refused
+    with pytest.raises(PrinterError, match="0x0500") as info:
+        get_backend("system").print_pages(_pages(12), "HP_Office", PrintOptions())
+    assert info.value.params == {"pages": True, "queue_canceled": True}
+    assert fake.canceled == [12]
+
+
 def test_a_busy_printer_gets_the_same_pages_again(fake):
     fake.print_errors = [system.BUSY, 0, 0]
     get_backend("system").print_pages(_pages(12), "HP_Office", PrintOptions())

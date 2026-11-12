@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Verkställ",
     "Labels %s reach into the margin the printer cannot print on": "Etiketterna %s når in i marginalen som skrivaren inte kan skriva ut på",
     "Sheets already printed: %(n)d of %(total)d.": "Redan utskrivna ark: %(n)d av %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Arken som fortfarande väntade i kön avbröts.",
 }

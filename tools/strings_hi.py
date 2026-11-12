@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "लागू करें",
     "Labels %s reach into the margin the printer cannot print on": "लेबल %s उस हाशिये में जाते हैं जिस पर प्रिंटर प्रिंट नहीं कर सकता",
     "Sheets already printed: %(n)d of %(total)d.": "पहले ही प्रिंट हो चुकी शीटें: %(total)d में से %(n)d।",
+    "The sheets still waiting in the queue were canceled.": "कतार में अभी भी प्रतीक्षा कर रही शीटें रद्द कर दी गईं।",
 }

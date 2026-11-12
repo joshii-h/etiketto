@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 02:39+0100\n"
+"POT-Creation-Date: 2026-11-12 02:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -918,184 +918,188 @@ msgstr ""
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr ""
 
-#: etiketto/ui/texts.py:116
+#: etiketto/ui/texts.py:117
+msgid "The sheets still waiting in the queue were canceled."
+msgstr ""
+
+#: etiketto/ui/texts.py:119
 msgid "The labels still waiting in the queue were canceled."
 msgstr ""
 
-#: etiketto/ui/texts.py:125
+#: etiketto/ui/texts.py:128
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr ""
 
-#: etiketto/ui/texts.py:128
+#: etiketto/ui/texts.py:131
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr ""
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:133
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr ""
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:136
 msgid "No cassette is inserted. Insert one and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:137
 msgid "The printer's cover is open. Close it and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:138
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:136
+#: etiketto/ui/texts.py:139
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr ""
 
-#: etiketto/ui/texts.py:137
+#: etiketto/ui/texts.py:140
 msgid "The printer is busy. Wait a moment and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:141
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr ""
 
-#: etiketto/ui/texts.py:139
+#: etiketto/ui/texts.py:142
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr ""
 
-#: etiketto/ui/texts.py:140
+#: etiketto/ui/texts.py:143
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:141
+#: etiketto/ui/texts.py:144
 msgid "The print head is open. Close it and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:143
+#: etiketto/ui/texts.py:146
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr ""
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:150
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr ""
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:153
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:151
+#: etiketto/ui/texts.py:154
 msgid "The printer is out of paper. Load paper and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:156
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:155
+#: etiketto/ui/texts.py:158
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:159
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr ""
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:161
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr ""
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:164
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:165
+#: etiketto/ui/texts.py:168
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr ""
 
-#: etiketto/ui/texts.py:169
+#: etiketto/ui/texts.py:172
 msgid "The print job was canceled at the printer or in the queue."
 msgstr ""
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:174
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr ""
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:186
 msgid "Warming up…"
 msgstr ""
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:187
 msgid "Cooling down…"
 msgstr ""
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:188
 msgid "Cleaning…"
 msgstr ""
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:189
 msgid "Swipe the printer's panel to cut the label"
 msgstr ""
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:191
 msgid "Out of paper – load paper to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:189
+#: etiketto/ui/texts.py:192
 msgid "Cover open – close it to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:193
 msgid "Paper jammed – remove it to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:201
+#: etiketto/ui/texts.py:204
 msgid "This label needs a newer version of Etiketto"
 msgstr ""
 
-#: etiketto/ui/texts.py:203
+#: etiketto/ui/texts.py:206
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr ""
 
-#: etiketto/ui/texts.py:204
+#: etiketto/ui/texts.py:207
 #, python-format
 msgid "The file is damaged: %s"
 msgstr ""
 
-#: etiketto/ui/texts.py:210
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr ""
 
-#: etiketto/ui/texts.py:212
+#: etiketto/ui/texts.py:215
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr ""
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:216
 #, python-format
 msgid "Cannot save %s"
 msgstr ""
 
-#: etiketto/ui/texts.py:222
+#: etiketto/ui/texts.py:225
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

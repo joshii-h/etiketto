@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Toepassen",
     "Labels %s reach into the margin the printer cannot print on": "Etiketten %s reiken tot in de marge waarop de printer niet kan afdrukken",
     "Sheets already printed: %(n)d of %(total)d.": "Al afgedrukte vellen: %(n)d van %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "De vellen die nog in de wachtrij stonden, zijn geannuleerd.",
 }

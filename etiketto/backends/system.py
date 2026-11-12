@@ -815,6 +815,10 @@ class _Pages:
     height: int
 
 
+# PrinterError params that count labels, or sheets with "pages"
+_COUNTED = frozenset(("printed", "queue_canceled"))
+
+
 class _Jobs:
     """Sends the copies: in one job if the printer makes copies itself,
     else the page repeated in jobs of up to PAGES_PER_JOB pages (PWG
@@ -852,10 +856,10 @@ class _Jobs:
             canceled = self._cancel_unfinished()
             if isinstance(e, PrinterError) and self.printed:
                 e.params.update(printed=self.printed, copies=self.total)
-                if self.several:
-                    e.params["pages"] = True
             if isinstance(e, PrinterError) and canceled and self.queued:
                 e.params["queue_canceled"] = True
+            if isinstance(e, PrinterError) and self.several and e.params.keys() & _COUNTED:
+                e.params["pages"] = True  # the counts are of sheets
             raise
         return PrintResult(queued=True) if self.queued else None
 

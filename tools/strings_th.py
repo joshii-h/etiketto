@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "ใช้",
     "Labels %s reach into the margin the printer cannot print on": "ฉลาก %s ล้ำเข้าไปในขอบที่เครื่องพิมพ์พิมพ์ไม่ได้",
     "Sheets already printed: %(n)d of %(total)d.": "แผ่นที่พิมพ์แล้ว: %(n)d จาก %(total)d",
+    "The sheets still waiting in the queue were canceled.": "แผ่นที่ยังรออยู่ในคิวถูกยกเลิกแล้ว",
 }

@@ -265,4 +265,5 @@ TRANSLATIONS = {
     "Apply": "Áp dụng",
     "Labels %s reach into the margin the printer cannot print on": "Các nhãn %s lấn vào lề mà máy in không in được",
     "Sheets already printed: %(n)d of %(total)d.": "Số tờ đã in: %(n)d trên %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Các tờ còn chờ trong hàng đợi đã bị hủy.",
 }
