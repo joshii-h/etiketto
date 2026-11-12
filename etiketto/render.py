@@ -873,3 +873,16 @@ def render(
     _place(img, label, parts, gap, f, steps)
     _draw_border(img, label, f)
     return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
+
+
+def whole_tape(image: Image.Image, tape: int) -> Image.Image:
+    """Endless tape: the render covers only what the head prints (a
+    P-touch's or QL's printable width); preview and export show the whole
+    tape (`tape` pixels; 0: not endless tape), the strip in its middle and
+    the tape the head does not reach white, as it comes out. The border
+    and the background are where the printer puts them: on the strip."""
+    if image.height >= tape:
+        return image
+    whole = Image.new("RGB", (image.width, tape), "white")
+    whole.paste(image.convert("RGB"), (0, (tape - image.height) // 2))
+    return whole

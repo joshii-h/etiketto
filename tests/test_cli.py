@@ -19,7 +19,13 @@ from PIL import Image
 
 from etiketto import __version__, cli
 from etiketto.backends import register, unregister
-from etiketto.backends.base import FoundPrinter, PaperJam, PrinterTimeout, PrintResult
+from etiketto.backends.base import (
+    FoundPrinter,
+    PaperJam,
+    PrinterTimeout,
+    PrintOptions,
+    PrintResult,
+)
 from etiketto.model import CodeElement, Label, TextElement
 from etiketto.ui import settings as config
 from etiketto.ui.settings import Settings
@@ -1157,3 +1163,19 @@ def test_a_page_too_large_for_the_check_is_refused(mono, label_file, monkeypatch
     monkeypatch.setattr(mono, "render_label", too_large)
     assert run("print", path, "--dry-run") == cli.EXIT_LABEL
     assert err(capsys).startswith("etiketto: The page is too large")
+
+
+def test_dry_run_output_is_the_windows_export(mono, label_file, tmp_path):
+    """--output saves the label as the window exports it: label space, the
+    whole tape, with its resolution in the PNG."""
+    from PIL import Image
+
+    path = label_file(TextElement(text="x"))
+    out = tmp_path / "o.png"
+    assert run("print", path, "--dry-run", "--output", out) == 0
+    label = Label.load(path)
+    dpi = mono.render_dpi(label.tape_mm, PrintOptions())
+    with Image.open(out) as png:
+        assert round(png.info["dpi"][0]) == round(dpi)
+        if mono.capabilities.continuous:
+            assert png.height == round(label.tape_mm / 25.4 * dpi)

@@ -29,7 +29,7 @@ from etiketto.model import (  # noqa: E402
     SymbolElement,
     TextElement,
 )
-from etiketto.render import Rendered  # noqa: E402
+from etiketto.render import Rendered, whole_tape  # noqa: E402
 from etiketto.serial import unknown_columns  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
@@ -496,7 +496,7 @@ class Window(Adw.ApplicationWindow):
         def work() -> tuple[Rendered, Image.Image]:
             rendered = backend.render_label(label, options, safe_mm, PREVIEW_MAX_DPI, bleed=False)
             rendered.warnings[:0] = warnings
-            image = backend.preview(_on_tape(rendered.image, tape), mode)
+            image = backend.preview(whole_tape(rendered.image, tape), mode)
             if sheet and choice:  # round labels and CDs: their shape
                 image = clip_preview(image, sheet, choice.rotated)
             return rendered, image
@@ -789,19 +789,6 @@ def _stamp(path: Path) -> tuple | None:
     except OSError:
         return None
     return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)
-
-
-def _on_tape(image: Image.Image, tape: int) -> Image.Image:
-    """Endless tape: the render covers only what the head prints (a
-    P-touch's or QL's printable width); preview and export show the whole
-    tape (`tape` pixels; 0: not endless tape), the strip in its middle and
-    the tape the head does not reach white, as it comes out. The border
-    and the background are where the printer puts them: on the strip."""
-    if image.height >= tape:
-        return image
-    whole = Image.new("RGB", (image.width, tape), "white")
-    whole.paste(image.convert("RGB"), (0, (tape - image.height) // 2))
-    return whole
 
 
 def _run(work: Callable[[], tuple[Rendered, Image.Image]]) -> tuple:

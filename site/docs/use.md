@@ -281,9 +281,9 @@ etiketto --version
   A placeholder without a column or a code a row cannot make stops the
   print before the first label. See [Serial labels](serial.md).
 - `--dry-run` only checks and renders: it lists the texts of each label;
-  `--output file.png` saves the PNG images as the printer would get them
-  (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to
-  standard output).
+  `--output file.png` saves each label as [[ui:Export PNG…]] does: as
+  printed, on the whole tape, with its resolution (`file-1.png`,
+  `file-2.png` … if they differ; `-` writes the first to standard output).
 
 Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong
 arguments, 3 label file cannot be read, still locked by another print or

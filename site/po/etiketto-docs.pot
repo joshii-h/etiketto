@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 13:05+0100\n"
+"POT-Creation-Date: 2026-11-12 13:46+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1906,7 +1906,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves the PNG images as the printer would get them (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output)."
+msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves each label as [[ui:Export PNG…]] does: as printed, on the whole tape, with its resolution (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output)."
 msgstr ""
 
 #. type: Plain text

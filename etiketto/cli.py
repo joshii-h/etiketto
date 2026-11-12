@@ -431,17 +431,18 @@ def _check_output(output: str) -> None:
         raise CliError(_("--output writes PNG images: give a name ending in .png"), EXIT_USAGE)
 
 
-def _write_png(image, target: str) -> None:
+def _write_png(image, dpi: float, target: str) -> None:
+    """The image as PNG with its resolution (what the window's export writes)."""
     if target == "-":
         stdout = _stdout_bytes()
         try:
-            image.save(stdout, format="PNG")
+            image.save(stdout, format="PNG", dpi=(dpi, dpi))
             stdout.flush()
         except (OSError, ValueError):
             raise _output_failed() from None
         return
     try:
-        image.save(target, format="PNG")
+        image.save(target, format="PNG", dpi=(dpi, dpi))
     except OSError as e:
         raise CliError(save_error_text(e, _name(Path(target))), EXIT_FILE) from None
 
@@ -458,17 +459,18 @@ def _prepare_failed(error: PrepareFailed, unit) -> CliError:
 def _dry_run(job: Job, output: str | None, unit) -> int:
     """Fill in the labels of the job one at a time and list their texts.
     The first is rendered as the printer would get it, to find what would
-    fail; the others only with --output, which saves each image. "-"
+    fail; the others only with --output, which saves each label as the
+    window exports it (on the whole tape, with its resolution). "-"
     writes the first image to stdout and nothing else: stdout holds one PNG."""
     try:
         if output == "-":
             _copy, label = next(job.labels())
-            _write_png(job.image(label), "-")
+            _write_png(*job.export(label), "-")
             return EXIT_OK
         targets = _output_paths(output, job.renders) if output else None
         for copy, label in job.labels():
             if targets:
-                _write_png(job.image(label), next(targets))
+                _write_png(*job.export(label), next(targets))
             elif copy == 1:
                 job.image(label)
             _out("\t".join([str(copy)] + [_one_line(t) for t in _contents(label)]))
@@ -493,7 +495,7 @@ def _dry_run_series(series: Series, output: str | None, unit) -> int:
     try:
         if output == "-":
             first = job(0, series.indexes[0])
-            _write_png(first.image(next(first.labels())[1]), "-")
+            _write_png(*first.export(next(first.labels())[1]), "-")
             return EXIT_OK
         renders = job(0, series.indexes[0]).renders * len(series.indexes)  # the same for each row
         targets = _output_paths(output, renders) if output else None
@@ -501,7 +503,7 @@ def _dry_run_series(series: Series, output: str | None, unit) -> int:
             row_job = job(position, index)
             for copy, label in row_job.labels():
                 if targets:
-                    _write_png(row_job.image(label), next(targets))
+                    _write_png(*row_job.export(label), next(targets))
                 elif copy == 1 and position == 0:
                     row_job.image(label)
                 fields = [str(index + 1), str(copy)] + [_one_line(t) for t in _contents(label)]

@@ -26,7 +26,7 @@ from etiketto.backends.base import (
     RenderAgain,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, RenderWarning
+from etiketto.render import DEFAULT_SAFE_MM, RenderWarning, whole_tape
 from etiketto.sheets.layout import Copies, LabelSource, Pages, SheetJob
 from etiketto.variables import Values, expand_label, uses_counter, varies_per_copy
 
@@ -133,6 +133,18 @@ class Job:
             return self.backend.prepare(label, options, self.safe_mm)
         except Exception as e:  # noqa: BLE001 - whatever went wrong while drawing
             raise PrepareFailed(str(e)) from e
+
+    def export(self, label: Label) -> tuple[Image.Image, float]:
+        """One label as the window exports it, and its resolution: as
+        printed (prepare() runs first, so what would fail fails here), in
+        label space on the whole tape (render.whole_tape)."""
+        self.image(label)
+        backend, options = self.backend, self.options
+        dpi = backend.render_dpi(label.tape_mm, options)
+        rendered = backend.render_label(label, options, self.safe_mm, bleed=False)
+        continuous = backend.capabilities.continuous
+        tape = round(label.tape_mm / 25.4 * dpi) if continuous else 0
+        return backend.preview(whole_tape(rendered.image, tape), options.mode), dpi
 
     def run(self, host: str, progress: ProgressCallback | None = None) -> PrintResult | None:
         """Print; raises PrepareFailed or the backend's PrinterError.
