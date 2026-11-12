@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import pytest
 from backend_contract import BackendContract
 from fake_backends import FakeMono
-from PIL import Image
+from PIL import Image, ImageChops
 
 from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
 from etiketto.backends.base import (
@@ -55,6 +55,7 @@ class FakeIpp:
         self.pwg_types = ["srgb_8", "sgray_8"]
         self.pwg_resolutions = [(300, 300, 3), (600, 600, 3)]
         self.urf: list[str] | None = None  # urf-supported, None: not said
+        self.resolution = (600, 600, 3)  # printer-resolution-default
         self.sizes = [A4, CUSTOM]
         self.scaling = ["auto", "fit", "none"]
         # processing, then completed; or (state, pages done); None: no such attribute
@@ -103,6 +104,7 @@ class FakeIpp:
             ipp.Attribute(
                 ipp.RESOLUTION, "pwg-raster-document-resolution-supported", self.pwg_resolutions
             ),
+            ipp.Attribute(ipp.RESOLUTION, "printer-resolution-default", [self.resolution]),
         ]
         if self.copies_supported:
             attrs.append(
@@ -632,6 +634,68 @@ def test_label_sheet_pages_are_composed_at_the_printers_resolution(fake):
     assert [p.size for p in found] == [(px(210, 203), px(297, 203))] * 2
     assert all(_greys(page) == 0 for page in found)
     assert Pages(SheetJob(sheet, 1), lambda n: image, 300).at_dpi(203) is None  # cannot
+
+
+def _pdf_image(data: bytes) -> tuple[int, int, int]:
+    """Width, height and bits per component of the first page image."""
+    found = re.search(rb"/Width (\d+) /Height (\d+) .*?/BitsPerComponent (\d+)", data)
+    assert found
+    return int(found[1]), int(found[2]), int(found[3])
+
+
+@pytest.mark.parametrize(
+    "resolution, dpi",
+    [
+        (None, 300),
+        ((300, 300, 3), 300),
+        ((203, 203, 3), 203),  # a thermal printer: its own dots
+        ((80, 80, 4), 203),  # 8 dots per mm
+        ((150, 150, 3), 150),
+        ((400, 400, 3), 400),
+        ((600, 600, 3), 300),  # every pixel doubled exactly
+        ((1200, 1200, 3), 300),
+        ((720, 720, 3), 300),  # above 600: 300 dpi is fine enough
+        ((203, 406, 3), 300),  # not square
+        ("x", 300),
+    ],
+)
+def test_pdf_resolution(resolution, dpi):
+    attrs = {} if resolution is None else {"printer-resolution-default": [resolution]}
+    assert system.pdf_resolution(attrs) == dpi
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+def test_a_pdf_label_is_rendered_at_the_printers_resolution(fake, dpi):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (dpi, dpi, 3)
+    backend = get_backend("system")
+    backend.print_label(
+        backend.prepare(_shipping_label(), PrintOptions()), "HP_Office", PrintOptions()
+    )
+    data = fake.documents[0][1]
+    at = 203 if dpi == 203 else 300
+    assert _pdf_image(data) == (px(101.6, at), px(152.4, at), 1)  # 1 bit: no grey
+    assert b"/MediaBox [0 0 288.000 432.000]" in data  # 4 x 6 inches, whatever the dpi
+
+
+def test_pdf_label_sheet_pages_at_the_printers_resolution(fake):
+    fake.formats, fake.resolution = ["application/pdf"], (203, 203, 3)
+    backend = get_backend("system")
+    sheet = find("Avery L7160")
+    label = _shipping_label()
+    label.orientation = "across"
+    label.set_media_size(sheet.width, sheet.height)
+    image = backend.prepare(label, PrintOptions())
+    pages = Pages(SheetJob(sheet, 30), Copies(image), backend.capabilities.dpi)
+    backend.print_pages(pages, "HP_Office", PrintOptions())
+    assert _pdf_image(fake.documents[0][1])[:2] == (px(210, 203), px(297, 203))
+
+
+def test_a_pdf_page_that_cannot_be_rendered_again_stays_at_300_dpi(fake):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (203, 203, 3)
+    _print(_image(118, 59))  # no size in mm, nothing to render it again with
+    data = fake.documents[0][1]
+    assert _pdf_image(data)[:2] == (118, 59)
+    assert b"/MediaBox [0 0 28.320 14.160]" in data  # its pixels at 300 dpi
 
 
 @pytest.mark.parametrize(
@@ -1221,9 +1285,9 @@ def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append(repeat)
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     events = []
@@ -1239,9 +1303,9 @@ def test_the_document_is_made_once_for_all_copies(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append(repeat)
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     _print(copies=4)
@@ -1700,6 +1764,62 @@ def test_pdf_is_well_formed():
     assert b"/MediaBox [0 0 72.000 36.000]" in pdf.encode([plain], 300)
 
 
+def _hairlines(dpi: float, size_mm: tuple[float, float]) -> Image.Image:
+    """One-pixel lines, across and down, one every millimetre or so."""
+    from PIL import ImageDraw
+
+    width, height = px(size_mm[0], dpi), px(size_mm[1], dpi)
+    image = Image.new("L", (width, height), 255)
+    draw = ImageDraw.Draw(image)
+    for i in range(40):
+        x, y = px(5 + i, dpi), px(5 + i * 0.6, dpi)
+        draw.line((x, 10, x, height - 10), fill=0)
+        draw.line((10, y, width - 10, y), fill=0)
+    image.info["size_mm"] = size_mm
+    return image
+
+
+def test_pdf_image_one_pixel_per_dot_slightly_inset():
+    a4 = Image.new("1", (2480, 3508), 1)  # 2480.3 x 3507.9 pixels at 300 dpi
+    a4.info["size_mm"] = (210, 297)
+    data = pdf.encode([a4], 300)
+    # its own size (2480 pixels: 595.2 pt) from the top left, 0.01 pt smaller
+    assert b"q 595.190 0 0 841.910 0.005 -0.025 cm /Im0 Do Q" in data
+    odd = Image.new("1", (100, 100), 1)
+    odd.info["size_mm"] = (20, 20)  # not 300 dpi: it fills the page
+    assert b"q 56.683 0 0 56.683 0.005 0.005 cm" in pdf.encode([odd], 300)
+
+
+@pytest.mark.parametrize("tool", ["pdftoppm", "gs"])
+@pytest.mark.parametrize(
+    "dpi, size_mm",
+    [(203, (101.6, 152.4)), (300, (101.6, 152.4)), (300, (210, 297)), (203, (50, 30))],
+)
+def test_pdf_renders_pixel_for_pixel(tmp_path, tool, dpi, size_mm):
+    """Poppler (cups-filters, pdftoppm) and Ghostscript, the two renderers
+    CUPS uses, give back every pixel: no grey, no hairline lost."""
+    import shutil
+    import subprocess
+
+    if not shutil.which(tool):
+        pytest.skip(tool + " not installed")
+    image = _hairlines(dpi, size_mm)
+    (tmp_path / "page.pdf").write_bytes(pdf.encode([image], dpi))
+    if tool == "gs":
+        command = ["gs", "-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=pgmraw"]
+        command += ["-r%d" % dpi, "-sOutputFile=%s" % (tmp_path / "out.pgm")]
+    else:
+        command = ["pdftoppm", "-r", str(dpi), "-gray", "-singlefile"]
+    command.append(str(tmp_path / "page.pdf"))
+    if tool == "pdftoppm":
+        command.append(str(tmp_path / "out"))
+    subprocess.run(command, check=True, timeout=60)  # noqa: S603 - fixed command
+    with Image.open(tmp_path / "out.pgm") as out:
+        found = out.convert("L").crop((0, 0, image.width, image.height))
+    assert _greys(found) == 0
+    assert ImageChops.difference(found, image).getbbox() is None
+
+
 # --- the contract every backend passes ------------------------------------------------------
 
 
@@ -1801,9 +1921,9 @@ def test_many_copies_in_apple_raster_go_in_several_jobs(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append((count, repeat))
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     _print(_image(118, 59, size_mm=(10, 5)), copies=12)

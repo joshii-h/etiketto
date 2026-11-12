@@ -18,6 +18,7 @@ from PIL import Image, ImageChops
 
 POINTS_PER_MM = 72 / 25.4
 LEVEL = 6  # zlib: good enough, and quick on a full A4 page
+INSET = 0.01  # pt: the image this much smaller than the page, centred (see encode)
 
 
 def pixels(image: Image.Image) -> tuple[str, int, bytes]:
@@ -50,6 +51,32 @@ def _size_pt(image: Image.Image, dpi: float) -> tuple[float, float]:
     return image.width * 72 / dpi, image.height * 72 / dpi
 
 
+def _placement(
+    image: Image.Image, dpi: float, width: float, height: float
+) -> tuple[float, float, float, float]:
+    """Where the image goes on the page (width x height pt): its size and
+    lower left corner. One image pixel is one printer dot at dpi: the
+    image keeps its own size from the top left corner when that is within
+    a pixel of the page (A4 at 300 dpi is 2480.3 pixels wide, the image
+    2480), else it fills the page. And it is INSET pt smaller, centred on
+    that place: Poppler's Splash (cups-filters, pdftoppm) otherwise
+    resamples an image that exactly fills whole device pixels, with grey
+    edges and lost hairlines; Ghostscript places it pixel for pixel
+    either way."""
+    pixel = 72 / dpi
+    own = image.width * pixel, image.height * pixel
+    if abs(own[0] - width) <= pixel and abs(own[1] - height) <= pixel:
+        box = own
+    else:
+        box = width, height
+    return (
+        box[0] - INSET,
+        box[1] - INSET,
+        INSET / 2,
+        height - box[1] + INSET / 2,
+    )
+
+
 def encode(pages: Iterable[Image.Image], dpi: float) -> bytes:
     """The pages as one PDF document."""
     # each object: its parts, joined once at the end
@@ -69,7 +96,7 @@ def encode(pages: Iterable[Image.Image], dpi: float) -> bytes:
                 % (width, height, number + 2, number + 1)
             ]
         )
-        content = b"q %.3f 0 0 %.3f 0 0 cm /Im0 Do Q" % (width, height)
+        content = b"q %.3f 0 0 %.3f %.3f %.3f cm /Im0 Do Q" % _placement(image, dpi, width, height)
         objects.append([b"<< /Length %d >>\nstream\n" % len(content), content, b"\nendstream"])
         objects.append(
             [
