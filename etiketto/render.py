@@ -147,6 +147,9 @@ def render_text(
         size = _fitted_size(element, measure, limits, dpi)
     block = draw(size)
     if inks.mono:  # reduced to a fixed length: laid out again (see _resize)
+        if wrap:  # with the lines it has now: smaller, it would wrap otherwise
+            lines = typeset.wrapped_lines(element, size, False, wrap)
+            element = replace(element, text="\n".join(lines), max_width_mm=0.0)
         block.info["redraw"] = _TextRedraw(element, size, dpi, block.height)
     return block
 
@@ -175,9 +178,10 @@ REDRAW_TRIES = 20
 class _TextRedraw:
     """A black-and-white text laid out again at a smaller size (a fixed
     length too short): the font and every length of the element (padding,
-    frame, outline, shadow, wrap width) scaled, then checked against the
-    size it must fit, smaller in steps until it does; None if no layout
-    fits (the caller resamples). Keeps the parameters, not the image."""
+    frame, outline, shadow) scaled, a wrapped text with the line breaks it
+    had (render_text), then checked against the size it must fit, smaller
+    in steps until it does; None if no layout fits (the caller resamples).
+    Keeps the parameters, not the image."""
 
     def __init__(self, element: TextElement, size: float, dpi: float, height: int):
         self.element, self.size, self.dpi, self.height = element, size, dpi, max(1, height)
@@ -196,8 +200,8 @@ class _TextRedraw:
             high, low = low, low * 0.9
         else:
             return None
-        if low < high:  # … then as large as fits (bisection)
-            while high - low > 0.002:
+        if low < high:  # … then as large as fits (bisection, to 0.2 %)
+            while high - low > 0.002 * high:
                 middle = (low + high) / 2
                 low, high = (middle, high) if fits(middle) else (low, middle)
         element, size, wrap = self._at(low)
@@ -771,11 +775,13 @@ def _mono_text_part(part: Image.Image, inks: Inks) -> Image.Image:
     """A text drawn without anti-aliasing in black and white is ready as it
     is; one with colour pixels (a colour emoji, whatever its code point) is
     converted like a drawing or photo. Decided from the pixels."""
-    tones = imagefx.tones(part)
+    tones = imagefx.tones(part, inks.red)
     if tones == "hard":
         return part
-    if tones == "colour":
-        return imagefx.black_and_white(part, "auto", red=inks.red)
+    if tones == "colour":  # its shapes outlined, so light parts stay visible
+        converted = imagefx.black_and_white(part, "auto", red=inks.red)
+        ink = (0, 0, 0) if inks.background >= 128 else (255, 255, 255)
+        return imagefx.outlined_colours(part, converted, ink)
     return imagefx.hard(part, inks.red)
 
 
@@ -1072,17 +1078,28 @@ def _local_inks(area: Image.Image, mask: Image.Image | None, inks: Inks) -> Inks
 CONTRAST = 80
 CODE_CONTRAST = 160
 LOST_SHARE = 0.25  # more of an element's ink than this without contrast: a warning
+# a code: a linear code has no error correction (one lost bar and it does
+# not scan) and a 2D code's correction is for damage, not for a part laid
+# out on the wrong background; only stray edge dots are let pass
+CODE_LOST_SHARE = 0.02
 
 
-def _lost(area: Image.Image, mask: Image.Image, ink: str, minimum: int) -> float:
+def _lost(area: Image.Image, mask: Image.Image, ink: str, minimum: int, red: bool = False):
     """The share of an element's ink pixels (mask) whose background lies
-    too near the ink's brightness (a part of a straddling element lost)."""
+    too near the ink's brightness (a part of a straddling element lost).
+    Black-and-red printers: red ink is lost on red, black and white ink
+    show on red (other inks), as in _ink_visible."""
     total = mask.histogram()[255]
     if not total or ink == "":
         return 0.0
+    reds = imagefx.red_mask(area) if red else None
+    if reds is not None and imagefx.mono_ink(_color(ink), 255, True) == imagefx.RED:
+        return reds.histogram(mask)[255] / total
     level = 255 if _color(ink) == (255, 255, 255) else 0
     near = ImageChops.difference(area.convert("L"), Image.new("L", area.size, level))
     close = near.point([255] * minimum + [0] * (256 - minimum))
+    if reds is not None:
+        close = ImageChops.subtract(close, reds)
     return close.histogram(mask)[255] / total
 
 
@@ -1213,9 +1230,10 @@ def _mono_parts(label: Label, parts, places, canvas, inks: Inks, geometry, warni
             local = _local_inks(area, mask, inks)
             if _ink_choice(element, local) != _ink_choice(element, inks):
                 part = _redrawn(element, part, f, dpi, local, step)
-            lost = _lost(area, mask, _main_ink(element, local), _contrast(element))
+            lost = _lost(area, mask, _main_ink(element, local), _contrast(element), local.red)
         part = _mono_part(element, part, local, dpi)
-        if _shows_ink(element) and (lost > LOST_SHARE or not _ink_shows(element, part, local)):
+        too_much = CODE_LOST_SHARE if isinstance(element, CodeElement) else LOST_SHARE
+        if _shows_ink(element) and (lost > too_much or not _ink_shows(element, part, local)):
             warnings.append(RenderWarning("no_contrast", {"n": index}))
         done.append(part)
     return done
@@ -1245,8 +1263,8 @@ def _main_ink(element: Element, inks: Inks) -> str:
     """The ink that has to stand out against the background ("" for a text
     in a box: the box decides, see _ink_shows)."""
     choice = _ink_choice(element, inks)
-    if isinstance(element, TextElement) and choice[1]:
-        return ""
+    if isinstance(element, TextElement) and (choice[1] or (choice[2] and choice[2] != choice[0])):
+        return ""  # a box, or an outline in the other ink: they make it show
     return choice[0] if not isinstance(element, ImageElement) else ""
 
 

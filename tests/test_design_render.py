@@ -1130,9 +1130,9 @@ def test_an_inset_too_large_across_the_tape_is_reduced():
 @pytest.mark.parametrize(
     "options, warns",
     [
-        ({"color": "#ff0000", "box_color": "#e53935", "red": True}, True),  # red on red
+        ({"color": "#ff0000", "box_color": "#e53935", "red": True}, False),  # white on red
         ({"color": "#ff0000", "box_color": "#e53935"}, False),  # black box, white letters
-        ({"color": "#ffffff", "box_color": "#ffffff"}, True),  # white in white
+        ({"color": "#ffffff", "box_color": "#ffffff"}, False),  # black letters in white
         ({"color": "#000000", "box_color": "#ffffff"}, False),
         ({"color": "#ffffff", "box_color": "#ffffff", "outline_mm": 0.3}, False),
         ({"color": "#000000", "inverted": True}, False),  # cut out of a black box
@@ -1319,3 +1319,149 @@ def test_local_inks_and_lost_share_edge_cases():
     full = Image.new("L", (4, 4), 255)
     assert render_module._lost(area, full, "#000000", 80) == 1.0
     assert render_module._lost(area, full, "#ffffff", 80) == 0.0
+
+
+# --- review 4 ----------------------------------------------------------------------------
+
+
+def example(name: str) -> Label:
+    from pathlib import Path
+
+    return Label.load(Path(__file__).parent.parent / "docs" / "examples" / (name + ".etiketto"))
+
+
+def test_photos_and_gradients_are_no_drawings():
+    from pathlib import Path
+
+    from PIL import ImageFilter
+
+    sunset = Image.open(Path(__file__).parent.parent / "docs/examples/sunset.png")
+    assert not imagefx.is_drawing(sunset.convert("L"))
+    flower = Image.open(Path(__file__).parent.parent / "docs/examples/flower.png").convert("RGBA")
+    assert not imagefx.is_drawing(flower.convert("L"), flower.getchannel("A").point(imagefx.HALF))
+    smooth = Image.linear_gradient("L").resize((200, 100)).point(lambda v: 64 + v // 2)
+    assert not imagefx.is_drawing(smooth)
+    noise = Image.effect_noise((200, 200), 60).filter(ImageFilter.GaussianBlur(4))
+    assert not imagefx.is_drawing(noise)
+    dark = Image.radial_gradient("L").resize((200, 200)).point(lambda v: v // 3)
+    assert not imagefx.is_drawing(dark)
+
+
+def test_the_sticker_flower_is_dithered_not_a_blob():
+    image = render(example("sticker"), dpi=300, mono=True).image.convert("L")
+    histogram = image.histogram()
+    share = histogram[0] / (histogram[0] + histogram[255])
+    assert share < 0.6  # dithered dots, not a black area
+    # a dithered area changes from black to white often in a row
+    row = image.crop((0, image.height // 2, image.width, image.height // 2 + 1)).tobytes()
+    assert sum(1 for a, b in zip(row, row[1:], strict=False) if a != b) > 100
+
+
+@pytest.mark.parametrize(
+    "name", ["spice", "party", "sticker", "cable", "shelf", "serial", "design"]
+)
+def test_the_examples_have_no_warnings(name):
+    label = example(name)
+    for dpi in (203, 300):
+        assert render(label, dpi=dpi).warnings == []
+        assert render(label, dpi=dpi, mono=True).warnings == []
+
+
+def test_an_outline_in_the_other_ink_is_no_lost_text():
+    dark = b64(Image.new("RGB", (100, 20), (5, 5, 5)))
+    label = Label(
+        tape_mm=12,
+        background_image=ImageElement(data=dark),
+        elements=[
+            TextElement(text="Out", color="#000000", outline_mm=0.3, outline_color="#ffffff")
+        ],
+    )
+    assert render(label, dpi=300, mono=True).warnings == []
+
+
+def test_black_and_red_on_background_images():
+    black = b64(Image.new("RGB", (100, 20), (0, 0, 0)))
+    red = b64(Image.new("RGB", (100, 20), (230, 0, 0)))
+    halves = Image.new("RGB", (100, 20), (230, 0, 0))
+    ImageDraw.Draw(halves).rectangle((50, 0, 100, 20), fill="white")
+    cases = [
+        (black, TextElement(text="Red", color="#e00000"), []),
+        (black, ShapeElement(shape="rectangle", fill="solid", color="#e00000"), []),
+        (black, CodeElement(data="x", color="#e00000"), []),
+        (red, TextElement(text="Black", color="#000000"), []),
+        (b64(halves), TextElement(text="Black on both", color="#000000"), []),
+        (red, TextElement(text="Red", color="#e00000"), ["no_contrast"]),
+    ]
+    for background, element, expected in cases:
+        label = Label(
+            tape_mm=12, background_image=ImageElement(data=background), elements=[element]
+        )
+        keys = [w.key for w in render(label, dpi=300, mono=True, red=True).warnings]
+        assert keys == expected, (element, keys)
+
+
+def test_dark_letters_on_a_light_box_print_white_on_black():
+    element = TextElement(
+        text="Box", color="#000000", box_color="#ffeb3b", padding_mm=1, size_pt=20
+    )
+    label = Label(tape_mm=12, elements=[element])
+    rendered = render(label, dpi=300, mono=True)
+    assert rendered.warnings == []
+    block = render_text(element, 1000, 300, mono=True)
+    colours = {p[:3] for p in pixels(block) if p[3]}
+    assert colours == {(0, 0, 0), (255, 255, 255)}  # black box, white letters
+
+
+def test_a_wrapped_text_keeps_its_lines_when_reduced():
+    element = TextElement(text="A long text that overflows", max_width_mm=20)
+    label = Label(tape_mm=6, auto_length=False, length_mm=15, elements=[element])
+    colour = ink_bbox(render(label, dpi=300, safe_mm=1).image, WHITE)
+    mono = ink_bbox(render(label, dpi=300, safe_mm=1, mono=True).image, WHITE)
+    colour_w, mono_w = colour[2] - colour[0], mono[2] - mono[0]
+    assert mono_w > 0.85 * colour_w
+    from etiketto import typeset
+
+    lines = typeset.wrapped_lines(TextElement(text="aa bb cc"), 40, True, 80)
+    assert len(lines) > 1 and " ".join(lines) == "aa bb cc"
+
+
+def test_a_redraw_far_below_the_size_still_comes_close():
+    element = TextElement(text="Hg", size_pt=200)
+    block = render_text(element, 10000, 300, mono=True)
+    target = (round(block.width * 0.05), round(block.height * 0.05))
+    small = block.info["redraw"](*target)
+    assert small.width <= target[0] and small.height <= target[1]
+    assert small.width > 0.9 * target[0] or small.height > 0.9 * target[1]
+
+
+def test_pure_red_is_a_colour_on_a_black_and_white_printer():
+    part = Image.new("RGBA", (4, 4), (255, 0, 0, 255))
+    assert imagefx.tones(part) == "colour"
+    assert imagefx.tones(part, red=True) == "hard"
+
+
+def test_a_code_partly_on_the_wrong_background_warns():
+    """A code loses far less before it warns than a text."""
+    img = Image.new("RGB", (1000, 200), "white")
+    ImageDraw.Draw(img).rectangle((0, 0, 150, 100), fill="#101010")
+    label = Label(
+        tape_mm=12,
+        auto_length=False,
+        length_mm=60,
+        margin_mm=0,
+        align="start",
+        background_image=ImageElement(data=b64(img)),
+        elements=[CodeElement(data="https://example.org/a")],
+    )
+    assert [w.key for w in render(label, dpi=300, safe_mm=0, mono=True).warnings] == [
+        "no_contrast"
+    ]
+    label.elements = [TextElement(text="MMMMMMMMMMMMMMMM", size_pt=20)]
+    assert render(label, dpi=300, safe_mm=0, mono=True).warnings == []
+
+
+def test_colour_emoji_keep_their_shape_on_mono():
+    """A white square emoji would vanish on white: its outline shows."""
+    label = Label(tape_mm=12, margin_mm=0, elements=[TextElement(text="⬜", size_pt=20)])
+    image = render(label, dpi=300, safe_mm=0, mono=True).image.convert("L")
+    assert image.histogram()[0] > 50

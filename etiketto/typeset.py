@@ -68,16 +68,13 @@ def _hex(rgb: tuple[int, int, int]) -> str:
 def mono_text(element: TextElement, background: float = 255.0, red: bool = False) -> TextElement:
     """The element as a black-and-white printer prints it on a background
     of that brightness: each colour black or white against what lies behind
-    it (imagefx.mono_ink), an outline always the other ink than the
-    letters, the shadow solid in the other ink than what lies behind."""
-    behind = background
-    box = ""
-    if element.inverted or element.box_color:
-        box_rgb = imagefx.mono_ink(
-            imagefx.rgb(element.color if element.inverted else element.box_color), background, red
-        )
-        box, behind = _hex(box_rgb), imagefx.luma(box_rgb)
+    it (imagefx.mono_ink), letters in a box and an outline always in the
+    other ink than what they lie on, the shadow solid in the other ink
+    than what lies behind."""
+    box, behind = _mono_box(element, background, red)
     text = imagefx.mono_ink(imagefx.rgb(element.color), behind, red)
+    if box and not element.inverted and _hex(text) == box:  # letters in their box's ink
+        text = imagefx.opposite(text)
     outline = imagefx.mono_ink(imagefx.rgb(element.outline_color, "#ffffff"), behind, red)
     if outline == text:
         outline = imagefx.opposite(text)
@@ -89,6 +86,15 @@ def mono_text(element: TextElement, background: float = 255.0, red: bool = False
         box_color=box if element.box_color else "",
         shadow_color=_hex(shadow),
     )
+
+
+def _mono_box(element: TextElement, background: float, red: bool) -> tuple[str, float]:
+    """The box's ink ("" without a box) and the brightness behind the letters."""
+    if not (element.inverted or element.box_color):
+        return "", background
+    colour = element.color if element.inverted else element.box_color
+    ink = imagefx.mono_ink(imagefx.rgb(colour), background, red)
+    return _hex(ink), imagefx.luma(ink)
 
 
 @dataclass(frozen=True)
@@ -201,6 +207,18 @@ def spaced_runs(text: str) -> list[tuple[int, int]]:
     if position > start:
         runs.append((start, position))
     return runs
+
+
+def wrapped_lines(
+    element: TextElement, size_px: float, antialias: bool, wrap_px: int | None
+) -> list[str]:
+    """The lines of the text as it is wrapped at this size."""
+    text = layout(element, size_px, antialias, wrap_px)
+    raw = _shown(element).encode()
+    return [
+        raw[line.start_index : line.start_index + line.length].decode().rstrip()
+        for line in text.get_lines_readonly()
+    ]
 
 
 def size_of(element: TextElement, size_px: float, dpi: float, antialias: bool, wrap_px) -> tuple:

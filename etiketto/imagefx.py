@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from PIL import Image, ImageChops, ImageColor, ImageEnhance, ImageOps
+from PIL import Image, ImageChops, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
 # the ordered dithering's threshold map (Bayer, 8 × 8): a regular pattern
 # that stays the same from label to label, unlike error diffusion
@@ -176,12 +176,17 @@ def ordered(grey: Image.Image) -> Image.Image:
     return above.point(lambda v: 255 if v > 0 else 0)
 
 
-# a picture whose pixels are almost all (TONE_COVER) in at most this many
-# bands of TONE_BAND grey levels is a drawing, also in flat middle tones (a
-# grey logo) and with the noise of JPEG compression around its tones
-DRAWING_TONES = 8
+# a picture whose pixels are almost all (TONE_COVER) in at most DRAWING_TONES
+# separate, narrow tones is a drawing, also in flat middle tones (a grey
+# logo) and with the noise of JPEG compression around each tone. A tone:
+# neighbouring bands of TONE_BAND grey levels that each hold more than
+# TONE_SHARE of the pixels, at most TONE_WIDTH bands wide (wider: a
+# gradient, a photo)
+DRAWING_TONES = 4
 TONE_COVER = 0.95
-TONE_BAND = 16
+TONE_BAND = 8
+TONE_SHARE = 0.015
+TONE_WIDTH = 2
 
 
 def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
@@ -197,10 +202,28 @@ def is_drawing(grey: Image.Image, mask: Image.Image | None = None) -> bool:
 
 
 def few_tones(histogram: list[int], total: int) -> bool:
-    """Whether the DRAWING_TONES fullest bands of grey (of 16) hold almost
-    all pixels: a few flat tones, each with some noise around it."""
-    bands = sorted(sum(histogram[i : i + TONE_BAND]) for i in range(0, 256, TONE_BAND))
-    return sum(bands[-DRAWING_TONES:]) >= TONE_COVER * total
+    """Whether a few separate, narrow tones hold almost all pixels (see
+    DRAWING_TONES): flat colours, each with some noise around it; not a
+    gradient or a photo, whose pixels spread over neighbouring bands."""
+    return tone_count(histogram, total) is not None
+
+
+def tone_count(histogram: list[int], total: int) -> int | None:
+    """How many separate, narrow tones hold almost all pixels; None if they
+    are not a few (a gradient, a photo)."""
+    bands = [sum(histogram[i : i + TONE_BAND]) for i in range(0, 256, TONE_BAND)]
+    tones, width, covered = 0, 0, 0
+    for count in [*bands, 0]:
+        if count > TONE_SHARE * total:
+            width += 1
+            covered += count
+            continue
+        if width:
+            tones += 1
+            if width > TONE_WIDTH:
+                return None
+        width = 0
+    return tones if tones <= DRAWING_TONES and covered >= TONE_COVER * total else None
 
 
 def otsu(histogram: list[int]) -> int:
@@ -244,9 +267,24 @@ def _drawing(grey: Image.Image, alpha: Image.Image) -> Image.Image:
     return bw
 
 
+def _auto(grey: Image.Image, alpha: Image.Image) -> Image.Image:
+    """ "Automatic": a drawing in black and white or two tones thresholded
+    between them (Otsu); a drawing in several flat tones as even patterns
+    (ordered dithering keeps each tone apart, a threshold would merge them
+    into a blob); a photo or gradient dithered (Floyd-Steinberg)."""
+    histogram = grey.histogram(alpha)
+    total = sum(histogram)
+    if not total or sum(histogram[DARK:LIGHT]) / total < AUTO_GREY_SHARE:
+        return _drawing(grey, alpha)
+    tones = tone_count(histogram, total)
+    if tones is None:
+        return floyd_steinberg(grey)
+    return _drawing(grey, alpha) if tones <= 2 else ordered(grey)
+
+
 def _converted(grey: Image.Image, alpha: Image.Image, mode: str, level: int) -> Image.Image:
     if mode == "auto":
-        return _drawing(grey, alpha) if is_drawing(grey, alpha) else floyd_steinberg(grey)
+        return _auto(grey, alpha)
     if mode == "dither":
         return floyd_steinberg(grey)
     if mode == "ordered":
@@ -304,25 +342,53 @@ def hard(img: Image.Image, red: bool = False) -> Image.Image:
     return Image.merge("RGBA", (grey, grey, grey, img.getchannel("A").point(HALF)))
 
 
-def tones(img: Image.Image) -> str:
+def _few_colours(colours: list, red: bool) -> str:
+    """tones() of a part with these (count, RGBA) colours."""
+    allowed = {(0, 0, 0), (255, 255, 255)} | ({RED} if red else set())
+    if {c[:3] for _n, c in colours if c[3] >= 128} <= allowed:
+        return "edges" if any(0 < c[3] < 255 for _n, c in colours) else "hard"
+    return "colour"
+
+
+def tones(img: Image.Image, red: bool = False) -> str:
     """What a part drawn in black and white holds: "hard" (only black and
     white, transparency hard edged: nothing to convert), "edges" (soft
     edges of transparency) or "colour" (opaque pixels between black and
     white, like a colour emoji in a text: a drawing's or photo's
-    conversion)."""
+    conversion). red: red is an ink too (a black-and-red printer)."""
     if img.mode != "RGBA":
         img = img.convert("RGBA")
     colours: list | None = img.getcolors(16)  # quick: a few colours, or None
     if colours is not None:
-        inks = {c[:3] for _n, c in colours if c[3] >= 128}
-        if inks <= {(0, 0, 0), (255, 255, 255), RED}:
-            soft = any(0 < c[3] < 255 for _n, c in colours)
-            return "edges" if soft else "hard"
-        return "colour"
+        return _few_colours(colours, red)
     alpha = img.getchannel("A")
     if sum(img.convert("L").histogram(alpha.point(HALF))[1:255]):
         return "colour"
     return "edges" if sum(alpha.histogram()[1:255]) else "hard"
+
+
+def outlined_colours(img: Image.Image, converted: Image.Image, ink) -> Image.Image:
+    """A converted part with a line of ink around its colour areas (a colour
+    emoji in a text): a light face or a white square that the conversion
+    leaves white still shows its shape. img: the part before conversion."""
+    rgb = img.convert("RGB")
+    r, g, b = rgb.split()
+    spread = ImageChops.subtract(
+        ImageChops.lighter(ImageChops.lighter(r, g), b),
+        ImageChops.darker(ImageChops.darker(r, g), b),
+    )
+    grey = rgb.convert("L").point([0] + [255] * 254 + [0])
+    colour = ImageChops.lighter(spread.point([0] + [255] * 255), grey)
+    alpha = img.getchannel("A").point(HALF) if img.mode == "RGBA" else None
+    if alpha is not None:
+        colour = ImageChops.multiply(colour, alpha)
+    area = colour.filter(ImageFilter.MaxFilter(5))  # the emoji as a whole
+    if alpha is not None:
+        area = ImageChops.multiply(area, alpha)
+    edge = ImageChops.subtract(area, area.filter(ImageFilter.MinFilter(3)))
+    out = converted.copy()
+    out.paste((*ink, 255), (0, 0), edge)
+    return out
 
 
 # --- inks -------------------------------------------------------------------------
