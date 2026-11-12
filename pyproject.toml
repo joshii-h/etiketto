@@ -53,6 +53,12 @@ dev = [
     "hypothesis>=6",
     "ruff>=0.6",
     "zxing-cpp>=2.2",  # reads the codes back in the tests
+    # tools/check.sh and the CI's quality job
+    "mypy>=1.10",
+    "bandit>=1.7",
+    "radon>=6",
+    "xenon>=0.9",
+    "pip-audit>=2.7",
 ]
 
 [tool.ruff]

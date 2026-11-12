@@ -59,14 +59,16 @@ gettext from your distribution (see README for package names).
 git clone https://git.joshuahirsig.xyz/joshii/etiketto.git
 cd etiketto
 uv venv --system-site-packages .venv
-uv pip install --python .venv/bin/python -e . pytest pytest-cov hypothesis ruff zxing-cpp
+uv pip install --python .venv/bin/python -e . --group dev
 .venv/bin/python -m etiketto.app
 ```
 
 ## Before you open a pull request
 
-Run `tools/check.sh`: it runs the same checks as the CI (formatting, lint,
-tests with coverage, mypy, bandit, complexity, translations, metadata).
+Run `tools/check.sh`: it runs the same checks with the same flags as the CI
+(formatting, lint, tests with coverage, mypy, bandit, complexity, the
+dependency audit with pip-audit, translations, metadata; the tools are in
+the `dev` dependency group).
 It also requires every string to be translated; `ALLOW_UNTRANSLATED=1
 tools/check.sh` skips that locally, the CI does not. If you cannot translate
 new strings, say so in the pull request and a maintainer helps. In detail:
@@ -74,7 +76,7 @@ new strings, say so in the pull request and a maintainer helps. In detail:
 ```sh
 .venv/bin/ruff format .
 .venv/bin/ruff check .
-.venv/bin/python -m pytest --cov=etiketto --cov-report=term-missing
+.venv/bin/python -m pytest -q --cov=etiketto --cov-report=term-missing
 ```
 
 - All tests pass and total coverage stays **at or above 90 %**.
@@ -128,6 +130,7 @@ extension of the interface first; please open an issue before you start.
            data_formats=("jpeg",),  # the first one is the default
            min_length_mm=0,  # shorter labels are extended
            max_length_mm=None,  # longer labels are refused
+           pages=False,  # die-cut: the labels are pages (office printers, label sheets)
            media="cassette",  # continuous: "cassette" or "roll" it recognises, "paper"
            settings=(),  # Choice/Level: printer settings shown in the printer group
            qualities=(),  # e.g. ("standard", "high"); one or none: no choice
@@ -233,9 +236,13 @@ extension of the interface first; please open an issue before you start.
 4. Texts: a row in the "Supported printers" table of the README, an entry
    under "Supported printers" in the metainfo description, a section in
    `site/docs/printer.md` (setup and problems), protocol notes in
-   `docs/<name>.md`, and the trademark in the README and the metainfo.
-   Nothing else names printers, so no existing sentence needs a new
-   translation.
+   `docs/<name>.md`, and the trademark in the README and the metainfo;
+   the printer's names among the `Keywords` of the desktop file and the
+   `<keywords>` of the metainfo, so a search finds it. Protocol knowledge
+   from other projects goes into `THIRD_PARTY_NOTICES.md` (section 2) and
+   `PROTOCOL_SOURCES` in `etiketto/app.py` (a test keeps both in step), code
+   or data you ship into section 1 and `LEGAL`. Nothing else names
+   printers, so no existing sentence needs a new translation.
 
 Labels store the backend id in the `printer` field; files without it belong
 to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`;
@@ -305,7 +312,10 @@ python3 tools/glabels_templates.py /tmp/glabels-qt/templates
 ```
 
 It rewrites `templates.json` and copies the license to
-`etiketto/sheets/LICENSE.glabels`; check the number of sheets it reports and
+`etiketto/sheets/LICENSE.glabels`; check the number of sheets it reports
+(and the number "over 1700 sheets" in the README and `site/docs/sheets.md`),
+keep the copyright years in the README credits, `THIRD_PARTY_NOTICES.md`
+and `LEGAL` in `etiketto/app.py` current, and
 run the tests (`tests/test_sheets.py` checks that every sheet is usable).
 A sheet that is missing or wrong belongs in gLabels, so that both projects
 profit; fixes to the converter belong here. Sheet ids (`"Avery L7160"`, brand
@@ -337,8 +347,10 @@ feature (bluetooth, usb, nfc, hdmi, cast, contactless payment), as a label
 on a device needs them, and the key symbols apple-keyboard-* (command,
 option, shift are standard key symbols in Unicode, not a logo). It stops if the release's license text is no longer the
 one in `etiketto/symbols/LICENSE.mdi`: then check the new license and update
-that file by hand. Update the version in the README credits and
-`LICENSE.mdi`, check the number of icons it reports and run the tests
+that file by hand. Update the version in the README credits,
+`THIRD_PARTY_NOTICES.md` and `LICENSE.mdi` (and the holders in `LEGAL` in
+`etiketto/app.py` if they change), check the number of icons it reports
+and run the tests
 (`tests/test_symbols.py` counts the icons and checks that every path
 parses). The output depends only on the release (sorted, no timestamp).
 
@@ -374,7 +386,9 @@ text), never a raw `KeyError`, `zipfile` or XML error.
   files (`read_table()`, `read_book()` with the sheet names), and the
   `{column}` placeholders in label texts (`fill()`, which never uses
   `str.format()` on user data). It raises `MergeError` with the codes
-  `not_table`, `damaged`, `too_large` and `empty`; the limits (file size,
+  `not_table`, `damaged`, `too_large`, `empty`, `no_sheet` (a sheet name
+  the file does not have) and `cancelled` (the caller set `cancel`: the window
+  stops a read when another file is chosen); the limits (file size,
   number of zip entries, unpacked size of each zip member, rows, columns,
   cells) are in `etiketto/merge/limits.py`. Only plain files are read (a
   named pipe would block). Hidden cells of merged ranges are empty in ODS

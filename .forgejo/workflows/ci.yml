@@ -1,4 +1,5 @@
-# Tests, lint and static analysis on Forgejo.
+# Tests, lint and static analysis on Forgejo; tools/check.sh runs the same
+# commands with the same flags locally (tests/test_packaging.py compares).
 #
 # actions/checkout does not work on this instance (the runner reaches Forgejo
 # as server:3000), so the code is fetched with plain git.
@@ -17,7 +18,8 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # main, and next: the integration branch of the feature branches
+    branches: [main, next]
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 
@@ -86,7 +88,7 @@ jobs:
       - name: pytest
         working-directory: src
         # fail_under for the coverage comes from pyproject.toml
-        run: xvfb-run -a .venv/bin/python -m pytest --cov=etiketto --cov-report=term-missing
+        run: xvfb-run -a .venv/bin/python -m pytest -q --cov=etiketto --cov-report=term-missing
 
       - name: Translations
         working-directory: src
