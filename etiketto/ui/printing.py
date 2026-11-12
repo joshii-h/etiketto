@@ -222,7 +222,28 @@ class PrintFlow:
         whether to print the outlines; with a data file the rows to print, all
         of them; the extra settings the printer has (Capabilities.extras),
         density and label type too."""
-        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode, "quality": self._quality()}
+        choices: dict[str, object] = {
+            "copies": 1,
+            "cut": self._cut(),
+            "mode": self.mode,
+            "quality": self._quality(),
+        }
+        choices.update(self._printer_choices())
+        copies = 1
+        sheet, choice = self.window.sheet, self.window.label.sheet
+        if sheet and choice:
+            copies = len(first_positions(sheet, choice.positions))
+            choices["outlines"] = bool(self.window.printer_settings.get("outlines", False))
+        choices["copies"] = copies
+        if self.window.data.active:
+            choices.update(first=1, last=len(self.window.data.rows))
+        self._plan_copies(copies)
+        return choices
+
+    def _printer_choices(self) -> dict[str, object]:
+        """The extras (chain, high resolution, feed), density and label
+        type, where the printer has them, as last chosen."""
+        choices: dict[str, object] = {}
         settings = self.window.printer_settings
         extras = self._extras()
         for name in ("chain", "high_res"):
@@ -240,13 +261,6 @@ class PrintFlow:
         if media:
             saved = settings.get("media")
             choices["media"] = saved if saved in media else media[0]
-        sheet, choice = self.window.sheet, self.window.label.sheet
-        if sheet and choice:
-            choices["copies"] = len(first_positions(sheet, choice.positions))
-            choices["outlines"] = bool(self.window.printer_settings.get("outlines", False))
-        if self.window.data.active:
-            choices.update(first=1, last=len(self.window.data.rows))
-        self._plan_copies(choices["copies"])
         return choices
 
     def _sheet_rows(self, choices: dict) -> list[Gtk.Widget]:
