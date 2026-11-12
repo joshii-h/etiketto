@@ -736,6 +736,16 @@ def map_error(error: Exception) -> PrinterError:
     return PrinterError(text)
 
 
+class ConnectionClosed(PrinterTimeout):
+    """The printer (or the network) closed the connection: not a printer
+    that is merely silent."""
+
+
+def _same_host(a: str, b: str) -> bool:
+    """Host names as DNS compares them: any case, with or without the final dot."""
+    return a.casefold().rstrip(".") == b.casefold().rstrip(".")
+
+
 class _Session:
     def __init__(self, link):
         self.link = link
@@ -760,7 +770,7 @@ class _Session:
                 raise PrinterError("no status in the answer %r" % self.buffer[:64])
             chunk = self.link.recv(256)
             if not chunk:
-                raise PrinterTimeout("connection closed after %r" % self.buffer[:64])
+                raise ConnectionClosed("connection closed after %r" % self.buffer[:64])
             self.buffer += chunk
 
     def drop_reply(self, timeout: float) -> None:
@@ -781,11 +791,12 @@ class _Session:
         progress: ProgressCallback | None,
         waits: bool,
         network: bool,
-    ) -> None:
+    ) -> bool:
         """The job, page by page; the printer may stop reading for as long
         as a page takes to print. `waits`: after each page, read the
         status until it is printed (Brother's flow 5.1); on the network a
-        printer that does not report pages gets the rest without waiting."""
+        printer that does not report pages gets the rest without waiting.
+        True if the printer reported every page printed."""
         copies = len(pieces) - 1
         self.link.settimeout(timeout)
         try:
@@ -799,6 +810,7 @@ class _Session:
                     waits = self._printed(model, n - 1, copies, network)
         finally:
             self.link.settimeout(SOCKET_TIMEOUT)
+        return waits
 
     def _printed(self, model: Model, done: int, copies: int, network: bool) -> bool:
         """Until the printer reports the page printed; its errors at once.
@@ -812,6 +824,8 @@ class _Session:
                     raise status_error(status, model.p900_series) or PrinterError(
                         "error status %s" % status.raw.hex(" ")
                     )
+        except ConnectionClosed as e:  # gone, not silent: say what came out
+            raise _printed_before(e, done, copies) from None
         except PrinterTimeout:
             if network:  # status over TCP is not documented [open]
                 return False
@@ -865,7 +879,7 @@ def _network_model(host: str, info: PrinterInfo | None) -> Model | None:
     if model:
         return model
     for found in _browse("_pdl-datastream._tcp", _is_network_ptouch, 1.0):
-        if host in (found.host, found.address):
+        if _same_host(host, found.host) or _same_host(host, found.address):
             return model_by_name(found.name.removeprefix("Brother").strip())
     return None
 
@@ -1066,7 +1080,10 @@ class PTouch(Backend):
             lines = columns(_fit(image, area[1], rendered_lpi, lpi), model, area[0])
             timeout = print_timeout(length_mm, settings.high_res)
             pieces = build_job(model, lines, settings, copies)
-            s.send_job(model, pieces, timeout, progress, waits, not usb.is_usb(host))
+            confirmed = s.send_job(model, pieces, timeout, progress, waits, not usb.is_usb(host))
+        if model.documented and not confirmed:
+            # sent, but the printer did not say it printed: no "Printed"
+            return PrintResult(queued=True)
         return None
 
 

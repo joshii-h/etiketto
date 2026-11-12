@@ -44,7 +44,14 @@ untested, from one of the projects, or contradicting between the sources,
     (`PT-P900W.local`) or the DNS-SD name of that address; only without
     any of these from the tape width (36 mm: PT-P900 series). [assumed]
   - it comes, but no page is reported: after the page's time the rest of
-    the job is sent without waiting, and the job counts as sent. [assumed]
+    the job is sent without waiting; the interface then says the job was
+    sent, not that it was printed (also when no status came at all).
+    [assumed]
+  - the printer closes the connection while Etiketto waits for a page: an
+    error, with the number of labels reported printed so far; nothing more
+    is sent.
+  - the DNS-SD name is matched to the host in any case, with or without a
+    final dot.
 - Sending: the printer stops reading while it prints a page (5.6: "printer
   buffer is full, BUSY"), so a job is sent in pieces; it fails only when
   the printer takes no data for as long as a page may take (see Status).

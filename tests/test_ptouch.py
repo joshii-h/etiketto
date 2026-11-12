@@ -108,6 +108,8 @@ class FakePTouch:
         self.settings: dict = {}
         self.lines: list[bytes] = []
         self.inits = 0
+        self.close_after: int | None = None  # pages, then the connection closes
+        self.closed = False
         self.unread_at_page: list[int] = []  # answer bytes nobody had read at ESC i a
 
     def status(self, kind=0) -> bytes:
@@ -180,7 +182,9 @@ class FakePTouch:
     def _page(self, end: int) -> None:
         self.pages.append(dict(self.settings, lines=self.lines, end=end))
         self.lines = []
-        if self.fail_after is not None and len(self.pages) >= self.fail_after:
+        if self.close_after is not None and len(self.pages) >= self.close_after:
+            self.closed = True  # hangs up instead of reporting the page
+        elif self.fail_after is not None and len(self.pages) >= self.fail_after:
             self.errors = (0, 0x10)
             self.out += self.status(kind=0x02)
         elif self.completes:
@@ -201,6 +205,8 @@ class FakeLink:
 
     def recv(self, size: int) -> bytes:
         out = self.printer.out
+        if not out and self.printer.closed:
+            return b""  # like a socket the other side closed
         if not out:  # like _TcpLink and usb.Connection
             raise PrinterTimeout("printer did not answer")
         piece = bytes(out[: min(size, self.chunk)])
@@ -1007,8 +1013,33 @@ def test_silent_printer_on_the_network_gets_the_job(fake):
     backend = PTouch()
     image = backend.prepare(label(12), PrintOptions())
     events = []
-    backend.print_label(image, "ptouch.local", PrintOptions(copies=3), events.append)
+    result = backend.print_label(image, "ptouch.local", PrintOptions(copies=3), events.append)
     assert len(fake.printer.pages) == 3 and [e.copy for e in events] == [1, 2, 3]
+    # sent, not reported printed: the interface says so instead of "Printed"
+    assert result == ptouch.PrintResult(queued=True)
+
+
+@pytest.mark.parametrize("close_after, printed", [(1, None), (2, 1), (3, 2)])
+def test_connection_closed_during_the_job(fake, close_after, printed):
+    """A printer that hangs up is not silent: the job fails and says how
+    many labels it reported printed, also after the last page."""
+    fake.printer.close_after = close_after
+    backend = PTouch()
+    image = backend.prepare(label(12), PrintOptions())
+    with pytest.raises(PrinterError) as raised:
+        backend.print_label(image, "ptouch.local", PrintOptions(copies=3))
+    assert raised.value.code == "timeout" and "closed" in raised.value.details
+    assert len(fake.printer.pages) == close_after  # nothing sent after it
+    if printed:
+        assert raised.value.params == {"printed": printed, "copies": 3}
+    else:
+        assert not raised.value.params
+
+
+def test_all_pages_reported_is_printed(fake):
+    backend = PTouch()
+    image = backend.prepare(label(12), PrintOptions())
+    assert backend.print_label(image, "ptouch.local", PrintOptions(copies=2)) is None
 
 
 def test_status_is_read_between_pages(fake, monkeypatch):
@@ -1073,6 +1104,12 @@ def test_network_printer_without_status_is_named_by_its_host(fake, monkeypatch):
     monkeypatch.setattr(ptouch, "_browse", lambda service_type, match, timeout: found)
     backend.print_label(image, "192.0.2.9", PrintOptions())
     assert len(fake.printer.pages[-1]["lines"][0]) == 70
+    # host names in any case, with or without the final dot
+    for host in ("brw0001.LOCAL.", "BRW0001.local"):
+        fake.printer.line_bytes = 70
+        backend.print_label(image, host, PrintOptions())
+        assert len(fake.printer.pages[-1]["lines"][0]) == 70
+    assert not ptouch._same_host("brw0001.local", "brw0002.local")
     assert fake.printer.pages[-1]["z"][8] == 2  # PT-P900 series: last page
     monkeypatch.setattr(ptouch, "_browse", lambda service_type, match, timeout: [])
     backend.print_label(image, "printer.lan", PrintOptions(info=info_for("PT-P900")))
