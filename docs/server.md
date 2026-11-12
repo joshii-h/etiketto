@@ -33,7 +33,7 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--labels-dir` | the only folder label and data files are read from; `~/.local/share/etiketto/labels` by default (made if missing) |
 | `--mcp` | MCP (Streamable HTTP) at `/mcp` as well |
 | `--allow-origin` | web origin whose pages may call the server (`https://app.example`): CORS preflights are answered and the answers carry `Access-Control-Allow-Origin`; repeatable |
-| `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A name pattern (`*.local`, `cups.example.com`) matches host names; an address pattern (`192.168.1.0/24`, `192.168.1.*`, `2001:db8::/32`) matches IP addresses only, a host name if every address it resolves to matches one of them (so `192.168.1.evil.example` is not in `192.168.1.*`); the server then prints on the address it checked, not on the name (a name looked up again could point elsewhere; an `ipps` printer must then accept its IP address). `*` allows everything without a lookup; repeatable |
+| `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A name pattern (`*.local`, `cups.example.com`) matches host names; an address pattern (an address or network as Python's ipaddress reads it, `192.168.1.0/24`, `2001:db8::/32`, or four IPv4 parts with `*` for whole parts, `192.168.1.*`; `*.*`, `123` or `*.5` are name patterns) matches IP addresses only, a host name if every address it resolves to matches one of them (so `192.168.1.evil.example` is not in `192.168.1.*`); the server then prints on the first address the resolver gives (only that one; there is no trying the others), not on the name (a name looked up again could point elsewhere; an `ipps` printer must then accept its IP address). `*` allows everything without a lookup; repeatable |
 | `--max-body` | largest request body in MB, 4 by default (parsed JSON takes many times its size) |
 | `--max-labels` | most labels in one print job, copies times rows; 10 000 by default (413 `too_many_labels`) |
 | `--trusted-proxy` | a reverse proxy, best its own address (`172.30.0.10/32`), whose `X-Forwarded-For` names the client: the rate limit, the 8 requests per client and the log use that address (all header lines together, ports taken off; anything that is no address stops the search at the proxy), the proxy itself is not held to 8 connections. `0.0.0.0/0` or `::/0` (everyone) is warned about. With a proxy, publish the server's port nowhere else; repeatable |
@@ -120,16 +120,21 @@ description = "PC at gate 2"
   hash, which slows down guessing a chosen token;
   `--scrypt` does that for a made one too (random tokens need no slow
   hash). The default file is `~/.config/etiketto/tokens.toml`.
-- The file is read strictly: the role is required, the same token (hash
-  or id) under two names is refused, scrypt parameters must be digits
+- The file is read strictly: the role is required, the same hash (also an
+  scrypt hash copied with its salt) or id under two names is refused (the
+  same chosen token hashed twice cannot be seen in the file; `token new`
+  refuses it), scrypt parameters must be digits
   within the memory scrypt may use (salt at least 8, hash 16 to 64
   bytes). A file every user may change is refused, one others may read
   is warned about.
 - A token with an id is checked against the entry with that id only;
-  entries with an id are never tried for other tokens. A token without an
-  id (or with an id no entry has) is compared with the entries without an
-  id: SHA-256 first, then scrypt one after the other, at most two scrypt
-  checks at once. A known token whose entry changed is looked up again.
+  entries with an id are never tried for other tokens. A token with an id
+  no entry has is compared with a dummy entry too, so the answer takes as
+  long as for a known id. A token without an id is compared with the
+  entries without an id: SHA-256 first, then scrypt one after the other,
+  at most two scrypt checks at once. An id that is not 12 hexadecimal
+  digits is warned about and ignored (the token still works, found the
+  slow way). A known token whose entry changed is looked up again.
   `token new` checks the file's mode as the server does, also of an empty
   file.
 - Revoking: remove the entry. The server reads the file again when it
@@ -367,10 +372,20 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
 - **Image files**: only PNG, JPEG, GIF, BMP, WebP and TIFF are read (EPS
   would run Ghostscript, ICO and ICNS are decoded before their size is
-  known); Pillow's decompression bomb warning refuses an image. Images
-  are measured from their header (EXIF orientation applied), codes from
-  their small image: nothing large is drawn while measuring. A Code 128
-  holds at most 200 characters.
+  known); a file over Pillow's MAX_IMAGE_PIXELS is refused by a check of
+  its size (no warning filter, which is not safe in threads). Images are
+  measured from their header: the EXIF orientation of JPEG and WebP, and
+  of a PNG whose eXIf chunk comes before the image data (one after it is
+  not looked for, as that would decode the image; such a PNG is drawn as
+  stored); TIFF is turned by Pillow when it is opened. Header sizes are
+  remembered by the image's hash, 64 at most. Codes are measured from
+  their small image, each different code made once per render; together
+  with the image files they may not take more than 20 megapixels before
+  the label is drawn. Nothing large is drawn while measuring. A Code 128
+  holds at most 200 characters; a longer one is refused for printing in
+  the window, on the command line and by the server, as for serial
+  labels. The digits under a barcode are drawn as text at their final
+  size, not scaled with the bars.
 - **Rendering**: a label of a request has at most 200 elements, 5000
   characters and 100 lines in each text or code (filled in, and in the
   cells of the columns it uses); more is 413 (`label_too_large`). While
@@ -384,8 +399,16 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   crossed-out box. The image files of a label together (each counted
   once) may not unpack to more than 40 megapixels, checked from their
   headers before any is decoded; each is decoded once per render, nothing
-  is kept between renders. Two previews or checks render at once; a
-  request that waits 20 s for one gets 503 (`busy`). Labels scaled down
+  is kept between renders. A label has at most 50 images and codes (each
+  takes time to draw). Every render takes one of two render slots:
+  previews, checks before printing and the renders of print jobs, which
+  wait their turn. A preview or print request is parsed only once it
+  has a slot, so waiting requests hold their body, not the parsed label;
+  a request that waits 20 s, or would be the ninth waiting, gets 503
+  (`busy`). The server draws a small text in its main thread before it
+  serves: PyGObject sets up Pango on first use, which is not safe in
+  several threads at once (the window renders in the main thread, where
+  GTK has done it). Labels scaled down
   to a fixed length or page are drawn at their final size and look a
   little sharper than before; others render exactly as before.
 - **Roles**: see [tokens.toml](#tokens). The token's name, never the token,
@@ -397,9 +420,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   may make the server connect to (the backends talk to whatever address
   they are given, as in the app). The network is searched only with
   `--discover`.
-- **Resources**: at most 32 requests at once (503 `busy` beyond; two more
-  connections are kept for `/health`, which needs no slot) and 8
-  connections from one address; no thread to be had is a 503 too. 30 s
+- **Resources**: at most 32 connections and requests at once (503 `busy`
+  beyond); when all are taken, two more connections are let in that may
+  only ask for `/health` and have 5 s to send it, so a stuck server still
+  answers its health check. At most 8 connections from one address (an
+  IPv6 address by its /64 network); no thread to be had is a 503 too. 30 s
   to send the whole request: a watchdog stops reading at the deadline
   however the client trickles (inside a line, a header or the body), and
   what was read then is not taken as a request (408 or the connection
@@ -408,12 +433,15 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   waiting or printing, 20 of them for one named token (of tokens.toml;
   one shared token or none is everyone, only the 100 apply), about 256
   MB of requests held by waiting jobs, 10 000 labels per job; a worker
-  per printer ends after 60 s without jobs, at most 16 printers at once
-  (429 `queue_full` beyond any of these). A finished job keeps only its
+  per printer ends after 60 s without jobs, at most 16 printers at once;
+  a new printer takes the place of the one idle longest (429
+  `queue_full` beyond any of these). A finished job keeps only its
   outcome, not the request. MCP sessions: 10 per named token (its own
   oldest makes room), 100 in all; only a token's own session ever makes
   room, a full table of others' sessions is 503. MCP bodies are parsed
-  within the two-at-a-time limit too. The systemd unit and the Compose file limit
+  within the two-at-a-time limit too. A trusted proxy's requests without
+  a usable X-Forwarded-For are held to the overall limits only, not to
+  the 8 per client. The systemd unit and the Compose file limit
   memory (1 GB) and processes, and `MALLOC_ARENA_MAX=2` keeps threads
   from holding on to memory a large label used.
 - **Logs** (stderr, the journal): client address, token name (`-` before
