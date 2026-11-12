@@ -1,0 +1,14 @@
+# Override for compose.yaml: build the image from this checkout instead of
+# pulling the published one.
+#
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+#
+# With the host's network too: -f compose.yaml -f compose.host.yaml -f compose.build.yaml
+
+services:
+  tavletta:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: tavletta-server
+    pull_policy: build

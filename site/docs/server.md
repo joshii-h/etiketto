@@ -173,3 +173,30 @@ Claude Desktop, in `claude_desktop_config.json`:
   `docker compose -f compose.yaml -f compose.host.yaml up -d`.
 - Technical details and security:
   [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md).
+
+## Container image { #container }
+
+The print server is published as a container image for amd64 and arm64
+(also a Raspberry Pi with a 64-bit system):
+
+```sh
+docker pull ghcr.io/joshii-h/tavletta:1.1.0
+```
+
+- `1.1.0` is a release, `1.1` the latest bug fix release of 1.1, `latest`
+  the latest release. `edge` is the state of development, not a release.
+- `packaging/docker/compose.yaml` uses the published image:
+  `docker compose pull`, then `docker compose up -d`.
+- To build the image yourself instead, add `compose.build.yaml`:
+  `docker compose -f compose.yaml -f compose.build.yaml up -d --build`.
+- The image runs without root rights and reports its state to Docker
+  (`HEALTHCHECK`).
+- Check that an image was built from Tavletta's repository, with the
+  [GitHub CLI](https://cli.github.com) or [cosign](https://docs.sigstore.dev):
+
+```sh
+gh attestation verify oci://ghcr.io/joshii-h/tavletta:1.1.0 --repo joshii-h/tavletta
+cosign verify ghcr.io/joshii-h/tavletta:1.1.0 \
+    --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+    --certificate-identity-regexp '^https://github\.com/joshii-h/tavletta/\.github/workflows/docker\.yml@refs/tags/v'
+```

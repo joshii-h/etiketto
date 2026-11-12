@@ -133,8 +133,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Tavlett
 - Print server: `tavletta serve` offers a REST API (OpenAPI 3.1) and MCP
   for AI assistants (`tavletta mcp` for Claude Desktop and Claude Code),
   with print jobs queued per printer, named printers with their settings
-  (`printers.toml`), access tokens with roles; a Dockerfile, a Docker
-  Compose example and a systemd unit
+  (`printers.toml`), access tokens with roles; a container image for
+  amd64 and arm64 (`ghcr.io/joshii-h/tavletta`), a Docker Compose example
+  and a systemd unit
 - Serial labels: placeholders such as `{Name}` in texts and codes, filled
   from each row of a CSV, ODS or XLSX file; step through the rows in the
   preview and print all of them, or a range, on any printer
@@ -324,6 +325,14 @@ listens on 127.0.0.1 and refuses other addresses without an access token
 an override for the host's network, mDNS and USB) and a systemd user unit
 are in `packaging/`. Details, API reference and security notes:
 [docs/server.md](docs/server.md).
+
+The server is published as a container image for amd64 and arm64, with
+build provenance and a signature
+([how to check them](docs/server.md#container)):
+
+```sh
+docker pull ghcr.io/joshii-h/tavletta:1.1.0
+```
 
 ## How labels are laid out
 

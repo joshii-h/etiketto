@@ -129,8 +129,25 @@ def extras(element: TextElement, dpi: float) -> Extras:
     )
 
 
-# the weights Pango names; a font weight between them takes the nearest
-WEIGHTS = sorted(int(w) for w in Pango.Weight)
+# the weights Pango names; a font weight between them takes the nearest. By
+# name: iterating over Pango.Weight needs PyGObject 3.52 (Debian 13 has 3.50)
+WEIGHTS = sorted(
+    int(getattr(Pango.Weight, name))
+    for name in (
+        "THIN",
+        "ULTRALIGHT",
+        "LIGHT",
+        "SEMILIGHT",
+        "BOOK",
+        "NORMAL",
+        "MEDIUM",
+        "SEMIBOLD",
+        "BOLD",
+        "ULTRABOLD",
+        "HEAVY",
+        "ULTRAHEAVY",
+    )
+)
 
 
 def weight(element: TextElement) -> Pango.Weight:

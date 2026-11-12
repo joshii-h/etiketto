@@ -194,6 +194,13 @@ def test_weights_between_pangos_take_the_nearest():
     assert int(typeset.weight(TextElement(weight=0, bold=False))) == 400
 
 
+def test_the_weights_are_every_one_pango_names():
+    """Named one by one (PyGObject 3.50 cannot iterate over an enum): none missing."""
+    named = {int(v) for v in typeset.Pango.Weight.__enum_values__}
+    assert sorted(named) == typeset.WEIGHTS
+    assert int(typeset.weight(TextElement(weight=360))) == 350  # SEMILIGHT
+
+
 @needs_source_sans
 def test_a_family_ending_in_a_number_is_not_a_size():
     """ "Source Sans 3" is a family, not "Source Sans" at size 3."""

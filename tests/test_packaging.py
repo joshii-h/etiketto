@@ -98,3 +98,132 @@ def test_the_flatpak_ships_every_licence_once():
         for source in module.get("sources", []):
             if source.get("type") in ("file", "archive") and "url" in source:
                 assert "x-checker-data" in source, (module["name"], source["url"])
+
+
+def _workflow(name: str) -> dict:
+    import yaml
+
+    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"))
+    workflow["on"] = workflow.pop(True, workflow.get("on"))  # YAML 1.1 reads `on` as true
+    return workflow
+
+
+def test_github_workflows_pin_actions_and_run_only_on_github():
+    """Forgejo reads .github/workflows too: every job is guarded. Actions are
+    pinned to a full commit SHA, with the version as a comment."""
+    for path in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        text = path.read_text(encoding="utf-8")
+        for line in re.findall(r"uses:\s*(\S.*)", text):
+            assert re.fullmatch(r"[\w.-]+/[\w./-]+@[0-9a-f]{40}\s+# v\d+(\.\d+)*", line), (
+                path.name,
+                line,
+            )
+        for name, job in _workflow(path.name)["jobs"].items():
+            assert job["if"].startswith("github.server_url == 'https://github.com'"), name
+
+
+def test_the_container_workflow():
+    workflow = _workflow("docker.yml")
+    text = (ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8")
+    on = workflow["on"]
+    assert on["push"] == {"tags": ["v*"], "branches": ["main"]}
+    assert on["pull_request"] == {"branches": ["main"]} and "workflow_dispatch" in on
+    assert workflow["permissions"] == {"contents": "read"}
+    assert workflow["env"]["IMAGE"] == "ghcr.io/joshii-h/tavletta"
+    check, publish = workflow["jobs"]["check"], workflow["jobs"]["publish"]
+    assert "permissions" not in check  # read-only, also for pull requests
+    assert publish["needs"] == "check" and "github.event_name != 'pull_request'" in publish["if"]
+    assert publish["permissions"] == {
+        "contents": "read",
+        "packages": "write",
+        "id-token": "write",
+        "attestations": "write",
+    }
+
+    def step(job: dict, uses: str = "", run: str = "") -> dict:
+        found = [
+            s
+            for s in job["steps"]
+            if (uses and s.get("uses", "").startswith(uses + "@"))
+            or (run and run in s.get("run", ""))
+        ]
+        assert len(found) == 1, uses or run
+        return found[0]
+
+    smoke = step(check, run="packaging/docker/smoke-test.sh")
+    assert smoke["env"]["EXPECT_VERSION"]  # a release reports its tag's version
+    script = ROOT / "packaging" / "docker" / "smoke-test.sh"
+    assert script.stat().st_mode & 0o111  # executable
+    trivy = step(check, uses="aquasecurity/trivy-action")["with"]
+    assert trivy["severity"] == "CRITICAL,HIGH" and trivy["ignore-unfixed"] is True
+    assert trivy["exit-code"] == "${{ env.RELEASE == 'true' && '1' || '0' }}"
+    assert re.fullmatch(r"v\d+\.\d+\.\d+", trivy["version"])  # not whatever is newest
+    test_build = step(check, uses="docker/build-push-action")["with"]
+    assert test_build["platforms"] == "linux/amd64" and test_build["load"] is True
+    # a release has today's security updates, scanned as they are pushed
+    assert test_build["no-cache"] == "${{ env.RELEASE == 'true' }}"
+
+    build = step(publish, uses="docker/build-push-action")["with"]
+    assert build["file"] == "packaging/docker/Dockerfile"
+    assert build["platforms"] == "linux/amd64,linux/arm64"
+    assert build["push"] == "${{ env.PUSH == 'true' }}"
+    assert publish["env"]["PUSH"] == "${{ github.event_name == 'push' }}"
+    assert build["sbom"] is True and build["provenance"] == "mode=max"
+    assert build["cache-from"].splitlines() == [
+        "type=gha,scope=check",
+        "${{ env.RELEASE != 'true' && 'type=gha,scope=publish' || '' }}",
+    ]
+    assert build["cache-to"] == "type=gha,scope=publish,mode=max"
+    assert step(publish, uses="docker/setup-qemu-action")["with"]["platforms"] == "arm64"
+    attest = step(publish, uses="actions/attest-build-provenance")
+    assert attest["with"]["push-to-registry"] is True
+    assert attest["with"]["subject-digest"] == "${{ steps.build.outputs.digest }}"
+    assert "cosign sign --yes" in step(publish, run="cosign sign")["run"]
+    login = step(publish, uses="docker/login-action")
+    assert login["with"]["password"] == "${{ github.token }}"  # no long-lived token
+    for writing in (login, attest, step(publish, run="cosign sign")):
+        assert writing["if"] == "env.PUSH == 'true'"
+
+    meta = step(publish, uses="docker/metadata-action")["with"]
+    for tag in (
+        "type=semver,pattern={{version}}",
+        "type=semver,pattern={{major}}.{{minor}}",
+        "type=edge,branch=main",
+    ):
+        assert tag in meta["tags"], tag
+    assert "type=raw,value=latest," in meta["tags"] and meta["flavor"] == "latest=false"
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    for field in ("labels", "annotations"):
+        assert "org.opencontainers.image.licenses=%s\n" % project["license"] in meta[field]
+        assert (
+            "org.opencontainers.image.source=https://github.com/joshii-h/tavletta\n" in meta[field]
+        )
+        assert (
+            "org.opencontainers.image.url=https://git.joshuahirsig.xyz/joshii/tavletta\n"
+            in (meta[field])
+        )
+    assert "secrets." not in text  # GITHUB_TOKEN only
+
+
+def test_the_container_image_and_compose_files():
+    import yaml
+
+    from tavletta import __version__
+
+    docker = ROOT / "packaging" / "docker"
+    dockerfile = (docker / "Dockerfile").read_text(encoding="utf-8")
+    assert re.search(r"^USER tavletta$", dockerfile, re.M)
+    assert "HEALTHCHECK" in dockerfile and "/api/v1/health" in dockerfile
+    assert re.search(r"^COPY .*THIRD_PARTY_NOTICES\.md \./$", dockerfile, re.M)  # setuptools
+    assert "/src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavletta/" in dockerfile
+    assert "gir1.2-poppler-0.18" in dockerfile  # PDF pages of shipping labels
+    assert "apt-get upgrade -y" in dockerfile  # fixes newer than the base image
+    compose = yaml.safe_load((docker / "compose.yaml").read_text(encoding="utf-8"))
+    service = compose["services"]["tavletta"]
+    assert "build" not in service
+    minor = ".".join(__version__.split(".")[:2])
+    assert service["image"] == "ghcr.io/joshii-h/tavletta:" + minor  # bumped with the version
+    build = yaml.safe_load((docker / "compose.build.yaml").read_text(encoding="utf-8"))
+    built = build["services"]["tavletta"]
+    assert (docker / built["build"]["context"] / built["build"]["dockerfile"]).is_file()
+    assert built["pull_policy"] == "build"

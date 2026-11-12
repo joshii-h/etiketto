@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 16:04+0100\n"
+"POT-Creation-Date: 2026-11-12 16:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1733,6 +1733,64 @@ msgstr ""
 #: docs/server.md
 #, markdown-text
 msgid "Technical details and security: [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/server.md
+#, markdown-text, no-wrap
+msgid "Container image { #container }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server.md
+#, markdown-text
+msgid "The print server is published as a container image for amd64 and arm64 (also a Raspberry Pi with a 64-bit system):"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid "docker pull ghcr.io/joshii-h/tavletta:1.1.0\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`1.1.0` is a release, `1.1` the latest bug fix release of 1.1, `latest` the latest release. `edge` is the state of development, not a release."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "`packaging/docker/compose.yaml` uses the published image: `docker compose pull`, then `docker compose up -d`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "To build the image yourself instead, add `compose.build.yaml`: `docker compose -f compose.yaml -f compose.build.yaml up -d --build`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The image runs without root rights and reports its state to Docker (`HEALTHCHECK`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Check that an image was built from Tavletta's repository, with the [GitHub CLI](https://cli.github.com) or [cosign](https://docs.sigstore.dev):"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server.md
+#, no-wrap
+msgid ""
+"gh attestation verify oci://ghcr.io/joshii-h/tavletta:1.1.0 --repo joshii-h/tavletta\n"
+"cosign verify ghcr.io/joshii-h/tavletta:1.1.0 \\\n"
+"    --certificate-oidc-issuer https://token.actions.githubusercontent.com \\\n"
+"    --certificate-identity-regexp '^https://github\\.com/joshii-h/tavletta/\\.github/workflows/docker\\.yml@refs/tags/v'\n"
 msgstr ""
 
 #. type: Title #
