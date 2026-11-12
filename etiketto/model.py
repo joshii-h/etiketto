@@ -74,7 +74,27 @@ class CodeElement:
     kind: Literal["code"] = "code"
 
 
-Element = TextElement | ImageElement | CodeElement
+ROTATIONS = (0, 90, 180, 270)
+MAX_SYMBOL_PATH = 100_000  # etiketto.symbols.path.MAX_PATH_CHARS
+
+
+@dataclass
+class SymbolElement:
+    """A symbol of the symbol library (etiketto.symbols), drawn as a vector
+    path at the printer's resolution. The file keeps the name, for the
+    chooser, and a copy of the path, which is what is drawn: the label looks
+    the same with an icon set where the symbol was changed, renamed or
+    removed (the same reason images are embedded)."""
+
+    name: str = ""  # "printer-outline"
+    path: str = ""  # SVG path data in the 24 × 24 square; empty: look up name
+    size_mm: float = 0.0  # 0 = the content height
+    rotation: int = 0  # clockwise, a quarter turn at a time
+    color: str = "#000000"  # black on black-and-white printers
+    kind: Literal["symbol"] = "symbol"
+
+
+Element = TextElement | ImageElement | CodeElement | SymbolElement
 
 
 @dataclass
@@ -108,7 +128,14 @@ class SheetChoice:
         return choice
 
 
-ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement}
+# an Etiketto that does not know a kind refuses the file as "newer": symbols
+# need no format version or feature of their own
+ELEMENT_TYPES = {
+    "text": TextElement,
+    "image": ImageElement,
+    "code": CodeElement,
+    "symbol": SymbolElement,
+}
 
 
 @dataclass
@@ -381,8 +408,23 @@ def _element_from_dict(item) -> Element:
     elif isinstance(element, ImageElement):
         element.data = _str(element.data, "image data")
         element.name = _str(element.name, "image name")
+    elif isinstance(element, SymbolElement):
+        _validate_symbol(element)
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
         element.symbology = _choice(element.symbology, ("qr", "code128", "ean13"), "symbology")
     return element
+
+
+def _validate_symbol(element: SymbolElement) -> None:
+    element.name = _str(element.name, "symbol name")
+    element.path = _str(element.path, "symbol path")
+    if len(element.path) > MAX_SYMBOL_PATH:
+        raise _damaged("symbol path too long")
+    element.color = _str(element.color, "color")
+    element.size_mm = _clamp(element.size_mm, 0, MAX_SIZE_MM, "size_mm")
+    rotation = element.rotation
+    if isinstance(rotation, bool) or rotation not in ROTATIONS:
+        raise _damaged("invalid rotation %r" % (rotation,))
+    element.rotation = ROTATIONS[ROTATIONS.index(rotation)]  # 90, not 90.0

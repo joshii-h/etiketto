@@ -12,10 +12,17 @@ gi.require_version("Pango", "1.0")
 
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto.model import ImageElement, TextElement  # noqa: E402
+from etiketto.model import ImageElement, SymbolElement, TextElement  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
-from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
-from etiketto.ui.widgets import color_button, combo_row, flat_button, spin_row  # noqa: E402
+from etiketto.ui.symbols import SymbolChooser, SymbolIcon  # noqa: E402
+from etiketto.ui.texts import (  # noqa: E402
+    ROTATIONS,
+    SYMBOLOGIES,
+    TEXT_ALIGNS,
+    element_icon,
+    element_title,
+)
+from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row, spin_row  # noqa: E402
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
@@ -34,7 +41,7 @@ class ElementsGroup(Adw.PreferencesGroup):
 
         if not window.label.elements:
             empty = Adw.ActionRow(
-                title=_("No content yet"), subtitle=_("Add text, an image or a code")
+                title=_("No content yet"), subtitle=_("Add text, an image, a symbol or a code")
             )
             empty.add_css_class("dim-label")
             self.add(empty)
@@ -45,6 +52,7 @@ class ElementsGroup(Adw.PreferencesGroup):
         add_menu = Gio.Menu()
         add_menu.append(_("Text"), "win.add-text")
         add_menu.append(_("Image…"), "win.add-image")
+        add_menu.append(_("Symbol…"), "win.add-symbol")
         add_menu.append(_("QR code / barcode"), "win.add-code")
         add = Gtk.MenuButton(
             icon_name="list-add-symbolic", menu_model=add_menu, tooltip_text=_("Add")
@@ -54,7 +62,9 @@ class ElementsGroup(Adw.PreferencesGroup):
 
     def _element_row(self, index: int, element) -> Adw.ExpanderRow:
         row = Adw.ExpanderRow()
-        row.add_prefix(Gtk.Image(icon_name=element_icon(element)))
+        # a symbol shows itself
+        prefix = SymbolIcon(element.path) if isinstance(element, SymbolElement) else None
+        row.add_prefix(prefix or Gtk.Image(icon_name=element_icon(element)))
         row.set_expanded(index == self.window.expand_index)
         self._add_header_buttons(row, index)
 
@@ -73,6 +83,9 @@ class ElementsGroup(Adw.PreferencesGroup):
             self._text_rows(row, element, set_attr)
         elif isinstance(element, ImageElement):
             self._image_rows(row, element, set_attr)
+        elif isinstance(element, SymbolElement):
+            assert prefix
+            self._symbol_rows(row, element, set_attr, prefix)
         else:
             self._code_rows(row, element, set_attr)
         return row
@@ -165,6 +178,50 @@ class ElementsGroup(Adw.PreferencesGroup):
         choose.connect("clicked", lambda _b: self.window.files.choose_image(picked))
         image_row.add_suffix(choose)
         row.add_row(image_row)
+
+    def _symbol_rows(
+        self, row: Adw.ExpanderRow, element: SymbolElement, set_attr, prefix: SymbolIcon
+    ) -> None:
+        icon = SymbolIcon(element.path, 24)
+        symbol_row = Adw.ActionRow(title=_("Symbol"))
+        symbol_row.add_prefix(icon)
+        symbol_row.set_subtitle(GLib.markup_escape_text(element.name or _("None")))
+        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
+
+        def picked(symbol):
+            set_attr(name=symbol.name, path=symbol.path)
+            symbol_row.set_subtitle(GLib.markup_escape_text(symbol.name))
+            for widget in (icon, prefix):
+                widget.show(symbol.path)
+
+        choose.connect(
+            "clicked",
+            lambda _b: SymbolChooser(self.window, picked, element.name).present(),
+        )
+        symbol_row.add_suffix(choose)
+        row.add_row(symbol_row)
+        size = length_row(
+            self.window.unit,
+            _("Size"),
+            element.size_mm,
+            0,
+            200,
+            1,
+            lambda v: set_attr(size_mm=v),
+            subtitle=_("%(unit)s, 0 = fill tape height"),
+        )
+        color = color_button(element.color, lambda v: set_attr(color=v))
+        color.set_tooltip_text(_("Black-and-white printers print symbols in black"))
+        size.add_suffix(color)
+        row.add_row(size)
+        row.add_row(
+            combo_row(
+                _("Rotation"),
+                [(str(k), text) for k, text in ROTATIONS],
+                str(element.rotation),
+                lambda v: set_attr(rotation=int(v)),
+            )
+        )
 
     def _code_rows(self, row: Adw.ExpanderRow, element, set_attr) -> None:
         row.add_row(

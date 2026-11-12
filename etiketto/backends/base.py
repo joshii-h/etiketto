@@ -440,6 +440,7 @@ class Backend(ABC):
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
+            mono=self.capabilities.color_model == "mono",
         ).image
         if raster.width_px and image.height > raster.width_px:
             image = image.crop((0, 0, image.width, raster.width_px))
