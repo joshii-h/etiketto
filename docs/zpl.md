@@ -66,8 +66,8 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   answer: with "As reported by the printer" each print asks `~HI` again;
   resolutions are kept per printer address, and the label is rendered for
   the one of the printer it is printed on. If the printer now reports
-  another resolution, a whole ratio (300 and 600 dpi) is scaled dot by dot,
-  any other (203 and 300 dpi) renders the label again. A printer not heard
+  another resolution, a whole ratio upwards (300 to 600 dpi) is scaled dot
+  by dot, any other (600 to 300 or 203 to 300 dpi) renders the label again. A printer not heard
   of before gets 3 s for `~HI` instead of 1 s; one that never answered it
   gets no job, and Etiketto asks to choose the resolution instead of
   guessing.

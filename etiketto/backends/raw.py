@@ -249,10 +249,10 @@ def state(answered: bool, error: PrinterError | None, busy: bool = False) -> str
 
 
 def whole_ratio(factor: float) -> bool:
-    """2, 3, 1/2: scaling by it keeps every dot (each becomes a block of
-    dots, or every second goes); 1.5 would make lines uneven."""
-    big = max(factor, 1 / factor)
-    return math.isclose(big, round(big), abs_tol=0.01)
+    """2, 3: scaling up by it keeps every dot (each becomes a block of
+    dots). Scaling down (1/2) would drop every second dot and spoil thin
+    lines and bars, 1.5 would make lines uneven: both are rendered again."""
+    return factor >= 1 and math.isclose(factor, round(factor), abs_tol=0.01)
 
 
 def rescale(image: Image.Image, factor: float) -> Image.Image:

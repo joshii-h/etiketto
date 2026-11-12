@@ -651,15 +651,19 @@ def test_zpl_auto_resolution_per_printer(monkeypatch):
     install(monkeypatch, printer)
     backend.query("a.invalid")  # 300 dpi
     assert backend.reported == {"a.invalid": raw.DPI["300"]}
-    # rendered at 600 dpi: every second dot goes
-    image = Image.new("RGB", (16, 8), "white")
-    image.info[raw.DPI_INFO] = raw.DPI["600"]
+    # rendered at 150 dpi: twice as large, every dot a block of dots
+    image = Image.new("RGB", (8, 4), "white")
+    image.info[raw.DPI_INFO] = raw.DPI["300"] / 2
     backend.print_label(image, "a.invalid", PrintOptions())
-    assert b"^PW8\n" in printer.jobs[-1]
+    assert b"^PW16\n" in printer.jobs[-1]
     # no answer now: what it reported before
     del printer.answers[b"~HI\n"]
     backend.print_label(image, "a.invalid", PrintOptions())
-    assert b"^PW8\n" in printer.jobs[-1]
+    assert b"^PW16\n" in printer.jobs[-1]
+    # rendered at 600 dpi: halving would drop thin lines, render anew
+    image.info[raw.DPI_INFO] = raw.DPI["600"]
+    with pytest.raises(RenderAgain):
+        backend.print_label(image, "a.invalid", PrintOptions())
     # rendered at 203 dpi: 1.5 times would spoil lines, render anew
     image.info[raw.DPI_INFO] = raw.DPI["203"]
     with pytest.raises(RenderAgain):
@@ -685,7 +689,7 @@ def test_zpl_auto_resolution_per_printer(monkeypatch):
 def test_whole_ratios():
     assert [raw.whole_ratio(f) for f in (2.0, 0.5, 3.0, 1.5, 304.8 / 203.2)] == [
         True,
-        True,
+        False,
         True,
         False,
         False,
