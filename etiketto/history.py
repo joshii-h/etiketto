@@ -1,20 +1,46 @@
 """Undo and redo: copies of the label after each change.
 
-Changes in quick succession to the same thing (typing into one text,
-dragging one slider) are one step: they share a key and come within
-COALESCE_SECONDS of each other. The stack keeps at most LIMIT steps.
+Typing into one text or changing one number in quick succession is one
+step: such changes share a key (typing_key()) and come within
+COALESCE_SECONDS of each other; a switch or a choice is always a step of
+its own. The stack keeps at most LIMIT steps and about LIMIT_BYTES of
+embedded files (an image replaced again and again).
 """
 
 from __future__ import annotations
 
 import copy
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 
 from etiketto.model import Label
 
 LIMIT = 200
+LIMIT_BYTES = 256 * 2**20
 COALESCE_SECONDS = 1.5
+TYPED = frozenset({"text", "data", "name"})  # fields typed into
+
+
+def typing_key(prefix: str, changes: dict) -> str | None:
+    """The key that joins a change with the one before: typing into a text
+    field or changing a number (a spin button); None (a step of its own)
+    for switches, choices and colours."""
+    numbers = all(
+        isinstance(v, (int, float)) and not isinstance(v, bool) for v in changes.values()
+    )
+    if not changes or not (numbers or set(changes) <= TYPED):
+        return None
+    return prefix + ":" + ",".join(sorted(changes))
+
+
+def _files(label: Label) -> Iterator[str]:
+    """The embedded files of a label (base64 text, shared between copies)."""
+    for element in label.elements:
+        data = getattr(element, "data", None)
+        if isinstance(data, str) and getattr(element, "kind", "") in ("image", "page"):
+            yield data
+    if label.background_image:
+        yield label.background_image.data
 
 
 class History:
@@ -23,10 +49,11 @@ class History:
         self._undo: list[Label] = []
         self._redo: list[Label] = []
         self._current = copy.deepcopy(label)
+        self._saved: Label | None = self._current
         self._last: tuple[str | None, float] = (None, 0.0)
 
     def reset(self, label: Label) -> None:
-        """Another label (opened, new): nothing to undo."""
+        """Another label (opened, new): nothing to undo, as saved."""
         self.__init__(label, self._clock)  # type: ignore[misc]
 
     @property
@@ -37,8 +64,16 @@ class History:
     def can_redo(self) -> bool:
         return bool(self._redo)
 
+    @property
+    def at_saved(self) -> bool:
+        """Whether the label is as it was opened or last saved."""
+        return self._current is self._saved
+
+    def mark_saved(self) -> None:
+        self._saved = self._current
+
     def record(self, label: Label, key: str | None = None) -> None:
-        """The label after a change. key: what was changed (see above);
+        """The label after a change. key: what was changed (typing_key());
         None never joins the step before."""
         now = self._clock()
         last_key, last_time = self._last
@@ -49,6 +84,19 @@ class History:
         self._current = copy.deepcopy(label)
         self._redo.clear()
         self._last = (key, now)
+        self._limit_bytes()
+
+    def _limit_bytes(self) -> None:
+        """Drop the oldest steps while their embedded files take too much."""
+        while self._undo and self._bytes() > LIMIT_BYTES:
+            del self._undo[0]
+
+    def _bytes(self) -> int:
+        seen: dict[int, int] = {}
+        for label in (*self._undo, *self._redo, self._current):
+            for data in _files(label):
+                seen[id(data)] = len(data)
+        return sum(seen.values())
 
     def undo(self) -> Label | None:
         """The label before the last step (a copy to use), None if none."""

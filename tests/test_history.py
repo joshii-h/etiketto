@@ -96,3 +96,59 @@ def test_patch_and_reset():
     assert history.redo().counter_next == 42
     history.reset(Label())
     assert not history.can_undo and not history.can_redo
+
+
+def test_typing_key_joins_typing_and_numbers_only():
+    from etiketto.history import typing_key
+
+    assert typing_key("element:0", {"text": "a"}) == "element:0:text"
+    assert typing_key("label", {"margin_mm": 2.5}) == "label:margin_mm"
+    assert typing_key("element:0", {"bold": True}) is None
+    assert typing_key("element:0", {"align": "right"}) is None
+    assert typing_key("element:0", {"color": "#ff0000"}) is None
+    assert typing_key("element:0", {}) is None
+
+
+def test_undo_back_to_the_saved_state():
+    label = Label()
+    history = History(label)
+    assert history.at_saved
+    label.margin_mm = 3
+    history.record(label)
+    assert not history.at_saved
+    history.undo()
+    assert history.at_saved
+    history.redo()
+    history.mark_saved()
+    assert history.at_saved
+    history.undo()
+    assert not history.at_saved
+
+
+def test_replaced_images_are_limited_by_size(monkeypatch):
+    from etiketto import history as module
+    from etiketto.model import ImageElement
+
+    monkeypatch.setattr(module, "LIMIT_BYTES", 1000)
+    label = Label(elements=[ImageElement(data="A" * 300)])
+    history = History(label)
+    for n in range(10):
+        label.elements[0].data = str(n) * 300  # each a new image
+        history.record(label)
+    steps = 0
+    while history.undo() is not None:
+        steps += 1
+    assert steps == 2  # three images of 300 bytes fit in 1000
+
+
+def test_shared_images_count_once(monkeypatch):
+    from etiketto import history as module
+    from etiketto.model import ImageElement
+
+    monkeypatch.setattr(module, "LIMIT_BYTES", 1000)
+    label = Label(elements=[ImageElement(data="A" * 600)])
+    history = History(label)
+    for n in range(10):
+        label.margin_mm = n
+        history.record(label)
+    assert sum(1 for _ in iter(history.undo, None)) == 10
