@@ -159,7 +159,24 @@ def _check_digits(data: str, symbology: str) -> None:
 def encode(element: CodeElement) -> Symbol:
     """The modules of the code; CodeError if its content cannot be encoded."""
     check(element)
+    if element.symbology == "qr" and element.error_correction:
+        return _qr(element.data, element.error_correction)
     return _encode(element.symbology, element.data)
+
+
+@lru_cache(maxsize=64)
+def _qr(data: str, level: str) -> Symbol:
+    """A QR code of the chosen error correction level, exactly that level
+    (not raised where the version has room). From Zint, which chooses the
+    mask as ISO/IEC 18004 does, and like the firmware of label printers
+    (segno chooses differently): the same modules as their own QR codes.
+    Without Zint from segno."""
+    try:
+        import zint
+    except ImportError:
+        return _segno(data, level.lower(), boost=False)
+    symbol = _zint_symbol(zint, "qr", data, option_1="LMQH".index(level) + 1)
+    return _zint_modules(symbol, "qr", data)
 
 
 @lru_cache(maxsize=64)
@@ -171,7 +188,7 @@ def _encode(symbology: str, data: str) -> Symbol:
     return _zint(symbology, data)
 
 
-def _segno(data: str) -> Symbol:
+def _segno(data: str, error: str = "m", boost: bool = True) -> Symbol:
     """Never a Micro QR code (most phones cannot read those). Text beyond
     ASCII as UTF-8 with ECI 26: without an ECI scanners guess at the bytes
     and read Latin-1 "37°" as katakana. ASCII stays as in the first
@@ -182,7 +199,8 @@ def _segno(data: str) -> Symbol:
     try:
         matrix = segno.make(
             data,
-            error="m",
+            error=error,
+            boost_error=boost,
             micro=False,
             encoding=None if ascii_only else "utf-8",
             eci=not ascii_only,
@@ -203,7 +221,7 @@ def _python_barcode(symbology: str, data: str) -> Symbol:
 GS1_SYNTAX = {250, 252, 253, 254, 255, 256, 257, 258}
 GS1_ERRORS = {259: "gs1_length", 260: "gs1_ai"}
 UPCE_FORM = {271, 272, 273}  # digits no UPC-A number is zero-suppressed to
-ECI_SYMBOLOGIES = ("datamatrix", "pdf417", "aztec")
+ECI_SYMBOLOGIES = ("datamatrix", "pdf417", "aztec", "qr")
 ZINT_ERROR = re.compile(r"Error (\d+): (.*)")
 ZINT_AI = re.compile(r"AI \((\d+)\)")
 # rows of encoded_data: bit-packed, this many bytes each (ZINT_COLS_MAX / 8)
@@ -225,6 +243,7 @@ def _zint_symbol(zint, symbology: str, data: str, **options):
     """A Zint symbol of data; strict: a warning (e.g. a wrong GS1 check
     digit, which Zint would otherwise only print) fails too."""
     names = {
+        "qr": "QRCODE",
         "code39": "CODE39",
         "code93": "CODE93",
         "ean8": "EANX",

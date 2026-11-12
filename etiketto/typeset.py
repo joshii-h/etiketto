@@ -129,11 +129,31 @@ def extras(element: TextElement, dpi: float) -> Extras:
     )
 
 
+# the weights Pango names; a font weight between them takes the nearest
+WEIGHTS = sorted(int(w) for w in Pango.Weight)
+
+
+def weight(element: TextElement) -> Pango.Weight:
+    """The element's font weight (TextElement.weight), else bold or regular."""
+    if not element.weight:
+        return Pango.Weight.BOLD if element.bold else Pango.Weight.NORMAL
+    return Pango.Weight(min(WEIGHTS, key=lambda w: abs(w - element.weight)))
+
+
 def layout(
-    element: TextElement, size_px: float, antialias: bool = True, wrap_px: int | None = None
+    element: TextElement,
+    size_px: float,
+    antialias: bool = True,
+    wrap_px: int | None = None,
+    exact: bool = False,
 ) -> Pango.Layout:
-    desc = Pango.FontDescription.from_string(element.font or "Sans")
-    desc.set_weight(Pango.Weight.BOLD if element.bold else Pango.Weight.NORMAL)
+    """exact: glyphs where the font puts them, not each on a whole pixel
+    (the free layout: as wide as other label designers draw a text)."""
+    desc = Pango.FontDescription()
+    # the family as it is: from_string() would read "Source Sans 3" as the
+    # family "Source Sans" at size 3
+    desc.set_family(element.font or "Sans")
+    desc.set_weight(weight(element))
     desc.set_style(Pango.Style.ITALIC if element.italic else Pango.Style.NORMAL)
     desc.set_absolute_size(max(1.0, size_px) * Pango.SCALE)
 
@@ -144,6 +164,9 @@ def layout(
         options.set_antialias(cairo.ANTIALIAS_NONE)
         options.set_hint_style(cairo.HINT_STYLE_FULL)
         PangoCairo.context_set_font_options(text.get_context(), options)
+    if exact:
+        text.get_context().set_round_glyph_positions(False)
+        text.context_changed()
     text.set_font_description(desc)
     text.set_alignment(
         {
@@ -236,10 +259,11 @@ def block(
     dpi: float,
     antialias: bool = True,
     wrap_px: int | None = None,
+    exact: bool = False,
 ) -> Image.Image:
     """The text laid out into RGBA, turned as it will be printed; without
-    anti-aliasing every pixel is either ink or not."""
-    text = layout(element, size_px, antialias, wrap_px)
+    anti-aliasing every pixel is either ink or not. exact: see layout()."""
+    text = layout(element, size_px, antialias, wrap_px, exact)
     _ink, logical = text.get_pixel_extents()
     extra = extras(element, dpi)
     width = max(1, logical.width) + 2 * extra.pad + extra.shadow

@@ -108,6 +108,42 @@ Each element has [[ui:Position]]:
 - [[ui:Own spacing]]: [[ui:Space after it]] instead of the label's
   [[ui:Spacing]].
 
+## Free layout { #free-layout }
+
+[[ui:Layout]] at the top of [[ui:Content]] places the elements
+[[ui:One after another]] along the tape, or [[ui:Free]]: each one where you
+put it.
+
+- In the free layout every element has [[ui:Position and size]]: X and Y
+  from the label's top left corner, to a hundredth of a millimetre.
+- A text is placed by the top left corner of its letters' ink, a code by its
+  first module. The numbers of other label designers can be taken over as
+  they are.
+- A text's [[ui:Size]] is the height of its font (the em) in mm, as label
+  designers give it.
+- A code's [[ui:Module size]] is rounded to whole printer dots: 0.67 mm at
+  12 dots per mm prints as 8 dots. Leave room for the quiet zone around the
+  code. Codes can be turned ([[ui:Rotation]]), a barcode has its
+  [[ui:Bar height]].
+- An image has its [[ui:Height]], a symbol its [[ui:Size]], a line or shape
+  its width and height. A shipping label fills the label from its position
+  to the right and bottom edge.
+- Switching to the free layout for the first time keeps every element where
+  it was.
+- An element that reaches beyond the label is cut off there; the preview
+  warns about it.
+- Labels in the free layout do not open in earlier versions of Etiketto.
+
+## Weight and error correction { #weight }
+
+- [[ui:Weight]] chooses one of the font's own weights, such as Light or
+  Semibold, instead of regular or bold. The bold button sets it back.
+- QR codes have [[ui:Error correction]]: how much of the code may be damaged
+  and still be read. [[ui:Standard (medium)]] keeps the code of earlier
+  versions; the other levels choose the code's pattern as label printers do.
+- Labels with a weight or an error correction do not open in earlier
+  versions of Etiketto.
+
 ## Black-and-white printers { #black-and-white }
 
 - Text, codes, symbols, lines and borders print with sharp edges: text is

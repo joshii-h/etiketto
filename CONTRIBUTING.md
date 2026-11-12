@@ -284,7 +284,6 @@ features (`model.FEATURES`):
 - `"variables"`: variables (`{=date}`, `{=counter}` …) in texts or codes, or
   a counter other than the default; older versions would print `{=date}` as
   it is and drop the counter when they save.
-
 - `"styles"`: a design option set to anything but its default
   (`model.STYLE_FIELDS`: text decoration, spacing, fitting, rotation, boxes,
   outline and shadow; image mode, adjustments, crop, corners and border;
@@ -295,6 +294,12 @@ features (`model.FEATURES`):
   ignore them and print the label differently.
 - `"shapes"`: a line or shape element (kind `shape`, `model.ShapeElement`);
   versions before it also refuse the unknown element kind.
+- `"free_layout"`: the free layout (`layout: "free"`, every element at its
+  own `x_mm`, `y_mm`; `etiketto/freelayout.py`) and the fields that came
+  with it (`model.FREE_FIELDS`: a font weight, a QR code's error
+  correction, a code's module size, height and turn, an image's height),
+  written only when they differ from their default; older versions would
+  place the elements one after another.
 
 A new design option: a field with the old behaviour as its default, its
 name in `model.STYLE_FIELDS` (or `LABEL_STYLE_FIELDS`), validation in

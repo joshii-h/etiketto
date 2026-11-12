@@ -45,9 +45,24 @@ FORMAT_VERSION = 2
 # the field and print the label differently
 # "shapes": a line or shape element (ShapeElement; earlier readers also
 # refuse the unknown element kind)
+# "free_layout": every element at its own position (Label.layout "free",
+# see etiketto.freelayout), and the options that came with it (FREE_FIELDS:
+# a font weight, a QR code's error correction, a code's module size); older
+# versions would place the elements one after another
 FEATURES = frozenset(
-    {"barcodes", "symbols", "pages", "sheets", "serial", "variables", "styles", "shapes"}
+    {
+        "barcodes",
+        "symbols",
+        "pages",
+        "sheets",
+        "serial",
+        "variables",
+        "styles",
+        "shapes",
+        "free_layout",
+    }
 )
+LAYOUTS = ("flow", "free")
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -93,6 +108,11 @@ class Placed:
 
     valign: Literal["top", "center", "bottom"] = "center"
     gap_mm: float | None = None
+    # --- the feature "free_layout" (FREE_FIELDS) ---
+    # free layout: from the label's top left corner to the element's (a
+    # text's and a code's: to the top left corner of its ink)
+    x_mm: float = 0.0
+    y_mm: float = 0.0
 
     def __post_init__(self) -> None:
         # who it is while the label is edited (not a field: not in the file,
@@ -147,6 +167,9 @@ class TextElement(Placed):
     outline_color: str = "#ffffff"
     shadow_mm: float = 0.0  # offset of a shadow down and to the right
     shadow_color: str = "#808080"
+    # --- the feature "free_layout" (FREE_FIELDS) ---
+    # the font's weight (100 thin … 400 regular … 900 black); 0: bold or not
+    weight: int = 0
 
 
 IMAGE_MODES = ("auto", "threshold", "dither", "ordered")
@@ -174,6 +197,8 @@ class ImageElement(Placed):
     corner_mm: float = 0.0  # rounded corners
     border_mm: float = 0.0  # a border around the image
     border_color: str = "#000000"
+    # --- the feature "free_layout" (FREE_FIELDS) ---
+    height_mm: float = 0.0  # free layout: its height (0: FREE_SIZE_MM)
 
     @classmethod
     def from_file(cls, path: str | Path) -> ImageElement:
@@ -203,6 +228,9 @@ BARCODES = (
 SYMBOLOGIES = FIRST_SYMBOLOGIES + BARCODES
 
 
+ERROR_CORRECTIONS = ("", "L", "M", "Q", "H")
+
+
 @dataclass
 class CodeElement(Placed):
     data: str = "https://"
@@ -210,6 +238,15 @@ class CodeElement(Placed):
     color: str = "#000000"
     name: str = ""  # see TextElement.name
     kind: Literal["code"] = "code"
+    # --- the feature "free_layout" (FREE_FIELDS) ---
+    # QR codes: "L", "M", "Q" or "H" (7, 15, 25, 30 % may be damaged);
+    # "": medium, the modules of the first versions (see codes.py)
+    error_correction: str = ""
+    # free layout: a module's width (0: FREE_MODULE_MM), the bars' height
+    # of a linear code (0: as designed for the module) and a quarter turn
+    module_mm: float = 0.0
+    height_mm: float = 0.0
+    rotation: int = 0
 
 
 MAX_SYMBOL_PATH = 100_000  # etiketto.symbols.path.MAX_PATH_CHARS
@@ -347,6 +384,20 @@ STYLE_FIELDS: dict[type, tuple[str, ...]] = {
     ShapeElement: _PLACED,
 }
 LABEL_STYLE_FIELDS = ("border_radius_mm", "border_style", "border_inset_mm")
+# the fields of the feature "free_layout": written only when they differ
+# from their default; the label's layout makes it a feature, and so does an
+# element option that changes how it looks in either layout (FREE_OPTIONS)
+_POSITION = ("x_mm", "y_mm")
+FREE_FIELDS: dict[type, tuple[str, ...]] = {
+    TextElement: _POSITION + ("weight",),
+    ImageElement: _POSITION + ("height_mm",),
+    CodeElement: _POSITION + ("error_correction", "module_mm", "height_mm", "rotation"),
+    SymbolElement: _POSITION,
+    PageElement: _POSITION,
+    ShapeElement: _POSITION,
+}
+FREE_OPTIONS = ("weight", "error_correction")
+LABEL_FREE_FIELDS = ("layout",)
 
 
 def default_of(cls: type, name: str):
@@ -458,6 +509,10 @@ class Label:
     border_radius_mm: float = 0.0
     border_style: Literal["solid", "dashed", "dotted", "double"] = "solid"
     border_inset_mm: float = 0.0  # further in than the safety margin
+    # --- the feature "free_layout" (LABEL_FREE_FIELDS) ---
+    # "flow": the elements one after another along the tape; "free": each
+    # at its own position (x_mm, y_mm; etiketto.freelayout)
+    layout: Literal["flow", "free"] = "flow"
     elements: list[Element] = field(default_factory=list)
     printer: str = DEFAULT_PRINTER  # backend id; files without it are for the VC-500W
     # die-cut labels only: the gap to the next label, and whether the content
@@ -592,6 +647,11 @@ class Label:
             "variables": self._uses_variables(),
             "styles": self._styled(),
             "shapes": ShapeElement in kinds,
+            "free_layout": self.layout == "free"
+            or any(
+                styled(e, tuple(n for n in FREE_OPTIONS if n in FREE_FIELDS[type(e)]))
+                for e in self.elements
+            ),
         }
         return [name for name, used in uses.items() if used]
 
@@ -610,14 +670,15 @@ class Label:
         )
 
     def to_dict(self) -> dict:
-        data = _compact(self, asdict(self), LABEL_STYLE_FIELDS)
+        data = _compact(self, asdict(self), LABEL_STYLE_FIELDS + LABEL_FREE_FIELDS)
         data["elements"] = [
-            _compact(e, item, STYLE_FIELDS[type(e)])
+            _compact(e, item, STYLE_FIELDS[type(e)] + FREE_FIELDS[type(e)])
             for e, item in zip(self.elements, data["elements"], strict=True)
         ]
         if self.background_image:  # its image options are not used
             image = self.background_image
-            data["background_image"] = _compact(image, asdict(image), STYLE_FIELDS[ImageElement])
+            names = STYLE_FIELDS[ImageElement] + FREE_FIELDS[ImageElement]
+            data["background_image"] = _compact(image, asdict(image), names)
         features = self.features()
         data["version"] = FORMAT_VERSION if features else 1
         if features:
@@ -692,6 +753,7 @@ class Label:
         self.border_style = _choice(self.border_style, BORDER_STYLES, "border_style")
         self.border_inset_mm = _clamp(self.border_inset_mm, 0, 10, "border_inset_mm")
         self.align = _choice(self.align, ("start", "center", "end"), "align")
+        self.layout = _choice(self.layout, LAYOUTS, "layout")
         self.background = _str(self.background, "background")
         self.border_color = _str(self.border_color, "border_color")
         self.counter_next = _int(self.counter_next, 0, MAX_COUNTER, "counter_next")
@@ -1062,6 +1124,7 @@ def _element_from_dict(item) -> Element:
     element = cls(**_known_fields(cls, item))
     _validate_placed(element)
     _VALIDATORS[cls](element)
+    _validate_free(element)
     return element
 
 
@@ -1069,6 +1132,27 @@ def _validate_placed(element: Placed) -> None:
     element.valign = _choice(element.valign, VALIGNS, "valign")
     if element.gap_mm is not None:
         element.gap_mm = _clamp(element.gap_mm, 0, MAX_GAP_AFTER_MM, "gap_mm")
+
+
+MAX_MODULE_MM = 10.0
+
+
+def _validate_free(element: Placed) -> None:
+    """The fields of the feature "free_layout" (FREE_FIELDS)."""
+    element.x_mm = _clamp(element.x_mm, 0, MAX_SIZE_MM, "x_mm")
+    element.y_mm = _clamp(element.y_mm, 0, MAX_SIZE_MM, "y_mm")
+    if isinstance(element, TextElement):
+        weight = _int(element.weight, 0, 1000, "weight")
+        element.weight = max(100, weight) if weight else 0
+    elif isinstance(element, ImageElement):
+        element.height_mm = _clamp(element.height_mm, 0, MAX_SIZE_MM, "height_mm")
+    elif isinstance(element, CodeElement):
+        element.error_correction = _choice(
+            element.error_correction, ERROR_CORRECTIONS, "error_correction"
+        )
+        element.module_mm = _clamp(element.module_mm, 0, MAX_MODULE_MM, "module_mm")
+        element.height_mm = _clamp(element.height_mm, 0, MAX_SIZE_MM, "height_mm")
+        element.rotation = _rotation(element.rotation)
 
 
 def _validate_text(element: TextElement) -> None:

@@ -598,6 +598,7 @@ def test_a_label_with_both_features(tmp_path):
         "variables",
         "styles",
         "shapes",
+        "free_layout",
     } == model.FEATURES
 
 
@@ -617,6 +618,7 @@ def test_every_feature_at_once(tmp_path):
             ShapeElement(),
         ],
         data_file=str(tmp_path / "rows.csv"),
+        layout="free",
     )
     label.sheet = SheetChoice("Avery L7160", [0])
     data = label.to_dict()
@@ -630,6 +632,7 @@ def test_every_feature_at_once(tmp_path):
         "variables",
         "styles",
         "shapes",
+        "free_layout",
     ]
     assert set(data["features"]) == model.FEATURES  # every one there is
     assert Label.from_dict(data).features() == data["features"]

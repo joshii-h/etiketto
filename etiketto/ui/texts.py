@@ -400,6 +400,10 @@ def warning_text(warning: RenderWarning) -> str:
             "behind it, as a whole or in part – choose another colour or move it"
         ),
         "shape_invisible": _("Element %(n)d: the shape has neither a line nor a fill"),
+        "outside_label": _(
+            "Element %(n)d reaches beyond the edge of the label and is cut off there – "
+            "move it or make it smaller"
+        ),
         "padding_too_large": _(
             "Element %(n)d: the padding, frame, outline or shadow leave no room for the text "
             "– make them smaller"
