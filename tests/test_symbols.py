@@ -28,7 +28,7 @@ def names(found):
 def test_the_icon_set_is_complete_and_without_brands():
     everything = symbols.all_symbols()
     assert symbols.source() == "Material Design Icons 7.4.47"
-    assert len(everything) == 7160
+    assert len(everything) == 7153
     assert names(everything) == sorted(set(names(everything)))  # sorted, each once
     cats = symbols.categories()
     assert list(cats) == sorted(cats) and "Brand / Logo" not in cats
@@ -53,7 +53,8 @@ def test_brands_and_trademarks_are_left_out(tool):
         for alias in symbol.aliases:
             assert not tool.BRAND_WORDS & set(alias.split("-")), (symbol.name, alias)
     assert symbols.find("toy-brick").aliases == ("extension", "plugin")  # no "lego"
-    assert symbols.find("ghost").aliases == ()  # Pac-Man's ghosts
+    for name in ("ghost", "ghost-off", "one-up", "firewire", "minidisc"):
+        assert symbols.find(name) is None, name  # Pac-Man, Super Mario, Apple, Sony
     for name in ("bluetooth", "usb", "nfc-variant", "cast", "contactless-payment", "hdmi-port"):
         assert symbols.find(name), name
     assert symbols.find("apple-keyboard-command")  # a key symbol, not a logo

@@ -233,7 +233,7 @@ It keeps name, path data, categories and aliases of every icon, without the
 deprecated ones, without the category "Brand / Logo" and without further
 icons showing brands, trademarks or designs from games and films
 (`DENIED` in the converter: e.g. raspberry-pi, nintendo-*, pokeball,
-death-star, file-word); aliases naming a brand ("lego", "apple",
+ghost, one-up, death-star, firewire, minidisc, file-word); aliases naming a brand ("lego", "apple",
 "twitter-retweet", see `BRAND_WORDS`) are dropped, the icon stays. When
 updating, scan the new names and aliases for brands and extend both lists.
 Kept on purpose: marks of technical standards that label a port or a

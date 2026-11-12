@@ -46,11 +46,15 @@ DENIED = (
     "file-excel*",
     "file-powerpoint*",
     "file-word*",
+    "firewire",
+    "ghost*",
     "hololens",
     "ipod",
     "klingon",
     "microsoft-*",
+    "minidisc",
     "nintendo-*",
+    "one-up",
     "pac-man",
     "pokeball",
     "polaroid",
@@ -61,9 +65,9 @@ DENIED = (
 # an alias with one of these words is dropped
 BRAND_WORDS = frozenset(
     {
-        "acrobat", "adobe", "airplay", "apple", "blinky", "chrome", "clyde", "harry",
-        "inky", "ios", "lego", "linux", "microsoft", "olympics", "pinky", "potter",
-        "roomba", "tesla", "twitter", "vespa", "windows", "xbox", "youtube", "zelda",
+        "acrobat", "adobe", "airplay", "apple", "blinky", "chrome", "clyde", "fortnite",
+        "harry", "inky", "ios", "lego", "linux", "microsoft", "nest", "olympics", "pinky",
+        "potter", "roomba", "tesla", "twitter", "vespa", "windows", "xbox", "youtube", "zelda",
     }
 )  # fmt: skip
 # every icon is <svg … viewBox="0 0 24 24"><path d="…" /></svg>
