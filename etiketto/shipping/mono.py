@@ -109,6 +109,16 @@ class _Image:
     def span(self) -> int:
         return self.light - self.dark
 
+    @property
+    def low(self) -> float:
+        """Darker than this: near black."""
+        return self.dark + self.span * EDGE_SHARE
+
+    @property
+    def high(self) -> float:
+        """Lighter than this: near white."""
+        return self.light - self.span * EDGE_SHARE
+
 
 def _shifted(image: Image.Image, dx: int, dy: int, fill: int) -> Image.Image:
     """The image moved by (dx, dy), fill where nothing came."""
@@ -119,16 +129,19 @@ def _shifted(image: Image.Image, dx: int, dy: int, fill: int) -> Image.Image:
 
 def spread(image: Image.Image, darkest: bool, size: int) -> Image.Image:
     """The darkest (or lightest) pixel in the size × size square around
-    each pixel, like a min (max) filter, in a few whole-image steps: per
-    direction the windows double (1, 2, 4 …), then two overlapping ones
-    cover the square. Outside the image counts as neither."""
+    each pixel, as a min (max) filter gives, in a few whole-image steps:
+    per direction the windows double (1, 2, 4 …), then two overlapping
+    ones cover the square. Near the edges only the pixels of the image
+    count (it is padded with a value that never wins)."""
     if size < 2:
         return image
     pick = ImageChops.darker if darkest else ImageChops.lighter
     fill = 255 if darkest else 0
     radius = (size - 1) // 2
+    padded = Image.new("L", (image.width + 2 * radius, image.height + 2 * radius), fill)
+    padded.paste(image, (radius, radius))
     for axis in (0, 1):
-        windows, span = image, 1  # windows: over span pixels from each one on
+        windows, span = padded, 1  # windows: over span pixels from each one on
         while span * 2 <= size:
             step = (-span, 0) if axis == 0 else (0, -span)
             windows = pick(windows, _shifted(windows, *step, fill))
@@ -136,8 +149,8 @@ def spread(image: Image.Image, darkest: bool, size: int) -> Image.Image:
         first = (radius, 0) if axis == 0 else (0, radius)
         rest = radius - (size - span)
         second = (rest, 0) if axis == 0 else (0, rest)
-        image = pick(_shifted(windows, *first, fill), _shifted(windows, *second, fill))
-    return image
+        padded = pick(_shifted(windows, *first, fill), _shifted(windows, *second, fill))
+    return padded.crop((radius, radius, radius + image.width, radius + image.height))
 
 
 def black_and_white(grey: Image.Image, scale: float = 1.0) -> Image.Image:
@@ -192,7 +205,7 @@ class _BarcodeRows:
                     area.grey.height,
                 )
             )
-            self._columns[left] = _tall(barcode_rows(strip, area.middle), tile)
+            self._columns[left] = _tall(barcode_rows(strip, area.low, area.high), tile)
         return self._columns[left]
 
 
@@ -228,16 +241,18 @@ def _tile(area: _Image, masks, result, box, bars: _BarcodeRows) -> None:
     result.paste(255, (left, top), halo)
 
 
-def barcode_rows(part: Image.Image, middle: float) -> list[int]:
-    """The rows that cross many dark runs: through a barcode."""
-    binary = part.point(lambda v: 0 if v < middle else 255).tobytes()
+def barcode_rows(part: Image.Image, low: float, high: float) -> list[int]:
+    """The rows that cross many bars: through a barcode. A bar starts
+    darker than low and ends lighter than high (hysteresis): the noise of
+    a grey area around the middle makes no bars."""
+    levels = part.point(lambda v: 0 if v < low else 255 if v > high else 128).tobytes()
     width = part.width
-    return [
-        row
-        for row in range(part.height)
-        if len([r for r in binary[row * width : (row + 1) * width].split(b"\xff") if r])
-        >= BARCODE_RUNS
-    ]
+    found = []
+    for row in range(part.height):
+        line = levels[row * width : (row + 1) * width].translate(None, b"\x80")
+        if len([r for r in line.split(b"\xff") if r]) >= BARCODE_RUNS:
+            found.append(row)
+    return found
 
 
 def _local_middle(part: Image.Image, area: _Image) -> float:

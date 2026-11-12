@@ -6,7 +6,7 @@ from __future__ import annotations
 import copy
 import threading
 from collections.abc import Callable
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import gi
@@ -43,6 +43,7 @@ from etiketto.ui.widgets import combo_row, flat_button  # noqa: E402
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
 
+STORE_TIMEOUT = 10  # seconds Create label waits for the copy of a page
 PAGE_PX = 1400  # the page is shown and searched at this size (about 120 dpi on A4)
 RESULT_DPI = 60  # the small preview of the label
 HANDLE_PX = 10  # how near an edge the pointer grabs it
@@ -210,6 +211,7 @@ class ShippingDialog(Adw.Dialog):
         # per page: what goes into the label file (see _check_storage)
         self._stored: dict[int, tuple[str, int]] = {}
         self._storage_threads: dict[int, threading.Thread] = {}
+        self._finishing = self._completed = False  # Create label waits for the copy
         self._build()
         self._load_page(find=not edit)
         # the decoded document and its drawings go with the dialog
@@ -229,6 +231,8 @@ class ShippingDialog(Adw.Dialog):
         self.done_button.add_css_class("suggested-action")
         self.done_button.connect("clicked", lambda _b: self.finish())
         header.pack_end(self.done_button)
+        self.busy = Gtk.Spinner(visible=False)  # while Create label waits for the copy
+        header.pack_end(self.busy)
         view = Adw.ToolbarView(content=self._body())
         view.add_top_bar(header)
         self.set_child(view)
@@ -319,6 +323,9 @@ class ShippingDialog(Adw.Dialog):
         if page in self._stored:
             self._show_storage(page)
             return
+        running = self._storage_threads.get(page)
+        if running is not None and running.is_alive():
+            return  # the copy of this page is on its way already
         thread = threading.Thread(
             target=self._store_in_background,
             args=(self.element.data, page),
@@ -329,29 +336,25 @@ class ShippingDialog(Adw.Dialog):
         thread.start()
 
     def _store_in_background(self, data: str, page: int) -> None:
-        stored = (data, page)
-        with suppress(SourceError):
+        stored = (data, page)  # if anything goes wrong: the whole document
+        try:
             stored = only_page(data, page)
-        self._stored[page] = stored  # for stored(), which may wait for it
-        GLib.idle_add(self._stored_ready, page)
+        except Exception:  # noqa: BLE001 - never lose the label over the copy
+            pass
+        finally:
+            self._stored[page] = stored
+            GLib.idle_add(self._stored_ready, page)
 
     def _stored_ready(self, page: int) -> bool:
         if page == self.element.page:
             self._show_storage(page)
+            if self._finishing:
+                self._complete()
         return False
 
     def _show_storage(self, page: int) -> None:
         whole = self._stored[page][0] is self.element.data
         self.store_note.set_visible(self.info.pages > 1 and whole)
-
-    def stored(self) -> tuple[str, int]:
-        """(data, page) to keep for the page shown: waits for the copy if it
-        is still being made."""
-        page = self.element.page
-        thread = self._storage_threads.get(page)
-        if thread is not None:
-            thread.join()
-        return self._stored.get(page, (self.element.data, page))
 
     def find(self) -> None:
         self.detection = detect.detect(self.page_image, self.page_width_mm)
@@ -433,6 +436,30 @@ class ShippingDialog(Adw.Dialog):
         self.result.set_paintable(texture)
 
     def finish(self) -> None:
-        self.element.data, self.element.page = self.stored()
+        """Hand over the area; if the copy of its page is still being made,
+        when it is done (the button waits, the main loop runs on), or after
+        STORE_TIMEOUT with the whole document."""
+        if self.element.page in self._stored:
+            self._complete()
+            return
+        self._finishing = True
+        self.done_button.set_sensitive(False)
+        self.busy.set_visible(True)
+        self.busy.start()
+        GLib.timeout_add(round(STORE_TIMEOUT * 1000), self._store_timeout, self.element.page)
+
+    def _store_timeout(self, page: int) -> bool:
+        if self._finishing and page == self.element.page and page not in self._stored:
+            self._stored[page] = (self.element.data, page)
+            self.window.toast(self.store_note.get_label())
+            self._complete()
+        return False
+
+    def _complete(self) -> None:
+        if self._completed:
+            return
+        self._completed = True
+        page = self.element.page
+        self.element.data, self.element.page = self._stored.get(page, (self.element.data, page))
         self.on_done(self.element, self.target)
         self.close()

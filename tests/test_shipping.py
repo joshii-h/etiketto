@@ -377,6 +377,32 @@ def test_tiff_pages():
     assert source.page_info(data, 9) == second  # a page after the last is the last
 
 
+def test_copy_of_a_tiff_page_leaves_the_cache_alone():
+    """The copy runs in the background: it neither fills nor empties the
+    cache of the preview's image."""
+    data = b64(tiff_pages())
+    source.page_info(data, 0)  # the preview's image
+    kept = list(source._pictures._values)
+    source.only_page(data, 1)
+    assert list(source._pictures._values) == kept
+
+
+def test_image_decoded_across_a_clear_is_not_kept(monkeypatch):
+    """A dialog closed (caches cleared) while an image was being decoded:
+    the image is not put back."""
+    data = b64(encode(square_image()))
+    real = source._decode_frame
+
+    def clearing(raw, frame):
+        result = real(raw, frame)
+        source.clear_caches()  # the dialog closes meanwhile
+        return result
+
+    monkeypatch.setattr(source, "_decode_frame", clearing)
+    source.page_info(data)
+    assert len(source._pictures) == 0
+
+
 def test_only_the_page_of_a_tiff():
     data, page = source.only_page(b64(tiff_pages()), 1)
     assert page == 0
@@ -1486,28 +1512,39 @@ def test_a_line_of_text_is_no_barcode():
     draw.rectangle((40, 100, 1160, 160), fill=150)  # a grey band ...
     for x in range(60, 1100, 14):  # ... with a line of black letters, 20 rows high
         draw.rectangle((x, 120, x + 4, 139), fill=0)
+    for x in range(60, 1100, 14):  # a line of letters on paper, 20 rows high
+        draw.rectangle((x, 300, x + 4, 319), fill=0)
     for x in range(100, 1100, 8):
         draw.rectangle((x, 600, x + 2, 900), fill=0)
     result = mono.black_and_white(image)
     assert result.getpixel((1120, 130)) == 150
-    rows = mono.barcode_rows(image.crop((0, 0, 400, 1000)), 128)
-    assert 130 in rows and 130 not in mono._tall(rows, 30) and 700 in mono._tall(rows, 30)
+    rows = mono.barcode_rows(image.crop((0, 0, 400, 1000)), 90, 166)
+    assert 130 not in rows  # letters on grey: no paper between them
+    assert 310 in rows and 310 not in mono._tall(rows, 30)  # too low for a barcode
+    assert 700 in mono._tall(rows, 30)
+
+
+def test_noise_around_the_middle_makes_no_bars():
+    """A noisy grey area at the middle between black and white crosses the
+    middle often; with hysteresis it crosses no bars."""
+    from etiketto.shipping import mono
+
+    noise = Image.effect_noise((400, 40), 12)  # grey 128, spread around it
+    assert mono.barcode_rows(noise, 70, 186) == []
+    assert len(mono.barcode_rows(noise, 127, 129)) > 0
 
 
 def test_spread_is_a_min_and_max_filter():
+    """The same as Pillow's rank filters, to the edges."""
     from PIL import ImageChops, ImageFilter
 
     from etiketto.shipping import mono
 
     noise = Image.effect_noise((90, 70), 60)
     for size in (3, 5, 11, 15):
-        inner = (size, size, 90 - size, 70 - size)
         for darkest, rank in ((True, ImageFilter.MinFilter), (False, ImageFilter.MaxFilter)):
-            spread = mono.spread(noise, darkest, size).crop(inner)
-            assert (
-                ImageChops.difference(spread, noise.filter(rank(size)).crop(inner)).getbbox()
-                is None
-            )
+            spread = mono.spread(noise, darkest, size)
+            assert ImageChops.difference(spread, noise.filter(rank(size))).getbbox() is None
     assert mono.spread(noise, True, 1) is noise
 
 

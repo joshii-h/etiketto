@@ -470,7 +470,7 @@ def test_edit_keeps_only_the_page(cab_window, tmp_path):
     dialog = cab_window.last_dialog
     dialog.set_page(1)
     dialog.done_button.emit("clicked")
-    pump()
+    stored(dialog)
     assert element.page == 0 and source.page_info(element.data).pages == 1
 
 
@@ -522,9 +522,15 @@ def test_page_copy_runs_in_the_background(cab_window, sample_pdf, monkeypatch):
     dialog = open_dialog(cab_window, sample_pdf)
     assert started.wait(5)  # running, and the dialog is open already
     assert not dialog.store_note.get_visible()
+    dialog.finish()  # the button waits, the main loop does not
+    assert dialog.busy.get_visible() and not dialog.done_button.get_sensitive()
+    assert not isinstance(cab_window.label.elements[0], PageElement)
+    # the same page again: no second copy while the first is running
+    threads = dict(dialog._storage_threads)
+    dialog._check_storage()
+    assert dialog._storage_threads == threads
     release.set()
-    dialog.finish()  # waits for the copy
-    pump()
+    stored(dialog)  # done: the label is made
     assert source.page_info(cab_window.label.elements[0].data).pages == 1
     # a page seen before is not copied again
     calls = []
@@ -535,4 +541,44 @@ def test_page_copy_runs_in_the_background(cab_window, sample_pdf, monkeypatch):
     stored(dialog)
     dialog.set_page(0)
     assert calls == [0, 1]
+    dialog.close()
+
+
+@needs_poppler
+def test_create_label_does_not_wait_forever(cab_window, sample_pdf, monkeypatch):
+    """A copy that takes too long: the label keeps the whole document, and
+    a message says so."""
+    import threading
+
+    release = threading.Event()
+
+    def stuck(data, page):
+        release.wait(5)
+        return data, page
+
+    monkeypatch.setattr(shipping, "only_page", stuck)
+    monkeypatch.setattr(shipping, "STORE_TIMEOUT", 0)
+    dialog = open_dialog(cab_window, sample_pdf)
+    data = dialog.element.data
+    dialog.finish()
+    for _ in range(20):
+        pump()
+        if isinstance(cab_window.label.elements[0], PageElement):
+            break
+    assert cab_window.label.elements[0].data is data  # all pages
+    assert toast_titles(cab_window)[-1] == dialog.store_note.get_label()
+    release.set()
+    stored(dialog)  # the late copy changes nothing
+    assert cab_window.label.elements[0].data is data
+
+
+@needs_poppler
+def test_failed_copy_keeps_the_whole_document(cab_window, sample_pdf, monkeypatch):
+    def broken(_data, _page):
+        raise RuntimeError("no copy today")
+
+    monkeypatch.setattr(shipping, "only_page", broken)
+    dialog = open_dialog(cab_window, sample_pdf)
+    stored(dialog)
+    assert dialog.store_note.get_visible()
     dialog.close()

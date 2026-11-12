@@ -163,6 +163,7 @@ def _image_bytes(image: Image.Image) -> int:
 
 # one decoded image (the frame in use): the preview and a print share it
 _pictures = _Cache(1)
+_generation = [0]  # counts clear_caches(): what was decoded before is not kept
 # drawn areas, bounded by their memory
 _drawings = _Cache(16, CACHE_BYTES, _image_bytes)
 # Poppler documents are not safe to use from two threads: the preview (main
@@ -184,6 +185,7 @@ def cached(key: tuple, make: Callable[[], Image.Image]) -> Image.Image:
 
 def clear_caches() -> None:
     """Forget decoded files and drawings (tests; the memory after a label)."""
+    _generation[0] += 1
     _pictures.clear()
     _drawings.clear()
     _threads.__dict__.clear()
@@ -300,13 +302,17 @@ def _decode_frame(raw: bytes, frame: int) -> tuple[Image.Image, int, float | Non
     return image, frames, dpi
 
 
-def _picture(data: str, frame: int) -> _Picture:
-    """The decoded frame of an image file (cached: the last one used)."""
+def _picture(data: str, frame: int, keep: bool = True) -> _Picture:
+    """The decoded frame of an image file (cached: the last one used; not
+    kept if keep is False). Not kept either if the caches were cleared
+    while it was decoded (a closed dialog's document stays freed)."""
     key = (data, frame)
     cached = _pictures.get(key)
     if cached is not None:
         return cached
-    _pictures.clear()  # the old image goes before the new one is decoded
+    generation = _generation[0]
+    if keep:
+        _pictures.clear()  # the old image goes before the new one is decoded
     try:
         image, frames, dpi = _decode_frame(_decoded(data), frame)
     except SourceError:
@@ -316,7 +322,8 @@ def _picture(data: str, frame: int) -> _Picture:
     except Exception as e:  # noqa: BLE001 - PIL raises many kinds
         raise SourceError("unreadable", str(e)) from e
     picture = _Picture(image, frames, dpi)
-    _pictures.put(key, picture)
+    if keep and generation == _generation[0]:
+        _pictures.put(key, picture)
     return picture
 
 
@@ -605,16 +612,19 @@ def only_page(data: str, page: int) -> tuple[str, int]:
     original (up to rounding, see SHARP_SHARE), else the whole file is
     kept; a frame of a TIFF becomes a PNG. Files of one page stay as they
     are."""
-    info = page_info(data, page)
-    if info.pages < 2:
-        return data, page
-    if not info.pdf:
-        picture = _picture(data, page)
+    if not _starts_as_pdf(data):
+        # decoded for this only, not kept: this runs in the background, and
+        # the image of the preview stays the one in the cache
+        picture = _picture(data, page, keep=False)
+        if picture.frames < 2:
+            return data, page
         buf = io.BytesIO()
         extra = {"dpi": (picture.dpi, picture.dpi)} if picture.dpi else {}
         picture.image.save(buf, format="PNG", **extra)
         return base64.b64encode(buf.getvalue()).decode(), 0
-    original, _count = _pdf_page(_pdf(data), page)
+    original, count = _pdf_page(_pdf(data), page)
+    if count < 2:
+        return data, page
     try:
         raw = _pdf_copy(original)
         copy, _count = _pdf_page(_open_pdf(raw), 0)
