@@ -127,6 +127,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "switched on and awake, then search again."
         ),
         "timeout": _("The printer does not answer. Check that it is switched on and awake."),
+        "stalled": _(
+            "The printer stopped taking data. Check whether it shows a problem, such as no "
+            "labels or an open cover, then try again."
+        ),
         "port_closed": _(
             "The printer refuses the connection. Switch it off and on again. If its web "
             "interface offers a “Port 9100” option, turn it on."

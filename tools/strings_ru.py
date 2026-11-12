@@ -235,4 +235,5 @@ TRANSLATIONS = {
     "Paper jammed – remove it to continue": "Замятие бумаги – извлеките её, чтобы продолжить",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "У Etiketto нет доступа к USB-порту принтера. Добавьте своего пользователя в группу «lp» (sudo usermod -aG lp $USER), затем выйдите из системы и войдите снова.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Принтер не найден по USB. Проверьте кабель и убедитесь, что принтер включён и не в спящем режиме, затем повторите поиск.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Принтер перестал принимать данные. Проверьте, не сообщает ли он о проблеме, например о закончившихся этикетках или открытой крышке, и повторите попытку.",
 }

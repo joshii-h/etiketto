@@ -349,10 +349,11 @@ def encode_jpeg(image: Image.Image, mode: PrintMode) -> bytes:
 # --- connection -----------------------------------------------------------------
 
 
-def _connect(host: str, port: int):
-    """TCP through labelprinter, or the printer's USB device file."""
+def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
+    """TCP through labelprinter, or the printer's USB device file; `wait`:
+    on USB, how long to wait while another session uses it."""
     if usb.is_usb(host):
-        return _UsbLink(usb.connect(host, STANDARD_TIMEOUT))
+        return _UsbLink(usb.connect(host, STANDARD_TIMEOUT, wait))
     from labelprinter.connection import Connection
 
     # labelprinter opens an IPv4 socket
@@ -462,8 +463,10 @@ class _Session:
         PrintAnswer(self.connection.get_message(long_timeout=True), self.connection.get_message)
 
 
-def session(host: str, port: int = DEFAULT_PORT) -> AbstractContextManager[_Session]:
-    return open_session(lambda: _connect(host, port), _Session, map_error)
+def session(
+    host: str, port: int = DEFAULT_PORT, wait: float = usb.BUSY_WAIT
+) -> AbstractContextManager[_Session]:
+    return open_session(lambda: _connect(host, port, wait), _Session, map_error)
 
 
 # --- the backend --------------------------------------------------------------------
@@ -548,7 +551,7 @@ class VC500W(Backend):
         # prepare() rendered the image at this resolution along the tape
         rendered_dpi = raster_dpi(options.mode) if fmt == "rawrgb" else PRINT_DPI
         check_length(image.width / rendered_dpi * 25.4, self.capabilities)
-        with session(host, self.port) as s:
+        with session(host, self.port, usb.PRINT_WAIT) as s:
             config = s.config()
             if config.no_cassette:
                 raise NoCassette("config.xml: empty cassette_type")

@@ -14,7 +14,7 @@ from backend_contract import BackendContract
 from conftest import status
 from PIL import Image
 
-from etiketto.backends import mdns, vc500w
+from etiketto.backends import mdns, usb, vc500w
 from etiketto.backends.base import (
     BadCassette,
     CassetteInfo,
@@ -240,7 +240,7 @@ def test_map_error_keeps_printer_errors():
 
 
 def test_session_maps_connect_and_request_errors(monkeypatch):
-    def unreachable(host, port):
+    def unreachable(host, port, wait=None):
         raise ValueError("Connection to 'p:9100' was refused.")
 
     monkeypatch.setattr(vc500w, "_connect", unreachable)
@@ -299,6 +299,12 @@ def test_query(printer):
         cassette=CassetteInfo("ABC123456", "180529-0116G133390-0084", date(2018, 5, 29), 24.1),
     )
     assert printer.device.names() == ["config", "read", "status", "read", "close"]
+    assert printer.waits == [usb.BUSY_WAIT]  # a query gives up soon on a busy USB device
+
+
+def test_print_waits_longer_for_a_busy_usb_device(printer, backend):
+    backend.print_label(Image.new("RGB", (400, 120), "white"), "p", PrintOptions())
+    assert printer.waits == [usb.PRINT_WAIT]  # behind a hung query, not "busy"
 
 
 def test_query_reports_a_problem_as_its_code(printer, backend):

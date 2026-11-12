@@ -21,6 +21,11 @@ Markers: **[manual]** from cab's manual, **[confirmed]** seen on the device,
   there by the IEEE 1284 device ID in sysfs (`MFG:cab`) and addresses them
   like CUPS: `usb://cab/EOS2%2F300?serial=...`. [manual] [assumed: not yet
   tried on a printer]
+- Timeouts on USB: 10 s for an answer; while sending a job, 10 s without
+  the printer taking any data (each write that gets data through starts it
+  again), at most 10 s + the job's size at 100 kB/s. A print waits up to
+  45 s for a status query still using the device, a status query 5 s. On
+  TCP the socket's timeout of 10 s applies as before.
 - Commands end with CR; Etiketto sends CR LF. [confirmed]
 - ESC commands (`0x1B` + letter) are executed at once, also while a job is
   running, and answer on the same connection without a terminator unless
@@ -99,9 +104,12 @@ A 1                       (number of labels)
   last character goes back to `N`. Etiketto counts a job as done once it saw
   labels pending and then none, or after 3 s without any activity.
   [manual] [open: how fast it counts on a real printout]
-- On an error during a job (out of labels, head open, timeout) Etiketto
-  sends `ESC c` (cancel job), so that the remaining labels are not printed
-  once the problem is solved and the user prints again. [manual]
+- On an error while sending or during a job (out of labels, head open,
+  timeout) Etiketto sends `ESC c` (cancel job), so that the remaining
+  labels are not printed once the problem is solved and the user prints
+  again. [manual] After a job cut off while sending, it should also drop
+  the half-downloaded image, which on USB would otherwise run into the next
+  job. [assumed]
 - Peel-off and print on demand (the printer waits for a button or a removed
   label) are not supported: the job would time out after 180 s.
 

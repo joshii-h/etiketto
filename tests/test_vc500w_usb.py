@@ -64,7 +64,7 @@ def usb_printer(monkeypatch):
     device = FakeVC500W()
     made = []
 
-    def connect(address, timeout):
+    def connect(address, timeout, wait=None):
         """Like usb.connect(): the device, with stale answers dropped."""
         assert address == USB_HOST
         made.append(FakeUsbDevice(device, stale=b"<status><code>0</code></status>\n"))
@@ -110,13 +110,15 @@ def test_a_printer_that_does_not_answer_on_usb(usb_printer, monkeypatch):
         def sendall(self, data):
             pass  # takes everything, answers nothing
 
-    monkeypatch.setattr(usb, "connect", lambda address, timeout: Silent(usb_printer.device))
+    monkeypatch.setattr(
+        usb, "connect", lambda address, timeout, wait=None: Silent(usb_printer.device)
+    )
     with pytest.raises(PrinterTimeout):
         VC500W().query(USB_HOST)
 
 
 def test_no_permission_for_the_usb_port(monkeypatch):
-    def refuse(address, timeout):
+    def refuse(address, timeout, wait=None):
         raise UsbPermission("/dev/usb/lp0: Permission denied")
 
     monkeypatch.setattr(vc500w, "_connect", REAL_CONNECT)

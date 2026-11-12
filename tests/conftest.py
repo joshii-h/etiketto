@@ -188,11 +188,13 @@ def printer(monkeypatch):
     clock only advances by the time vc500w sleeps."""
     device = FakeVC500W()
     calls = []
+    waits = []
     sleeps = []
     now = [1000.0]
 
-    def connect(host, port):
+    def connect(host, port, wait=None):
         calls.append((host, port))
+        waits.append(wait)
         return FakeConnection(device)
 
     def sleep(seconds):
@@ -204,7 +206,7 @@ def printer(monkeypatch):
     monkeypatch.setattr(vc500w, "_connect", connect)
     monkeypatch.setattr(vc500w, "_sleep", sleep)
     monkeypatch.setattr(vc500w, "_clock", lambda: now[0])
-    return SimpleNamespace(device=device, calls=calls, sleeps=sleeps, now=now)
+    return SimpleNamespace(device=device, calls=calls, waits=waits, sleeps=sleeps, now=now)
 
 
 # --- GTK -------------------------------------------------------------------

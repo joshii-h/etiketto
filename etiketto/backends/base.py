@@ -212,6 +212,13 @@ class PrinterTimeout(PrinterError):
     code = "timeout"
 
 
+class PrinterStalled(PrinterTimeout):
+    """The printer stopped taking the data of a job (paper out, buffer
+    full, a problem it shows on its own)."""
+
+    code = "stalled"
+
+
 class PortClosed(PrinterError):
     code = "port_closed"
 

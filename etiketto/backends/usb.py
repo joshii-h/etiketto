@@ -24,6 +24,7 @@ from urllib.parse import parse_qs, quote, unquote, urlsplit
 from etiketto.backends.base import (
     PrinterBusy,
     PrinterError,
+    PrinterStalled,
     PrinterTimeout,
     UsbNotFound,
     UsbPermission,
@@ -35,7 +36,16 @@ SCHEME = "usb://"
 
 SLICE = 1.0  # waits are cut into pieces this long, to notice an unplugged printer
 EMPTY_WAIT = 0.05  # after an empty read (a zero-length packet) before reading again
-BUSY_WAIT = 5.0  # how long to wait for a printer another session or program uses
+BUSY_WAIT = 5.0  # how long a status query waits for a printer another session uses
+# how long a print waits for it: longer than the longest status query takes
+# (a cab: draining 2 s plus three answers of 10 s; a VC-500W: draining 2 s
+# plus two answers of 5 s that may run on for 10 s each), so that a print
+# behind a hung query does not fail as busy
+PRINT_WAIT = 45.0
+# bytes per second a printer takes at least, on average: a print job may
+# take timeout + its size / MIN_RATE to send (USB full speed carries about
+# 1 MB/s; a VC-500W job is up to 10 MB)
+MIN_RATE = 100_000
 DRAIN_QUIET = 0.2  # stale bytes have ended when nothing comes for this long
 DRAIN_LIMIT = 2.0  # a printer that keeps talking does not hold up the session longer
 CLOSE_WAIT = 5.0  # at most, for the last write to reach the printer before closing
@@ -135,6 +145,15 @@ def _device_lock(device: Path) -> threading.Lock:
         return _locks.setdefault(str(device), threading.Lock())
 
 
+def _device_error(device: Path, error: OSError) -> PrinterError:
+    """An OS error of the device file: unplugged (UsbNotFound), or a failing
+    transfer (EIO; it also comes with unplugging) as a generic problem."""
+    text = "%s: %s" % (device, error)
+    if error.errno in GONE or not device.exists():
+        return UsbNotFound(text)
+    return PrinterError(text)
+
+
 def _open(device: Path, deadline: float) -> int:
     """The device file, non-blocking: every wait goes through select() with
     a deadline. Retries while another program has it open (EBUSY)."""
@@ -144,43 +163,50 @@ def _open(device: Path, deadline: float) -> int:
         except PermissionError as e:
             raise UsbPermission("%s: %s" % (device, e)) from e
         except OSError as e:
-            if e.errno in GONE:
-                raise UsbNotFound("%s: %s" % (device, e)) from e
             if e.errno != errno.EBUSY:
-                raise
+                raise _device_error(device, e) from e
             if time.monotonic() >= deadline:
                 raise PrinterBusy("%s: %s" % (device, e)) from e
         time.sleep(0.1)
 
 
 class Connection:
-    """A USB printer's device file, used like a socket (sendall, recv)."""
+    """A USB printer's device file, used like a socket (sendall, recv).
+    `wait`: how long to wait while another session or program uses it."""
 
-    def __init__(self, device: Path, timeout: float):
+    def __init__(self, device: Path, timeout: float, wait: float | None = None):
         self.device = device
         self.timeout = timeout
         self.fd = -1
+        wait = BUSY_WAIT if wait is None else wait
         self.lock = _device_lock(device)
-        if not self.lock.acquire(timeout=BUSY_WAIT):
+        if not self.lock.acquire(timeout=wait):
             raise PrinterBusy("%s is in use by another session" % device)
         try:
-            self.fd = _open(device, time.monotonic() + BUSY_WAIT)
+            self.fd = _open(device, time.monotonic() + wait)
         except BaseException:
             self.lock.release()
             raise
 
     def sendall(self, data: bytes) -> None:
-        """All of data within the timeout, like socket.sendall: the printer
-        may stop taking data (paper out, buffer full)."""
-        deadline = time.monotonic() + self.timeout
+        """All of data, like socket.sendall. The printer may stop taking
+        data (paper out, buffer full): PrinterStalled once it took nothing
+        for the timeout. Every write that gets bytes through starts the
+        timeout again, so a large job on a slow port goes through; one that
+        trickles still ends after timeout + len(data) / MIN_RATE."""
+        start = time.monotonic()
+        end = start + self.timeout + len(data) / MIN_RATE
+        idle = start + self.timeout
         view = memoryview(data)
         while view:
-            self._wait(writing=True, deadline=deadline)
+            self._wait(writing=True, deadline=min(idle, end))
             with self._errors():
                 try:
                     written = self._write(view)
                 except BlockingIOError:  # writable after all only for select()
                     continue
+            if written:
+                idle = time.monotonic() + self.timeout
             view = view[written:]
 
     def recv(self, size: int) -> bytes:
@@ -237,23 +263,22 @@ class Connection:
 
     @contextmanager
     def _errors(self) -> Iterator[None]:
-        """OS errors of the device as PrinterErrors: unplugged, or a
-        failing transfer (EIO), which also comes with unplugging."""
+        """OS errors of the device as PrinterErrors (see _device_error)."""
         try:
             yield
         except OSError as e:
-            text = "%s: %s" % (self.device, e)
-            if e.errno in GONE or not self.device.exists():
-                raise UsbNotFound(text) from e
-            raise PrinterError(text) from e
+            raise _device_error(self.device, e) from e
 
     def _wait(self, writing: bool, deadline: float) -> None:
-        """Until the device can be read or written; PrinterTimeout at the
-        deadline, UsbNotFound as soon as the device file is gone."""
+        """Until the device can be read or written; at the deadline
+        PrinterTimeout (nothing to read) or PrinterStalled (the printer
+        takes no data), UsbNotFound as soon as the device file is gone."""
         fds = [self.fd]
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
+                if writing:
+                    raise PrinterStalled("USB printer stopped taking data")
                 raise PrinterTimeout("USB printer did not answer within %g s" % self.timeout)
             ready = select.select(
                 [] if writing else fds, fds if writing else [], [], min(remaining, SLICE)
@@ -264,9 +289,10 @@ class Connection:
                 raise UsbNotFound("%s is gone" % self.device)
 
 
-def connect(address: str, timeout: float) -> Connection:
-    """The printer's device file, with what it still had to say dropped."""
-    connection = Connection(find(address).device, timeout)
+def connect(address: str, timeout: float, wait: float | None = None) -> Connection:
+    """The printer's device file, with what it still had to say dropped;
+    `wait` as for Connection (BUSY_WAIT, PRINT_WAIT for a print)."""
+    connection = Connection(find(address).device, timeout, wait)
     try:
         connection.drain()
     except BaseException:

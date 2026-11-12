@@ -52,7 +52,9 @@ from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM
 
 DEFAULT_PORT = 9100
-SOCKET_TIMEOUT = 10.0  # seconds for connecting and for each answer
+# seconds for connecting and for each answer; on USB also without progress
+# while sending a job (see usb.Connection.sendall)
+SOCKET_TIMEOUT = 10.0
 PRINT_TIMEOUT = 180.0  # seconds without progress while waiting or printing
 POLL_INTERVAL = 0.5  # the manual: status requests not more often than every 0.5 s
 START_GRACE = 3.0  # a job that never shows up as running counts as done after this
@@ -220,10 +222,11 @@ def build_job(image: Image.Image, dots_per_mm: float, gap_mm: float, copies: int
 # --- connection -----------------------------------------------------------------
 
 
-def _connect(host: str, port: int):
-    """TCP to port 9100, or the printer's USB device: the same JScript."""
+def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
+    """TCP to port 9100, or the printer's USB device: the same JScript.
+    `wait`: on USB, how long to wait while another session uses it."""
     if usb.is_usb(host):
-        return usb.connect(host, SOCKET_TIMEOUT)
+        return usb.connect(host, SOCKET_TIMEOUT, wait)
     return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
 
 
@@ -274,12 +277,15 @@ class _Session:
     def cancel(self) -> None:
         """ESC c: drop the running job, so that "try again" does not print
         its remaining labels a second time once the problem is solved."""
-        with suppress(OSError):  # the connection is gone; nothing more to do
+        # the connection is gone or the printer takes nothing: nothing more to do
+        with suppress(OSError, PrinterError):
             self.sock.sendall(ESC + b"c")
 
 
-def session(host: str, port: int = DEFAULT_PORT) -> AbstractContextManager[_Session]:
-    return open_session(lambda: _connect(host, port), _Session, map_error)
+def session(
+    host: str, port: int = DEFAULT_PORT, wait: float = usb.BUSY_WAIT
+) -> AbstractContextManager[_Session]:
+    return open_session(lambda: _connect(host, port, wait), _Session, map_error)
 
 
 # --- the backend ------------------------------------------------------------------
@@ -369,7 +375,7 @@ class Cab(Backend):
         rendered = float(image.info.get("dots_per_mm", self.dots_per_mm))
         check_width(image.width / rendered, self.capabilities)
         copies = max(1, options.copies)
-        with session(host, self.port) as s:
+        with session(host, self.port, usb.PRINT_WAIT) as s:
             report_progress(progress, 1, copies)
             # the printer may not have been asked yet (switched on later)
             version = s.version()
@@ -379,10 +385,12 @@ class Cab(Backend):
                 image = _rescale(image, dots / rendered)
             job = build_job(image, dots, options.gap_mm, copies)
             _wait_idle(s)
-            s.send(job)
             try:
+                # a job cut off while sending would leave a partial image
+                # download in the printer, which spoils the next job
+                s.send(job)
                 _wait_done(s, progress, copies)
-            except PrinterError:
+            except (PrinterError, OSError):
                 s.cancel()
                 raise
         return None

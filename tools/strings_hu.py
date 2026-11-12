@@ -235,4 +235,5 @@ TRANSLATIONS = {
     "Paper jammed – remove it to continue": "Elakadt a papír – a folytatáshoz távolítsa el",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Az Etiketto nem használhatja a nyomtató USB-portját. Adja hozzá a felhasználóját az „lp” csoporthoz (sudo usermod -aG lp $USER), majd jelentkezzen ki, és jelentkezzen be újra.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "A nyomtató nem található USB-n. Ellenőrizze a kábelt, és hogy a nyomtató be van-e kapcsolva és nem alszik-e, majd keressen újra.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "A nyomtató nem fogad több adatot. Ellenőrizze, hogy jelez-e hibát, például kifogyott címkéket vagy nyitott fedelet, majd próbálja újra.",
 }

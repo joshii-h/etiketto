@@ -2142,3 +2142,12 @@ def test_a_usb_printer_not_found_gets_usb_advice():
     text = texts.printer_error_text(UsbNotFound("no USB printer"), MILLIMETRES)
     assert "cable" in text and "IP address" not in text
     assert "usb_not_found" in texts.CONNECTION_ERRORS  # "Printer not reachable"
+
+
+def test_a_printer_that_stopped_taking_data_needs_attention():
+    from etiketto.backends.base import PrinterStalled
+
+    text = texts.printer_error_text(PrinterStalled("stopped taking data"), MILLIMETRES)
+    assert text.startswith("The printer stopped taking data.")
+    assert text != texts.code_text("timeout", MILLIMETRES)  # not "does not answer"
+    assert "stalled" not in texts.CONNECTION_ERRORS  # reachable: "Printer needs attention"

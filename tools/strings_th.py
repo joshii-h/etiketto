@@ -235,4 +235,5 @@ TRANSLATIONS = {
     "Paper jammed – remove it to continue": "กระดาษติด – นำกระดาษออกเพื่อดำเนินการต่อ",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto ไม่ได้รับอนุญาตให้ใช้พอร์ต USB ของเครื่องพิมพ์ ให้เพิ่มผู้ใช้ของคุณในกลุ่ม “lp” (sudo usermod -aG lp $USER) แล้วออกจากระบบและเข้าสู่ระบบอีกครั้ง",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "ไม่พบเครื่องพิมพ์ทาง USB ตรวจสอบสายเคเบิลและตรวจสอบว่าเครื่องพิมพ์เปิดอยู่และไม่ได้อยู่ในโหมดพัก แล้วค้นหาอีกครั้ง",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "เครื่องพิมพ์หยุดรับข้อมูล ตรวจสอบว่าเครื่องแสดงปัญหาหรือไม่ เช่น ฉลากหมดหรือฝาเปิดอยู่ แล้วลองอีกครั้ง",
 }

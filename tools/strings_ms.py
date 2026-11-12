@@ -235,4 +235,5 @@ TRANSLATIONS = {
     "Paper jammed – remove it to continue": "Kertas tersekat – keluarkan untuk meneruskan",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto tidak dibenarkan menggunakan port USB pencetak. Tambahkan pengguna anda ke kumpulan “lp” (sudo usermod -aG lp $USER), kemudian log keluar dan log masuk semula.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Pencetak tidak ditemui melalui USB. Semak kabel dan pastikan pencetak dihidupkan dan tidak dalam mod tidur, kemudian cari semula.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Pencetak berhenti menerima data. Semak sama ada pencetak menunjukkan masalah, seperti label habis atau penutup terbuka, kemudian cuba lagi.",
 }

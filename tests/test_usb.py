@@ -20,6 +20,7 @@ from etiketto.backends.base import (
     PrinterError,
     PrinterInfo,
     PrinterNotFound,
+    PrinterStalled,
     PrinterTimeout,
     UsbNotFound,
     UsbPermission,
@@ -146,6 +147,8 @@ def test_connection_sends_and_receives(device):
 
 
 def test_connection_errors(monkeypatch, tmp_path):
+    (tmp_path / "lp1").touch()  # a device file that is there
+
     def refuse(path, flags):
         assert flags & os.O_NONBLOCK  # every wait has a timeout
         raise PermissionError(errno.EACCES, "Permission denied")
@@ -164,9 +167,26 @@ def test_connection_errors(monkeypatch, tmp_path):
     def broken(path, flags):
         raise OSError(errno.EIO, "Input/output error")
 
+    # a failing device: a USB problem, not a printer missing from the network
     monkeypatch.setattr(usb.os, "open", broken)
-    with pytest.raises(OSError, match="Input/output"):
+    with pytest.raises(PrinterError, match="Input/output") as raised:
+        usb.Connection(tmp_path / "lp1", 1)
+    assert type(raised.value) is PrinterError and raised.value.code == "generic"
+    with pytest.raises(UsbNotFound):  # EIO because it went away
         usb.Connection(tmp_path / "lp0", 1)
+    assert usb._device_lock(tmp_path / "lp1").acquire(blocking=False)  # lock released
+    usb._device_lock(tmp_path / "lp1").release()
+
+
+def test_cab_maps_a_failing_usb_device_as_a_usb_problem(sysfs, monkeypatch, tmp_path):
+    sysfs("lp0", "MFG:cab;MDL:EOS2/300;")
+    (tmp_path / "lp0").touch()
+    monkeypatch.setattr(usb, "DEV", tmp_path)
+    monkeypatch.setattr(cab, "_connect", REAL_CAB_CONNECT)
+    monkeypatch.setattr(usb.os, "open", broken(errno.EIO))
+    with pytest.raises(PrinterError) as raised:
+        cab.Cab().query("usb://cab/EOS2%2F300")
+    assert raised.value.code == "generic"  # not "not_found" with network advice
 
 
 class Recorder:
@@ -191,7 +211,7 @@ def test_connect_finds_the_device_and_drains_it(sysfs, monkeypatch):
     monkeypatch.setattr(
         usb,
         "Connection",
-        lambda device, timeout: made.append(Recorder(device, timeout)) or made[-1],
+        lambda device, timeout, wait=None: made.append(Recorder(device, timeout)) or made[-1],
     )
     connection = usb.connect("usb://cab/EOS2%2F300?serial=A1", 5)
     assert connection is made[0] and connection.device == Path("/dev/usb/lp0")
@@ -202,7 +222,7 @@ def test_connect_closes_when_draining_fails(sysfs, monkeypatch):
     sysfs("lp0", "MFG:cab;MDL:EOS2/300;")
     made = []
 
-    def connection(device, timeout):
+    def connection(device, timeout, wait=None):
         made.append(Recorder(device, timeout, UsbNotFound("unplugged")))
         return made[-1]
 
@@ -219,9 +239,95 @@ def test_a_blocked_write_times_out(device):
     path, printer = device
     connection = usb.Connection(path, timeout=0.3)
     start = time.monotonic()
-    with pytest.raises(PrinterTimeout):
+    with pytest.raises(PrinterStalled, match="stopped taking data") as raised:
         connection.sendall(b"x" * 500_000)  # nobody reads: the buffer fills up
     assert time.monotonic() - start < 2
+    assert raised.value.code == "stalled" and isinstance(raised.value, PrinterTimeout)
+    connection.close()
+
+
+class Consumer(threading.Thread):
+    """A printer reading `total` bytes at about `rate` bytes per second;
+    one that stops reading after `stop_after` bytes, if given. stop()
+    before the pseudo terminal is closed."""
+
+    def __init__(self, fd: int, total: int, rate: float, stop_after: int | None = None):
+        super().__init__(daemon=True)
+        self.fd, self.total, self.rate, self.stop_after = fd, total, rate, stop_after
+        self.received = 0
+        self.stopped = threading.Event()
+        self.start()
+
+    def run(self):
+        start = time.monotonic()
+        limit = self.total if self.stop_after is None else self.stop_after
+        while self.received < limit and not self.stopped.is_set():
+            if not select.select([self.fd], [], [], 0.05)[0]:
+                continue
+            self.received += len(os.read(self.fd, 65536))
+            ahead = self.received / self.rate - (time.monotonic() - start)
+            if ahead > 0:
+                self.stopped.wait(ahead)
+
+    def stop(self) -> None:
+        self.stopped.set()
+        self.join(5)
+
+
+def test_a_large_job_on_a_slow_port_goes_through(device):
+    """6 MB at 4 MB/s take 1.5 s, far longer than the timeout: every write
+    that gets data through starts the timeout again."""
+    path, printer = device
+    connection = usb.Connection(path, timeout=0.5)
+    data = b"x" * 6_000_000
+    reader = Consumer(printer, len(data), rate=4_000_000)
+    start = time.monotonic()
+    connection.sendall(data)
+    assert time.monotonic() - start > connection.timeout
+    reader.join(5)
+    assert reader.received == len(data)
+    connection.close()
+
+
+def test_a_printer_that_stops_taking_data_mid_job_times_out(device):
+    path, printer = device
+    connection = usb.Connection(path, timeout=0.3)
+    reader = Consumer(printer, 6_000_000, rate=20_000_000, stop_after=1_000_000)
+    start = time.monotonic()
+    with pytest.raises(PrinterStalled):
+        connection.sendall(b"x" * 6_000_000)
+    assert time.monotonic() - start < 3  # the timeout after it stopped, not the job's budget
+    reader.stop()
+    assert reader.received >= 1_000_000
+    connection.close()
+
+
+def test_a_trickling_printer_still_ends(device, monkeypatch):
+    """Data keeps moving, but slower than MIN_RATE: the job's budget
+    (timeout + size / MIN_RATE) ends it."""
+    path, printer = device
+    monkeypatch.setattr(usb, "MIN_RATE", 1_000_000)
+    connection = usb.Connection(path, timeout=0.3)
+    data = b"x" * 300_000  # budget 0.3 + 0.3 s; at 50 kB/s it would take 6 s
+    reader = Consumer(printer, len(data), rate=50_000)
+    start = time.monotonic()
+    with pytest.raises(PrinterStalled):
+        connection.sendall(data)
+    assert 0.5 < time.monotonic() - start < 2
+    reader.stop()
+    assert 0 < reader.received < len(data)  # data moved, just too slowly
+    connection.close()
+
+
+def test_cab_sends_a_large_job_on_a_slow_usb_port(device):
+    """cab's answers wait 10 s; a job takes as long as the data keeps moving."""
+    path, printer = device
+    connection = usb.Connection(path, timeout=0.5)
+    job = b"d PNG;ETIKETTO\r\n" + b"A" * 6_000_000
+    reader = Consumer(printer, len(job), rate=4_000_000)
+    cab._Session(connection).send(job)
+    reader.join(5)
+    assert reader.received == len(job)
     connection.close()
 
 
@@ -432,15 +538,41 @@ def test_sessions_take_turns(device, monkeypatch):
     second.close()
 
 
+def test_a_print_waits_longer_than_a_status_query(device, monkeypatch):
+    """A print behind a hung status query must not fail as busy."""
+    path, printer = device
+    monkeypatch.setattr(usb, "BUSY_WAIT", 0.1)
+    assert usb.PRINT_WAIT > 2 * cab.SOCKET_TIMEOUT + usb.DRAIN_LIMIT
+    query = usb.Connection(path, timeout=1)
+    with pytest.raises(PrinterBusy):
+        usb.Connection(path, timeout=1)  # another query gives up soon
+    threading.Timer(0.4, query.close).start()
+    printing = usb.Connection(path, timeout=1, wait=usb.PRINT_WAIT)
+    assert query.fd == -1
+    printing.close()
+
+
+def test_cab_prints_with_the_longer_wait(device, sysfs, monkeypatch):
+    sysfs("lp0", "MFG:cab;MDL:EOS2/300;")
+    waits = []
+    monkeypatch.setattr(cab, "_connect", REAL_CAB_CONNECT)
+    monkeypatch.setattr(usb, "connect", lambda host, timeout, wait=None: waits.append(wait) or 1)
+    cab._connect("usb://cab/EOS2%2F300", 9100)
+    cab._connect("usb://cab/EOS2%2F300", 9100, usb.PRINT_WAIT)
+    assert waits == [usb.BUSY_WAIT, usb.PRINT_WAIT]
+
+
 # --- the cab backend over USB ------------------------------------------------------------
 
 
 def test_cab_uses_usb_for_usb_addresses(monkeypatch):
     monkeypatch.setattr(cab, "_connect", REAL_CAB_CONNECT)  # not the test guard
     calls = []
-    monkeypatch.setattr(usb, "connect", lambda host, timeout: calls.append(host) or "usb")
+    monkeypatch.setattr(
+        usb, "connect", lambda host, timeout, wait=None: calls.append((host, wait)) or "usb"
+    )
     assert cab._connect("usb://cab/EOS2%2F300", 9100) == "usb"
-    assert calls == ["usb://cab/EOS2%2F300"]
+    assert calls == [("usb://cab/EOS2%2F300", usb.BUSY_WAIT)]
 
 
 def test_cab_drops_a_stale_answer_on_usb(device, sysfs, monkeypatch, tmp_path):

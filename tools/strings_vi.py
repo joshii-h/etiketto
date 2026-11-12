@@ -235,4 +235,5 @@ TRANSLATIONS = {
     "Paper jammed – remove it to continue": "Kẹt giấy – hãy lấy giấy ra để tiếp tục",
     "Etiketto is not allowed to use the printer's USB port. Add your user to the group “lp” (sudo usermod -aG lp $USER), then log out and in again.": "Etiketto không được phép dùng cổng USB của máy in. Hãy thêm người dùng của bạn vào nhóm “lp” (sudo usermod -aG lp $USER), rồi đăng xuất và đăng nhập lại.",
     "The printer cannot be found on USB. Check the cable and that the printer is switched on and awake, then search again.": "Không tìm thấy máy in qua USB. Hãy kiểm tra cáp và máy in đã bật, không ở chế độ ngủ, rồi tìm lại.",
+    "The printer stopped taking data. Check whether it shows a problem, such as no labels or an open cover, then try again.": "Máy in đã ngừng nhận dữ liệu. Hãy kiểm tra xem máy có báo lỗi không, chẳng hạn hết nhãn hoặc nắp đang mở, rồi thử lại.",
 }
