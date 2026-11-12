@@ -372,45 +372,64 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
 - **Image files**: only PNG, JPEG, GIF, BMP, WebP and TIFF are read (EPS
   would run Ghostscript, ICO and ICNS are decoded before their size is
-  known); a file over Pillow's MAX_IMAGE_PIXELS is refused by a check of
-  its size (no warning filter, which is not safe in threads). Images are
-  measured from their header: the EXIF orientation of JPEG and WebP, and
-  of a PNG whose eXIf chunk comes before the image data (one after it is
-  not looked for, as that would decode the image; such a PNG is drawn as
-  stored); TIFF is turned by Pillow when it is opened. Header sizes are
-  remembered by the image's hash, 64 at most. Codes are measured from
-  their small image, each different code made once per render; together
-  with the image files they may not take more than 20 megapixels before
-  the label is drawn. Nothing large is drawn while measuring. A Code 128
-  holds at most 200 characters; a longer one is refused for printing in
-  the window, on the command line and by the server, as for serial
-  labels. The digits under a barcode are drawn as text at their final
-  size, not scaled with the bars.
+  known). A file that would unpack to more than 80 megapixels is refused
+  by a check of its size when it is opened; Pillow's own check (which
+  only warns from 80 megapixels) is turned off, as a warning filter is not
+  safe in threads. Images are measured from their header: the EXIF
+  orientation of JPEG and WebP, and of a PNG whose eXIf chunk comes
+  before the image data; a PNG with the chunk after its image data is
+  drawn as stored, not turned (finding it would decode the image), both
+  when measured and when drawn. TIFF is turned by Pillow when it is
+  opened. Header sizes are remembered by the image's hash and length, 64
+  at most. Nothing large is drawn while measuring.
+- **Codes**: a QR code is made once per render as a small image (one
+  pixel per module); a barcode is kept as its string of modules with the
+  quiet zones the standards ask for (10 modules for Code 128, 11 and 7
+  for EAN-13). Bars are drawn whole modules wide: every module the same
+  number of pixels, the barcode centred in its place; a barcode that is
+  not scaled down has at least one pixel per module. Squeezed below one
+  pixel per module (a label scaled down to its length) it is drawn
+  anyway and warned about (`barcode_narrow`). The digits are drawn as
+  text at their final size. A Code 128 holds at most 200 characters; a
+  longer one is refused for printing in the window, on the command line
+  and by the server, as for serial labels.
 - **Rendering**: a label of a request has at most 200 elements, 5000
   characters and 100 lines in each text or code (filled in, and in the
-  cells of the columns it uses); more is 413 (`label_too_large`). While
-  rendering, no image may exceed 40 megapixels (a text block, a decoded
-  image file checked by its size before it is unpacked, the label) and
-  the label not the printer's longest length, and all elements together
-  stay within the 40 megapixels as well. Elements are measured first and
-  drawn at their final size (a text fitted to a page is not drawn large
-  and scaled down); the length is checked before anything is drawn. An
-  element over the limits refuses the label (413), it is not drawn as a
-  crossed-out box. The image files of a label together (each counted
-  once) may not unpack to more than 40 megapixels, checked from their
-  headers before any is decoded; each is decoded once per render, nothing
-  is kept between renders. A label has at most 50 images and codes (each
-  takes time to draw). Every render takes one of two render slots:
-  previews, checks before printing and the renders of print jobs, which
-  wait their turn. A preview or print request is parsed only once it
-  has a slot, so waiting requests hold their body, not the parsed label;
-  a request that waits 20 s, or would be the ninth waiting, gets 503
-  (`busy`). The server draws a small text in its main thread before it
-  serves: PyGObject sets up Pango on first use, which is not safe in
-  several threads at once (the window renders in the main thread, where
-  GTK has done it). Labels scaled down
-  to a fixed length or page are drawn at their final size and look a
-  little sharper than before; others render exactly as before.
+  cells of the columns it uses), then at most 50 images and codes (each
+  takes time to draw); more is 413 (`label_too_large`), the first of
+  these limits that is broken is told. Within limits:
+  - no image made while rendering may exceed 40 megapixels (a text
+    block, a decoded image file, the label) and the label not the
+    printer's longest length, checked before anything large is drawn;
+  - the elements of a label together stay within these 40 megapixels as
+    they are drawn;
+  - the image files of a label (each counted once) may unpack to at most
+    20 megapixels together, checked from their headers before any is
+    decoded; separately, the small images of its QR codes (each
+    different one once) at most 20 megapixels together;
+  - each image file is decoded once per render, nothing is kept between
+    renders (the window keeps a few in caches).
+
+  Elements are measured first and drawn at their final size (a text
+  fitted to a page is not drawn large and scaled down). An element over
+  the limits refuses the label (413), it is not drawn as a crossed-out
+  box. Every render takes one of two render slots: previews, checks
+  before printing and the renders of print jobs, which wait their turn.
+  A REST preview or print request is parsed only once it has a slot, so
+  waiting requests hold their body, not the parsed label; the printer of
+  a print request is looked up after the slot is given back (a name
+  lookup or a search can take seconds). An MCP request over HTTP with a
+  body over 512 KB is parsed in a render slot too; a smaller one within
+  the two-at-a-time parse limit, its tool takes a slot when it renders;
+  `print_label` and `job_status` give the slot back while they wait for
+  the job. stdio (`etiketto mcp`) has one client, the process's own: its
+  lines are parsed as they come. With eight requests waiting, the next
+  one gets 503 (`busy`) at once, as one that waits 20 s. The server draws
+  a small text in its main thread before it serves: PyGObject sets up
+  Pango on first use, which is not safe in several threads at once (the
+  window renders in the main thread, where GTK has done it). Labels
+  scaled down to a fixed length or page are drawn at their final size and
+  look a little sharper than before; others render exactly as before.
 - **Roles**: see [tokens.toml](#tokens). The token's name, never the token,
   is logged and kept with each job.
 - **Printers**: with `printers.toml` clients choose by name and cannot
@@ -421,9 +440,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   they are given, as in the app). The network is searched only with
   `--discover`.
 - **Resources**: at most 32 connections and requests at once (503 `busy`
-  beyond); when all are taken, two more connections are let in that may
-  only ask for `/health` and have 5 s to send it, so a stuck server still
-  answers its health check. At most 8 connections from one address (an
+  beyond); when all are taken, four more connections are let in that may
+  only ask for `/health` and have 1 s to send it, so a stuck server still
+  answers its health check. Clients that open slow connections can still
+  keep these four busy for a second each; a health check that fails may
+  simply be tried again. At most 8 connections from one address (an
   IPv6 address by its /64 network); no thread to be had is a 503 too. 30 s
   to send the whole request: a watchdog stops reading at the deadline
   however the client trickles (inside a line, a header or the body), and
@@ -484,7 +505,10 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   processes invisible, no namespaces, only Internet, Unix and netlink
   sockets, `MemoryMax=1G`, `TasksMax=128`, `MALLOC_ARENA_MAX=2`.
   `systemctl --user reload etiketto` reads tokens.toml again (without
-  tokens.toml the reload does nothing, the server goes on).
+  tokens.toml the reload does nothing, the server goes on). The unit is
+  `Type=notify`: the server tells systemd it is ready once it listens, so
+  a reload is not sent while it starts; `etiketto serve` also ignores
+  SIGHUP from its first line until its handler is installed.
 
 ```sh
 cd packaging/docker
