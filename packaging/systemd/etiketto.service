@@ -17,6 +17,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+# the folders, made outside the sandbox below (it cannot create them)
+ExecStartPre=+/usr/bin/env mkdir -p %h/.local/share/etiketto/labels %h/.config/etiketto
 ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --token-file %h/.config/etiketto/token --labels-dir %h/.local/share/etiketto/labels
 # With a printer list and named tokens (docs/server.md) instead:
 # ExecStart=%h/.local/bin/etiketto serve --host 127.0.0.1 --port 8790 --mcp --printers %h/.config/etiketto/printers.toml --tokens %h/.config/etiketto/tokens.toml --labels-dir %h/.local/share/etiketto/labels
@@ -30,7 +32,16 @@ TimeoutStopSec=60
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-ReadWritePaths=%h/.local/share/etiketto %h/.config/etiketto
+ReadWritePaths=-%h/.local/share/etiketto -%h/.config/etiketto
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+# network printers, CUPS and Avahi (D-Bus); netlink for name lookups
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# a label that renders large is refused at 40 megapixels; this bounds the rest
+MemoryMax=1G
+TasksMax=128
 LockPersonality=yes
 RestrictRealtime=yes
 RestrictSUIDSGID=yes

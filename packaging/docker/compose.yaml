@@ -25,6 +25,12 @@ services:
       dockerfile: packaging/docker/Dockerfile
     image: etiketto-server
     restart: unless-stopped
+    # the owner of config/ and labels/ on the host: the container reads
+    # tokens.toml (mode 600) and saves counters into the label files as that
+    # user (export ETIKETTO_UID=$(id -u) ETIKETTO_GID=$(id -g) if not 1000)
+    user: "${ETIKETTO_UID:-1000}:${ETIKETTO_GID:-1000}"
+    mem_limit: 1g
+    pids_limit: 128
     ports:
       - "127.0.0.1:8790:8790"  # only this computer; a reverse proxy adds TLS for others
     command:
@@ -36,13 +42,9 @@ services:
     volumes:
       - ./config:/config:ro  # printers.toml, tokens.toml (hashes only)
       - ./labels:/labels  # the label files (.etiketto) and their data files
-      - etiketto-data:/data  # settings.json of the app, if wanted
     read_only: true
     tmpfs:
       - /tmp
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-
-volumes:
-  etiketto-data:
