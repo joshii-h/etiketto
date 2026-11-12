@@ -1089,6 +1089,32 @@ def test_a_finished_status_counts_on_the_second_poll(fake, monkeypatch):
     assert fake.commands().count(niimbot.PRINT_STATUS) == 2
 
 
+def test_a_stale_status_counts_no_labels(fake, monkeypatch):
+    """A status left over from a job of 5 labels, then no paper at once."""
+    answers = iter([niimbot.u16(5) + bytes([100, 100, 0, 0, 0, 0, 0, 0])])
+    no_paper = niimbot.u16(0) + bytes([10, 0, 0, 0, 2, 0, 0, 0])
+    monkeypatch.setattr(fake, "_on_a3", lambda data: fake._answer(0xB3, next(answers, no_paper)))
+    events = []
+    with pytest.raises(OutOfLabels) as caught:
+        Niimbot().print_label(_image(), "printer", PrintOptions(copies=3), events.append)
+    assert "printed" not in caught.value.params
+    assert [(e.copy, e.copies) for e in events] == [(1, 3)]
+
+
+def test_a_finished_status_that_keeps_changing_still_ends(fake, monkeypatch):
+    answers = iter(
+        [
+            niimbot.u16(1) + bytes([100, 100, 0, 0, 0, 0, 0, 0]),
+            niimbot.u16(2) + bytes([100, 100, 0, 0, 0, 0, 0, 0]),  # counts on
+        ]
+    )
+    monkeypatch.setattr(fake, "_on_a3", lambda data: fake._answer(0xB3, next(answers)))
+    events = []
+    Niimbot().print_label(_image(), "printer", PrintOptions(), events.append)
+    assert fake.commands().count(niimbot.PRINT_STATUS) == 2
+    assert [(e.copy, e.copies) for e in events] == [(1, 1), (1, 1)]
+
+
 def test_print_on_a_b1_pro_with_protocol_4(fake):
     fake.model_id = 4097
     fake.feeds = False  # finished on the page count and print progress alone

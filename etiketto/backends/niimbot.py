@@ -759,35 +759,55 @@ def _finished(status: PrintStatus, total: int, feed: bool) -> bool:
     return status.page >= total and done
 
 
+@dataclass
+class _Polls:
+    """What the status polls of a job said so far. The first status may
+    still be the last job's: a finished one counts once the job was seen
+    unfinished, or when the next poll is finished too."""
+
+    total: int
+    feed: bool
+    done: int = 0  # labels printed, as far as accepted
+    unfinished: bool = False
+    was_finished: bool = False
+
+    def accept(self, status: PrintStatus) -> bool:
+        """Note a status; True when the job is done. A finished status not
+        yet accepted does not count labels (it may be a stale one)."""
+        finished = _finished(status, self.total, self.feed)
+        ended = finished and (self.unfinished or self.was_finished)
+        if ended or not finished:
+            self.done = max(self.done, min(status.page, self.total))
+        self.unfinished = self.unfinished or not finished
+        self.was_finished = finished
+        return ended
+
+
 def _wait_pages(s: Session, total: int, progress: ProgressCallback | None, feed: bool) -> None:
     """Poll until the printer has printed `total` labels and the last one
     to the end (and fed it out, unless `feed` is False: protocol 4 printers
     may never report that). The timeout restarts with every change."""
-    done = 0
+    polls = _Polls(total, feed)
     last = None
-    unfinished = False  # seen the job not yet done, so "done" is not a stale status
     deadline = time.monotonic() + PRINT_TIMEOUT
     try:
         while True:
             status = parse_print_status(s.request(PRINT_STATUS, timeout=STATUS_TIMEOUT).data)
-            if status.page > done:
-                done = status.page
-                report_progress(progress, min(total, done + 1), total)
+            before = polls.done
+            ended = polls.accept(status)
+            if polls.done > before:
+                report_progress(progress, min(total, polls.done + 1), total)
             if status.error and status.error not in NON_FATAL:
                 raise error_for(status.error)
-            finished = _finished(status, total, feed)
-            # the first status may still be the last job's: done counts once
-            # the job was seen unfinished, or on the second poll
-            if finished and (unfinished or last == status):
+            if ended:
                 return
-            unfinished = unfinished or not finished
             if status != last:
                 last, deadline = status, time.monotonic() + PRINT_TIMEOUT
             elif time.monotonic() > deadline:
-                raise PrinterTimeout("printed %d of %d labels, then nothing" % (done, total))
+                raise PrinterTimeout("printed %d of %d labels, then nothing" % (polls.done, total))
             _sleep(POLL_INTERVAL)
     except PrinterError as e:
-        raise _with_count(e, done, total) from None
+        raise _with_count(e, polls.done, total) from None
 
 
 def _wait_page_index(s: Session, total: int, progress: ProgressCallback | None) -> None:
