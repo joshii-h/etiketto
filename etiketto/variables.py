@@ -131,24 +131,31 @@ def shift(moment: datetime, offsets: str) -> datetime:
     """Apply "+30d", "-1w", "+1m", "+1y", "+2h" (in this order of writing).
     Days, weeks, months and years move the calendar date and keep the time
     of day; hours are real hours, across a change to or from summer time.
-    The result knows its time zone (the system's, if `moment` has none)."""
+    The result knows its time zone (the system's, if `moment` has none).
+
+    The moment is kept aware all along: a wall clock time without its
+    offset is ambiguous in the hour repeated at the end of summer time
+    (02:30 twice); "+2h" from 01:30 summer time must give the second
+    02:30, winter time. Only the calendar units work on the wall clock."""
     zone = moment.tzinfo
-    wall = moment.replace(tzinfo=None)
+    current = _aware(moment.replace(tzinfo=None), zone)  # keeps `fold` of a naive time
     for sign, amount, unit in _OFFSET.findall(offsets):
         n = int(amount) * (-1 if sign == "-" else 1)
         unit = unit.lower()
+        if unit == "h":
+            # real hours: in UTC, then back to the zone (an aware datetime
+            # adds wall clock time, also with a ZoneInfo)
+            current = (current.astimezone(UTC) + timedelta(hours=n)).astimezone(zone)
+            continue
+        wall = current.replace(tzinfo=None, fold=0)
         if unit in ("m", "y"):
             wall = _add_months(wall, n * (12 if unit == "y" else 1))
         elif unit in _WALL_UNITS:
             wall += timedelta(**{_WALL_UNITS[unit]: n})
-        elif unit == "h":
-            # real hours: in UTC, then back to the zone's wall clock (an
-            # aware datetime adds wall clock time, also with a ZoneInfo)
-            later = _aware(wall, zone).astimezone(UTC) + timedelta(hours=n)
-            wall = later.astimezone(zone).replace(tzinfo=None)
         else:
             raise ValueError("unknown unit %r" % unit)
-    return _aware(wall, zone)
+        current = _aware(wall, zone)
+    return current
 
 
 def _plain(offsets: str, fmt: str | None) -> None:

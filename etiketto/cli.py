@@ -270,20 +270,42 @@ def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
     return overrides
 
 
+# what would print a label other than meant: a variable as text, or without
+# an element or the background that could not be drawn (nobody looks at a
+# preview here). The other warnings (an EAN-13 with a wrong check digit, no
+# room for the content) are told and the label is printed, like the window.
+REFUSED = frozenset(
+    {
+        "unknown_variable",
+        "unclosed_variable",
+        "date_out_of_range",
+        "element_failed",
+        "image_unreadable",
+        "background_unreadable",
+    }
+)
+
+
 def _check(job: Job) -> None:
     """Refuse what would print wrongly; other problems become warnings."""
     label = job.label
     if not label.elements and not label.background_image:
         raise CliError(_("The label is empty"), EXIT_LABEL)
     for warning in job.check():
-        if warning.key in ("unknown_variable", "unclosed_variable", "date_out_of_range"):
+        if warning.key in REFUSED:
             raise CliError(warning_text(warning), EXIT_LABEL)
         _say(warning_text(warning))
 
 
 def _say(message: str) -> None:
-    with contextlib.suppress(OSError):  # no stderr either: the exit code tells
-        print("etiketto: " + message, file=sys.stderr)
+    """One line on stderr; without stderr (closed, None) the message is
+    dropped, never written to stdout: the exit code tells."""
+    stderr = sys.stderr
+    if stderr is None:
+        return
+    with contextlib.suppress(OSError, ValueError):
+        stderr.write("etiketto: " + message + "\n")
+        stderr.flush()
 
 
 def _name(path: Path) -> str:

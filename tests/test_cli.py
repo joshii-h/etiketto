@@ -696,7 +696,7 @@ def test_a_full_disk_on_stdout(tmp_path):
 def test_a_folder_has_a_name_in_messages(mono, tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     assert run("print", ".", "--dry-run") == cli.EXIT_FILE
-    assert err(capsys) == "etiketto: Cannot open .\n"
+    assert err(capsys) == "etiketto: . is not an Etiketto label\n"
 
 
 def test_list_printers_keeps_its_columns(mono, capsys, monkeypatch):
@@ -776,3 +776,20 @@ def test_dates_out_of_range_are_refused(mono, label_file, capsys):
     assert err(capsys) == (
         "etiketto: Element 1: the date of {=date+9000y} is before the year 1 or after 9999\n"
     )
+
+
+def test_messages_are_dropped_without_stderr(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="Lot {=lot}"))
+    monkeypatch.setattr(sys, "stderr", None)
+    assert run("print", path, "--host", "h") == cli.EXIT_LABEL
+    assert capsys.readouterr().out == ""  # not on stdout instead
+
+
+def test_an_element_that_cannot_be_drawn_is_not_printed(mono, label_file, monkeypatch, capsys):
+    from etiketto.render import RenderWarning
+
+    path = label_file(TextElement(text="x"))
+    monkeypatch.setattr(cli.Job, "check", lambda self: [RenderWarning("element_failed", {"n": 1})])
+    assert run("print", path, "--host", "h") == cli.EXIT_LABEL
+    assert err(capsys) == "etiketto: Element 1 cannot be drawn\n"
+    assert mono.jobs == []

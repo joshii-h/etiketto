@@ -289,3 +289,30 @@ def test_the_lock_gives_up_after_the_timeout(tmp_path, monkeypatch):
     ):
         pass
     assert waited == [1]
+
+
+def test_reading_a_folder_leaves_no_open_file(tmp_path):
+    before = len(os.listdir("/proc/self/fd"))
+    for _n in range(5):
+        with pytest.raises(LabelError):
+            Label.load(tmp_path)
+    assert len(os.listdir("/proc/self/fd")) == before
+
+
+def test_a_read_only_file_system_is_locked_for_reading(tmp_path, monkeypatch):
+    import errno
+
+    path = tmp_path / "a.etiketto"
+    Label().save(path)
+    real_open = os.open
+    opened = []
+
+    def read_only_fs(target, flags, *args):
+        if flags & os.O_RDWR:
+            raise OSError(errno.EROFS, "read-only file system")
+        opened.append(flags)
+        return real_open(target, flags, *args)
+
+    monkeypatch.setattr(model.os, "open", read_only_fs)
+    with model.locked(path):
+        assert len(opened) == 1  # locked, opened for reading

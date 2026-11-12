@@ -410,3 +410,14 @@ def test_hours_with_a_zone_are_real_hours():
     assert shift(night, "+1h").strftime("%H:%M %z") == "02:30 +0200"
     assert shift(night, "+2h").strftime("%H:%M %z") == "02:30 +0100"  # the hour again
     assert shift(night, "+1d").strftime("%d %H:%M %z") == "26 01:30 +0100"
+
+
+def test_hours_into_the_repeated_hour_at_the_end_of_summer_time(zurich):
+    night = datetime(2026, 10, 25, 1, 30)  # summer time, naive like datetime.now()
+    assert shift(night, "+1h").strftime("%H:%M %z") == "02:30 +0200"
+    assert shift(night, "+2h").strftime("%H:%M %z") == "02:30 +0100"  # the second 02:30
+    assert shift(night, "+3h").strftime("%H:%M %z") == "03:30 +0100"
+    second = datetime(2026, 10, 25, 2, 30, fold=1)  # now() in the repeated hour
+    assert shift(second, "").strftime("%z") == "+0100"
+    assert shift(second, "-1h").strftime("%H:%M %z") == "02:30 +0200"
+    assert shift(second, "+1d").strftime("%d %H:%M %z") == "26 02:30 +0100"

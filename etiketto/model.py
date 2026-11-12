@@ -343,9 +343,15 @@ def read_file(path: str | Path) -> bytes:
     regular file: a device like /dev/zero never ends, a FIFO would block
     (opened without blocking to find out)."""
     fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
-    with open(fd, "rb") as f:
-        if not stat.S_ISREG(os.fstat(fd).st_mode):
-            raise LabelError("not_label", "not a regular file")
+    try:
+        regular = stat.S_ISREG(os.fstat(fd).st_mode)
+    except BaseException:
+        os.close(fd)
+        raise
+    if not regular:  # also a folder: closed here, open() would leave it open
+        os.close(fd)
+        raise LabelError("not_label", "not a regular file")
+    with open(fd, "rb") as f:  # owns fd from here on
         raw = f.read(MAX_FILE_BYTES + 1)
     if len(raw) > MAX_FILE_BYTES:
         raise _damaged("file larger than %d MB" % (MAX_FILE_BYTES // 2**20))
@@ -493,9 +499,9 @@ def _open_for_lock(target: str) -> int | None:
     for flags in (os.O_RDWR, os.O_RDONLY):
         try:
             return os.open(target, flags | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
-        except PermissionError:
-            continue
-        except OSError:
+        except OSError as e:
+            if isinstance(e, PermissionError) or e.errno == errno.EROFS:
+                continue  # not for writing: for reading then
             return None
     return None
 
