@@ -78,7 +78,7 @@ def cairo_surface(image: Image.Image) -> cairo.ImageSurface:
     """A Pillow image as a cairo surface (for drawing it in a widget)."""
     data = bytearray(image.convert("RGBA").tobytes("raw", "BGRa"))
     return cairo.ImageSurface.create_for_data(
-        data, cairo.FORMAT_ARGB32, image.width, image.height, image.width * 4
+        memoryview(data), cairo.FORMAT_ARGB32, image.width, image.height, image.width * 4
     )
 
 
