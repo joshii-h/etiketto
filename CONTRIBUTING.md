@@ -169,6 +169,10 @@ extension of the interface first; please open an issue before you start.
      `"feed"` with `capabilities.feed_mm`); they arrive in
      `PrintOptions.chain`, `high_res` and `feed_mm`. See the P-touch
      backend.
+   - One backend instance serves every window: keep no printer state in
+     it. `PrintOptions.info` carries the printer as last asked, for a
+     `prepare()` that depends on the model; `capabilities.default_tape_mm`
+     sets the tape of a new label.
    - Override `preview(image, mode)` if a mode changes the result (the
      VC-500W shows black and white as grey).
 

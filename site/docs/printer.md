@@ -167,7 +167,8 @@ on a printer yet.
 - [[ui:Chain printing]]: the last label stays in the printer and comes out
   with the next print. Saves about 25 mm of tape per print.
 - [[ui:High resolution]]: finer print along the tape, slower.
-- [[ui:Tape feed]]: blank tape before and after each label, at least 2 mm.
+- [[ui:Tape feed]]: blank tape before and after each label, at least 2 mm
+  (PT-P900 series: 1 mm).
 - The first label after switching on starts with a blank piece: the cutter
   sits behind the print head.
 

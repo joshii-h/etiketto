@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:58+0100\n"
+"POT-Creation-Date: 2026-11-12 07:24+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -632,7 +632,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm."
+msgid "[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm (PT-P900 series: 1 mm)."
 msgstr ""
 
 #. type: Bullet: '- '

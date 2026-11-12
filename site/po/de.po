@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:58+0100\n"
+"POT-Creation-Date: 2026-11-12 07:24+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -876,9 +876,11 @@ msgstr "[[ui:High resolution]]: feinerer Druck entlang des Bandes, langsamer."
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm."
+"[[ui:Tape feed]]: blank tape before and after each label, at least 2 mm (PT-"
+"P900 series: 1 mm)."
 msgstr ""
-"[[ui:Tape feed]]: leeres Band vor und nach jedem Etikett, mindestens 2 mm."
+"[[ui:Tape feed]]: leeres Band vor und nach jedem Etikett, mindestens 2 mm "
+"(Serie PT-P900: 1 mm)."
 
 #. type: Bullet: '- '
 #: docs/printer.md
