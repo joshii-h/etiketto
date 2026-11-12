@@ -137,9 +137,8 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 
 Prints on the printers your computer knows: printers set up in the system
 settings (also over USB) and printers in the network that support IPP
-Everywhere, as most office printers do. A network printer that only offers
-AirPrint can be printed on once it is set up in the system settings. The
-label is printed as one page of exactly its size, unscaled.
+Everywhere or AirPrint, as most office printers do. The label is printed
+as one page of exactly its size, unscaled.
 
 - [[ui:Search for printers]] lists both. Otherwise enter the printer's
   address or the name of its CUPS queue under

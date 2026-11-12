@@ -14,7 +14,7 @@ from backend_contract import BackendContract
 from fake_backends import FakeMono
 from PIL import Image
 
-from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system
+from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
 from etiketto.backends.base import (
     CoverOpen,
     FoundPrinter,
@@ -54,6 +54,7 @@ class FakeIpp:
         self.formats = ["application/pdf", "image/pwg-raster"]
         self.pwg_types = ["srgb_8", "sgray_8"]
         self.pwg_resolutions = [(300, 300, 3), (600, 600, 3)]
+        self.urf: list[str] | None = None  # urf-supported, None: not said
         self.sizes = [A4, CUSTOM]
         self.scaling = ["auto", "fit", "none"]
         # processing, then completed; or (state, pages done); None: no such attribute
@@ -110,6 +111,8 @@ class FakeIpp:
         if sizes:
             attrs.append(ipp.Attribute(ipp.BEGIN_COLLECTION, "media-size-supported", sizes))
         attrs.append(ipp.Attribute(ipp.ENUM, "operations-supported", self.operations_supported))
+        if self.urf is not None:
+            attrs.append(ipp.Attribute(ipp.KEYWORD, "urf-supported", self.urf))
         return _answer(0, [(ipp.PRINTER_GROUP, attrs + self.extra)])
 
     def _unsupported(self) -> list:
@@ -128,11 +131,14 @@ class FakeIpp:
         if status:
             return _answer(status, [(ipp.OPERATION_GROUP, [])])
         mime = ops["document-format"][0]
-        start = {"application/pdf": b"%PDF", "image/pwg-raster": pwg.SYNC}.get(mime, b"\xff\xd8")
-        document = body[body.find(start) :]
+        starts = {"application/pdf": b"%PDF", "image/pwg-raster": pwg.SYNC, "image/urf": urf.SYNC}
+        document = body[body.find(starts.get(mime, b"\xff\xd8")) :]
         self.documents.append((mime, document))
         copies = 1 if "copies" in self.ignored else job.get("copies", [1])[0]
-        self.printed += copies * max(1, document.count(b"PwgRaster"))
+        pages = document.count(b"PwgRaster")
+        if mime == "image/urf":
+            pages = struct.unpack_from(">I", document, len(urf.SYNC))[0]
+        self.printed += copies * max(1, pages)
         self.job_id += 1
         groups = [(ipp.JOB_GROUP, [ipp.Attribute(ipp.INTEGER, "job-id", [self.job_id])])]
         groups += self._unsupported()
@@ -419,6 +425,7 @@ def test_the_nearest_listed_size_wins():
         (["application/pdf", "image/pwg-raster"], "application/pdf"),
         ([], "application/pdf"),  # not said: CUPS takes PDF
         (["image/urf", "image/pwg-raster", "image/jpeg"], "image/pwg-raster"),
+        (["image/jpeg", "image/urf"], "image/urf"),
         (["image/jpeg"], "image/jpeg"),
     ],
 )
@@ -428,10 +435,93 @@ def test_document_format(formats, mime):
     assert chosen == mime
 
 
+def test_a_raster_format_in_colour_spaces_etiketto_cannot_make_is_passed_over():
+    attrs = {
+        "document-format-supported": ["image/pwg-raster", "image/urf", "image/jpeg"],
+        "pwg-raster-document-type-supported": ["black_1"],
+        "urf-supported": ["V1.4", "DEVCMYK32"],
+    }
+    assert system.document_format(attrs) == "image/jpeg"
+    attrs["urf-supported"] = ["V1.4", "W8", "RS600"]
+    assert system.document_format(attrs) == "image/urf"
+
+
 def test_no_format_the_printer_takes(fake):
-    fake.formats = ["image/urf", "application/vnd.hp-PCL"]
-    with pytest.raises(NoFormat, match="image/urf"):
+    fake.formats = ["image/urf", "image/pwg-raster", "application/vnd.hp-PCL"]
+    fake.urf, fake.pwg_types = ["V1.4", "DEVCMYK32", "RS600"], ["black_1"]  # no W8, SRGB24
+    with pytest.raises(NoFormat, match="black_1; urf-supported: V1.4, DEVCMYK32"):
         _print()
+    assert ipp.PRINT_JOB not in fake.operations()
+
+
+HP_URF = (  # an HP LaserJet Pro 4002
+    "CP1,MT1-2-8-9-10-11,PQ3-4-5,RS600,SRGB24,OB10,W8,DEVW8,DEVRGB24,"
+    "ADOBERGB24,DM3,IS1-1-2,V1.5,FN3"
+)
+
+
+@pytest.mark.parametrize(
+    "keywords, mode, dpis, copies",
+    [
+        ([], "L", [], False),  # not said: W8, which every printer has
+        (["V1.4", "RS600", "CP1"], "L", [600], True),  # no colour space: W8 too
+        (HP_URF.split(","), "RGB", [600], True),
+        ([HP_URF], "RGB", [600], True),  # one comma-joined value
+        (["W8", "SRGB24", "RS300-600", "DM1", "IS1-4-5-19", "MT1-2-5"], "RGB", [300, 600], False),
+        (["w8", " RS203 ", "RSx", "RS6e2", "RS\u0666\u0660\u0660", "RS-"], "L", [203], False),
+        (["W8", "CP0", "CP", "CPx", "CP-1", "CP\u0661"], "L", [], False),  # CP strictly
+        (["V1.5", "DEVW8"], None, [], False),
+    ],
+)
+def test_urf_supported(keywords, mode, dpis, copies):
+    attrs = {"urf-supported": keywords}
+    assert system._urf_mode(attrs) == mode
+    assert system._urf_resolutions(attrs) == dpis
+    assert system._urf_copies(attrs) is copies
+
+
+@pytest.mark.parametrize(
+    "dpis, dpi",
+    [
+        ([], 300),
+        ([600], 600),
+        ([300, 600], 300),
+        ([203], 203),
+        ([150, 360, 720], 360),
+        ([10, 50], 300),  # not believed
+        ([600, 2400, 100000], 600),
+        ([100, 1200], 1200),
+    ],
+)
+def test_resolution_within_reason(dpis, dpi):
+    assert system._resolution(dpis) == dpi
+
+
+def test_apple_raster_in_the_printers_colour_space_and_resolution(fake):
+    fake.formats, fake.sizes = ["image/urf", "image/jpeg"], []
+    fake.urf = ["CP1", "IS1-4-5-19", "MT1-2-3-4-5-6", "RS600", "V1.4", "W8"]  # ippeveprinter
+    image = _image(118, 59, size_mm=(10, 5))
+    image.paste((0, 0, 0), (10, 0, 11, 59))  # a bar one pixel wide
+    _print(image)
+    mime, data = fake.documents[0]
+    (page,) = urf.decode(data)
+    assert mime == "image/urf" and page.mode == "L" and page.size == (236, 118)
+    assert page.info["dpi"] == (600, 600)
+    # each pixel twice, not blurred: the bar is two pixels, black, with hard edges
+    assert set(page.tobytes()) == {0, 255}
+    assert [page.getpixel((x, 5)) for x in range(19, 24)] == [255, 0, 0, 255, 255]
+
+
+@pytest.mark.parametrize("dpi", [203, 600])
+def test_a_label_is_rendered_at_the_apple_raster_resolution(fake, dpi):
+    fake.formats, fake.sizes, fake.urf = ["image/urf"], [], ["W8", "RS%d" % dpi]
+    backend = get_backend("system")
+    backend.print_label(
+        backend.prepare(_shipping_label(), PrintOptions()), "x.local", PrintOptions()
+    )
+    (page,) = urf.decode(fake.documents[0][1])
+    assert page.size == (px(101.6, dpi), px(152.4, dpi))  # rendered again, not resized
+    assert _greys(page) == 0
 
 
 IMAGE_RE = re.compile(
@@ -555,7 +645,8 @@ def test_label_sheet_pages_are_composed_at_the_printers_resolution(fake):
     ],
 )
 def test_pwg_resolution(resolutions, dpi):
-    assert system._pwg_resolution(resolutions) == dpi
+    attrs = {"pwg-raster-document-resolution-supported": resolutions}
+    assert system._resolution(system._pwg_resolutions(attrs)) == dpi
 
 
 def test_pwg_raster_without_a_usable_colour_space(fake):
@@ -1139,7 +1230,7 @@ def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
     _print(_image(118, 59, size_mm=(10, 5)), copies=23, events=events)
     pages = [data.count(b"PwgRaster") for _mime, data in fake.documents]
     assert pages == [10, 10, 3] and fake.printed == 23
-    assert made == [10, 3]  # made once for both jobs of 10
+    assert made == [1]  # the page compressed once, for all jobs
     assert events[-1].copy == 23
 
 
@@ -1673,3 +1764,85 @@ def test_a_problem_that_comes_and_goes_still_ends_after_the_total(fake, monkeypa
     finally:
         FakeIpp._op_000b = saved
     assert fake.now < 120 + 10
+
+
+# --- Apple Raster: copies and pages ----------------------------------------------------------
+
+
+def test_copies_in_apple_raster_without_cp_are_pages(fake):
+    fake.copies_supported, fake.urf = None, ["W8", "RS300", "V1.4"]  # no CP
+    fake.formats, fake.sizes = ["image/urf"], []
+    _print(_image(118, 59, size_mm=(10, 5)), copies=3)
+    ((mime, data),) = fake.documents
+    assert mime == "image/urf" and "copies" not in fake.job()
+    assert len(urf.decode(data)) == 3 and fake.printed == 3
+
+
+def test_copies_in_apple_raster_with_cp_are_left_to_the_printer(fake):
+    fake.copies_supported, fake.urf = None, ["W8", "RS300", "V1.4", "CP1"]
+    fake.formats, fake.sizes = ["image/urf"], []
+    _print(_image(118, 59, size_mm=(10, 5)), copies=3)
+    ((_mime, data),) = fake.documents
+    assert fake.job()["copies"] == [3] and len(urf.decode(data)) == 1
+
+
+def test_many_copies_in_apple_raster_go_in_several_jobs(fake, monkeypatch):
+    fake.copies_supported, fake.urf = (1, 1), ["W8", "CP1"]  # copies-supported decides
+    fake.formats, fake.sizes = ["image/urf"], []
+    made = []
+    original = system.document_of
+
+    def document_of(images, count, attrs, repeat=1):
+        made.append((count, repeat))
+        return original(images, count, attrs, repeat)
+
+    monkeypatch.setattr(system, "document_of", document_of)
+    _print(_image(118, 59, size_mm=(10, 5)), copies=12)
+    pages = [len(urf.decode(data)) for _mime, data in fake.documents]
+    assert pages == [10, 2] and fake.printed == 12
+    assert made == [(1, 1)]  # compressed once
+    assert fake.documents[0][1][12:] == fake.documents[1][1][12:] * 5  # the same page
+
+
+@pytest.mark.parametrize("mime", ["image/urf", "image/pwg-raster"])
+def test_raster_copies_are_limited_by_bytes_too(fake, monkeypatch, mime):
+    fake.copies_supported, fake.formats, fake.sizes = (1, 1), [mime], []
+    image = _image(118, 59, size_mm=(10, 5))
+    single = len(system.document(image, {"document-format-supported": [mime]})[0])
+    monkeypatch.setattr(system, "MAX_JOB_BYTES", single * 3)
+    _print(image, copies=7)
+    decode = urf.decode if mime == "image/urf" else pwg.decode_all
+    assert [len(decode(data)) for _mime, data in fake.documents] == [3, 3, 1]
+    assert fake.printed == 7
+
+
+def test_a_page_larger_than_the_byte_limit_still_goes(fake, monkeypatch):
+    fake.copies_supported, fake.formats, fake.sizes = (1, 1), ["image/urf"], []
+    monkeypatch.setattr(system, "MAX_JOB_BYTES", 10)
+    _print(_image(118, 59, size_mm=(10, 5)), copies=2)
+    assert [len(urf.decode(data)) for _mime, data in fake.documents] == [1, 1]
+
+
+@pytest.mark.parametrize("mime", ["image/urf", "image/pwg-raster"])
+def test_raster_pages_go_in_jobs_limited_by_bytes(fake, monkeypatch, mime):
+    fake.formats, fake.urf = [mime], ["SRGB24", "RS300"]
+    pages = _pages(23)  # pages of one colour each: the same size compressed
+    attrs = {"document-format-supported": [mime], "urf-supported": fake.urf}
+    one = len(system.document(pages[0], attrs)[0])
+    monkeypatch.setattr(system, "MAX_JOB_BYTES", one * 4 + 1)
+    events = []
+    get_backend("system").print_pages(pages, "HP_Office", PrintOptions(), events.append)
+    decode = urf.decode if mime == "image/urf" else pwg.decode_all
+    found = [decode(data) for _mime, data in fake.documents]
+    assert [len(job) for job in found] == [4, 4, 4, 4, 4, 3]
+    every = [page for job in found for page in job]
+    assert [page.getpixel((5, 5)) for page in every] == [page.getpixel((5, 5)) for page in pages]
+    assert events[-1] == Progress(23, 23)
+
+
+def test_raster_pages_without_a_byte_limit_go_ten_a_job(fake):
+    fake.formats, fake.urf = ["image/urf"], ["SRGB24", "RS300"]
+    get_backend("system").print_pages(_pages(23), "HP_Office", PrintOptions())
+    found = [urf.decode(data) for _mime, data in fake.documents]
+    assert [len(pages) for pages in found] == [10, 10, 3]
+    assert struct.unpack_from(">I", fake.documents[0][1], 8)[0] == 10

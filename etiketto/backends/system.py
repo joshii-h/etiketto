@@ -14,7 +14,7 @@ import io
 import ipaddress
 import ssl
 import time
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, replace
 from functools import partial
 from typing import Any
@@ -22,7 +22,7 @@ from urllib.parse import quote, urlsplit
 
 from PIL import Image
 
-from etiketto.backends import ipp, mdns, pdf, pwg
+from etiketto.backends import ipp, mdns, pdf, pwg, urf
 from etiketto.backends.base import (
     Backend,
     Capabilities,
@@ -66,7 +66,8 @@ BUSY_LIMIT = 30.0  # a printer that answers Print-Job with "busy": asked again t
 BUSY_PAUSE = 3.0
 BUSY = 0x0507  # server-error-busy: no job was made
 PENDING_LIMIT = 30.0  # waiting behind other jobs: then it prints on its own
-PAGES_PER_JOB = 10  # copies as PWG Raster pages: the document is made in memory
+PAGES_PER_JOB = 10  # pages in one job: the document is made in memory
+MAX_JOB_BYTES = 64 << 20  # and raster pages up to this much data (one at least)
 POLL_INTERVAL = 1.0
 POLL_FAILURES = 3  # a busy printer may miss an answer now and then
 PROBLEM_POLLS = 3  # a problem must last this many answers: not a passing state
@@ -131,6 +132,7 @@ PRINTER_ATTRIBUTES = [
     "pwg-raster-document-resolution-supported",
     "copies-supported",
     "operations-supported",
+    "urf-supported",
 ]
 STATE_ATTRIBUTES = ["printer-state", "printer-state-reasons"]
 MARGIN_SIDES = ("top", "right", "bottom", "left")
@@ -413,62 +415,150 @@ def _media(width: int, height: int) -> ipp.Attribute:
 # --- documents ---------------------------------------------------------------------
 
 
-PDF, PWG_RASTER, JPEG = "application/pdf", "image/pwg-raster", "image/jpeg"
+PDF, PWG_RASTER, URF, JPEG = "application/pdf", "image/pwg-raster", "image/urf", "image/jpeg"
+RASTERS = (PWG_RASTER, URF)  # copies as pages, at the printer's resolution
+MIN_DPI, MAX_DPI = 100, 1200  # raster resolutions taken from a printer
 
 
 def document_format(attrs: dict) -> str:
-    """The format to send: PDF, PWG Raster or JPEG, the first the printer takes."""
+    """The format to send: PDF, PWG Raster, Apple Raster (URF) or JPEG, the
+    first the printer takes; a raster format only in a colour space
+    Etiketto can make."""
     formats = _texts(attrs, "document-format-supported")
     if not formats:
         return PDF
-    for mime in (PDF, PWG_RASTER, JPEG):
-        if mime in formats:
+    usable = {PWG_RASTER: _pwg_mode(attrs), URF: _urf_mode(attrs)}
+    for mime in (PDF, PWG_RASTER, URF, JPEG):
+        if mime in formats and usable.get(mime, "") is not None:
             return mime
-    raise NoFormat("document-format-supported: " + ", ".join(formats))
+    details = "document-format-supported: " + ", ".join(formats)
+    if PWG_RASTER in formats:
+        types = _texts(attrs, "pwg-raster-document-type-supported")
+        details += "; pwg-raster-document-type-supported: " + ", ".join(types)
+    if URF in formats:
+        details += "; urf-supported: " + ", ".join(_urf_keywords(attrs))
+    raise NoFormat(details)
 
 
 def document(image: Image.Image, attrs: dict, pages: int = 1) -> tuple[bytes, str]:
-    """The page in a format the printer takes: PDF, PWG Raster or JPEG.
-    Only PWG Raster repeats the page (pages > 1)."""
+    """The page in a format the printer takes: PDF, PWG Raster, Apple Raster
+    or JPEG. Only the raster formats repeat the page (pages > 1)."""
     return document_of([image], 1, attrs, pages)
 
 
 def document_of(
     images: Iterable[Image.Image], count: int, attrs: dict, repeat: int = 1
 ) -> tuple[bytes, str]:
-    """count pages in a format the printer takes: PDF or PWG Raster with all
-    of them, JPEG with the first (one job per page). PDF and PWG Raster
-    without loss, JPEG at its best quality, without chroma subsampling, so
-    that small text stays sharp. Each page is encoded when it comes. Only
-    PWG Raster repeats a single page (repeat > 1)."""
+    """count pages in a format the printer takes: PDF, PWG Raster or Apple
+    Raster with all of them, JPEG with the first (one job per page). PDF
+    and the raster formats without loss, JPEG at its best quality, without
+    chroma subsampling, so that small text stays sharp. Each page is
+    encoded when it comes. Only the raster formats repeat a single page
+    (repeat > 1), compressed once."""
     mime = document_format(attrs)
     if mime == PDF:
         return pdf.encode(images, DPI), mime
-    if mime == PWG_RASTER:
-        mode, dpi = _pwg_format(attrs)
-        pages = (_pwg_page(image, mode, dpi) for image in images)
-        if count == 1:
-            return pwg.encode(next(iter(pages)), dpi, pages=repeat), mime
-        return pwg.encode_pages(pages, dpi, count), mime
+    if mime in RASTERS:
+        mode, dpi = _raster_format(attrs, mime)
+        pages = (_raster_page(image, mode, dpi) for image in images)
+        encode = pwg.encode_pages if mime == PWG_RASTER else urf.encode
+        data = encode(pages, dpi, count)
+        return (join_documents([data] * repeat, mime) if repeat > 1 else data), mime
     buf = io.BytesIO()
     image = next(iter(images)).convert("RGB")
     image.save(buf, format="JPEG", quality=95, subsampling=0, dpi=(DPI, DPI))
     return buf.getvalue(), mime
 
 
-def _pwg_format(attrs: dict) -> tuple[str, int]:
-    """The colour space ("RGB" or "L") and resolution the printer lists."""
+def join_documents(documents: list[bytes], mime: str) -> bytes:
+    """One raster document of the pages of several."""
+    return (pwg.join if mime == PWG_RASTER else urf.join)(documents)
+
+
+def _raster_format(attrs: dict, mime: str) -> tuple[str, int]:
+    """The colour space ("RGB" or "L") and resolution for a raster format."""
+    if mime == PWG_RASTER:
+        return _pwg_mode(attrs) or "RGB", _resolution(_pwg_resolutions(attrs))
+    return _urf_mode(attrs) or "L", _resolution(_urf_resolutions(attrs))
+
+
+def _pwg_mode(attrs: dict) -> str | None:
+    """The image mode for the PWG Raster colour space the printer lists:
+    8-bit sRGB, else sGray; a printer that does not say takes sRGB."""
     types = _texts(attrs, "pwg-raster-document-type-supported")
     if not types or "srgb_8" in types:
-        mode = "RGB"
-    elif "sgray_8" in types:
-        mode = "L"
-    else:
-        raise NoFormat("pwg-raster-document-type-supported: " + ", ".join(types))
-    return mode, _pwg_resolution(attrs.get("pwg-raster-document-resolution-supported") or [])
+        return "RGB"
+    return "L" if "sgray_8" in types else None
 
 
-def _pwg_page(image: Image.Image, mode: str, dpi: int) -> Image.Image:
+def _pwg_resolutions(attrs: dict) -> list[int]:
+    return [
+        r[0]
+        for r in attrs.get("pwg-raster-document-resolution-supported") or []
+        if isinstance(r, tuple) and len(r) == 3 and r[0] == r[1] and r[2] == 3
+    ]
+
+
+def _urf_keywords(attrs: dict) -> list[str]:
+    """urf-supported, also as one comma-joined value (some printers)."""
+    return [
+        keyword.strip().upper()
+        for value in _texts(attrs, "urf-supported")
+        for keyword in value.split(",")
+        if keyword.strip()
+    ]
+
+
+URF_COLOURS = ("W8", "SRGB24", "ADOBERGB", "DEVW", "DEVRGB", "DEVCMYK")
+
+
+def _urf_mode(attrs: dict) -> str | None:
+    """The image mode for the Apple Raster colour space the printer lists:
+    SRGB24, else W8, which every AirPrint printer must take (also one that
+    lists no colour space)."""
+    keywords = _urf_keywords(attrs)
+    if "SRGB24" in keywords:
+        return "RGB"
+    if "W8" in keywords or not any(k.startswith(URF_COLOURS) for k in keywords):
+        return "L"
+    return None
+
+
+def _number(text: str) -> int | None:
+    """A number of ASCII digits only ("600", not "6e2", "\u0666", "-1")."""
+    return int(text) if text.isascii() and text.isdecimal() else None
+
+
+def _urf_resolutions(attrs: dict) -> list[int]:
+    """The resolutions in urf-supported: RS300, RS300-600 (a list, not a
+    range: PAPPL writes its last two resolutions so)."""
+    values = [
+        _number(value)
+        for keyword in _urf_keywords(attrs)
+        if keyword.startswith("RS")
+        for value in keyword[2:].split("-")
+    ]
+    return [value for value in values if value is not None]
+
+
+def _urf_copies(attrs: dict) -> bool:
+    """Whether urf-supported says the printer makes copies: CP<n>, n >= 1."""
+    counts = [_number(k[2:]) for k in _urf_keywords(attrs) if k.startswith("CP")]
+    return any(count is not None and count >= 1 for count in counts)
+
+
+def _resolution(dpis: list[int]) -> int:
+    """300 dpi if the printer takes it, else the lowest it has above (or
+    its highest): never less sharp than the render. Resolutions outside
+    MIN_DPI..MAX_DPI are not believed (and a page at more would not fit in
+    memory)."""
+    dpis = sorted(d for d in dpis if MIN_DPI <= d <= MAX_DPI)
+    if not dpis or int(DPI) in dpis:
+        return int(DPI)
+    return next((d for d in dpis if d > DPI), dpis[-1])
+
+
+def _raster_page(image: Image.Image, mode: str, dpi: int) -> Image.Image:
     """The page at dpi: as it is if it was rendered at dpi (see
     _at_resolution), else resized: pixel by pixel for a whole factor (600
     dpi from 300: no grey edges where there were none), smoothly else."""
@@ -481,19 +571,6 @@ def _pwg_page(image: Image.Image, mode: str, dpi: int) -> Image.Image:
             size = (image.width * int(dpi // DPI), image.height * int(dpi // DPI))
         image = image.resize(size, method)
     return image.convert(mode)
-
-
-def _pwg_resolution(resolutions: list[Any]) -> int:
-    """300 dpi if the printer takes it, else the lowest it has above (or
-    its highest): never less sharp than the render."""
-    dpis = sorted(
-        r[0]
-        for r in resolutions
-        if isinstance(r, tuple) and len(r) == 3 and r[0] == r[1] and r[2] == 3
-    )
-    if not dpis or int(DPI) in dpis:
-        return int(DPI)
-    return next((d for d in dpis if d > DPI), dpis[-1])
 
 
 # --- the backend -----------------------------------------------------------------
@@ -604,8 +681,8 @@ class SystemPrinter(Backend):
         if problem:
             raise problem
         mime = document_format(attrs)  # NoFormat before anything is sent
-        if mime == PWG_RASTER:
-            pages = _at_resolution(pages, _pwg_format(attrs)[1])
+        if mime in RASTERS:
+            pages = _at_resolution(pages, _raster_format(attrs, mime)[1])
         turned, width, height = _page(pages[0], attrs.get("media-size-supported") or [])
         if turned:
             pages = _Turned(pages)
@@ -718,11 +795,14 @@ def _completed(attrs: dict) -> int | None:
 
 def takes_copies(attrs: dict, copies: int) -> bool:
     """Whether the printer makes this many copies itself (copies-supported,
-    a range 1..n); a printer that does not say is trusted to."""
+    a range 1..n); a printer that does not say is trusted to, unless it gets
+    Apple Raster and urf-supported has no CP."""
     supported = _value(attrs, "copies-supported", (tuple, int), None)
     if isinstance(supported, tuple) and len(supported) == 2:
         return supported[1] >= copies
-    return not isinstance(supported, int) or supported >= copies
+    if isinstance(supported, int):
+        return supported >= copies
+    return document_format(attrs) != URF or _urf_copies(attrs)
 
 
 # --- sending and following jobs -------------------------------------------------------
@@ -738,9 +818,10 @@ class _Pages:
 class _Jobs:
     """Sends the copies: in one job if the printer makes copies itself,
     else the page repeated in jobs of up to PAGES_PER_JOB pages (PWG
-    Raster) or one job per copy. Several pages (label sheets, each once)
-    go in jobs of up to PAGES_PER_JOB pages, as JPEG one job per page: a
-    document is made in memory, so a long job is split. Each job is
+    Raster, Apple Raster: compressed once) or one job per copy. Several
+    pages (label sheets, each once) go in jobs of up to PAGES_PER_JOB pages,
+    as JPEG one job per page: a document is made in memory, so a long job
+    is split; raster pages also once they reach MAX_JOB_BYTES. Each job is
     followed until it is done; once one waits in the queue, the others are
     sent behind it without waiting. If a step fails, the jobs sent and not
     over are canceled, so that they do not print later on their own.
@@ -759,6 +840,7 @@ class _Jobs:
         self.printed = 0  # labels (or pages) the printer said it finished
         # (first page, pages, repeats), data, format
         self._document: tuple[tuple[int, int, int], bytes, str] | None = None
+        self._single: tuple[bytes, str] | None = None  # the one page, compressed once
 
     def run(self) -> PrintResult | None:
         try:
@@ -801,14 +883,36 @@ class _Jobs:
     def _all_pages(self) -> None:
         """The pages in order, each once."""
         self._validate(0)
-        step = 1 if document_format(self.attrs) == JPEG else PAGES_PER_JOB
+        mime = document_format(self.attrs)
+        if mime in RASTERS:
+            for first, parts in self._raster_batches():
+                document = (join_documents(parts, mime), mime)
+                self._job(first, len(parts), first=first, document=document)
+            return
+        step = 1 if mime == JPEG else PAGES_PER_JOB
         for first in range(0, self.total, step):
             self._job(first, min(step, self.total - first), first=first)
 
+    def _raster_batches(self) -> Iterator[tuple[int, list[bytes]]]:
+        """The pages, each a document of its own, in groups for one job:
+        up to PAGES_PER_JOB pages and MAX_JOB_BYTES (one page at least)."""
+        images = self.pages.images
+        first, parts, size = 0, list[bytes](), 0
+        for n in range(self.total):
+            part = document_of([images[n]], 1, self.attrs)[0]
+            if parts and (len(parts) == PAGES_PER_JOB or size + len(part) > MAX_JOB_BYTES):
+                yield first, parts
+                first, parts, size = n, [], 0
+            parts.append(part)
+            size += len(part)
+        yield first, parts
+
     def _one_by_one(self, done: int) -> None:
-        if document_format(self.attrs) == PWG_RASTER:
-            for first in range(done, self.copies, PAGES_PER_JOB):
-                pages = min(PAGES_PER_JOB, self.copies - first)
+        if document_format(self.attrs) in RASTERS:
+            single = len(self.data(0, 1, 1)[0])
+            step = max(1, min(PAGES_PER_JOB, MAX_JOB_BYTES // single))
+            for first in range(done, self.copies, step):
+                pages = min(step, self.copies - first)
                 self._job(first, pages, pages=pages)
             return
         for n in range(done, self.copies):
@@ -816,14 +920,23 @@ class _Jobs:
 
     def data(self, first: int, count: int, repeat: int) -> tuple[bytes, str]:
         """The document of count pages from the first one (one page:
-        repeated), made once for all jobs alike; the last one is let go
-        before the next is made."""
+        repeated, compressed once), made once for all jobs alike; the last
+        one is let go before the next is made."""
+        if not self.several:
+            if self._single is None:
+                self._single = document_of([self.pages.images[0]], 1, self.attrs)
+            if repeat == 1:
+                return self._single
         key = (first, count, repeat)
         if self._document is None or self._document[0] != key:
             self._document = None
-            images = self.pages.images
-            pages = (images[n] for n in range(first, first + count))
-            self._document = (key, *document_of(pages, count, self.attrs, repeat))
+            if self._single is not None:  # copies of the one page, as pages
+                data, mime = self._single
+                self._document = (key, join_documents([data] * repeat, mime), mime)
+            else:
+                images = self.pages.images
+                pages = (images[n] for n in range(first, first + count))
+                self._document = (key, *document_of(pages, count, self.attrs, repeat))
         return self._document[1], self._document[2]
 
     def _operation(self, mime: str) -> list[ipp.Attribute]:
@@ -865,13 +978,22 @@ class _Jobs:
         return ignored
 
     def _job(
-        self, done: int, count: int, copies: int = 0, pages: int = 1, first: int = 0
+        self,
+        done: int,
+        count: int,
+        copies: int = 0,
+        pages: int = 1,
+        first: int = 0,
+        document: tuple[bytes, str] | None = None,
     ) -> set[str]:
         """Print-Job for count labels after done ones: copies of the page,
-        the page repeated pages times, or count pages from the first one;
-        the names of the attributes the printer ignored."""
+        the page repeated pages times, or count pages from the first one
+        (or the document made for them); the names of the attributes the
+        printer ignored."""
         report_progress(self.progress, done + 1, self.total)
-        if self.several:
+        if document is not None:
+            data, mime = document
+        elif self.several:
             data, mime = self.data(first, count, 1)
         else:
             data, mime = self.data(0, 1, pages)

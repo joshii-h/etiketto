@@ -78,8 +78,10 @@ def _line(row: bytes, step: int) -> bytes:
     return bytes(out)
 
 
-def _body(image: Image.Image) -> bytes:
-    """The compressed pixel rows of an "RGB" or "L" image."""
+def compress(image: Image.Image) -> bytes:
+    """The compressed pixel rows of an "RGB" or "L" image: a repeat count
+    for identical lines (up to 256), then the line. Apple Raster (urf.py)
+    compresses its pages the same way."""
     step = 3 if image.mode == "RGB" else 1
     data = image.tobytes()
     stride = image.width * step
@@ -104,7 +106,7 @@ def encode(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -
     """A PWG Raster document for an "RGB" or "L" image: the page once, or
     several times (copies for a printer that cannot make them itself)."""
     image = _usable(image)
-    return SYNC + (header(image, dpi, media_name, pages) + _body(image)) * pages
+    return SYNC + (header(image, dpi, media_name, pages) + compress(image)) * pages
 
 
 def encode_pages(images: Iterable[Image.Image], dpi: int, total: int) -> bytes:
@@ -113,7 +115,19 @@ def encode_pages(images: Iterable[Image.Image], dpi: int, total: int) -> bytes:
     out = bytearray(SYNC)
     for image in images:
         image = _usable(image)
-        out += header(image, dpi, "", total) + _body(image)
+        out += header(image, dpi, "", total) + compress(image)
+    return bytes(out)
+
+
+def join(documents: Iterable[bytes]) -> bytes:
+    """One document of the pages of several one-page documents (the same
+    one again for copies: compressed once), TotalPageCount set to all."""
+    pages = [document[len(SYNC) :] for document in documents]
+    out = bytearray(SYNC)
+    for page in pages:
+        head = bytearray(page[:HEADER_SIZE])
+        struct.pack_into(">I", head, 452, len(pages))
+        out += head + page[HEADER_SIZE:]
     return bytes(out)
 
 

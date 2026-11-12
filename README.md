@@ -165,6 +165,13 @@ The VC-500W on USB follows the observations of
 [barnguard](https://github.com/JulianaGaibler/barnguard) (Juliana Gaibler,
 MPL-2.0), written anew; no barnguard code is included.
 
+Apple Raster (URF) for AirPrint printers follows the byte layout of
+[libcups](https://github.com/OpenPrinting/libcups),
+[PAPPL](https://github.com/michaelrsweet/pappl) and
+[libcupsfilters](https://github.com/OpenPrinting/libcupsfilters)
+(OpenPrinting, Apple Inc., Michael R Sweet, Till Kamppeter; Apache-2.0),
+written anew; no code of theirs is included.
+
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
