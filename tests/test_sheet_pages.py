@@ -8,7 +8,6 @@ from PIL import Image
 from test_sheets import _sheet
 
 from etiketto.sheets import find
-from etiketto.sheets import layout as sheet_layout
 from etiketto.sheets.layout import (
     MAX_LABELS,
     Pages,
@@ -135,7 +134,7 @@ def test_outlines_for_a_test_print():
     page = compose_page(sheet, [], DPI, outlines=True)
     left, top, right, _bottom = (px(v, DPI) for v in sheet.rect(0))
     middle = (top + px(sheet.rect(0)[3], DPI)) // 2
-    assert page.getpixel((left, middle))[0] == sheet_layout.OUTLINE_GREY
+    assert page.getpixel((left, middle)) == (128, 128, 128)  # grey in every channel, not red
     assert page.getpixel((left + 5, middle)) == (255, 255, 255)  # only a thin line
     for shape in ("round", "cd"):
         other = _sheet(shape=shape, width=40.0, height=40.0, hole=10.0, diameter=50.0)

@@ -20,7 +20,7 @@ from etiketto.sheets import Sheet
 
 MAX_LABELS = 999  # one job; also keeps the number of pages sane
 OUTLINE_MM = 0.2  # line width of the outlines for a test print
-OUTLINE_GREY = 128
+OUTLINE_GREY = (128, 128, 128)  # the pages are RGB: grey in every channel
 MARGIN_SLACK_MM = 0.05  # rounding in the printer's hundredths of mm
 
 # label_at(n): the n-th label of the job (0-based), rendered at the page's

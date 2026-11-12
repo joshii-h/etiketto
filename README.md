@@ -20,7 +20,7 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 ([docs/vc500w.md](docs/vc500w.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 ([docs/cab.md](docs/cab.md)) |
-| System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size, or on label sheets (A4, US Letter, over 1400 sheets); explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
+| System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size, or on label sheets (A4, US Letter, over 1700 sheets); explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
 Each printer family is a backend; adding one does not touch the rest of
 the app, see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-printer).
@@ -50,7 +50,7 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Finds the printer on the network by itself and shows its state
 - Endless tape: as long as the content, or a fixed length
 - Die-cut labels: common or custom sizes, content across or along the roll
-- Label sheets on office printers: over 1400 sheets (Avery, Zweckform,
+- Label sheets on office printers: over 1700 sheets (Avery, Zweckform,
   Herma …) found by part number or size, start at any position on a partly
   used sheet, outlines for a test print; warns about the printer's margins
 - Text with any installed font, bold/italic, colour, multiple lines, size

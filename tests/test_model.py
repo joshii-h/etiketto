@@ -419,11 +419,18 @@ def test_a_label_sheet_is_saved_with_its_positions(tmp_path):
 
 def test_the_label_takes_its_sheets_size_also_turned():
     data = {"printer": "system", "tape_mm": 10, "length_mm": 10}
-    data["sheet"] = {"id": "Zweckform 3475", "positions": [5, 5, 2, 10**6, -1], "rotated": 1}
+    data["sheet"] = {"id": "Zweckform 3475", "positions": [5, 5, 2, 10**6, -1], "rotated": True}
     label = Label.from_dict(data)
     assert label.sheet == SheetChoice("Zweckform 3475", [2, 5], rotated=True)
     assert label.media_size() == (36.026, 70.051)  # turned: as high as the sheet's is wide
     assert label.sheet_size() == (36.026, 70.051)
+
+
+@pytest.mark.parametrize("rotated", [1, "false", None, [True]])
+def test_sheet_rotated_must_be_true_or_false(rotated):
+    data = {"printer": "system", "sheet": {"id": "Zweckform 3475", "rotated": rotated}}
+    with pytest.raises(LabelError, match="rotated"):
+        Label.from_dict(data)
 
 
 def test_a_sheet_this_version_does_not_know_keeps_the_saved_size():

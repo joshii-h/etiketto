@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 02:24+0100\n"
+"PO-Revision-Date: 2026-11-12 02:33+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: nl\n"
 "Language: nl\n"
@@ -35,7 +35,7 @@ msgstr "Nog geen inhoud"
 msgid "Add text, an image or a code"
 msgstr "Voeg tekst, een afbeelding of een code toe"
 
-#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:478
+#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:479
 msgid "Text"
 msgstr "Tekst"
 
@@ -154,7 +154,7 @@ msgstr "%s opgeslagen"
 msgid "Export PNG"
 msgstr "Exporteren als PNG"
 
-#: etiketto/ui/files.py:178 etiketto/ui/window.py:396
+#: etiketto/ui/files.py:178 etiketto/ui/window.py:397
 msgid "The preview cannot be drawn"
 msgstr "De voorbeeldweergave kan niet worden getekend"
 
@@ -320,7 +320,7 @@ msgstr "Etiketformaat"
 msgid "Not in the list of sheets of this version"
 msgstr "Staat niet in de lijst met vellen van deze versie"
 
-#: etiketto/ui/label_group.py:241 etiketto/ui/sheets.py:351
+#: etiketto/ui/label_group.py:241 etiketto/ui/sheets.py:358
 msgid "Positions"
 msgstr "Posities"
 
@@ -454,9 +454,9 @@ msgstr "%s gevonden"
 msgid "Choose a printer"
 msgstr "Printer kiezen"
 
-#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:247
-#: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:358
-#: etiketto/ui/window.py:412
+#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
+#: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
+#: etiketto/ui/window.py:413
 msgid "Cancel"
 msgstr "Annuleren"
 
@@ -539,38 +539,38 @@ msgstr "Serienummer"
 msgid "Probably made"
 msgstr "Vermoedelijk gemaakt"
 
-#: etiketto/ui/printer.py:380 etiketto/ui/printing.py:379
+#: etiketto/ui/printer.py:380 etiketto/ui/printing.py:386
 msgid "Close"
 msgstr "Sluiten"
 
-#: etiketto/ui/printing.py:73
+#: etiketto/ui/printing.py:80
 msgid "The label is empty"
 msgstr "Het etiket is leeg"
 
-#: etiketto/ui/printing.py:76
+#: etiketto/ui/printing.py:83
 msgid "This label sheet is unknown to this version – choose another one"
 msgstr "Dit etikettenvel is onbekend in deze versie – kies een ander"
 
-#: etiketto/ui/printing.py:86 etiketto/ui/printing.py:287
+#: etiketto/ui/printing.py:93 etiketto/ui/printing.py:294
 msgid "Print anyway"
 msgstr "Toch afdrukken"
 
-#: etiketto/ui/printing.py:91
+#: etiketto/ui/printing.py:98
 msgid "Wrong cassette"
 msgstr "Verkeerde cassette"
 
-#: etiketto/ui/printing.py:93
+#: etiketto/ui/printing.py:100
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Het etiket is ontworpen voor tape van %(label)s, maar er zit een cassette van %(tape)s in. De printer zou het op de tape schalen."
 
-#: etiketto/ui/printing.py:105
+#: etiketto/ui/printing.py:112
 msgid "Different labels loaded"
 msgstr "Andere etiketten geladen"
 
-#: etiketto/ui/printing.py:107
+#: etiketto/ui/printing.py:114
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -578,65 +578,65 @@ msgid ""
 "size and the gap."
 msgstr "Het etiket is %(size)s met een tussenruimte van %(gap)s, dus er begint elke %(pitch)s een nieuw. De printer mat een etiket om de %(measured)s. Controleer het etiketformaat en de tussenruimte."
 
-#: etiketto/ui/printing.py:139
+#: etiketto/ui/printing.py:146
 msgid "Labels"
 msgstr "Etiketten"
 
-#: etiketto/ui/printing.py:147
+#: etiketto/ui/printing.py:154
 msgid "Print outlines"
 msgstr "Omtrekken afdrukken"
 
-#: etiketto/ui/printing.py:147
+#: etiketto/ui/printing.py:154
 msgid "To test on plain paper"
 msgstr "Om te testen op gewoon papier"
 
-#: etiketto/ui/printing.py:174
+#: etiketto/ui/printing.py:181
 #, python-format
 msgid "Sheets: %d"
 msgstr "Vellen: %d"
 
-#: etiketto/ui/printing.py:185
+#: etiketto/ui/printing.py:192
 msgid "Copies"
 msgstr "Exemplaren"
 
-#: etiketto/ui/printing.py:189
+#: etiketto/ui/printing.py:196
 msgid "Cut"
 msgstr "Snijden"
 
-#: etiketto/ui/printing.py:194
+#: etiketto/ui/printing.py:201
 msgid "Colours"
 msgstr "Kleuren"
 
-#: etiketto/ui/printing.py:203
+#: etiketto/ui/printing.py:210
 msgid "Colour adjustment"
 msgstr "Kleuraanpassing"
 
-#: etiketto/ui/printing.py:206
+#: etiketto/ui/printing.py:213
 msgid "Reset"
 msgstr "Herstellen"
 
-#: etiketto/ui/printing.py:232
+#: etiketto/ui/printing.py:239
 msgid "Not adjusted"
 msgstr "Niet aangepast"
 
-#: etiketto/ui/printing.py:232
+#: etiketto/ui/printing.py:239
 msgid "Adjusted"
 msgstr "Aangepast"
 
-#: etiketto/ui/printing.py:245
+#: etiketto/ui/printing.py:252
 msgid "Print label"
 msgstr "Etiket afdrukken"
 
-#: etiketto/ui/printing.py:248 etiketto/ui/printing.py:349
+#: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
 #: etiketto/ui/window.py:107
 msgid "Print"
 msgstr "Afdrukken"
 
-#: etiketto/ui/printing.py:279
+#: etiketto/ui/printing.py:286
 msgid "Labels in the printer's margin"
 msgstr "Etiketten in de marge van de printer"
 
-#: etiketto/ui/printing.py:281
+#: etiketto/ui/printing.py:288
 #, python-format
 msgid ""
 "The printer cannot print near the edges of the paper. The content of labels "
@@ -644,47 +644,47 @@ msgid ""
 "safety margin, or leave these positions out."
 msgstr "De printer kan niet dicht bij de randen van het papier afdrukken. De inhoud van etiketten %(positions)s reikt tot in die marge en zou worden afgesneden. Vergroot de veiligheidsmarge of laat deze posities weg."
 
-#: etiketto/ui/printing.py:297
+#: etiketto/ui/printing.py:304
 msgid "No printer yet – search for one or enter its address"
 msgstr "Nog geen printer – zoek er een of voer het adres in"
 
-#: etiketto/ui/printing.py:303
+#: etiketto/ui/printing.py:310
 msgid "Printing…"
 msgstr "Afdrukken…"
 
-#: etiketto/ui/printing.py:313
+#: etiketto/ui/printing.py:320
 msgid "The label cannot be prepared for printing."
 msgstr "Het etiket kan niet worden voorbereid voor afdrukken."
 
-#: etiketto/ui/printing.py:332
+#: etiketto/ui/printing.py:339
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Afdrukken %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:361
+#: etiketto/ui/printing.py:368
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Naar de printer gestuurd – wordt afgedrukt zodra het aan de beurt is"
 
-#: etiketto/ui/printing.py:363
+#: etiketto/ui/printing.py:370
 msgid "Printed"
 msgstr "Afgedrukt"
 
-#: etiketto/ui/printing.py:365
+#: etiketto/ui/printing.py:372
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Kleurmodus ‘%(wanted)s’ is niet beschikbaar op deze printer, afgedrukt met ‘%(used)s’"
 
-#: etiketto/ui/printing.py:374
+#: etiketto/ui/printing.py:381
 msgid "Printing failed"
 msgstr "Afdrukken mislukt"
 
-#: etiketto/ui/printing.py:375
+#: etiketto/ui/printing.py:382
 msgid "Details"
 msgstr "Details"
 
-#: etiketto/ui/printing.py:378 etiketto/ui/window.py:432
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:433
 msgid "Report"
 msgstr "Melden"
 
@@ -728,39 +728,39 @@ msgstr "Alle papierformaten"
 msgid "Other paper sizes"
 msgstr "Andere papierformaten"
 
-#: etiketto/ui/sheets.py:272
+#: etiketto/ui/sheets.py:273
 #, python-format
 msgid "%(shown)d of %(total)d sheets shown – refine the search"
 msgstr "%(shown)d van %(total)d vellen getoond – verfijn de zoekopdracht"
 
-#: etiketto/ui/sheets.py:279
+#: etiketto/ui/sheets.py:280
 msgid "No sheet found"
 msgstr "Geen vel gevonden"
 
-#: etiketto/ui/sheets.py:333
+#: etiketto/ui/sheets.py:340
 msgid "Start at position"
 msgstr "Beginnen bij positie"
 
-#: etiketto/ui/sheets.py:340
+#: etiketto/ui/sheets.py:347
 msgid "Select all"
 msgstr "Alles selecteren"
 
-#: etiketto/ui/sheets.py:341
+#: etiketto/ui/sheets.py:348
 msgid "Select none"
 msgstr "Niets selecteren"
 
-#: etiketto/ui/sheets.py:353
+#: etiketto/ui/sheets.py:360
 msgid ""
 "Click a label to leave it out or to print on it again. Only the first sheet "
 "is affected: the sheets after it are filled completely."
 msgstr "Klik op een etiket om het over te slaan of er weer op af te drukken. Alleen het eerste vel wordt beïnvloed: de vellen daarna worden volledig gevuld."
 
-#: etiketto/ui/sheets.py:359
+#: etiketto/ui/sheets.py:366
 msgid "Apply"
 msgstr "Toepassen"
 
 #. translators: %s is a list of position numbers on the sheet, e.g. "1, 2, 3"
-#: etiketto/ui/sheets.py:398
+#: etiketto/ui/sheets.py:405
 #, python-format
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Etiketten %s reiken tot in de marge waarop de printer niet kan afdrukken"
@@ -1131,41 +1131,41 @@ msgstr "Probleem melden…"
 msgid "About Etiketto"
 msgstr "Over Etiketto"
 
-#: etiketto/ui/window.py:329
+#: etiketto/ui/window.py:330
 msgid "Unsaved label"
 msgstr "Niet-opgeslagen etiket"
 
-#: etiketto/ui/window.py:372
+#: etiketto/ui/window.py:373
 msgid "content scaled down to fit"
 msgstr "inhoud verkleind om te passen"
 
-#: etiketto/ui/window.py:374
+#: etiketto/ui/window.py:375
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Te lang voor deze printer: maximaal %s"
 
-#: etiketto/ui/window.py:379
+#: etiketto/ui/window.py:380
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Te breed voor deze printer: maximaal %s"
 
-#: etiketto/ui/window.py:384
+#: etiketto/ui/window.py:385
 #, python-format
 msgid "Problem: %s"
 msgstr "Probleem: %s"
 
-#: etiketto/ui/window.py:459
+#: etiketto/ui/window.py:460
 msgid "The browser cannot be opened"
 msgstr "Kan de browser niet openen"
 
-#: etiketto/ui/window.py:461
+#: etiketto/ui/window.py:462
 msgid "Copy link"
 msgstr "Link kopiëren"
 
-#: etiketto/ui/window.py:505
+#: etiketto/ui/window.py:506
 msgid "Only local files can be dropped"
 msgstr "Alleen lokale bestanden kunnen worden neergezet"
 
-#: etiketto/ui/window.py:520
+#: etiketto/ui/window.py:521
 msgid "Please wait until printing has finished"
 msgstr "Wacht tot het afdrukken klaar is"

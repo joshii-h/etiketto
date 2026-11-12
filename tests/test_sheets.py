@@ -45,7 +45,7 @@ def test_the_database_has_the_common_sheets():
 
 def test_every_sheet_is_usable():
     ids = [sheet.id for sheet in sheets.sheets()]
-    assert len(ids) == len(set(ids)) > 1400
+    assert len(ids) == len(set(ids)) > 1700
     for sheet in sheets.sheets():
         assert sheet.shape in sheets.SHAPES
         assert min(sheet.width, sheet.height) >= 5  # what a label file may have
@@ -228,6 +228,8 @@ def test_converter_lengths(converter):
     assert converter.mm("8.5in") == 215.9
     assert converter.mm("72") == converter.mm("72pt") == 25.4
     assert converter.mm("1cm") == 10 and converter.mm("6pc") == 25.4
+    assert converter.mm("3.93386e-16pt") == 0 and converter.mm("1E1mm") == 10
+    assert converter.mm(".5in") == 12.7
     with pytest.raises(ValueError):
         converter.mm("in")
 
@@ -260,6 +262,36 @@ def test_converter_keeps_sheets_and_resolves_aliases(converter, glabels):
     assert entries["Oval"]["shape"] == "ellipse"
 
 
+NAMESPACED = """<?xml version="1.0"?>
+<Glabels-templates xmlns="http://glabels.org/xmlns/3.0/">
+  <Template brand="Beta" part="N1" size="A4" _description="In a namespace">
+    <Meta category="label"/>
+    <Label-rectangle id="0" width="105mm" height="3.70e1mm" round="0">
+      <Layout nx="2" ny="8" x0="0" y0="7.86772e-17pt" dx="105mm" dy="37mm"/>
+    </Label-rectangle>
+  </Template>
+  <Template brand="Beta" part="N2" equiv="N1"/>
+</Glabels-templates>
+"""
+
+
+def test_converter_reads_files_in_the_glabels_namespace(converter, glabels):
+    (glabels / "beta-templates.xml").write_text(NAMESPACED)
+    report = {}
+    entries = {e["part"]: e for e in converter.templates(glabels, report)}
+    assert entries["N1"]["layouts"] == [[2, 8, 0, 0, 105, 37]]
+    assert entries["N1"]["height"] == 37 and entries["N2"]["brand"] == "Beta"
+    assert report == {"acme-templates.xml": (12, 5), "beta-templates.xml": (2, 1)}
+
+
+def test_converter_fails_on_a_file_without_templates(converter, glabels):
+    (glabels / "empty-templates.xml").write_text(
+        '<?xml version="1.0"?><Glabels-templates xmlns="urn:other"/>'
+    )
+    with pytest.raises(ValueError, match="empty-templates.xml: no templates"):
+        converter.templates(glabels)
+
+
 def test_converter_writes_the_data_and_the_license(converter, glabels, tmp_path, monkeypatch):
     monkeypatch.setattr(converter, "OUT", tmp_path / "out")
     converter.main(glabels)
@@ -272,5 +304,11 @@ def test_converter_writes_the_data_and_the_license(converter, glabels, tmp_path,
 
 
 def test_sizes_in_a_search_are_numbers():
-    rest, sizes = sheets._sizes("Avery 63.5x38,1")
-    assert rest.split() == ["Avery"] and sizes == [(63.5, 38.1)]
+    found = search("Avery 63.5x38,1")
+    assert found and all(s.brand == "Avery" for s in found)
+    assert all(sheets._has_size(s, 63.5, 38.1) for s in found)  # "38,1" is 38.1 mm
+
+
+@pytest.mark.parametrize("text", ["Igepa EA-381x212", "EA-381x212", "ea381x212", "381x212"])
+def test_a_part_number_that_looks_like_a_size_is_found(text):
+    assert "Igepa EA-381x212" in [sheet.id for sheet in search(text)]

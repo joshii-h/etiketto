@@ -233,7 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Paperi loppu – jatka lisäämällä paperia",
     "Cover open – close it to continue": "Kansi auki – jatka sulkemalla se",
     "Paper jammed – remove it to continue": "Paperi jumissa – jatka poistamalla se",
-    "Print on": "Tulostusalusta",
+    "Print on": "Tulostusmateriaali",
     "Single label": "Yksittäinen tarra",
     "Label sheet": "Tarra-arkki",
     "Not in the list of sheets of this version": "Ei tämän version arkkiluettelossa",

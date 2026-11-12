@@ -259,6 +259,7 @@ class SheetChooser:
     def refresh(self) -> None:
         paper = self.PAPERS[self.paper.get_selected()]
         self.found = search(self.entry.get_text(), paper)
+        chosen = self.chosen  # emptying the list unselects it
         self.list.remove_all()
         unit = self.window.unit
         for sheet in self.found[:MAX_RESULTS]:
@@ -278,7 +279,13 @@ class SheetChooser:
             self.list.append(
                 Adw.ActionRow(title=_("No sheet found"), activatable=False, selectable=False)
             )
-        if self.found:
+        # the sheet chosen so far stays chosen while the search finds it
+        shown = self.found[:MAX_RESULTS]
+        if chosen is not None and chosen in shown:
+            self.list.select_row(self.list.get_row_at_index(shown.index(chosen)))
+        elif chosen is not None and chosen in self.found:  # further down: not listed
+            self._show(chosen)
+        elif self.found:
             self.list.select_row(self.list.get_row_at_index(0))
         else:
             self._show(None)

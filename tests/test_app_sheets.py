@@ -192,6 +192,21 @@ def test_back_to_a_single_label_and_to_the_sheet_again(office):
     assert win.label.sheet.id == "Zweckform 3475"
 
 
+def test_a_new_label_does_not_go_back_to_the_last_sheet(office):
+    win = office
+    _use_sheet(win, "Zweckform 3475")
+    one(win.sidebar, Adw.ComboRow, title="Print on").set_selected(0)
+    win.dirty = False
+    win.files.new()
+    pump()
+    win.last_dialog = None
+    one(win.sidebar, Adw.ComboRow, title="Print on").set_selected(1)
+    assert pump(lambda: win.last_dialog is not None)  # the chooser, not the old sheet
+    assert win.label.sheet is None
+    _button(_chooser(win), "Cancel").emit("clicked")
+    pump()
+
+
 def test_another_sheet_from_the_sheet_row(office):
     win = office
     _use_sheet(win, "Avery L7160")
@@ -207,6 +222,29 @@ def test_another_sheet_from_the_sheet_row(office):
     _button(_chooser(win), "Use sheet").emit("clicked")
     pump()
     assert win.label.sheet == SheetChoice("Zweckform 3475", list(range(24)))
+
+
+def test_the_chooser_keeps_the_current_sheet_chosen(office):
+    win = office
+    win.choose_sheet()
+    dialog = _chooser(win)
+    _search(dialog, "Hisago GB861")  # lists "Hisago FSCGB861" first
+    listbox, rows = _rows(dialog)
+    listbox.select_row(rows[1])
+    _button(dialog, "Use sheet").emit("clicked")
+    pump()
+    assert win.label.sheet.id == "Hisago GB861"
+    win.choose_sheet()
+    dialog = _chooser(win)
+    listbox, rows = _rows(dialog)
+    assert [r.get_title() for r in rows] == ["Hisago FSCGB861", "Hisago GB861"]
+    assert listbox.get_selected_row() is rows[1]  # the current one, not the first
+    _search(dialog, "hisago gb86")  # still in the list: still chosen
+    listbox, rows = _rows(dialog)
+    assert listbox.get_selected_row().get_title() == "Hisago GB861"
+    _button(dialog, "Use sheet").emit("clicked")
+    pump()
+    assert win.label.sheet.id == "Hisago GB861"
 
 
 def test_turning_the_content(office):
@@ -394,7 +432,7 @@ def test_a_sheet_this_version_does_not_know(office, system_env):
 def test_sheet_summary_in_inches():
     sheet = find_sheet("Avery 5160")
     assert ui_sheets.sheet_summary(sheet, MILLIMETRES).endswith("30 per sheet · US Letter")
-    other = next(s for s in search("", "other"))
+    other = next(s for s in search("", "other") if not s.paper_name)  # A5 has a name
     assert ui_sheets.paper_text(other, MILLIMETRES).endswith(" mm")
 
 

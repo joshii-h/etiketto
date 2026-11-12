@@ -233,7 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Kağıt bitti – devam etmek için kağıt yükleyin",
     "Cover open – close it to continue": "Kapak açık – devam etmek için kapatın",
     "Paper jammed – remove it to continue": "Kağıt sıkıştı – devam etmek için çıkarın",
-    "Print on": "Yazdırma ortamı",
+    "Print on": "Baskı malzemesi",
     "Single label": "Tek etiket",
     "Label sheet": "Etiket sayfası",
     "Not in the list of sheets of this version": "Bu sürümün sayfa listesinde yok",

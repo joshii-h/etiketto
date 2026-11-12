@@ -35,17 +35,31 @@ SHAPES = {
 }
 
 
+NUMBER = r"[-+]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][-+]?[0-9]+)?"
+
+
 def mm(length: str | None) -> float:
-    """A gLabels length ("2.5in", "210mm", "72pt", "72" = points) in mm."""
-    match = re.fullmatch(r"\s*([0-9.]+)\s*([a-z]*)\s*", length or "0")
+    """A gLabels length ("2.5in", "210mm", "72pt", "72" = points,
+    "3.93386e-16pt") in mm."""
+    match = re.fullmatch(r"\s*(%s)\s*([a-z]*)\s*" % NUMBER, length or "0")
     if not match or match.group(2) not in UNITS:
         raise ValueError("unknown length %r" % length)
     return round(float(match.group(1)) * UNITS[match.group(2)], 3)
 
 
+def parse(path: Path) -> ET.Element:
+    """The root element of a gLabels file, without XML namespaces: some
+    files are in xmlns="http://glabels.org/xmlns/3.0/", most in none."""
+    root = ET.parse(path).getroot()  # noqa: S314
+    for element in root.iter():
+        if isinstance(element.tag, str) and element.tag.startswith("{"):
+            element.tag = element.tag.split("}", 1)[1]
+    return root
+
+
 def paper_sizes(folder: Path) -> dict[str, tuple[str, float, float]]:
     """Paper id: (name, width, height)."""
-    root = ET.parse(folder / "paper-sizes.xml").getroot()  # noqa: S314
+    root = parse(folder / "paper-sizes.xml")
     return {
         p.get("id", ""): (p.get("name", ""), mm(p.get("width")), mm(p.get("height"))) for p in root
     }
@@ -98,12 +112,19 @@ def usable(entry: dict, paper: tuple[float, float]) -> bool:
     return min(entry["width"], entry["height"]) >= MIN_SIZE_MM
 
 
-def templates(folder: Path) -> list[dict]:
+def templates(folder: Path, report: dict[str, tuple[int, int]] | None = None) -> list[dict]:
+    """The sheets of every *-templates.xml; report gets, per file, the
+    templates in it and the sheets kept of them (aliases not counted).
+    ValueError for a file without any template: the format changed."""
     papers = paper_sizes(folder)
     found: dict[tuple[str, str], dict] = {}
     aliases: list[tuple[str, str, str]] = []
     for path in sorted(folder.glob("*-templates.xml")):
-        for t in ET.parse(path).getroot().findall("Template"):  # noqa: S314
+        elements = parse(path).findall("Template")
+        if not elements:
+            raise ValueError("%s: no templates found" % path.name)
+        kept = 0
+        for t in elements:
             brand, part = t.get("brand", ""), t.get("part", "")
             if t.get("equiv"):
                 aliases.append((brand, part, t.get("equiv", "")))
@@ -128,6 +149,9 @@ def templates(folder: Path) -> list[dict]:
                 "categories": [m.get("category") for m in t.findall("Meta") if m.get("category")],
                 **shapes[0],
             }
+            kept += 1
+        if report is not None:
+            report[path.name] = (len(elements), kept)
     for brand, part, equiv in aliases:
         original = found.get((brand, equiv))
         if original and (brand, part) not in found:
@@ -140,7 +164,10 @@ def _natural(text: str) -> list:
 
 
 def main(folder: Path) -> None:
-    entries = templates(folder)
+    report: dict[str, tuple[int, int]] = {}
+    entries = templates(folder, report)
+    for name, (count, kept) in report.items():
+        print("%-40s %4d templates, %4d sheets" % (name, count, kept))
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "templates.json").write_text(
         json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8"

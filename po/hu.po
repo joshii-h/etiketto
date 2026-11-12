@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 02:24+0100\n"
+"PO-Revision-Date: 2026-11-12 02:33+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hu\n"
 "Language: hu\n"
@@ -35,7 +35,7 @@ msgstr "Még nincs tartalom"
 msgid "Add text, an image or a code"
 msgstr "Adjon hozzá szöveget, képet vagy kódot"
 
-#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:478
+#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:479
 msgid "Text"
 msgstr "Szöveg"
 
@@ -154,7 +154,7 @@ msgstr "Mentve: %s"
 msgid "Export PNG"
 msgstr "Exportálás PNG-ként"
 
-#: etiketto/ui/files.py:178 etiketto/ui/window.py:396
+#: etiketto/ui/files.py:178 etiketto/ui/window.py:397
 msgid "The preview cannot be drawn"
 msgstr "Az előnézet nem rajzolható meg"
 
@@ -320,7 +320,7 @@ msgstr "Címkeméret"
 msgid "Not in the list of sheets of this version"
 msgstr "Nem szerepel ennek a verziónak az ívlistájában"
 
-#: etiketto/ui/label_group.py:241 etiketto/ui/sheets.py:351
+#: etiketto/ui/label_group.py:241 etiketto/ui/sheets.py:358
 msgid "Positions"
 msgstr "Pozíciók"
 
@@ -454,9 +454,9 @@ msgstr "Megtalálva: %s"
 msgid "Choose a printer"
 msgstr "Nyomtató kiválasztása"
 
-#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:247
-#: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:358
-#: etiketto/ui/window.py:412
+#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
+#: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
+#: etiketto/ui/window.py:413
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -539,38 +539,38 @@ msgstr "Sorozatszám"
 msgid "Probably made"
 msgstr "Valószínű gyártás"
 
-#: etiketto/ui/printer.py:380 etiketto/ui/printing.py:379
+#: etiketto/ui/printer.py:380 etiketto/ui/printing.py:386
 msgid "Close"
 msgstr "Bezárás"
 
-#: etiketto/ui/printing.py:73
+#: etiketto/ui/printing.py:80
 msgid "The label is empty"
 msgstr "A címke üres"
 
-#: etiketto/ui/printing.py:76
+#: etiketto/ui/printing.py:83
 msgid "This label sheet is unknown to this version – choose another one"
 msgstr "Ezt a címkeívet ez a verzió nem ismeri – válasszon másikat"
 
-#: etiketto/ui/printing.py:86 etiketto/ui/printing.py:287
+#: etiketto/ui/printing.py:93 etiketto/ui/printing.py:294
 msgid "Print anyway"
 msgstr "Nyomtatás mégis"
 
-#: etiketto/ui/printing.py:91
+#: etiketto/ui/printing.py:98
 msgid "Wrong cassette"
 msgstr "Nem megfelelő kazetta"
 
-#: etiketto/ui/printing.py:93
+#: etiketto/ui/printing.py:100
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "A címke szalagszélessége %(label)s, de a behelyezett kazettáé %(tape)s. A nyomtató a szalaghoz méretezné."
 
-#: etiketto/ui/printing.py:105
+#: etiketto/ui/printing.py:112
 msgid "Different labels loaded"
 msgstr "Más címkék vannak betöltve"
 
-#: etiketto/ui/printing.py:107
+#: etiketto/ui/printing.py:114
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -578,65 +578,65 @@ msgid ""
 "size and the gap."
 msgstr "A címke %(size)s, a hézag %(gap)s, így %(pitch)s távolságonként kezdődik új címke. A nyomtató %(measured)s címketávolságot mért. Ellenőrizze a címkeméretet és a hézagot."
 
-#: etiketto/ui/printing.py:139
+#: etiketto/ui/printing.py:146
 msgid "Labels"
 msgstr "Címkék"
 
-#: etiketto/ui/printing.py:147
+#: etiketto/ui/printing.py:154
 msgid "Print outlines"
 msgstr "Körvonalak nyomtatása"
 
-#: etiketto/ui/printing.py:147
+#: etiketto/ui/printing.py:154
 msgid "To test on plain paper"
 msgstr "Próbához sima papíron"
 
-#: etiketto/ui/printing.py:174
+#: etiketto/ui/printing.py:181
 #, python-format
 msgid "Sheets: %d"
 msgstr "Ívek: %d"
 
-#: etiketto/ui/printing.py:185
+#: etiketto/ui/printing.py:192
 msgid "Copies"
 msgstr "Példányszám"
 
-#: etiketto/ui/printing.py:189
+#: etiketto/ui/printing.py:196
 msgid "Cut"
 msgstr "Vágás"
 
-#: etiketto/ui/printing.py:194
+#: etiketto/ui/printing.py:201
 msgid "Colours"
 msgstr "Színek"
 
-#: etiketto/ui/printing.py:203
+#: etiketto/ui/printing.py:210
 msgid "Colour adjustment"
 msgstr "Színbeállítás"
 
-#: etiketto/ui/printing.py:206
+#: etiketto/ui/printing.py:213
 msgid "Reset"
 msgstr "Visszaállítás"
 
-#: etiketto/ui/printing.py:232
+#: etiketto/ui/printing.py:239
 msgid "Not adjusted"
 msgstr "Nincs módosítva"
 
-#: etiketto/ui/printing.py:232
+#: etiketto/ui/printing.py:239
 msgid "Adjusted"
 msgstr "Módosítva"
 
-#: etiketto/ui/printing.py:245
+#: etiketto/ui/printing.py:252
 msgid "Print label"
 msgstr "Címke nyomtatása"
 
-#: etiketto/ui/printing.py:248 etiketto/ui/printing.py:349
+#: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
 #: etiketto/ui/window.py:107
 msgid "Print"
 msgstr "Nyomtatás"
 
-#: etiketto/ui/printing.py:279
+#: etiketto/ui/printing.py:286
 msgid "Labels in the printer's margin"
 msgstr "Címkék a nyomtató margójában"
 
-#: etiketto/ui/printing.py:281
+#: etiketto/ui/printing.py:288
 #, python-format
 msgid ""
 "The printer cannot print near the edges of the paper. The content of labels "
@@ -644,47 +644,47 @@ msgid ""
 "safety margin, or leave these positions out."
 msgstr "A nyomtató nem tud a papír széleihez közel nyomtatni. A következő címkék tartalma belelóg ebbe a margóba, és levágódna: %(positions)s. Növelje a biztonsági margót, vagy hagyja ki ezeket a pozíciókat."
 
-#: etiketto/ui/printing.py:297
+#: etiketto/ui/printing.py:304
 msgid "No printer yet – search for one or enter its address"
 msgstr "Még nincs nyomtató – keressen egyet, vagy adja meg a címét"
 
-#: etiketto/ui/printing.py:303
+#: etiketto/ui/printing.py:310
 msgid "Printing…"
 msgstr "Nyomtatás…"
 
-#: etiketto/ui/printing.py:313
+#: etiketto/ui/printing.py:320
 msgid "The label cannot be prepared for printing."
 msgstr "A címke nem készíthető elő nyomtatásra."
 
-#: etiketto/ui/printing.py:332
+#: etiketto/ui/printing.py:339
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Nyomtatás: %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:361
+#: etiketto/ui/printing.py:368
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Elküldve a nyomtatónak – akkor nyomtatja, amikor sorra kerül"
 
-#: etiketto/ui/printing.py:363
+#: etiketto/ui/printing.py:370
 msgid "Printed"
 msgstr "Kinyomtatva"
 
-#: etiketto/ui/printing.py:365
+#: etiketto/ui/printing.py:372
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "„%(wanted)s” színmód nem érhető el ezen a nyomtatón, helyette: „%(used)s”"
 
-#: etiketto/ui/printing.py:374
+#: etiketto/ui/printing.py:381
 msgid "Printing failed"
 msgstr "A nyomtatás sikertelen"
 
-#: etiketto/ui/printing.py:375
+#: etiketto/ui/printing.py:382
 msgid "Details"
 msgstr "Részletek"
 
-#: etiketto/ui/printing.py:378 etiketto/ui/window.py:432
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:433
 msgid "Report"
 msgstr "Jelentés"
 
@@ -728,39 +728,39 @@ msgstr "Minden papírméret"
 msgid "Other paper sizes"
 msgstr "Egyéb papírméretek"
 
-#: etiketto/ui/sheets.py:272
+#: etiketto/ui/sheets.py:273
 #, python-format
 msgid "%(shown)d of %(total)d sheets shown – refine the search"
 msgstr "%(shown)d / %(total)d ív látható – pontosítsa a keresést"
 
-#: etiketto/ui/sheets.py:279
+#: etiketto/ui/sheets.py:280
 msgid "No sheet found"
 msgstr "Nem található ív"
 
-#: etiketto/ui/sheets.py:333
+#: etiketto/ui/sheets.py:340
 msgid "Start at position"
 msgstr "Kezdő pozíció"
 
-#: etiketto/ui/sheets.py:340
+#: etiketto/ui/sheets.py:347
 msgid "Select all"
 msgstr "Összes kijelölése"
 
-#: etiketto/ui/sheets.py:341
+#: etiketto/ui/sheets.py:348
 msgid "Select none"
 msgstr "Kijelölés megszüntetése"
 
-#: etiketto/ui/sheets.py:353
+#: etiketto/ui/sheets.py:360
 msgid ""
 "Click a label to leave it out or to print on it again. Only the first sheet "
 "is affected: the sheets after it are filled completely."
 msgstr "Kattintson egy címkére a kihagyásához vagy az újbóli nyomtatáshoz. Csak az első ívre vonatkozik: az utána következő ívek teljesen megtelnek."
 
-#: etiketto/ui/sheets.py:359
+#: etiketto/ui/sheets.py:366
 msgid "Apply"
 msgstr "Alkalmaz"
 
 #. translators: %s is a list of position numbers on the sheet, e.g. "1, 2, 3"
-#: etiketto/ui/sheets.py:398
+#: etiketto/ui/sheets.py:405
 #, python-format
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s"
@@ -1131,41 +1131,41 @@ msgstr "Probléma jelentése…"
 msgid "About Etiketto"
 msgstr "Az Etiketto névjegye"
 
-#: etiketto/ui/window.py:329
+#: etiketto/ui/window.py:330
 msgid "Unsaved label"
 msgstr "Mentetlen címke"
 
-#: etiketto/ui/window.py:372
+#: etiketto/ui/window.py:373
 msgid "content scaled down to fit"
 msgstr "a tartalom kicsinyítve, hogy elférjen"
 
-#: etiketto/ui/window.py:374
+#: etiketto/ui/window.py:375
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Túl hosszú ehhez a nyomtatóhoz: legfeljebb %s"
 
-#: etiketto/ui/window.py:379
+#: etiketto/ui/window.py:380
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Túl széles ehhez a nyomtatóhoz: legfeljebb %s"
 
-#: etiketto/ui/window.py:384
+#: etiketto/ui/window.py:385
 #, python-format
 msgid "Problem: %s"
 msgstr "Probléma: %s"
 
-#: etiketto/ui/window.py:459
+#: etiketto/ui/window.py:460
 msgid "The browser cannot be opened"
 msgstr "A böngésző nem nyitható meg"
 
-#: etiketto/ui/window.py:461
+#: etiketto/ui/window.py:462
 msgid "Copy link"
 msgstr "Hivatkozás másolása"
 
-#: etiketto/ui/window.py:505
+#: etiketto/ui/window.py:506
 msgid "Only local files can be dropped"
 msgstr "Csak helyi fájlok húzhatók ide"
 
-#: etiketto/ui/window.py:520
+#: etiketto/ui/window.py:521
 msgid "Please wait until printing has finished"
 msgstr "Várjon, amíg a nyomtatás befejeződik"

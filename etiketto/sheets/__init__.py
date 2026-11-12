@@ -128,12 +128,6 @@ def _number(text: str) -> float:
     return float(text.replace(",", "."))
 
 
-def _sizes(text: str) -> tuple[str, list[tuple[float, float]]]:
-    """The sizes typed in the search ("70x37") and the rest of the text."""
-    sizes = [(_number(w), _number(h)) for w, h in _SIZE.findall(text)]
-    return _SIZE.sub(" ", text), sizes
-
-
 def _has_size(sheet: Sheet, width: float, height: float) -> bool:
     def close(a: float, b: float) -> bool:
         return abs(a - b) <= SIZE_TOLERANCE_MM
@@ -156,18 +150,25 @@ def search(text: str, paper: str = "") -> list[Sheet]:
     """Sheets whose brand, part number or description contain every word of
     text (any case), and whose labels have every size in it ("70x37", within
     SIZE_TOLERANCE_MM, also turned); optionally only for one paper (see
-    paper_matches)."""
-    rest, sizes = _sizes(text.lower())
-    words = rest.split()
-    found = []
-    for sheet in sheets():
-        if not paper_matches(sheet, paper):
-            continue
-        if not all(_has_size(sheet, w, h) for w, h in sizes):
-            continue
-        haystack = " ".join((sheet.brand, sheet.part, sheet.description)).lower()
-        # "L7160" also as "L 7160", "Zweckform 3475" as "zweckform3475"
-        squeezed = haystack.replace(" ", "").replace("-", "")
-        if all(word in haystack or word.replace("-", "") in squeezed for word in words):
-            found.append(sheet)
-    return found
+    paper_matches). A size is also found as text: part numbers like
+    "EA-381x212" look like sizes."""
+    text = text.lower()
+    tokens = [(m.group(0), _number(m.group(1)), _number(m.group(2))) for m in _SIZE.finditer(text)]
+    words = _SIZE.sub(" ", text).split()
+    return [
+        sheet
+        for sheet in sheets()
+        if paper_matches(sheet, paper) and _matches(sheet, tokens, words)
+    ]
+
+
+def _matches(sheet: Sheet, tokens: list[tuple[str, float, float]], words: list[str]) -> bool:
+    haystack = " ".join((sheet.brand, sheet.part, sheet.description)).lower()
+    # "L7160" also as "L 7160", "Zweckform 3475" as "zweckform3475"
+    squeezed = haystack.replace(" ", "").replace("-", "")
+
+    def has(word: str) -> bool:
+        return word in haystack or word.replace("-", "").replace(" ", "") in squeezed
+
+    sizes = all(_has_size(sheet, w, h) or has(raw) for raw, w, h in tokens)
+    return sizes and all(has(word) for word in words)

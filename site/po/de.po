@@ -849,12 +849,12 @@ msgid ""
 "With the [[ui:System printer (CUPS, IPP)]], an office printer prints on "
 "sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels, "
 "as Avery, Zweckform, Herma and many others sell them. Etiketto knows more "
-"than 1400 of these sheets, from the template collection of gLabels."
+"than 1700 of these sheets, from the template collection of gLabels."
 msgstr ""
 "Mit dem [[ui:System printer (CUPS, IPP)]] druckt ein Bürodrucker auf Bögen "
 "mit selbstklebenden Etiketten: A4- oder US-Letter-Seiten mit einem Raster "
 "von Etiketten, wie sie Avery, Zweckform, Herma und viele andere verkaufen. "
-"Etiketto kennt über 1400 solcher Bögen, aus der Vorlagensammlung von gLabels."
+"Etiketto kennt über 1700 solcher Bögen, aus der Vorlagensammlung von gLabels."
 
 #. type: Title ##
 #: docs/sheets.md

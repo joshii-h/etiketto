@@ -233,7 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "用紙がありません – 用紙をセットすると続行します",
     "Cover open – close it to continue": "カバーが開いています – 閉じると続行します",
     "Paper jammed – remove it to continue": "紙詰まり – 取り除くと続行します",
-    "Print on": "印刷先",
+    "Print on": "印刷媒体",
     "Single label": "単体ラベル",
     "Label sheet": "ラベルシート",
     "Not in the list of sheets of this version": "このバージョンのシート一覧にありません",

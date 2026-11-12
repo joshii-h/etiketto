@@ -205,12 +205,21 @@ the gLabels template database says (`etiketto/sheets`, see below).
 `etiketto/sheets/templates.json` is converted from gLabels' template files
 (`templates/*-templates.xml`, MIT license, Copyright (C) 2001-2026 Jaye
 Evins; license in `etiketto/sheets/LICENSE.glabels`) by
-`tools/glabels_templates.py`: lengths in mm, aliases (`equiv`) resolved,
-paper sizes from `paper-sizes.xml`. Left out: rolls, free-form labels
-(`Label-path`), templates with more than one kind of label, labels smaller
-than 5 mm, and a handful of templates whose labels lie off the page
-(typing errors in the database). gLabels gives a CD's hole as a radius;
-business-card CDs (a disc cut off at the sides) keep the disc's diameter.
+`tools/glabels_templates.py`: lengths in mm (also written with an
+exponent, `3.93386e-16pt`), aliases (`equiv`) resolved, paper sizes from
+`paper-sizes.xml`, 1750 sheets from 35 files. Some files use the XML
+namespace `http://glabels.org/xmlns/3.0/`, most none: namespaces are
+dropped when a file is read. The converter lists the templates and the
+sheets kept per file, and stops at a file without any template (a change
+in the format would otherwise drop sheets without a word). Left out (of
+1797 templates, 654 of them aliases, in the version converted): 23 rolls
+(`size="roll"`), 9 templates whose labels lie off the page (typing errors
+in the database) and 1 with labels smaller than 5 mm; free-form labels
+(`Label-path`) and templates with more than one kind of label would be
+left out too (none at present). An alias goes with its template, and is
+skipped if its template is missing or the part number is taken already
+(14). gLabels gives a CD's hole as a radius; business-card CDs (a disc cut
+off at the sides) keep the disc's diameter.
 
 ## Problems the printer reports
 

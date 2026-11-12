@@ -233,7 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "Paber on otsas – jätkamiseks pane paberit juurde",
     "Cover open – close it to continue": "Kaas on lahti – jätkamiseks sulge see",
     "Paper jammed – remove it to continue": "Paber on kinni jäänud – jätkamiseks eemalda see",
-    "Print on": "Printimise kandja",
+    "Print on": "Prindikandja",
     "Single label": "Üksik silt",
     "Label sheet": "Sildileht",
     "Not in the list of sheets of this version": "Selle versiooni lehtede loendis puudub",

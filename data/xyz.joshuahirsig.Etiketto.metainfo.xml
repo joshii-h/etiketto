@@ -2,7 +2,7 @@
 <component type="desktop-application">
   <id>xyz.joshuahirsig.Etiketto</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>AGPL-3.0-or-later</project_license>
+  <project_license>AGPL-3.0-or-later AND MIT</project_license>
 
   <name>Etiketto</name>
   <summary>Design and print labels</summary>

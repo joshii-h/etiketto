@@ -3,7 +3,7 @@
 With the [[ui:System printer (CUPS, IPP)]], an office printer prints on
 sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels,
 as Avery, Zweckform, Herma and many others sell them. Etiketto knows more
-than 1400 of these sheets, from the template collection of gLabels.
+than 1700 of these sheets, from the template collection of gLabels.
 
 ## Choose the sheet { #choose }
 

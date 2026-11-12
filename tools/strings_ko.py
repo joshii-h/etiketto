@@ -233,7 +233,7 @@ TRANSLATIONS = {
     "Out of paper – load paper to continue": "용지 없음 – 계속하려면 용지를 넣으세요",
     "Cover open – close it to continue": "덮개 열림 – 계속하려면 덮개를 닫으세요",
     "Paper jammed – remove it to continue": "용지 걸림 – 계속하려면 용지를 제거하세요",
-    "Print on": "인쇄 대상",
+    "Print on": "인쇄 매체",
     "Single label": "단일 라벨",
     "Label sheet": "라벨 시트",
     "Not in the list of sheets of this version": "이 버전의 시트 목록에 없음",

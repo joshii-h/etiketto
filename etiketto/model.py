@@ -103,7 +103,8 @@ class SheetChoice:
         ):
             raise _damaged("sheet positions must be a list of numbers")
         choice.positions = sorted({p for p in positions if 0 <= p < MAX_SHEET_POSITIONS})
-        choice.rotated = bool(choice.rotated)
+        if not isinstance(choice.rotated, bool):  # bool("false") would be True
+            raise _damaged("sheet rotated must be true or false")
         return choice
 
 

@@ -231,6 +231,7 @@ class Window(Adw.ApplicationWindow):
     def set_label(self, label: Label, path: Path | None, adopts_tape: bool = False) -> None:
         printer_changed = label.printer != self.label.printer
         self.label = label
+        self._last_sheet = None  # another label (new, opened): not its sheet
         self.adopts_tape = adopts_tape
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
