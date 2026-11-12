@@ -474,10 +474,14 @@ def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
     # block height not proportional to the size: the first estimate overshoots
     sizes = []
 
-    def fake_block(element, size_px):
+    def fake_size(element, size_px):  # measured, not drawn
         sizes.append(size_px)
-        return Image.new("RGBA", (10, round(size_px + 40)))
+        return 10, round(size_px + 40)
 
+    def fake_block(element, size_px):
+        return Image.new("RGBA", fake_size(element, size_px))
+
+    monkeypatch.setattr(render_module, "_text_size", fake_size)
     monkeypatch.setattr(render_module, "_text_block", fake_block)
     block = render_module.render_text(TextElement(text="x"), 100, 317)
     assert block.height <= 100
@@ -517,3 +521,65 @@ def test_bleed_zero_is_the_default(make_label, wide_image):
     plain = render(label).image
     assert ImageChops.difference(plain, render(label, bleed_px=0).image).getbbox() is None
     assert render(label, bleed_px=-3).image.size == plain.size
+
+
+# --- limits for untrusted labels (the print server) -----------------------------------
+
+
+def test_many_parts_add_up_to_the_limit(make_label, png_b64):
+    """Each part is small, together they are over the budget: refused
+    before the label's image is made."""
+    image = ImageElement(data=png_b64((40, 10)))
+    label = make_label(elements=[image] * 20)
+    one = render_module.render(make_label(elements=[image]), 100)
+    budget = one.image.height * one.image.width * 5  # room for about five
+    with render_module.limited(budget), pytest.raises(render_module.RenderTooLarge):
+        render_module.render(label, 100)
+
+
+def test_auto_length_over_the_printer_maximum_is_refused_before_drawing(make_label, monkeypatch):
+    drawn = []
+    real = render_module._text_block
+    monkeypatch.setattr(
+        render_module, "_text_block", lambda e, size: drawn.append(size) or real(e, size)
+    )
+    label = make_label(elements=[TextElement(text="W" * 200)])
+    with (
+        render_module.limited(10**9, max_length_mm=50),
+        pytest.raises(render_module.RenderTooLarge),
+    ):
+        render_module.render(label, 100)
+    assert drawn == []  # measured only
+
+
+def test_text_fitted_to_a_page_is_drawn_at_its_final_size(monkeypatch):
+    """A fit-to-height text on a page wider than tall would be drawn huge
+    and scaled down; it is drawn at the size it ends up with."""
+    label = Label(
+        printer="system",
+        tape_mm=297,
+        length_mm=210,
+        auto_length=False,
+        orientation="across",
+        elements=[TextElement(text="Hello World")],
+    )
+    label.set_media_size(210, 297)
+    sizes = []
+    real = render_module._text_block
+
+    def block(element, size):
+        image = real(element, size)
+        sizes.append(image.width * image.height)
+        return image
+
+    monkeypatch.setattr(render_module, "_text_block", block)
+    with render_module.limited(40_000_000):
+        rendered = render_module.render(label, 300)
+    assert rendered.overflow and rendered.warnings == []
+    assert max(sizes) <= rendered.image.width * rendered.image.height
+
+
+def test_fixed_size_text_taller_than_the_tape_fits(make_label):
+    label = make_label(elements=[TextElement(text="Hg", size_pt=200)], tape_mm=12)
+    rendered = render_module.render(label, 100)
+    assert rendered.image.height == render_module.mm_to_px(12, 100)

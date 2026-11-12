@@ -11,7 +11,7 @@ import base64
 import contextlib
 import io
 import math
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -110,8 +110,8 @@ def _color(value: str, fallback: str = "#000000") -> tuple[int, int, int]:
 # --- elements ---------------------------------------------------------------
 
 
-def _text_block(element: TextElement, size_px: float) -> Image.Image:
-    """Lay out text with Pango (font fallback, emoji, kerning) into RGBA."""
+def _layout(element: TextElement, size_px: float):
+    """The Pango layout of a text at a size, and its logical extents."""
     import cairo
     import gi
 
@@ -136,6 +136,21 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
     # a trailing newline (easy to type) would add an empty line and halve the text
     layout.set_text(element.text.rstrip("\n") or " ", -1)
     _ink, logical = layout.get_pixel_extents()
+    return layout, logical
+
+
+def _text_size(element: TextElement, size_px: float) -> tuple[int, int]:
+    """Width and height of the text block at a size, without drawing it."""
+    _layout_, logical = _layout(element, size_px)
+    return max(1, logical.width), max(1, logical.height)
+
+
+def _text_block(element: TextElement, size_px: float) -> Image.Image:
+    """Lay out text with Pango (font fallback, emoji, kerning) into RGBA."""
+    import cairo
+    from gi.repository import PangoCairo
+
+    layout, logical = _layout(element, size_px)
     width = max(1, logical.width)
     height = max(1, logical.height)
     _check_size(width, height)
@@ -159,18 +174,21 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
     ).copy()
 
 
-def render_text(element: TextElement, height: int, dpi: float) -> Image.Image:
+def text_size_px(element: TextElement, height: int, dpi: float) -> float:
+    """The font size of a text: its own, or the largest that fits the
+    height; found by measuring, nothing is drawn."""
     if element.size_pt > 0:
-        return _text_block(element, element.size_pt / 72 * dpi)
+        return element.size_pt / 72 * dpi
     # Fit to the tape: the block height scales about linearly with font size
     probe = 100.0
-    block = _text_block(element, probe)
-    size = probe * height / max(1, block.height)
-    block = _text_block(element, size)
-    while block.height > height and size > 1:
+    size = probe * height / _text_size(element, probe)[1]
+    while _text_size(element, size)[1] > height and size > 1:
         size *= 0.97
-        block = _text_block(element, size)
-    return block
+    return size
+
+
+def render_text(element: TextElement, height: int, dpi: float) -> Image.Image:
+    return _text_block(element, text_size_px(element, height, dpi))
 
 
 # Decoding a large photo (base64 + EXIF + resample) takes far longer than the
@@ -334,48 +352,97 @@ def _element_warning(element: Element, index: int, error: Exception) -> RenderWa
     return RenderWarning("element_failed", {"n": index})
 
 
-def _parts(label: Label, f: _Frame, dpi: float, warnings) -> list[Image.Image]:
+@dataclass
+class _Part:
+    """An element measured: its size in the label, and how to draw it at
+    another size (texts are drawn at the size they end up with, never
+    drawn large and scaled down: a large page would need gigapixels)."""
+
+    width: int
+    height: int
+    draw: Callable[[int, int], Image.Image]
+
+
+def _resized(image: Image.Image, width: int, height: int) -> Image.Image:
+    if image.size == (width, height):
+        return image
+    return image.resize((width, height), Image.Resampling.LANCZOS)
+
+
+def _text_part(element: TextElement, inner: int, dpi: float) -> _Part:
+    size = text_size_px(element, inner, dpi)
+    width, height = _text_size(element, size)
+    if height > inner:  # fixed-size text taller than the tape
+        width, height = max(1, round(width * inner / height)), inner
+    natural_height = _text_size(element, size)[1]
+
+    def draw(w: int, h: int) -> Image.Image:
+        if (w, h) == _text_size(element, size):
+            return _text_block(element, size)
+        return _resized(_text_block(element, size * h / natural_height), w, h)
+
+    return _Part(width, height, draw)
+
+
+def _image_part(image: Image.Image, inner: int) -> _Part:
+    if image.height > inner:
+        image = _resized(image, max(1, round(image.width * inner / image.height)), inner)
+    return _Part(image.width, image.height, lambda w, h: _resized(image, w, h))
+
+
+def _measure(label: Label, f: _Frame, dpi: float, warnings) -> list[_Part]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi)
+            if isinstance(element, TextElement):
+                part = _text_part(element, f.inner, dpi)
+            else:
+                part = _image_part(render_element(element, f.inner, dpi), f.inner)
+        except RenderTooLarge:
+            raise  # over the limits of an untrusted label: refused, not drawn
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
-            part = _placeholder(f.inner)
-        if part.height > f.inner:  # fixed-size text taller than the tape
-            part = part.resize(
-                (max(1, round(part.width * f.inner / part.height)), f.inner),
-                Image.Resampling.LANCZOS,
-            )
+            part = _image_part(_placeholder(f.inner), f.inner)
         parts.append(part)
     return parts
 
 
-def _content_width(parts: list[Image.Image], gap: int) -> int:
+def _content_width(parts, gap: int) -> int:
     return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
 
 
 def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float):
-    """Label length, the (possibly scaled) parts and the gap between them."""
+    """Label length, the scale of the parts (None: as they are), the gap
+    between them and whether the content was scaled down."""
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     content_w = _content_width(parts, f.margin)
     if label.auto_length:
-        return max(min_len, content_w + 2 * (f.margin + f.frame)), parts, f.margin, False
+        return max(min_len, content_w + 2 * (f.margin + f.frame)), None, f.margin, False
     length = max(min_len, mm_to_px(label.length_mm, dpi))
     room = length - 2 * (f.margin + f.frame)
     if parts and room <= 0:
         warnings.append(RenderWarning("fixed_too_short"))
     elif parts and content_w > room:
         scale = room / content_w
-        parts = [
-            p.resize(
-                (max(1, round(p.width * scale)), max(1, round(p.height * scale))),
-                Image.Resampling.LANCZOS,
-            )
-            for p in parts
-        ]
-        return length, parts, round(f.margin * scale), True
-    return length, parts, f.margin, False
+        return length, scale, round(f.margin * scale), True
+    return length, None, f.margin, False
+
+
+def _draw_parts(parts: list[_Part], scale: float | None) -> list[Image.Image]:
+    """The parts at their final size; within limits, all of them together
+    stay within the pixel budget (many small parts add up)."""
+    limits = _LIMITS.get()
+    used = 0
+    images = []
+    for part in parts:
+        width, height = part.width, part.height
+        if scale is not None:
+            width, height = max(1, round(width * scale)), max(1, round(height * scale))
+        used += width * height
+        if limits is not None and used > limits.pixels:
+            raise RenderTooLarge("%d pixels of elements" % used)
+        images.append(part.draw(width, height))
+    return images
 
 
 def _background(label: Label, size: tuple[int, int], warnings) -> Image.Image:
@@ -439,9 +506,10 @@ def render(
     min_length_mm is the printer's shortest label (Capabilities.min_length_mm)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings)
-    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
-    _check_label(length, f.tape + 2 * f.bleed, dpi)
+    measured = _measure(label, f, dpi, warnings)
+    length, scale, gap, overflow = _fit_length(label, measured, f, dpi, warnings, min_length_mm)
+    _check_label(length, f.tape + 2 * f.bleed, dpi)  # before anything large is drawn
+    parts = _draw_parts(measured, scale)
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

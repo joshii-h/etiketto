@@ -107,9 +107,8 @@ def test_images_are_checked_by_their_size_before_unpacking(make_label):
     with render_module.limited(50_000), pytest.raises(render_module.RenderTooLarge):
         render_module._decoded(big)
     label = make_label(elements=[ImageElement(data=big)])
-    with render_module.limited(50_000):
-        warnings = render_module.render(label, 100).warnings
-    assert [w.key for w in warnings] == ["image_unreadable"]
+    with render_module.limited(50_000), pytest.raises(render_module.RenderTooLarge):
+        render_module.render(label, 100)  # refused, not drawn as a placeholder
 
 
 def test_limited_renders_skip_the_caches():
@@ -127,13 +126,10 @@ def test_limited_renders_skip_the_caches():
 
 def test_image_bomb_over_http(api, monkeypatch):
     monkeypatch.setattr(service_module, "MAX_PIXELS", 50_000)
-    body = {"label_content": content(ImageElement(data=png((300, 200)))), "format": "json"}
-    status, _r, answer = call(api, "POST", "/api/v1/preview", body=body)
-    assert status == 200 and [w["code"] for w in answer["warnings"]] == ["image_unreadable"]
-    status, _r, answer = call(
-        api, "POST", "/api/v1/print", body={"label_content": body["label_content"]}
-    )
-    assert status == 422 and answer["error"]["code"] == "label_unprintable"
+    image = {"label_content": content(ImageElement(data=png((300, 200))))}
+    for path in ("/api/v1/preview", "/api/v1/print"):
+        status, _r, answer = call(api, "POST", path, body=image)
+        assert status == 413 and answer["error"]["code"] == "label_too_large"
 
 
 # --- 4 and 11: printer addresses ------------------------------------------------------
