@@ -18,7 +18,7 @@ import logging
 import os
 import threading
 import time
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -61,6 +61,7 @@ from etiketto.serial import (
     unknown_columns,
     used_columns,
 )
+from etiketto.server.config import LOCAL, Caller, NamedPrinter
 from etiketto.server.errors import ApiError, bad_request, invalid_field, not_found
 from etiketto.server.jobs import Failure, JobQueue, PrintJob, QueueFull
 from etiketto.server.paths import LabelsDir
@@ -102,6 +103,7 @@ class Prepared:
     indexes: list[int]  # the rows to print
     fixed_time: bool  # "date" was set: the time is not that of printing
     fixed_counter: bool  # counter_start was given
+    named: NamedPrinter | None = None  # the printer of printers.toml it is for
 
     def job(self, values: Values | None = None, index: int | None = None) -> Job:
         columns = self.rows[self.indexes[0] if index is None else index] if self.rows else None
@@ -158,9 +160,14 @@ class Service:
         allowed_hosts: tuple[str, ...] = (),
         settings: Callable[[], Settings] = Settings.load,
         clock: Callable[[], datetime] = datetime.now,
+        printers: Mapping[str, NamedPrinter] | None = None,
+        discover: bool = False,
     ):
         self.labels = LabelsDir(labels_dir)
         self.allowed_hosts = allowed_hosts  # fnmatch patterns; () allows any
+        # printers.toml: only these printers, chosen by name
+        self.named = dict(printers) if printers is not None else None
+        self.discovery = discover  # search the network (off unless --discover)
         self._settings = settings
         self._clock = clock
         self.jobs = JobQueue(self._failed)
@@ -178,16 +185,77 @@ class Service:
     def health(self) -> dict:
         return {"status": "ok", "version": __version__}
 
-    def printers(self, discover: bool = True) -> list[dict]:
+    def printers(
+        self, discover: bool = True, status: bool = True, caller: Caller = LOCAL
+    ) -> list[dict]:
+        """The printers of printers.toml (with their state), else the
+        printer models with the address set in the app and those found."""
+        if self.named is not None:
+            return self._named_printers(status, caller)
         chosen = backends()
         settings = self._settings()
         found: dict[str, list[dict[str, str]]] = {}
-        if discover:
+        if discover and self.discovery:
             with ThreadPoolExecutor(max_workers=len(chosen)) as pool:
                 found = dict(
                     zip((b.id for b in chosen), pool.map(self._discover, chosen), strict=True)
                 )
         return [self._printer(b, settings, found.get(b.id, [])) for b in chosen]
+
+    def _named_printers(self, status: bool, caller: Caller) -> list[dict]:
+        assert self.named is not None
+        chosen = [p for p in self.named.values() if caller.may_use(p.name)]
+        if not chosen:
+            return []
+        states: list[dict | None] = [None] * len(chosen)
+        if status:
+            with ThreadPoolExecutor(max_workers=min(len(chosen), 16)) as pool:
+                states = list(pool.map(self._state, chosen))
+        return [
+            dict(p.to_dict(), model=backend_name(get_backend(p.backend)), status=state)
+            for p, state in zip(chosen, states, strict=True)
+        ]
+
+    def _state(self, printer: NamedPrinter) -> dict:
+        """A printer's state for the list; a problem is part of the state."""
+        try:
+            return self._query(
+                get_backend(printer.backend), printer.host, self._named_settings(printer)
+            )
+        except ApiError as e:
+            return {"state": "UNREACHABLE", "error": e.to_dict()}
+
+    def _named_settings(self, printer: NamedPrinter) -> Settings:
+        """The app's settings, with this printer's own for its model."""
+        base = self._settings()
+        return Settings(
+            {"units": base.units, "printers": {printer.backend: dict(printer.settings)}}
+        )
+
+    def _named(self, name: object, caller: Caller) -> NamedPrinter:
+        assert self.named is not None
+        printer = self.named.get(name) if isinstance(name, str) else None
+        if printer is None:
+            raise not_found("printer_not_found", _("Unknown printer: %s") % name)
+        if not caller.may_use(printer.name):
+            raise ApiError(
+                403, "printer_forbidden", _("This access token may not use the printer %s") % name
+            )
+        return printer
+
+    def _choose(self, name: str | None, caller: Caller, required: bool) -> NamedPrinter | None:
+        """The printer a request names, else the default one, else the only one."""
+        assert self.named is not None
+        if name is not None:
+            return self._named(name, caller)
+        defaults = [p for p in self.named.values() if p.default] or (
+            list(self.named.values()) if len(self.named) == 1 else []
+        )
+        if defaults:
+            return self._named(defaults[0].name, caller)
+        if required:
+            raise bad_request(_("Choose a printer by its name"), "no_printer")
+        return None
 
     def _printer(self, backend: Backend, settings: Settings, found: list[dict]) -> dict:
         caps = backend.capabilities
@@ -229,12 +297,22 @@ class Service:
                 "printer_not_found", _("Unknown printer model: %s") % backend_id
             ) from None
 
-    def status(self, backend_id: object, host: object = None) -> dict:
-        backend = self._backend(backend_id)
+    def status(self, printer: object, host: object = None, caller: Caller = LOCAL) -> dict:
+        """The state of a printer: by name with printers.toml, else a
+        printer model and an address."""
         if host is not None and not isinstance(host, str):
             raise invalid_field("host")
+        if self.named is not None:
+            if host is not None:
+                raise _host_given()
+            named = self._named(printer, caller)
+            data = self._query(get_backend(named.backend), named.host, self._named_settings(named))
+            return dict(data, name=named.name)
+        backend = self._backend(printer)
         settings = self._settings()
-        host = self._host(host or settings.printer(backend).host)
+        return self._query(backend, self._host(host or settings.printer(backend).host), settings)
+
+    def _query(self, backend: Backend, host: str, settings: Settings) -> dict:
         try:
             info = backend.query(host)
         except Exception as e:  # noqa: BLE001 - the backend's errors, like in the window
@@ -249,8 +327,7 @@ class Service:
         return {
             "printer": backend.id,
             "host": host,
-            "name": backend.display_name(info),
-            "model": info.model,
+            "model": info.model or backend.display_name(info),
             "state": info.state,
             "error": (
                 {"code": info.error, "message": code_text(info.error, unit)}
@@ -294,8 +371,12 @@ class Service:
     def _print_host(self, request: PrintRequest, prepared: Prepared) -> str:
         """The address asked for, the one set in the app, or the only
         printer found."""
+        if prepared.named is not None:
+            if request.host is not None:
+                raise _host_given()
+            return prepared.named.host
         host = request.host or prepared.printer.host
-        if not host:
+        if not host and self.discovery:
             found = self._discover(prepared.backend)
             host = found[0]["host"] if len(found) == 1 else None
         return self._host(host)
@@ -378,16 +459,24 @@ class Service:
 
     # --- filling in -----------------------------------------------------------
 
-    def prepare(self, request: LabelRequest, copies: int = 1, rows=None) -> Prepared:
+    def prepare(
+        self,
+        request: LabelRequest,
+        copies: int = 1,
+        rows=None,
+        caller: Caller = LOCAL,
+        printing: bool = False,
+    ) -> Prepared:
         """The label of a request with its values and data rows, checked
-        as the command line checks before printing."""
+        as the command line checks before printing. With printers.toml
+        `printer` names one of its printers (printing needs one)."""
+        named = None
+        if self.named is not None:
+            named = self._choose(request.printer, caller, printing)
         path = self.labels.label(request.label) if request.label is not None else None
-        label = self._load(path) if path else self._content(request.content or {})
-        if request.printer and request.printer != label.printer:
-            self._backend(request.printer)
-            label.switch_printer(request.printer)
+        label = self._label(request, path, named.backend if named else request.printer)
         backend = self._backend(label.printer)
-        settings = self._settings()
+        settings = self._named_settings(named) if named else self._settings()
         printer = settings.printer(backend)
         if request.counter_start is not None:
             label.counter_next = request.counter_start
@@ -412,7 +501,16 @@ class Service:
             indexes,
             overrides.now is not None,
             request.counter_start is not None,
+            named,
         )
+
+    def _label(self, request: LabelRequest, path: Path | None, model: str | None) -> Label:
+        """The label of the request, moved to the printer model asked for."""
+        label = self._load(path) if path else self._content(request.content or {})
+        if model and model != label.printer:
+            self._backend(model)
+            label.switch_printer(model)
+        return label
 
     def _rows(self, request: LabelRequest, label: Label, path: Path | None, span):
         """The data rows: given inline, a data file of the labels folder,
@@ -459,8 +557,8 @@ class Service:
 
     # --- preview --------------------------------------------------------------
 
-    def preview(self, request: PreviewRequest) -> Preview:
-        prepared = self.prepare(request)
+    def preview(self, request: PreviewRequest, caller: Caller = LOCAL) -> Preview:
+        prepared = self.prepare(request, caller=caller)
         index = request.row - 1
         if prepared.rows and index >= len(prepared.rows):
             raise invalid_field("row")
@@ -495,13 +593,13 @@ class Service:
 
     # --- printing -------------------------------------------------------------
 
-    def submit(self, request: PrintRequest) -> PrintJob:
+    def submit(self, request: PrintRequest, caller: Caller = LOCAL) -> PrintJob:
         """Check the request and queue the job; ApiError if it cannot print."""
-        prepared = self.prepare(request, request.copies, request.rows)
+        _require(caller, "print")
+        prepared = self.prepare(request, request.copies, request.rows, caller, printing=True)
+        _check_copies(prepared, request.copies)
         warnings = self._check(prepared)
-        save = prepared.path is not None and not request.no_save_counter
-        if save and prepared.path and prepared.job().next_counter() is not None:
-            self._check_writable(prepared.path)
+        save = self._saves(prepared, request.no_save_counter)
         host = self._print_host(request, prepared)
         total = request.copies * (len(prepared.indexes) if prepared.rows else 1)
         name = self.labels.name_of(prepared.path) if prepared.path else ""
@@ -510,12 +608,32 @@ class Service:
             return self._print(job, prepared, save)
 
         job = PrintJob(prepared.backend.id, host, name, total, run, warnings=warnings)
+        job.owner = caller.name
+        job.printer_name = prepared.named.name if prepared.named else ""
         try:
-            return self.jobs.submit(job)
+            self.jobs.submit(job)
         except QueueFull:
             raise ApiError(
                 429, "queue_full", _("Too many print jobs are waiting – try again later")
             ) from None
+        log.info(
+            "job %s by %s: %s on %s (%s), %d labels",
+            job.id,
+            caller.name,
+            name or "label_content",
+            job.printer_name or job.printer,
+            host,
+            total,
+        )
+        return job
+
+    def _saves(self, prepared: Prepared, no_save: bool) -> bool:
+        """Whether the job saves the next counter value into the label
+        file; refused if it would have to and cannot."""
+        save = prepared.path is not None and not no_save
+        if save and prepared.path and prepared.job().next_counter() is not None:
+            self._check_writable(prepared.path)
+        return save
 
     def _check(self, prepared: Prepared) -> list[RenderWarning]:
         label = prepared.label
@@ -662,8 +780,13 @@ class Service:
                 "printer_" + code, lambda: printer_error_text(error, unit_for(units))
             )
 
-    def job(self, job_id: object) -> PrintJob:
+    def job(self, job_id: object, caller: Caller = LOCAL) -> PrintJob:
+        """A job; others' jobs only for admin tokens (for the rest they are
+        not there)."""
+        _require(caller, "print")
         job = self.jobs.get(job_id) if isinstance(job_id, str) else None
+        if job is not None and not caller.may("admin") and job.owner != caller.name:
+            job = None
         if job is None:
             raise not_found("job_not_found", _("No such print job: %s") % job_id)
         return job
@@ -674,12 +797,29 @@ class Service:
         data["warnings"] = [_warning(w.key, warning_text(w)) for w in job.warnings]
         return data
 
-    def cancel(self, job_id: object) -> PrintJob:
-        job = self.job(job_id)
+    def cancel(self, job_id: object, caller: Caller = LOCAL) -> PrintJob:
+        job = self.job(job_id, caller)
         if job.done.is_set():
             raise ApiError(409, "job_finished", _("The print job has already finished"))
         self.jobs.cancel(job)
         return job
+
+
+def _require(caller: Caller, role: str) -> None:
+    if not caller.may(role):
+        raise ApiError(403, "forbidden", _("This access token may not do this"))
+
+
+def _check_copies(prepared: Prepared, copies: int) -> None:
+    named = prepared.named
+    if named and copies > named.max_copies:
+        raise bad_request(
+            _("At most %d copies on this printer") % named.max_copies, "too_many_copies"
+        )
+
+
+def _host_given() -> ApiError:
+    return bad_request(_("Printers are chosen by name: leave out host"), "host_given")
 
 
 class CounterNotSaved(Exception):

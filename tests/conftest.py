@@ -430,13 +430,21 @@ def make_server(server_env):
 
     servers = []
 
-    def factory(token=None, mcp=True, settings=None, allowed=(), **config):
+    def factory(
+        token=None, mcp=True, settings=None, allowed=(), printers=None, discover=False, **config
+    ):
         data = (
             settings
             if settings is not None
             else {"printers": {"fake-mono": {"host": "mono.local"}}}
         )
-        service = Service(server_env.labels, allowed, settings=lambda: Settings(dict(data)))
+        service = Service(
+            server_env.labels,
+            allowed,
+            settings=lambda: Settings(dict(data)),
+            printers=printers,
+            discover=discover,
+        )
         server = Server(Config("127.0.0.1", 0, token, mcp, **config), service)
         thread = threading.Thread(
             target=server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True

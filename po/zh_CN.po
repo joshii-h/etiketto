@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 09:56+0100\n"
+"PO-Revision-Date: 2026-11-12 10:22+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: zh_CN\n"
 "Language: zh_CN\n"
@@ -128,167 +128,228 @@ msgstr "包含服务器可使用的标签文件的文件夹"
 msgid "only print on this printer address (* matches anything); repeatable"
 msgstr "仅在此打印机地址上打印（* 匹配任意内容）；可重复使用"
 
-#: etiketto/cli.py:267
+#: etiketto/cli.py:266
+msgid "printers.toml: the printers clients may use, by name"
+msgstr "printers.toml：客户端可按名称使用的打印机"
+
+#: etiketto/cli.py:271
+msgid "search the network for printers (off by default)"
+msgstr "在网络中搜索打印机（默认关闭）"
+
+#: etiketto/cli.py:278
 msgid "run a print server with a REST API"
 msgstr "运行带 REST API 的打印服务器"
 
-#: etiketto/cli.py:268
+#: etiketto/cli.py:279
 msgid "Run a print server: a REST API and, with --mcp, MCP for AI clients."
 msgstr "运行打印服务器：提供 REST API，使用 --mcp 时还为 AI 客户端提供 MCP。"
 
-#: etiketto/cli.py:271
+#: etiketto/cli.py:282
 msgid "address to listen on (default 127.0.0.1)"
 msgstr "监听的地址（默认 127.0.0.1）"
 
-#: etiketto/cli.py:277
+#: etiketto/cli.py:288
 #, python-format
 msgid "port to listen on (default %d)"
 msgstr "监听的端口（默认 %d）"
 
-#: etiketto/cli.py:283
+#: etiketto/cli.py:294
 msgid ""
 "file with the access token; else the environment variable ETIKETTO_TOKEN"
 msgstr "包含访问令牌的文件；否则使用环境变量 ETIKETTO_TOKEN"
 
-#: etiketto/cli.py:285
+#: etiketto/cli.py:300
+msgid "tokens.toml: named access tokens with roles"
+msgstr "tokens.toml：带角色的具名访问令牌"
+
+#: etiketto/cli.py:302
 msgid "also serve MCP at /mcp"
 msgstr "同时在 /mcp 提供 MCP"
 
-#: etiketto/cli.py:291
+#: etiketto/cli.py:308
 msgid "allow requests from web pages of this origin; repeatable"
 msgstr "允许来自此来源网页的请求；可重复使用"
 
-#: etiketto/cli.py:296
+#: etiketto/cli.py:313
 msgid "serve MCP on standard input and output"
 msgstr "通过标准输入和输出提供 MCP"
 
-#: etiketto/cli.py:298
+#: etiketto/cli.py:315
 msgid ""
 "Serve MCP on standard input and output, for AI clients such as Claude "
 "Desktop."
 msgstr "通过标准输入和输出提供 MCP，供 Claude Desktop 等 AI 客户端使用。"
 
-#: etiketto/cli.py:319 etiketto/server/service.py:229
+#: etiketto/cli.py:325
+msgid "manage the access tokens of the print server"
+msgstr "管理打印服务器的访问令牌"
+
+#: etiketto/cli.py:326
+msgid "Manage the access tokens of the print server."
+msgstr "管理打印服务器的访问令牌。"
+
+#: etiketto/cli.py:331
+msgid "make a token and add its hash to tokens.toml"
+msgstr "生成令牌并将其哈希添加到 tokens.toml"
+
+#: etiketto/cli.py:332
+msgid "Make a token, add its hash to tokens.toml and show the token once."
+msgstr "生成令牌，将其哈希添加到 tokens.toml，并仅显示一次令牌。"
+
+#: etiketto/cli.py:334
+msgid "name of the token, e.g. the device"
+msgstr "令牌名称，例如设备名"
+
+#: etiketto/cli.py:339
+msgid "preview: look only; print: also print; admin: also all jobs"
+msgstr "preview：仅查看；print：还可打印；admin：还可管理所有作业"
+
+#: etiketto/cli.py:341
+msgid "tokens.toml to add it to"
+msgstr "要添加到的 tokens.toml"
+
+#: etiketto/cli.py:347
+msgid "only this printer of printers.toml; repeatable"
+msgstr "仅限 printers.toml 中的此打印机；可重复使用"
+
+#: etiketto/cli.py:350
+msgid "printers.toml, to check --printer"
+msgstr "printers.toml，用于检查 --printer"
+
+#: etiketto/cli.py:352
+msgid "valid until, e.g. 2027-12-31"
+msgstr "有效期至，例如 2027-12-31"
+
+#: etiketto/cli.py:353
+msgid "a note for people"
+msgstr "给人看的备注"
+
+#: etiketto/cli.py:355
+msgid "store the hash with scrypt instead of SHA-256"
+msgstr "使用 scrypt 而非 SHA-256 存储哈希"
+
+#: etiketto/cli.py:374 etiketto/server/config.py:213
+#: etiketto/server/service.py:297
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "未知的打印机型号：%s"
 
-#: etiketto/cli.py:326 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
-#: etiketto/server/service.py:362
+#: etiketto/cli.py:381 etiketto/ui/files.py:66 etiketto/ui/texts.py:237
+#: etiketto/server/service.py:443
 #, python-format
 msgid "Cannot open %s"
 msgstr "无法打开 %s"
 
-#: etiketto/cli.py:348
+#: etiketto/cli.py:403 etiketto/server/main.py:168
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s 不是日期，应类似 2026-12-31 或 2026-12-31T08:30"
 
-#: etiketto/cli.py:378
+#: etiketto/cli.py:433
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} 会在打印时填入，无法设置"
 
-#: etiketto/cli.py:383
+#: etiketto/cli.py:438
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "标签中没有名为 %s 的元素或变量"
 
-#: etiketto/cli.py:407 etiketto/ui/printing.py:85
-#: etiketto/server/service.py:523
+#: etiketto/cli.py:462 etiketto/ui/printing.py:85
+#: etiketto/server/service.py:641
 msgid "The label is empty"
 msgstr "标签为空"
 
-#: etiketto/cli.py:440
+#: etiketto/cli.py:495
 msgid "Cannot write the output"
 msgstr "无法写入输出"
 
-#: etiketto/cli.py:471
+#: etiketto/cli.py:526
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output 写入 PNG 图像：请给出以 .png 结尾的名称"
 
-#: etiketto/cli.py:507 etiketto/cli.py:541 etiketto/cli.py:660
-#: etiketto/cli.py:688 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
-#: etiketto/server/service.py:493 etiketto/server/service.py:657
-#: etiketto/server/service.py:706
+#: etiketto/cli.py:562 etiketto/cli.py:596 etiketto/cli.py:715
+#: etiketto/cli.py:743 etiketto/ui/printing.py:330 etiketto/ui/printing.py:468
+#: etiketto/server/service.py:591 etiketto/server/service.py:775
+#: etiketto/server/service.py:846
 msgid "The label cannot be prepared for printing."
 msgstr "无法准备标签以供打印。"
 
-#: etiketto/cli.py:568
+#: etiketto/cli.py:623
 msgid "No printer found – give its address with --host"
 msgstr "未找到打印机，请用 --host 指定其地址"
 
-#: etiketto/cli.py:570
+#: etiketto/cli.py:625
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "找到多台打印机，请用 --host 选择一台（etiketto list-printers）"
 
-#: etiketto/cli.py:581 etiketto/ui/texts.py:271 etiketto/server/service.py:696
+#: etiketto/cli.py:636 etiketto/ui/texts.py:271 etiketto/server/service.py:836
 #, python-format
 msgid "Cannot save %s"
 msgstr "无法保存 %s"
 
-#: etiketto/cli.py:583 etiketto/server/service.py:699
+#: etiketto/cli.py:638 etiketto/server/service.py:839
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "标签已打印，但下一个计数器值未能保存"
 
-#: etiketto/cli.py:598 etiketto/server/service.py:547
+#: etiketto/cli.py:653 etiketto/server/service.py:665
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "未打印任何内容：下一个计数器值无法保存"
 
-#: etiketto/cli.py:658 etiketto/cli.py:685 etiketto/cli.py:886
+#: etiketto/cli.py:713 etiketto/cli.py:740 etiketto/cli.py:942
 msgid "Interrupted"
 msgstr "已中断"
 
-#: etiketto/cli.py:761
+#: etiketto/cli.py:816
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "此标签使用其文件夹之外的数据文件：请用 --data 指定"
 
-#: etiketto/cli.py:767
+#: etiketto/cli.py:822
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet 和 --rows 需要数据文件（--data）"
 
-#: etiketto/cli.py:782 etiketto/ui/printing.py:346
-#: etiketto/server/service.py:431
+#: etiketto/cli.py:837 etiketto/ui/printing.py:346
+#: etiketto/server/service.py:529
 msgid "No rows to print"
 msgstr "没有要打印的行"
 
-#: etiketto/cli.py:791 etiketto/ui/window.py:389 etiketto/server/service.py:484
+#: etiketto/cli.py:846 etiketto/ui/window.py:389 etiketto/server/service.py:582
 #, python-format
 msgid "No such column: %s"
 msgstr "没有此列：%s"
 
-#: etiketto/cli.py:796 etiketto/ui/printing.py:419
+#: etiketto/cli.py:851 etiketto/ui/printing.py:419
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "无法根据这些行的值生成条形码或二维码，例如含字母的 EAN-13 或空单元格。请修正数据文件并重新读取，或不打印这些行。"
 
-#: etiketto/cli.py:801 etiketto/ui/printing.py:424
+#: etiketto/cli.py:856 etiketto/ui/printing.py:424
 #, python-format
 msgid "Rows: %s"
 msgstr "行：%s"
 
-#: etiketto/cli.py:809
+#: etiketto/cli.py:864
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "正在等待 %s 的另一个打印任务完成…"
 
-#: etiketto/cli.py:816 etiketto/server/service.py:651
+#: etiketto/cli.py:871 etiketto/server/service.py:769
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s 仍被另一个打印任务锁定 – 请稍后再试"
 
-#: etiketto/cli.py:822
+#: etiketto/cli.py:877
 msgid "--output needs --dry-run"
 msgstr "--output 需要 --dry-run"
 
-#: etiketto/cli.py:831
+#: etiketto/cli.py:886
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "下一个计数器值不会保存：下次打印会重复这些编号"
 
-#: etiketto/cli.py:858 etiketto/ui/printer.py:161
+#: etiketto/cli.py:913 etiketto/ui/printer.py:161
 msgid "No printer found"
 msgstr "未找到打印机"
 
@@ -1366,7 +1427,7 @@ msgid "%s is not an Etiketto label"
 msgstr "%s 不是 Etiketto 标签"
 
 #: etiketto/ui/texts.py:228 etiketto/ui/texts.py:248
-#: etiketto/server/service.py:373
+#: etiketto/server/service.py:454
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "文件已损坏：%s"
@@ -1568,81 +1629,181 @@ msgstr "只能拖放本地文件"
 msgid "Please wait until printing has finished"
 msgstr "请等待打印完成"
 
+#: etiketto/server/config.py:74
+#, python-format
+msgid "%(file)s: %(key)s: %(problem)s"
+msgstr "%(file)s: %(key)s: %(problem)s"
+
+#: etiketto/server/config.py:84 etiketto/server/config.py:88
+#: etiketto/server/config.py:94
+#, python-format
+msgid "Cannot read %(file)s: %(reason)s"
+msgstr "无法读取 %(file)s：%(reason)s"
+
+#: etiketto/server/config.py:104
+msgid "expected a table"
+msgstr "应为表"
+
+#: etiketto/server/config.py:114
+msgid "missing"
+msgstr "缺失"
+
+#: etiketto/server/config.py:117
+msgid "expected text"
+msgstr "应为文本"
+
+#: etiketto/server/config.py:123
+msgid "expected true or false"
+msgstr "应为 true 或 false"
+
+#: etiketto/server/config.py:134
+#, python-format
+msgid "expected a number from %(min)s to %(max)s"
+msgstr "应为 %(min)s 到 %(max)s 之间的数字"
+
+#: etiketto/server/config.py:141
+#, python-format
+msgid "expected one of: %s"
+msgstr "应为以下之一：%s"
+
+#: etiketto/server/config.py:146 etiketto/server/config.py:152
+msgid "unknown key"
+msgstr "未知键"
+
+#: etiketto/server/config.py:155
+msgid "nothing defined"
+msgstr "未定义任何内容"
+
+#: etiketto/server/config.py:161
+msgid "not a valid name: letters, digits, . _ - (up to 64)"
+msgstr "名称无效：只能使用字母、数字、. _ -（最多 64 个）"
+
+#: etiketto/server/config.py:202
+msgid "only one printer can be the default"
+msgstr "只能有一台默认打印机"
+
+#: etiketto/server/config.py:216
+msgid "not a valid printer address"
+msgstr "打印机地址无效"
+
+#: etiketto/server/config.py:338
+msgid "expected a date such as 2027-12-31"
+msgstr "应为日期，例如 2027-12-31"
+
+#: etiketto/server/config.py:350
+msgid "not a token hash: expected sha256:… or scrypt:…"
+msgstr "不是令牌哈希：应为 sha256:… 或 scrypt:…"
+
+#: etiketto/server/config.py:364
+msgid "expected a list of printer names"
+msgstr "应为打印机名称列表"
+
+#: etiketto/server/config.py:366
+msgid "printers can only be limited with --printers"
+msgstr "只能通过 --printers 限制打印机"
+
+#: etiketto/server/config.py:368 etiketto/server/service.py:239
+#, python-format
+msgid "Unknown printer: %s"
+msgstr "未知打印机：%s"
+
 #: etiketto/server/errors.py:29
 #, python-format
 msgid "Invalid value for %s"
 msgstr "%s 的值无效"
 
-#: etiketto/server/http.py:188
+#: etiketto/server/http.py:193
 msgid "Internal error"
 msgstr "内部错误"
 
-#: etiketto/server/http.py:193
+#: etiketto/server/http.py:198
 msgid "This server only answers on its local address"
 msgstr "此服务器只在其本地地址上应答"
 
-#: etiketto/server/http.py:197
+#: etiketto/server/http.py:202
 msgid "Requests from this web page are not allowed"
 msgstr "不允许来自此网页的请求"
 
-#: etiketto/server/http.py:206
+#: etiketto/server/http.py:212
 msgid "Too many requests – try again later"
 msgstr "请求过多，请稍后重试"
 
-#: etiketto/server/http.py:211
+#: etiketto/server/http.py:217
 msgid "Access token missing or wrong"
 msgstr "访问令牌缺失或错误"
 
-#: etiketto/server/http.py:225 etiketto/server/http.py:230
+#: etiketto/server/http.py:241 etiketto/server/http.py:246
 msgid "The request needs a Content-Length"
 msgstr "请求需要 Content-Length"
 
-#: etiketto/server/http.py:233
+#: etiketto/server/http.py:249
 msgid "The request is too large"
 msgstr "请求过大"
 
-#: etiketto/server/http.py:239
+#: etiketto/server/http.py:255
 msgid "Send the request as application/json"
 msgstr "请以 application/json 格式发送请求"
 
-#: etiketto/server/http.py:244
+#: etiketto/server/http.py:260
 msgid "The request is not valid JSON"
 msgstr "请求不是有效的 JSON"
 
-#: etiketto/server/http.py:254 etiketto/server/http.py:264
+#: etiketto/server/http.py:270 etiketto/server/http.py:280
 msgid "Not found"
 msgstr "未找到"
 
-#: etiketto/server/http.py:263
+#: etiketto/server/http.py:279
 msgid "Method not allowed"
 msgstr "不允许的方法"
 
-#: etiketto/server/main.py:34
+#: etiketto/server/main.py:35
 #, python-format
 msgid "The labels folder %s does not exist"
 msgstr "标签文件夹 %s 不存在"
 
-#: etiketto/server/main.py:47
+#: etiketto/server/main.py:48
 #, python-format
 msgid "Cannot read the token file %s"
 msgstr "无法读取令牌文件 %s"
 
-#: etiketto/server/main.py:52
+#: etiketto/server/main.py:53
 #, python-format
 msgid "The access token must be at least %d characters long"
 msgstr "访问令牌长度至少为 %d 个字符"
 
-#: etiketto/server/main.py:72
+#: etiketto/server/main.py:69
+msgid "Use either --printers or --allow-printer"
+msgstr "请使用 --printers 或 --allow-printer，二者选一"
+
+#: etiketto/server/main.py:71
+msgid "Use either --tokens or --token-file"
+msgstr "请使用 --tokens 或 --token-file，二者选一"
+
+#: etiketto/server/main.py:96
 #, python-format
 msgid ""
 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or use "
 "--token-file"
 msgstr "拒绝在没有访问令牌的情况下监听 %s：请设置 ETIKETTO_TOKEN 或使用 --token-file"
 
-#: etiketto/server/main.py:85
+#: etiketto/server/main.py:109
 #, python-format
 msgid "Cannot listen on %(address)s: %(reason)s"
 msgstr "无法监听 %(address)s：%(reason)s"
+
+#: etiketto/server/main.py:178
+msgid "Not a valid name: letters, digits, . _ - (up to 64)"
+msgstr "名称无效：只能使用字母、数字、. _ -（最多 64 个）"
+
+#: etiketto/server/main.py:192
+#, python-format
+msgid "A token named %s exists already"
+msgstr "名为 %s 的令牌已存在"
+
+#: etiketto/server/main.py:202
+#, python-format
+msgid "The token is shown only this once; %s keeps only its hash."
+msgstr "令牌仅显示这一次；%s 只保存其哈希。"
 
 #: etiketto/server/paths.py:39
 #, python-format
@@ -1686,33 +1847,55 @@ msgstr "列过多：最多 %d 列"
 msgid "Too many cells: at most %d"
 msgstr "单元格过多：最多 %d 个"
 
-#: etiketto/server/service.py:283
+#: etiketto/server/service.py:242
+#, python-format
+msgid "This access token may not use the printer %s"
+msgstr "此访问令牌不能使用打印机 %s"
+
+#: etiketto/server/service.py:257
+msgid "Choose a printer by its name"
+msgstr "请按名称选择打印机"
+
+#: etiketto/server/service.py:360
 msgid "No printer address: give it as host"
 msgstr "没有打印机地址：请以 host 提供"
 
-#: etiketto/server/service.py:290
+#: etiketto/server/service.py:367
 #, python-format
 msgid "This printer address is not allowed: %s"
 msgstr "不允许此打印机地址：%s"
 
-#: etiketto/server/service.py:439
+#: etiketto/server/service.py:537
 msgid "A sheet needs a data file"
 msgstr "工作表需要数据文件"
 
-#: etiketto/server/service.py:445
+#: etiketto/server/service.py:543
 msgid ""
 "The label uses a data file outside the labels folder: send its rows along"
 msgstr "标签使用了标签文件夹之外的数据文件：请随请求一起发送其数据行"
 
-#: etiketto/server/service.py:517
+#: etiketto/server/service.py:617
 msgid "Too many print jobs are waiting – try again later"
 msgstr "等待中的打印作业过多，请稍后重试"
 
-#: etiketto/server/service.py:668
+#: etiketto/server/service.py:791
 #, python-format
 msgid "No such print job: %s"
 msgstr "没有此打印作业：%s"
 
-#: etiketto/server/service.py:680
+#: etiketto/server/service.py:803
 msgid "The print job has already finished"
 msgstr "打印作业已完成"
+
+#: etiketto/server/service.py:810
+msgid "This access token may not do this"
+msgstr "此访问令牌无权执行此操作"
+
+#: etiketto/server/service.py:817
+#, python-format
+msgid "At most %d copies on this printer"
+msgstr "此打印机最多 %d 份"
+
+#: etiketto/server/service.py:822
+msgid "Printers are chosen by name: leave out host"
+msgstr "打印机按名称选择：请省略 host"

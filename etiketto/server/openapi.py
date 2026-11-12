@@ -40,7 +40,12 @@ LABEL_FIELDS: dict[str, Any] = {
         "description": "Or the label itself, as the JSON of an .etiketto file. Its data "
         "file is ignored: send data_rows instead.",
     },
-    "printer": {"type": "string", "description": "Printer model id, if not the label's own."},
+    "printer": {
+        "type": "string",
+        "description": "With printers.toml on the server: the printer's name (default: "
+        "the default printer, or the only one). Else a printer model id, if not the "
+        "label's own.",
+    },
     "set": dict(
         _TEXTS,
         description="Element name or variable name -> value; variables in a value are "
@@ -94,6 +99,27 @@ SCHEMAS: dict[str, Any] = {
         "required": ["status", "version"],
         "properties": {"status": {"const": "ok"}, "version": {"type": "string"}},
     },
+    "NamedPrinter": {
+        "type": "object",
+        "description": "A printer of printers.toml.",
+        "required": ["name", "printer", "host"],
+        "properties": {
+            "name": {"type": "string"},
+            "printer": {"type": "string", "description": "Printer model id."},
+            "model": {"type": "string"},
+            "host": {"type": "string"},
+            "description": {"type": ["string", "null"]},
+            "location": {"type": ["string", "null"]},
+            "media": {"type": ["string", "null"]},
+            "default": {"type": "boolean"},
+            "max_copies": {"type": "integer"},
+            "status": {
+                "description": "The state (as PrinterStatus), or UNREACHABLE with an error; "
+                "null with status=false.",
+                "type": ["object", "null"],
+            },
+        },
+    },
     "Printer": {
         "type": "object",
         "required": ["id", "name", "kind", "found"],
@@ -128,7 +154,7 @@ SCHEMAS: dict[str, Any] = {
         "properties": {
             "printer": {"type": "string"},
             "host": {"type": "string"},
-            "name": {"type": "string"},
+            "name": {"type": "string", "description": "Its name in printers.toml."},
             "model": {"type": "string"},
             "state": {"type": "string"},
             "error": {"oneOf": [{"type": "null"}, _ref("Warning")]},
@@ -211,7 +237,11 @@ SCHEMAS: dict[str, Any] = {
         "additionalProperties": False,
         "properties": dict(
             LABEL_FIELDS,
-            host={"type": "string", "description": "Printer address; the one set by default."},
+            host={
+                "type": "string",
+                "description": "Printer address, only without printers.toml; the one set "
+                "in the app by default.",
+            },
             copies={"type": "integer", "minimum": 1, "maximum": MAX_COPIES, "default": 1},
             rows={"type": "string", "description": "Data rows: 3-10, 5, 7- or -4."},
             no_save_counter={"type": "boolean", "default": False},
@@ -231,7 +261,9 @@ SCHEMAS: dict[str, Any] = {
             "id": {"type": "string"},
             "state": {"enum": ["queued", "printing", "done", "failed", "canceled"]},
             "printer": {"type": "string"},
+            "printer_name": {"type": ["string", "null"]},
             "host": {"type": "string"},
+            "owner": {"type": ["string", "null"], "description": "Name of the token."},
             "label": {"type": ["string", "null"]},
             "printed": {"type": "integer", "description": "Labels printed so far."},
             "total": {"type": "integer"},
@@ -259,6 +291,7 @@ _JOB_ID = {"name": "id", "in": "path", "required": True, "schema": {"type": "str
 
 def _operation(summary: str, responses: dict, **extra) -> dict:
     responses.setdefault("401", _error("Access token missing or wrong"))
+    responses.setdefault("403", _error("Not allowed for this token, or a printer it may not use"))
     operation: dict[str, Any] = {
         "summary": summary,
         "parameters": [_LANGUAGE],
@@ -282,13 +315,17 @@ def _paths() -> dict:
         },
         "/printers": {
             "get": _operation(
-                "Printer models, the address set for each, printers found on the network",
+                "The printers of printers.toml with their state; without it the printer "
+                "models, the address set for each and the printers found (--discover)",
                 {
                     "200": _json(
                         {
                             "type": "object",
                             "properties": {
-                                "printers": {"type": "array", "items": _ref("Printer")}
+                                "printers": {
+                                    "type": "array",
+                                    "items": {"oneOf": [_ref("NamedPrinter"), _ref("Printer")]},
+                                }
                             },
                         },
                         "Printers",
@@ -300,6 +337,12 @@ def _paths() -> dict:
                         "name": "discover",
                         "in": "query",
                         "schema": {"type": "boolean", "default": True},
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {"type": "boolean", "default": True},
+                        "description": "Ask each printer of printers.toml for its state.",
                     },
                 ],
             )
@@ -316,8 +359,19 @@ def _paths() -> dict:
                 },
                 parameters=[
                     _LANGUAGE,
-                    {"name": "id", "in": "path", "required": True, "schema": {"type": "string"}},
-                    {"name": "host", "in": "query", "schema": {"type": "string"}},
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "string"},
+                        "description": "Printer name (printers.toml) or printer model id.",
+                    },
+                    {
+                        "name": "host",
+                        "in": "query",
+                        "schema": {"type": "string"},
+                        "description": "Only without printers.toml.",
+                    },
                 ],
             )
         },
@@ -417,7 +471,9 @@ def _paths() -> dict:
 def spec(mcp: bool = False) -> dict:
     description = (
         "Print labels made with Etiketto. All requests but /health need "
-        "'Authorization: Bearer <token>' when the server has a token."
+        "'Authorization: Bearer <token>' when the server has a token. Named tokens "
+        "have a role: preview (look only), print (also print and follow their own "
+        "jobs) or admin (also all jobs)."
     )
     if mcp:
         description += " MCP (Streamable HTTP) is served at /mcp."

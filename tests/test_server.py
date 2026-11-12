@@ -365,8 +365,9 @@ def test_describe_label_with_a_data_file_elsewhere(api, server_env, tmp_path, pn
 # --- printers -------------------------------------------------------------------------
 
 
-def test_printers(api, server_env):
-    status, _r, body = call(api.base, "GET", "/api/v1/printers")
+def test_printers(make_server, server_env):
+    _server, base = make_server(discover=True)
+    status, _r, body = call(base, "GET", "/api/v1/printers")
     assert status == 200
     fake = next(p for p in body["printers"] if p["id"] == "fake-mono")
     assert fake["configured_host"] == "mono.local"
@@ -374,11 +375,15 @@ def test_printers(api, server_env):
     assert fake["kind"] == "tape" and fake["tape_widths_mm"] == [12, 24]
     ids = [p["id"] for p in body["printers"]]
     assert {"vc500w", "cab", "system", "fake-mono"} <= set(ids)
-    status, _r, body = call(api.base, "GET", "/api/v1/printers?discover=false")
+    status, _r, body = call(base, "GET", "/api/v1/printers?discover=false")
+    assert all(p["found"] == [] for p in body["printers"])
+    _server, quiet = make_server()  # the server does not search unless told
+    status, _r, body = call(quiet, "GET", "/api/v1/printers")
     assert all(p["found"] == [] for p in body["printers"])
 
 
-def test_discovery_is_remembered_and_survives_broken_plugins(api, server_env, monkeypatch):
+def test_discovery_is_remembered_and_survives_broken_plugins(make_server, server_env, monkeypatch):
+    _server, base = make_server(discover=True)
     calls = []
 
     def discover(timeout=3.0):
@@ -387,7 +392,7 @@ def test_discovery_is_remembered_and_survives_broken_plugins(api, server_env, mo
 
     monkeypatch.setattr(server_env.printer, "discover", discover)
     for _n in range(2):
-        status, _r, body = call(api.base, "GET", "/api/v1/printers")
+        status, _r, body = call(base, "GET", "/api/v1/printers")
         assert status == 200
     assert len(calls) == 1
     assert next(p for p in body["printers"] if p["id"] == "fake-mono")["found"] == []
@@ -685,7 +690,9 @@ def test_print_needs_a_host(make_server, server_env):
     server_env.printer.found = server_env.printer.found + [
         SimpleNamespace(name="One", host="one.local", address="192.0.2.1")
     ]
-    _server, base = make_server(settings={})
+    status, _r, body = call(base, "POST", "/api/v1/print", body={"label": "box"})
+    assert status == 400  # no search without --discover
+    _server, base = make_server(settings={}, discover=True)
     status, _r, job = call(base, "POST", "/api/v1/print", body={"label": "box", "wait": 10})
     assert job["host"] == "one.local"
 

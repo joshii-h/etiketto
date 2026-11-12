@@ -37,6 +37,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from etiketto.server import requests
+from etiketto.server.config import LOCAL, Caller, TokenStore
 from etiketto.server.errors import ApiError, bad_request
 from etiketto.server.mcp import HttpTransport, Mcp
 from etiketto.server.openapi import spec
@@ -85,10 +86,11 @@ def _host_name(header: str) -> str:
 class Config:
     host: str = "127.0.0.1"
     port: int = 8790
-    token: str | None = None
+    token: str | None = None  # one token for everything (role admin)
     mcp: bool = False
     origins: tuple[str, ...] = ()  # web origins allowed besides the server itself
     max_body: int = MAX_BODY
+    tokens: TokenStore | None = None  # named tokens with roles (tokens.toml)
 
 
 class RateLimit:
@@ -176,7 +178,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self) -> None:  # noqa: N802 - no CORS: preflights are refused
         self._handle("OPTIONS")
 
+    caller: Caller = LOCAL
+
     def _handle(self, method: str) -> None:
+        self.caller = LOCAL
         with language(self.headers.get("Accept-Language")):
             try:
                 self._check()
@@ -196,19 +201,30 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError(
                 403, "origin_not_allowed", _("Requests from this web page are not allowed")
             )
-        token = self.server.config.token
-        if token is not None and self._path() != PREFIX + "/health":
-            self._authorize(token)
+        config = self.server.config
+        if (config.token or config.tokens) and self._path() != PREFIX + "/health":
+            self.caller = self._authorize()
 
-    def _authorize(self, token: str) -> None:
+    def _authorize(self) -> Caller:
+        """Who the token belongs to; 401 for a wrong, expired or revoked one."""
         client = self.client_address[0]
         if self.server.rate_limit.blocked(client):
             raise ApiError(429, "too_many_requests", _("Too many requests – try again later"))
         scheme, _sep, value = self.headers.get("Authorization", "").partition(" ")
-        right = hmac.compare_digest(value.strip().encode(), token.encode())
-        if scheme.lower() != "bearer" or not right:
+        caller = self._caller(value.strip()) if scheme.lower() == "bearer" else None
+        if caller is None:
             self.server.rate_limit.failed(client)
             raise ApiError(401, "unauthorized", _("Access token missing or wrong"))
+        return caller
+
+    def _caller(self, given: str) -> Caller | None:
+        config = self.server.config
+        if config.tokens is not None:
+            return config.tokens.find(given) if given else None
+        assert config.token is not None
+        return (
+            Caller("token") if hmac.compare_digest(given.encode(), config.token.encode()) else None
+        )
 
     def _origin_ok(self, origin: str) -> bool:
         own = {"http://" + self.headers.get("Host", ""), "https://" + self.headers.get("Host", "")}
@@ -270,12 +286,17 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, spec(mcp=self.server.mcp is not None))
 
     def printers(self, _parts: list[str]) -> None:
-        discover = self._query().get("discover", ["true"])[-1].lower() not in ("false", "0", "no")
-        self._send(200, {"printers": self.server.service.printers(discover)})
+        query = self._query()
+        discover, status = (
+            query.get(key, ["true"])[-1].lower() not in ("false", "0", "no")
+            for key in ("discover", "status")
+        )
+        printers = self.server.service.printers(discover, status, self.caller)
+        self._send(200, {"printers": printers})
 
     def status(self, parts: list[str]) -> None:
         host = self._query().get("host", [None])[-1]
-        self._send(200, self.server.service.status(parts[1], host))
+        self._send(200, self.server.service.status(parts[1], host, self.caller))
 
     def labels(self, _parts: list[str]) -> None:
         self._send(200, {"labels": self.server.service.list_labels()})
@@ -285,7 +306,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def preview(self, _parts: list[str]) -> None:
         request = requests.preview_request(self._json())
-        preview = self.server.service.preview(request)
+        preview = self.server.service.preview(request, self.caller)
         if request.format == "json":
             self._send(200, preview.to_dict())
             return
@@ -296,27 +317,27 @@ class Handler(BaseHTTPRequestHandler):
     def print_job(self, _parts: list[str]) -> None:
         request = requests.print_request(self._json())
         service = self.server.service
-        job = service.submit(request)
+        job = service.submit(request, self.caller)
         finished = job.done.wait(request.wait) if request.wait else job.done.is_set()
         location = {"Location": "%s/jobs/%s" % (PREFIX, job.id)}
         self._send(200 if finished else 202, service.job_dict(job), location)
 
     def job(self, parts: list[str]) -> None:
         service = self.server.service
-        self._send(200, service.job_dict(service.job(parts[1])))
+        self._send(200, service.job_dict(service.job(parts[1], self.caller)))
 
     def cancel(self, parts: list[str]) -> None:
         service = self.server.service
-        self._send(202, service.job_dict(service.cancel(parts[1])))
+        self._send(202, service.job_dict(service.cancel(parts[1], self.caller)))
 
     def _mcp(self, method: str) -> None:
         transport = self.server.mcp
         assert transport is not None
         headers = {key.lower(): value for key, value in self.headers.items()}
         if method == "POST":
-            reply = transport.post(headers, self._body())
+            reply = transport.post(headers, self._body(), self.caller)
         elif method == "DELETE":
-            reply = transport.delete(headers)
+            reply = transport.delete(headers, self.caller)
         else:
             self._send(405, None, {"Allow": "POST, DELETE"})
             return
@@ -357,7 +378,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
         status = code.value if isinstance(code, HTTPStatus) else code
-        log.info("%s %s %s %s", self.client_address[0], self.command, self._path(), status)
+        log.info(
+            "%s %s %s %s %s",
+            self.client_address[0],
+            self.caller.name,
+            self.command,
+            self._path(),
+            status,
+        )
 
     def log_message(self, format: str, *args) -> None:  # noqa: A002 - http.server's name
         log.debug("%s " + format, self.client_address[0], *args)

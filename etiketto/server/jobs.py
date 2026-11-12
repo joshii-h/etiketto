@@ -58,6 +58,8 @@ class PrintJob:
     failure: Failure | None = None
     remark: Callable[[], str | None] | None = None
     warnings: list = field(default_factory=list)  # the check's warnings (RenderWarning)
+    owner: str = ""  # the name of the token that asked for it
+    printer_name: str = ""  # its name in printers.toml, if any
     created: str = field(default_factory=_now)
     started: str = ""
     finished: str = ""
@@ -70,7 +72,9 @@ class PrintJob:
             "id": self.id,
             "state": self.state,
             "printer": self.printer,
+            "printer_name": self.printer_name or None,
             "host": self.host,
+            "owner": self.owner or None,
             "label": self.label or None,
             "printed": self.printed,
             "total": self.total,
@@ -92,6 +96,16 @@ class PrintJob:
         self.finished = _now()
         self.finished_at = time.monotonic()
         self.done.set()
+        code = self.failure.code if self.failure else ""
+        log.info(
+            "job %s by %s %s: %d of %d %s",
+            self.id,
+            self.owner,
+            state,
+            self.printed,
+            self.total,
+            code,
+        )
 
 
 class QueueFull(Exception):

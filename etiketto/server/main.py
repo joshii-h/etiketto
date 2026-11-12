@@ -7,6 +7,7 @@ import os
 import signal
 import stat
 import sys
+from datetime import date, datetime
 from pathlib import Path
 
 from etiketto.cli import EXIT_FILE, EXIT_OK, EXIT_USAGE, CliError
@@ -60,13 +61,36 @@ def _logging() -> None:
     )
 
 
-def serve(args) -> int:
-    from etiketto.server.http import Config, Server, binds_loopback
+def _configured(args):
+    """printers.toml and tokens.toml, checked: (printers or None, tokens or None)."""
+    from etiketto.server.config import ConfigError, TokenStore, load_printers
+
+    if args.printers and args.allow_printer:
+        raise CliError(_("Use either --printers or --allow-printer"), EXIT_USAGE)
+    if getattr(args, "tokens", None) and getattr(args, "token_file", None):
+        raise CliError(_("Use either --tokens or --token-file"), EXIT_USAGE)
+    try:
+        printers = load_printers(args.printers) if args.printers else None
+        tokens = TokenStore(args.tokens, printers) if getattr(args, "tokens", None) else None
+    except ConfigError as e:
+        raise CliError(str(e), EXIT_FILE) from None
+    return printers, tokens
+
+
+def _service(args, printers):
     from etiketto.server.service import Service
 
+    folder = labels_dir(args.labels_dir)
+    return Service(folder, tuple(args.allow_printer), printers=printers, discover=args.discover)
+
+
+def serve(args) -> int:
+    from etiketto.server.http import Config, Server, binds_loopback
+
     _logging()
-    token = read_token(args.token_file)
-    if token is None and not binds_loopback(args.host):
+    printers, tokens = _configured(args)
+    token = read_token(args.token_file) if tokens is None else None
+    if token is None and tokens is None and not binds_loopback(args.host):
         raise CliError(
             _(
                 "Refusing to listen on %s without an access token: set ETIKETTO_TOKEN or "
@@ -75,8 +99,8 @@ def serve(args) -> int:
             % args.host,
             EXIT_USAGE,
         )
-    service = Service(labels_dir(args.labels_dir), tuple(args.allow_printer))
-    config = Config(args.host, args.port, token, args.mcp, tuple(args.allow_origin))
+    service = _service(args, printers)
+    config = Config(args.host, args.port, token, args.mcp, tuple(args.allow_origin), tokens=tokens)
     try:
         server = Server(config, service)
     except OSError as e:
@@ -86,6 +110,8 @@ def serve(args) -> int:
             % {"address": "%s:%d" % (args.host, args.port), "reason": e.strerror or e},
             EXIT_USAGE,
         ) from None
+    if tokens is not None:  # revoked tokens: read the file again on SIGHUP too
+        signal.signal(signal.SIGHUP, lambda _signum, _frame: tokens.reload())
     return _run(server, service)
 
 
@@ -114,7 +140,99 @@ def _run(server, service) -> int:
 
 def mcp(args) -> int:
     from etiketto.server.mcp import run_stdio
-    from etiketto.server.service import Service
 
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
-    return run_stdio(Service(labels_dir(args.labels_dir), tuple(args.allow_printer)))
+    printers, _tokens = _configured(args)
+    return run_stdio(_service(args, printers))
+
+
+# --- etiketto token new -------------------------------------------------------------
+
+
+def default_tokens_file() -> Path:
+    from gi.repository import GLib
+
+    return Path(GLib.get_user_config_dir()) / "etiketto" / "tokens.toml"
+
+
+def _expiry(text: str | None) -> str:
+    """A date or date and time as TOML writes it; "" for none."""
+    if not text:
+        return ""
+    try:
+        if "T" in text or " " in text.strip():
+            return datetime.fromisoformat(text.strip()).isoformat()
+        return date.fromisoformat(text.strip()).isoformat()
+    except ValueError:
+        raise CliError(
+            _("%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30") % text, EXIT_USAGE
+        ) from None
+
+
+def token_new(args) -> int:
+    """Make a token, add its hash to tokens.toml, show the token once."""
+    from etiketto.model import write_file
+    from etiketto.server.config import NAME, hash_token, new_token, token_entry
+
+    if not NAME.match(args.name):
+        raise CliError(_("Not a valid name: letters, digits, . _ - (up to 64)"), EXIT_USAGE)
+    path = args.tokens or default_tokens_file()
+    printers = _printers_file(args.printers)
+    old = path.read_text(encoding="utf-8") if path.exists() else ""
+    token = new_token()
+    entry = token_entry(
+        args.name,
+        hash_token(token, "scrypt" if args.scrypt else "sha256"),
+        args.role,
+        args.printer,
+        _expiry(args.expires),
+        args.description or "",
+    )
+    if old.strip() and any(e.caller.name == args.name for e in _entries(path, printers)):
+        raise CliError(_("A token named %s exists already") % args.name, EXIT_USAGE)
+    _check_new(path, old + entry, printers)
+    if not path.exists():  # only for this user, from the start
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.close(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
+    write_file(path, (old + entry).encode())
+    sys.stdout.write(token + "\n")
+    sys.stdout.flush()
+    sys.stderr.write(
+        "etiketto: "
+        + _("The token is shown only this once; %s keeps only its hash.") % path
+        + "\n"
+    )
+    return EXIT_OK
+
+
+def _printers_file(path: Path | None):
+    from etiketto.server.config import ConfigError, load_printers
+
+    try:
+        return load_printers(path) if path else None
+    except ConfigError as e:
+        raise CliError(str(e), EXIT_FILE) from None
+
+
+def _entries(path: Path, printers):
+    from etiketto.server.config import ConfigError, load_tokens
+
+    try:
+        return load_tokens(path, printers)
+    except ConfigError as e:
+        raise CliError(str(e), EXIT_FILE) from None
+
+
+def _check_new(path: Path, text: str, printers) -> None:
+    """The file with the new entry must read as the server reads it."""
+    import tempfile
+
+    from etiketto.server.config import ConfigError, load_tokens
+
+    with tempfile.TemporaryDirectory() as folder:
+        trial = Path(folder) / path.name
+        trial.write_text(text, encoding="utf-8")
+        try:
+            load_tokens(trial, printers)
+        except ConfigError as e:
+            raise CliError(str(e).replace(str(trial), str(path)), EXIT_FILE) from None

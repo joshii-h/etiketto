@@ -75,7 +75,7 @@ from etiketto.ui.texts import (
 from etiketto.units import unit_for
 from etiketto.variables import BUILTIN, Values, label_names
 
-COMMANDS = ("print", "list-printers", "serve", "mcp", "--version", "--help", "-h")
+COMMANDS = ("print", "list-printers", "serve", "mcp", "token", "--version", "--help", "-h")
 DEFAULT_PORT = 8790
 
 EXIT_OK = 0
@@ -259,6 +259,17 @@ def _server_options(command: argparse.ArgumentParser) -> None:
         default=[],
         help=_("only print on this printer address (* matches anything); repeatable"),
     )
+    command.add_argument(
+        "--printers",
+        metavar="FILE",
+        type=Path,
+        help=_("printers.toml: the printers clients may use, by name"),
+    )
+    command.add_argument(
+        "--discover",
+        action="store_true",
+        help=_("search the network for printers (off by default)"),
+    )
 
 
 def _server_parsers(commands) -> None:
@@ -282,6 +293,12 @@ def _server_parsers(commands) -> None:
         type=Path,
         help=_("file with the access token; else the environment variable ETIKETTO_TOKEN"),
     )
+    serve.add_argument(
+        "--tokens",
+        metavar="FILE",
+        type=Path,
+        help=_("tokens.toml: named access tokens with roles"),
+    )
     serve.add_argument("--mcp", action="store_true", help=_("also serve MCP at /mcp"))
     serve.add_argument(
         "--allow-origin",
@@ -299,6 +316,44 @@ def _server_parsers(commands) -> None:
         ),
     )
     _server_options(mcp)
+    _token_parser(commands)
+
+
+def _token_parser(commands) -> None:
+    token = commands.add_parser(
+        "token",
+        help=_("manage the access tokens of the print server"),
+        description=_("Manage the access tokens of the print server."),
+    )
+    actions = token.add_subparsers(dest="action", required=True, metavar="ACTION")
+    new = actions.add_parser(
+        "new",
+        help=_("make a token and add its hash to tokens.toml"),
+        description=_("Make a token, add its hash to tokens.toml and show the token once."),
+    )
+    new.add_argument("name", metavar="NAME", help=_("name of the token, e.g. the device"))
+    new.add_argument(
+        "--role",
+        choices=("preview", "print", "admin"),
+        default="print",
+        help=_("preview: look only; print: also print; admin: also all jobs"),
+    )
+    new.add_argument("--tokens", metavar="FILE", type=Path, help=_("tokens.toml to add it to"))
+    new.add_argument(
+        "--printer",
+        metavar="NAME",
+        action="append",
+        default=[],
+        help=_("only this printer of printers.toml; repeatable"),
+    )
+    new.add_argument(
+        "--printers", metavar="FILE", type=Path, help=_("printers.toml, to check --printer")
+    )
+    new.add_argument("--expires", metavar="DATE", help=_("valid until, e.g. 2027-12-31"))
+    new.add_argument("--description", metavar="TEXT", help=_("a note for people"))
+    new.add_argument(
+        "--scrypt", action="store_true", help=_("store the hash with scrypt instead of SHA-256")
+    )
 
 
 # --- print ------------------------------------------------------------------
@@ -874,10 +929,11 @@ def run(argv: list[str]) -> int:
     try:
         if args.command == "print":
             return print_command(args)
-        if args.command in ("serve", "mcp"):
+        if args.command in ("serve", "mcp", "token"):
             from etiketto.server import main as server
 
-            return server.serve(args) if args.command == "serve" else server.mcp(args)
+            run = {"serve": server.serve, "mcp": server.mcp, "token": server.token_new}
+            return run[args.command](args)
         return list_command(args)
     except CliError as e:
         _say(str(e))

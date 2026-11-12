@@ -35,6 +35,7 @@ from typing import IO, Any
 
 from etiketto import __version__
 from etiketto.server import requests
+from etiketto.server.config import LOCAL, Caller
 from etiketto.server.errors import ApiError
 from etiketto.server.service import Service
 
@@ -94,7 +95,8 @@ _LABEL_PROPERTIES = {
     },
     "printer": {
         "type": "string",
-        "description": "Printer model (id from list_printers), if not the label's own.",
+        "description": "The printer's name from list_printers; without a printer list on "
+        "the server, a printer model id, if not the label's own.",
     },
     "set": dict(
         _TEXTS,
@@ -159,8 +161,17 @@ TOOLS = [
     _tool(
         "list_printers",
         "List printers",
-        "Printer models with the address set for each and the printers found on the network.",
-        _schema({"discover": {"type": "boolean", "description": "Search the network (3 s)."}}),
+        "The printers this server prints on, with their state; without a printer list, "
+        "the printer models with the address set for each.",
+        _schema(
+            {
+                "status": {"type": "boolean", "description": "Ask each printer for its state."},
+                "discover": {
+                    "type": "boolean",
+                    "description": "Search the network, if the server allows it.",
+                },
+            }
+        ),
         True,
     ),
     _tool(
@@ -169,8 +180,11 @@ TOOLS = [
         "Ask a printer for its state: loaded media, problems, resolution, print modes.",
         _schema(
             {
-                "printer": {"type": "string", "description": "Printer model id."},
-                "host": {"type": "string", "description": "Address; the one set by default."},
+                "printer": {"type": "string", "description": "Printer name or model id."},
+                "host": {
+                    "type": "string",
+                    "description": "Address, only without a printer list; the one set by default.",
+                },
             },
             ("printer",),
         ),
@@ -216,7 +230,10 @@ TOOLS = [
         _schema(
             dict(
                 _LABEL_PROPERTIES,
-                host={"type": "string", "description": "Printer address; the one set by default."},
+                host={
+                    "type": "string",
+                    "description": "Printer address, only without a printer list on the server.",
+                },
                 copies={"type": "integer", "minimum": 1, "maximum": requests.MAX_COPIES},
                 rows={"type": "string", "description": "Data rows to print, e.g. 3-10, 5 or 7-."},
                 no_save_counter={
@@ -244,6 +261,12 @@ TOOLS = [
     ),
 ]
 TOOL_NAMES = frozenset(tool["name"] for tool in TOOLS)
+PRINTING = frozenset({"print_label", "job_status", "cancel_job"})  # need the role print
+
+
+def tools_for(caller: Caller) -> list[dict]:
+    """The tools a token may use: a preview token sees no printing tools."""
+    return [t for t in TOOLS if caller.may("print") or t["name"] not in PRINTING]
 
 
 def _json_text(data: object) -> dict:
@@ -260,6 +283,7 @@ class Session:
 
     version: str
     id: str = field(default_factory=lambda: secrets.token_urlsafe(24))
+    owner: str = ""  # the token that opened it; no other may use it
     used: float = field(default_factory=time.monotonic)
 
 
@@ -269,20 +293,26 @@ class Mcp:
 
     def __init__(self, service: Service):
         self.service = service
-        self._tools: dict[str, Callable[[dict], dict]] = {
+        self._tools: dict[str, Callable[[dict, Caller], dict]] = {
             "list_printers": self._list_printers,
             "printer_status": self._printer_status,
-            "list_labels": lambda _args: _structured({"labels": self.service.list_labels()}),
-            "describe_label": lambda args: _structured(self.service.describe(args.get("label"))),
+            "list_labels": lambda _args, _caller: _structured(
+                {"labels": self.service.list_labels()}
+            ),
+            "describe_label": lambda args, _caller: _structured(
+                self.service.describe(args.get("label"))
+            ),
             "preview_label": self._preview,
             "print_label": self._print,
             "job_status": self._job_status,
-            "cancel_job": lambda args: _structured(
-                self.service.job_dict(self.service.cancel(args.get("job_id")))
+            "cancel_job": lambda args, caller: _structured(
+                self.service.job_dict(self.service.cancel(args.get("job_id"), caller))
             ),
         }
 
-    def handle(self, message: object, session: Session | None = None) -> dict | None:
+    def handle(
+        self, message: object, session: Session | None = None, caller: Caller = LOCAL
+    ) -> dict | None:
         """The answer to one JSON-RPC message; None for a notification or
         a response (the server sends no requests, so they are ignored)."""
         if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
@@ -295,21 +325,22 @@ class Mcp:
         if isinstance(ident, bool) or not isinstance(ident, (str, int)):
             return _error(None, RpcError(INVALID_REQUEST, "Invalid Request"))
         try:
-            return {"jsonrpc": "2.0", "id": ident, "result": self.result(message, session)}
+            result = self.result(message, session, caller)
+            return {"jsonrpc": "2.0", "id": ident, "result": result}
         except RpcError as e:
             return _error(ident, e)
 
-    def result(self, message: dict, session: Session | None) -> dict:
+    def result(self, message: dict, session: Session | None, caller: Caller = LOCAL) -> dict:
         method, params = message.get("method"), message.get("params", {})
         if not isinstance(method, str) or not isinstance(params, dict):
             raise RpcError(INVALID_REQUEST, "Invalid Request")
         meta = params.get("_meta")
         if isinstance(meta, dict) and VERSION_KEY in meta:
-            result = self._modern(method, params, meta)
+            result = self._modern(method, params, meta, caller)
             return dict(result, resultType="complete", _meta={SERVER_INFO_KEY: SERVER_INFO})
-        return self._legacy(method, params, session)
+        return self._legacy(method, params, session, caller)
 
-    def _modern(self, method: str, params: dict, meta: dict) -> dict:
+    def _modern(self, method: str, params: dict, meta: dict, caller: Caller) -> dict:
         requested = meta[VERSION_KEY]
         if requested not in MODERN:
             data = {"supported": list(SUPPORTED), "requested": requested}
@@ -322,9 +353,9 @@ class Mcp:
                 "capabilities": {"tools": {"listChanged": False}},
                 "instructions": INSTRUCTIONS,
             }
-        return self._common(method, params)
+        return self._common(method, params, caller)
 
-    def _legacy(self, method: str, params: dict, session: Session | None) -> dict:
+    def _legacy(self, method: str, params: dict, session: Session | None, caller: Caller) -> dict:
         if method == "initialize":
             requested = params.get("protocolVersion")
             version = requested if requested in LEGACY else LEGACY[0]
@@ -336,25 +367,25 @@ class Mcp:
                 "serverInfo": SERVER_INFO,
                 "instructions": INSTRUCTIONS,
             }
-        return self._common(method, params)
+        return self._common(method, params, caller)
 
-    def _common(self, method: str, params: dict) -> dict:
+    def _common(self, method: str, params: dict, caller: Caller) -> dict:
         if method == "ping":
             return {}
         if method == "tools/list":
-            return {"tools": TOOLS}
+            return {"tools": tools_for(caller)}
         if method == "tools/call":
-            return self.call(params)
+            return self.call(params, caller)
         raise RpcError(METHOD_NOT_FOUND, "Method not found: %s" % method)
 
-    def call(self, params: Mapping) -> dict:
+    def call(self, params: Mapping, caller: Caller = LOCAL) -> dict:
         name, arguments = params.get("name"), params.get("arguments", {})
         if not isinstance(name, str) or name not in TOOL_NAMES:
             raise RpcError(INVALID_PARAMS, "Unknown tool: %s" % name)
         if not isinstance(arguments, dict):
             raise RpcError(INVALID_PARAMS, "arguments must be an object")
         try:
-            return self._tools[name](arguments)
+            return self._tools[name](arguments, caller)
         except ApiError as e:
             return {
                 "content": [{"type": "text", "text": "%s (%s)" % (e.message, e.code)}],
@@ -364,17 +395,17 @@ class Mcp:
 
     # --- the tools ------------------------------------------------------------
 
-    def _list_printers(self, args: dict) -> dict:
-        discover = args.get("discover", True)
-        return _structured({"printers": self.service.printers(discover is not False)})
+    def _list_printers(self, args: dict, caller: Caller) -> dict:
+        discover, status = (args.get(key, True) is not False for key in ("discover", "status"))
+        return _structured({"printers": self.service.printers(discover, status, caller)})
 
-    def _printer_status(self, args: dict) -> dict:
+    def _printer_status(self, args: dict, caller: Caller) -> dict:
         host = args.get("host")
-        return _structured(self.service.status(args.get("printer"), host))
+        return _structured(self.service.status(args.get("printer"), host, caller))
 
-    def _preview(self, args: dict) -> dict:
+    def _preview(self, args: dict, caller: Caller) -> dict:
         request = requests.preview_request(args)
-        preview = self.service.preview(request)
+        preview = self.service.preview(request, caller)
         summary = {"width": preview.width, "height": preview.height, "warnings": preview.warnings}
         image = {
             "type": "image",
@@ -383,16 +414,16 @@ class Mcp:
         }
         return {"content": [image, _json_text(summary)], "structuredContent": summary}
 
-    def _print(self, args: dict) -> dict:
+    def _print(self, args: dict, caller: Caller) -> dict:
         args = dict(args)
         args.setdefault("wait", DEFAULT_WAIT)
         request = requests.print_request(args)
-        job = self.service.submit(request)
+        job = self.service.submit(request, caller)
         job.done.wait(request.wait)
         return _structured(self.service.job_dict(job))
 
-    def _job_status(self, args: dict) -> dict:
-        job = self.service.job(args.get("job_id"))
+    def _job_status(self, args: dict, caller: Caller) -> dict:
+        job = self.service.job(args.get("job_id"), caller)
         wait = requests._number(args, "wait", 0.0, requests.MAX_WAIT)
         job.done.wait(wait)
         return _structured(self.service.job_dict(job))
@@ -506,7 +537,7 @@ class HttpTransport:
         self._sessions: dict[str, Session] = {}
         self._lock = threading.Lock()
 
-    def post(self, headers: Mapping[str, str], body: bytes) -> Reply:
+    def post(self, headers: Mapping[str, str], body: bytes, caller: Caller = LOCAL) -> Reply:
         if not _accepts_json(headers.get("accept")):
             return Reply(406, _error(None, RpcError(INVALID_REQUEST, "Accept application/json")))
         try:
@@ -518,26 +549,28 @@ class HttpTransport:
         params = message.get("params")
         meta = params.get("_meta") if isinstance(params, dict) else None
         if isinstance(meta, dict) and VERSION_KEY in meta:
-            return self._modern(headers, message, meta)
-        return self._legacy(headers, message)
+            return self._modern(headers, message, meta, caller)
+        return self._legacy(headers, message, caller)
 
-    def _modern(self, headers: Mapping[str, str], message: dict, meta: dict) -> Reply:
+    def _modern(
+        self, headers: Mapping[str, str], message: dict, meta: dict, caller: Caller
+    ) -> Reply:
         if "id" not in message:
             return Reply(202)
         mismatch = _header_mismatch(headers, message, meta)
         if mismatch:
             error = RpcError(HEADER_MISMATCH, "Header mismatch: " + mismatch)
             return Reply(400, _error(message.get("id"), error))
-        answer = self.mcp.handle(message)
+        answer = self.mcp.handle(message, caller=caller)
         return Reply(_status(answer), answer)
 
-    def _legacy(self, headers: Mapping[str, str], message: dict) -> Reply:
+    def _legacy(self, headers: Mapping[str, str], message: dict, caller: Caller) -> Reply:
         if message.get("method") == "initialize" and "id" in message:
-            return self._initialize(message)
+            return self._initialize(message, caller)
         session_id = headers.get("mcp-session-id")
         if not session_id:
             return Reply(400, _error(message.get("id"), RpcError(INVALID_REQUEST, "No session")))
-        session = self._session(session_id)
+        session = self._session(session_id, caller)
         if session is None:
             return Reply(
                 404, _error(message.get("id"), RpcError(INVALID_REQUEST, "No such session"))
@@ -546,24 +579,26 @@ class HttpTransport:
         if version is not None and version not in LEGACY:
             error = RpcError(INVALID_REQUEST, "Unsupported MCP-Protocol-Version: %s" % version)
             return Reply(400, _error(message.get("id"), error))
-        answer = self.mcp.handle(message, session)
+        answer = self.mcp.handle(message, session, caller)
         return Reply(202) if answer is None else Reply(200, answer)
 
-    def _initialize(self, message: dict) -> Reply:
-        session = Session(LEGACY[0])
-        answer = self.mcp.handle(message, session)
+    def _initialize(self, message: dict, caller: Caller) -> Reply:
+        session = Session(LEGACY[0], owner=caller.name)
+        answer = self.mcp.handle(message, session, caller)
         if answer is None or "error" in answer:
             return Reply(200, answer)
         self._open(session)
         return Reply(200, answer, {"Mcp-Session-Id": session.id})
 
-    def delete(self, headers: Mapping[str, str]) -> Reply:
+    def delete(self, headers: Mapping[str, str], caller: Caller = LOCAL) -> Reply:
         session_id = headers.get("mcp-session-id")
         if not session_id:
             return Reply(400, _error(None, RpcError(INVALID_REQUEST, "No session")))
+        if self._session(session_id, caller) is None:
+            return Reply(404)
         with self._lock:
-            found = self._sessions.pop(session_id, None)
-        return Reply(204 if found else 404)
+            self._sessions.pop(session_id, None)
+        return Reply(204)
 
     def _open(self, session: Session) -> None:
         with self._lock:
@@ -573,10 +608,13 @@ class HttpTransport:
                 del self._sessions[oldest.id]
             self._sessions[session.id] = session
 
-    def _session(self, session_id: str) -> Session | None:
+    def _session(self, session_id: str, caller: Caller = LOCAL) -> Session | None:
+        """The session, if the same token opened it."""
         with self._lock:
             self._expire()
             session = self._sessions.get(session_id)
+            if session and session.owner != caller.name:
+                return None
             if session:
                 session.used = time.monotonic()
             return session
