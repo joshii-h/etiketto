@@ -93,7 +93,12 @@ class PrintFlow:
 
     def on_print(self, *_args) -> None:
         window = self.window
-        if self.busy or not window.rendered:
+        if self.busy:
+            return
+        # an edit not rendered yet, or the first render still running: the
+        # dialog shows (and the check uses) the label as it is now
+        window.render_if_stale()
+        if not window.rendered:  # the render failed: its message is shown
             return
         if not window.label.elements and not window.label.background_image:
             window.toast(_("The label is empty"))

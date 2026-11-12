@@ -408,6 +408,8 @@ def make_window(gtk_app, gui_env):
     for thread in threading.enumerate():  # the searches and queries end with the test
         if thread.name in ("etiketto-discover", "etiketto-query"):
             thread.join(timeout=5)
+    for win in windows:  # and the preview's thread, after its render
+        win.preview_worker.stop()
     for win in windows:
         win.dirty = False
         win.print_flow.busy = False

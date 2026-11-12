@@ -166,8 +166,9 @@ _pictures = _Cache(1)
 _generation = [0]  # counts clear_caches(): what was decoded before is not kept
 # drawn areas, bounded by their memory
 _drawings = _Cache(16, CACHE_BYTES, _image_bytes)
-# Poppler documents are not safe to use from two threads: the preview (main
-# thread) and a print in the background each open their own document
+# Poppler documents are not safe to use from two threads: the preview's
+# thread (window.PreviewWorker, which keeps its documents from render to
+# render) and a print in the background each open their own document
 _threads = threading.local()
 
 

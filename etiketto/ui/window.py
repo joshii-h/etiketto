@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import os
 import threading
 from collections.abc import Callable
@@ -15,7 +16,7 @@ gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
-from PIL import Image, ImageColor  # noqa: E402
+from PIL import Image  # noqa: E402
 
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
@@ -74,7 +75,9 @@ class Window(Adw.ApplicationWindow):
         self.expand_index = -1
         self.last_dialog = None
         self._render_source = 0
-        self._render_generation = 0  # a render shows only if no newer one started
+        self._render_generation = 0  # a render shows only if nothing changed since
+        self._shown_generation = -1  # the generation the preview shows
+        self.preview_worker = PreviewWorker(self._show_render)
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
         # random variables ({=uuid}, {=id}) keep their preview value while editing
@@ -109,7 +112,7 @@ class Window(Adw.ApplicationWindow):
         self.connect("close-request", self._on_close_request)
         # a search or query still running must not touch a closed window's
         # settings (they would overwrite those of a newer window)
-        self.connect("destroy", lambda _w: self.printer._next_generation())
+        self.connect("destroy", self._on_destroy)
 
         self.rebuild_sidebar()
         self.update_title()
@@ -475,22 +478,25 @@ class Window(Adw.ApplicationWindow):
         return self._render_work()()
 
     def _render_work(self) -> Callable[[], tuple[Rendered, Image.Image]]:
-        """What a render needs, taken from the window now (a copy of the
-        label filled in, the options, the sheet), and a function that
-        renders it without touching the window: it may run in a thread."""
+        """What a render needs, copied from the window now (the label filled
+        in, the options, the sheet, what the backend's capabilities say),
+        and a function that renders it from those copies alone: it runs in
+        the preview's thread while the label is edited further."""
         backend = self.backend
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
-        options = self.render_options()
+        label = copy.deepcopy(label)  # the window's elements change while it renders
+        options = copy.deepcopy(self.render_options())
         self.rendered_geometry = self.render_geometry()
         self.rendered_dpi = backend.render_dpi(label.tape_mm, options, PREVIEW_MAX_DPI)
         safe_mm, mode, sheet = self.printer_settings.safe_mm, self.print_flow.mode, self.sheet
-        choice = self.label.sheet
-        tape = round(label.tape_mm / 25.4 * self.rendered_dpi)
+        choice = copy.deepcopy(self.label.sheet)
+        continuous = backend.capabilities.continuous
+        tape = round(label.tape_mm / 25.4 * self.rendered_dpi) if continuous else 0
 
         def work() -> tuple[Rendered, Image.Image]:
             rendered = backend.render_label(label, options, safe_mm, PREVIEW_MAX_DPI, bleed=False)
             rendered.warnings[:0] = warnings
-            image = backend.preview(self._on_tape(rendered.image, label, tape), mode)
+            image = backend.preview(_on_tape(rendered.image, tape), mode)
             if sheet and choice:  # round labels and CDs: their shape
                 image = clip_preview(image, sheet, choice.rotated)
             return rendered, image
@@ -516,19 +522,6 @@ class Window(Adw.ApplicationWindow):
         rendered.warnings[:0] = warnings
         return rendered
 
-    def _on_tape(self, image: Image.Image, label: Label, tape: int) -> Image.Image:
-        """Endless tape: the render covers only what the head prints (a
-        P-touch's or QL's printable width); preview and export show the
-        whole tape (`tape` pixels), the strip on the label's background in
-        its middle."""
-        if not self.backend.capabilities.continuous:
-            return image
-        if image.height >= tape:
-            return image
-        whole = Image.new("RGB", (image.width, tape), _color_of(label.background))
-        whole.paste(image.convert("RGB"), (0, (tape - image.height) // 2))
-        return whole
-
     def preview_values(self) -> Values:
         """The variables as the next print fills them in: now, the next counter."""
         return Values.for_label(
@@ -539,14 +532,30 @@ class Window(Adw.ApplicationWindow):
         )
 
     def schedule_render(self) -> None:
+        """A render soon (edits come in bursts); a render still running for
+        the label before this edit is not shown any more."""
+        self._render_generation += 1
         if self._render_source:
             GLib.source_remove(self._render_source)
         self._render_source = GLib.timeout_add(120, self.render_preview)
 
+    @property
+    def preview_current(self) -> bool:
+        """The preview (and `rendered`) shows the label as it is now."""
+        return self.rendered is not None and self._shown_generation == self._render_generation
+
+    def render_if_stale(self) -> None:
+        """The preview rendered here and now if an edit or a render is still
+        pending (the print dialog shows the length of what it prints)."""
+        if not self.preview_current:
+            if self._render_source:
+                GLib.source_remove(self._render_source)
+            self.render_preview(wait=True)
+
     def render_preview(self, wait: bool = False) -> bool:
-        """Render the preview in a thread (a large label at 600 dpi takes a
-        while; the window stays responsive), shown when it is done unless a
-        newer render was started meanwhile; `wait`: here and now."""
+        """Render the preview in the preview's thread (a large label at 600
+        dpi takes a while; the window stays responsive), shown when it is
+        done unless an edit came meanwhile; `wait`: here and now."""
         self._render_source = 0
         self._render_generation += 1
         generation = self._render_generation
@@ -555,26 +564,16 @@ class Window(Adw.ApplicationWindow):
         except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
             self._render_failed(e)
             return False
-
-        def run() -> tuple:
-            try:
-                return work(), None
-            except Exception as e:  # noqa: BLE001 - shown in the main loop
-                return None, e
-
         if wait:
-            self._show_render(generation, *run())
+            self._show_render(generation, *_run(work))
         else:
-            threading.Thread(
-                target=lambda: GLib.idle_add(self._show_render, generation, *run()),
-                name="etiketto-preview",
-                daemon=True,
-            ).start()
+            self.preview_worker.submit(generation, work)
         return False
 
     def _show_render(self, generation: int, result, error: Exception | None) -> bool:
-        if generation != self._render_generation:  # a newer render follows
+        if generation != self._render_generation:  # edited meanwhile: a newer one follows
             return False
+        self._shown_generation = generation
         if error is not None:
             self._render_failed(error)
             return False
@@ -763,11 +762,16 @@ class Window(Adw.ApplicationWindow):
             return False
         return True
 
+    def _on_destroy(self, _window) -> None:
+        self.printer._next_generation()
+        self.preview_worker.stop(timeout=0)  # it ends after the render it is in
+
     def _on_close_request(self, _window) -> bool:
         if self.print_flow.busy:
             self.toast(_("Please wait until printing has finished"))
             return True
         if not self.dirty:
+            self.preview_worker.stop(timeout=0)  # closes: it ends after its render
             return False
 
         def close():
@@ -787,9 +791,66 @@ def _stamp(path: Path) -> tuple | None:
     return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)
 
 
-def _color_of(value: str) -> tuple[int, int, int]:
-    """The label's background colour; white if it cannot be read."""
+def _on_tape(image: Image.Image, tape: int) -> Image.Image:
+    """Endless tape: the render covers only what the head prints (a
+    P-touch's or QL's printable width); preview and export show the whole
+    tape (`tape` pixels; 0: not endless tape), the strip in its middle and
+    the tape the head does not reach white, as it comes out. The border
+    and the background are where the printer puts them: on the strip."""
+    if image.height >= tape:
+        return image
+    whole = Image.new("RGB", (image.width, tape), "white")
+    whole.paste(image.convert("RGB"), (0, (tape - image.height) // 2))
+    return whole
+
+
+def _run(work: Callable[[], tuple[Rendered, Image.Image]]) -> tuple:
+    """(result, None), or (None, the exception): shown in the main loop."""
     try:
-        return ImageColor.getrgb(value)[:3]
-    except ValueError:
-        return (255, 255, 255)
+        return work(), None
+    except Exception as e:  # noqa: BLE001 - shown in the main loop
+        return None, e
+
+
+class PreviewWorker:
+    """One long-lived thread for a window's preview renders. It keeps what
+    a thread builds once, Pango's font map and Poppler's documents (see
+    shipping/source.py), from render to render, and takes only the latest
+    request: one overtaken while another renders is dropped unstarted.
+    done(generation, result, error) is called in the main loop."""
+
+    def __init__(self, done: Callable[..., bool]):
+        self._done = done
+        self._wake = threading.Condition()
+        self._pending: tuple[int, Callable] | None = None
+        self._stopped = False
+        self.thread: threading.Thread | None = None
+
+    def submit(self, generation: int, work: Callable) -> None:
+        with self._wake:
+            self._pending = (generation, work)  # the older request, if any, is dropped
+            if self.thread is None:
+                self.thread = threading.Thread(
+                    target=self._loop, name="etiketto-preview", daemon=True
+                )
+                self.thread.start()
+            self._wake.notify()
+
+    def stop(self, timeout: float = 5.0) -> None:
+        """End the thread (after the render it is in, if any)."""
+        with self._wake:
+            self._stopped = True
+            self._wake.notify()
+        if self.thread is not None:
+            self.thread.join(timeout)
+
+    def _loop(self) -> None:
+        while True:
+            with self._wake:
+                while self._pending is None and not self._stopped:
+                    self._wake.wait()
+                if self._stopped or self._pending is None:
+                    return
+                generation, work = self._pending
+                self._pending = None
+            GLib.idle_add(self._done, generation, *_run(work))

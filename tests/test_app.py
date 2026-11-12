@@ -790,9 +790,12 @@ def test_print_guards(ready):
     assert ready.get_visible_dialog() is None
     ready.print_flow.busy = False
     ready.rendered = None
-    ready.print_flow.on_print()
-    ready.print_flow.dialog()  # the screenshot tool opens it directly
+    ready.print_flow.dialog()  # the screenshot tool opens it directly: nothing to show
     assert ready.get_visible_dialog() is None
+    ready.print_flow.on_print()  # the first render still running: rendered here first
+    assert ready.rendered is not None and ready.preview_current
+    assert ready.last_dialog.get_heading() == "Print label"
+    respond(ready.last_dialog, "cancel")
     ready.set_label(Label(tape_mm=25), None)
     render_now(ready)
     ready.print_flow.on_print()
@@ -3829,12 +3832,14 @@ def test_preview_and_export_show_the_whole_tape(ptouch_window_12mm, tmp_path):
     show the whole 12 mm tape, the printed strip in its middle on the
     label's background, not a strip of 9 mm."""
     win = ptouch_window_12mm
-    win.label.background = "#000080"  # printed black by the mono P-touch
+    win.label.background = "#000080"  # printed black by the mono P-touch, on the strip
     render_now(win)
     _rendered, image = win.render_image()
     dpi = win.print_dpi()
     assert image.height == round(12 / 25.4 * dpi)
-    assert image.getpixel((image.width // 2, 0))[:3] == (0, 0, 0)  # the background
+    assert image.getpixel((image.width // 2, 0))[:3] == (255, 255, 255)  # tape, unprinted
+    middle = image.getpixel((image.width // 2, image.height // 2))[:3]
+    assert middle == (0, 0, 0)  # the background, where the printer puts it
     win.files.export_png(tmp_path / "x.png")
     from PIL import Image
 
@@ -3886,19 +3891,86 @@ def test_the_preview_follows_the_print_area_the_printer_reports(
     assert win.rendered_geometry[1].tape_px == 50
 
 
-def test_the_preview_renders_in_a_thread_and_shows_only_the_latest(window):
-    """render_preview() returns at once; the result shows when it is done,
-    an older render that ends later is dropped."""
+def test_the_preview_renders_in_its_thread_and_shows_only_the_latest(window):
+    """render_preview() returns at once and the preview's one thread renders;
+    an edit while it renders drops that result; the thread is kept."""
     window.label.elements[0].text = "first"
     window.render_preview()
-    first = window._render_generation
     window.label.elements[0].text = "second, much longer than the first one"
-    window.render_preview()
-    assert window._render_generation == first + 1
-    expected = window.render_image()[0].image.size  # what the current label gives
-    assert pump(lambda: window.rendered is not None and window.rendered.image.size == expected)
-    pump(timeout=0.3)  # the first render, done later or earlier, changes nothing
+    window.schedule_render()  # the edit: the first result is not shown
+    assert not window.preview_current
+    expected = window.render_image()[0].image.size
+    assert pump(lambda: window.preview_current, timeout=5)
     assert window.rendered.image.size == expected
-    stale = window.rendered
-    window._show_render(first, (None, None), None)  # an older one, late: ignored
-    assert window.rendered is stale
+    thread = window.preview_worker.thread
+    window.label.elements[0].text = "third"
+    window.render_preview()
+    assert pump(lambda: window.preview_current, timeout=5)
+    assert window.preview_worker.thread is thread and thread.name == "etiketto-preview"
+
+
+def test_a_failed_render_in_the_thread_is_shown(window, monkeypatch):
+    def broken(*_args, **_kwargs):
+        raise RuntimeError("kaputt")
+
+    monkeypatch.setattr(window.backend, "render_label", broken)
+    window.render_preview()
+    assert pump(lambda: window.preview.status.get_text() == "The preview cannot be drawn")
+
+
+def test_the_preview_worker_takes_only_the_latest_request():
+    import threading
+
+    from etiketto.ui.window import PreviewWorker
+
+    started = threading.Event()
+    release = threading.Event()
+    ran, shown = [], []
+
+    def work(name, block=False):
+        def run():
+            ran.append(name)
+            if block:
+                started.set()
+                release.wait(5)
+            return name
+
+        return run
+
+    worker = PreviewWorker(lambda generation, result, error: shown.append(result) or False)
+    worker.submit(1, work("one", block=True))
+    assert started.wait(5)
+    worker.submit(2, work("two"))  # overtaken before it starts: dropped
+    worker.submit(3, work("three"))
+    release.set()
+    assert pump(lambda: shown == ["one", "three"], timeout=5)
+    assert ran == ["one", "three"]
+    worker.stop()
+    assert not worker.thread.is_alive()
+
+
+def test_a_render_that_cannot_even_start_is_shown(window, monkeypatch):
+    """What the render needs is taken in the main loop: a failure there
+    (the printer's settings, the label) is shown like any render failure."""
+
+    def broken():
+        raise RuntimeError("kaputt")
+
+    monkeypatch.setattr(window, "render_options", broken)
+    window.render_preview()
+    assert window.preview.status.get_text() == "The preview cannot be drawn"
+
+
+def test_a_closed_window_ends_its_preview_thread(make_window):
+    win = make_window()
+    win.render_preview()
+    assert pump(lambda: win.preview_current, timeout=5)
+    thread = win.preview_worker.thread
+    stopped = []
+    real = win.preview_worker.stop
+    win.preview_worker.stop = lambda timeout=5.0: stopped.append(timeout) or real(timeout)
+    win.dirty = False
+    assert win.emit("close-request") is False  # it closes
+    win._on_destroy(win)  # and when destroyed (twice is fine)
+    thread.join(5)
+    assert stopped and not thread.is_alive()
