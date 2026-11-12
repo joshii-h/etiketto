@@ -418,7 +418,11 @@ class Mcp:
         if not isinstance(arguments, dict):
             raise RpcError(INVALID_PARAMS, "arguments must be an object")
         try:
-            return self._tools[name](arguments, caller)
+            # an MCP body over 512 KB was parsed in a render slot: given back
+            # now, before a tool asks printers or waits for a job; a tool that
+            # renders (preview, the check of print) takes one anew
+            with self.service.slot_released():
+                return self._tools[name](arguments, caller)
         except ApiError as e:
             return {
                 "content": [{"type": "text", "text": "%s (%s)" % (e.message, e.code)}],
@@ -451,15 +455,14 @@ class Mcp:
         args = dict(args)
         args.setdefault("wait", DEFAULT_WAIT)
         request = requests.print_request(args)
-        job = self.service.submit(request, caller)
-        with self.service.slot_released():  # waiting needs no render slot
-            _wait(job, request.wait)
+        checked = self.service.check_print(request, caller)  # renders in a slot
+        job = self.service.queue_print(checked, caller)  # looks up the printer outside
+        _wait(job, request.wait)
         return _structured(self.service.job_dict(job))
 
     def _job_status(self, args: dict, caller: Caller) -> dict:
         job = self.service.job(args.get("job_id"), caller)
-        with self.service.slot_released():
-            _wait(job, requests._number(args, "wait", 0.0, requests.MAX_WAIT))
+        _wait(job, requests._number(args, "wait", 0.0, requests.MAX_WAIT))
         return _structured(self.service.job_dict(job))
 
 

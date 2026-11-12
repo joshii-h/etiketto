@@ -190,9 +190,13 @@ def _run(server, service) -> int:
     except KeyboardInterrupt:
         log.info("stopping: jobs printing finish their label")
     finally:
+        notify("STOPPING=1")
         server.server_close()
         service.close()
     return EXIT_OK
+
+
+_notify_socket: list[str] = []  # $NOTIFY_SOCKET, kept here
 
 
 def notify(state: str) -> None:
@@ -200,7 +204,11 @@ def notify(state: str) -> None:
     to $NOTIFY_SOCKET, as sd_notify() sends it, without a library."""
     import socket
 
-    path = os.environ.get("NOTIFY_SOCKET", "")
+    # taken out of the environment the first time: a program this one
+    # starts (CUPS filters do not, but a plugin might) must not speak for it
+    if "NOTIFY_SOCKET" in os.environ:
+        _notify_socket[:] = [os.environ.pop("NOTIFY_SOCKET")]
+    path = _notify_socket[0] if _notify_socket else ""
     if not path:
         return
     address = "\0" + path[1:] if path.startswith("@") else path  # an abstract socket
@@ -308,6 +316,10 @@ def _chosen_token() -> tuple[str, str]:
         raise CliError(
             _("The access token must be at least %d characters long") % MIN_TOKEN, EXIT_USAGE
         )
+    from etiketto.server.config import TOKEN_ID
+
+    if TOKEN_ID.match(token):  # it would only be looked for by its id, which it has none of
+        raise CliError(_("A chosen token must not look like a made one (etk_…)"), EXIT_USAGE)
     return token, ""
 
 

@@ -211,19 +211,30 @@ def _ip_pattern(pattern: str) -> bool:
         return bool(re.fullmatch(r"[0-9.*]+", pattern))
 
 
+_OCTET = re.compile(r"\*|0|[1-9]\d{0,2}")
+
+
 def pattern_problem(pattern: str) -> bool:
-    """Whether an --allow-printer pattern cannot be meant: an address
-    pattern with a part over 255 or more than four parts, a network that
-    is none ("10.0.0.0/33"), an empty one."""
+    """Whether an --allow-printer pattern cannot be meant: a network that
+    is none ("10.0.0.0/33"), an empty one, or an address pattern that can
+    never match an address: a part over 255 or with a leading zero
+    ("010"), a * that is not a whole part ("10*", "**"), more than four
+    parts, or fewer than four without a * ("1.2.3", "10")."""
     if not pattern:
         return True
     if "/" in pattern or ":" in pattern:
         return not _network_ok(pattern)
     if not re.fullmatch(r"[0-9.*]+", pattern):
         return False  # a pattern for host names
-    parts = pattern.split(".")
-    too_big = any(int(part) > 255 for part in parts if part.isdigit())
-    return len(parts) > 4 or too_big or "" in parts
+    return _address_pattern_problem(pattern.split("."))
+
+
+def _address_pattern_problem(parts: list[str]) -> bool:
+    if len(parts) > 4 or not all(_OCTET.fullmatch(part) for part in parts):
+        return True
+    if "*" not in parts and len(parts) != 4:
+        return True
+    return any(part.isdigit() and int(part) > 255 for part in parts)
 
 
 def _network_ok(pattern: str) -> bool:
@@ -823,32 +834,29 @@ class Service:
             try:
                 yield
             finally:
-                self._held.count -= 1
+                if self._held.count:  # 0: given back meanwhile (slot_released)
+                    self._held.count -= 1
             return
         self._take(timeout)
         self._held.count = 1
         try:
             yield
         finally:
-            self._held.count = 0
-            self._renders.release()
+            if self._held.count:  # not given back meanwhile
+                self._held.count = 0
+                self._renders.release()
 
     @contextlib.contextmanager
     def slot_released(self) -> Iterator[None]:
-        """Give back the render slot this thread holds while it waits for
-        something else (an MCP print_label waiting for its job); taken again
-        afterwards."""
-        count = getattr(self._held, "count", 0)
-        if not count:
-            yield
-            return
-        self._held.count = 0
-        self._renders.release()
-        try:
-            yield
-        finally:
-            self._renders.acquire()
-            self._held.count = count
+        """Give back the render slot this thread holds, for good: what
+        follows needs none (it waits for a job or asks a printer). A render
+        afterwards takes a slot anew, with the same timeout and waiting
+        limit as any; the render_slot() that took this one does not give it
+        back a second time."""
+        if getattr(self._held, "count", 0):
+            self._held.count = 0
+            self._renders.release()
+        yield
 
     def _take(self, timeout: float | None) -> None:
         if timeout is None:

@@ -449,6 +449,7 @@ class TokenStore:
         self.printers = printers
         self._lock = threading.Lock()
         self._entries = load_tokens(path, printers)  # ConfigError at startup
+        self._dummy = _dummy(self._entries)  # made now, not on the first request
         self._stamp = self._stat()
         # tokens checked before, by their SHA-256: no slow hash again
         self._known: dict[bytes, TokenEntry] = {}
@@ -479,6 +480,7 @@ class TokenStore:
             # tokens known before stay known if their entry is unchanged
             self._known = {k: e for k, e in self._known.items() if e in entries}
             self._entries = entries
+            self._dummy = _dummy(entries)
             log.info("read %s: %d tokens", self.path, len(entries))
 
     def find(
@@ -498,7 +500,7 @@ class TokenStore:
         if known is not None:  # its entry changed or expired: forget, look again
             with self._lock:
                 self._known.pop(key, None)
-        entry = self._match(token, entries, cheap_only)
+        entry = self._match(token, entries, cheap_only, self._dummy)
         if entry is not None:
             with self._lock:
                 self._known[key] = entry
@@ -506,12 +508,17 @@ class TokenStore:
         return None
 
     @staticmethod
-    def _match(token: str, entries: list[TokenEntry], cheap_only: bool) -> TokenEntry | None:
+    def _match(
+        token: str,
+        entries: list[TokenEntry],
+        cheap_only: bool,
+        dummy: TokenEntry | None = None,
+    ) -> TokenEntry | None:
         """The entry of a token: an entry with an id only for a token that
         carries it (so a token cannot make the server try them all), others
         among the entries without an id: SHA-256 first (fast), then scrypt
         one after the other."""
-        candidates = _candidates(token, entries)
+        candidates = _candidates(token, entries, dummy or _dummy(entries))
         order = [e for e in candidates if _fast(e)]
         if not cheap_only:
             order += [e for e in candidates if not _fast(e)]
@@ -523,25 +530,26 @@ _dummy_scrypt: list[TokenEntry] = []  # made once when first needed
 
 
 def _dummy(entries: list[TokenEntry]) -> TokenEntry:
-    """An entry no token matches, as slow to check as the entries with an
-    id: an id no entry has is answered as fast as one an entry has."""
-    if not any(e.id and not _fast(e) for e in entries):
+    """An entry no token matches, of the kind most entries with an id have
+    (scrypt or SHA-256): an id no entry has costs one check of that kind,
+    as an id an entry has costs one check of its own."""
+    ids = [e for e in entries if e.id]
+    if sum(not _fast(e) for e in ids) * 2 <= len(ids):
         return _DUMMY
     if not _dummy_scrypt:
         _dummy_scrypt.append(TokenEntry(Caller("-"), hash_token(secrets.token_hex(16), "scrypt")))
     return _dummy_scrypt[0]
 
 
-def _candidates(token: str, entries: list[TokenEntry]) -> list[TokenEntry]:
-    """The entry with the token's id; without one (or an id no entry has),
-    the entries without an id. An id no entry has is compared with a dummy
-    entry as well: the answer takes as long as for a known id."""
+def _candidates(token: str, entries: list[TokenEntry], dummy: TokenEntry) -> list[TokenEntry]:
+    """The entry with the token's id; for an id no entry has only the dummy
+    (one check, as for a known id: the entries without an id are not tried,
+    their number would show); a token without an id against the entries
+    without an id."""
     ident = TOKEN_ID.match(token)
     if ident:
         mine = [e for e in entries if e.id == ident.group(1)]
-        if mine:
-            return mine
-        return [_dummy(entries)] + [e for e in entries if not e.id]
+        return mine or [dummy]
     return [e for e in entries if not e.id]
 
 

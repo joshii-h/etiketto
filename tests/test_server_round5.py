@@ -7,7 +7,6 @@ import os
 import signal
 import socket
 import sys
-import threading
 from types import SimpleNamespace
 
 import pytest
@@ -122,13 +121,17 @@ def test_the_launcher_ignores_sighup_before_anything_is_imported(monkeypatch):
 
 
 def test_readiness_is_told_to_systemd(tmp_path, monkeypatch):
+    monkeypatch.setattr(server_main, "_notify_socket", [])
     path = str(tmp_path / "notify")
     with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as sock:
         sock.bind(path)
         monkeypatch.setenv("NOTIFY_SOCKET", path)
         server_main.notify("READY=1")
         assert sock.recv(64) == b"READY=1"
-    monkeypatch.delenv("NOTIFY_SOCKET")
+        assert "NOTIFY_SOCKET" not in os.environ  # not handed to programs it starts
+        server_main.notify("STOPPING=1")
+        assert sock.recv(64) == b"STOPPING=1"
+    monkeypatch.setattr(server_main, "_notify_socket", [])
     server_main.notify("READY=1")  # not under systemd: nothing
     monkeypatch.setenv("NOTIFY_SOCKET", str(tmp_path / "gone"))
     server_main.notify("READY=1")  # a socket that is gone: only a warning
@@ -159,16 +162,22 @@ def test_the_printer_is_looked_up_outside_the_render_slot(api, monkeypatch):
     assert status == 200 and held == [0]
 
 
-def test_mcp_waits_without_a_render_slot(api, server_env):
+def test_a_released_slot_is_not_taken_again(api, server_env):
     service = api.service
+    renders = service._renders
     with service.render_slot():
         assert service._held.count == 1
-        with service.slot_released():
+        with service.render_slot(), service.slot_released():  # nested, then given back
             assert getattr(service._held, "count", 0) == 0
-            other = threading.Thread(target=lambda: service.render_slot().__enter__())
-            other.start()
-            other.join(5)
-        assert service._held.count == 1
+            # free for others now, and not taken back afterwards
+            assert renders.acquire(blocking=False)
+            renders.release()
+        assert getattr(service._held, "count", 0) == 0
+    # both render_slot() blocks ended without giving it back twice
+    for _n in range(service_module.RENDERS):
+        assert renders.acquire(blocking=False)
+    for _n in range(service_module.RENDERS):
+        renders.release()
 
 
 # --- F11, F16, F19 --------------------------------------------------------------------------
