@@ -211,7 +211,11 @@ class ElementsGroup(Adw.PreferencesGroup):
             subtitle=_("%(unit)s, 0 = fill tape height"),
         )
         color = color_button(element.color, lambda v: set_attr(color=v))
-        color.set_tooltip_text(_("Black-and-white printers print symbols in black"))
+        color.set_tooltip_text(
+            _(
+                "Black-and-white printers print symbols in black, or in white if the colour is light"
+            )
+        )
         size.add_suffix(color)
         row.add_row(size)
         row.add_row(

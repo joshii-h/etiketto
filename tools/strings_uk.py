@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Символ…",
     "Symbol": "Символ",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = на всю висоту стрічки",
-    "Black-and-white printers print symbols in black": "Чорно-білі принтери друкують символи чорним",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Чорно-білі принтери друкують символи чорним, а за світлого кольору білим",
     "Rotation": "Поворот",
     "Symbols": "Символи",
     "Use symbol": "Використати символ",

@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "أيقونة…",
     "Symbol": "أيقونة",
     "%(unit)s, 0 = fill tape height": "%(unit)s، 0 = ملء ارتفاع الشريط",
-    "Black-and-white printers print symbols in black": "تطبع الطابعات بالأبيض والأسود الأيقونات باللون الأسود",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "تطبع الطابعات بالأبيض والأسود الأيقونات باللون الأسود، أو بالأبيض إذا كان اللون فاتحًا",
     "Rotation": "التدوير",
     "Symbols": "الأيقونات",
     "Use symbol": "استخدام الأيقونة",

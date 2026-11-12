@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "प्रतीक…",
     "Symbol": "प्रतीक",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = टेप की पूरी ऊँचाई",
-    "Black-and-white printers print symbols in black": "श्वेत-श्याम प्रिंटर प्रतीकों को काले रंग में छापते हैं",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "श्वेत-श्याम प्रिंटर प्रतीकों को काले रंग में छापते हैं, या हल्का रंग होने पर सफ़ेद में",
     "Rotation": "घुमाव",
     "Symbols": "प्रतीक",
     "Use symbol": "प्रतीक इस्तेमाल करें",

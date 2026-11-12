@@ -3,6 +3,7 @@ recently used symbols, the converter in tools/ and the packaging."""
 
 from __future__ import annotations
 
+import fnmatch
 import gzip
 import importlib.util
 import json
@@ -27,7 +28,7 @@ def names(found):
 def test_the_icon_set_is_complete_and_without_brands():
     everything = symbols.all_symbols()
     assert symbols.source() == "Material Design Icons 7.4.47"
-    assert len(everything) == 7188
+    assert len(everything) == 7160
     assert names(everything) == sorted(set(names(everything)))  # sorted, each once
     cats = symbols.categories()
     assert list(cats) == sorted(cats) and "Brand / Logo" not in cats
@@ -38,6 +39,24 @@ def test_the_icon_set_is_complete_and_without_brands():
     assert printer.path.startswith("M18,3H6V7H18")
     assert symbols.find("account").aliases[:2] == ("person", "user")
     assert symbols.find("no-such-symbol") is None
+
+
+def test_brands_and_trademarks_are_left_out(tool):
+    """Beyond "Brand / Logo": the deny-list of the converter, and no alias
+    names a brand; standard marks of ports and features stay."""
+    everything = names(symbols.all_symbols())
+    for pattern in tool.DENIED:
+        assert not fnmatch.filter(everything, pattern), pattern
+    for name in ("raspberry-pi", "microsoft-xbox-controller-battery-unknown", "pokeball"):
+        assert symbols.find(name) is None
+    for symbol in symbols.all_symbols():
+        for alias in symbol.aliases:
+            assert not tool.BRAND_WORDS & set(alias.split("-")), (symbol.name, alias)
+    assert symbols.find("toy-brick").aliases == ("extension", "plugin")  # no "lego"
+    assert symbols.find("ghost").aliases == ()  # Pac-Man's ghosts
+    for name in ("bluetooth", "usb", "nfc-variant", "cast", "contactless-payment", "hdmi-port"):
+        assert symbols.find(name), name
+    assert symbols.find("apple-keyboard-command")  # a key symbol, not a logo
 
 
 def test_every_symbol_parses_inside_its_square():
@@ -54,6 +73,9 @@ def test_search_ranks_the_name_first():
     found = names(symbols.search("printer"))
     assert found[0] == "printer"
     assert found[1].startswith("printer-")  # names starting with the query next
+    # a name that adds words to the query, not one that only starts with it
+    assert names(symbols.search("print"))[0] == "printer"
+    assert "printer" not in names(symbols.search("print"))[1:]
     found = names(symbols.search("Arrow Left"))
     assert found[:3] == ["arrow-left", "arrow-left-bold", "arrow-left-bottom"]
 
@@ -73,6 +95,14 @@ def test_search_needs_every_word():
     assert found[0] == "arrow-left-bold"  # every word in the name, the shortest name
     assert "arrow-left-bold" in found and "arrow-right-bold" not in found
     assert symbols.search("zzzz nothing") == []
+
+
+def test_search_with_words_written_together_or_apart():
+    for query in ("wi-fi", "wi fi", "WiFi"):
+        assert names(symbols.search(query))[0] == "wifi", query
+    assert names(symbols.search("e mail"))[0] == "email"
+    assert names(symbols.search("arrowleft")) == ["arrow-left"]
+    assert symbols.search("--") == [] and symbols.search("!?") == []  # nothing to look for
 
 
 def test_search_within_a_category():
@@ -109,6 +139,10 @@ def test_segments_are_cached_and_traced():
     ]
     with pytest.raises(symbols.PathError):
         symbols.segments("L1,1")
+    hits = symbols._parsed.cache_info().hits
+    with pytest.raises(symbols.PathError, match="start with M"):
+        symbols.segments("L1,1")  # the failure is cached too
+    assert symbols._parsed.cache_info().hits == hits + 1
 
 
 # --- the converter (tools/mdi_symbols.py) ---------------------------------------------
@@ -132,6 +166,9 @@ def _package(folder: Path, license_text="Upstream license text") -> Path:
         ("alpha", ["Shape", "Arrow"], ["b", "a"], False, "M1,1L2,2Z"),
         ("old", ["Arrow"], [], True, "M0,0Z"),
         ("brand", ["Brand / Logo", "Social Media"], [], False, "M0,0Z"),
+        ("pokeball", ["Gaming / RPG"], [], False, "M0,0Z"),  # on the deny-list
+        ("nintendo-game-boy", ["Arrow"], [], False, "M0,0Z"),
+        ("brick", ["Shape"], ["lego", "plugin", "lego-outline"], False, "M2,2Z"),
     ]
     (folder / "svg").mkdir(parents=True)
     meta = []
@@ -157,13 +194,15 @@ def test_the_converter_keeps_what_etiketto_needs(tool, tmp_path, capsys):
     assert data == {
         "set": "Material Design Icons",
         "version": "1.2.3",
-        "categories": ["Arrow", "Shape"],  # no brands, nothing only deprecated icons had
+        # no brands, nothing only deprecated or denied icons had
+        "categories": ["Arrow", "Shape"],
         "icons": [
             ["alpha", "M1,1L2,2Z", [0, 1], ["a", "b"]],
+            ["brick", "M2,2Z", [1], ["plugin"]],  # without the brand aliases
             ["zeta", "M0,0H24V24Z", [0], ["z-alias"]],
         ],
     }
-    assert "1.2.3: 2 icons in 2 categories" in capsys.readouterr().out
+    assert "1.2.3: 3 icons in 2 categories" in capsys.readouterr().out
     tool.main(["mdi_symbols.py", str(package)])
     assert target.read_bytes() == first  # reproducible
 

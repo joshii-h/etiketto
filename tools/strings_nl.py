@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Symbool…",
     "Symbol": "Symbool",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = tapehoogte vullen",
-    "Black-and-white printers print symbols in black": "Zwart-witprinters drukken symbolen zwart af",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Zwart-witprinters drukken symbolen zwart af, of wit als de kleur licht is",
     "Rotation": "Draaiing",
     "Symbols": "Symbolen",
     "Use symbol": "Symbool gebruiken",

@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "기호…",
     "Symbol": "기호",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = 테이프 높이에 맞춤",
-    "Black-and-white printers print symbols in black": "흑백 프린터는 기호를 검은색으로 인쇄합니다",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "흑백 프린터는 기호를 검은색으로, 색이 밝으면 흰색으로 인쇄합니다",
     "Rotation": "회전",
     "Symbols": "기호",
     "Use symbol": "기호 사용",

@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Sümbol…",
     "Symbol": "Sümbol",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = täida lindi kõrgus",
-    "Black-and-white printers print symbols in black": "Mustvalged printerid prindivad sümbolid mustana",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Mustvalged printerid prindivad sümbolid mustana või valgena, kui värv on hele",
     "Rotation": "Pööre",
     "Symbols": "Sümbolid",
     "Use symbol": "Kasuta sümbolit",

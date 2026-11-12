@@ -230,8 +230,16 @@ cd - && python3 -I tools/mdi_symbols.py /tmp/mdi/package
 ```
 
 It keeps name, path data, categories and aliases of every icon, without the
-deprecated ones and without the category "Brand / Logo" (trademarks of
-third parties), and stops if the release's license text is no longer the
+deprecated ones, without the category "Brand / Logo" and without further
+icons showing brands, trademarks or designs from games and films
+(`DENIED` in the converter: e.g. raspberry-pi, nintendo-*, pokeball,
+death-star, file-word); aliases naming a brand ("lego", "apple",
+"twitter-retweet", see `BRAND_WORDS`) are dropped, the icon stays. When
+updating, scan the new names and aliases for brands and extend both lists.
+Kept on purpose: marks of technical standards that label a port or a
+feature (bluetooth, usb, nfc, hdmi, cast, contactless payment), as a label
+on a device needs them, and the key symbols apple-keyboard-* (command,
+option, shift are standard key symbols in Unicode, not a logo). It stops if the release's license text is no longer the
 one in `etiketto/symbols/LICENSE.mdi`: then check the new license and update
 that file by hand. Update the version in the README credits and
 `LICENSE.mdi`, check the number of icons it reports and run the tests

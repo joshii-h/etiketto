@@ -59,7 +59,8 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Symbol library: over 7000 pictograms (Material Design Icons) found by
   name, alias or category (in English, as the icon set names them),
   recently used ones at hand; drawn as vectors at the printer's resolution,
-  in colour or, on black-and-white printers, black with sharp edges
+  in colour, or on black-and-white label printers in black or white with
+  sharp edges
 - QR codes, Code 128 and EAN-13 barcodes
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
@@ -178,9 +179,10 @@ The symbols are the icons of
 [Pictogrammers](https://pictogrammers.com) (Austin Andrews and contributors),
 Apache License 2.0
 ([`etiketto/symbols/LICENSE.mdi`](etiketto/symbols/LICENSE.mdi)); some are
-based on Google's Material Icons (Apache-2.0). The brand logos of the icon
-set are left out: they are trademarks of their owners. Etiketto draws the
-icons with its own SVG path parser.
+based on Google's Material Icons (Apache-2.0). The "Brand / Logo" category
+and further icons showing brands or trademarks are left out
+([`tools/mdi_symbols.py`](tools/mdi_symbols.py)). Etiketto draws the icons
+with its own SVG path parser.
 
 ## License
 

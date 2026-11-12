@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "符号…",
     "Symbol": "符号",
     "%(unit)s, 0 = fill tape height": "%(unit)s，0 = 填满色带高度",
-    "Black-and-white printers print symbols in black": "黑白打印机会以黑色打印符号",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "黑白打印机会以黑色打印符号，颜色较浅时则以白色打印",
     "Rotation": "旋转",
     "Symbols": "符号",
     "Use symbol": "使用此符号",

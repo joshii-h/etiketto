@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Sembol…",
     "Symbol": "Sembol",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = şerit yüksekliğini doldur",
-    "Black-and-white printers print symbols in black": "Siyah beyaz yazıcılar sembolleri siyah basar",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Siyah beyaz yazıcılar sembolleri siyah, renk açıksa beyaz basar",
     "Rotation": "Döndürme",
     "Symbols": "Semboller",
     "Use symbol": "Sembolü kullan",

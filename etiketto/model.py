@@ -76,6 +76,7 @@ class CodeElement:
 
 ROTATIONS = (0, 90, 180, 270)
 MAX_SYMBOL_PATH = 100_000  # etiketto.symbols.path.MAX_PATH_CHARS
+MAX_SYMBOL_NAME = 100  # the longest icon name has 41 characters
 
 
 @dataclass
@@ -419,6 +420,8 @@ def _element_from_dict(item) -> Element:
 
 def _validate_symbol(element: SymbolElement) -> None:
     element.name = _str(element.name, "symbol name")
+    if len(element.name) > MAX_SYMBOL_NAME:
+        raise _damaged("symbol name too long")
     element.path = _str(element.path, "symbol path")
     if len(element.path) > MAX_SYMBOL_PATH:
         raise _damaged("symbol path too long")

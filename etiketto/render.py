@@ -264,6 +264,13 @@ def _draw_symbol(path: str, rotation: int, color: str, mono: bool, size: int) ->
     return img
 
 
+def _mono_ink(color: str) -> str:
+    """What a black-and-white printer makes of a colour: white for light
+    colours (a white symbol on a dark background stays visible), else black."""
+    r, g, b = _color(color)
+    return "#ffffff" if (r * 299 + g * 587 + b * 114) / 1000 >= 128 else "#000000"
+
+
 def render_symbol(
     element: SymbolElement, height: int, dpi: float, mono: bool = False
 ) -> Image.Image:
@@ -276,7 +283,7 @@ def render_symbol(
             raise ElementError("symbol_unknown")
         path = found.path
     size = height if element.size_mm <= 0 else min(height, mm_to_px(element.size_mm, dpi))
-    color = "#000000" if mono else element.color
+    color = _mono_ink(element.color) if mono else element.color
     draw = partial(_draw_symbol, path, element.rotation, color, mono)
     img = draw(size)
     # scaled down to fit a fixed length: drawn again, as sharp as before
@@ -438,7 +445,8 @@ def render(
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
     min_length_mm is the printer's shortest label (Capabilities.min_length_mm);
-    mono: for a black-and-white printer (symbols black, without grey edges)."""
+    mono: for a black-and-white printer (symbols black or white, without
+    grey edges)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings, mono)

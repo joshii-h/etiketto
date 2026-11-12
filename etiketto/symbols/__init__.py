@@ -72,14 +72,9 @@ def categories() -> tuple[str, ...]:
     return _load()[2]
 
 
-def _rank(symbol: Symbol, query: str, tokens: list[str]) -> int | None:
-    """How well a symbol matches (lower is better), None if not at all:
-    0 the name itself, 1 a name starting with the query, 2 every word found
-    in the name, 3 in the name or the aliases, 4 also in the categories."""
-    if symbol.name == query:
-        return 0
-    if symbol.name.startswith(query):
-        return 1
+def _word_rank(symbol: Symbol, tokens: list[str]) -> int | None:
+    """2 if every token starts a word of the name, 3 if also of the aliases,
+    4 if also of the categories; None if one starts no word at all."""
     best = 0
     for token in tokens:
         for rank, words in enumerate(symbol.words, 2):
@@ -91,20 +86,38 @@ def _rank(symbol: Symbol, query: str, tokens: list[str]) -> int | None:
     return best
 
 
+def _rank(symbol: Symbol, tokens: list[str]) -> int | None:
+    """How well a symbol matches (lower is better), None if not at all:
+    0 the name itself ("arrow left" or "arrowleft" for arrow-left), 1 a name
+    that adds words to it, else _word_rank(); the words written together
+    also count ("wi fi", "wi-fi" find wifi)."""
+    joined, compact = "-".join(tokens), "".join(tokens)
+    name = symbol.name
+    if name == joined or name.replace("-", "") == compact:
+        return 0
+    if name.startswith(joined + "-"):
+        return 1
+    rank = _word_rank(symbol, tokens)
+    if rank is None and len(tokens) > 1:
+        rank = _word_rank(symbol, [compact])
+    return rank
+
+
 def search(query: str, category: str | None = None) -> list[Symbol]:
     """The symbols matching every word of the query (a word matches the start
     of a word in a symbol's name, aliases or categories), best first (see
-    _rank, then shorter names); all of
-    the category (or all symbols) for an empty query."""
+    _rank, then shorter names). An empty query lists all of the category (or
+    all symbols); one without letters or digits ("--") finds nothing."""
     candidates = [s for s in all_symbols() if category is None or category in s.categories]
     text = query.strip().lower()
+    if not text:
+        return candidates
     tokens = _WORD.findall(text)
     if not tokens:
-        return candidates
-    joined = "-".join(tokens)  # "arrow left" finds "arrow-left" first
+        return []
     ranked = []
     for symbol in candidates:
-        rank = _rank(symbol, joined, tokens)
+        rank = _rank(symbol, tokens)
         if rank is not None:
             # equally good: the shorter name (fewer extra words) first
             ranked.append((rank, symbol.name.count("-"), symbol.name, symbol))
@@ -120,10 +133,21 @@ def remember(recent: object, name: str) -> list[str]:
 
 
 @lru_cache(maxsize=512)
+def _parsed(path: str) -> tuple[Segment, ...] | PathError:
+    try:
+        return tuple(parse(path))
+    except PathError as error:
+        return error
+
+
 def segments(path: str) -> tuple[Segment, ...]:
-    """The parsed path, cached: the chooser draws hundreds of symbols, the
-    preview the same ones again and again. PathError if it is invalid."""
-    return tuple(parse(path))
+    """The parsed path, cached (also a failure): the chooser draws hundreds
+    of symbols, the preview the same ones again and again. PathError if it
+    is invalid."""
+    result = _parsed(path)
+    if isinstance(result, PathError):
+        raise PathError(str(result))
+    return result
 
 
 def trace(ctx, path_segments) -> None:

@@ -3,6 +3,8 @@ the element's rows in the sidebar and the symbol drawn as a widget."""
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import cairo
 import pytest
 from conftest import gtk_available, pump, render_now
@@ -81,6 +83,8 @@ def test_the_chooser_offers_the_recently_used(make_window):
     chooser.category.set_selected(chooser.categories.index("Printer") + 2)
     pump()
     assert all("Printer" in symbols.find(n).categories for n in _shown(chooser))
+    assert chooser.category.get_enable_search()  # type to find a category
+    assert chooser.entry.get_key_capture_widget() is chooser.grid
     _search(chooser, "no such thing at all")
     assert _shown(chooser) == [] and chooser.stack.get_visible_child_name() == "empty"
     assert not chooser.use_button.get_sensitive() and chooser.details.get_text() == ""
@@ -98,6 +102,19 @@ def test_activating_a_symbol_uses_it(window):
     chooser.grid.emit("activate", 0)
     pump()
     assert win.label.elements[-1].name == "star"
+
+
+def test_grid_cells_are_named_for_screen_readers():
+    said = []
+    icon = ui_symbols.SymbolIcon(size=ui_symbols.CELL_PX)
+    item = SimpleNamespace(
+        get_item=lambda: Gtk.StringObject.new("printer"),
+        get_child=lambda: icon,
+        set_accessible_label=said.append,
+    )
+    ui_symbols.SymbolChooser._bind_cell(None, item)
+    assert said == ["printer"] and icon.get_tooltip_text() == "printer"
+    assert icon.path == symbols.find("printer").path
 
 
 def test_the_symbol_rows(make_window):
@@ -128,7 +145,9 @@ def test_the_symbol_rows(make_window):
     rotation.set_selected(3)
     assert element.rotation == 270
     color = one(size, Gtk.ColorDialogButton)
-    assert color.get_tooltip_text() == "Black-and-white printers print symbols in black"
+    assert color.get_tooltip_text() == (
+        "Black-and-white printers print symbols in black, or in white if the colour is light"
+    )
 
 
 def test_the_symbol_widget_draws_in_the_text_colour():
@@ -136,11 +155,24 @@ def test_the_symbol_widget_draws_in_the_text_colour():
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 24, 24)
     icon._draw(icon, cairo.Context(surface), 24, 24)
     assert bytes(surface.get_data())[(12 * 24 + 12) * 4 + 3] == 255  # inked in the middle
-    for path in ("", "L1,1"):  # nothing chosen, damaged: nothing drawn
-        icon.show(path)
-        blank = cairo.ImageSurface(cairo.FORMAT_ARGB32, 24, 24)
-        icon._draw(icon, cairo.Context(blank), 24, 24)
-        assert not any(bytes(blank.get_data()))
+    icon.show("")  # nothing chosen: nothing drawn
+    blank = cairo.ImageSurface(cairo.FORMAT_ARGB32, 24, 24)
+    icon._draw(icon, cairo.Context(blank), 24, 24)
+    assert not any(bytes(blank.get_data()))
+
+
+@pytest.mark.parametrize("path", ["L1,1", "M0,0 Z 1"])
+def test_a_damaged_symbol_is_drawn_crossed_out(path, monkeypatch):
+    icon = ui_symbols.SymbolIcon(path, 24)
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 24, 24)
+    icon._draw(icon, cairo.Context(surface), 24, 24)
+    data = bytes(surface.get_data())
+    alpha = [data[(y * 24 + x) * 4 + 3] for x, y in ((12, 12), (3, 12), (7, 12))]
+    assert alpha[0] and alpha[1] and not alpha[2]  # the cross and the frame, no fill
+    # any other failure while drawing, too
+    monkeypatch.setattr(ui_symbols.symbols, "trace", lambda *_a: 1 / 0)
+    icon.show(symbols.find("square").path)
+    icon._draw(icon, cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 24, 24)), 24, 24)
 
 
 def test_texts_for_symbols(window):

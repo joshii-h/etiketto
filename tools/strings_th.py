@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "สัญลักษณ์…",
     "Symbol": "สัญลักษณ์",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = เต็มความสูงเทป",
-    "Black-and-white printers print symbols in black": "เครื่องพิมพ์ขาวดำพิมพ์สัญลักษณ์เป็นสีดำ",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "เครื่องพิมพ์ขาวดำพิมพ์สัญลักษณ์เป็นสีดำ หรือเป็นสีขาวหากสีอ่อน",
     "Rotation": "การหมุน",
     "Symbols": "สัญลักษณ์",
     "Use symbol": "ใช้สัญลักษณ์นี้",

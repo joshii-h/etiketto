@@ -21,14 +21,15 @@ arrows, warnings, recycling, tools, food or weather, from Material Design
 Icons. Search by name, for example "arrow" or "recycle". The names and
 categories come from the icon set and are English, so the search is in
 English too. The list next to the search shows one category;
-[[ui:Recently used]] shows the symbols chosen last. Brand logos of the icon
-set are left out.
+[[ui:Recently used]] shows the symbols chosen last. The "Brand / Logo"
+category and further icons showing brands or trademarks are left out.
 
 - [[ui:Size]] 0 fills the label height, otherwise the symbol has this
   height.
 - [[ui:Rotation]]: a quarter turn at a time, clockwise.
-- The colour is printed on colour printers. Black-and-white printers print
-  symbols in black, with sharp edges.
+- The colour is printed on colour and office printers. Black-and-white label
+  printers print symbols in black, or in white if the colour is light, with
+  sharp edges.
 
 The label file keeps the outline of each symbol, so a label looks the same
 in later versions. Older versions of Etiketto cannot open labels with

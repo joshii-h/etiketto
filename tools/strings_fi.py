@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Symboli…",
     "Symbol": "Symboli",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = täytä nauhan korkeus",
-    "Black-and-white printers print symbols in black": "Mustavalkotulostimet tulostavat symbolit mustina",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Mustavalkotulostimet tulostavat symbolit mustina, tai valkoisina, jos väri on vaalea",
     "Rotation": "Kierto",
     "Symbols": "Symbolit",
     "Use symbol": "Käytä symbolia",

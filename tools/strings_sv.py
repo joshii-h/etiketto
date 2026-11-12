@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Symbol…",
     "Symbol": "Symbol",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = fyll tejpens höjd",
-    "Black-and-white printers print symbols in black": "Svartvita skrivare skriver ut symboler i svart",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Svartvita skrivare skriver ut symboler i svart, eller i vitt om färgen är ljus",
     "Rotation": "Rotation",
     "Symbols": "Symboler",
     "Use symbol": "Använd symbol",

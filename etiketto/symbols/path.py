@@ -26,10 +26,11 @@ MAX_PATH_CHARS = 100_000  # the longest Material Design Icon has about 9000
 # coordinates of a symbol lie within its 24 × 24 square; far larger ones are
 # junk and would overflow in the arc calculation
 MAX_COORDINATE = 1e6
-MIN_RADIUS = 1e-9  # smaller arcs are lines
+MIN_RADIUS = 1e-9  # arcs with a smaller radius or span are lines
 
 _NUMBER = re.compile(r"[-+]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][-+]?[0-9]+)?")
-_SEPARATOR = re.compile(r"[\s,]*")
+# white space as SVG 1.1 defines it (space, tab, CR, LF) and commas
+_SEPARATOR = re.compile(r"[ \t\r\n,]*")
 # arguments per command; an arc has two flags among its seven
 _ARITY = {"M": 2, "L": 2, "H": 1, "V": 1, "C": 6, "S": 4, "Q": 4, "T": 2, "A": 7, "Z": 0}
 _ARC_FLAGS = (3, 4)
@@ -234,6 +235,8 @@ def _arc_center(x1, y1, rx, ry, phi, large, sweep, x2, y2):
         rx, ry = rx * math.sqrt(scale), ry * math.sqrt(scale)
     num = rx * rx * ry * ry - rx * rx * py * py - ry * ry * px * px
     den = rx * rx * py * py + ry * ry * px * px
+    if not den > 0:  # underflow: the end points are too close to tell
+        raise ArithmeticError("arc without extent")
     root = math.sqrt(max(0.0, num / den)) * (-1 if large == sweep else 1)
     cxp, cyp = root * rx * py / ry, -root * ry * px / rx
     cx = cos * cxp - sin * cyp + (x1 + x2) / 2
@@ -251,12 +254,24 @@ def _arc_center(x1, y1, rx, ry, phi, large, sweep, x2, y2):
 def arc_to_cubics(x1, y1, rx, ry, angle, large, sweep, x2, y2) -> list[tuple]:
     """An SVG arc from (x1, y1) to (x2, y2) as cubic curves (x1', y1', x2',
     y2', x, y), each at most a quarter of the ellipse; a line if a radius is
-    zero, nothing if the end points are the same."""
+    zero (or the arc too small to calculate), nothing if the end points are
+    the same."""
     if (x1, y1) == (x2, y2):
         return []
+    line = [(x1, y1, x2, y2, x2, y2)]
     rx, ry = abs(rx), abs(ry)
-    if rx < MIN_RADIUS or ry < MIN_RADIUS:
-        return [(x1, y1, x2, y2, x2, y2)]
+    if min(rx, ry, math.hypot(x2 - x1, y2 - y1)) < MIN_RADIUS:
+        return line
+    try:
+        curves = _arc_curves(x1, y1, rx, ry, angle, large, sweep, x2, y2)
+    except (ArithmeticError, ValueError):  # underflow, NaN: too small to see
+        return line
+    if not all(math.isfinite(v) for curve in curves for v in curve):
+        return line
+    return curves
+
+
+def _arc_curves(x1, y1, rx, ry, angle, large, sweep, x2, y2) -> list[tuple]:
     phi = math.radians(angle % 360)
     cx, cy, rx, ry, start, delta = _arc_center(x1, y1, rx, ry, phi, large, sweep, x2, y2)
     count = max(1, math.ceil(abs(delta) / (math.pi / 2) - 1e-9))

@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Biểu tượng…",
     "Symbol": "Biểu tượng",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = lấp đầy chiều cao băng",
-    "Black-and-white printers print symbols in black": "Máy in đen trắng in biểu tượng màu đen",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Máy in đen trắng in biểu tượng màu đen, hoặc màu trắng nếu màu sáng",
     "Rotation": "Xoay",
     "Symbols": "Biểu tượng",
     "Use symbol": "Dùng biểu tượng này",

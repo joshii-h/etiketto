@@ -216,6 +216,30 @@ def test_malformed_path_data_is_refused(data):
         parse(data)
 
 
+@pytest.mark.parametrize(
+    "data",
+    [
+        "M0 0a1e-9 1 0 0 0 1e-300 0",  # the arithmetic underflows
+        "M0 0A1 1 0 0 0 1e-160 0",  # NaN on the way
+        "M0 0A1e-8 1e-8 0 0 0 1e-300 1e-300",
+        "M0 0A1000000 1e-9 45 1 1 1e-300 0",
+    ],
+)
+def test_arcs_too_small_to_calculate_are_lines(data):
+    move, line = parse(data)
+    assert move == ("M", 0, 0) and line[0] == "C"
+    assert line[3:5] == line[5:7]  # a straight line to the end point
+    assert all(math.isfinite(v) for v in line[1:])
+
+
+@pytest.mark.parametrize("separator", ["\f", "\v", "\u00a0", "\u2003", ";"])
+def test_only_svg_separators(separator):
+    # SVG white space is space, tab, CR and LF; the comma separates too
+    assert parse("M1\t2\r\n3,4") == [("M", 1, 2), ("L", 3, 4)]
+    with pytest.raises(PathError):
+        parse("M1%s2" % separator)
+
+
 def test_too_long_or_not_text_is_refused():
     with pytest.raises(PathError):
         parse("M0,0" + " L1,1" * (MAX_PATH_CHARS // 5))
@@ -232,3 +256,16 @@ def test_any_data_parses_or_raises_path_error(data):
     for segment in segments:
         assert segment[0] in ("M", "L", "C", "Z")
         assert all(math.isfinite(v) for v in segment[1:])
+
+
+def test_arc_arithmetic_failures_fall_back_to_a_line(monkeypatch):
+    from etiketto.symbols import path
+
+    with pytest.raises(ArithmeticError):  # end points that coincide: no centre
+        path._arc_center(1, 1, 1, 1, 0, False, False, 1, 1)
+    line = [(0, 0, 3, 4, 3, 4)]
+    for failure in (lambda *_a: 1 / 0, lambda *_a: math.ceil(math.nan)):
+        monkeypatch.setattr(path, "_arc_curves", failure)
+        assert arc_to_cubics(0, 0, 5, 5, 0, False, True, 3, 4) == line
+    monkeypatch.setattr(path, "_arc_curves", lambda *_a: [(math.inf, 0, 0, 0, 3, 4)])
+    assert arc_to_cubics(0, 0, 5, 5, 0, False, True, 3, 4) == line

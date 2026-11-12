@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "記号…",
     "Symbol": "記号",
     "%(unit)s, 0 = fill tape height": "%(unit)s、0 = テープの高さいっぱい",
-    "Black-and-white printers print symbols in black": "モノクロプリンターでは記号は黒で印刷されます",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "モノクロプリンターでは記号は黒で、明るい色の場合は白で印刷されます",
     "Rotation": "回転",
     "Symbols": "記号",
     "Use symbol": "この記号を使用",

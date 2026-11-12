@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 08:03+0100\n"
+"PO-Revision-Date: 2026-11-12 09:31+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hu\n"
 "Language: hu\n"
@@ -105,23 +105,25 @@ msgstr "Szimbólum"
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = a szalag magasságának kitöltése"
 
-#: etiketto/ui/elements.py:214
-msgid "Black-and-white printers print symbols in black"
-msgstr "A fekete-fehér nyomtatók feketén nyomtatják a szimbólumokat"
+#: etiketto/ui/elements.py:216
+msgid ""
+"Black-and-white printers print symbols in black, or in white if the colour "
+"is light"
+msgstr "A fekete-fehér nyomtatók feketén nyomtatják a szimbólumokat, vagy fehéren, ha a szín világos"
 
-#: etiketto/ui/elements.py:219
+#: etiketto/ui/elements.py:223
 msgid "Rotation"
 msgstr "Elforgatás"
 
-#: etiketto/ui/elements.py:228
+#: etiketto/ui/elements.py:232
 msgid "Type"
 msgstr "Típus"
 
-#: etiketto/ui/elements.py:230
+#: etiketto/ui/elements.py:234
 msgid "Content (link, text, number)"
 msgstr "Tartalom (hivatkozás, szöveg, szám)"
 
-#: etiketto/ui/elements.py:234
+#: etiketto/ui/elements.py:238
 msgid "Colour"
 msgstr "Szín"
 
@@ -478,7 +480,7 @@ msgstr "Nyomtató kiválasztása"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:67 etiketto/ui/window.py:422
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:422
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -787,27 +789,27 @@ msgstr "Alkalmaz"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "A következő címkék belelógnak a margóba, ahová a nyomtató nem tud nyomtatni: %s"
 
-#: etiketto/ui/symbols.py:62
+#: etiketto/ui/symbols.py:74
 msgid "Symbols"
 msgstr "Szimbólumok"
 
-#: etiketto/ui/symbols.py:64
+#: etiketto/ui/symbols.py:76
 msgid "Use symbol"
 msgstr "Szimbólum használata"
 
-#: etiketto/ui/symbols.py:85
+#: etiketto/ui/symbols.py:97
 msgid "Search in English, e.g. arrow or recycle"
 msgstr "Keresés angolul, pl. arrow vagy recycle"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "All symbols"
 msgstr "Minden szimbólum"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "Recently used"
 msgstr "Legutóbb használt"
 
-#: etiketto/ui/symbols.py:107
+#: etiketto/ui/symbols.py:123
 msgid "No symbol found"
 msgstr "Nem található szimbólum"
 

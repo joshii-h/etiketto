@@ -1,17 +1,16 @@
 Material Design Icons (etiketto/symbols/mdi.json.gz)
 ====================================================
 
-The symbols are the icons of Material Design Icons 7.4.47 (@mdi/svg,
-https://github.com/Templarian/MaterialDesign-SVG), by Pictogrammers
-(https://pictogrammers.com), Austin Andrews and the contributors named in
-the release's meta.json. Some icons are based on Google's Material Icons,
-Copyright Google LLC, Apache License 2.0.
-
-Copyright (c) 2014-2023 Pictogrammers (Austin Andrews and contributors)
+Material Design Icons by Pictogrammers, https://pictogrammers.com, under
+the Pictogrammers Free License: icons Apache-2.0. Version 7.4.47 (@mdi/svg,
+https://github.com/Templarian/MaterialDesign-SVG); the authors of the
+icons are named in the release's meta.json. Some icons are based on
+Google's Material Icons (Apache-2.0).
 
 Etiketto keeps the path data, names, aliases and categories of the icons,
-converted by tools/mdi_symbols.py, without the deprecated icons and without
-the "Brand / Logo" category (trademarks of third parties).
+converted by tools/mdi_symbols.py. Left out are the deprecated icons, the
+"Brand / Logo" category and further icons showing brands or trademarks;
+aliases naming a brand are dropped.
 
 The release's license file follows, then the text of the Apache License 2.0.
 

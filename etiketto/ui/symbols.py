@@ -40,17 +40,29 @@ class SymbolIcon(Gtk.DrawingArea):
     def _draw(self, _area, cr, width: int, height: int) -> None:
         if not self.path:
             return
-        try:
-            path_segments = symbols.segments(self.path)
-        except symbols.PathError:
-            return  # a damaged file: the preview warns about it
         size = min(width, height)
         cr.translate((width - size) / 2, (height - size) / 2)
         cr.scale(size / symbols.VIEW_BOX, size / symbols.VIEW_BOX)
         color = self.get_color()
         cr.set_source_rgba(color.red, color.green, color.blue, color.alpha)
-        symbols.trace(cr, path_segments)
-        cr.fill()
+        try:
+            symbols.trace(cr, symbols.segments(self.path))
+            cr.fill()
+        except Exception:  # noqa: BLE001 - a damaged file must not break the window
+            cr.new_path()
+            _placeholder(cr)
+
+
+def _placeholder(cr) -> None:
+    """A crossed-out square in the 24 × 24 box: a symbol that cannot be
+    drawn (the preview warns about the element)."""
+    cr.set_line_width(2)
+    cr.rectangle(3, 3, 18, 18)
+    cr.move_to(3, 3)
+    cr.line_to(21, 21)
+    cr.move_to(21, 3)
+    cr.line_to(3, 21)
+    cr.stroke()
 
 
 class SymbolChooser:
@@ -89,6 +101,8 @@ class SymbolChooser:
         self.categories = list(symbols.categories())
         names = [_("All symbols"), _("Recently used"), *self.categories]
         self.category = Gtk.DropDown.new_from_strings(names)
+        self.category.set_expression(Gtk.PropertyExpression.new(Gtk.StringObject, None, "string"))
+        self.category.set_enable_search(True)
         self.category.connect("notify::selected", lambda _d, _p: self.refresh())
         bar = Gtk.Box(spacing=6, margin_start=12, margin_end=12, margin_top=6, margin_bottom=6)
         bar.append(self.entry)
@@ -102,6 +116,8 @@ class SymbolChooser:
         factory.connect("bind", self._bind_cell)
         self.grid = Gtk.GridView(model=self.selection, factory=factory, max_columns=30)
         self.grid.connect("activate", lambda _g, _n: self.use())
+        # typing while the grid has the focus goes to the search
+        self.entry.set_key_capture_widget(self.grid)
         scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
         scroller.set_child(self.grid)
         self.empty = Adw.StatusPage(title=_("No symbol found"), icon_name="edit-find-symbolic")
@@ -133,6 +149,7 @@ class SymbolChooser:
         icon = item.get_child()
         icon.show(found.path if found else "")
         icon.set_tooltip_text(name)
+        item.set_accessible_label(name)  # what a screen reader says for the cell
 
     def present(self) -> None:
         self.window.present_dialog(self.dialog)

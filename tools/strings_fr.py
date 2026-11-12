@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Symbole…",
     "Symbol": "Symbole",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = remplir la hauteur du ruban",
-    "Black-and-white printers print symbols in black": "Les imprimantes noir et blanc impriment les symboles en noir",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Les imprimantes noir et blanc impriment les symboles en noir, ou en blanc si la couleur est claire",
     "Rotation": "Rotation",
     "Symbols": "Symboles",
     "Use symbol": "Utiliser le symbole",

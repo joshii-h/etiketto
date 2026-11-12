@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Szimbólum…",
     "Symbol": "Szimbólum",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = a szalag magasságának kitöltése",
-    "Black-and-white printers print symbols in black": "A fekete-fehér nyomtatók feketén nyomtatják a szimbólumokat",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "A fekete-fehér nyomtatók feketén nyomtatják a szimbólumokat, vagy fehéren, ha a szín világos",
     "Rotation": "Elforgatás",
     "Symbols": "Szimbólumok",
     "Use symbol": "Szimbólum használata",

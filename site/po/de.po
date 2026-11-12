@@ -1062,16 +1062,17 @@ msgid ""
 "Icons. Search by name, for example \"arrow\" or \"recycle\". The names and "
 "categories come from the icon set and are English, so the search is in "
 "English too. The list next to the search shows one category; [[ui:Recently "
-"used]] shows the symbols chosen last. Brand logos of the icon set are left "
-"out."
+"used]] shows the symbols chosen last. The \"Brand / Logo\" category and "
+"further icons showing brands or trademarks are left out."
 msgstr ""
 "[[ui:Symbol…]] öffnet die Symbolbibliothek: über 7000 Piktogramme wie "
 "Pfeile, Warnzeichen, Recycling, Werkzeuge, Essen oder Wetter, aus Material "
 "Design Icons. Gesucht wird nach dem Namen, zum Beispiel „arrow“ oder "
 "„recycle“. Namen und Kategorien stammen aus dem Icon-Set und sind englisch, "
 "darum wird auch auf Englisch gesucht. Die Liste neben der Suche zeigt eine "
-"Kategorie; [[ui:Recently used]] zeigt die zuletzt gewählten Symbole. "
-"Markenlogos des Icon-Sets sind nicht dabei."
+"Kategorie; [[ui:Recently used]] zeigt die zuletzt gewählten Symbole. Die "
+"Kategorie „Brand / Logo“ und weitere Symbole, die Marken zeigen, sind nicht "
+"dabei."
 
 #. type: Bullet: '- '
 #: docs/use.md
@@ -1088,11 +1089,13 @@ msgstr "[[ui:Rotation]]: jeweils eine Vierteldrehung, im Uhrzeigersinn."
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"The colour is printed on colour printers. Black-and-white printers print "
-"symbols in black, with sharp edges."
+"The colour is printed on colour and office printers. Black-and-white label "
+"printers print symbols in black, or in white if the colour is light, with "
+"sharp edges."
 msgstr ""
-"Die Farbe wird auf Farbdruckern gedruckt. Schwarzweissdrucker drucken "
-"Symbole schwarz, mit scharfen Kanten."
+"Die Farbe wird auf Farb- und Bürodruckern gedruckt. Schwarzweisse "
+"Etikettendrucker drucken Symbole schwarz, oder weiss, wenn die Farbe hell "
+"ist, mit scharfen Kanten."
 
 #. type: Plain text
 #: docs/use.md

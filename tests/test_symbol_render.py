@@ -44,6 +44,19 @@ def test_mono_symbols_are_pure_black_and_white(dpi):
     assert (y1 - y0) / size == pytest.approx(18 / 24, abs=2 / size)
 
 
+@pytest.mark.parametrize(
+    ("color", "ink"),
+    [("#ffffff", 255), ("#ffff66", 255), ("#808080", 255), ("#7f7f7f", 0), ("#0000ff", 0)],
+)
+def test_mono_symbols_are_black_or_white_by_brightness(color, ink):
+    """A white symbol on a black label stays white on a mono printer."""
+    label = Label(tape_mm=25, margin_mm=0, background="#000000")
+    label.elements = [SymbolElement(path=SQUARE, color=color)]
+    image = render(label, dpi=203, safe_mm=0, mono=True).image
+    size = image.height
+    assert image.getpixel((size // 2, size // 2)) == (ink, ink, ink)
+
+
 @pytest.mark.parametrize("dpi", [203, 300, 600])
 def test_symbols_on_colour_printers_are_smooth_and_coloured(dpi):
     label = Label(tape_mm=25, margin_mm=0, elements=[printer_symbol(color="#0000ff")])
@@ -149,6 +162,7 @@ def test_symbol_fields_are_checked():
         {"rotation": True},
         {"rotation": [90]},
         {"name": 3},
+        {"name": "x" * (model.MAX_SYMBOL_NAME + 1)},
         {"path": None},
         {"path": "M0,0" + "L1,1" * model.MAX_SYMBOL_PATH},
         {"color": 0},

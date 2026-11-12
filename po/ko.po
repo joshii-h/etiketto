@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 08:03+0100\n"
+"PO-Revision-Date: 2026-11-12 09:31+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ko\n"
 "Language: ko\n"
@@ -105,23 +105,25 @@ msgstr "기호"
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = 테이프 높이에 맞춤"
 
-#: etiketto/ui/elements.py:214
-msgid "Black-and-white printers print symbols in black"
-msgstr "흑백 프린터는 기호를 검은색으로 인쇄합니다"
+#: etiketto/ui/elements.py:216
+msgid ""
+"Black-and-white printers print symbols in black, or in white if the colour "
+"is light"
+msgstr "흑백 프린터는 기호를 검은색으로, 색이 밝으면 흰색으로 인쇄합니다"
 
-#: etiketto/ui/elements.py:219
+#: etiketto/ui/elements.py:223
 msgid "Rotation"
 msgstr "회전"
 
-#: etiketto/ui/elements.py:228
+#: etiketto/ui/elements.py:232
 msgid "Type"
 msgstr "종류"
 
-#: etiketto/ui/elements.py:230
+#: etiketto/ui/elements.py:234
 msgid "Content (link, text, number)"
 msgstr "내용(링크, 텍스트, 번호)"
 
-#: etiketto/ui/elements.py:234
+#: etiketto/ui/elements.py:238
 msgid "Colour"
 msgstr "색"
 
@@ -478,7 +480,7 @@ msgstr "프린터 선택"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:67 etiketto/ui/window.py:422
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:422
 msgid "Cancel"
 msgstr "취소"
 
@@ -787,27 +789,27 @@ msgstr "적용"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "라벨 %s이(가) 프린터가 인쇄할 수 없는 여백에 걸칩니다"
 
-#: etiketto/ui/symbols.py:62
+#: etiketto/ui/symbols.py:74
 msgid "Symbols"
 msgstr "기호"
 
-#: etiketto/ui/symbols.py:64
+#: etiketto/ui/symbols.py:76
 msgid "Use symbol"
 msgstr "기호 사용"
 
-#: etiketto/ui/symbols.py:85
+#: etiketto/ui/symbols.py:97
 msgid "Search in English, e.g. arrow or recycle"
 msgstr "영어로 검색하십시오(예: arrow, recycle)"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "All symbols"
 msgstr "모든 기호"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "Recently used"
 msgstr "최근 사용"
 
-#: etiketto/ui/symbols.py:107
+#: etiketto/ui/symbols.py:123
 msgid "No symbol found"
 msgstr "기호를 찾을 수 없습니다"
 

@@ -268,7 +268,7 @@ TRANSLATIONS = {
     "Symbol…": "Simbol…",
     "Symbol": "Simbol",
     "%(unit)s, 0 = fill tape height": "%(unit)s, 0 = penuhi tinggi pita",
-    "Black-and-white printers print symbols in black": "Pencetak hitam putih mencetak simbol dalam warna hitam",
+    "Black-and-white printers print symbols in black, or in white if the colour is light": "Pencetak hitam putih mencetak simbol dalam warna hitam, atau putih jika warnanya cerah",
     "Rotation": "Putaran",
     "Symbols": "Simbol",
     "Use symbol": "Guna simbol",

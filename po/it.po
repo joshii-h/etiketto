@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 08:03+0100\n"
+"PO-Revision-Date: 2026-11-12 09:31+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: it\n"
 "Language: it\n"
@@ -105,23 +105,25 @@ msgstr "Simbolo"
 msgid "%(unit)s, 0 = fill tape height"
 msgstr "%(unit)s, 0 = riempi l’altezza del nastro"
 
-#: etiketto/ui/elements.py:214
-msgid "Black-and-white printers print symbols in black"
-msgstr "Le stampanti in bianco e nero stampano i simboli in nero"
+#: etiketto/ui/elements.py:216
+msgid ""
+"Black-and-white printers print symbols in black, or in white if the colour "
+"is light"
+msgstr "Le stampanti in bianco e nero stampano i simboli in nero, o in bianco se il colore è chiaro"
 
-#: etiketto/ui/elements.py:219
+#: etiketto/ui/elements.py:223
 msgid "Rotation"
 msgstr "Rotazione"
 
-#: etiketto/ui/elements.py:228
+#: etiketto/ui/elements.py:232
 msgid "Type"
 msgstr "Tipo"
 
-#: etiketto/ui/elements.py:230
+#: etiketto/ui/elements.py:234
 msgid "Content (link, text, number)"
 msgstr "Contenuto (link, testo, numero)"
 
-#: etiketto/ui/elements.py:234
+#: etiketto/ui/elements.py:238
 msgid "Colour"
 msgstr "Colore"
 
@@ -478,7 +480,7 @@ msgstr "Scegli una stampante"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/symbols.py:67 etiketto/ui/window.py:422
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:422
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -787,27 +789,27 @@ msgstr "Applica"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Le etichette %s entrano nel margine in cui la stampante non può stampare"
 
-#: etiketto/ui/symbols.py:62
+#: etiketto/ui/symbols.py:74
 msgid "Symbols"
 msgstr "Simboli"
 
-#: etiketto/ui/symbols.py:64
+#: etiketto/ui/symbols.py:76
 msgid "Use symbol"
 msgstr "Usa simbolo"
 
-#: etiketto/ui/symbols.py:85
+#: etiketto/ui/symbols.py:97
 msgid "Search in English, e.g. arrow or recycle"
 msgstr "Cerca in inglese, ad es. arrow o recycle"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "All symbols"
 msgstr "Tutti i simboli"
 
-#: etiketto/ui/symbols.py:90
+#: etiketto/ui/symbols.py:102
 msgid "Recently used"
 msgstr "Usati di recente"
 
-#: etiketto/ui/symbols.py:107
+#: etiketto/ui/symbols.py:123
 msgid "No symbol found"
 msgstr "Nessun simbolo trovato"
 

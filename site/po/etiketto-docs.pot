@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 08:07+0100\n"
+"POT-Creation-Date: 2026-11-12 09:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -764,7 +764,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as arrows, warnings, recycling, tools, food or weather, from Material Design Icons. Search by name, for example \"arrow\" or \"recycle\". The names and categories come from the icon set and are English, so the search is in English too. The list next to the search shows one category; [[ui:Recently used]] shows the symbols chosen last. Brand logos of the icon set are left out."
+msgid "[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as arrows, warnings, recycling, tools, food or weather, from Material Design Icons. Search by name, for example \"arrow\" or \"recycle\". The names and categories come from the icon set and are English, so the search is in English too. The list next to the search shows one category; [[ui:Recently used]] shows the symbols chosen last. The \"Brand / Logo\" category and further icons showing brands or trademarks are left out."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -782,7 +782,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "The colour is printed on colour printers. Black-and-white printers print symbols in black, with sharp edges."
+msgid "The colour is printed on colour and office printers. Black-and-white label printers print symbols in black, or in white if the colour is light, with sharp edges."
 msgstr ""
 
 #. type: Plain text
