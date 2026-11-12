@@ -245,7 +245,9 @@ def _module(designed: float, modules: int, quiet: tuple[int, int], box: int) -> 
     return _fit_at(module, modules, quiet, box)
 
 
-def _fit_at(module: int, modules: int, quiet: tuple[int, int], box: int) -> _Fit:
+def _fit_at(
+    module: int, modules: int, quiet: tuple[int, int], box: int, thin: int = THIN_MODULE
+) -> _Fit:
     """The start (the first module, in pixels): the code and its quiet zone
     centred in the box; if the quiet zone does not fit, the code alone
     centred; if not even that fits, 0 (the rest is cut off).
@@ -257,7 +259,7 @@ def _fit_at(module: int, modules: int, quiet: tuple[int, int], box: int) -> _Fit
         problems.append("code_too_big")
     elif module * total > box:
         problems.append("code_quiet")
-    if module < THIN_MODULE:
+    if module < thin:
         problems.append("code_thin")
     if module * total <= box:
         start = (box - module * total) // 2 + quiet[0] * module
@@ -290,12 +292,19 @@ def _dark(element: CodeElement, mask: Image.Image, fit: _Fit) -> Image.Image:
 
 
 def _matrix(
-    element: CodeElement, symbol: codes.Symbol, spec: codes.Spec, height: int, width: int | None
+    element: CodeElement,
+    symbol: codes.Symbol,
+    spec: codes.Spec,
+    height: int,
+    width: int | None,
+    step: int = 1,
 ) -> Image.Image:
     """A 2D code: square modules of a whole number of pixels with their
     quiet zone on every side, centred. A square code (QR, Data Matrix,
     Aztec) in height x height pixels (or width x width, if less); PDF417
-    height pixels high, as wide as its modules (or width pixels)."""
+    height pixels high, as wide as its modules (or width pixels). `step`:
+    the image is reduced across (in height) by this factor later: modules
+    and the first row are multiples of it (code_row0), so they stay whole."""
     quiet = (spec.quiet[0], spec.quiet[0])
     tall, wide = len(symbol.rows) * spec.row_modules, symbol.width
     if spec.layout == "matrix":
@@ -305,7 +314,10 @@ def _matrix(
         width = (wide + sum(quiet)) * module
     else:
         module = min(module, _module(width / (wide + sum(quiet)), wide, quiet, width).module)
-    across, down = _fit_at(module, wide, quiet, width), _fit_at(module, tall, quiet, height)
+    module = max(step, module // step * step)
+    thin = THIN_MODULE * step
+    across = _fit_at(module, wide, quiet, width, thin)
+    down = _fit_at(module, tall, quiet, height, thin)
     mask = Image.new(
         "L",
         (max(width, across.start + wide * module), max(height, down.start + tall * module)),
@@ -318,7 +330,9 @@ def _matrix(
         for start, end in _runs(row):
             x0, x1 = across.start + start * module, across.start + end * module
             draw.rectangle((x0, top, x1 - 1, top + row_px - 1), 255)
-    return _dark(element, mask, _Fit(module, across.start, _problems(across, down)))
+    img = _dark(element, mask, _Fit(module, across.start, _problems(across, down)))
+    img.code_row0 = down.start  # type: ignore[attr-defined]
+    return img
 
 
 def _ink(text: str, size_px: float) -> Image.Image | None:
@@ -438,16 +452,18 @@ def _runs(pattern: str) -> list[tuple[int, int]]:
     return runs
 
 
-def render_code(element: CodeElement, height: int, width: int | None = None) -> Image.Image:
+def render_code(
+    element: CodeElement, height: int, width: int | None = None, step: int = 1
+) -> Image.Image:
     """The code in its colour on transparent, 1 bit, each module a whole
     number of pixels, the quiet zone inside: a square 2D code height pixels
     square (or as wide as width, if less), a barcode or PDF417 height pixels
     high and as wide as its design (or width pixels). What is wrong with
-    it: code_problems()."""
+    it: code_problems(). `step`: see _matrix()."""
     symbol = codes.encode(element)
     spec = codes.SPECS[element.symbology]
     if spec.layout in ("matrix", "stacked"):
-        img = _matrix(element, symbol, spec, height, width)
+        img = _matrix(element, symbol, spec, height, width, step)
     else:
         img = _barcode(element, symbol, spec, height, width)
     img.code_problems += codes.notes(element)  # type: ignore[attr-defined]
@@ -544,10 +560,16 @@ def _mono_page(element: PageElement, args) -> Image.Image:
 
 
 def render_element(
-    element: Element, height: int, dpi: float, width: int | None = None, mono: bool = False
+    element: Element,
+    height: int,
+    dpi: float,
+    width: int | None = None,
+    mono: bool = False,
+    step: int = 1,
 ) -> Image.Image:
     """width: the room along the label (fixed length), None if it grows;
-    mono: the printer prints only black and white (see render_page())."""
+    mono: the printer prints only black and white (see render_page());
+    step: the image is reduced across by this factor later (render())."""
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
@@ -556,7 +578,7 @@ def render_element(
         return render_symbol(element, height, dpi, mono)
     if isinstance(element, PageElement):
         return render_page(element, width, height, mono)
-    return render_code(element, height)
+    return render_code(element, height, step=step)
 
 
 def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
@@ -630,12 +652,12 @@ def _room(label: Label, f: _Frame, dpi: float, min_length_mm: float) -> int | No
 
 
 def _parts(
-    label: Label, f: _Frame, dpi: float, warnings, room: int | None, mono: bool
+    label: Label, f: _Frame, dpi: float, warnings, room: int | None, mono: bool, step: int = 1
 ) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi, room, mono)
+            part = render_element(element, f.inner, dpi, room, mono, step)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
@@ -651,14 +673,16 @@ def _content_width(parts: list[Image.Image], gap: int) -> int:
     return sum(p.width for p in parts) + gap * max(0, len(parts) - 1)
 
 
-def _smaller(element: Element, part: Image.Image, scale: float, mono: bool) -> Image.Image:
+def _smaller(
+    element: Element, part: Image.Image, scale: float, mono: bool, step: int = 1
+) -> Image.Image:
     """A part reduced to fit a label of fixed length. A code, a page area or
     a symbol is drawn again at the smaller size (not reduced: that would
     blur bars, or a code's modules would no longer be whole pixels)."""
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
     if isinstance(element, CodeElement):
         try:
-            return render_code(element, size[1], size[0])
+            return render_code(element, size[1], size[0], step)
         except Exception:  # noqa: BLE001 - the placeholder of a code that failed
             pass
     if isinstance(element, PageElement):
@@ -672,7 +696,14 @@ def _smaller(element: Element, part: Image.Image, scale: float, mono: bool) -> I
 
 
 def _fit_length(
-    label: Label, parts, f: _Frame, dpi: float, warnings, min_length_mm: float, mono: bool
+    label: Label,
+    parts,
+    f: _Frame,
+    dpi: float,
+    warnings,
+    min_length_mm: float,
+    mono: bool,
+    step: int = 1,
 ):
     """Label length, the (possibly scaled) parts and the gap between them."""
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
@@ -686,7 +717,7 @@ def _fit_length(
     elif parts and content_w > room:
         scale = room / content_w
         parts = [
-            _smaller(element, p, scale, mono)
+            _smaller(element, p, scale, mono, step)
             for element, p in zip(label.elements, parts, strict=True)
         ]
         return length, parts, round(f.margin * scale), True
@@ -704,7 +735,7 @@ def _background(label: Label, size: tuple[int, int], warnings) -> Image.Image:
     return img
 
 
-def _place(img: Image.Image, label: Label, parts, gap: int, f: _Frame) -> None:
+def _place(img: Image.Image, label: Label, parts, gap: int, f: _Frame, step: int = 1) -> None:
     length = img.width
     content_w = _content_width(parts, gap)
     if label.auto_length or label.align == "center":
@@ -715,6 +746,9 @@ def _place(img: Image.Image, label: Label, parts, gap: int, f: _Frame) -> None:
         x = f.frame + f.margin
     for part in parts:
         y = f.bleed + (f.tape - part.height) // 2
+        row0 = getattr(part, "code_row0", None)
+        if row0 is not None:  # a 2D code's first row on a multiple of step
+            y -= (y + row0) % step
         img.paste(part, (x, y), part)
         x += part.width + gap
 
@@ -739,16 +773,24 @@ def render(
     bleed_px: int = 0,
     min_length_mm: float = 0.0,
     mono: bool = False,
+    across_step: int = 1,
 ) -> Rendered:
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
     min_length_mm is the printer's shortest label (Capabilities.min_length_mm);
     mono: the printer prints only black and white (Capabilities.color_model):
-    symbols black or white without grey edges, page areas thresholded."""
+    symbols black or white without grey edges, page areas thresholded;
+    across_step: the caller reduces the image across the tape by this whole
+    factor (a resolution finer along the tape than across it, like the
+    P-touch's high resolution): 2D codes then get modules and rows on
+    multiples of it, so their modules stay whole pixels after the reduction."""
     warnings: list[RenderWarning] = []
+    step = across_step
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono)
-    length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm, mono)
+    parts = _parts(label, f, dpi, warnings, _room(label, f, dpi, min_length_mm), mono, step)
+    length, parts, gap, overflow = _fit_length(
+        label, parts, f, dpi, warnings, min_length_mm, mono, step
+    )
     warnings += [
         RenderWarning(key, {"n": index})
         for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)
@@ -756,6 +798,6 @@ def render(
         for key in code_problems(part)
     ]
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
-    _place(img, label, parts, gap, f)
+    _place(img, label, parts, gap, f, step)
     _draw_border(img, label, f)
     return Rendered(img, px_to_mm(length, dpi), warnings, overflow)

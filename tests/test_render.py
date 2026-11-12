@@ -725,3 +725,21 @@ def test_tiny_ean13_digits_all_one_size():
         for box in ((0, 0, first, text.height), (first + 3, 0, first + 45, text.height))
     ]
     assert heights[0] == heights[1]  # the first digit no smaller than the others
+
+
+@pytest.mark.parametrize("step", [1, 2, 3])
+def test_across_step_puts_2d_code_modules_on_whole_rows(step):
+    """render(across_step=n): the caller reduces the image across by n; a
+    2D code's modules and first row are multiples of n."""
+    from etiketto.model import CodeElement
+    from etiketto.render import render_code
+
+    code = CodeElement(data="across step", symbology="datamatrix")
+    part = render_code(code, 101, step=step)
+    assert part.code_module % step == 0 and part.code_module >= step
+    label = Label(tape_mm=24, elements=[code])
+    rendered = render(label, dpi=360, tape_px=338, across_step=step)
+    from PIL import ImageOps
+
+    top = ImageOps.invert(rendered.image.convert("L")).getbbox()[1]
+    assert top % step == 0  # the first dark row starts a group

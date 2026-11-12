@@ -1043,6 +1043,11 @@ class PTouch(Backend):
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
     ) -> Image.Image:
         raster = self.raster(label.tape_mm, options)
+        pins = raster.width_px or raster.tape_px or 0
+        # high resolution: rendered at twice the dpi, then halved across to
+        # the pins; 2D codes are laid out for that (across_step), so their
+        # modules stay whole pins
+        step = round(raster.tape_px / pins) if pins and raster.tape_px else 1
         rendered = render(
             label,
             dpi=raster.dpi,
@@ -1050,13 +1055,11 @@ class PTouch(Backend):
             tape_px=raster.tape_px,
             min_length_mm=self.capabilities.min_length_mm,
             mono=True,
+            across_step=max(1, step),
         )
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image
-        # TODO: high resolution renders at twice the dpi both ways and halves
-        # the height to the pins: a code's modules across the tape are then
-        # resampled (render at the pins' dpi across, twice along, instead)
-        pins = raster.width_px or image.height
+        pins = pins or image.height
         if image.height != pins:
             image = image.convert("L").resize((image.width, pins), Image.Resampling.BOX)
         image = self.preview(image)

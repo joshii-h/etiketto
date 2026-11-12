@@ -1592,3 +1592,24 @@ def test_a_job_goes_through_net_send_all_with_the_models_rate(monkeypatch):
     link.min_rate = 70.0
     link.sendall(b"abc")
     assert sent == [(3, 7.0, 70.0)]
+
+
+@pytest.mark.parametrize("symbology", ["qr", "datamatrix", "pdf417"])
+def test_high_resolution_keeps_2d_code_modules_whole(monkeypatch, symbology):
+    """Rendered at 360 dpi and halved across to the pins: a 2D code's rows
+    fall on whole pins (no row is averaged with another: no grey before the
+    threshold), and each module is as many pins high as it is half as many
+    columns wide (360 lpi along, 180 across)."""
+    from etiketto.model import CodeElement
+
+    backend = PTouch()
+    monkeypatch.setattr(PTouch, "preview", lambda self, image, mode="": image)
+    code = Label(
+        tape_mm=24,
+        printer="ptouch",
+        elements=[CodeElement(data="https://example.org/" + symbology, symbology=symbology)],
+    )
+    image = backend.prepare(code, PrintOptions(high_res=True))
+    assert image.info["lpi"] == 360
+    histogram = image.convert("L").histogram()
+    assert sum(histogram[1:255]) == 0  # no row averaged with another

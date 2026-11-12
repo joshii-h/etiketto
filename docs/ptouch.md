@@ -196,7 +196,10 @@ the outer edges of the tape stay blank.
   only and with `n2 = 09h` in ESC i z; the PT-P910BT has none [spec].
   Etiketto renders the label at twice the resolution and halves it across
   the tape, so the extra lines carry real detail; the line count and the
-  margin are given in the finer dots.
+  margin are given in the finer dots. 2D codes are laid out for the
+  halving (modules and their first row on even rows of the fine render,
+  `render(across_step=2)`), so each module is a whole number of pins across
+  and twice as many columns along: never averaged.
 
 ## Command sequence
 
