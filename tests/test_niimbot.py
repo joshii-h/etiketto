@@ -48,8 +48,6 @@ from etiketto.backends.niimbot import (
 )
 from etiketto.model import Label
 
-ROWS = (niimbot.ROW_BITMAP, niimbot.ROW_INDEXED, niimbot.ROW_EMPTY, niimbot.CHECK_LINE)
-
 
 def b(text: str) -> bytes:
     return bytes.fromhex(text.replace(" ", ""))
@@ -64,7 +62,7 @@ def b(text: str) -> bytes:
         (Packet(0xDC, b"\x02"), "55 55 DC 01 02 DF AA AA"),  # heartbeat, basic
         (Packet(0x21, b"\x03"), "55 55 21 01 03 23 AA AA"),  # density 3
         (Packet(0x40, b"\x08"), "55 55 40 01 08 49 AA AA"),  # the probe: model id
-        (Packet(0xC1), "55 55 C1 01 01 C1 AA AA"),  # connect, default data [1]
+        (Packet(0xC1), "03 55 55 C1 01 01 C1 AA AA"),  # connect: prefixed with 03
     ],
 )
 def test_golden_packets(packet, expected):
@@ -139,16 +137,56 @@ def test_model_id_protocol_and_firmware():
         data[11], data[12] = divmod(version, 100)
         assert niimbot.protocol_version(bytes(data)) == expected, version
     assert niimbot.protocol_version(b"\x01") == 0
-    assert niimbot.firmware(b"\x02\x02") == "5.14"
+    assert niimbot.firmware(niimbot.u16(781)) == "7.81"  # Thermalith's B3S P
     assert niimbot.firmware(b"\x02") == ""
+    assert niimbot.firmware(b"\x01\x02\x03") == ""
 
 
 def test_print_status():
-    assert niimbot.parse_print_status(b"\x00\x03\x64\x64") == niimbot.PrintStatus(3, 0)
+    four = b"\x00\x03\x64\x32"
+    assert niimbot.parse_print_status(four) == niimbot.PrintStatus(3, 100, 50, 0)
     ten = b"\x00\x01\x10\x20\x00\x00\x02\x00\x00\x00"
-    assert niimbot.parse_print_status(ten) == niimbot.PrintStatus(1, 2)
+    assert niimbot.parse_print_status(ten) == niimbot.PrintStatus(1, 16, 32, 2)
+    eight = b"\x00\x01\x64\x64\x00\x00\x02\x00"  # only the 10 byte form has an error
+    assert niimbot.parse_print_status(eight).error == 0
     with pytest.raises(PrinterError):
-        niimbot.parse_print_status(b"\x01")
+        niimbot.parse_print_status(b"\x00\x01\x64")
+
+
+@pytest.mark.parametrize(
+    "command, data, model, expected",
+    [
+        # type 1, D110 form: lid, battery (steps of 25 %)
+        (0xDD, bytes(8) + b"\x00\x03", 2320, niimbot.Heartbeat(True, None, 75)),
+        # the D110 (2304) reports its lid the other way round
+        (0xDD, bytes(8) + b"\x00\x03", 2304, niimbot.Heartbeat(False, None, 75)),
+        # type 1, B1 form: lid, battery, paper, RFID
+        (0xDD, bytes(9) + b"\x00\x04\x01\x01", 4096, niimbot.Heartbeat(True, False, 100)),
+        (0xDD, bytes(15) + b"\x01\x50\x00\x01", 4096, niimbot.Heartbeat(False, True, 80)),
+        (0xDD, bytes(18) + b"\x00\x01", 4096, niimbot.Heartbeat(None, True, None)),
+        (0xDD, bytes(5), 4096, niimbot.Heartbeat()),  # a length nobody knows
+        # type 4: 2 bytes, battery, temperature, lid, paper, ...
+        (0xD9, b"\x00\x00\x08\x20\x00\x00\x01\x01\x00", 2320, niimbot.Heartbeat(True, True, 8)),
+        (0xD9, b"\x00\x00\x02", 2320, niimbot.Heartbeat()),
+    ],
+)
+def test_heartbeat(command, data, model, expected):
+    assert niimbot.parse_heartbeat(command, data, model) == expected
+
+
+@pytest.mark.parametrize(
+    "heartbeat, code",
+    [
+        (niimbot.Heartbeat(True, True, 100), ""),
+        (niimbot.Heartbeat(), ""),
+        (niimbot.Heartbeat(False, True, 100), "cover_open"),
+        (niimbot.Heartbeat(True, False, 100), "out_of_labels"),
+        (niimbot.Heartbeat(True, True, 8), "low_battery"),
+        (niimbot.Heartbeat(True, True, 0), ""),  # 0: no battery or unknown
+    ],
+)
+def test_heartbeat_problems(heartbeat, code):
+    assert heartbeat.error() == code
 
 
 @pytest.mark.parametrize(
@@ -190,8 +228,8 @@ def test_pixel_counts_split_in_thirds_or_total():
     assert pixel_counts(row, head, total=True) == bytes([0, 208, 0])
     wide = bytes([0xFF] * 50)  # longer than three thirds: the total, low byte first
     assert pixel_counts(wide, head) == bytes([0, 400 & 0xFF, 400 >> 8])
-    # B4: a third of 34 bytes holds more black pixels than one byte counts
-    assert pixel_counts(bytes([0xFF] * 102), 832) == bytes([255, 255, 255])
+    # B4: a third of 34 bytes holds 272 black pixels, one byte wraps as upstream
+    assert pixel_counts(bytes([0xFF] * 102), 832) == bytes([16, 16, 16])
     # its full width (104 bytes) does not fit three thirds: the total
     assert pixel_counts(bytes([0xFF] * 104), 832) == bytes([0, 832 & 0xFF, 832 >> 8])
 
@@ -208,20 +246,23 @@ def test_row_encodings():
     assert indexed == Packet(niimbot.ROW_INDEXED, b"\x00\x00\x06\x00\x00\x02" + positions)
 
 
-def test_long_runs_are_split_at_255():
-    blank = row_packets([bytes(48)] * 600, 384)
+def test_runs_end_at_each_check_point():
+    """As niimbluelib's encoder: rows 0-199, 200-399, ... never share a run."""
+    blank = row_packets([bytes(48)] * 450, 384)
     assert blank == [
-        Packet(niimbot.ROW_EMPTY, b"\x00\x00\xff"),
-        Packet(niimbot.ROW_EMPTY, b"\x00\xff\xff"),
-        Packet(niimbot.ROW_EMPTY, b"\x01\xfe\x5a"),  # row 510, 90 rows
+        Packet(niimbot.ROW_EMPTY, b"\x00\x00\xc8"),  # rows 0 to 199
+        Packet(niimbot.ROW_EMPTY, b"\x00\xc8\xc8"),  # 200 to 399
+        Packet(niimbot.ROW_EMPTY, b"\x01\x90\x32"),  # 400 to 449
     ]
-    line = bytes([0xFF] * 48)
-    packets = row_packets([line] * 256 + [bytes(48)], 384)
-    assert [(p.command, p.data[:2], p.data[5]) for p in packets[:2]] == [
-        (niimbot.ROW_BITMAP, b"\x00\x00", 255),
-        (niimbot.ROW_BITMAP, b"\x00\xff", 1),
+
+
+def test_long_runs_are_split_at_255():
+    rows = [bytes(1)] * 600
+    assert [(start, n) for start, _row, n in niimbot.runs(rows, check_every=0)] == [
+        (0, 255),
+        (255, 255),
+        (510, 90),
     ]
-    assert packets[2] == Packet(niimbot.ROW_EMPTY, b"\x01\x00\x01")
 
 
 def test_different_rows_are_not_merged():
@@ -233,18 +274,31 @@ def test_different_rows_are_not_merged():
     ]
 
 
-def test_check_lines_every_200_rows():
+def test_check_lines_after_rows_199_and_399():
     packets = row_packets([bytes(48)] * 450, 384, total=True, check_lines=True)
+    assert [p.command for p in packets] == [
+        niimbot.ROW_EMPTY,
+        niimbot.CHECK_LINE,
+        niimbot.ROW_EMPTY,
+        niimbot.CHECK_LINE,
+        niimbot.ROW_EMPTY,
+    ]
     lines = [p.data for p in packets if p.command == niimbot.CHECK_LINE]
-    assert lines == [b"\x00\xc8\x01", b"\x01\x90\x01"]  # after rows 200 and 400
+    assert lines == [niimbot.u16(199) + b"\x01", niimbot.u16(399) + b"\x01"]
 
 
-def test_fit_head_keeps_the_middle():
-    image = Image.new("RGB", (400, 10), "white")
-    image.putpixel((8, 0), (0, 0, 0))  # the first pixel the 384 px head prints
-    fitted = niimbot.fit_head(image, 384)
-    assert fitted.size == (384, 10) and fitted.getpixel((0, 0)) == (0, 0, 0)
-    assert niimbot.fit_head(image, 400) is image
+def test_position_on_head_centres_and_cuts():
+    narrow = Image.new("RGB", (320, 4), "white")
+    narrow.putpixel((0, 0), (0, 0, 0))
+    page = niimbot.position_on_head(narrow, 384)
+    assert page.size == (384, 4) and page.getpixel((32, 0)) == (0, 0, 0)
+    assert page.getpixel((0, 0)) == (255, 255, 255)
+    wide = Image.new("RGB", (400, 10), "white")
+    wide.putpixel((8, 0), (0, 0, 0))  # the first pixel the 384 px head prints
+    cut = niimbot.position_on_head(wide, 384)
+    assert cut.size == (384, 10) and cut.getpixel((0, 0)) == (0, 0, 0)
+    exact = Image.new("RGB", (384, 1), "white")
+    assert niimbot.position_on_head(exact, 384) is exact
 
 
 # --- models ---------------------------------------------------------------------------
@@ -257,23 +311,39 @@ def test_model_table():
     assert (b1.name, b1.head_px, b1.task, b1.widest_mm) == ("B1", 384, "b1", 50)
     assert b1.head_mm == pytest.approx(48)
     assert niimbot.BY_ID[512].density == Density(1, 3, 2)  # D11
+    assert niimbot.BY_ID[514].name == "D11S"
     assert niimbot.BY_ID[2560].head_px == 192  # D101
-    assert niimbot.BY_ID[6656].widest_mm == 106  # B4: 104 mm head + 2
+    assert niimbot.BY_ID[6656].widest_mm == 108  # B4: 108 mm stock, 104 mm head
     for model in MODELS:
         # no NIIMBOT printer has 229 dpi: 8 dots/mm or 300 dpi, never computed
         assert model.dpi in (niimbot.DPI_203, niimbot.DPI_300), model.name
         assert set(model.media) <= set(niimbot.LABEL_TYPES)
-        assert model.task in ("b1", "d110", "b21", "v4")
+        assert model.task in ("", "b1", "d110", "d11", "b21", "b21_l2b", "h1s", "v4")
         assert model.density.lowest <= model.density.default <= model.density.highest
         assert model.head_mm <= model.widest_mm + 0.1  # B21 PRO: 591 px are 50.04 mm
     assert pytest.approx(8) == niimbot.DPI_203 / 25.4
 
 
-def test_task_for_protocol():
-    d110m = niimbot.BY_NAME["D110 M"]
-    assert niimbot.task_for(d110m, 0) == "b1"
-    assert niimbot.task_for(d110m, 4) == "v4"
-    assert niimbot.task_for(niimbot.BY_NAME["B1"], 5) == "b1"
+@pytest.mark.parametrize(
+    "name, protocol, task",
+    [
+        ("D11", 0, "d11"),  # the old sequence by default
+        ("D11", 1, "d110"),
+        ("D11", 2, "d110"),
+        ("D11", 3, "d11"),
+        ("D11S", 0, "d11"),
+        ("D110 M", 0, "b1"),
+        ("D110 M", 4, "v4"),
+        ("D110 M", 5, "b1"),  # exactly 4, as niimbluelib
+        ("B4", 0, "b1"),  # no sequence of its own
+        ("B4", 4, "v4"),
+        ("B1", 5, "b1"),
+        ("H1S", 0, "h1s"),
+        ("B21 L2B", 0, "b21_l2b"),
+    ],
+)
+def test_task_for_protocol(name, protocol, task):
+    assert niimbot.task_for(niimbot.BY_NAME[name], protocol) == task
 
 
 def test_density_clamp():
@@ -355,6 +425,7 @@ def test_no_sysfs_no_devices(tmp_path, monkeypatch):
     [
         ("/dev/ttyACM0", "/dev/ttyACM0"),
         (" ttyACM1 ", "/dev/ttyACM1"),
+        (" ttyUSB2", "/dev/ttyUSB2"),
         ("/dev/serial/by-id/usb-NIIMBOT_B1-if00", "/dev/serial/by-id/usb-NIIMBOT_B1-if00"),
     ],
 )
@@ -362,10 +433,30 @@ def test_device_path(host, path):
     assert serialport.device_path(host) == Path(path)
 
 
-@pytest.mark.parametrize("host", ["printer.local", "192.0.2.1", "tty/../x", ""])
+@pytest.mark.parametrize(
+    "host",
+    [
+        "printer.local",
+        "192.0.2.1",
+        "tty/../x",
+        "",
+        "/dev/pts/0",
+        "/dev/ttyS0",
+        "ttyS1",
+        "/etc/passwd",
+    ],
+)
 def test_device_path_refuses_other_addresses(host):
     with pytest.raises(UsbNotFound):
         serialport.device_path(host)
+
+
+def test_device_path_needs_a_device(tmp_path, monkeypatch):
+    monkeypatch.setattr(serialport, "DEV", tmp_path)
+    (tmp_path / "ttyACM5").write_text("")
+    with pytest.raises(UsbNotFound, match="not a device"):
+        serialport.device_path("ttyACM5")
+    assert serialport.device_path("ttyACM6") == tmp_path / "ttyACM6"  # not plugged in
 
 
 def test_the_tests_never_open_a_real_serial_port():
@@ -480,6 +571,11 @@ def test_port_errors_while_talking(pty_port, monkeypatch, tmp_path):
         assert port.read(deadline=serialport.time.monotonic() + 0.05) == b""
         monkeypatch.setattr(os, "read", lambda fd, size: b"")  # hung up
         assert port.read(deadline=serialport.time.monotonic() + 0.05) == b""
+        device = port.device
+        port.device = tmp_path / "gone"  # hung up because it was unplugged
+        with pytest.raises(UsbNotFound, match="is gone"):
+            port.read(deadline=serialport.time.monotonic() + 5)
+        port.device = device
         monkeypatch.setattr(os, "read", real_read)
         real_read(pty_port.master, 0)
 
@@ -506,10 +602,19 @@ def test_stable_names_skip_entries_that_are_no_links(tty_sysfs):
 
 # --- a fake printer on a pseudo terminal ----------------------------------------------
 
+V4_MODELS = {4097, 785, 528}  # protocol 4 printers by their id (niimbluelib)
+
 
 class FakeNiimbot:
-    """Answers like a NIIMBOT printer on the other end of a pseudo terminal;
-    records every packet. Labels print one per status poll."""
+    """Answers like a NIIMBOT printer on the other end of a pseudo terminal,
+    as niimbluelib and Thermalith describe it; records every packet.
+
+    - Connect is only answered with the 03 prefix in front.
+    - Protocol 4 printers do not answer a page start.
+    - Heartbeats are answered with the printer's state, never with an error.
+    - Each label takes two status polls: printing (50 %), then done.
+    - An old D11 (a page size of rows only) sends the number of each
+      printed label (0xE0) by itself."""
 
     def __init__(self, model_id: int = 4096):
         self.master, self.slave = os.openpty()
@@ -518,21 +623,40 @@ class FakeNiimbot:
         self.model_id = model_id
         self.connect_result = 1
         self.status_data = b""
-        self.firmware = b"\x02\x02"
-        self.error = 0  # answered with 0xDB to every request
+        self.firmware = niimbot.u16(781)
+        self.lid_closed = True
+        self.paper = True
+        self.battery = 4  # steps of 25 %
+        self.feeds = True  # reports the label fed out (protocol 4 may not)
+        self.status_length = 10  # of a print status; only 10 bytes carry an error
+        self.counts_pages = True  # an old D11 sends 0xE0 for each label
+        self.index_first = False  # ... even before its answer to the page end
+        self.error = 0  # answered with 0xDB to every request but heartbeats
         self.errors: dict[int, int] = {}  # command -> error code instead of the answer
         self.status_errors: dict[int, int] = {}  # labels printed -> error in the status
         self.silent: set[int] = set()
         self.garbage = b""  # sent before every answer
         self.busy_ends = 0  # PRINT_END answers 0 this many times
+        self.refused_starts = 0  # PAGE_START answers 0 this many times
+        self.busy_page_ends = 0  # PAGE_END answers 0 this many times
         self.log: list[Packet] = []
+        self.raw = bytearray()
         self.copies = 1  # of the page being sent
+        self.page_index = False  # the page size had rows only: report 0xE0
         self.queued = 0  # labels sent
         self.printed = 0
+        self.halfway = False  # the current label is half printed
         self._stop = threading.Event()
         self._reader = Reader()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
+
+    @property
+    def v4(self) -> bool:
+        return self.model_id in V4_MODELS or (self.model_id == 2320 and self._protocol() == 4)
+
+    def _protocol(self) -> int:
+        return niimbot.protocol_version(self.status_data) if self.connect_result == 3 else 0
 
     def close(self) -> None:
         self._stop.set()
@@ -547,8 +671,8 @@ class FakeNiimbot:
             assert serialport.time.monotonic() < deadline, "the fake never got it"
             serialport.time.sleep(0.005)
 
-    def commands(self, rows: bool = False) -> list[int]:
-        return [p.command for p in self.log if rows or p.command not in ROWS]
+    def commands(self) -> list[int]:
+        return [p.command for p in self.log if p.command not in niimbot.ROWS]
 
     def sent(self, command: int) -> list[bytes]:
         return [p.data for p in self.log if p.command == command]
@@ -561,6 +685,7 @@ class FakeNiimbot:
                 data = os.read(self.master, 1 << 16)
             except OSError:
                 continue
+            self.raw += data
             for packet in self._reader.feed(data):
                 self.log.append(packet)
                 self._handle(packet)
@@ -570,10 +695,12 @@ class FakeNiimbot:
 
     def _handle(self, packet: Packet) -> None:
         command = packet.command
-        if command in ROWS or command in self.silent:
+        if command in niimbot.ROWS or command in self.silent:
+            return
+        if command == niimbot.PAGE_START and self.v4:
             return
         code = self.errors.get(command, self.error)
-        if code:
+        if code and command != niimbot.HEARTBEAT:
             self._answer(niimbot.ERROR, bytes([code]))
             return
         answer = getattr(self, "_on_%02x" % command, None)
@@ -585,7 +712,9 @@ class FakeNiimbot:
             self._answer(niimbot.NOT_SUPPORTED, bytes([command]))
 
     def _on_c1(self, data):
-        self._answer(0xC2, bytes([self.connect_result]))
+        prefixed = Packet(niimbot.CONNECT).to_bytes()
+        if prefixed in self.raw:  # without the prefix the printer stays silent
+            self._answer(0xC2, bytes([self.connect_result]))
 
     def _on_a5(self, data):
         self._answer(0xB5, self.status_data)
@@ -596,27 +725,60 @@ class FakeNiimbot:
         self._answer(0x40 + kind, value)
 
     def _on_dc(self, data):
-        self._answer(niimbot.HEARTBEAT_ANSWERS[data[0]], bytes(10))
+        inverted = self.model_id in niimbot.INVERTED_LID
+        lid = int(self.lid_closed == inverted)  # 0 = closed, the other way when inverted
+        paper = 0 if self.paper else 1
+        if data[0] == 4:
+            self._answer(
+                0xD9, bytes([0, 0, self.battery, 30, int(not self.lid_closed), paper, 1, 1, 0])
+            )
+        elif data[0] == 1:
+            self._answer(0xDD, bytes(9) + bytes([lid, self.battery, paper, 1]))
+        else:
+            self._answer(niimbot.HEARTBEAT_ANSWERS[data[0]], bytes(10))
 
     def _on_13(self, data):
         self.copies = data[4] << 8 | data[5] if len(data) >= 6 else 1
+        self.page_index = len(data) == 2
         self._answer(0x14)
 
     def _on_15(self, data):
         self.copies = data[0] << 8 | data[1]
         self._answer(0x16)
 
+    def _on_03(self, data):
+        if self.refused_starts:
+            self.refused_starts -= 1
+            self._answer(0x04, b"\x00")
+            return
+        self._answer(0x04)
+
     def _on_e3(self, data):
-        self.queued += self.copies
-        self._answer(0xE4)
+        if self.index_first:
+            self._answer(niimbot.PAGE_INDEX, niimbot.u16(1))
+        if self.busy_page_ends:
+            self.busy_page_ends -= 1
+            self._answer(0xE4, b"\x00")
+        else:
+            self._answer(0xE4)
+        if self.log[-2].command != niimbot.PAGE_END:  # not a repeated page end
+            self.queued += self.copies
+        if self.page_index and self.counts_pages:
+            for n in range(self.printed + 1, self.queued + 1):
+                self._answer(niimbot.PAGE_INDEX, niimbot.u16(n))
+            self.printed = self.queued
 
     def _on_a3(self, data):
-        if self.printed < self.queued:
+        if self.halfway:
+            self.halfway = False
+        elif self.printed < self.queued:
             self.printed += 1
+            self.halfway = True
         error = self.status_errors.get(self.printed, 0)
-        self._answer(
-            0xB3, niimbot.u16(self.printed) + b"\x64\x64\x00\x00" + bytes([error, 0, 0, 0])
-        )
+        progress = 50 if self.halfway else 100
+        fed = 0 if self.halfway or not self.feeds else 100
+        body = niimbot.u16(self.printed) + bytes([progress, fed, 0, 0, error, 0, 0, 0])
+        self._answer(0xB3, body[: self.status_length])
 
     def _on_f3(self, data):
         if self.busy_ends:
@@ -636,6 +798,7 @@ def fake(monkeypatch):
     )
     monkeypatch.setattr(niimbot, "_sleep", lambda seconds: None)
     monkeypatch.setattr(niimbot, "REQUEST_TIMEOUT", 0.3)
+    monkeypatch.setattr(niimbot, "STATUS_TIMEOUT", 0.5)
     yield printer
     printer.close()
 
@@ -648,30 +811,48 @@ def _image(width=320, height=240) -> Image.Image:
     return image
 
 
+START = [niimbot.CONNECT, niimbot.PRINTER_INFO]
+
+
 def test_query_a_b1(fake):
     backend = Niimbot()
     info = backend.query("/dev/ttyACM0")
-    assert (info.model, info.firmware, info.state, info.error) == ("B1", "5.14", "IDLE", "")
+    assert (info.model, info.firmware, info.state, info.error) == ("B1", "7.81", "IDLE", "")
     assert backend.display_name(info) == "NIIMBOT B1"
     assert fake.commands() == [0xC1, 0x40, 0x40, 0xDC]
     assert fake.sent(0x40) == [b"\x08", b"\x09"]
+    assert fake.sent(0xDC) == [b"\x01"]  # protocol below 3: heartbeat type 1
     assert backend.raster(50, PrintOptions()).dpi == niimbot.DPI_203
 
 
 def test_query_survives_garbage_and_unasked_answers(fake):
     fake.garbage = b"\x00\xff" + Packet(0xB3, bytes(4)).to_bytes() + b"\x55\x55\x13"
     info = Niimbot().query("printer")
-    assert info.model == "B1" and info.firmware == "5.14"
+    assert info.model == "B1" and info.firmware == "7.81"
 
 
-def test_query_reports_a_problem_as_state(fake):
-    fake.errors[0xDC] = 1
+@pytest.mark.parametrize(
+    "model, change, code",
+    [
+        (4096, {"lid_closed": False}, "cover_open"),
+        (512, {"lid_closed": False}, "cover_open"),  # a D11 says it the other way round
+        (512, {}, ""),
+        (4096, {"paper": False}, "out_of_labels"),
+    ],
+)
+def test_query_reads_the_heartbeat(fake, model, change, code):
+    fake.model_id = model
+    for name, value in change.items():
+        setattr(fake, name, value)
     info = Niimbot().query("printer")
-    assert (info.model, info.state, info.error) == ("B1", "ERROR", "cover_open")
+    assert (info.state, info.error) == ("ERROR" if code else "IDLE", code)
+
+
+def test_query_reports_an_error_answer_as_state(fake):
     fake.errors = {0xC1: 2}  # already when connecting: the model is the one asked before
     backend = Niimbot()
     info = backend.query("printer")
-    assert (info.model, info.error) == ("", "out_of_labels")
+    assert (info.model, info.state, info.error) == ("", "ERROR", "out_of_labels")
     assert backend.display_name(info) == backend.name
 
 
@@ -679,11 +860,17 @@ def test_query_without_firmware_heartbeat_or_connect(fake):
     fake.silent = {0xC1, 0xDC}
     fake.firmware = b""
     info = Niimbot().query("printer")
-    assert info.model == "B1" and info.firmware == ""
-    fake.errors = {0x40: 0}
+    assert info.model == "B1" and info.firmware == "" and info.error == ""
     fake.silent = {0x40}
     with pytest.raises(PrinterTimeout):
         Niimbot().query("printer")
+
+
+def test_connect_needs_its_prefix(fake, monkeypatch):
+    plain = Packet(niimbot.CONNECT).to_bytes()[1:]
+    monkeypatch.setattr(Packet, "to_bytes", lambda self: plain)  # as if sent bare
+    with niimbot.session("printer") as s:
+        assert s.optional(niimbot.CONNECT) is None  # the printer stays silent
 
 
 def test_query_an_unknown_model(fake):
@@ -698,59 +885,89 @@ def test_query_an_unknown_model(fake):
     assert 0x01 not in fake.commands()  # nothing printed
 
 
-def test_query_a_d110_with_protocol_4(fake):
+def test_query_a_d110_m_with_protocol_4(fake):
     fake.model_id = 2320  # D110 M
     fake.connect_result = 3
     fake.status_data = bytes(11) + bytes([3, 0])  # 300: protocol 4
+    fake.battery = 8  # percent
     backend = Niimbot()
     info = backend.query("printer")
-    assert info.model == "D110 M"
+    assert info.model == "D110 M" and info.error == "low_battery"
     assert fake.commands()[:3] == [0xC1, 0xA5, 0x40]
+    assert fake.sent(0xDC) == [b"\x04"]  # protocol 3 and up: heartbeat type 4
     assert backend.density(info) == Density(1, 5, 3)
     assert backend.media_types(info) == ("gap", "transparent")
 
 
 def test_print_on_a_b1(fake):
     events = []
-    image = _image(320, 240)  # 40 × 30 mm at 8 dots/mm
+    image = _image(384, 240)  # 48 × 30 mm at 8 dots/mm
     image.info["niimbot_dpi"] = niimbot.DPI_203
     Niimbot().print_label(image, "printer", PrintOptions(copies=2, density=4), events.append)
-    assert fake.commands() == [
-        0xC1,
-        0x40,  # model
-        0x21,  # density
-        0x23,  # label type
-        0x01,  # print start
-        0x03,  # page start
-        0x13,  # page size
-        0xE3,  # page end
-        0xA3,
-        0xA3,  # two polls, one label each
-        0xF3,
-    ]
+    assert fake.commands() == START + [0x21, 0x23, 0x01, 0x03, 0x13, 0xE3] + [0xA3] * 4 + [0xF3]
     assert fake.sent(0x21) == [b"\x04"] and fake.sent(0x23) == [b"\x01"]
     assert fake.sent(0x01) == [b"\x00\x02\x00\x00\x00\x00\x00"]
-    assert fake.sent(0x13) == [niimbot.u16(240) + niimbot.u16(320) + niimbot.u16(2)]
-    rows = [p for p in fake.log if p.command in ROWS]
+    assert fake.sent(0x13) == [niimbot.u16(240) + niimbot.u16(384) + niimbot.u16(2)]
+    rows = [p for p in fake.log if p.command in niimbot.ROWS]
     assert rows[0].command == niimbot.ROW_EMPTY and rows[0].data == b"\x00\x00\x0a"
     assert rows[-1].data[:2] == niimbot.u16(239)  # the last row
     assert fake.printed == 2
     assert [(e.copy, e.copies) for e in events] == [(1, 2), (2, 2), (2, 2)]
 
 
+def test_a_narrow_label_is_centred_on_the_head(fake):
+    image = Image.new("RGB", (320, 2), "white")  # 40 mm on the 48 mm head of a B1
+    image.putpixel((0, 0), (0, 0, 0))
+    Niimbot().print_label(image, "printer", PrintOptions())
+    assert fake.sent(0x13)[0][2:4] == niimbot.u16(384)  # the head's width
+    row = [p for p in fake.log if p.command == niimbot.ROW_INDEXED][0]
+    assert row.data[-2:] == niimbot.u16(32)  # 32 px of white on the left
+
+
 def test_print_on_a_d110(fake):
     fake.model_id = 2304
     image = _image(96, 320)  # 12 × 40 mm
     Niimbot().print_label(image, "printer", PrintOptions(copies=3, density=5, media="continuous"))
-    assert fake.commands() == [0xC1, 0x40, 0x21, 0x23, 0x01, 0x20, 0x03, 0x13, 0x15, 0xE3] + [
-        0xA3
-    ] * 3 + [0xF3]
+    page = [0x20, 0x03, 0x13, 0x15, 0xE3]
+    assert fake.commands() == START + [0x21, 0x23, 0x01] + page + [0xA3] * 6 + [0xF3]
     assert fake.sent(0x21) == [b"\x03"]  # D110: density 1 to 3
     assert fake.sent(0x23) == [b"\x01"]  # no continuous rolls: gaps
     assert fake.sent(0x01) == [b"\x01"]
     assert fake.sent(0x13) == [niimbot.u16(320) + niimbot.u16(96)]
     assert fake.sent(0x15) == [b"\x00\x03"]
     assert fake.printed == 3
+
+
+def test_print_on_an_old_d11(fake):
+    fake.model_id = 512
+    events = []
+    Niimbot().print_label(_image(96, 160), "printer", PrintOptions(copies=2), events.append)
+    page = [0x20, 0x03, 0x13, 0x15, 0xE3]
+    assert fake.commands() == START + [0x21, 0x23, 0x01] + page + [0xF3]  # no status polls
+    assert fake.sent(0x13) == [niimbot.u16(160)]  # rows only
+    assert fake.printed == 2 and {e.copy for e in events} == {1, 2}
+
+
+def test_an_old_d11_that_counts_before_it_answers(fake):
+    fake.model_id = 512
+    fake.index_first = True
+    Niimbot().print_label(_image(96, 160), "printer", PrintOptions())
+    assert fake.commands()[-1] == niimbot.PRINT_END
+
+
+def test_a_d11_on_protocol_1_takes_the_d110_sequence(fake):
+    fake.model_id = 512
+    fake.connect_result = 2  # connected, protocol 1
+    Niimbot().print_label(_image(96, 160), "printer", PrintOptions())
+    assert fake.sent(0x13) == [niimbot.u16(160) + niimbot.u16(96)]
+    assert niimbot.PRINT_STATUS in fake.commands()
+
+
+def test_an_old_d11_that_stops_counting(fake):
+    fake.model_id = 512
+    fake.counts_pages = False
+    with pytest.raises(PrinterTimeout):
+        Niimbot().print_label(_image(96, 160), "printer", PrintOptions())
 
 
 def test_print_on_a_b21(fake):
@@ -761,52 +978,79 @@ def test_print_on_a_b21(fake):
     Niimbot().print_label(
         image, "printer", PrintOptions(copies=2, media="black_mark"), events.append
     )
-    commands = fake.commands()
-    assert commands == [0xC1, 0x40, 0x21, 0x23, 0x01] + [0x03, 0x13, 0xE3] * 2 + [0xF3] * 3
+    page = [0x03, 0x13, 0x86, 0x86, 0xE3]  # check lines after rows 199 and 399
+    assert fake.commands() == START + [0x21, 0x23, 0x01] + page * 2 + [0xF3] * 3
     assert fake.sent(0x23) == [b"\x02"]
     assert fake.sent(0x13) == [niimbot.u16(450) + niimbot.u16(384)] * 2
-    lines = [p.data for p in fake.log if p.command == niimbot.CHECK_LINE]
-    assert lines == [b"\x00\xc8\x01", b"\x01\x90\x01"] * 2
+    lines = fake.sent(niimbot.CHECK_LINE)
+    assert lines == [niimbot.u16(199) + b"\x01", niimbot.u16(399) + b"\x01"] * 2
     bitmap = [p for p in fake.log if p.command == niimbot.ROW_BITMAP][0]
     assert bitmap.data[2] == 0  # counts as a total
     assert fake.printed == 2 and {e.copy for e in events} == {1, 2}
 
 
+def test_print_on_a_b21_l2b(fake):
+    fake.model_id = 769
+    fake.refused_starts = 1
+    fake.busy_page_ends = 3
+    Niimbot().print_label(_image(384, 100), "printer", PrintOptions(copies=2))
+    first = [0x03, 0x03, 0x13, 0xE3]  # the page start is tried again
+    assert fake.commands() == START + [0x21, 0x23, 0x01] + first + [0x03, 0x13, 0xE3] + [
+        0xE3,
+        0xE3,
+        0xF3,
+    ]
+    assert fake.printed == 2
+
+
+def test_a_b21_l2b_that_keeps_refusing(fake):
+    fake.model_id = 769
+    fake.refused_starts = 10
+    with pytest.raises(PrinterBusy, match="refused 0x03 5 times"):
+        Niimbot().print_label(_image(384, 100), "printer", PrintOptions())
+
+
+def test_print_on_an_h1s(fake):
+    fake.model_id = 4352
+    Niimbot().print_label(_image(96, 200), "printer", PrintOptions(copies=2))
+    assert fake.commands() == START + [0x21, 0x23, 0x01, 0x03, 0x13, 0xE3] + [0xA3] * 4 + [0xF3]
+    assert fake.sent(0x01) == [b"\x00\x02"]
+    assert fake.sent(0x13) == [niimbot.u16(200) + niimbot.u16(96) + b"\x00\x02" + bytes(3)]
+    assert fake.printed == 2
+
+
 def test_print_on_a_b1_pro_with_protocol_4(fake):
     fake.model_id = 4097
-    image = _image(560, 300)
+    fake.feeds = False  # finished on the page count and print progress alone
+    image = _image(567, 300)
     image.info["niimbot_dpi"] = niimbot.DPI_300
     backend = Niimbot()
     backend.print_label(image, "printer", PrintOptions(density=2, media="transparent"))
     fake.wait_for(lambda: 0xDC in fake.commands())  # sent last, without an answer
-    assert fake.commands() == [
-        0xC1,
-        0x40,
-        0x23,
-        0x21,
-        0x01,
-        0xA3,
-        0x03,
-        0x13,
-        0xE3,
-        0xA3,
-        0xF3,
-        0xDC,
-    ]
+    after_start = [0xA3, 0x13, 0xE3, 0xA3, 0xA3, 0xF3, 0xDC]  # no page start
+    assert fake.commands() == START + [0x23, 0x21, 0x01] + after_start
     assert fake.sent(0x23) == [b"\x05"]
     assert fake.sent(0x01) == [b"\x00\x01" + bytes(5) + b"\x01\x00"]
-    assert fake.sent(0x13) == [niimbot.u16(300) + niimbot.u16(560) + niimbot.u16(1) + bytes(7)]
+    assert fake.sent(0x13) == [niimbot.u16(300) + niimbot.u16(567) + niimbot.u16(1) + bytes(7)]
     assert fake.sent(0xDC) == [b"\x01"]
     assert backend.raster(50, PrintOptions()).dpi == niimbot.DPI_300
 
 
+def test_a_d110_m_on_protocol_4(fake):
+    fake.model_id = 2320
+    fake.connect_result = 3
+    fake.status_data = bytes(11) + bytes([3, 0])
+    Niimbot().print_label(_image(96, 100), "printer", PrintOptions())
+    assert niimbot.PAGE_START not in fake.commands()
+    assert len(fake.sent(0x13)[0]) == 13
+
+
 def test_print_rescales_an_image_made_for_another_resolution(fake):
     fake.model_id = 4097  # 300 dpi
+    fake.feeds = False
     image = _image(400, 240)  # 50 × 30 mm at 8 dots/mm
     Niimbot().print_label(image, "printer", PrintOptions())
-    rows, cols = fake.sent(0x13)[0][:2], fake.sent(0x13)[0][2:4]
-    assert niimbot.u16(354) == rows  # 30 mm at 300 dpi
-    assert niimbot.u16(568) == cols  # 591 px cut to the 567 px head, padded to bytes
+    assert fake.sent(0x13)[0][:4] == niimbot.u16(354) + niimbot.u16(567)  # 30 mm, the head
 
 
 def test_print_cuts_a_wide_label_to_the_head(fake):
@@ -824,11 +1068,19 @@ def test_print_refuses_a_label_too_wide_or_too_long(fake):
 
 
 def test_an_error_while_printing_says_how_many_labels_came_out(fake):
-    fake.status_errors = {1: 2}  # no paper after the first label
+    fake.status_errors = {1: 2}  # no paper while the first label prints
     with pytest.raises(OutOfLabels) as caught:
         Niimbot().print_label(_image(), "printer", PrintOptions(copies=3))
     assert caught.value.params == {"reported": 2, "printed": 1, "copies": 3}
     assert fake.commands()[-1] == niimbot.CANCEL
+
+
+def test_an_error_byte_needs_the_long_status(fake):
+    """Only a status of 10 bytes has an error byte (8 bytes: none)."""
+    fake.status_errors = {1: 2}
+    fake.status_length = 8
+    Niimbot().print_label(_image(), "printer", PrintOptions())
+    assert fake.printed == 1
 
 
 def test_non_fatal_errors_do_not_stop_a_job(fake):
@@ -845,7 +1097,13 @@ def test_an_error_answer_to_a_page_cancels_the_job(fake):
     assert fake.commands()[-1] == niimbot.CANCEL
 
 
-def test_a_printer_that_stops_answering_times_out(fake, monkeypatch):
+def test_a_late_answer_to_the_end_is_no_failure(fake):
+    fake.silent = {0xF3}
+    Niimbot().print_label(_image(), "printer", PrintOptions())
+    assert fake.printed == 1 and niimbot.CANCEL not in fake.commands()
+
+
+def test_a_printer_that_stops_answering_times_out(fake):
     fake.silent = {0x03}
     with pytest.raises(PrinterTimeout):
         Niimbot().print_label(_image(), "printer", PrintOptions())
@@ -915,7 +1173,7 @@ def test_registered():
     backend = get_backend("niimbot")
     assert isinstance(backend, Niimbot)
     caps = backend.capabilities
-    assert not caps.continuous and caps.max_width_mm == 106
+    assert not caps.continuous and caps.max_width_mm == 108
     assert caps.label_sizes[0].width_mm == 50
 
 

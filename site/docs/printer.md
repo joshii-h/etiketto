@@ -146,14 +146,15 @@ please report how it works.
 - The port belongs to the group `dialout` (Fedora, Debian, Ubuntu) or
   `uucp` (Arch Linux), not `lp`. Run `sudo usermod -aG dialout $USER`
   (on Arch Linux: `uucp`), then log out and in again.
-- Bluetooth is not supported yet.
+- Bluetooth is not supported yet. Older B3S with a micro-USB port do not
+  answer over USB; the B3S P with USB-C does.
 - [[ui:Label size]]: the labels on the roll, the width across the printer.
   On the D11, D110 and D101 the roll is narrow (12 mm on a D11): choose
   [[ui:Along the roll]] under [[ui:Content direction]] for text along the
   label.
-- A label a little wider than the print head is cut to the middle: a B1
-  prints 48 mm of a 50 mm label. Keep 1 mm or more as
-  [[ui:Safety margin]].
+- A label narrower than the print head is printed in its middle. One a
+  little wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.
+  Keep 1 mm or more as [[ui:Safety margin]].
 - In the print dialog: [[ui:Print density]] (higher prints darker) and
   [[ui:Label type]] (labels with gaps, black marks, a continuous roll or
   transparent labels, as loaded). Etiketto offers what the connected model

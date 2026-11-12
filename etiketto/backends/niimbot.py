@@ -7,7 +7,7 @@ The printers speak a small binary protocol of packets
 label type, then sends the label row by row (blank rows, rows with a few
 black pixels and full bitmap rows each have their own packet) and polls the
 printer until it has printed all copies. Which commands a model takes
-depends on its model id, which the printer reports.
+depends on its model id and protocol version, which the printer reports.
 
 Protocol knowledge from niimbluelib (MultiMote, MIT) and Thermalith /
 Niimbot.Net (EvilGeniusLabs, GPL-3.0-or-later), written anew for Etiketto.
@@ -61,19 +61,26 @@ from etiketto.render import DEFAULT_SAFE_MM
 
 HEAD = b"\x55\x55"
 TAIL = b"\xaa\xaa"
+CONNECT_PREFIX = b"\x03"  # the printer wants it in front of a Connect packet
 
-# seconds: an ordinary answer, a status poll, the answer after a page of rows
+# seconds: an ordinary answer, a status poll (and the wait for the next page
+# index), the answer after a page of rows
 REQUEST_TIMEOUT = 1.0
 STATUS_TIMEOUT = 5.0
 PAGE_TIMEOUT = 10.0
 POLL_INTERVAL = 0.3  # between two status polls while printing
-PRINT_TIMEOUT = 60.0  # without a printed label while waiting for a job to finish
+RETRY_INTERVAL = 0.5  # between two tries of a page start or page end (B21 L2B)
+PAGE_START_TRIES = 5
+PAGE_END_TRIES = 20
+PRINT_TIMEOUT = 60.0  # without progress while waiting for a job to finish
 WRITE_TIMEOUT = 5.0  # without the port taking data
 
 MAX_REPEAT = 255  # the repeat field of a row packet is one byte
 MAX_INDEXED = 6  # rows with up to this many black pixels are sent as positions
 MAX_ROWS = 0xFFFF  # the row number is 16 bits
-CHECK_LINE_EVERY = 200  # B21 (protocol 1): a check line after this many rows
+# a check point after each 200 rows (rows 199, 399, ...): runs of identical
+# rows end there for every model, the B21 sends a check line there
+CHECK_LINE_EVERY = 200
 
 DPI_203 = 8 * 25.4  # 8 dots per mm exactly; "203 dpi" is rounded
 DPI_300 = 300.0
@@ -94,14 +101,16 @@ PAGE_END = 0xE3
 PRINT_STATUS = 0xA3
 PRINT_END = 0xF3
 CANCEL = 0xDA
+CHECK_LINE = 0x86
 # rows; the printer does not answer them
 ROW_BITMAP = 0x85
 ROW_INDEXED = 0x83
 ROW_EMPTY = 0x84
-CHECK_LINE = 0x86
-# answers that can come instead of the expected one
+ROWS = (ROW_BITMAP, ROW_INDEXED, ROW_EMPTY)
+# answers that can come instead of the expected one, or unasked
 ERROR = 0xDB
 NOT_SUPPORTED = 0x00
+PAGE_INDEX = 0xE0  # old D11: the number of the label just printed
 
 ANSWERS = {
     CONNECT: (0xC2,),
@@ -117,10 +126,13 @@ ANSWERS = {
     PRINT_STATUS: (0xB3,),
     PRINT_END: (0xF4,),
     CANCEL: (0xD0,),
+    CHECK_LINE: (0xD3,),
 }
 HEARTBEAT_ANSWERS = {1: 0xDD, 2: 0xDE, 3: 0xDF, 4: 0xD9}
 INFO_MODEL_ID = 8
 INFO_FIRMWARE = 9
+CONNECTED_NEW = 2  # Connect answer: protocol 1
+CONNECTED_V3 = 3  # Connect answer: the status data tell the protocol
 
 # label types by Etiketto's media names (base.MEDIA_TYPES)
 LABEL_TYPES = {"gap": 1, "black_mark": 2, "continuous": 3, "transparent": 5}
@@ -151,6 +163,7 @@ ERRORS: dict[int, tuple[type[PrinterError], str]] = {
 }
 # reading or writing the roll's RFID tag failed: the printer prints anyway
 NON_FATAL = frozenset({0x14, 0x1D, 0x22})
+LOW_BATTERY_PERCENT = 10  # the heartbeat's charge at or below this is "low"
 
 _sleep = time.sleep  # replaced in tests
 
@@ -161,7 +174,7 @@ _sleep = time.sleep  # replaced in tests
 @dataclass(frozen=True)
 class Model:
     """What a model can do, by the ids it reports (NIIMBOT's devices.json
-    through niimbluelib). Task: which command sequence it takes."""
+    through niimbluelib; the widest label from Thermalith's printers.json)."""
 
     name: str
     ids: tuple[int, ...]
@@ -169,18 +182,13 @@ class Model:
     head_px: int  # pixels across the print head
     media: tuple[str, ...]  # label types, the default first
     density: Density
-    task: str  # "b1", "d110", "b21" (B21, protocol 1) or "v4" (protocol 4)
-    max_label_mm: float = 0.0  # widest label; 0: the head width + 2 mm
+    # command sequence (see task_for); "" = none of its own
+    task: str
+    widest_mm: float  # the widest label (stock), a little wider than the head prints
 
     @property
     def head_mm(self) -> float:
         return self.head_px * 25.4 / self.dpi
-
-    @property
-    def widest_mm(self) -> float:
-        """The widest label taken: a label is a little wider than the head
-        can print (B1: 50 mm labels, a 48 mm head), the rest is cut off."""
-        return self.max_label_mm or math.ceil(self.head_mm) + 2.0
 
 
 GBT = ("gap", "black_mark", "transparent")
@@ -188,42 +196,37 @@ GBCT = ("gap", "black_mark", "continuous", "transparent")
 GT = ("gap", "transparent")
 D5 = Density(1, 5, 3)
 D3 = Density(1, 3, 2)
+B21C2B_MEDIA = ("gap", "continuous", "transparent", "black_mark")
 
 MODELS = (
     Model("B1", (4096,), DPI_203, 384, GBT, D5, "b1", 50),
     Model("B1 PRO", (4097,), DPI_300, 567, GBT, D5, "v4", 50),
-    Model("B1 SE", (4098,), DPI_203, 384, GBT, D5, "b1", 50),
+    Model("B1 SE", (4098,), DPI_203, 384, GBT, D5, "", 54),
     Model("B21", (768,), DPI_203, 384, GBCT, D5, "b21", 50),
     Model("B21 PRO", (785,), DPI_300, 591, GBCT, D5, "v4", 50),
-    Model(
-        "B21 C2B",
-        (771, 775),
-        DPI_203,
-        384,
-        ("gap", "continuous", "transparent", "black_mark"),
-        D5,
-        "b1",
-        50,
-    ),
-    Model("B21 L2B", (769,), DPI_203, 384, GBT, D5, "b1", 50),
+    Model("B21 C2B", (771, 775), DPI_203, 384, B21C2B_MEDIA, D5, "b1", 50),
+    Model("B21 L2B", (769,), DPI_203, 384, GBT, D5, "b21_l2b", 50),
     Model("B21S", (777,), DPI_203, 384, GBCT, D5, "d110", 50),
-    Model("B203", (2816,), DPI_203, 400, GBT, D5, "b1"),
-    Model("B3", (52993,), DPI_203, 600, GBCT, D5, "b1"),
-    Model("B31", (5632,), DPI_203, 600, GBT, D5, "b1"),
-    Model("B32", (2049,), DPI_300, 851, GT, Density(1, 15, 10), "b1"),
-    Model("B3S", (256, 260, 262), DPI_203, 576, GBCT, D5, "b1", 75),
-    Model("B3S P", (272,), DPI_203, 576, GBCT, D5, "b1", 75),
-    Model("B4", (6656,), DPI_203, 832, GBT, D5, "b1"),
-    Model("D11", (512,), DPI_203, 96, GT, D3, "d110", 15),
+    Model("B203", (2816,), DPI_203, 400, GBT, D5, "", 50),
+    Model("B3", (52993,), DPI_203, 600, GBCT, D5, "", 75),
+    Model("B31", (5632,), DPI_203, 600, GBT, D5, "", 77),
+    Model("B32", (2049,), DPI_300, 851, GT, Density(1, 15, 10), "", 75),
+    Model("B3S", (256, 260, 262), DPI_203, 576, GBCT, D5, "", 75),
+    Model("B3S P", (272,), DPI_203, 576, GBCT, D5, "", 75),
+    Model("B4", (6656,), DPI_203, 832, GBT, D5, "", 108),
+    Model("D11", (512,), DPI_203, 96, GT, D3, "d11", 15),
+    Model("D11S", (514,), DPI_203, 96, GT, D3, "d11", 15),
     Model("D11 H", (528,), DPI_300, 142, GT, D5, "v4", 15),
     Model("D110", (2304, 2305), DPI_203, 96, GT, D3, "d110", 15),
     Model("D110 M", (2320,), DPI_203, 96, GT, D5, "b1", 15),
     Model("D101", (2560,), DPI_203, 192, GT, D3, "b1", 25),
-    Model("B18", (3584,), DPI_203, 96, ("gap", "transparent", "continuous"), D3, "b1", 15),
-    Model("H1S", (4352,), DPI_203, 96, ("gap", "continuous", "transparent"), D3, "b1", 15),
+    Model("B18", (3584,), DPI_203, 96, ("gap", "transparent", "continuous"), D3, "", 15),
+    Model("H1S", (4352,), DPI_203, 96, ("gap", "continuous", "transparent"), D3, "h1s", 15),
 )
 BY_ID = {model_id: model for model in MODELS for model_id in model.ids}
 BY_NAME = {model.name: model for model in MODELS}
+# models whose lid byte in the heartbeat means "open" where others mean "closed"
+INVERTED_LID = frozenset({512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272, 273, 274})
 
 # common label sizes (width across the head × height along the feed), the
 # default first: B1/B21 rolls, larger ones for B3S/B4, the narrow D11/D110 rolls
@@ -242,9 +245,16 @@ LABEL_SIZES = (
 
 
 def task_for(model: Model, protocol: int) -> str:
-    """The command sequence: D110 M speaks protocol 4 with newer firmware."""
-    if model.task == "b1" and protocol >= 4 and model.name == "D110 M":
+    """The command sequence for a model and protocol version, as niimbluelib
+    picks it: the D11 speaks the D110 sequence on protocol 1 and 2, the D110 M
+    the protocol 4 one on protocol 4; a model without a sequence of its own
+    takes protocol 4 from version 4 on, else the B1 one (as Thermalith)."""
+    if model.task == "d11" and protocol in (1, 2):
+        return "d110"
+    if model.name == "D110 M" and protocol == 4:
         return "v4"
+    if not model.task:
+        return "v4" if protocol >= 4 else "b1"
     return model.task
 
 
@@ -269,7 +279,8 @@ class Packet:
         if len(self.data) > 0xFF:
             raise ValueError("packet data too long: %d bytes" % len(self.data))
         body = bytes((self.command, len(self.data))) + self.data
-        return HEAD + body + bytes((checksum(body),)) + TAIL
+        frame = HEAD + body + bytes((checksum(body),)) + TAIL
+        return CONNECT_PREFIX + frame if self.command == CONNECT else frame
 
 
 class Reader:
@@ -295,7 +306,7 @@ class Reader:
         del self.buffer[:start]
         frame = self._frame(0)
         if isinstance(frame, Packet):
-            del self.buffer[: len(frame.to_bytes())]
+            del self.buffer[: 7 + len(frame.data)]
             return frame
         if frame is False:
             del self.buffer[:1]  # not a packet after all: look for the next header
@@ -353,8 +364,8 @@ def protocol_version(data: bytes) -> int:
 
 
 def firmware(data: bytes) -> str:
-    """Software version: a 16 bit number in hundredths ("5.14")."""
-    if len(data) < 2:
+    """Software version: a 16 bit number in hundredths ("7.81")."""
+    if len(data) != 2:
         return ""
     return "%.2f" % ((data[0] << 8 | data[1]) / 100)
 
@@ -362,24 +373,77 @@ def firmware(data: bytes) -> str:
 @dataclass(frozen=True)
 class PrintStatus:
     page: int  # labels printed so far
+    printed: int = 100  # percent of the current label printed
+    fed: int = 100  # percent of the current label fed out
     error: int = 0
 
 
 def parse_print_status(data: bytes) -> PrintStatus:
-    if len(data) < 2:
+    """page u16, print and feed progress; the 10 byte form has an error at 6."""
+    if len(data) < 4:
         raise PrinterError("short print status %s" % data.hex())
-    return PrintStatus(data[0] << 8 | data[1], data[6] if len(data) >= 7 else 0)
+    error = data[6] if len(data) == 10 else 0
+    return PrintStatus(data[0] << 8 | data[1], data[2], data[3], error)
+
+
+@dataclass(frozen=True)
+class Heartbeat:
+    """What a heartbeat says; None where this answer does not tell."""
+
+    lid_closed: bool | None = None
+    paper: bool | None = None
+    battery: int | None = None  # percent
+
+    def error(self) -> str:
+        """The PrinterError code of a problem it shows, or ""."""
+        if self.lid_closed is False:
+            return CoverOpen.code
+        if self.paper is False:
+            return OutOfLabels.code
+        if self.battery is not None and 0 < self.battery <= LOW_BATTERY_PERCENT:
+            return LowBattery.code
+        return ""
+
+
+# heartbeat type 1 (answer 0xDD): offset of the lid byte by length, then battery, paper
+_ADVANCED1 = {10: (8, False), 13: (9, True), 19: (15, True)}
+
+
+def _percent(level: int) -> int:
+    """Charge as 0 to 4 steps on some printers, in percent on others."""
+    return level * 25 if level <= 4 else level
+
+
+def parse_heartbeat(command: int, data: bytes, model: int) -> Heartbeat:
+    """Heartbeat answers: type 1 (protocol below 3) or type 4. Lengths the
+    sources do not know tell nothing."""
+    if command == HEARTBEAT_ANSWERS[4]:
+        if len(data) < 9:
+            return Heartbeat()
+        return Heartbeat(data[4] == 0, data[5] == 0, _percent(data[2]))
+    if len(data) == 20:
+        return Heartbeat(paper=data[18] == 0)
+    if len(data) not in _ADVANCED1:
+        return Heartbeat()
+    at, has_paper = _ADVANCED1[len(data)]
+    lid = (data[at] == 0) != (model in INVERTED_LID)
+    paper = data[at + 2] == 0 if has_paper else None
+    return Heartbeat(lid, paper, _percent(data[at + 1]))
 
 
 # --- rows ---------------------------------------------------------------------------
 
 
-def fit_head(image: Image.Image, head_px: int) -> Image.Image:
-    """Wider than the print head: keep the middle (labels are centred)."""
-    if image.width <= head_px:
+def position_on_head(image: Image.Image, head_px: int) -> Image.Image:
+    """Exactly the head's width, the label in the middle: the protocol has no
+    offset, so a narrower label is padded with white on both sides and a
+    wider one is cut to the middle."""
+    if image.width == head_px:
         return image
-    left = (image.width - head_px) // 2
-    return image.crop((left, 0, left + head_px, image.height))
+    left = (head_px - image.width) // 2
+    page = Image.new("RGB", (head_px, image.height), "white")
+    page.paste(image.convert("RGB"), (left, 0))
+    return page
 
 
 def ink_rows(image: Image.Image) -> list[bytes]:
@@ -396,12 +460,13 @@ def black_pixels(row: bytes) -> list[int]:
 
 
 def pixel_counts(row: bytes, head_px: int, total: bool = False) -> bytes:
-    """Black pixels in each third of the head, or the total as
-    [0, low byte, high byte] where the row does not fit the thirds."""
+    """Black pixels in each third of the head (one byte each: more than 255
+    wrap, as in niimbluelib), or the total as [0, low byte, high byte] where
+    the row does not fit the thirds."""
     chunk = head_px // 24
     if not total and chunk and len(row) <= 3 * chunk:
         thirds = (row[i * chunk : (i + 1) * chunk] for i in range(3))
-        return bytes(min(0xFF, sum(b.bit_count() for b in part)) for part in thirds)
+        return bytes(sum(b.bit_count() for b in part) & 0xFF for part in thirds)
     count = sum(b.bit_count() for b in row)
     return bytes((0, count & 0xFF, (count >> 8) & 0xFF))
 
@@ -417,13 +482,21 @@ def row_packet(number: int, row: bytes, repeat: int, counts: bytes) -> Packet:
     return Packet(ROW_BITMAP, head + row)
 
 
-def runs(rows: list[bytes]) -> Iterator[tuple[int, bytes, int]]:
-    """(first row, content, count) of identical rows, at most MAX_REPEAT
-    each: a longer run goes on at the next row number."""
+def runs(
+    rows: list[bytes], check_every: int = CHECK_LINE_EVERY
+) -> Iterator[tuple[int, bytes, int]]:
+    """(first row, content, count) of identical rows. A run ends at each
+    check point (after rows 199, 399, ...) and after MAX_REPEAT rows; it
+    goes on at the next row number."""
     start = 0
     while start < len(rows):
         end = start + 1
-        while end < len(rows) and end - start < MAX_REPEAT and rows[end] == rows[start]:
+        while (
+            end < len(rows)
+            and end - start < MAX_REPEAT
+            and not (check_every and end % check_every == 0)
+            and rows[end] == rows[start]
+        ):
             end += 1
         yield start, rows[start], end - start
         start = end
@@ -432,18 +505,14 @@ def runs(rows: list[bytes]) -> Iterator[tuple[int, bytes, int]]:
 def row_packets(
     rows: list[bytes], head_px: int, total: bool = False, check_lines: bool = False
 ) -> list[Packet]:
-    """The packets of one page; `check_lines` adds a check line after each
-    CHECK_LINE_EVERY rows (B21, protocol 1)."""
+    """The packets of one page; `check_lines` adds a check line at each
+    check point (B21), numbered by the row it follows."""
     packets = []
     for start, row, count in runs(rows):
         packets.append(row_packet(start, row, count, pixel_counts(row, head_px, total)))
-        if check_lines:
-            lines = range(start + 1, start + count + 1)
-            packets.extend(
-                Packet(CHECK_LINE, u16(line) + b"\x01")
-                for line in lines
-                if line % CHECK_LINE_EVERY == 0
-            )
+        last = start + count - 1
+        if check_lines and last % CHECK_LINE_EVERY == CHECK_LINE_EVERY - 1:
+            packets.append(Packet(CHECK_LINE, u16(last) + b"\x01"))
     return packets
 
 
@@ -454,8 +523,8 @@ def row_packets(
 class Job:
     task: str
     rows: int
-    cols: int  # bits per row, a multiple of 8
-    page: bytes  # the row packets of one label
+    cols: int  # pixels per row: the head's width
+    page: tuple[Packet, ...]  # the rows of one label (and its check lines)
     copies: int
     density: int
     label_type: int
@@ -464,18 +533,12 @@ class Job:
 def make_job(
     image: Image.Image, model: Model, task: str, copies: int, density: int, label_type: int
 ) -> Job:
-    """Rows of an image already fit to the head, in printer orientation."""
-    rows = ink_rows(image)
-    packets = row_packets(rows, model.head_px, total=task == "b21", check_lines=task == "b21")
-    return Job(
-        task,
-        len(rows),
-        (image.width + 7) // 8 * 8,
-        b"".join(p.to_bytes() for p in packets),
-        copies,
-        density,
-        label_type,
-    )
+    """Rows of an image in printer orientation, placed on the head."""
+    page = position_on_head(image, model.head_px)
+    rows = ink_rows(page)
+    checks = task in ("b21", "b21_l2b")
+    packets = row_packets(rows, model.head_px, total=checks, check_lines=checks)
+    return Job(task, len(rows), page.width, tuple(packets), copies, density, label_type)
 
 
 # --- connection ---------------------------------------------------------------------
@@ -501,6 +564,7 @@ class Session:
         self.port = port
         self.reader = Reader()
         self.pending: list[Packet] = []
+        self.page_index = 0  # the last 0xE0 the printer sent (old D11)
 
     def send(self, command: int, data: bytes = b"\x01") -> None:
         self.port.write(Packet(command, data).to_bytes(), WRITE_TIMEOUT)
@@ -514,7 +578,7 @@ class Session:
                 packet = self.pending.pop(0)
                 if packet.command in expect:
                     return packet
-                _check(packet)
+                self._check(packet)
             chunk = self.port.read(deadline)
             if not chunk:
                 raise PrinterTimeout(
@@ -543,7 +607,7 @@ class Session:
     def info(self, kind: int) -> Packet:
         return self.request(PRINTER_INFO, bytes((kind,)), expect=(PRINTER_INFO + kind,))
 
-    def heartbeat(self, kind: int = 2) -> Packet | None:
+    def heartbeat(self, kind: int) -> Packet | None:
         return self.optional(HEARTBEAT, bytes((kind,)), expect=(HEARTBEAT_ANSWERS[kind],))
 
     def cancel(self) -> None:
@@ -551,15 +615,21 @@ class Session:
         with suppress(PrinterError, OSError):
             self.request(CANCEL)
 
+    def _check(self, packet: Packet) -> None:
+        """An answer nobody waits for: errors raise, a page index is kept,
+        the rest is dropped."""
+        if packet.command == ERROR:
+            code = packet.data[0] if packet.data else 0
+            if code and code not in NON_FATAL:
+                raise error_for(code)
+        elif packet.command == NOT_SUPPORTED:
+            raise NotSupported("request not supported: %s" % packet.data.hex())
+        elif packet.command == PAGE_INDEX:
+            self.note_page_index(packet)
 
-def _check(packet: Packet) -> None:
-    """An answer nobody waits for: errors raise, the rest is dropped."""
-    if packet.command == ERROR:
-        code = packet.data[0] if packet.data else 0
-        if code and code not in NON_FATAL:
-            raise error_for(code)
-    elif packet.command == NOT_SUPPORTED:
-        raise NotSupported("request not supported: %s" % packet.data.hex())
+    def note_page_index(self, packet: Packet) -> None:
+        if len(packet.data) == 2:
+            self.page_index = max(self.page_index, model_id(packet.data))
 
 
 def session(host: str, wait: float = serialport.BUSY_WAIT) -> AbstractContextManager[Session]:
@@ -575,10 +645,13 @@ class Identity:
 
 
 def identify(s: Session, with_firmware: bool = False) -> Identity:
-    """Connect, then ask for the model (and firmware)."""
+    """Connect (which tells the protocol), then ask for the model (and firmware)."""
     protocol = 0
     connected = s.optional(CONNECT)
-    if connected and connected.data[:1] == b"\x03":  # protocol 3 or newer
+    result = connected.data[0] if connected and connected.data else 0
+    if result == CONNECTED_NEW:
+        protocol = 1
+    elif result == CONNECTED_V3:
         status = s.optional(STATUS_DATA)
         protocol = protocol_version(status.data) if status else 0
     number = model_id(s.info(INFO_MODEL_ID).data)
@@ -603,56 +676,116 @@ def _start(s: Session, job: Job) -> None:
     elif job.task == "v4":
         # pages, 0, 0, 0, 0, one colour, speed 1 (the default), flag 0
         s.request(PRINT_START, u16(job.copies) + bytes(5) + b"\x01\x00")
-        s.send(PRINT_STATUS)  # protocol 4 expects it before the first page
+    elif job.task == "h1s":
+        s.request(PRINT_START, u16(job.copies))
     else:
         s.request(PRINT_START)
 
 
 def _page_size(job: Job, copies: int) -> bytes:
-    size = u16(job.rows) + u16(job.cols)
-    if job.task == "b1":
-        return size + u16(copies)
-    if job.task == "v4":
-        # copies, cut height, cut type, 0, send all, part height
-        return size + u16(copies) + bytes(7)
-    return size
+    rows, size = u16(job.rows), u16(job.rows) + u16(job.cols)
+    sizes = {
+        "d11": rows,  # rows only
+        "b1": size + u16(copies),
+        "h1s": size + u16(copies) + bytes(3),  # cut height, cut type
+        # cut height, cut type, 0, send all, part height
+        "v4": size + u16(copies) + bytes(7),
+    }
+    return sizes.get(job.task, size)
+
+
+def _rows(s: Session, job: Job) -> None:
+    """The rows of one label; a check line waits for its answer."""
+    chunk: list[bytes] = []
+    for packet in job.page:
+        if packet.command == CHECK_LINE:
+            s.port.write(b"".join(chunk), PAGE_TIMEOUT)
+            chunk = []
+            s.request(CHECK_LINE, packet.data, timeout=PAGE_TIMEOUT)
+        else:
+            chunk.append(packet.to_bytes())
+    s.port.write(b"".join(chunk), PAGE_TIMEOUT)
+
+
+def _until_true(s: Session, command: int, tries: int) -> None:
+    """Repeat a request until the printer answers 1 (B21 L2B)."""
+    for _ in range(tries - 1):
+        if s.request(command, timeout=PAGE_TIMEOUT).data[:1] == b"\x01":
+            return
+        _sleep(RETRY_INTERVAL)
+    if s.request(command, timeout=PAGE_TIMEOUT).data[:1] != b"\x01":
+        raise PrinterBusy("the printer refused 0x%02X %d times" % (command, tries))
 
 
 def _page(s: Session, job: Job, copies: int) -> None:
-    """One label: rows and their frame; the printer prints `copies`."""
-    if job.task == "d110":
+    """One label: its frame and rows; the printer prints `copies`."""
+    if job.task in ("d110", "d11"):
         s.request(PRINT_CLEAR)
-    s.request(PAGE_START)
+    if job.task == "v4":  # no page start: a status request nobody waits for
+        s.send(PRINT_STATUS)
+    elif job.task == "b21_l2b":
+        _until_true(s, PAGE_START, PAGE_START_TRIES)
+    else:
+        s.request(PAGE_START)
     s.request(SET_PAGE_SIZE, _page_size(job, copies))
-    if job.task == "d110":
+    if job.task in ("d110", "d11"):
         s.request(PRINT_QUANTITY, u16(copies))
-    s.port.write(job.page, PAGE_TIMEOUT)
+    _rows(s, job)
     s.request(PAGE_END, timeout=PAGE_TIMEOUT)
 
 
-def _wait_pages(s: Session, total: int, progress: ProgressCallback | None) -> None:
-    """Poll until the printer has printed `total` labels; the timeout
-    restarts with every label. Errors say how many came out."""
+def _with_count(error: PrinterError, done: int, total: int) -> PrinterError:
+    if done:
+        error.params.update(printed=done, copies=total)
+    return error
+
+
+def _finished(status: PrintStatus, total: int, feed: bool) -> bool:
+    """All labels counted, the last one printed to its end (and fed out)."""
+    done = status.printed >= 100 and (status.fed >= 100 or not feed)
+    return status.page >= total and done
+
+
+def _wait_pages(s: Session, total: int, progress: ProgressCallback | None, feed: bool) -> None:
+    """Poll until the printer has printed `total` labels and the last one
+    to the end (and fed it out, unless `feed` is False: protocol 4 printers
+    may never report that). The timeout restarts with every change."""
     done = 0
+    last = None
     deadline = time.monotonic() + PRINT_TIMEOUT
     try:
         while True:
             status = parse_print_status(s.request(PRINT_STATUS, timeout=STATUS_TIMEOUT).data)
             if status.page > done:
                 done = status.page
-                deadline = time.monotonic() + PRINT_TIMEOUT
                 report_progress(progress, min(total, done + 1), total)
             if status.error and status.error not in NON_FATAL:
                 raise error_for(status.error)
-            if done >= total:
+            if _finished(status, total, feed):
                 return
-            if time.monotonic() > deadline:
+            if status != last:
+                last, deadline = status, time.monotonic() + PRINT_TIMEOUT
+            elif time.monotonic() > deadline:
                 raise PrinterTimeout("printed %d of %d labels, then nothing" % (done, total))
             _sleep(POLL_INTERVAL)
     except PrinterError as e:
-        if done:
-            e.params.update(printed=done, copies=total)
-        raise
+        raise _with_count(e, done, total) from None
+
+
+def _wait_page_index(s: Session, total: int, progress: ProgressCallback | None) -> None:
+    """Old D11: the printer sends the number of each label it printed, also
+    while Etiketto still waits for another answer (kept in the session)."""
+    done = 0
+    try:
+        while True:
+            if s.page_index > done:
+                done = s.page_index
+                report_progress(progress, min(total, done + 1), total)
+            if done >= total:
+                return
+            s.note_page_index(s.receive((PAGE_INDEX,), STATUS_TIMEOUT))
+    except PrinterError as e:
+        raise _with_count(e, done, total) from None
 
 
 def _wait_print_end(s: Session) -> None:
@@ -664,17 +797,31 @@ def _wait_print_end(s: Session) -> None:
         _sleep(POLL_INTERVAL)
 
 
+def _end(s: Session) -> None:
+    """The labels are out: an answer to the end that comes late or not at
+    all does not make the job fail."""
+    with suppress(PrinterTimeout):
+        s.request(PRINT_END, timeout=STATUS_TIMEOUT)
+
+
 def run_job(s: Session, job: Job, progress: ProgressCallback | None) -> None:
     _start(s, job)
-    if job.task == "b21":  # no copies field: one page per copy
+    if job.task in ("b21", "b21_l2b"):  # no copies field: one page per copy
         for n in range(1, job.copies + 1):
             report_progress(progress, n, job.copies)
             _page(s, job, 1)
-        _wait_print_end(s)
+        if job.task == "b21":
+            _wait_print_end(s)
+            return
+        _until_true(s, PAGE_END, PAGE_END_TRIES)
+        _end(s)
         return
     _page(s, job, job.copies)
-    _wait_pages(s, job.copies, progress)
-    s.request(PRINT_END)
+    if job.task == "d11":
+        _wait_page_index(s, job.copies, progress)
+    else:
+        _wait_pages(s, job.copies, progress, feed=job.task != "v4")
+    _end(s)
     if job.task == "v4":
         s.send(HEARTBEAT)  # protocol 4 printers expect one after the end
 
@@ -682,15 +829,15 @@ def run_job(s: Session, job: Job, progress: ProgressCallback | None) -> None:
 # --- the backend --------------------------------------------------------------------
 
 
+# USB vendor id of NIIMBOT printers with a native USB serial port (Thermalith,
+# seen on a B3S P)
+VENDOR_IDS = frozenset({0x3513})
+
+
 def is_niimbot(device: serialport.SerialDevice) -> bool:
-    """By the USB strings: NIIMBOT names itself as maker or in the product
-    [assumed: to be checked on a printer], or by its vendor id."""
+    """By the vendor id, or "NIIMBOT" in the USB maker or product name."""
     text = (device.manufacturer + " " + device.product).casefold()
     return "niimbot" in text or device.vendor_id in VENDOR_IDS
-
-
-# USB vendor ids of NIIMBOT printers [assumed: not in the sources, verify with lsusb]
-VENDOR_IDS = frozenset({0x3513})
 
 
 class Niimbot(Backend):
@@ -740,14 +887,15 @@ class Niimbot(Backend):
         ]
 
     def query(self, host: str) -> PrinterInfo:
-        """Model and firmware; a problem the printer reports (cover open, no
-        labels) is part of the answer, not a failure."""
+        """Model and firmware, and cover, labels and battery from the
+        heartbeat; a problem the printer reports is part of the answer,
+        not a failure."""
         error = ""
         identity = None
         with session(host) as s:
             try:
                 identity = identify(s, with_firmware=True)
-                s.heartbeat()
+                error = _heartbeat(s, identity).error()
             except PrinterError as e:
                 if "reported" not in e.params:
                     raise
@@ -805,6 +953,15 @@ class Niimbot(Backend):
         return None
 
 
+def _heartbeat(s: Session, identity: Identity) -> Heartbeat:
+    """Type 4 from protocol 3 on, else type 1; nothing if it does not answer."""
+    kind = 4 if identity.protocol >= 3 else 1
+    packet = s.heartbeat(kind)
+    if packet is None:
+        return Heartbeat()
+    return parse_heartbeat(packet.command, packet.data, identity.model_id)
+
+
 def _model_name(identity: Identity | None, known: Model | None) -> str:
     """The model's name; an unknown one by its id, none if the printer did not say."""
     if identity is None:
@@ -837,10 +994,5 @@ def _job_for(
         raise LabelTooLong("%d rows" % image.height, max_mm=round(limit, 1))
     media = options.media if options.media in model.media else model.media[0]
     return make_job(
-        fit_head(image, model.head_px),
-        model,
-        task,
-        copies,
-        model.density.clamp(options.density),
-        LABEL_TYPES[media],
+        image, model, task, copies, model.density.clamp(options.density), LABEL_TYPES[media]
     )

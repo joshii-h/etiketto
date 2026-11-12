@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:56+0100\n"
+"POT-Creation-Date: 2026-11-12 07:20+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -797,8 +797,12 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/printer.md
-msgid "Bluetooth is not supported yet."
-msgstr "Bluetooth wird noch nicht unterstützt."
+msgid ""
+"Bluetooth is not supported yet. Older B3S with a micro-USB port do not "
+"answer over USB; the B3S P with USB-C does."
+msgstr ""
+"Bluetooth wird noch nicht unterstützt. Ältere B3S mit Micro-USB-Anschluss "
+"antworten über USB nicht; der B3S P mit USB-C schon."
 
 #. type: Bullet: '- '
 #: docs/printer.md
@@ -816,12 +820,14 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"A label a little wider than the print head is cut to the middle: a B1 prints "
-"48 mm of a 50 mm label. Keep 1 mm or more as [[ui:Safety margin]]."
+"A label narrower than the print head is printed in its middle. One a little "
+"wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.  Keep 1 mm "
+"or more as [[ui:Safety margin]]."
 msgstr ""
-"Ein Etikett, das etwas breiter ist als der Druckkopf, wird auf die Mitte "
-"gekürzt: Ein B1 druckt 48 mm eines 50 mm breiten Etiketts. Als [[ui:Safety "
-"margin]] 1 mm oder mehr lassen."
+"Ein Etikett, das schmaler ist als der Druckkopf, wird in dessen Mitte "
+"gedruckt. Eines, das etwas breiter ist, wird auf die Mitte gekürzt: Ein B1 "
+"druckt 48 mm eines 50 mm breiten Etiketts. Als [[ui:Safety margin]] 1 mm "
+"oder mehr lassen."
 
 #. type: Bullet: '- '
 #: docs/printer.md

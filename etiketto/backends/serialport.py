@@ -15,7 +15,9 @@ from __future__ import annotations
 import errno
 import fcntl
 import os
+import re
 import select
+import stat
 import struct
 import termios
 import threading
@@ -118,15 +120,26 @@ def devices() -> list[SerialDevice]:
     return found
 
 
+USB_TTY = re.compile(r"tty(ACM|USB)\d+")
+
+
 def device_path(host: str) -> Path:
     """The device file of an address: a path, or a bare name ("ttyACM0").
-    UsbNotFound for anything else, e.g. a host name typed by mistake."""
+    Only USB serial ports (ttyACM, ttyUSB, or a /dev/serial link to one)
+    are taken; UsbNotFound for anything else, e.g. a host name typed by
+    mistake, a pseudo terminal or a built-in serial port."""
     host = host.strip()
-    if host.startswith("/"):
-        return Path(host)
-    if host.startswith("tty") and "/" not in host:
-        return DEV / host
-    raise UsbNotFound("%r is not a serial port (e.g. /dev/ttyACM0)" % host)
+    path = DEV / host if host.startswith("tty") and "/" not in host else Path(host)
+    if not path.is_absolute():
+        raise UsbNotFound("%r is not a serial port (e.g. /dev/ttyACM0)" % host)
+    real = Path(os.path.realpath(path))
+    linked = path.is_relative_to(DEV / "serial")  # a stable name, maybe unplugged
+    if not USB_TTY.fullmatch(real.name) and not (linked and real == path):
+        raise UsbNotFound("%s is not a USB serial port (e.g. /dev/ttyACM0)" % host)
+    with suppress(OSError):  # missing: the open says so
+        if not stat.S_ISCHR(real.stat().st_mode):
+            raise UsbNotFound("%s is not a device" % host)
+    return path
 
 
 # a status query and a print run in threads of their own: they take turns
@@ -242,9 +255,12 @@ class Port:
                 raise _device_error(self.device, e) from e
             if data:
                 return data
+            # readable without data: the line hung up, the printer is gone
+            if not self.device.exists():
+                raise UsbNotFound("%s is gone" % self.device)
             if time.monotonic() >= deadline:
                 return b""
-            time.sleep(0.01)  # readable without data: the line is hung up
+            time.sleep(0.01)
 
     def close(self) -> None:
         if self.fd >= 0:

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:56+0100\n"
+"POT-Creation-Date: 2026-11-12 07:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -572,7 +572,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "Bluetooth is not supported yet."
+msgid "Bluetooth is not supported yet. Older B3S with a micro-USB port do not answer over USB; the B3S P with USB-C does."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -584,7 +584,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 #, markdown-text
-msgid "A label a little wider than the print head is cut to the middle: a B1 prints 48 mm of a 50 mm label. Keep 1 mm or more as [[ui:Safety margin]]."
+msgid "A label narrower than the print head is printed in its middle. One a little wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.  Keep 1 mm or more as [[ui:Safety margin]]."
 msgstr ""
 
 #. type: Bullet: '- '
