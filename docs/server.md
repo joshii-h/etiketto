@@ -14,15 +14,17 @@ printers on the network (mDNS) and USB are optional.
 etiketto serve [--host 127.0.0.1] [--port 8790] [--labels-dir DIR] [--mcp]
                [--printers printers.toml | --allow-printer ADDR] [--discover]
                [--tokens tokens.toml | --token-file FILE] [--allow-origin URL]
-etiketto mcp [--labels-dir DIR] [--printers printers.toml | --allow-printer ADDR] [--discover]
+               [--max-body MB] [--max-labels N] [--trusted-proxy CIDR]
+etiketto mcp [--labels-dir DIR] [--printers printers.toml | --allow-printer ADDR]
+             [--discover] [--max-labels N]
 etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
                         [--printer NAME ... --printers FILE] [--expires DATE]
-                        [--description TEXT] [--scrypt]
+                        [--description TEXT] [--scrypt | --from-stdin]
 ```
 
 | Option | Meaning |
 |---|---|
-| `--host` | address to listen on; `127.0.0.1` by default. Any other address needs a token. |
+| `--host` | address to listen on; `127.0.0.1` by default. Any other address needs a token. A name is resolved once and only its first address is used (`localhost`: usually 127.0.0.1, not ::1 as well) |
 | `--port` | `8790` by default |
 | `--printers` | `printers.toml`: the printers clients may use, by name; nothing else can be printed on. Not with `--allow-printer` |
 | `--discover` | search the network for printers (mDNS); off by default |
@@ -31,7 +33,10 @@ etiketto token new NAME [--role preview|print|admin] [--tokens FILE]
 | `--labels-dir` | the only folder label and data files are read from; `~/.local/share/etiketto/labels` by default (made if missing) |
 | `--mcp` | MCP (Streamable HTTP) at `/mcp` as well |
 | `--allow-origin` | web origin whose pages may call the server (`https://app.example`): CORS preflights are answered and the answers carry `Access-Control-Allow-Origin`; repeatable |
-| `--allow-printer` | without a printer list: only printers whose host name or IP address matches, `*` matches anything (`*.local`, `192.168.1.*`, `cups.example.com`); the pattern is compared with the host of the address, not the whole address; repeatable |
+| `--allow-printer` | without a printer list: only these printers, compared with the host of the address (never the whole address). A name pattern (`*.local`, `cups.example.com`) matches host names; an address pattern (`192.168.1.0/24`, `192.168.1.*`, `2001:db8::/32`) matches IP addresses only, a host name by every address it resolves to (so `192.168.1.evil.example` is not in `192.168.1.*`); repeatable |
+| `--max-body` | largest request body in MB, 4 by default (parsed JSON takes many times its size) |
+| `--max-labels` | most labels in one print job, copies times rows; 10 000 by default (413 `too_many_labels`) |
+| `--trusted-proxy` | a reverse proxy (address or network) whose `X-Forwarded-For` names the client: the rate limit and the log use that address, and the proxy is not held to 8 connections; repeatable |
 
 Without `printers.toml`, printer settings (address, safety margin, cut,
 mode, colour) come from the app's `settings.json`, as for `etiketto print`,
@@ -63,9 +68,11 @@ color = { brightness = 0, red = 0, green = 0, blue = 0 }
   `host` are required; `cut`, `mode` and `data_format` must be ones the
   model has, `safe_mm` 0–10, colour steps −3 to 3. At most one default.
 - Read strictly at startup: an unknown key, a wrong type, an unknown model
-  or address stop the server with the file, the key and the problem, for
-  example `printers.toml: printers.shipping.cut: expected one of: full,
-  half, none`. Changes need a restart.
+  or address, `cut` on a model that does not cut, `color` on a model
+  without colour settings, control characters in a text stop the server
+  with the file, the key and the problem, for example `printers.toml:
+  printers.kitchen.cut: expected one of: full, half, none`. Changes need
+  a restart.
 - With the list, `printer` in a request is a name from it; the label is
   moved to that printer's model as in the app. Without `printer` the
   default printer is used, or the only one; else printing is refused
@@ -74,7 +81,7 @@ color = { brightness = 0, red = 0, green = 0, blue = 0 }
   More copies than `max_copies` are refused (`too_many_copies`).
 - `GET /printers` lists the printers of the list a token may use, each
   asked for its state at once (`status`; `UNREACHABLE` with the error if it
-  does not answer; `?status=false` skips asking). `GET
+  does not answer; remembered for 5 s; `?status=false` skips asking). `GET
   /printers/{name}/status` asks one.
 - `packaging/docker/printers.example.toml` is a starting point.
 
@@ -83,9 +90,10 @@ color = { brightness = 0, red = 0, green = 0, blue = 0 }
 ```toml
 [tokens.shipping-pc]
 hash = "sha256:6b86b2…"              # never the token itself
-role = "print"                       # preview, print or admin
+role = "print"                       # preview, print or admin; required
+id = "3f9c0a1b2c4d"                  # written by token new: finds the entry at once
 printers = ["shipping"]              # only these (needs --printers); all by default
-expires = 2027-12-31                 # a date, or a date and time (local time if no zone)
+expires = 2027-12-31                 # valid through that day; or a date and time
 description = "PC at gate 2"
 ```
 
@@ -96,21 +104,41 @@ description = "PC at gate 2"
 | `admin` | as `print`, and see and cancel every job |
 
 - `etiketto token new shipping-pc --role print --tokens tokens.toml`
-  makes a random token (`etk_` and 43 characters), adds its SHA-256 hash
-  to the file (made with mode 600 if new; the file is checked as the
-  server reads it before it is written) and prints the token once.
-  `--printer` (repeatable, with `--printers` to check the names),
-  `--expires 2027-12-31`, `--description`. `--scrypt` stores an scrypt
-  hash instead (for tokens people choose; random tokens need no slow
+  makes a random token, `etk_<id>_<secret>` (12 hex digits, 43 random
+  characters), adds its SHA-256 hash and the id to the file and prints
+  the token once. The file is made with mode 600 if new and locked while
+  the entry is added (two at once lose none); the result is checked as
+  the server reads it before it is written; names are quoted, so a dot in
+  one stays part of the name. `--printer` (repeatable, with `--printers`
+  to check the names), `--expires 2027-12-31`, `--description`.
+  `--from-stdin` takes a token you chose from standard input instead
+  (printable ASCII, at least 16 characters; not printed again) and keeps
+  it as an scrypt hash, which slows down guessing a chosen token;
+  `--scrypt` does that for a made one too (random tokens need no slow
   hash). The default file is `~/.config/etiketto/tokens.toml`.
+- The file is read strictly: the role is required, the same token (hash
+  or id) under two names is refused, scrypt parameters must be digits
+  within the memory scrypt may use (salt at least 8, hash 16 to 64
+  bytes). A file every user may change is refused, one others may read
+  is warned about.
+- A token with an id is checked against its own entry only; others are
+  compared with the SHA-256 entries first, the scrypt entries one after
+  the other, at most two scrypt checks at once.
 - Revoking: remove the entry. The server reads the file again when it
-  changes (checked with every request) and on `SIGHUP`. A file that
-  became unusable lets no token in until it is fixed, so a revoked token
-  never stays valid because of a typo elsewhere; the error is logged.
+  changes (inode, time or size; checked with every request) and after
+  `SIGHUP` (the handler only sets a flag; the next request reads). A file
+  that became unusable lets no token in until it is fixed, so a revoked
+  token never stays valid because of a typo elsewhere; the error is
+  logged. Tokens known before stay known when their entry is unchanged.
 - An expired token is refused like a wrong one (401). A job of another
   token is "not found" for a `print` token (404); a `preview` token gets
-  403 (`forbidden`) for print and job requests, a printer it may not use
-  403 (`printer_forbidden`).
+  403 (`forbidden`) for print and job requests and for a `host` of its
+  own; a printer a token may not use is "not found" (404), like one that
+  does not exist, so the names of the others stay unknown. Without
+  `printer` in a request, the default among the printers the token may
+  use is chosen, or the only one.
+- `--tokens` without `--printers` (or `--allow-printer`) is warned about at
+  startup: `print` tokens can then print on any address.
 - Each job keeps the name of its token (`owner`); the log names the token
   with every request and job, never the token itself.
 - `--token-file` (or `ETIKETTO_TOKEN`) stays for simple setups: one token,
@@ -288,11 +316,14 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 - **Token**: `Authorization: Bearer`, compared with
   `hmac.compare_digest` (named tokens: their SHA-256 or scrypt hash; a
   token found once is remembered by its SHA-256 until the file changes).
-  Tokens must be printable ASCII. Ten wrong tokens from one address
-  within a minute make further wrong ones 429 for the minute; a valid
-  token always works (a blocked address only skips the slow scrypt check
-  of tokens not seen before). Behind a reverse proxy all clients share
-  the proxy's address. A token file readable by others is warned about.
+  Tokens must be printable ASCII. Ten wrong tokens from one address (an
+  IPv6 address by its /64 network) within a minute make further wrong
+  ones 429 until a minute after the tenth; the 429s are not counted. A
+  valid token always works: a blocked address still has its SHA-256 and
+  known tokens checked, only the slow scrypt check of tokens not seen
+  before is skipped. Behind a reverse proxy all clients share the
+  proxy's address unless it is given with `--trusted-proxy`. A token file
+  readable by others is warned about.
   Without a token (loopback only) every local program can print.
 - **Web pages**: on a loopback address, requests whose `Host` is not
   exactly a loopback name with an optional port (`localhost`,
@@ -319,8 +350,9 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   are tables (`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`). A label's own data
   file is used only if it lies beside the label inside the folder; a label
   sent as content never reads a file.
-- **Input**: request bodies need a `Content-Length` of at most 32 MB (no
-  chunked bodies); labels are checked by the model (`Label.from_dict`,
+- **Input**: request bodies need a `Content-Length` (ASCII digits) of at
+  most 4 MB (`--max-body`; no chunked bodies), bodies over 512 KB are
+  parsed two at a time; labels are checked by the model (`Label.from_dict`,
   sizes clamped); data rows and data files keep the limits of
   `etiketto/merge/limits.py` (100 000 rows, 1000 columns, 2 000 000 cells);
   values up to 100 000 characters, 1000 `set` entries, 9999 copies.
@@ -329,8 +361,13 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   cells of the columns it uses); more is 413 (`label_too_large`). While
   rendering, no image may exceed 40 megapixels (a text block, a decoded
   image file checked by its size before it is unpacked, the label) and
-  the label not the printer's longest length; image caches are not used
-  for requests. Two previews or checks render at once.
+  the label not the printer's longest length, and all elements together
+  stay within the 40 megapixels as well. Elements are measured first and
+  drawn at their final size (a text fitted to a page is not drawn large
+  and scaled down); the length is checked before anything is drawn. An
+  element over the limits refuses the label (413), it is not drawn as a
+  crossed-out box. Image caches are not used for requests. Two previews or
+  checks render at once.
 - **Roles**: see [tokens.toml](#tokens). The token's name, never the token,
   is logged and kept with each job.
 - **Printers**: with `printers.toml` clients choose by name and cannot
@@ -341,12 +378,20 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   they are given, as in the app). The network is searched only with
   `--discover`.
 - **Resources**: at most 32 connections at once and 8 from one address;
-  30 s to send the whole request (line, headers and body; 408 or the
-  connection closed after that); 100 jobs queued; a finished job keeps
-  only its outcome, not the request. The systemd unit and the Compose
-  file limit memory (1 GB) and processes.
-- **Logs** (stderr, the journal): client address, token name, method, path
-  without the query, status; for each job its id, token name, label,
+  30 s to send the whole request: a watchdog stops reading at the
+  deadline however the client trickles (inside a line, a header or the
+  body), and what was read then is not taken as a request (408 or the
+  connection closed); the answer then has 60 s of its own. Jobs: 100
+  waiting or printing, 20 of them for one token, about 256 MB of
+  requests held by waiting jobs, 10 000 labels per job; a worker per
+  printer ends after 60 s without jobs, at most 64 printers at once (429
+  `queue_full` beyond any of these). A finished job keeps only its
+  outcome, not the request. MCP sessions: 10 per token (its own oldest
+  makes room), 100 in all. The systemd unit and the Compose file limit
+  memory (1 GB) and processes, and `MALLOC_ARENA_MAX=2` keeps threads
+  from holding on to memory a large label used.
+- **Logs** (stderr, the journal): client address, token name (`-` before
+  a token was accepted), method, path without the query, status; for each job its id, token name, label,
   printer and outcome. Never headers, tokens or label content.
 - No shell is run and no path from a request is used outside the labels
   folder.
@@ -355,8 +400,11 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
 
 - `packaging/docker/Dockerfile`: Debian slim with Python, PyGObject,
   Pango and Cairo (no GTK), the app in a venv, user `etiketto` (uid
-  10001). Labels in `/labels`, settings in `/data`. It listens on all
-  interfaces of the container, so it does not start without a token.
+  10001), `MALLOC_ARENA_MAX=2`. No volumes: mount the labels at
+  `/labels` and `printers.toml`, `tokens.toml` (and, if wanted,
+  `etiketto/settings.json`) at `/config` (`XDG_CONFIG_HOME`), readable by
+  whatever user the container runs as. It listens on all interfaces of
+  the container, so it does not start without a token.
 - `packaging/docker/compose.yaml`: network printers, running as the
   owner of `config/` and `labels/` (`user:`, `ETIKETTO_UID` and
   `ETIKETTO_GID`, 1000 by default), 1 GB memory, 128 processes. `config/` with
@@ -368,15 +416,20 @@ With the Flatpak: `"command": "flatpak"`, `"args": ["run",
   (`-f compose.yaml -f compose.host.yaml`): the host's network
   (`network_mode: host`, listening on 127.0.0.1), `--discover` with the
   host's D-Bus socket for mDNS through Avahi, `/dev/usb` for backends that
-  talk USB themselves. CUPS queues of the host (USB printers set up there
+  talk USB themselves, with the groups `lp` and `dialout`. CUPS queues of the host (USB printers set up there
   too) are at `ipp://localhost:631/printers/<queue>`; name them in
   `printers.toml`.
 - `packaging/systemd/etiketto.service`: a user service on `127.0.0.1:8790`
   with MCP and a token file; it makes the labels and config folders,
-  then runs sandboxed (`ProtectSystem=strict` with write access only to
-  them, kernel and cgroup settings protected, no namespaces, only
-  Internet, Unix and netlink sockets, `MemoryMax=1G`, `TasksMax=128`);
-  `systemctl --user reload etiketto` reads tokens.toml again.
+  then runs sandboxed: the system read-only (`ProtectSystem=strict`), the
+  home folder read-only (`ProtectHome=read-only`) but for those two
+  folders, `~/.ssh` and `~/.gnupg` not visible, no capabilities, only the
+  system calls of ordinary services (`@system-service`), kernel
+  settings, modules, logs, clock, host name and cgroups protected, other
+  processes invisible, no namespaces, only Internet, Unix and netlink
+  sockets, `MemoryMax=1G`, `TasksMax=128`, `MALLOC_ARENA_MAX=2`.
+  `systemctl --user reload etiketto` reads tokens.toml again (without
+  tokens.toml the reload does nothing, the server goes on).
 
 ```sh
 cd packaging/docker
