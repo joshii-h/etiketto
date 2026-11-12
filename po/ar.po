@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 09:48+0100\n"
+"PO-Revision-Date: 2026-11-12 09:51+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: ar\n"
 "Language: ar\n"
@@ -35,7 +35,7 @@ msgstr "لا يوجد محتوى بعد"
 msgid "Add text, an image or a code"
 msgstr "أضف نصًا أو صورة أو رمزًا"
 
-#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:479
+#: etiketto/ui/elements.py:46 etiketto/ui/texts.py:58 etiketto/ui/window.py:491
 msgid "Text"
 msgstr "نص"
 
@@ -141,7 +141,7 @@ msgstr "ملصق"
 msgid "Save label"
 msgstr "حفظ الملصق"
 
-#: etiketto/ui/files.py:142 etiketto/ui/window.py:118
+#: etiketto/ui/files.py:142 etiketto/ui/window.py:120
 msgid "Save as template…"
 msgstr "حفظ كقالب…"
 
@@ -154,7 +154,7 @@ msgstr "حُفظ %s"
 msgid "Export PNG"
 msgstr "تصدير بصيغة PNG"
 
-#: etiketto/ui/files.py:178 etiketto/ui/window.py:397
+#: etiketto/ui/files.py:178 etiketto/ui/window.py:409
 msgid "The preview cannot be drawn"
 msgstr "تعذّر رسم المعاينة"
 
@@ -167,7 +167,7 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "لا توجد قوالب بعد – استخدم «حفظ كقالب…»"
 
 #: etiketto/ui/files.py:217 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:41
+#: etiketto/ui/window.py:43
 msgid "Label"
 msgstr "الملصق"
 
@@ -415,11 +415,11 @@ msgstr "تلقائي (%s)"
 msgid "Printer model"
 msgstr "طراز الطابعة"
 
-#: etiketto/ui/printer.py:111 etiketto/ui/printer.py:298
+#: etiketto/ui/printer.py:111 etiketto/ui/printer.py:300
 msgid "Searching…"
 msgstr "جارٍ البحث…"
 
-#: etiketto/ui/printer.py:114 etiketto/ui/printer.py:379
+#: etiketto/ui/printer.py:114 etiketto/ui/printer.py:381
 msgid "Printer details"
 msgstr "تفاصيل الطابعة"
 
@@ -454,9 +454,9 @@ msgstr "عُثر على %s"
 msgid "Choose a printer"
 msgstr "اختيار طابعة"
 
-#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
+#: etiketto/ui/printer.py:195 etiketto/ui/printing.py:260
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:413
+#: etiketto/ui/window.py:425
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -464,113 +464,114 @@ msgstr "إلغاء"
 msgid "Connecting…"
 msgstr "جارٍ الاتصال…"
 
-#: etiketto/ui/printer.py:280
+#: etiketto/ui/printer.py:282
 msgid "Printer not reachable"
 msgstr "تعذّر الوصول إلى الطابعة"
 
-#: etiketto/ui/printer.py:282 etiketto/ui/printer.py:296
+#: etiketto/ui/printer.py:284 etiketto/ui/printer.py:298
 msgid "Printer needs attention"
 msgstr "الطابعة تحتاج إلى انتباه"
 
-#: etiketto/ui/printer.py:311
+#: etiketto/ui/printer.py:313
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "يتبقى %(left)s من %(total)s"
 
-#: etiketto/ui/printer.py:322
+#: etiketto/ui/printer.py:324
 msgid "Printing"
 msgstr "جارٍ الطباعة"
 
-#: etiketto/ui/printer.py:324
+#: etiketto/ui/printer.py:326
 #, python-format
 msgid "Ready · a label every %s"
 msgstr "جاهزة · ملصق كل %s"
 
-#: etiketto/ui/printer.py:325
+#: etiketto/ui/printer.py:327
 msgid "Ready"
 msgstr "جاهزة"
 
-#: etiketto/ui/printer.py:327
+#: etiketto/ui/printer.py:329
 msgid "No cassette inserted"
 msgstr "لا توجد خرطوشة"
 
-#: etiketto/ui/printer.py:328
+#: etiketto/ui/printer.py:330
 #, python-format
 msgid "%s cassette"
 msgstr "خرطوشة %s"
 
-#: etiketto/ui/printer.py:347
+#: etiketto/ui/printer.py:349
 msgid "Model"
 msgstr "الطراز"
 
-#: etiketto/ui/printer.py:348
+#: etiketto/ui/printer.py:350
 msgid "Address"
 msgstr "العنوان"
 
-#: etiketto/ui/printer.py:349
+#: etiketto/ui/printer.py:351
 msgid "Firmware"
 msgstr "البرنامج الثابت"
 
-#: etiketto/ui/printer.py:350
+#: etiketto/ui/printer.py:352
 msgid "Cassette"
 msgstr "الخرطوشة"
 
-#: etiketto/ui/printer.py:351
+#: etiketto/ui/printer.py:353
 msgid "Label distance"
 msgstr "المسافة بين الملصقات"
 
-#: etiketto/ui/printer.py:352
+#: etiketto/ui/printer.py:354
 msgid "Remaining tape"
 msgstr "الشريط المتبقي"
 
-#: etiketto/ui/printer.py:362
+#: etiketto/ui/printer.py:364
 msgid "Printable width"
 msgstr "العرض القابل للطباعة"
 
-#: etiketto/ui/printer.py:363
+#: etiketto/ui/printer.py:365
 msgid "Lot number"
 msgstr "رقم الدفعة"
 
-#: etiketto/ui/printer.py:364
+#: etiketto/ui/printer.py:366
 msgid "Serial number"
 msgstr "الرقم التسلسلي"
 
-#: etiketto/ui/printer.py:366
+#: etiketto/ui/printer.py:368
 msgid "Probably made"
 msgstr "تاريخ الصنع التقريبي"
 
-#: etiketto/ui/printer.py:380 etiketto/ui/printing.py:386
+#: etiketto/ui/printer.py:382 etiketto/ui/printing.py:423
 msgid "Close"
 msgstr "إغلاق"
 
-#: etiketto/ui/printing.py:80
+#: etiketto/ui/printing.py:86
 msgid "The label is empty"
 msgstr "الملصق فارغ"
 
-#: etiketto/ui/printing.py:83
+#: etiketto/ui/printing.py:89
 msgid "This label sheet is unknown to this version – choose another one"
 msgstr "ورقة الملصقات هذه غير معروفة لهذا الإصدار – اختر ورقة أخرى"
 
-#: etiketto/ui/printing.py:93 etiketto/ui/printing.py:294
+#: etiketto/ui/printing.py:99 etiketto/ui/printing.py:303
+#: etiketto/ui/printing.py:328
 msgid "Print anyway"
 msgstr "الطباعة على أي حال"
 
-#: etiketto/ui/printing.py:98
+#: etiketto/ui/printing.py:104
 msgid "Wrong cassette"
 msgstr "خرطوشة غير مناسبة"
 
-#: etiketto/ui/printing.py:100
+#: etiketto/ui/printing.py:106
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "صُمّم الملصق لشريط %(label)s، لكن الخرطوشة المركّبة %(tape)s. ستعدّل الطابعة حجمه ليناسب الشريط."
 
-#: etiketto/ui/printing.py:112
+#: etiketto/ui/printing.py:118
 msgid "Different labels loaded"
 msgstr "تم تحميل ملصقات مختلفة"
 
-#: etiketto/ui/printing.py:114
+#: etiketto/ui/printing.py:120
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -578,65 +579,69 @@ msgid ""
 "size and the gap."
 msgstr "حجم الملصق %(size)s مع فراغ %(gap)s، لذا يبدأ ملصق جديد كل %(pitch)s. قاست الطابعة ملصقًا كل %(measured)s. تحقق من حجم الملصق والفراغ."
 
-#: etiketto/ui/printing.py:146
+#: etiketto/ui/printing.py:152
 msgid "Labels"
 msgstr "عدد الملصقات"
 
-#: etiketto/ui/printing.py:154
+#: etiketto/ui/printing.py:160
 msgid "Print outlines"
 msgstr "طباعة الحدود الخارجية"
 
-#: etiketto/ui/printing.py:154
+#: etiketto/ui/printing.py:160
 msgid "To test on plain paper"
 msgstr "للاختبار على ورق عادي"
 
-#: etiketto/ui/printing.py:181
+#: etiketto/ui/printing.py:187
 #, python-format
 msgid "Sheets: %d"
 msgstr "الأوراق: %d"
 
-#: etiketto/ui/printing.py:192
+#: etiketto/ui/printing.py:198
 msgid "Copies"
 msgstr "النسخ"
 
-#: etiketto/ui/printing.py:196
+#: etiketto/ui/printing.py:202
 msgid "Cut"
 msgstr "القص"
 
-#: etiketto/ui/printing.py:201
+#: etiketto/ui/printing.py:207
 msgid "Colours"
 msgstr "الألوان"
 
-#: etiketto/ui/printing.py:210
+#: etiketto/ui/printing.py:216
 msgid "Colour adjustment"
 msgstr "ضبط الألوان"
 
-#: etiketto/ui/printing.py:213
+#: etiketto/ui/printing.py:219
 msgid "Reset"
 msgstr "إعادة الضبط"
 
-#: etiketto/ui/printing.py:239
+#: etiketto/ui/printing.py:245
 msgid "Not adjusted"
 msgstr "غير مضبوطة"
 
-#: etiketto/ui/printing.py:239
+#: etiketto/ui/printing.py:245
 msgid "Adjusted"
 msgstr "مضبوطة"
 
-#: etiketto/ui/printing.py:252
+#: etiketto/ui/printing.py:258
 msgid "Print label"
 msgstr "طباعة الملصق"
 
-#: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
-#: etiketto/ui/window.py:107
+#: etiketto/ui/printing.py:261 etiketto/ui/printing.py:393
+#: etiketto/ui/window.py:109
 msgid "Print"
 msgstr "طباعة"
 
-#: etiketto/ui/printing.py:286
+#: etiketto/ui/printing.py:300
+msgid "Codes may not scan"
+msgstr "قد لا يمكن مسح الرموز"
+
+#: etiketto/ui/printing.py:320
 msgid "Labels in the printer's margin"
 msgstr "ملصقات في هامش الطابعة"
 
-#: etiketto/ui/printing.py:288
+#: etiketto/ui/printing.py:322
 #, python-format
 msgid ""
 "The printer cannot print near the edges of the paper. The content of labels "
@@ -644,47 +649,47 @@ msgid ""
 "safety margin, or leave these positions out."
 msgstr "لا تستطيع الطابعة الطباعة بالقرب من حواف الورق. محتوى الملصقات %(positions)s يمتد إلى ذلك الهامش وسيُقص. زِد هامش الأمان، أو تخطَّ هذه المواضع."
 
-#: etiketto/ui/printing.py:304
+#: etiketto/ui/printing.py:338
 msgid "No printer yet – search for one or enter its address"
 msgstr "لا توجد طابعة بعد – ابحث عن طابعة أو أدخل عنوانها"
 
-#: etiketto/ui/printing.py:310
+#: etiketto/ui/printing.py:344
 msgid "Printing…"
 msgstr "جارٍ الطباعة…"
 
-#: etiketto/ui/printing.py:320
+#: etiketto/ui/printing.py:357
 msgid "The label cannot be prepared for printing."
 msgstr "تعذّر تجهيز الملصق للطباعة."
 
-#: etiketto/ui/printing.py:339
+#: etiketto/ui/printing.py:376
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "جارٍ طباعة %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:368
+#: etiketto/ui/printing.py:405
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "أُرسل إلى الطابعة – ستتم طباعته عندما يحين دوره"
 
-#: etiketto/ui/printing.py:370
+#: etiketto/ui/printing.py:407
 msgid "Printed"
 msgstr "تمت الطباعة"
 
-#: etiketto/ui/printing.py:372
+#: etiketto/ui/printing.py:409
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "وضع الألوان «%(wanted)s» غير متاح على هذه الطابعة، طُبع باستخدام «%(used)s»"
 
-#: etiketto/ui/printing.py:381
+#: etiketto/ui/printing.py:418
 msgid "Printing failed"
 msgstr "فشلت الطباعة"
 
-#: etiketto/ui/printing.py:382
+#: etiketto/ui/printing.py:419
 msgid "Details"
 msgstr "التفاصيل"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:433
+#: etiketto/ui/printing.py:422 etiketto/ui/window.py:445
 msgid "Report"
 msgstr "إبلاغ"
 
@@ -901,289 +906,320 @@ msgstr "الطول الثابت أقصر من التباعد – زِده"
 msgid "The background image cannot be read"
 msgstr "تعذّرت قراءة صورة الخلفية"
 
-#: etiketto/ui/texts.py:111
+#: etiketto/ui/texts.py:100
+#, python-format
+msgid ""
+"Element %(n)d: the code's modules are only one printer dot wide and may not "
+"scan – make the code larger"
+msgstr "العنصر %(n)d: وحدات الرمز بعرض نقطة طباعة واحدة فقط وقد لا يمكن مسحها – كبّر الرمز"
+
+#: etiketto/ui/texts.py:104
+#, python-format
+msgid ""
+"Element %(n)d: the blank space the code needs around it does not fit – make "
+"the code larger"
+msgstr "العنصر %(n)d: المساحة الفارغة التي يحتاجها الرمز حوله لا تتسع – كبّر الرمز"
+
+#: etiketto/ui/texts.py:108
+#, python-format
+msgid ""
+"Element %(n)d: the code does not fit in its space, even at one printer dot "
+"per module – make the label larger or the content shorter"
+msgstr "العنصر %(n)d: لا يتسع الرمز في مكانه حتى بنقطة طباعة واحدة لكل وحدة – كبّر الملصق أو اختصر المحتوى"
+
+#: etiketto/ui/texts.py:123
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "الأوراق المطبوعة بالفعل: %(n)d من %(total)d."
 
-#: etiketto/ui/texts.py:113
+#: etiketto/ui/texts.py:125
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "الملصقات المطبوعة بالفعل: %(n)d من %(total)d."
 
-#: etiketto/ui/texts.py:116
+#: etiketto/ui/texts.py:129
+msgid "The sheets still waiting in the queue were canceled."
+msgstr "أُلغيت الأوراق التي كانت لا تزال تنتظر في قائمة الانتظار."
+
+#: etiketto/ui/texts.py:131
 msgid "The labels still waiting in the queue were canceled."
 msgstr "أُلغيت الملصقات التي كانت لا تزال تنتظر في قائمة الانتظار."
 
-#: etiketto/ui/texts.py:125
+#: etiketto/ui/texts.py:140
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "تعذّر العثور على الطابعة. تأكّد من أنها قيد التشغيل وعلى الشبكة نفسها، أو أدخل عنوان IP الخاص بها."
 
-#: etiketto/ui/texts.py:129
+#: etiketto/ui/texts.py:144
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "لا يمكن العثور على الطابعة عبر USB. تحقّق من الكابل ومن أن الطابعة قيد التشغيل وليست في وضع السكون، ثم ابحث مجددًا."
 
-#: etiketto/ui/texts.py:132
+#: etiketto/ui/texts.py:147
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "الطابعة لا تستجيب. تأكّد من أنها قيد التشغيل وليست في وضع السكون."
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:149
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "توقفت الطابعة عن استقبال البيانات. تحقّق مما إذا كانت تعرض مشكلة، مثل نفاد الملصقات أو غطاء مفتوح، ثم حاول مرة أخرى."
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:153
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "ترفض الطابعة الاتصال. أطفئها ثم شغّلها مجددًا. إن كانت واجهة الويب الخاصة بها توفّر خيار «Port 9100»، ففعّله."
 
-#: etiketto/ui/texts.py:141
+#: etiketto/ui/texts.py:156
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "لا توجد خرطوشة. أدخل خرطوشة وحاول مجددًا."
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:157
 msgid "The printer's cover is open. Close it and try again."
 msgstr "غطاء الطابعة مفتوح. أغلقه وحاول مجددًا."
 
-#: etiketto/ui/texts.py:143
+#: etiketto/ui/texts.py:158
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "الملصق عالق. افتح الغطاء وأزل الملصق ثم حاول مجددًا."
 
-#: etiketto/ui/texts.py:144
+#: etiketto/ui/texts.py:159
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "لم يتم التعرّف على الخرطوشة. أعد إدخالها أو جرّب خرطوشة أخرى."
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:160
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "الطابعة مشغولة. انتظر قليلًا وحاول مجددًا."
 
-#: etiketto/ui/texts.py:146
+#: etiketto/ui/texts.py:161
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "الملصق طويل جدًا لهذه الطابعة: الحد الأقصى %(max)s."
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:162
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "الملصق أعرض من أن تطبعه هذه الطابعة: الحد الأقصى %(max)s."
 
-#: etiketto/ui/texts.py:148
+#: etiketto/ui/texts.py:163
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "نفدت الملصقات من الطابعة. ضع رولًا جديدًا وحاول مرة أخرى."
 
-#: etiketto/ui/texts.py:149
+#: etiketto/ui/texts.py:164
 msgid "The print head is open. Close it and try again."
 msgstr "رأس الطباعة مفتوح. أغلقه وحاول مرة أخرى."
 
-#: etiketto/ui/texts.py:151
+#: etiketto/ui/texts.py:166
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "تعذّر على الطابعة العثور على الملصق التالي. تحقق من تحميل الملصقات بشكل صحيح ومن مرورها عبر حسّاس الملصقات."
 
-#: etiketto/ui/texts.py:155
+#: etiketto/ui/texts.py:170
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "توجد مشكلة في شريط الحبر. تحقق من تركيبه بشكل صحيح ومن توافقه مع طريقة الطباعة المضبوطة على الطابعة."
 
-#: etiketto/ui/texts.py:158
+#: etiketto/ui/texts.py:173
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "الطابعة متوقفة مؤقتًا. استأنف من شاشتها وحاول مرة أخرى."
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:174
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "نفد الورق من الطابعة. حمّل الورق وحاول مجددًا."
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:176
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "الورق عالق. أزله كما تعرض شاشة الطابعة وحاول مجددًا."
 
-#: etiketto/ui/texts.py:163
+#: etiketto/ui/texts.py:178
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "نفد الحبر أو مسحوق الحبر من الطابعة. استبدله وحاول مجددًا."
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:179
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "لا تستطيع الطابعة طباعة هذا الحجم. اختر حجم ورق تدعمه."
 
-#: etiketto/ui/texts.py:166
+#: etiketto/ui/texts.py:181
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "لا تقبل الطابعة أيًّا من الصيغ التي يستطيع Etiketto إرسالها (PDF وPWG Raster وJPEG)."
 
-#: etiketto/ui/texts.py:169
+#: etiketto/ui/texts.py:184
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "قائمة انتظار الطابعة متوقفة مؤقتًا. استأنفها من إعدادات الطابعة في النظام وحاول مجددًا."
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:188
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "احتُجزت مهمة الطباعة في قائمة الانتظار، مثلًا إلى أن يُفرج عنها أو تُدخل كلمة مرور. تحقق من قائمة الانتظار في إعدادات الطابعة في النظام وحاول مجددًا."
 
-#: etiketto/ui/texts.py:177
+#: etiketto/ui/texts.py:192
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "أُلغيت مهمة الطباعة في الطابعة أو في قائمة الانتظار."
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:194
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "لا يملك Etiketto إذن استخدام منفذ USB الخاص بالطابعة. أضف المستخدم الخاص بك إلى المجموعة «lp» (sudo usermod -aG lp $USER)، ثم سجّل الخروج وسجّل الدخول مجددًا."
 
-#: etiketto/ui/texts.py:183
+#: etiketto/ui/texts.py:198
+msgid ""
+"A code does not fit on the label at this printer's resolution and would be "
+"cut off. Make the label larger or the code's content shorter."
+msgstr "لا يتسع الرمز على الملصق بدقة هذه الطابعة وسيُقطع. كبّر الملصق أو اختصر محتوى الرمز."
+
+#: etiketto/ui/texts.py:202
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "أبلغت الطابعة عن مشكلة. أطفئها ثم شغّلها مجددًا، ثم حاول مرة أخرى."
 
-#: etiketto/ui/texts.py:195
+#: etiketto/ui/texts.py:214
 msgid "Warming up…"
 msgstr "جارٍ التسخين…"
 
-#: etiketto/ui/texts.py:196
+#: etiketto/ui/texts.py:215
 msgid "Cooling down…"
 msgstr "جارٍ التبريد…"
 
-#: etiketto/ui/texts.py:197
+#: etiketto/ui/texts.py:216
 msgid "Cleaning…"
 msgstr "جارٍ التنظيف…"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:217
 msgid "Swipe the printer's panel to cut the label"
 msgstr "اسحب على لوحة الطابعة لقص الملصق"
 
-#: etiketto/ui/texts.py:200
+#: etiketto/ui/texts.py:219
 msgid "Out of paper – load paper to continue"
 msgstr "نفد الورق – حمّل الورق للمتابعة"
 
-#: etiketto/ui/texts.py:201
+#: etiketto/ui/texts.py:220
 msgid "Cover open – close it to continue"
 msgstr "الغطاء مفتوح – أغلقه للمتابعة"
 
-#: etiketto/ui/texts.py:202
+#: etiketto/ui/texts.py:221
 msgid "Paper jammed – remove it to continue"
 msgstr "الورق عالق – أزله للمتابعة"
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:232
 msgid "This label needs a newer version of Etiketto"
 msgstr "يتطلب هذا الملصق إصدارًا أحدث من Etiketto"
 
-#: etiketto/ui/texts.py:215
+#: etiketto/ui/texts.py:234
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s ليس ملصق Etiketto"
 
-#: etiketto/ui/texts.py:216
+#: etiketto/ui/texts.py:235
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "الملف تالف: %s"
 
-#: etiketto/ui/texts.py:222
+#: etiketto/ui/texts.py:241
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "تعذّر حفظ %s: لا يوجد إذن بالكتابة هناك"
 
-#: etiketto/ui/texts.py:224
+#: etiketto/ui/texts.py:243
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "تعذّر حفظ %s: القرص ممتلئ"
 
-#: etiketto/ui/texts.py:225
+#: etiketto/ui/texts.py:244
 #, python-format
 msgid "Cannot save %s"
 msgstr "تعذّر حفظ %s"
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:253
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "يبدو أن هذه الخرطوشة من %(month)s %(year)d. ورق ZINK القديم يطبع ألوانًا باهتة."
 
-#: etiketto/ui/window.py:86
+#: etiketto/ui/window.py:88
 msgid "Open"
 msgstr "فتح"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:95
 msgid "Templates"
 msgstr "القوالب"
 
-#: etiketto/ui/window.py:99
+#: etiketto/ui/window.py:101
 msgid "Save"
 msgstr "حفظ"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:118
 msgid "New label"
 msgstr "ملصق جديد"
 
-#: etiketto/ui/window.py:117
+#: etiketto/ui/window.py:119
 msgid "Save as…"
 msgstr "حفظ باسم…"
 
-#: etiketto/ui/window.py:119
+#: etiketto/ui/window.py:121
 msgid "Export PNG…"
 msgstr "تصدير بصيغة PNG…"
 
-#: etiketto/ui/window.py:120
+#: etiketto/ui/window.py:122
 msgid "Help"
 msgstr "مساعدة"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:123
 msgid "Report a problem…"
 msgstr "الإبلاغ عن مشكلة…"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:124
 msgid "About Etiketto"
 msgstr "عن Etiketto"
 
-#: etiketto/ui/window.py:330
+#: etiketto/ui/window.py:332
 msgid "Unsaved label"
 msgstr "ملصق غير محفوظ"
 
-#: etiketto/ui/window.py:373
+#: etiketto/ui/window.py:385
 msgid "content scaled down to fit"
 msgstr "صُغّر المحتوى ليتسع"
 
-#: etiketto/ui/window.py:375
+#: etiketto/ui/window.py:387
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "طويل جدًا لهذه الطابعة: الحد الأقصى %s"
 
-#: etiketto/ui/window.py:380
+#: etiketto/ui/window.py:392
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "أعرض من أن تطبعه هذه الطابعة: الحد الأقصى %s"
 
-#: etiketto/ui/window.py:385
+#: etiketto/ui/window.py:397
 #, python-format
 msgid "Problem: %s"
 msgstr "مشكلة: %s"
 
-#: etiketto/ui/window.py:460
+#: etiketto/ui/window.py:472
 msgid "The browser cannot be opened"
 msgstr "تعذّر فتح المتصفح"
 
-#: etiketto/ui/window.py:462
+#: etiketto/ui/window.py:474
 msgid "Copy link"
 msgstr "نسخ الرابط"
 
-#: etiketto/ui/window.py:506
+#: etiketto/ui/window.py:518
 msgid "Only local files can be dropped"
 msgstr "يمكن إفلات الملفات المحلية فقط"
 
-#: etiketto/ui/window.py:521
+#: etiketto/ui/window.py:533
 msgid "Please wait until printing has finished"
 msgstr "يُرجى الانتظار حتى تنتهي الطباعة"

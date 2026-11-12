@@ -171,7 +171,7 @@ class Files:
 
     def export_png(self, path: Path) -> None:
         window = self.window
-        dpi = window.backend.capabilities.dpi
+        dpi = window.print_dpi()
         try:
             _rendered, image = window.render_image()
         except Exception as e:  # noqa: BLE001

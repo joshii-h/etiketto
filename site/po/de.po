@@ -1098,6 +1098,42 @@ msgstr "**Bild**: Fotos und Grafiken; Ziehen und Ablegen geht auch."
 msgid "**Code**: QR code, Code 128 or EAN-13."
 msgstr "**Code**: QR-Code, Code 128 oder EAN-13."
 
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Codes print sharp on every printer: each bar and square is a whole number of"
+" printer dots, as close to the designed width as the element's space allows,"
+" with the blank margin a scanner needs. The code may come out slightly "
+"smaller than designed, centred in its space."
+msgstr ""
+"Codes werden auf jedem Drucker scharf gedruckt: Jeder Strich und jedes "
+"Quadrat ist eine ganze Zahl von Druckpunkten breit, so nah an der "
+"entworfenen Breite, wie der Platz des Elements erlaubt, mit dem leeren Rand,"
+" den ein Scanner braucht. Der Code kann etwas kleiner als entworfen "
+"ausfallen, mittig in seinem Platz."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"A code whose bars are only one printer dot wide, or without room for its "
+"blank margin, may not scan: Etiketto warns before printing, make the code "
+"larger. A code that does not fit at all is not printed."
+msgstr ""
+"Ein Code, dessen Striche nur einen Druckpunkt breit sind oder dessen leerer "
+"Rand keinen Platz hat, lässt sich womöglich nicht scannen: Etiketto warnt "
+"vor dem Drucken, dann den Code grösser machen. Ein Code, der gar nicht "
+"passt, wird nicht gedruckt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Labels made with earlier versions: QR codes come out up to about a third "
+"smaller (their blank margin is now inside the element), barcodes slightly "
+"wider."
+msgstr ""
+"Etiketten aus früheren Versionen: QR-Codes werden bis zu etwa einem Drittel "
+"kleiner (ihr leerer Rand liegt jetzt im Element), Strichcodes etwas breiter."
+
 #. type: Title ##
 #: docs/use.md
 #, no-wrap

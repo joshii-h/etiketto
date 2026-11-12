@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "लागू करें",
     "Labels %s reach into the margin the printer cannot print on": "लेबल %s उस हाशिये में जाते हैं जिस पर प्रिंटर प्रिंट नहीं कर सकता",
     "Sheets already printed: %(n)d of %(total)d.": "पहले ही प्रिंट हो चुकी शीटें: %(total)d में से %(n)d।",
+    "The sheets still waiting in the queue were canceled.": "कतार में अभी भी प्रतीक्षा कर रही शीटें रद्द कर दी गईं।",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "तत्व %(n)d: कोड के मॉड्यूल केवल एक प्रिंट बिंदु चौड़े हैं और शायद स्कैन न हों – कोड बड़ा करें",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "तत्व %(n)d: कोड के चारों ओर ज़रूरी खाली जगह नहीं समाती – कोड बड़ा करें",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "तत्व %(n)d: प्रति मॉड्यूल एक प्रिंट बिंदु पर भी कोड अपनी जगह में नहीं समाता – लेबल बड़ा करें या सामग्री छोटी करें",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "इस प्रिंटर के रिज़ॉल्यूशन पर कोड लेबल पर नहीं समाता और कट जाएगा। लेबल बड़ा करें या कोड की सामग्री छोटी करें।",
+    "Codes may not scan": "कोड शायद स्कैन न हों",
 }

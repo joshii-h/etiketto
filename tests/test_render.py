@@ -405,7 +405,9 @@ def test_qr_is_square_coloured_and_transparent():
 def test_qr_on_label_shows_background(make_label):
     img = render(make_label(background="#00ff00", elements=[CodeElement(data="x" * 20)])).image
     x0, y0, x1, y1 = ink_bbox(img, (0, 255, 0))
-    assert (x1 - x0, y1 - y0) == (INNER, INNER)
+    # 25 modules and 2 x 4 of quiet zone in 274 px: 8 px each, centred
+    assert (x1 - x0, y1 - y0) == (200, 200)
+    assert y0 == FRAME + (INNER - 33 * 8) // 2 + 4 * 8
     colours = set(pixels(img.crop((x0, y0, x1, y1))))
     assert colours == {(0, 0, 0), (0, 255, 0)}
 
@@ -450,6 +452,197 @@ def test_invalid_codes_warn(make_label, symbology, data, key):
 )
 def test_check_code_accepts(symbology, data):
     render_module.check_code(CodeElement(data=data, symbology=symbology))  # no exception
+
+
+def _runs(row):
+    """Lengths of the runs of equal values in a row of pixels."""
+    runs, last = [], None
+    for value in row:
+        if value == last:
+            runs[-1] += 1
+        else:
+            runs.append(1)
+            last = value
+    return runs
+
+
+def _pattern(symbology, data):
+    import barcode
+
+    pattern = "".join(barcode.get_barcode_class(symbology)(data).build())
+    return [len(run) for run in pattern.replace("01", "0 1").replace("10", "1 0").split()]
+
+
+def _on_white(part):
+    page = Image.new("L", part.size, 255)
+    page.paste(part.convert("L"), (0, 0), part)
+    return page
+
+
+def _bars(page, y):
+    """The runs of a row through the bars, without the space around them,
+    and where the first bar starts and the last ends."""
+    row = list(pixels(page.crop((0, y, page.width, y + 1))))
+    first = row.index(0)
+    last = len(row) - row[::-1].index(0)
+    return _runs(row[first:last]), first, last
+
+
+def _expected_module(width, modules, quiet):
+    """The rule: the nearest whole module if the code and its quiet zone fit,
+    else the widest that does (at least 1)."""
+    nearest = max(1, round(width / (modules + quiet)))
+    if nearest * (modules + quiet) <= width:
+        return nearest
+    return max(1, width // (modules + quiet))
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+@pytest.mark.parametrize(
+    "symbology, data", [("code128", "1Z999AA10123456784"), ("ean13", "4006381333931")]
+)
+def test_barcode_modules_are_whole_pixels(symbology, data, dpi):
+    height = mm_to_px(12, dpi)
+    part = render_module.render_code(CodeElement(data, symbology=symbology), height)
+    page = _on_white(part)
+    assert set(pixels(page)) == {0, 255}  # 1 bit: nothing a printer has to round
+    runs, first, last = _bars(page, round(height * 6 / render_module.BAR_TOTAL_MM))
+    module = min(runs)
+    assert [run / module for run in runs] == _pattern(symbology, data)
+    left, right = render_module.QUIET[symbology]
+    modules = sum(runs) // module
+    assert module == _expected_module(page.width, modules, left + right)
+    assert part.code_module == module
+    assert render_module.code_problems(part) == (("code_thin",) if module < 2 else ())
+    assert first >= left * module and page.width - last >= right * module  # quiet zones
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+def test_qr_modules_are_whole_square_pixels(dpi):
+    height = mm_to_px(12, dpi)
+    part = render_module.render_code(CodeElement("https://example.org/etiketto"), height)
+    assert part.size == (height, height)  # the element keeps its size
+    page = _on_white(part)
+    assert set(pixels(page)) == {0, 255}
+    x0, y0, x1, y1 = ink_bbox(page, 255)
+    count = 29  # version 3
+    module = (x1 - x0) // count
+    assert (x1 - x0, y1 - y0) == (count * module, count * module)
+    assert module == _expected_module(height, count, 8)
+    assert x0 >= 4 * module and height - x1 >= 4 * module  # the quiet zone, inside
+    assert (x0, y0) == ((height - count * module) // 2,) * 2  # centred
+    # finder pattern: 7 modules dark-light-dark-light-dark 1:1:3:1:1
+    row = list(pixels(page.crop((x0, y0 + 3 * module, x0 + 7 * module, y0 + 3 * module + 1))))
+    assert _runs(row) == [module, module, 3 * module, module, module]
+
+
+def test_short_content_is_a_qr_code_not_a_micro_qr_code():
+    part = render_module.render_code(CodeElement("x"), 29 * 4)
+    _x0, _y0, x1, _y1 = ink_bbox(_on_white(part), 255)
+    assert part.code_module == 4 and (x1 - _x0) == 21 * 4  # version 1: 21 modules
+
+
+@pytest.mark.parametrize(
+    "designed, modules, quiet, box, module, start, problems",
+    [
+        (2.6, 10, (2, 2), 42, 3, 6, ()),  # the nearest, the quiet zone fits
+        (2.6, 10, (2, 2), 41, 2, 10, ()),  # 3 would leave too little quiet zone
+        (2.4, 10, (2, 2), 42, 2, 11, ()),
+        (1.4, 10, (2, 2), 14, 1, 2, ("code_thin",)),
+        (0.9, 10, (2, 2), 12, 1, 1, ("code_quiet", "code_thin")),  # bars fit, quiet zone not
+        (0.5, 10, (2, 2), 9, 1, 0, ("code_too_big", "code_thin")),  # not even the bars
+    ],
+)
+def test_module_width(designed, modules, quiet, box, module, start, problems):
+    fit = render_module._module(designed, modules, quiet, box)
+    assert (fit.module, fit.start, fit.problems) == (module, start, problems)
+
+
+def test_codes_that_may_not_scan_or_do_not_fit_warn(make_label):
+    long = CodeElement("1Z999AA10123456784" * 2, symbology="code128")
+    rendered = render(make_label(tape_mm=12, elements=[TextElement("x"), long]), dpi=203)
+    assert RenderWarning("code_thin", {"n": 2}) in rendered.warnings
+    qr = render(make_label(elements=[CodeElement("https://example.org")]), dpi=203)
+    assert qr.warnings == []  # 3 dots a module
+    code = CodeElement("1Z999AA10123456784", symbology="code128")
+    pattern = sum(_pattern("code128", code.data))
+    quiet = render_module.render_code(code, 60, pattern + 5)
+    assert render_module.code_problems(quiet) == ("code_quiet", "code_thin")
+    page = _on_white(quiet)
+    assert ink_bbox(page, 255)[0] == 2  # the bars centred in what there is
+    big = render_module.render_code(code, 60, pattern - 1)
+    assert render_module.code_problems(big) == ("code_too_big", "code_thin")
+    huge = render(make_label(tape_mm=6, elements=[CodeElement("x" * 300)]), dpi=203)
+    assert RenderWarning("code_too_big", {"n": 1}) in huge.warnings  # taller than the tape
+    fixed = make_label(elements=[code], auto_length=False, length_mm=8)
+    assert RenderWarning("code_too_big", {"n": 1}) in render(fixed, dpi=203).warnings
+
+
+def test_an_image_with_a_module_text_chunk_is_no_code(make_label):
+    from PIL import PngImagePlugin
+
+    meta = PngImagePlugin.PngInfo()
+    meta.add_text("module", "1")
+    buf = io.BytesIO()
+    Image.new("RGB", (40, 40), "red").save(buf, "PNG", pnginfo=meta)
+    image = ImageElement(data=base64.b64encode(buf.getvalue()).decode(), name="x.png")
+    assert render(make_label(elements=[image])).warnings == []
+
+
+def test_ean13_as_the_standard_draws_it():
+    height = 300
+    part = render_module.render_code(CodeElement("4006381333931", symbology="ean13"), height)
+    page = _on_white(part)
+    scale = height / render_module.BAR_TOTAL_MM
+    _runs_, first, _last = _bars(page, round(6 * scale))
+    module = part.code_module
+    bottom = round(render_module.BAR_TOP_MM * scale) + round(render_module.BAR_HEIGHT_MM * scale)
+    column = list(pixels(page.crop((first, 0, first + 1, page.height))))
+    assert len(column) - column[::-1].index(0) == bottom + 5 * module  # a guard bar: longer
+    # the first data bar after the start guard: as long as the others
+    bar = next(x for x in range(first + 3 * module, page.width) if page.getpixel((x, 50)) == 0)
+    column = list(pixels(page.crop((bar, 0, bar + 1, bottom + 2))))
+    assert column[bottom - 1] == 0 and column[bottom] == 255
+    # the digits: the first left of the bars, six under each half
+    text = page.crop((0, bottom + 1, page.width, page.height))
+    assert ink_bbox(text.crop((0, 0, first, text.height)), 255)  # "4" in the quiet zone
+    left_half = text.crop((first + 3 * module, 0, first + 45 * module, text.height))
+    right_half = text.crop((first + 50 * module, 0, first + 92 * module, text.height))
+    assert ink_bbox(left_half, 255) and ink_bbox(right_half, 255)
+
+
+def test_barcode_text_sits_its_gap_below_the_bars():
+    height = 326  # 20 pixels per designed mm
+    part = render_module.render_code(CodeElement("ABC-123", symbology="code128"), height)
+    page = _on_white(part)
+    bottom = 20 + 200  # top 1 mm, bars 10 mm
+    gap = list(pixels(page.crop((0, bottom, page.width, bottom + 6))))
+    assert set(gap) == {255}  # 0.3 mm: 6 pixels of nothing
+    assert 0 in pixels(page.crop((0, bottom + 6, page.width, bottom + 7)))  # then the text
+
+
+def test_a_barcode_without_its_text_still_has_its_bars(monkeypatch):
+    def broken(*args, **kwargs):
+        raise RuntimeError("no font")
+
+    monkeypatch.setattr(render_module, "_text_block", broken)
+    part = render_module.render_code(CodeElement("ABC-123", symbology="code128"), 163)
+    _x0, _y0, _x1, y1 = ink_bbox(_on_white(part), 255)
+    assert y1 == round(163 * 11 / render_module.BAR_TOTAL_MM)  # the bars end there
+
+
+def test_a_code_scaled_to_fit_keeps_whole_modules(make_label):
+    code = CodeElement("1Z999AA10123456784", symbology="code128")
+    label = make_label(elements=[code], auto_length=False, length_mm=40)
+    rendered = render(label, dpi=300)
+    assert rendered.overflow
+    grey = rendered.image.convert("L")
+    assert set(pixels(grey)) == {0, 255}  # drawn again, not resampled
+    _x0, y0, _x1, y1 = ink_bbox(grey, 255)
+    row = list(pixels(grey.crop((0, y0 + 2, grey.width, y0 + 3))))
+    runs = _runs(row)[1:-1]
+    module = min(runs)
+    assert [run / module for run in runs] == _pattern("code128", code.data)
 
 
 def test_other_element_errors(make_label, monkeypatch):
@@ -517,3 +710,18 @@ def test_bleed_zero_is_the_default(make_label, wide_image):
     plain = render(label).image
     assert ImageChops.difference(plain, render(label, bleed_px=0).image).getbbox() is None
     assert render(label, bleed_px=-3).image.size == plain.size
+
+
+def test_tiny_ean13_digits_all_one_size():
+    part = render_module.render_code(CodeElement("4006381333931", symbology="ean13"), 60)
+    page = _on_white(part)
+    assert part.code_module == 1
+    scale = 60 / render_module.BAR_TOTAL_MM
+    top = round(render_module.BAR_TOP_MM * scale) + round(render_module.BAR_HEIGHT_MM * scale)
+    text = page.crop((0, top + 1, page.width, page.height))
+    _r, first, _l = _bars(page, round(6 * scale))
+    heights = [
+        ink_bbox(text.crop(box), 255)[3] - ink_bbox(text.crop(box), 255)[1]
+        for box in ((0, 0, first, text.height), (first + 3, 0, first + 45, text.height))
+    ]
+    assert heights[0] == heights[1]  # the first digit no smaller than the others

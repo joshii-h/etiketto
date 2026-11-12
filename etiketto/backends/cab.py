@@ -348,6 +348,7 @@ class Cab(Backend):
             error=error.code if error else "",
             firmware=version.firmware,
             pitch_mm=pitch,
+            dpi=dpi_for(self.dots_per_mm),
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:

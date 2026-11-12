@@ -48,6 +48,7 @@ from etiketto.backends.base import (
     QueuePaused,
     SuppliesEmpty,
     UnsupportedSize,
+    check_codes,
     error_text,
     network_error,
     report_progress,
@@ -67,7 +68,7 @@ BUSY_PAUSE = 3.0
 BUSY = 0x0507  # server-error-busy: no job was made
 PENDING_LIMIT = 30.0  # waiting behind other jobs: then it prints on its own
 PAGES_PER_JOB = 10  # pages in one job: the document is made in memory
-MAX_JOB_BYTES = 64 << 20  # and raster pages up to this much data (one at least)
+MAX_JOB_BYTES = 64 << 20  # and up to this much page data (one page at least)
 POLL_INTERVAL = 1.0
 POLL_FAILURES = 3  # a busy printer may miss an answer now and then
 PROBLEM_POLLS = 3  # a problem must last this many answers: not a passing state
@@ -130,6 +131,8 @@ PRINTER_ATTRIBUTES = [
     "media-size-supported",
     "pwg-raster-document-type-supported",
     "pwg-raster-document-resolution-supported",
+    "printer-resolution-default",
+    "printer-resolution-supported",
     "copies-supported",
     "operations-supported",
     "urf-supported",
@@ -447,17 +450,18 @@ def document(image: Image.Image, attrs: dict, pages: int = 1) -> tuple[bytes, st
 
 
 def document_of(
-    images: Iterable[Image.Image], count: int, attrs: dict, repeat: int = 1
+    images: Iterable[Image.Image], count: int, attrs: dict, repeat: int = 1, dpi: float = DPI
 ) -> tuple[bytes, str]:
     """count pages in a format the printer takes: PDF, PWG Raster or Apple
     Raster with all of them, JPEG with the first (one job per page). PDF
     and the raster formats without loss, JPEG at its best quality, without
     chroma subsampling, so that small text stays sharp. Each page is
     encoded when it comes. Only the raster formats repeat a single page
-    (repeat > 1), compressed once."""
+    (repeat > 1), compressed once. dpi: the resolution of the PDF's images
+    (see pdf_resolution) for pages without a size in mm."""
     mime = document_format(attrs)
     if mime == PDF:
-        return pdf.encode(images, DPI), mime
+        return pdf.encode(images, dpi), mime
     if mime in RASTERS:
         mode, dpi = _raster_format(attrs, mime)
         pages = (_raster_page(image, mode, dpi) for image in images)
@@ -489,6 +493,21 @@ def _pwg_mode(attrs: dict) -> str | None:
     if not types or "srgb_8" in types:
         return "RGB"
     return "L" if "sgray_8" in types else None
+
+
+def print_resolution(attrs: dict) -> float | None:
+    """The resolution the label is rendered at for this printer (see
+    _print): PDF at pdf_resolution, a raster format at the printer's, JPEG
+    at 300 dpi; None if the printer takes no format Etiketto makes."""
+    try:
+        mime = document_format(attrs)
+    except NoFormat:
+        return None
+    if mime == PDF:
+        return float(pdf_resolution(attrs))
+    if mime in RASTERS:
+        return float(_raster_format(attrs, mime)[1])
+    return DPI
 
 
 def _pwg_resolutions(attrs: dict) -> list[int]:
@@ -573,6 +592,34 @@ def _raster_page(image: Image.Image, mode: str, dpi: int) -> Image.Image:
     return image.convert(mode)
 
 
+def _dpi(resolution: Any) -> int | None:
+    """A square IPP resolution in dots per inch (dots per cm converted:
+    8 dots/mm is 203 dpi); None for anything else."""
+    if not (isinstance(resolution, tuple) and len(resolution) == 3):
+        return None
+    x, y, units = resolution
+    if x != y or x <= 0 or units not in (3, 4):
+        return None
+    return x if units == 3 else round(x * 2.54)
+
+
+def pdf_resolution(attrs: dict) -> int:
+    """The resolution of the PDF's page images: the printer's own
+    (printer-resolution-default) where 300 dpi would not land on its dots
+    whole (below 300, or no whole multiple or divisor of 300 up to 600:
+    a 203 dpi thermal printer gets 203 dpi, so that CUPS or the printer
+    never resamples a barcode or a hairline); else 300 dpi (600 and 1200
+    dpi printers double every pixel exactly). Below MIN_DPI it is not
+    believed."""
+    default = attrs.get("printer-resolution-default")
+    dpi = _dpi(default[0] if isinstance(default, list) and default else default)
+    if dpi is None or dpi == DPI or dpi < MIN_DPI:
+        return int(DPI)
+    if dpi < DPI or (dpi <= 2 * DPI and dpi % DPI):
+        return dpi
+    return int(DPI)
+
+
 # --- the backend -----------------------------------------------------------------
 
 
@@ -624,6 +671,7 @@ class SystemPrinter(Backend):
             error=error.code if error else "",
             firmware=_text(attrs, "printer-firmware-string-version"),
             margins=margins(attrs),
+            dpi=print_resolution(attrs),
         )
 
     def prepare(
@@ -639,9 +687,11 @@ class SystemPrinter(Backend):
         self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
     ) -> Image.Image:
         label = replace(label, auto_length=False)
-        image = render(
+        rendered = render(
             label, dpi=dpi, safe_mm=safe_mm, min_length_mm=self.capabilities.min_length_mm
-        ).image
+        )
+        check_codes(rendered.warnings)  # at the resolution it is printed at
+        image = rendered.image
         image = self.preview(image, options.mode)
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)
@@ -681,12 +731,17 @@ class SystemPrinter(Backend):
         if problem:
             raise problem
         mime = document_format(attrs)  # NoFormat before anything is sent
+        dpi = DPI
         if mime in RASTERS:
             pages = _at_resolution(pages, _raster_format(attrs, mime)[1])
+        elif mime == PDF:
+            again = _at_resolution(pages, pdf_resolution(attrs))
+            if again is not pages:  # else the pages stay at 300 dpi
+                pages, dpi = again, pdf_resolution(attrs)
         turned, width, height = _page(pages[0], attrs.get("media-size-supported") or [])
         if turned:
             pages = _Turned(pages)
-        return _Jobs(uri, attrs, _Pages(pages, width, height), copies, progress).run()
+        return _Jobs(uri, attrs, _Pages(pages, width, height, dpi), copies, progress).run()
 
 
 def _at_resolution(pages: Sequence[Image.Image], dpi: int) -> Sequence[Image.Image]:
@@ -813,6 +868,11 @@ class _Pages:
     images: Sequence[Image.Image]
     width: int  # hundredths of mm, as the printer lists the size
     height: int
+    dpi: float = DPI  # of the images
+
+
+# PrinterError params that count labels, or sheets with "pages"
+_COUNTED = frozenset(("printed", "queue_canceled"))
 
 
 class _Jobs:
@@ -850,14 +910,20 @@ class _Jobs:
                 self._send_all()
         except Exception as e:
             canceled = self._cancel_unfinished()
-            if isinstance(e, PrinterError) and self.printed:
-                e.params.update(printed=self.printed, copies=self.total)
-                if self.several:
-                    e.params["pages"] = True
-            if isinstance(e, PrinterError) and canceled and self.queued:
-                e.params["queue_canceled"] = True
+            if isinstance(e, PrinterError):
+                self._explain(e, canceled)
             raise
         return PrintResult(queued=True) if self.queued else None
+
+    def _explain(self, error: PrinterError, canceled: bool) -> None:
+        """What the message adds: the labels (or sheets) printed already,
+        and whether jobs waiting in the queue were canceled."""
+        if self.printed:
+            error.params.update(printed=self.printed, copies=self.total)
+        if canceled and self.queued:
+            error.params["queue_canceled"] = True
+        if self.several and error.params.keys() & _COUNTED:
+            error.params["pages"] = True  # the counts are of sheets
 
     def _cancel_unfinished(self) -> bool:
         """Cancel-Job for the jobs sent and not over; whether there were
@@ -889,9 +955,31 @@ class _Jobs:
                 document = (join_documents(parts, mime), mime)
                 self._job(first, len(parts), first=first, document=document)
             return
-        step = 1 if mime == JPEG else PAGES_PER_JOB
-        for first in range(0, self.total, step):
-            self._job(first, min(step, self.total - first), first=first)
+        if mime == PDF:
+            for first, document, count in self._pdf_batches():
+                self._job(first, count, first=first, document=document)
+            return
+        for first in range(self.total):  # JPEG: a job each
+            self._job(first, 1, first=first)
+
+    def _pdf_batches(self) -> Iterator[tuple[int, tuple[bytes, str], int]]:
+        """The pages as PDF documents for one job each: up to PAGES_PER_JOB
+        pages, and no further page once another as large as the last would
+        take the document over MAX_JOB_BYTES (one page at least)."""
+        images = self.pages.images
+        first = 0
+        while first < self.total:
+            handed = 0
+
+            def given(start: int = first) -> Iterator[Image.Image]:
+                nonlocal handed
+                for n in range(start, min(start + PAGES_PER_JOB, self.total)):
+                    handed += 1
+                    yield images[n]
+
+            data = pdf.encode(given(), self.pages.dpi, MAX_JOB_BYTES)
+            yield first, (data, PDF), handed
+            first += handed
 
     def _raster_batches(self) -> Iterator[tuple[int, list[bytes]]]:
         """The pages, each a document of its own, in groups for one job:
@@ -924,7 +1012,9 @@ class _Jobs:
         one is let go before the next is made."""
         if not self.several:
             if self._single is None:
-                self._single = document_of([self.pages.images[0]], 1, self.attrs)
+                self._single = document_of(
+                    [self.pages.images[0]], 1, self.attrs, dpi=self.pages.dpi
+                )
             if repeat == 1:
                 return self._single
         key = (first, count, repeat)
@@ -936,7 +1026,8 @@ class _Jobs:
             else:
                 images = self.pages.images
                 pages = (images[n] for n in range(first, first + count))
-                self._document = (key, *document_of(pages, count, self.attrs, repeat))
+                document = document_of(pages, count, self.attrs, repeat, dpi=self.pages.dpi)
+                self._document = (key, *document)
         return self._document[1], self._document[2]
 
     def _operation(self, mime: str) -> list[ipp.Attribute]:

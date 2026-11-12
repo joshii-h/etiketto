@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "Ota käyttöön",
     "Labels %s reach into the margin the printer cannot print on": "Tarrat %s ulottuvat marginaaliin, johon tulostin ei voi tulostaa",
     "Sheets already printed: %(n)d of %(total)d.": "Jo tulostetut arkit: %(n)d/%(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Jonossa vielä odottaneet arkit peruttiin.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Elementti %(n)d: koodin moduulit ovat vain yhden tulostuspisteen levyisiä eivätkä ehkä skannaudu – suurenna koodia",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Elementti %(n)d: koodin ympärilleen tarvitsema tyhjä tila ei mahdu – suurenna koodia",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Elementti %(n)d: koodi ei mahdu paikkaansa edes yhdellä tulostuspisteellä moduulia kohden – suurenna tarraa tai lyhennä sisältöä",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Koodi ei mahdu tarraan tämän tulostimen tarkkuudella ja leikkautuisi. Suurenna tarraa tai lyhennä koodin sisältöä.",
+    "Codes may not scan": "Koodit eivät ehkä skannaudu",
 }

@@ -3,6 +3,7 @@ against a fake that answers IPP requests by operation."""
 
 from __future__ import annotations
 
+import io
 import re
 import ssl
 import struct
@@ -12,10 +13,11 @@ from types import SimpleNamespace
 import pytest
 from backend_contract import BackendContract
 from fake_backends import FakeMono
-from PIL import Image
+from PIL import Image, ImageChops
 
 from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system, urf
 from etiketto.backends.base import (
+    CodeTooLarge,
     CoverOpen,
     FoundPrinter,
     JobCanceled,
@@ -55,6 +57,7 @@ class FakeIpp:
         self.pwg_types = ["srgb_8", "sgray_8"]
         self.pwg_resolutions = [(300, 300, 3), (600, 600, 3)]
         self.urf: list[str] | None = None  # urf-supported, None: not said
+        self.resolution = (600, 600, 3)  # printer-resolution-default
         self.sizes = [A4, CUSTOM]
         self.scaling = ["auto", "fit", "none"]
         # processing, then completed; or (state, pages done); None: no such attribute
@@ -103,6 +106,7 @@ class FakeIpp:
             ipp.Attribute(
                 ipp.RESOLUTION, "pwg-raster-document-resolution-supported", self.pwg_resolutions
             ),
+            ipp.Attribute(ipp.RESOLUTION, "printer-resolution-default", [self.resolution]),
         ]
         if self.copies_supported:
             attrs.append(
@@ -632,6 +636,69 @@ def test_label_sheet_pages_are_composed_at_the_printers_resolution(fake):
     assert [p.size for p in found] == [(px(210, 203), px(297, 203))] * 2
     assert all(_greys(page) == 0 for page in found)
     assert Pages(SheetJob(sheet, 1), lambda n: image, 300).at_dpi(203) is None  # cannot
+
+
+def _pdf_image(data: bytes) -> tuple[int, int, int]:
+    """Width, height and bits per component of the first page image."""
+    found = re.search(rb"/Width (\d+) /Height (\d+) .*?/BitsPerComponent (\d+)", data)
+    assert found
+    return int(found[1]), int(found[2]), int(found[3])
+
+
+@pytest.mark.parametrize(
+    "resolution, dpi",
+    [
+        (None, 300),
+        ((300, 300, 3), 300),
+        ((203, 203, 3), 203),  # a thermal printer: its own dots
+        ((80, 80, 4), 203),  # 8 dots per mm
+        ((150, 150, 3), 150),
+        ((400, 400, 3), 400),
+        ((600, 600, 3), 300),  # every pixel doubled exactly
+        ((1200, 1200, 3), 300),
+        ((720, 720, 3), 300),  # above 600: 300 dpi is fine enough
+        ((72, 72, 3), 300),  # below MIN_DPI: not believed
+        ((203, 406, 3), 300),  # not square
+        ("x", 300),
+    ],
+)
+def test_pdf_resolution(resolution, dpi):
+    attrs = {} if resolution is None else {"printer-resolution-default": [resolution]}
+    assert system.pdf_resolution(attrs) == dpi
+
+
+@pytest.mark.parametrize("dpi", [203, 300, 600])
+def test_a_pdf_label_is_rendered_at_the_printers_resolution(fake, dpi):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (dpi, dpi, 3)
+    backend = get_backend("system")
+    backend.print_label(
+        backend.prepare(_shipping_label(), PrintOptions()), "HP_Office", PrintOptions()
+    )
+    data = fake.documents[0][1]
+    at = 203 if dpi == 203 else 300
+    assert _pdf_image(data) == (px(101.6, at), px(152.4, at), 1)  # 1 bit: no grey
+    assert b"/MediaBox [0 0 288.000 432.000]" in data  # 4 x 6 inches, whatever the dpi
+
+
+def test_pdf_label_sheet_pages_at_the_printers_resolution(fake):
+    fake.formats, fake.resolution = ["application/pdf"], (203, 203, 3)
+    backend = get_backend("system")
+    sheet = find("Avery L7160")
+    label = _shipping_label()
+    label.orientation = "across"
+    label.set_media_size(sheet.width, sheet.height)
+    image = backend.prepare(label, PrintOptions())
+    pages = Pages(SheetJob(sheet, 30), Copies(image), backend.capabilities.dpi)
+    backend.print_pages(pages, "HP_Office", PrintOptions())
+    assert _pdf_image(fake.documents[0][1])[:2] == (px(210, 203), px(297, 203))
+
+
+def test_a_pdf_page_that_cannot_be_rendered_again_stays_at_300_dpi(fake):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (203, 203, 3)
+    _print(_image(118, 59))  # no size in mm, nothing to render it again with
+    data = fake.documents[0][1]
+    assert _pdf_image(data)[:2] == (118, 59)
+    assert b"/MediaBox [0 0 28.320 14.160]" in data  # its pixels at 300 dpi
 
 
 @pytest.mark.parametrize(
@@ -1221,9 +1288,9 @@ def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append(repeat)
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     events = []
@@ -1239,9 +1306,9 @@ def test_the_document_is_made_once_for_all_copies(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append(repeat)
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     _print(copies=4)
@@ -1587,6 +1654,31 @@ def test_pages_go_in_one_pdf_job(fake):
     assert events[0] == Progress(1, 3) and events[-1] == Progress(3, 3)
 
 
+def _noisy_pages(count, size=(248, 351)):
+    """Colour noise: pages that compress badly, every one different."""
+    import random
+
+    rng = random.Random(7)
+    pages = []
+    for _n in range(count):
+        page = Image.frombytes("RGB", size, rng.randbytes(size[0] * size[1] * 3))
+        page.info["size_mm"] = (210, 297)
+        pages.append(page)
+    return pages
+
+
+def test_large_pdf_jobs_are_split_by_bytes(fake, monkeypatch):
+    monkeypatch.setattr(system, "MAX_JOB_BYTES", 1_000_000)  # a noisy page is about 261 kB
+    events = []
+    pages = _noisy_pages(9)
+    get_backend("system").print_pages(pages, "HP_Office", PrintOptions(), events.append)
+    counts = [data.count(b"/Type /Page ") for _mime, data in fake.documents]
+    assert counts == [3, 3, 3]  # a fourth page would take a job over 1 MB
+    assert all(len(data) < 1_000_000 for _mime, data in fake.documents)
+    assert fake.operations().count(ipp.PRINT_JOB) == 3
+    assert events[-1] == Progress(9, 9)
+
+
 def test_pages_in_pwg_raster(fake):
     fake.formats = ["image/pwg-raster"]
     fake.pwg_resolutions = [(600, 600, 3)]
@@ -1657,6 +1749,15 @@ def test_a_failed_sheet_job_cancels_the_rest_and_counts_sheets(fake):
     assert fake.canceled == [13]  # the one waiting in the queue: it must not print later
 
 
+def test_queued_sheets_canceled_before_any_printed_are_sheets(fake):
+    fake.job_states = [(3, 0)]  # the first job waits in the queue
+    fake.print_errors = [0, 0x0500]  # the second is refused
+    with pytest.raises(PrinterError, match="0x0500") as info:
+        get_backend("system").print_pages(_pages(12), "HP_Office", PrintOptions())
+    assert info.value.params == {"pages": True, "queue_canceled": True}
+    assert fake.canceled == [12]
+
+
 def test_a_busy_printer_gets_the_same_pages_again(fake):
     fake.print_errors = [system.BUSY, 0, 0]
     get_backend("system").print_pages(_pages(12), "HP_Office", PrintOptions())
@@ -1689,6 +1790,90 @@ def test_pdf_is_well_formed():
     assert b"/MediaBox [0 0 283.465 425.197]" in data
     plain = Image.new("RGB", (300, 150), "white")  # without a size: its pixels
     assert b"/MediaBox [0 0 72.000 36.000]" in pdf.encode([plain], 300)
+
+
+def _hairlines(dpi: float, size_mm: tuple[float, float]) -> Image.Image:
+    """One-pixel lines, across and down, one every millimetre or so."""
+    from PIL import ImageDraw
+
+    width, height = px(size_mm[0], dpi), px(size_mm[1], dpi)
+    image = Image.new("L", (width, height), 255)
+    draw = ImageDraw.Draw(image)
+    for i in range(40):
+        x, y = px(5 + i, dpi), px(5 + i * 0.6, dpi)
+        draw.line((x, 10, x, height - 10), fill=0)
+        draw.line((10, y, width - 10, y), fill=0)
+    image.info["size_mm"] = size_mm
+    return image
+
+
+def test_a_large_colour_page_goes_as_jpeg(monkeypatch):
+    monkeypatch.setattr(pdf, "DCT_ABOVE", 100_000)
+    photo, plain = _noisy_pages(2)
+    plain.paste((200, 30, 30), (0, 0, *plain.size))
+    data = pdf.encode([photo, plain], 30)
+    assert data.count(b"/Filter /DCTDecode") == 1  # only the large page
+    assert data.count(b"/Filter /FlateDecode") == 1
+    start = data.index(b"\xff\xd8")  # the JPEG in the PDF
+    with Image.open(io.BytesIO(data[start:])) as jpeg:
+        assert jpeg.size == photo.size and jpeg.mode == "RGB"
+    bw = Image.new("1", (2000, 2000), 1)  # never a black-and-white page
+    assert b"/DCTDecode" not in pdf.encode([bw], 300)
+
+
+def test_pdf_stops_taking_pages_short_of_the_limit():
+    pages = _noisy_pages(5)
+    taken = []
+
+    def given():
+        for page in pages:
+            taken.append(page)
+            yield page
+
+    data = pdf.encode(given(), 30, limit=700_000)  # 261 kB a page
+    assert len(taken) == 2 and data.count(b"/Type /Page ") == 2
+    assert pdf.encode(iter(pages[:1]), 30, limit=1).count(b"/Type /Page ") == 1  # always one
+
+
+def test_pdf_image_one_pixel_per_dot_slightly_inset():
+    a4 = Image.new("1", (2480, 3508), 1)  # 2480.3 x 3507.9 pixels at 300 dpi
+    a4.info["size_mm"] = (210, 297)
+    data = pdf.encode([a4], 300)
+    # its own size (2480 pixels: 595.2 pt) from the top left, 0.01 pt smaller
+    assert b"q 595.190 0 0 841.910 0.005 -0.025 cm /Im0 Do Q" in data
+    odd = Image.new("1", (100, 100), 1)
+    odd.info["size_mm"] = (20, 20)  # not 300 dpi: it fills the page
+    assert b"q 56.683 0 0 56.683 0.005 0.005 cm" in pdf.encode([odd], 300)
+
+
+@pytest.mark.parametrize("tool", ["pdftoppm", "gs"])
+@pytest.mark.parametrize(
+    "dpi, size_mm",
+    [(203, (101.6, 152.4)), (300, (101.6, 152.4)), (300, (210, 297)), (203, (50, 30))],
+)
+def test_pdf_renders_pixel_for_pixel(tmp_path, tool, dpi, size_mm):
+    """Poppler (cups-filters, pdftoppm) and Ghostscript, the two renderers
+    CUPS uses, give back every pixel: no grey, no hairline lost."""
+    import shutil
+    import subprocess
+
+    if not shutil.which(tool):
+        pytest.skip(tool + " not installed")
+    image = _hairlines(dpi, size_mm)
+    (tmp_path / "page.pdf").write_bytes(pdf.encode([image], dpi))
+    if tool == "gs":
+        command = ["gs", "-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=pgmraw"]
+        command += ["-r%d" % dpi, "-sOutputFile=%s" % (tmp_path / "out.pgm")]
+    else:
+        command = ["pdftoppm", "-r", str(dpi), "-gray", "-singlefile"]
+    command.append(str(tmp_path / "page.pdf"))
+    if tool == "pdftoppm":
+        command.append(str(tmp_path / "out"))
+    subprocess.run(command, check=True, timeout=60)  # noqa: S603 - fixed command
+    with Image.open(tmp_path / "out.pgm") as out:
+        found = out.convert("L").crop((0, 0, image.width, image.height))
+    assert _greys(found) == 0
+    assert ImageChops.difference(found, image).getbbox() is None
 
 
 # --- the contract every backend passes ------------------------------------------------------
@@ -1792,9 +1977,9 @@ def test_many_copies_in_apple_raster_go_in_several_jobs(fake, monkeypatch):
     made = []
     original = system.document_of
 
-    def document_of(images, count, attrs, repeat=1):
+    def document_of(images, count, attrs, repeat=1, **kwargs):
         made.append((count, repeat))
-        return original(images, count, attrs, repeat)
+        return original(images, count, attrs, repeat, **kwargs)
 
     monkeypatch.setattr(system, "document_of", document_of)
     _print(_image(118, 59, size_mm=(10, 5)), copies=12)
@@ -1846,3 +2031,50 @@ def test_raster_pages_without_a_byte_limit_go_ten_a_job(fake):
     found = [urf.decode(data) for _mime, data in fake.documents]
     assert [len(pages) for pages in found] == [10, 10, 3]
     assert struct.unpack_from(">I", fake.documents[0][1], 8)[0] == 10
+
+
+# --- codes at the printer's resolution ------------------------------------------------------
+
+
+def _code_label(length_mm: float, data: str = "ABC-123ABC-123") -> Label:
+    label = Label(printer="system", orientation="across", elements=[CodeElement(data, "code128")])
+    label.set_media_size(length_mm, 14)
+    return label
+
+
+def test_query_says_the_resolution_the_label_is_printed_at(fake):
+    fake.formats, fake.resolution = ["application/pdf"], (203, 203, 3)
+    assert get_backend("system").query("HP_Office").dpi == 203
+    fake.formats = ["image/pwg-raster"]
+    assert get_backend("system").query("HP_Office").dpi == 300
+    fake.formats = ["image/jpeg"]
+    assert get_backend("system").query("HP_Office").dpi == 300
+    fake.formats = ["text/plain"]
+    assert get_backend("system").query("HP_Office").dpi is None
+
+
+def test_a_code_that_does_not_fit_at_the_printers_resolution_is_not_printed(fake):
+    fake.formats, fake.sizes, fake.resolution = ["application/pdf"], [], (203, 203, 3)
+    backend = get_backend("system")
+    image = backend.prepare(_code_label(27), PrintOptions())  # fits at 300 dpi
+    with pytest.raises(CodeTooLarge) as info:
+        backend.print_label(image, "HP_Office", PrintOptions())
+    assert info.value.params == {"n": 1}
+    assert ipp.PRINT_JOB not in fake.operations()
+    with pytest.raises(CodeTooLarge):  # nor at 300 dpi, where it does not fit either
+        backend.prepare(_code_label(20), PrintOptions())
+
+
+@pytest.mark.parametrize(
+    "mode, space, size",
+    [
+        ("P", "DeviceRGB", 3),
+        ("RGBA", "DeviceRGB", 3),
+        ("CMYK", "DeviceRGB", 3),
+        ("LA", "DeviceGray", 1),
+    ],
+)
+def test_pdf_pages_in_other_modes(mode, space, size):
+    page = Image.new("RGB", (8, 4), (200, 30, 30)).convert(mode)
+    found, bits, raw = pdf.pixels(page)
+    assert (found, bits) == (space, 8) and len(raw) == 8 * 4 * size

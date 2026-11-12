@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "Terapkan",
     "Labels %s reach into the margin the printer cannot print on": "Label %s masuk ke dalam jidar yang tidak dapat dicetak oleh pencetak",
     "Sheets already printed: %(n)d of %(total)d.": "Helaian yang sudah dicetak: %(n)d daripada %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Helaian yang masih menunggu dalam baris gilir telah dibatalkan.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Elemen %(n)d: modul kod hanya selebar satu titik cetak dan mungkin tidak dapat diimbas – besarkan kod",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Elemen %(n)d: ruang kosong yang diperlukan di sekeliling kod tidak muat – besarkan kod",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Elemen %(n)d: kod tidak muat di ruangnya, walaupun dengan satu titik cetak setiap modul – besarkan label atau pendekkan kandungan",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Pada resolusi pencetak ini, kod tidak muat pada label dan akan terpotong. Besarkan label atau pendekkan kandungan kod.",
+    "Codes may not scan": "Kod mungkin tidak dapat diimbas",
 }

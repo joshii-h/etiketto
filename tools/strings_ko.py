@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "적용",
     "Labels %s reach into the margin the printer cannot print on": "라벨 %s이(가) 프린터가 인쇄할 수 없는 여백에 걸칩니다",
     "Sheets already printed: %(n)d of %(total)d.": "이미 인쇄된 시트: %(total)d장 중 %(n)d장.",
+    "The sheets still waiting in the queue were canceled.": "대기열에서 기다리던 시트는 취소되었습니다.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "요소 %(n)d: 코드의 모듈 너비가 인쇄 점 하나뿐이라 스캔되지 않을 수 있습니다 – 코드를 크게 하세요",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "요소 %(n)d: 코드 주위에 필요한 여백이 들어가지 않습니다 – 코드를 크게 하세요",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "요소 %(n)d: 모듈당 인쇄 점 하나로도 코드가 자리에 들어가지 않습니다 – 라벨을 크게 하거나 내용을 줄이세요",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "이 프린터의 해상도에서는 코드가 라벨에 들어가지 않아 잘립니다. 라벨을 크게 하거나 코드 내용을 줄이세요.",
+    "Codes may not scan": "코드가 스캔되지 않을 수 있습니다",
 }

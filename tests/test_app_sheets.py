@@ -465,3 +465,77 @@ def test_odd_cases_of_the_dialogs(office):
     view.show(win.sheet, [], None)  # margins unknown: none drawn
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 100, 140)
     view._draw(None, cairo.Context(surface), 100, 140)
+
+
+# --- codes at the printer's resolution ------------------------------------------------------
+
+
+def _code_window(make_window, system_env, dpi, length_mm=60.0):
+    from dataclasses import replace
+
+    from etiketto.model import CodeElement
+
+    system_env.info = replace(system_env.info, dpi=dpi)
+    Settings({"printers": {"system": {"host": "HP_Office"}}}).save()
+    win = make_window(settle=False)
+    win.set_backend("system")
+    assert pump(lambda: win.printer.info is system_env.info)
+    label = Label(printer="system", orientation="across", auto_length=False)
+    label.elements = [CodeElement("ABC-123ABC-123", symbology="code128")]
+    label.set_media_size(length_mm, 14)
+    win.set_label(label, None)
+    render_now(win)
+    return win
+
+
+def test_the_preview_is_rendered_at_the_printers_resolution(make_window, system_env):
+    win = _code_window(make_window, system_env, 203)
+    assert win.print_dpi() == 203
+    assert win.rendered.image.width == round(60 / 25.4 * 203)
+    assert "only one printer dot wide" in win.preview.status.get_text()  # not at 300 dpi
+
+
+@pytest.mark.parametrize("answer, prints", [("cancel", 0), ("print", 1)])
+def test_codes_that_may_not_scan_ask_first(make_window, system_env, answer, prints):
+    win = _code_window(make_window, system_env, 203)
+    win.print_flow.on_print()
+    respond(win.last_dialog, "print")
+    dialog = win.get_visible_dialog()
+    assert dialog.get_heading() == "Codes may not scan"
+    assert dialog.get_body() == (
+        "Element 1: the code's modules are only one printer dot wide and may not scan – "
+        "make the code larger"
+    )
+    respond(dialog, answer)
+    assert pump(lambda: not win.print_flow.busy)
+    assert len(system_env.labels) == prints
+
+
+def test_a_code_that_does_not_fit_is_not_printed(make_window, system_env):
+    win = _code_window(make_window, system_env, 203, length_mm=27)
+    win.print_flow.on_print()
+    respond(win.last_dialog, "print")
+    dialog = win.get_visible_dialog()
+    assert dialog.get_heading() == "Printing failed"
+    assert dialog.get_body().startswith("A code does not fit on the label")
+    assert system_env.labels == []
+
+
+def test_a_code_the_printer_cannot_fit_says_so(office, system_env, monkeypatch):
+    from etiketto.backends.base import CodeTooLarge
+
+    def prepare(label, options, safe_mm):
+        raise CodeTooLarge("element 1", n=1)
+
+    monkeypatch.setattr(office.backend, "prepare", prepare)
+    office.print_flow.on_print()
+    respond(office.last_dialog, "print")
+    assert pump(lambda: not office.print_flow.busy)
+    dialog = office.get_visible_dialog()
+    assert dialog.get_body().startswith("A code does not fit on the label")
+
+
+def test_the_preview_is_never_finer_than_600_dpi(make_window, system_env):
+    win = _code_window(make_window, system_env, 1200)
+    assert win.print_dpi() == 600
+    assert win.rendered.image.width == round(60 / 25.4 * 600)

@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "套用",
     "Labels %s reach into the margin the printer cannot print on": "標籤 %s 伸入了印表機無法列印的邊距",
     "Sheets already printed: %(n)d of %(total)d.": "已列印的紙張：%(n)d/%(total)d。",
+    "The sheets still waiting in the queue were canceled.": "仍在佇列中等待的紙張已取消。",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "元素 %(n)d：條碼的模組只有一個列印點寬，可能無法掃描 – 請放大條碼",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "元素 %(n)d：條碼周圍所需的空白放不下 – 請放大條碼",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "元素 %(n)d：即使每個模組只用一個列印點，條碼仍放不進它的空間 – 請放大標籤或縮短內容",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "以這台印表機的解析度，條碼放不進標籤，會被裁掉。請放大標籤或縮短條碼內容。",
+    "Codes may not scan": "條碼可能無法掃描",
 }

@@ -32,6 +32,8 @@ from etiketto.ui.sheets import PositionsDialog, SheetChooser, margins_note  # no
 from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
 
+PREVIEW_MAX_DPI = 600.0  # the preview at most this fine (see Window.print_dpi)
+
 
 class Window(Adw.ApplicationWindow):
     def __init__(self, app: Adw.Application):
@@ -332,13 +334,23 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
+    def print_dpi(self) -> float:
+        """The resolution the label is printed at: the printer's own if it
+        said (a page printer at 203 dpi), else the model's; for the preview
+        and the export at most PREVIEW_MAX_DPI (an A4 page at 1200 dpi would
+        be 140 megapixels, rendered on every keystroke)."""
+        info = self.printer.info
+        dpi = info.dpi if info and info.dpi else self.backend.capabilities.dpi
+        return min(dpi, PREVIEW_MAX_DPI)
+
     def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,
+        at the resolution it is printed at (codes and thin lines differ),
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
         rendered = render(
             self.label,
-            dpi=backend.capabilities.dpi,
+            dpi=self.print_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
         )

@@ -64,7 +64,12 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Text with any installed font, bold/italic, colour, multiple lines, size
   fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
-- QR codes, Code 128 and EAN-13 barcodes
+- QR codes, Code 128 and EAN-13 barcodes, every module a whole number of
+  printer dots, pure black and white, never resampled on printers with
+  square dots (except on a colour page too large to send without loss,
+  over 8 MB: then JPEG); the VC-500W prints its vivid and colour modes at
+  another number of lines per inch along the tape, so there the label is
+  resampled along the tape
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;

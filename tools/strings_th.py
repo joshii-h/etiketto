@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "ใช้",
     "Labels %s reach into the margin the printer cannot print on": "ฉลาก %s ล้ำเข้าไปในขอบที่เครื่องพิมพ์พิมพ์ไม่ได้",
     "Sheets already printed: %(n)d of %(total)d.": "แผ่นที่พิมพ์แล้ว: %(n)d จาก %(total)d",
+    "The sheets still waiting in the queue were canceled.": "แผ่นที่ยังรออยู่ในคิวถูกยกเลิกแล้ว",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "องค์ประกอบ %(n)d: โมดูลของโค้ดกว้างเพียงหนึ่งจุดพิมพ์และอาจสแกนไม่ได้ – ขยายโค้ดให้ใหญ่ขึ้น",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "องค์ประกอบ %(n)d: พื้นที่ว่างรอบโค้ดที่จำเป็นไม่พอ – ขยายโค้ดให้ใหญ่ขึ้น",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "องค์ประกอบ %(n)d: โค้ดไม่พอดีกับพื้นที่ แม้ใช้หนึ่งจุดพิมพ์ต่อโมดูล – ขยายฉลากหรือลดเนื้อหาให้สั้นลง",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "ที่ความละเอียดของเครื่องพิมพ์นี้ โค้ดไม่พอดีกับฉลากและจะถูกตัด ขยายฉลากหรือลดเนื้อหาของโค้ดให้สั้นลง",
+    "Codes may not scan": "โค้ดอาจสแกนไม่ได้",
 }

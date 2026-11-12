@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "Uygula",
     "Labels %s reach into the margin the printer cannot print on": "%s numaralı etiketler yazıcının yazdıramadığı kenar boşluğuna taşıyor",
     "Sheets already printed: %(n)d of %(total)d.": "Zaten yazdırılan sayfalar: %(total)d sayfadan %(n)d.",
+    "The sheets still waiting in the queue were canceled.": "Kuyrukta hâlâ bekleyen sayfalar iptal edildi.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Öge %(n)d: kodun modülleri yalnızca bir yazıcı noktası genişliğinde ve taranamayabilir – kodu büyütün",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Öge %(n)d: kodun çevresinde gereken boşluk sığmıyor – kodu büyütün",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Öge %(n)d: kod, modül başına bir yazıcı noktasıyla bile kendi alanına sığmıyor – etiketi büyütün veya içeriği kısaltın",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "Bu yazıcının çözünürlüğünde kod etikete sığmıyor ve kesilir. Etiketi büyütün veya kodun içeriğini kısaltın.",
+    "Codes may not scan": "Kodlar taranamayabilir",
 }

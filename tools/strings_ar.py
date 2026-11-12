@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "تطبيق",
     "Labels %s reach into the margin the printer cannot print on": "الملصقات %s تمتد إلى الهامش الذي لا تستطيع الطابعة الطباعة عليه",
     "Sheets already printed: %(n)d of %(total)d.": "الأوراق المطبوعة بالفعل: %(n)d من %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "أُلغيت الأوراق التي كانت لا تزال تنتظر في قائمة الانتظار.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "العنصر %(n)d: وحدات الرمز بعرض نقطة طباعة واحدة فقط وقد لا يمكن مسحها – كبّر الرمز",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "العنصر %(n)d: المساحة الفارغة التي يحتاجها الرمز حوله لا تتسع – كبّر الرمز",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "العنصر %(n)d: لا يتسع الرمز في مكانه حتى بنقطة طباعة واحدة لكل وحدة – كبّر الملصق أو اختصر المحتوى",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "لا يتسع الرمز على الملصق بدقة هذه الطابعة وسيُقطع. كبّر الملصق أو اختصر محتوى الرمز.",
+    "Codes may not scan": "قد لا يمكن مسح الرموز",
 }

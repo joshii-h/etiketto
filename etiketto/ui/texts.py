@@ -96,6 +96,18 @@ def warning_text(warning: RenderWarning) -> str:
         "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
+        "code_thin": _(
+            "Element %(n)d: the code's modules are only one printer dot wide and may not "
+            "scan – make the code larger"
+        ),
+        "code_quiet": _(
+            "Element %(n)d: the blank space the code needs around it does not fit – make "
+            "the code larger"
+        ),
+        "code_too_big": _(
+            "Element %(n)d: the code does not fit in its space, even at one printer dot per "
+            "module – make the label larger or the content shorter"
+        ),
     }
     return texts.get(warning.key, warning.key) % warning.params
 
@@ -113,7 +125,10 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
             done = _("Labels already printed: %(n)d of %(total)d.")
         text += " " + done % {"n": printed, "total": error.params.get("copies", printed)}
     if error.params.get("queue_canceled"):  # sent behind other jobs, not printed yet
-        text += " " + _("The labels still waiting in the queue were canceled.")
+        if error.params.get("pages"):
+            text += " " + _("The sheets still waiting in the queue were canceled.")
+        else:
+            text += " " + _("The labels still waiting in the queue were canceled.")
     return text
 
 
@@ -178,6 +193,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
         "usb_permission": _(
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
+        ),
+        "code_too_large": _(
+            "A code does not fit on the label at this printer's resolution and would be cut "
+            "off. Make the label larger or the code's content shorter."
         ),
         "generic": _(
             "The printer reported a problem. Switch it off and on again, then try once more."

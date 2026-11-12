@@ -34,7 +34,8 @@ class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
     translated message (keys: code_empty, ean13_digits, ean13_check,
     code128_charset, image_unreadable, element_failed, no_room,
-    fixed_too_short, background_unreadable)."""
+    fixed_too_short, background_unreadable, code_thin, code_quiet,
+    code_too_big)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
@@ -75,8 +76,9 @@ def _color(value: str, fallback: str = "#000000") -> tuple[int, int, int]:
 # --- elements ---------------------------------------------------------------
 
 
-def _text_block(element: TextElement, size_px: float) -> Image.Image:
-    """Lay out text with Pango (font fallback, emoji, kerning) into RGBA."""
+def _text_block(element: TextElement, size_px: float, antialias: bool = True) -> Image.Image:
+    """Lay out text with Pango (font fallback, emoji, kerning) into RGBA;
+    without anti-aliasing every pixel is either ink or not."""
     import cairo
     import gi
 
@@ -91,6 +93,11 @@ def _text_block(element: TextElement, size_px: float) -> Image.Image:
 
     measure = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1)
     layout = PangoCairo.create_layout(cairo.Context(measure))
+    if not antialias:
+        options = cairo.FontOptions()
+        options.set_antialias(cairo.ANTIALIAS_NONE)
+        options.set_hint_style(cairo.HINT_STYLE_FULL)
+        PangoCairo.context_set_font_options(layout.get_context(), options)
     layout.set_font_description(desc)
     layout.set_alignment(
         {
@@ -184,46 +191,205 @@ def check_code(element: CodeElement) -> None:
         raise CodeError("code128_charset")
 
 
-def render_code(element: CodeElement, height: int) -> Image.Image:
+# A code's design, in mm at its designed size; the element's height scales
+# all of it (and so gives its width). Each module is then drawn a whole
+# number of device pixels wide (see _module): a printer gets every bar and
+# space exactly, no resampling ever touches a code. The quiet zone the
+# symbology asks for is part of the element.
+BAR_MODULE_MM = 0.3  # narrowest bar or space
+BAR_TOP_MM = 1.0  # above the bars
+BAR_HEIGHT_MM = 10.0
+BAR_TEXT_GAP_MM = 0.3  # between the bars and the human-readable text (its ink)
+BAR_TEXT_PT = 8.0
+BAR_TOTAL_MM = 16.3  # the whole element: the text below the bars, then space
+EAN_GUARD_MODULES = 5  # EAN-13 guard bars reach this much below the others
+# quiet zones in modules (left, right): ISO/IEC 15417 (Code 128), ISO/IEC
+# 15420 (EAN-13), ISO/IEC 18004 (QR code)
+QUIET = {"code128": (10, 10), "ean13": (11, 7), "qr": (4, 4)}
+EAN_GUARDS = ((0, 3), (45, 50), (92, 95))  # start, centre and end guard: modules
+THIN_MODULE = 2  # pixels: a code with narrower modules may not scan (warning code_thin)
+
+
+@dataclass(frozen=True)
+class _Fit:
+    """How a code fits in its box: the module (pixels), where its first
+    module starts (pixels from the box's start, after the quiet zone) and
+    what is wrong, as warning keys."""
+
+    module: int
+    start: int
+    problems: tuple[str, ...]
+
+
+def _module(designed: float, modules: int, quiet: tuple[int, int], box: int) -> _Fit:
+    """How modules of a code plus their quiet zone (modules left and right)
+    fit in box pixels. The module: the designed width (pixels) rounded to
+    the nearest if the code and its quiet zone fit in the box with it, else
+    the widest whole module with which they fit (box // all modules), at
+    least 1. The start (the first module, in pixels): the code and its
+    quiet zone centred in the box; if the quiet zone does not fit, the code
+    alone centred; if not even that fits, 0 (the rest is cut off).
+    Problems: code_too_big (not even 1-pixel modules fit), code_quiet (they
+    fit, their quiet zone does not), code_thin (1-pixel modules)."""
+    total = modules + sum(quiet)
+    module = max(1, round(designed))
+    if module * total > box:
+        module = max(1, box // total)
+    problems = []
+    if module * modules > box:
+        problems.append("code_too_big")
+    elif module * total > box:
+        problems.append("code_quiet")
+    if module < THIN_MODULE:
+        problems.append("code_thin")
+    if module * total <= box:
+        start = (box - module * total) // 2 + quiet[0] * module
+    else:
+        start = max(0, (box - module * modules) // 2)
+    return _Fit(module, start, tuple(problems))
+
+
+def code_problems(part: Image.Image) -> tuple[str, ...]:
+    """What is wrong with a code drawn by render_code (warning keys)."""
+    return getattr(part, "code_problems", ())
+
+
+def _dark(element: CodeElement, mask: Image.Image, fit: _Fit) -> Image.Image:
+    """The code's colour where mask is 255, transparent elsewhere: 1 bit.
+    Its fit goes along as attributes of the image, not in its info (which
+    an image file brings along too)."""
+    img = Image.new("RGBA", mask.size, (*_color(element.color), 0))
+    img.putalpha(mask.point(lambda v: 255 if v >= 128 else 0))
+    img.code_module = fit.module  # type: ignore[attr-defined]
+    img.code_problems = fit.problems  # type: ignore[attr-defined]
+    return img
+
+
+def _qr(element: CodeElement, box: int) -> Image.Image:
+    """Square modules of a whole number of pixels with a quiet zone of four
+    modules, centred in box x box pixels. Never a Micro QR code (most
+    phones cannot read those)."""
+    import segno
+
+    matrix = segno.make(element.data, error="m", micro=False).matrix
+    count = len(matrix)
+    fit = _module(box / (count + sum(QUIET["qr"])), count, QUIET["qr"], box)
+    side = count * fit.module
+    modules = Image.frombytes("L", (count, count), b"".join(bytes(row) for row in matrix))
+    code = modules.point(lambda v: 255 if v else 0).resize((side, side), Image.Resampling.NEAREST)
+    size = max(box, side)
+    mask = Image.new("L", (size, size), 0)
+    mask.paste(code, (fit.start, fit.start))
+    return _dark(element, mask, fit)
+
+
+def _ink(text: str, size_px: float) -> Image.Image | None:
+    """A line of the human-readable text without anti-aliasing (1 bit),
+    cropped to its ink; None if it cannot be laid out."""
+    try:
+        block = _text_block(TextElement(text=text, font="Monospace"), size_px, antialias=False)
+    except Exception:  # noqa: BLE001 - the bars alone still scan
+        return None
+    alpha = block.getchannel("A")
+    box = alpha.getbbox()
+    return alpha.crop(box) if box else None
+
+
+def _text_in(text: str, size_px: float, width: int) -> Image.Image | None:
+    """The text at size_px, smaller if it would be wider than width."""
+    ink = _ink(text, size_px)
+    if ink is not None and ink.width > width > 0:
+        ink = _ink(text, size_px * width / ink.width)
+    return ink
+
+
+def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Image:
+    """Bars of whole-pixel modules with their quiet zones, centred in the
+    element, the text below them."""
+    import barcode
+
+    code = barcode.get_barcode_class(element.symbology)(element.data)
+    pattern = "".join(code.build())
+    quiet = QUIET[element.symbology]
+    designed_modules = sum(quiet) + len(pattern)
+    scale = height / BAR_TOTAL_MM  # pixels per designed mm
+    if width is None:  # as wide as designed, and as the code at 1-pixel modules
+        width = max(designed_modules, round(designed_modules * BAR_MODULE_MM * scale))
+    fit = _module(width / designed_modules, len(pattern), quiet, width)
+    module, left = fit.module, fit.start
+    top = round(BAR_TOP_MM * scale)
+    bars_h = max(1, round(BAR_HEIGHT_MM * scale))
+    mask = Image.new("L", (max(width, left + module * len(pattern)), height), 0)
+    draw = ImageDraw.Draw(mask)
+    guards = element.symbology == "ean13"
+    for start, end in _runs(pattern):
+        long = guards and any(a <= start < b for a, b in EAN_GUARDS)
+        bottom = top + bars_h + (EAN_GUARD_MODULES * module if long else 0)
+        draw.rectangle((left + start * module, top, left + end * module - 1, bottom - 1), 255)
+    y = top + bars_h + round(BAR_TEXT_GAP_MM * scale)
+    size = BAR_TEXT_PT / 72 * 25.4 * scale
+    if guards:
+        _ean_text(mask, code.get_fullcode(), size, left, module, y)
+    else:
+        text = _text_in(code.get_fullcode(), size, mask.width)
+        if text is not None:
+            _paste_text(mask, text, left + (module * len(pattern) - text.width) // 2, y)
+    return _dark(element, mask, fit)
+
+
+def _ean_text(mask: Image.Image, digits: str, size: float, left: int, module: int, y: int):
+    """EAN-13's digits as the standard places them: the first left of the
+    bars, then six under each half, between the guard bars."""
+    places = (
+        (digits[0], None, (QUIET["ean13"][0] - 1) * module),
+        (digits[1:7], (3, 45), 40 * module),
+        (digits[7:], (50, 92), 40 * module),
+    )
+    # one size for all three: as designed, or smaller if one would not fit
+    for text_, _place, room in places:
+        ink = _ink(text_, size)
+        if ink is not None and ink.width > room:
+            size *= max(1, room) / ink.width
+    for text_, place, _room in places:
+        ink = _ink(text_, size)
+        if ink is None:
+            continue
+        if place is None:  # the first digit: left of the bars
+            _paste_text(mask, ink, left - module - ink.width, y)
+        else:
+            middle = left + (place[0] + place[1]) * module // 2
+            _paste_text(mask, ink, middle - ink.width // 2, y)
+
+
+def _paste_text(mask: Image.Image, text: Image.Image, x: int, y: int) -> None:
+    """The text's ink into the mask, cut off at the element's bottom."""
+    if y < mask.height:
+        ink = text.crop((0, 0, text.width, mask.height - y))
+        mask.paste(255, (max(0, x), y, max(0, x) + ink.width, y + ink.height), ink)
+
+
+def _runs(pattern: str) -> list[tuple[int, int]]:
+    """The bars: (first module, module after the last) of each run of 1s."""
+    runs, start = [], None
+    for index, bit in enumerate(pattern + "0"):
+        if bit == "1" and start is None:
+            start = index
+        elif bit != "1" and start is not None:
+            runs.append((start, index))
+            start = None
+    return runs
+
+
+def render_code(element: CodeElement, height: int, width: int | None = None) -> Image.Image:
+    """The code in its colour on transparent, 1 bit, each module a whole
+    number of pixels, the quiet zone inside: a QR code height pixels square
+    (or as wide as width, if less), a barcode height pixels high and as
+    wide as its design (or width pixels). What is wrong with it:
+    code_problems()."""
     check_code(element)
     if element.symbology == "qr":
-        import segno
-
-        qr = segno.make(element.data, error="m")
-        buf = io.BytesIO()
-        qr.save(buf, kind="png", scale=1, border=0, dark=element.color, light=None)
-        buf.seek(0)
-        with Image.open(buf) as src:
-            img = src.convert("RGBA")
-        return img.resize((height, height), Image.Resampling.NEAREST)
-
-    import barcode
-    from barcode.writer import ImageWriter
-
-    cls = barcode.get_barcode_class(element.symbology)
-    writer = ImageWriter()
-    code = cls(element.data, writer=writer)
-    buf = io.BytesIO()
-    code.write(
-        buf,
-        options={
-            "module_width": 0.3,
-            "module_height": 10.0,
-            "quiet_zone": 1.0,
-            "font_size": 8,
-            "text_distance": 3.0,
-            "dpi": 300,
-            "foreground": element.color,
-            "background": "white",
-        },
-    )
-    buf.seek(0)
-    with Image.open(buf) as src:
-        img = src.convert("RGBA")
-    # white background -> transparent so the label background shows
-    img.putalpha(img.convert("L").point(lambda v: 0 if v == 255 else 255))
-    width = max(1, round(img.width * height / img.height))
-    return img.resize((width, height), Image.Resampling.NEAREST)
+        return _qr(element, height if width is None else min(height, width))
+    return _barcode(element, height, width)
 
 
 def render_element(element: Element, height: int, dpi: float) -> Image.Image:
@@ -293,13 +459,27 @@ def _parts(label: Label, f: _Frame, dpi: float, warnings) -> list[Image.Image]:
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
-        if part.height > f.inner:  # fixed-size text taller than the tape
+        if part.height > f.inner and not isinstance(element, CodeElement):
+            # fixed-size text taller than the tape (a code too large for it
+            # stays as it is: it cannot be printed, see code_too_big)
             part = part.resize(
                 (max(1, round(part.width * f.inner / part.height)), f.inner),
                 Image.Resampling.LANCZOS,
             )
         parts.append(part)
     return parts
+
+
+def _smaller(element: Element, part: Image.Image, scale: float) -> Image.Image:
+    """The part scaled down; a code drawn again at the smaller size, so its
+    modules stay whole pixels."""
+    size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
+    if isinstance(element, CodeElement):
+        try:
+            return render_code(element, size[1], size[0])
+        except Exception:  # noqa: BLE001 - the placeholder of a code that failed
+            pass
+    return part.resize(size, Image.Resampling.LANCZOS)
 
 
 def _content_width(parts: list[Image.Image], gap: int) -> int:
@@ -318,13 +498,7 @@ def _fit_length(label: Label, parts, f: _Frame, dpi: float, warnings, min_length
         warnings.append(RenderWarning("fixed_too_short"))
     elif parts and content_w > room:
         scale = room / content_w
-        parts = [
-            p.resize(
-                (max(1, round(p.width * scale)), max(1, round(p.height * scale))),
-                Image.Resampling.LANCZOS,
-            )
-            for p in parts
-        ]
+        parts = [_smaller(e, p, scale) for e, p in zip(label.elements, parts, strict=True)]
         return length, parts, round(f.margin * scale), True
     return length, parts, f.margin, False
 
@@ -382,6 +556,12 @@ def render(
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
     parts = _parts(label, f, dpi, warnings)
     length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
+    warnings += [
+        RenderWarning(key, {"n": index})
+        for index, (element, part) in enumerate(zip(label.elements, parts, strict=True), 1)
+        if isinstance(element, CodeElement)
+        for key in code_problems(part)
+    ]
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f)
     _draw_border(img, label, f)

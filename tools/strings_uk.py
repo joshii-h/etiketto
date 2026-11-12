@@ -268,4 +268,10 @@ TRANSLATIONS = {
     "Apply": "Застосувати",
     "Labels %s reach into the margin the printer cannot print on": "Етикетки %s заходять у поле, на якому принтер не може друкувати",
     "Sheets already printed: %(n)d of %(total)d.": "Уже надруковано аркушів: %(n)d з %(total)d.",
+    "The sheets still waiting in the queue were canceled.": "Аркуші, що ще чекали в черзі, скасовано.",
+    "Element %(n)d: the code's modules are only one printer dot wide and may not scan – make the code larger": "Елемент %(n)d: модулі коду завширшки лише одну точку друку й можуть не зчитатися – збільште код",
+    "Element %(n)d: the blank space the code needs around it does not fit – make the code larger": "Елемент %(n)d: вільне поле, потрібне коду навколо, не вміщується – збільште код",
+    "Element %(n)d: the code does not fit in its space, even at one printer dot per module – make the label larger or the content shorter": "Елемент %(n)d: код не вміщується у своє місце навіть з однією точкою друку на модуль – збільште етикетку або скоротіть вміст",
+    "A code does not fit on the label at this printer's resolution and would be cut off. Make the label larger or the code's content shorter.": "За роздільності цього принтера код не вміщується на етикетці й буде обрізаний. Збільште етикетку або скоротіть вміст коду.",
+    "Codes may not scan": "Коди можуть не зчитатися",
 }
