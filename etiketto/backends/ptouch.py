@@ -58,7 +58,7 @@ from etiketto.backends.base import (
     report_progress,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, render
+from etiketto.render import DEFAULT_SAFE_MM
 
 DEFAULT_PORT = 9100
 BROTHER = 0x04F9  # USB vendor ID
@@ -1043,23 +1043,13 @@ class PTouch(Backend):
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
     ) -> Image.Image:
         raster = self.raster(label.tape_mm, options)
-        pins = raster.width_px or raster.tape_px or 0
         # high resolution: rendered at twice the dpi, then halved across to
-        # the pins; 2D codes are laid out for that (across_step), so their
-        # modules stay whole pins
-        step = round(raster.tape_px / pins) if pins and raster.tape_px else 1
-        rendered = render(
-            label,
-            dpi=raster.dpi,
-            safe_mm=safe_mm,
-            tape_px=raster.tape_px,
-            min_length_mm=self.capabilities.min_length_mm,
-            mono=True,
-            across_step=max(1, step),
-        )
+        # the pins; 2D codes are laid out for that (Raster.across_step), so
+        # their modules stay whole pins
+        rendered = self.render_label(label, options, safe_mm)
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image
-        pins = pins or image.height
+        pins = raster.width_px or image.height
         if image.height != pins:
             image = image.convert("L").resize((image.width, pins), Image.Resampling.BOX)
         image = self.preview(image)

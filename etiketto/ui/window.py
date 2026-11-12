@@ -26,7 +26,7 @@ from etiketto.model import (  # noqa: E402
     SymbolElement,
     TextElement,
 )
-from etiketto.render import Rendered, render  # noqa: E402
+from etiketto.render import Rendered  # noqa: E402
 from etiketto.serial import unknown_columns  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
@@ -447,23 +447,20 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
-    def _render_dpi(self) -> float:
-        self.rendered_dpi = self.print_dpi()
-        return self.rendered_dpi
+    def render_options(self) -> PrintOptions:
+        """The options the next print would have, as far as the render
+        depends on them (mode, quality, high resolution, the printer's own
+        settings and what it reported)."""
+        return self.printer_settings.options(self.printer.info, host=self.printer.host or "")
 
     def print_dpi(self) -> float:
-        """The resolution the label is printed at: the printer's own if it
-        said (a page printer at 203 dpi), else the one the printer settings
-        choose (a ZPL printer at 300 dpi), else the model's; for the preview
-        and the export at most PREVIEW_MAX_DPI (an A4 page at 1200 dpi would
-        be 140 megapixels, rendered on every keystroke)."""
-        info = self.printer.info
-        if info and info.dpi:
-            return min(info.dpi, PREVIEW_MAX_DPI)
-        options = PrintOptions(
-            settings=self.printer_settings.backend_settings(), host=self.printer.host or ""
-        )
-        return min(self.backend.render_dpi(options), PREVIEW_MAX_DPI)
+        """The resolution the label is printed at (Backend.render_dpi): the
+        model's, what the printer settings choose (a ZPL printer at 300
+        dpi, a QL at 600 dpi in high quality, a P-touch at high resolution)
+        or what a page printer reported; for the preview and the export at
+        most PREVIEW_MAX_DPI (an A4 page at 1200 dpi would be 140
+        megapixels, rendered on every keystroke)."""
+        return self.backend.render_dpi(self.label.tape_mm, self.render_options(), PREVIEW_MAX_DPI)
 
     def render_image(self) -> tuple[Rendered, Image.Image]:
         """The label rendered for the current printer model and safety margin,
@@ -471,12 +468,10 @@ class Window(Adw.ApplicationWindow):
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
-        rendered = render(
-            label,
-            dpi=self._render_dpi(),
-            safe_mm=self.printer_settings.safe_mm,
-            min_length_mm=backend.capabilities.min_length_mm,
-            mono=backend.capabilities.color_model == "mono",
+        options = self.render_options()
+        self.rendered_dpi = backend.render_dpi(label.tape_mm, options, PREVIEW_MAX_DPI)
+        rendered = backend.render_label(
+            label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
         )
         rendered.warnings[:0] = warnings
         image = backend.preview(rendered.image, self.print_flow.mode)

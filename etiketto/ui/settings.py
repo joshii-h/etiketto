@@ -8,7 +8,7 @@ from pathlib import Path
 
 from gi.repository import GLib
 
-from etiketto.backends.base import Backend, ColorAdjust
+from etiketto.backends.base import Backend, ColorAdjust, PrinterInfo, PrintOptions
 from etiketto.model import DEFAULT_PRINTER
 from etiketto.render import DEFAULT_SAFE_MM
 
@@ -156,3 +156,58 @@ class PrinterSettings:
         formats = self.backend.capabilities.data_formats
         value = self.get("data_format")
         return value if value in formats else formats[0]
+
+    # --- the choices of the last print, for the dialog, the preview and the CLI
+
+    @staticmethod
+    def _one_of(value, choices) -> str:
+        choices = tuple(choices)
+        return value if value in choices else (choices or ("",))[0]
+
+    def cut(self, info: PrinterInfo | None) -> str:
+        return self._one_of(self.get("cut", "full"), self.backend.cut_modes(info))
+
+    def mode(self, info: PrinterInfo | None) -> str:
+        return self._one_of(self.get("mode"), [m.id for m in self.backend.modes(info)])
+
+    def quality(self, info: PrinterInfo | None) -> str:
+        return self._one_of(self.get("quality"), self.backend.qualities(info))
+
+    def extra_switch(self, name: str, info: PrinterInfo | None) -> bool | None:
+        """chain or high_res as last chosen; None if the printer has no such extra."""
+        if name not in self.backend.extras(info):
+            return None
+        return self.get(name) is True
+
+    def feed_mm(self, info: PrinterInfo | None) -> float | None:
+        """The tape feed as last chosen, within the printer's range; None
+        if the printer has no feed setting."""
+        if "feed" not in self.backend.extras(info):
+            return None
+        low, high, default = self.backend.feed_mm(info)
+        feed = self.get("feed_mm", default)
+        ok = isinstance(feed, (int, float)) and not isinstance(feed, bool)
+        return min(high, max(low, float(feed))) if ok else default
+
+    def options(
+        self, info: PrinterInfo | None = None, copies: int = 1, gap_mm: float = 3.0, **chosen
+    ) -> PrintOptions:
+        """The options of a job as last chosen, valid for the backend and the
+        connected printer: what the print dialog offers, the preview shows
+        and the command line prints with. `chosen` overrides some."""
+        values: dict = {
+            "copies": copies,
+            "cut": self.cut(info),
+            "mode": self.mode(info),
+            "quality": self.quality(info),
+            "color": self.color_adjust,
+            "data_format": self.data_format,
+            "gap_mm": gap_mm,
+            "settings": self.backend_settings(),
+            "info": info,
+            "chain": self.extra_switch("chain", info) is True,
+            "high_res": self.extra_switch("high_res", info) is True,
+            "feed_mm": self.feed_mm(info),
+        }
+        values.update(chosen)
+        return PrintOptions(**values)

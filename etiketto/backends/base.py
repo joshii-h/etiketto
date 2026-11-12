@@ -20,7 +20,7 @@ from typing import Literal
 from PIL import Image
 
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, RenderWarning, render
+from etiketto.render import DEFAULT_SAFE_MM, PRINT_DPI, Rendered, RenderWarning, render
 
 ColorModel = Literal["color", "mono", "two-color"]
 # rounding in unit conversions must not make a label "too long" or "too wide"
@@ -166,6 +166,14 @@ class Raster:
     tape_px: int | None = None
     bleed_px: int = 0
     width_px: int | None = None
+
+    @property
+    def across_step(self) -> int:
+        """The whole factor the render is reduced by across the tape
+        afterwards (tape_px to width_px: the P-touch's high resolution)."""
+        if self.tape_px and self.width_px and self.tape_px > self.width_px:
+            return max(1, round(self.tape_px / self.width_px))
+        return 1
 
 
 # --- printer state ----------------------------------------------------------
@@ -632,10 +640,46 @@ class Backend(ABC):
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
 
-    def render_dpi(self, options: PrintOptions) -> float:
-        """The resolution a job with these options is rendered at, for the
-        preview: capabilities.dpi, unless a setting chooses another one."""
-        return self.capabilities.dpi
+    def render_dpi(
+        self, tape_mm: float, options: PrintOptions, max_dpi: float | None = None
+    ) -> float:
+        """The resolution a label is rendered at for a job with these options
+        (raster()): a printer without a fixed head (a page printer) at the
+        resolution it reported (options.info.dpi); `max_dpi` limits those
+        (the preview of an A4 page at 1200 dpi)."""
+        raster = self.raster(tape_mm, options)
+        dpi = raster.dpi or PRINT_DPI
+        if raster.tape_px is None:
+            info = options.info
+            dpi = info.dpi if info and info.dpi else dpi
+            dpi = min(dpi, max_dpi) if max_dpi else dpi
+        return dpi
+
+    def render_label(
+        self,
+        label: Label,
+        options: PrintOptions,
+        safe_mm: float = DEFAULT_SAFE_MM,
+        max_dpi: float | None = None,
+        bleed: bool = True,
+    ) -> Rendered:
+        """The label rendered as for printing, in label space (x along the
+        tape), with its warnings: resolution, tape height, the reduction
+        across (Raster.across_step) as prepare() uses them. The preview and
+        the command line's check render with it too, so their warnings are
+        the print's. bleed=False: no background beyond the tape (preview)."""
+        raster = self.raster(label.tape_mm, options)
+        dpi = self.render_dpi(label.tape_mm, options, max_dpi)
+        return render(
+            label,
+            dpi=dpi,
+            safe_mm=safe_mm,
+            tape_px=raster.tape_px,
+            bleed_px=raster.bleed_px if bleed else 0,
+            min_length_mm=self.capabilities.min_length_mm,
+            mono=self.capabilities.color_model == "mono",
+            across_step=raster.across_step,
+        )
 
     @property
     def settings_id(self) -> str:
@@ -682,15 +726,7 @@ class Backend(ABC):
     ) -> Image.Image:
         """Render the label for printing (label space: x along the tape)."""
         raster = self.raster(label.tape_mm, options)
-        rendered = render(
-            label,
-            dpi=raster.dpi or PRINT_DPI,
-            safe_mm=safe_mm,
-            tape_px=raster.tape_px,
-            bleed_px=raster.bleed_px,
-            min_length_mm=self.capabilities.min_length_mm,
-            mono=self.capabilities.color_model == "mono",
-        )
+        rendered = self.render_label(label, options, safe_mm)
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image
         if raster.width_px and image.height > raster.width_px:

@@ -238,14 +238,29 @@ def test_a_code_too_large_for_the_tape_is_not_printed():
         get_backend("vc500w").prepare(label, PrintOptions())
 
 
-def test_the_preview_resolution_follows_a_dpi_setting():
-    from etiketto.backends.base import PrintOptions
+def test_the_render_resolution_follows_the_print():
+    """Backend.render_dpi: the resolution a label is printed at, from the
+    options as the print has them (preview and command line check)."""
+    from etiketto.backends.base import PrinterInfo, PrintOptions
 
     zpl = get_backend("zpl")
-    assert zpl.render_dpi(PrintOptions(settings={"dpi": "300"})) == pytest.approx(12 * 25.4)
-    assert zpl.render_dpi(PrintOptions(settings={"dpi": "600"})) == pytest.approx(24 * 25.4)
-    vc500w = get_backend("vc500w")
-    assert vc500w.render_dpi(PrintOptions()) == vc500w.capabilities.dpi
+    assert zpl.render_dpi(0, PrintOptions(settings={"dpi": "300"})) == pytest.approx(12 * 25.4)
+    assert zpl.render_dpi(0, PrintOptions(settings={"dpi": "600"})) == pytest.approx(24 * 25.4)
+    ql = get_backend("brother_ql")
+    assert ql.render_dpi(62, PrintOptions()) == 300
+    assert ql.render_dpi(62, PrintOptions(quality="high")) == 600
+    ptouch = get_backend("ptouch")
+    assert ptouch.render_dpi(12, PrintOptions()) == 180
+    assert ptouch.render_dpi(12, PrintOptions(high_res=True)) == 360
+    niimbot = get_backend("niimbot")
+    b32 = PrinterInfo("B32", None, None, None, "IDLE")
+    assert niimbot.render_dpi(0, PrintOptions(info=b32)) == pytest.approx(300)
+    system = get_backend("system")
+    office = PrinterInfo("Office", None, None, None, "IDLE", dpi=600)
+    assert system.render_dpi(0, PrintOptions(info=office)) == 600
+    assert system.render_dpi(0, PrintOptions(info=office), max_dpi=400) == 400
+    assert get_backend("ptouch").raster(12, PrintOptions(high_res=True)).across_step == 2
+    assert get_backend("vc500w").raster(24, PrintOptions()).across_step == 1
 
 
 def test_every_continuous_backend_says_what_its_tape_comes_as():

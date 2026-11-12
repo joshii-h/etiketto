@@ -369,9 +369,6 @@ class RawBackend(Backend):
             return self.reported.get(options.host) or DPI[self.default_dpi]
         return DPI.get(str(choice), DPI[self.default_dpi])
 
-    def render_dpi(self, options: PrintOptions) -> float:
-        return self.dpi(options)
-
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.dpi(options))
 

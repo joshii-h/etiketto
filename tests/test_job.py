@@ -316,3 +316,19 @@ def test_a_printer_with_another_resolution_gets_the_label_rendered_again():
 def test_unconfirmed_copies_are_merged():
     assert merge_results([None, PrintResult(unconfirmed=True)]) == PrintResult(unconfirmed=True)
     assert merge_results([None, None]) is None
+
+
+def test_the_check_renders_as_the_print(monkeypatch):
+    """Job.check() renders with the backend's render_label() and the job's
+    options: the printer's resolution, tape and reduction, as printed."""
+    backend = Recording()
+    seen = []
+    real = backend.render_label
+    monkeypatch.setattr(
+        backend,
+        "render_label",
+        lambda label, options, safe_mm: seen.append(options) or real(label, options, safe_mm),
+    )
+    job = make_job("{=date:%Y}", 1, backend)
+    assert job.check() == []
+    assert seen == [job.options]

@@ -26,7 +26,7 @@ from etiketto.backends.base import (
     RenderAgain,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM, RenderWarning, render
+from etiketto.render import DEFAULT_SAFE_MM, RenderWarning
 from etiketto.sheets.layout import Copies, LabelSource, Pages, SheetJob
 from etiketto.variables import Values, expand_label, uses_counter, varies_per_copy
 
@@ -101,14 +101,8 @@ class Job:
         """The problems of the first label: variables that cannot be filled
         in and what the preview would point out."""
         label, warnings = self.expanded(1)
-        caps = self.backend.capabilities
-        rendered = render(
-            label,
-            caps.dpi,
-            safe_mm=self.safe_mm,
-            min_length_mm=caps.min_length_mm,
-            mono=caps.color_model == "mono",
-        )
+        # as the print renders it: the printer's resolution, tape, reduction
+        rendered = self.backend.render_label(label, self.options, self.safe_mm)
         return warnings + rendered.warnings
 
     def images(self) -> Iterator[tuple[int, Image.Image]]:

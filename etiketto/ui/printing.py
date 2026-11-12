@@ -76,26 +76,17 @@ class PrintFlow:
     @property
     def mode(self) -> str:
         """The print mode of the last print (what the preview shows)."""
-        ids = [m.id for m in self._modes()]
-        saved = self.window.printer_settings.get("mode")
-        return saved if saved in ids else ids[0]
+        return self.window.printer_settings.mode(self.window.printer.info)
 
     def _quality(self) -> str:
         """The quality of the last print, if the printer offers one."""
-        ids = self.window.backend.qualities(self.window.printer.info)
-        saved = self.window.printer_settings.get("quality")
-        return saved if saved in ids else (ids or ("",))[0]
+        return self.window.printer_settings.quality(self.window.printer.info)
 
     def _cut_modes(self) -> tuple[str, ...]:
         return self.window.backend.cut_modes(self.window.printer.info)
 
-    def _extras(self) -> tuple[str, ...]:
-        return self.window.backend.extras(self.window.printer.info)
-
     def _cut(self) -> str:
-        cut_modes = self._cut_modes()
-        saved = self.window.printer_settings.get("cut", "full")
-        return saved if saved in cut_modes else (cut_modes or ("",))[0]
+        return self.window.printer_settings.cut(self.window.printer.info)
 
     # --- checks ----------------------------------------------------------------
 
@@ -232,16 +223,12 @@ class PrintFlow:
         them, as last chosen (density and label type are printer settings,
         in the printer group)."""
         choices: dict[str, object] = {}
-        settings = self.window.printer_settings
-        extras = self._extras()
+        settings, info = self.window.printer_settings, self.window.printer.info
         for name in ("chain", "high_res"):
-            if name in extras:
-                choices[name] = settings.get(name) is True
-        if "feed" in extras:
-            low, high, default = self.window.backend.feed_mm(self.window.printer.info)
-            feed = settings.get("feed_mm", default)
-            ok = isinstance(feed, (int, float)) and not isinstance(feed, bool)
-            choices["feed_mm"] = min(high, max(low, float(feed))) if ok else default
+            if (value := settings.extra_switch(name, info)) is not None:
+                choices[name] = value
+        if (feed := settings.feed_mm(info)) is not None:
+            choices["feed_mm"] = feed
         return choices
 
     def _sheet_rows(self, choices: dict) -> list[Gtk.Widget]:
@@ -450,17 +437,12 @@ class PrintFlow:
         settings.update(cut=choices["cut"], mode=choices["mode"], **extras)
         if choices["quality"]:
             settings.update(quality=choices["quality"])
-        options = PrintOptions(
-            copies=choices["copies"],
-            cut=choices["cut"],
-            mode=choices["mode"],
-            color=settings.color_adjust,
-            data_format=settings.data_format,
-            gap_mm=window.label.gap_mm,
-            settings=settings.backend_settings(),
-            quality=choices["quality"],
-            info=window.printer.info,
-            **extras,
+        chosen = ("cut", "mode", "quality", "chain", "high_res", "feed_mm")
+        options = settings.options(
+            window.printer.info,
+            choices["copies"],
+            window.label.gap_mm,
+            **{key: choices[key] for key in chosen if key in choices},
         )
         job = self.sheet_job(choices)
         if window.data.active:

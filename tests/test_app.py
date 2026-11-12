@@ -51,7 +51,7 @@ from etiketto.backends.base import (  # noqa: E402
     UsbNotFound,
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
-from etiketto.render import mm_to_px, render  # noqa: E402
+from etiketto.render import mm_to_px  # noqa: E402
 from etiketto.serial import SeriesProgress  # noqa: E402
 from etiketto.ui import i18n, preview, texts, widgets  # noqa: E402
 from etiketto.ui import settings as config  # noqa: E402
@@ -480,7 +480,7 @@ def test_render_failure_is_shown(window, monkeypatch):
     def broken(*_args, **_kwargs):
         raise RuntimeError("kaputt")
 
-    monkeypatch.setattr(ui_window, "render", broken)
+    monkeypatch.setattr(window.backend, "render_label", broken)
     render_now(window)
     assert window.rendered is None
     assert window.preview.picture.get_paintable() is None
@@ -591,8 +591,13 @@ def test_safety_margin_is_not_part_of_the_label(window):
     assert Settings.load().data["printers"]["vc500w"]["safe_mm"] == 0.0
     assert not window.dirty
     render_now(window)
-    assert window.rendered.image.tobytes() == render(window.label, safe_mm=0).image.tobytes()
-    assert window.rendered.image.tobytes() != render(window.label).image.tobytes()
+    # rendered as for printing (Backend.render_label), with this margin
+    options = window.render_options()
+    backend = window.backend
+    zero = backend.render_label(window.label, options, 0.0, bleed=False).image
+    assert window.rendered.image.tobytes() == zero.tobytes()
+    default = backend.render_label(window.label, options, bleed=False).image
+    assert window.rendered.image.tobytes() != default.tobytes()
 
 
 def test_host_entry(window, gui_env):
@@ -1068,7 +1073,7 @@ def test_export_png(window, file_dialog, tmp_path):
 
     with Image.open(tmp_path / "out.png") as img:
         assert img.size == window.rendered.image.size
-        assert round(img.info["dpi"][0]) == 317
+        assert round(img.info["dpi"][0]) == round(window.print_dpi())  # as printed
     assert toast_titles(window) == ["Exported"]
     file_dialog.result = tmp_path / "missing" / "x.PNG"
     window.files.export()
@@ -1079,7 +1084,7 @@ def test_export_png_render_failure(window, tmp_path, monkeypatch):
     def broken(*_args, **_kwargs):
         raise RuntimeError("kaputt")
 
-    monkeypatch.setattr(ui_window, "render", broken)
+    monkeypatch.setattr(window.backend, "render_label", broken)
     window.files.export_png(tmp_path / "x.png")
     assert toast_titles(window) == ["The preview cannot be drawn"]
     assert not (tmp_path / "x.png").exists()
@@ -3780,3 +3785,13 @@ def test_the_preview_follows_a_resolution_the_printer_reports_later(
     assert pump(lambda: win.rendered_dpi == pytest.approx(12 * 25.4))
     win.printer.found(raw_env.info)  # nothing new: no render
     assert win._render_source == 0
+
+
+def test_the_preview_is_rendered_at_the_quality_last_printed(ql_window, ql_env):
+    """A QL printed in high quality last: the preview (and its code
+    warnings) at 600 dpi, as the next print."""
+    win = ql_window
+    assert win.print_dpi() == 300
+    win.printer_settings.update(quality="high")
+    render_now(win)
+    assert win.print_dpi() == 600 and win.rendered_dpi == 600

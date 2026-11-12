@@ -38,7 +38,7 @@ from typing import IO, NamedTuple
 
 from etiketto import __version__
 from etiketto.backends import backends, get_backend
-from etiketto.backends.base import Backend, PrinterError, PrinterInfo, PrintOptions
+from etiketto.backends.base import Backend, PrinterError, PrinterInfo
 from etiketto.job import Job, PrepareFailed
 from etiketto.merge import MergeError, read_book
 from etiketto.model import (
@@ -666,22 +666,10 @@ def series_backend(series: Series) -> Backend:
 
 
 def _options(backend: Backend, printer: PrinterSettings, copies: int, gap_mm: float):
-    """Cut, mode, quality and colours as last chosen in the app, if the
-    printer has them."""
-    cut_modes = backend.cut_modes(None)
-    modes = [m.id for m in backend.modes(None)]
-    qualities = backend.qualities(None)
-    cut, mode, quality = printer.get("cut", "full"), printer.get("mode"), printer.get("quality")
-    return PrintOptions(
-        copies=copies,
-        cut=cut if cut in cut_modes else (cut_modes or ("",))[0],
-        mode=mode if mode in modes else modes[0],
-        color=printer.color_adjust,
-        data_format=printer.data_format,
-        gap_mm=gap_mm,
-        settings=printer.backend_settings(),
-        quality=quality if quality in qualities else (qualities or ("",))[0],
-    )
+    """Cut, mode, quality, colours and the printer's extras (chain printing,
+    high resolution, tape feed) as last chosen in the app, if the printer
+    has them (PrinterSettings.options, as for the print dialog)."""
+    return printer.options(None, copies, gap_mm)
 
 
 def _job(args, settings: Settings | None, now: datetime | None):
@@ -803,7 +791,9 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
     if args.output:
         _check_output(args.output)
     if args.dry_run:  # writes nothing back: no lock
-        job, _printer, settings, series = _job(args, settings, now)
+        job, printer, settings, series = _job(args, settings, now)
+        # rendered as the print would be, if the printer is known
+        series = _for_the_printer(args, job, series, args.host or printer.host or "", settings)
         unit = unit_for(settings.units)
         if series:
             return _dry_run_series(series, args.output, unit)
@@ -822,12 +812,24 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
 
 def _print(args, job: Job, series: Series | None, host: str, settings: Settings) -> int:
     unit = unit_for(settings.units)
-    info = None if args.no_query else ask_printer(job.backend, host)
-    if info is not None:  # rendered for what the printer reported
-        job.options = replace(job.options, info=info, host=host)
-        if series:
-            series = replace(series, options=replace(series.options, info=info, host=host))
+    series = _for_the_printer(args, job, series, host, settings)
     return _send_series(args, series, host, unit) if series else _send(args, job, host, unit)
+
+
+def _for_the_printer(
+    args, job: Job, series: Series | None, host: str, settings: Settings
+) -> Series | None:
+    """The job's options for what the printer reports (ask_printer(), unless
+    --no-query): rendered for its model, tape and resolution, with the
+    extras it has. The series, if any, with the same options."""
+    info = None if args.no_query or not host else ask_printer(job.backend, host)
+    if info is None:
+        return series
+    options = settings.printer(job.backend).options(
+        info, job.options.copies, job.options.gap_mm, host=host
+    )
+    job.options = options
+    return replace(series, options=options) if series else None
 
 
 QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer
@@ -836,7 +838,9 @@ QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer
 def ask_printer(backend: Backend, host: str, wait: float = QUERY_WAIT) -> PrinterInfo | None:
     """What the printer reports, for backends whose render depends on it
     (Backend.query_before_render); None if they do not, or the printer does
-    not answer within `wait` (the print then reports what is wrong)."""
+    not answer within `wait` (the print then reports what is wrong). A
+    later answer is not used, but waited for: the query ends (bounded by
+    the backend's timeouts) before anything is printed."""
     if not backend.query_before_render:
         return None
     answer: list[PrinterInfo] = []
@@ -848,7 +852,11 @@ def ask_printer(backend: Backend, host: str, wait: float = QUERY_WAIT) -> Printe
     thread = threading.Thread(target=query, name="etiketto-query", daemon=True)
     thread.start()
     thread.join(wait)
-    return answer[0] if answer else None
+    answered = answer[0] if answer else None
+    # never print while the question is still on its way (a USB printer
+    # takes one session at a time): its own timeouts end it
+    thread.join()
+    return answered
 
 
 # --- list-printers ----------------------------------------------------------

@@ -1017,9 +1017,13 @@ def test_a_printer_that_answers_too_late_is_not_waited_for(mono, monkeypatch):
 
     monkeypatch.setattr(mono, "query_before_render", True, raising=False)
     release = threading.Event()
-    monkeypatch.setattr(mono, "query", lambda host: release.wait(5) and mono.info)
-    assert cli.ask_printer(mono, "h", wait=0.05) is None
-    release.set()
+    done = []
+    monkeypatch.setattr(
+        mono, "query", lambda host: (release.wait(5), done.append(host), mono.info)[2]
+    )
+    threading.Timer(0.2, release.set).start()
+    assert cli.ask_printer(mono, "h", wait=0.05) is None  # too late: not used
+    assert done == ["h"]  # but waited for: nothing runs while printing
 
 
 def test_label_sheets_on_the_command_line(tmp_path, monkeypatch):
@@ -1041,3 +1045,32 @@ def test_label_sheets_on_the_command_line(tmp_path, monkeypatch):
     assert cli._sheet_job(label, system, printer, 5) is None  # unknown to this version
     label.sheet = None
     assert cli._sheet_job(label, system, printer, 5) is None
+
+
+def test_the_command_line_prints_with_the_extras_last_chosen(tmp_path, monkeypatch):
+    """Chain printing, high resolution and tape feed as chosen in the app's
+    print dialog (one helper for both: PrinterSettings.options)."""
+    from etiketto.backends import get_backend
+    from etiketto.ui.settings import Settings
+
+    monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "settings.json")
+    ptouch = get_backend("ptouch")
+    stored = {"chain": True, "high_res": True, "feed_mm": 999, "cut": "half", "quality": "x"}
+    printer = Settings({"printers": {"ptouch": stored}}).printer(ptouch)
+    options = cli._options(ptouch, printer, 2, 3.0)
+    low, high, _default = ptouch.feed_mm(None)
+    assert (options.chain, options.high_res, options.feed_mm) == (True, True, high)
+    assert (options.cut, options.copies, options.quality) == ("half", 2, "")
+    vc500w = get_backend("vc500w")
+    plain = cli._options(vc500w, Settings({}).printer(vc500w), 1, 3.0)
+    assert (plain.chain, plain.high_res, plain.feed_mm) == (False, False, None)
+
+
+def test_a_dry_run_asks_the_printer_too(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="x"))
+    monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    assert run("print", path, "--dry-run", "--host", "h") == 0
+    assert mono.queries == ["h"]
+    assert run("print", path, "--dry-run", "--host", "h", "--no-query") == 0
+    assert run("print", path, "--dry-run") == 0  # no printer known: nothing to ask
+    assert mono.queries == ["h"]

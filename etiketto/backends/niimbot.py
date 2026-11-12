@@ -978,7 +978,8 @@ class Niimbot(Backend):
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
-        return Raster(self.model.dpi if self.model else self.capabilities.dpi)
+        model = self._model(options.info)
+        return Raster(model.dpi if model else self.capabilities.dpi)
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
