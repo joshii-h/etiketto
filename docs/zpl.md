@@ -40,6 +40,10 @@ Markers: **[LPrint]** as LPrint sends it, **[spec]** from Zebra's manual,
   acknowledged every byte and then closed its side, stayed quiet for 1 s,
   or kept talking for 4 s more. A printer that takes nothing for 10 s, or
   resets or closes the connection before it has everything, is an error.
+  A printer that resets the connection right after it took the complete
+  job is reported as stalled too: TCP cannot tell that reset from one in
+  the middle of the job (bytes acknowledged by the kernel need not have
+  reached the printer's interpreter). [assumed: rare]
 
 ## Status and identification
 

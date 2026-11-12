@@ -35,6 +35,7 @@ from etiketto.backends.raw import (
     blank_runs,
     chunks,
     has_bytes,
+    pin_dpi,
     state,
 )
 from etiketto.model import Label
@@ -139,8 +140,9 @@ class EscPos(RawBackend):
     ) -> Image.Image:
         """Label space, like any endless tape (x along the paper): the
         plain Backend.prepare(), not RawBackend's die-cut one."""
-        image = Backend.prepare(self, label, options, safe_mm)
-        image.info[DPI_INFO] = self.dpi(options)
+        dpi = self.dpi(options)  # read once: the render uses the same
+        image = Backend.prepare(self, label, pin_dpi(options, dpi), safe_mm)
+        image.info[DPI_INFO] = dpi
         return image
 
     def check(self, image: Image.Image, dpi: float, host: str) -> None:

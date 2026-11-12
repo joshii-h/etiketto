@@ -56,6 +56,9 @@ MIN_RATE = 8_000
 ANSWER_TIMEOUT = 1.0  # a status answer: silence after this means "unknown"
 SERVICE = "_pdl-datastream._tcp"  # raw printing on port 9100, announced by mDNS
 DPI_INFO = "etiketto_dpi"  # image.info: the resolution prepare() rendered for
+# PrintOptions.settings: the resolution prepare() chose, so that the render
+# (raster()) uses the same one although the printer may report meanwhile
+PINNED_DPI = "_etiketto_dpi"
 
 # the resolutions of the dpi settings: the print heads have whole dots per
 # mm (8, 12, 24), so "203 dpi" is 203.2 and a 100 mm label 800 dots
@@ -169,6 +172,11 @@ def map_error(error: Exception) -> PrinterError:
     if isinstance(error, OSError) or "resolve" in text.lower():
         return PrinterNotFound(text)
     return PrinterError(text)
+
+
+def pin_dpi(options: PrintOptions, dpi: float) -> PrintOptions:
+    """The options with the resolution fixed for one render (PINNED_DPI)."""
+    return replace(options, settings={**options.settings, PINNED_DPI: float(dpi)})
 
 
 class Session:
@@ -349,6 +357,9 @@ class RawBackend(Backend):
         """The resolution of a job: the setting, or what the printer
         reported ("auto"), else the default. Without a dpi setting the
         printer has one resolution, capabilities.dpi."""
+        pinned = options.settings.get(PINNED_DPI)
+        if isinstance(pinned, float):
+            return pinned
         if not self.has_setting("dpi"):
             return self.capabilities.dpi
         choice = self.setting(options, "dpi")
@@ -368,7 +379,8 @@ class RawBackend(Backend):
         """Die-cut labels in printer orientation: x across the print head,
         y along the feed, the first row leaves the printer first. The
         resolution it was made for travels with the image (info)."""
-        dpi = self.dpi(options)
+        dpi = self.dpi(options)  # read once: the render uses the same
+        options = pin_dpi(options, dpi)
         image = super().prepare(replace(label, auto_length=False), options, safe_mm)
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)

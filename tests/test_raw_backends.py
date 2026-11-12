@@ -913,3 +913,35 @@ def test_tspl_turns_by_command(monkeypatch):
 
 def test_languages_without_a_resolution_question():
     assert raw.RawBackend.printer_dpi(epl.Epl(), raw.Session(None)) is None
+
+
+class _Changing(dict):
+    """The resolution a printer reported, changing after the first look (a
+    query answering while a label is prepared)."""
+
+    def __init__(self, first, then):
+        super().__init__()
+        self.answers = [first, then]
+
+    def get(self, key, default=None):
+        return self.answers.pop(0) if len(self.answers) > 1 else self.answers[0]
+
+
+@pytest.mark.parametrize("backend_id", ["zpl", "escpos"])
+def test_prepare_reads_the_resolution_once(backend_id, monkeypatch):
+    """The resolution the image says it was made for is the one it was
+    rendered at, also when the printer reports another one meanwhile."""
+    backend = get_backend(backend_id)
+    monkeypatch.setattr(backend, "reported", _Changing(8 * 25.4, 12 * 25.4))
+    options = PrintOptions(settings={"dpi": "auto"}, host="printer.local")
+    if backend_id == "zpl":
+        label = Label(printer="zpl", auto_length=False, orientation="across")
+        label.set_media_size(50, 25)
+        image = backend.prepare(label, options)
+        assert image.info[raw.DPI_INFO] == 8 * 25.4
+        assert image.width == round(50 / 25.4 * 8 * 25.4)  # 400 dots: 203 dpi
+    else:
+        label = Label(printer="escpos", tape_mm=80)
+        image = backend.prepare(label, options)
+        assert image.info[raw.DPI_INFO] == 8 * 25.4
+        assert image.height == escpos.head_dots(80, 8 * 25.4)
