@@ -11,6 +11,7 @@ time, as they come: only the compressed ones are kept.
 
 from __future__ import annotations
 
+import io
 import zlib
 from collections.abc import Iterable
 
@@ -19,6 +20,7 @@ from PIL import Image, ImageChops
 POINTS_PER_MM = 72 / 25.4
 LEVEL = 6  # zlib: good enough, and quick on a full A4 page
 INSET = 0.01  # pt: the image this much smaller than the page, centred (see encode)
+DCT_ABOVE = 8_000_000  # bytes: a colour page larger than this without loss goes as JPEG
 
 
 def pixels(image: Image.Image) -> tuple[str, int, bytes]:
@@ -77,16 +79,33 @@ def _placement(
     )
 
 
-def encode(pages: Iterable[Image.Image], dpi: float) -> bytes:
-    """The pages as one PDF document."""
+def _compressed(image: Image.Image) -> tuple[str, int, bytes, bytes]:
+    """Colour space, bits, filter and the compressed pixels: without loss,
+    except a colour page (a photo) that would be larger than DCT_ABOVE
+    bytes: JPEG at quality 95 without chroma subsampling."""
+    space, bits, raw = pixels(image)
+    data = zlib.compress(raw, LEVEL)
+    del raw
+    if space == "DeviceRGB" and len(data) > DCT_ABOVE:
+        buf = io.BytesIO()
+        image.convert("RGB").save(buf, format="JPEG", quality=95, subsampling=0)
+        return space, bits, b"DCTDecode", buf.getvalue()
+    return space, bits, b"FlateDecode", data
+
+
+def encode(pages: Iterable[Image.Image], dpi: float, limit: int = 0) -> bytes:
+    """The pages as one PDF document. With a limit (bytes), no further
+    page is taken from pages once another one as large as the last would
+    take the document over it (the first page always goes in): the caller
+    counts the pages it handed out."""
     # each object: its parts, joined once at the end
     objects: list[list[bytes]] = [[], []]  # 1: catalog, 2: page tree, filled in at the end
     kids = []
+    size = 0
     for image in pages:
         width, height = _size_pt(image, dpi)
-        space, bits, raw = pixels(image)
-        data = zlib.compress(raw, LEVEL)
-        del raw
+        space, bits, method, data = _compressed(image)
+        size += len(data)
         number = len(objects) + 1  # the page; its content and image follow
         kids.append(b"%d 0 R" % number)
         objects.append(
@@ -101,12 +120,14 @@ def encode(pages: Iterable[Image.Image], dpi: float) -> bytes:
         objects.append(
             [
                 b"<< /Type /XObject /Subtype /Image /Width %d /Height %d /ColorSpace /%s "
-                b"/BitsPerComponent %d /Filter /FlateDecode /Length %d >>\nstream\n"
-                % (image.width, image.height, space.encode(), bits, len(data)),
+                b"/BitsPerComponent %d /Filter /%s /Length %d >>\nstream\n"
+                % (image.width, image.height, space.encode(), bits, method, len(data)),
                 data,
                 b"\nendstream",
             ]
         )
+        if limit and size + len(data) > limit:
+            break
     objects[0] = [b"<< /Type /Catalog /Pages 2 0 R >>"]
     objects[1] = [b"<< /Type /Pages /Kids [%s] /Count %d >>" % (b" ".join(kids), len(kids))]
     return _document(objects)

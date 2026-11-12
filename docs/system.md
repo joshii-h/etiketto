@@ -35,7 +35,8 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
 
 - `Get-Printer-Attributes` first: state, `printer-state-reasons`, the
   formats, `print-scaling-supported`, `media-size-supported`,
-  `copies-supported`, `operations-supported` and `urf-supported`. A printer that reports a problem, or whose
+  `printer-resolution-default` and `-supported`, `copies-supported`,
+  `operations-supported` and `urf-supported`. A printer that reports a problem, or whose
   `printer-state` is stopped (a paused CUPS queue: `cupsdisable`), gets no
   job. [spec] [confirmed with a paused CUPS queue]
 - The page size comes from the label in millimetres (A4 is exactly 21000 ×
@@ -79,12 +80,51 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   embeds each page without loss (`FlateDecode`): 1 bit per pixel when the
   page is only black and white, 8-bit `DeviceGray` when it is grey, else
   8-bit `DeviceRGB`; the page exactly the size in millimetres (A4 is
-  595.276 × 841.89 pt), the image at 300 dpi. A mostly white page stays
+  595.276 × 841.89 pt). A colour page that would be larger than 8 MB
+  that way (a photo: an A4 photo is about 15 MB) goes as JPEG
+  (`DCTDecode`, quality 95, no chroma subsampling, about 2.4 MB) instead,
+  that page only. A mostly white page stays
   small: a black-and-white 4 × 6 inch label is about 2 kB, an A4 page
   filled with large text (grey edges: 8 bits) 40 to 80 kB, where JPEG at
-  quality 95 made 300 to 370 kB, with grey noise around every edge. PWG
-  Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi or
-  the next resolution the printer lists
+  quality 95 made 300 to 370 kB, with grey noise around every edge.
+- The PDF's image resolution: the printer's `printer-resolution-default`
+  when 300 dpi would not land on its dots whole, i.e. below 300 dpi, or
+  up to 600 dpi without a whole relation to 300 (203 dpi thermal printers
+  through CUPS, 400 dpi); the label (or the sheet's pages) is then
+  rendered again at that resolution, as for the raster formats. 300 dpi
+  otherwise: 600 and 1200 dpi double every pixel exactly, a page that
+  cannot be rendered again stays at 300 dpi. Dots per cm count too (8
+  dots/mm is 203 dpi); below 100 dpi it is not believed. [confirmed with a CUPS queue with the CUPS sample
+  Zebra driver (default 203 dpi) in front of `ippeveprinter`: CUPS
+  reports `printer-resolution-default` 203 dpi, Etiketto sends 812 × 1218
+  pixels for 4 × 6 inches; through the queue's filter chain (`cupsfilter`
+  with its PPD: pdftopdf, Ghostscript, 1-bit raster at 203 dpi) 60 of 60
+  one-pixel hairlines arrive, where the 300 dpi PDF lost 27 of them, and
+  Code 128 modules arrive 5 dots wide each instead of 5 and 6]
+- The image is placed on the page pixel for pixel: at its own size from
+  the top left corner (A4 at 300 dpi is 2480.3 pixels wide, the image
+  2480) when that is within a pixel of the page, and 0.01 pt smaller,
+  centred on that place. Poppler's renderer (Splash: `pdftoppm`,
+  cups-filters' Poppler path) resamples an image that exactly fills whole
+  device pixels, with grey edges and lost hairlines; with the inset it
+  gives back every pixel at the image's resolution, Ghostscript does
+  either way. [confirmed with pdftoppm and Ghostscript 10: hairline pages
+  of 4 × 6 inches, A4 and 50 × 30 mm at 203 and 300 dpi come back
+  identical; before, pdftoppm made 220 080 grey pixels of a 4 × 6 inch
+  page at 203 dpi and 409 200 of an A4 page at 300 dpi. Rendered at twice
+  the resolution (600 dpi), Splash still smooths the image; Ghostscript
+  doubles it exactly]
+- Codes (QR, Code 128, EAN-13) are drawn at the resolution they print
+  at, never resampled: every module the widest whole number of dots that
+  fits the element's designed space (at least one), pure black and white,
+  the code centred in its space and up to one dot per module smaller than
+  designed; the human-readable text is laid out on its own, without
+  anti-aliasing. A code shrunk to fit a fixed length is drawn again at the
+  smaller size. (A 0.3 mm module at 300 dpi is 3.54 dots: it prints at 3,
+  so the bars take 85 % of the designed width; at 203 dpi a module of
+  2.4 dots prints at 2.)
+- PWG Raster and Apple Raster (8-bit sRGB or sGray) are made at 300 dpi
+  or the next resolution the printer lists
   (`pwg-raster-document-resolution-supported`, the `RS` keywords of
   `urf-supported`; only 100 to 1200 dpi are believed), and the label
   (or the label sheet's pages) is rendered again at that resolution
@@ -241,8 +281,9 @@ no code is copied. [spec: from these sources]
 Several labels on one sheet of paper (A4, US Letter, others), placed as
 the gLabels template database says (`etiketto/sheets`, see below).
 
-- Each page is composed at 300 dpi (PWG Raster, Apple Raster: at the
-  printer's resolution, the labels rendered at it too): the paper's size from the template,
+- Each page is composed at 300 dpi (PWG Raster, Apple Raster, and PDF for
+  a printer below 300 dpi such as 203: at the printer's resolution, the
+  labels rendered at it too): the paper's size from the template,
   every label at its exact position (rounded to the pixel, 0.08 mm), round
   labels, ellipses and CDs clipped to their shape (rectangles are printed to
   their edges). Each position gets its own label image from a source
@@ -253,14 +294,17 @@ the gLabels template database says (`etiketto/sheets`, see below).
   sheets), every position on the sheets after it. Up to 999 labels a job.
 - The pages go in `Print-Job`s of up to 10 pages each, every page once (no
   `copies`): a PDF with a page each, or PWG Raster or Apple Raster with
-  the page count set; 23 sheets are jobs of 10, 10 and 3 pages. Pages are
+  the page count set; 23 sheets are jobs of 10, 10 and 3 pages. A job also
+  stays within 64 MB: a raster page that would take it over goes in the
+  next job; a PDF takes no further page once another as large as the one
+  before would take it over (the first page always goes in). Pages are
   composed one at a time while the document is written: a job holds one
-  page image at a time, plus the encoded pages of that job (at most 10,
-  raster pages also at most 64 MB, as for copies above). A printer that only takes JPEG gets one job per page. The jobs
+  page image at a time, plus the encoded pages of that job. A printer that only takes JPEG gets one job per page. The jobs
   take part in everything above: `Validate-Job` once before the first,
   a busy printer asked again with the same document, the jobs sent and not
   over canceled when a step fails; the message then counts sheets
-  ("Sheets already printed: 10 of 23."). Progress counts pages
+  ("Sheets already printed: 10 of 23.", "The sheets still waiting in the
+  queue were canceled."). Progress counts pages
   (`job-impressions-completed`). [spec] [confirmed with ippeveprinter:
   Avery L7160 with outlines, two pages, every label within a pixel of the
   template]

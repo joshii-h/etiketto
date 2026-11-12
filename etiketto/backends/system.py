@@ -67,7 +67,7 @@ BUSY_PAUSE = 3.0
 BUSY = 0x0507  # server-error-busy: no job was made
 PENDING_LIMIT = 30.0  # waiting behind other jobs: then it prints on its own
 PAGES_PER_JOB = 10  # pages in one job: the document is made in memory
-MAX_JOB_BYTES = 64 << 20  # and raster pages up to this much data (one at least)
+MAX_JOB_BYTES = 64 << 20  # and up to this much page data (one page at least)
 POLL_INTERVAL = 1.0
 POLL_FAILURES = 3  # a busy printer may miss an answer now and then
 PROBLEM_POLLS = 3  # a problem must last this many answers: not a passing state
@@ -930,9 +930,31 @@ class _Jobs:
                 document = (join_documents(parts, mime), mime)
                 self._job(first, len(parts), first=first, document=document)
             return
-        step = 1 if mime == JPEG else PAGES_PER_JOB
-        for first in range(0, self.total, step):
-            self._job(first, min(step, self.total - first), first=first)
+        if mime == PDF:
+            for first, document, count in self._pdf_batches():
+                self._job(first, count, first=first, document=document)
+            return
+        for first in range(self.total):  # JPEG: a job each
+            self._job(first, 1, first=first)
+
+    def _pdf_batches(self) -> Iterator[tuple[int, tuple[bytes, str], int]]:
+        """The pages as PDF documents for one job each: up to PAGES_PER_JOB
+        pages, and no further page once another as large as the last would
+        take the document over MAX_JOB_BYTES (one page at least)."""
+        images = self.pages.images
+        first = 0
+        while first < self.total:
+            handed = 0
+
+            def given(start: int = first) -> Iterator[Image.Image]:
+                nonlocal handed
+                for n in range(start, min(start + PAGES_PER_JOB, self.total)):
+                    handed += 1
+                    yield images[n]
+
+            data = pdf.encode(given(), self.pages.dpi, MAX_JOB_BYTES)
+            yield first, (data, PDF), handed
+            first += handed
 
     def _raster_batches(self) -> Iterator[tuple[int, list[bytes]]]:
         """The pages, each a document of its own, in groups for one job:

@@ -516,6 +516,16 @@ def test_qr_modules_are_whole_square_pixels(dpi):
     assert _runs(row) == [module, module, 3 * module, module, module]
 
 
+def test_a_barcode_without_its_text_still_has_its_bars(monkeypatch):
+    def broken(*args, **kwargs):
+        raise RuntimeError("no font")
+
+    monkeypatch.setattr(render_module, "_text_block", broken)
+    part = render_module.render_code(CodeElement("4006381333931", symbology="ean13"), 163)
+    _x0, _y0, _x1, y1 = ink_bbox(_on_white(part), 255)
+    assert y1 == round(163 * 11 / render_module.BAR_TOTAL_MM)  # the bars end there
+
+
 def test_a_code_scaled_to_fit_keeps_whole_modules(make_label):
     code = CodeElement("1Z999AA10123456784", symbology="code128")
     label = make_label(elements=[code], auto_length=False, length_mm=40)

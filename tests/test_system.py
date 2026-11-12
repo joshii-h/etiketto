@@ -3,6 +3,7 @@ against a fake that answers IPP requests by operation."""
 
 from __future__ import annotations
 
+import io
 import re
 import ssl
 import struct
@@ -1651,6 +1652,31 @@ def test_pages_go_in_one_pdf_job(fake):
     assert events[0] == Progress(1, 3) and events[-1] == Progress(3, 3)
 
 
+def _noisy_pages(count, size=(248, 351)):
+    """Colour noise: pages that compress badly, every one different."""
+    import random
+
+    rng = random.Random(7)
+    pages = []
+    for _n in range(count):
+        page = Image.frombytes("RGB", size, rng.randbytes(size[0] * size[1] * 3))
+        page.info["size_mm"] = (210, 297)
+        pages.append(page)
+    return pages
+
+
+def test_large_pdf_jobs_are_split_by_bytes(fake, monkeypatch):
+    monkeypatch.setattr(system, "MAX_JOB_BYTES", 1_000_000)  # a noisy page is about 261 kB
+    events = []
+    pages = _noisy_pages(9)
+    get_backend("system").print_pages(pages, "HP_Office", PrintOptions(), events.append)
+    counts = [data.count(b"/Type /Page ") for _mime, data in fake.documents]
+    assert counts == [3, 3, 3]  # a fourth page would take a job over 1 MB
+    assert all(len(data) < 1_000_000 for _mime, data in fake.documents)
+    assert fake.operations().count(ipp.PRINT_JOB) == 3
+    assert events[-1] == Progress(9, 9)
+
+
 def test_pages_in_pwg_raster(fake):
     fake.formats = ["image/pwg-raster"]
     fake.pwg_resolutions = [(600, 600, 3)]
@@ -1777,6 +1803,34 @@ def _hairlines(dpi: float, size_mm: tuple[float, float]) -> Image.Image:
         draw.line((10, y, width - 10, y), fill=0)
     image.info["size_mm"] = size_mm
     return image
+
+
+def test_a_large_colour_page_goes_as_jpeg(monkeypatch):
+    monkeypatch.setattr(pdf, "DCT_ABOVE", 100_000)
+    photo, plain = _noisy_pages(2)
+    plain.paste((200, 30, 30), (0, 0, *plain.size))
+    data = pdf.encode([photo, plain], 30)
+    assert data.count(b"/Filter /DCTDecode") == 1  # only the large page
+    assert data.count(b"/Filter /FlateDecode") == 1
+    start = data.index(b"\xff\xd8")  # the JPEG in the PDF
+    with Image.open(io.BytesIO(data[start:])) as jpeg:
+        assert jpeg.size == photo.size and jpeg.mode == "RGB"
+    bw = Image.new("1", (2000, 2000), 1)  # never a black-and-white page
+    assert b"/DCTDecode" not in pdf.encode([bw], 300)
+
+
+def test_pdf_stops_taking_pages_short_of_the_limit():
+    pages = _noisy_pages(5)
+    taken = []
+
+    def given():
+        for page in pages:
+            taken.append(page)
+            yield page
+
+    data = pdf.encode(given(), 30, limit=700_000)  # 261 kB a page
+    assert len(taken) == 2 and data.count(b"/Type /Page ") == 2
+    assert pdf.encode(iter(pages[:1]), 30, limit=1).count(b"/Type /Page ") == 1  # always one
 
 
 def test_pdf_image_one_pixel_per_dot_slightly_inset():
