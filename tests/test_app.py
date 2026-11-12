@@ -3688,37 +3688,41 @@ def niimbot_window(make_window, niimbot_env):
     return win
 
 
-def test_niimbot_print_dialog_has_density_and_label_type(niimbot_window, niimbot_env):
+def test_niimbot_density_and_label_type_are_printer_settings(niimbot_window, niimbot_env):
+    """The connected model's label types and density range, as printer
+    settings in the printer group (the mechanism of every backend); another
+    model brings other rows; the job carries what was chosen."""
     win = niimbot_window
     assert win.printer.row.get_title() == "NIIMBOT D110"
+    sensor = one(win.sidebar, Adw.ComboRow, title="Label sensor")
+    assert _items(sensor) == ["Gap between labels", "Transparent labels"]
+    density = one(win.sidebar, Adw.ComboRow, title="Print density")
+    assert _items(density) == ["As set on the printer", "1", "2", "3"]
+    sensor.set_selected(1)
+    density.set_selected(3)
+    saved = Settings.load().data["printers"]["niimbot"]
+    assert (saved["density"], saved["media"]) == (3, "transparent")
     win.print_flow.on_print()
     box = win.last_dialog.get_extra_child()
     assert box.get_row_at_index(0).get_title() == "Copies"
-    density = box.get_row_at_index(1)
-    assert density.get_title() == "Print density"
-    assert density.get_subtitle() == "Higher values print darker"
-    adjustment = density.get_adjustment()
-    assert (adjustment.get_lower(), adjustment.get_upper(), density.get_value()) == (1, 3, 2)
-    media = box.get_row_at_index(2)
-    assert media.get_title() == "Label type"
-    assert _items(media) == ["Labels with gaps", "Transparent labels"]
-    assert box.get_row_at_index(3) is None
-    density.set_value(3)
-    media.set_selected(1)
+    assert box.get_row_at_index(1) is None  # nothing of the printer's own here
     win.last_dialog.emit("response", "print")
     assert pump(lambda: not win.print_flow.busy)
     options = niimbot_env.prints[0][2]
-    assert (options.density, options.media) == (3, "transparent")
-    saved = Settings.load().data["printers"]["niimbot"]
-    assert (saved["density"], saved["media"]) == (3, "transparent")
-    # remembered, and kept within what the connected model takes
-    assert win.print_flow.choices()["density"] == 3
+    assert options.settings == {"media": "transparent", "density": 3}
     niimbot_env.info = PrinterInfo("B1", None, None, None, "IDLE")
-    win.printer.found(niimbot_env.info)
-    assert win.print_flow.choices()["media"] == "transparent"
-    win.printer_settings.update(density=9, media="tube")
-    assert win.print_flow.choices()["density"] == 5
-    assert win.print_flow.choices()["media"] == "gap"
+    win.printer.found(niimbot_env.info)  # another model: its rows
+    sensor = one(win.sidebar, Adw.ComboRow, title="Label sensor")
+    assert _items(sensor) == ["Gap between labels", "Black mark", "Transparent labels"]
+    assert _items(one(win.sidebar, Adw.ComboRow, title="Print density"))[-1] == "5"
+
+
+def test_niimbot_settings_of_an_earlier_version_are_migrated(make_window, niimbot_env):
+    Settings({"printers": {"niimbot": {"density": 0, "media": "black_mark"}}}).save()
+    win = make_window()
+    win.set_backend("niimbot")
+    assert win.printer_settings.get("media") == "mark"
+    assert win.printer_settings.get("density") is None
 
 
 def test_printers_without_density_have_no_such_rows(ready):
@@ -3741,7 +3745,7 @@ def test_serial_port_and_battery_texts():
     assert texts.code_text("battery", MILLIMETRES) == (
         "The printer's battery is low – charge it or connect the power adapter."
     )
-    assert texts.MEDIA_TYPE_NAMES["black_mark"] == "Labels with black marks"
+    assert texts.choice_name("transparent") == "Transparent labels"
 
 
 def test_third_party_notices_name_everything_the_about_dialog_credits():

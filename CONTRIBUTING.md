@@ -212,10 +212,11 @@ extension of the interface first; please open an issue before you start.
      `serialport.Port` and list `serialport.devices()`; see the NIIMBOT
      backend. Tests talk to a fake printer on a pseudo terminal; conftest
      refuses to open real serial ports.
-   - Settings per job: `Capabilities.density` (a `Density` range) and
-     `Capabilities.media_types` (see `base.MEDIA_TYPES`) add "Print
-     density" and "Label type" to the print dialog; override
-     `density(info)` and `media_types(info)` if they depend on the model.
+   - Printer settings (`Capabilities.settings`: label sensor, density,
+     darkness, ...) are the one mechanism for what a printer takes per job;
+     override `settings(info)` if the connected model takes other values
+     (NIIMBOT: its label types and density range), and `migrate_settings()`
+     to update keys or values an earlier version stored in settings.json.
 
 3. Tests: add `tests/test_<name>.py` with a fake of the printer's protocol
    (never the real device) and a subclass of

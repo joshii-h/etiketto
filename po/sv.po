@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 11:02+0100\n"
+"PO-Revision-Date: 2026-11-12 11:14+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: sv\n"
 "Language: sv\n"
@@ -142,7 +142,7 @@ msgid "Unknown printer model: %s"
 msgstr "Okänd skrivarmodell: %s"
 
 #: etiketto/cli.py:271 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:529
+#: etiketto/ui/texts.py:236 etiketto/ui/texts.py:524
 #, python-format
 msgid "Cannot open %s"
 msgstr "Kan inte öppna %s"
@@ -162,7 +162,7 @@ msgstr "{=%s} fylls i vid utskrift och kan inte anges"
 msgid "The label has no element or variable named %s"
 msgstr "Etiketten har inget element eller någon variabel med namnet %s"
 
-#: etiketto/cli.py:352 etiketto/ui/printing.py:109
+#: etiketto/cli.py:352 etiketto/ui/printing.py:107
 msgid "The label is empty"
 msgstr "Etiketten är tom"
 
@@ -174,8 +174,8 @@ msgstr "Det går inte att skriva utdata"
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output skriver PNG-bilder: ange ett namn som slutar på .png"
 
-#: etiketto/cli.py:440 etiketto/cli.py:644 etiketto/ui/printing.py:590
-#: etiketto/ui/printing.py:741
+#: etiketto/cli.py:440 etiketto/cli.py:644 etiketto/ui/printing.py:546
+#: etiketto/ui/printing.py:697
 msgid "The label cannot be prepared for printing."
 msgstr "Etiketten kan inte förberedas för utskrift."
 
@@ -188,7 +188,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Flera skrivare hittades – välj en med --host (etiketto list-printers)"
 
-#: etiketto/cli.py:535 etiketto/ui/texts.py:563
+#: etiketto/cli.py:535 etiketto/ui/texts.py:558
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kan inte spara %s"
@@ -213,7 +213,7 @@ msgstr "Etiketten använder en datafil utanför sin mapp: ange den med --data"
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet och --rows kräver en datafil (--data)"
 
-#: etiketto/cli.py:747 etiketto/ui/printing.py:619
+#: etiketto/cli.py:747 etiketto/ui/printing.py:575
 msgid "No rows to print"
 msgstr "Inga rader att skriva ut"
 
@@ -222,14 +222,14 @@ msgstr "Inga rader att skriva ut"
 msgid "No such column: %s"
 msgstr "Okänd kolumn: %s"
 
-#: etiketto/cli.py:761 etiketto/ui/printing.py:692
+#: etiketto/cli.py:761 etiketto/ui/printing.py:648
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Streckkoden eller QR-koden för de här raderna kan inte skapas från deras värden, till exempel en EAN-13 med bokstäver eller en tom cell. Rätta datafilen och läs den igen, eller skriv ut utan de här raderna."
 
-#: etiketto/cli.py:766 etiketto/ui/printing.py:697
+#: etiketto/cli.py:766 etiketto/ui/printing.py:653
 #, python-format
 msgid "Rows: %s"
 msgstr "Rader: %s"
@@ -252,7 +252,7 @@ msgstr "--output kräver --dry-run"
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "Nästa räknarvärde sparas inte: nästa utskrift upprepar numren"
 
-#: etiketto/cli.py:852 etiketto/ui/printer.py:197
+#: etiketto/cli.py:852 etiketto/ui/printer.py:201
 msgid "No printer found"
 msgstr "Ingen skrivare hittades"
 
@@ -265,7 +265,7 @@ msgid "Choose data file"
 msgstr "Välj datafil"
 
 #: etiketto/ui/data.py:108 etiketto/ui/files.py:109 etiketto/ui/files.py:131
-#: etiketto/ui/files.py:212 etiketto/ui/texts.py:155
+#: etiketto/ui/files.py:212 etiketto/ui/texts.py:150
 msgid "Only local files can be used"
 msgstr "Endast lokala filer kan användas"
 
@@ -371,7 +371,7 @@ msgstr "Inget innehåll än"
 msgid "Add text, an image, a symbol or a code"
 msgstr "Lägg till text, en bild, en symbol eller en kod"
 
-#: etiketto/ui/elements.py:68 etiketto/ui/texts.py:189
+#: etiketto/ui/elements.py:68 etiketto/ui/texts.py:184
 #: etiketto/ui/window.py:637
 msgid "Text"
 msgstr "Text"
@@ -441,7 +441,7 @@ msgstr "Område"
 msgid "Scale"
 msgstr "Skala"
 
-#: etiketto/ui/elements.py:233 etiketto/ui/texts.py:193
+#: etiketto/ui/elements.py:233 etiketto/ui/texts.py:188
 msgid "Symbol"
 msgstr "Symbol"
 
@@ -764,252 +764,252 @@ msgstr "Sista raden"
 msgid "Row %(n)d of %(total)d"
 msgstr "Rad %(n)d av %(total)d"
 
-#: etiketto/ui/printer.py:67
+#: etiketto/ui/printer.py:68
 msgid "Printer"
 msgstr "Skrivare"
 
-#: etiketto/ui/printer.py:72
+#: etiketto/ui/printer.py:73
 msgid "Host name or IP address"
 msgstr "Värdnamn eller IP-adress"
 
-#: etiketto/ui/printer.py:83
+#: etiketto/ui/printer.py:87
 msgid "Safety margin"
 msgstr "Säkerhetsmarginal"
 
-#: etiketto/ui/printer.py:90
+#: etiketto/ui/printer.py:94
 #, python-format
 msgid ""
 "%(unit)s kept free for content and border; the background is printed edge to "
 "edge"
 msgstr "%(unit)s fritt för innehåll och kant; bakgrunden skrivs ut utfallande"
 
-#: etiketto/ui/printer.py:95 etiketto/ui/printer.py:101
+#: etiketto/ui/printer.py:99 etiketto/ui/printer.py:105
 msgid "Millimetres"
 msgstr "Millimeter"
 
-#: etiketto/ui/printer.py:95 etiketto/ui/printer.py:102
+#: etiketto/ui/printer.py:99 etiketto/ui/printer.py:106
 msgid "Inches"
 msgstr "Tum"
 
-#: etiketto/ui/printer.py:98
+#: etiketto/ui/printer.py:102
 msgid "Units"
 msgstr "Enheter"
 
-#: etiketto/ui/printer.py:100
+#: etiketto/ui/printer.py:104
 #, python-format
 msgid "Automatic (%s)"
 msgstr "Automatisk (%s)"
 
-#: etiketto/ui/printer.py:113
+#: etiketto/ui/printer.py:117
 msgid "Printer model"
 msgstr "Skrivarmodell"
 
-#: etiketto/ui/printer.py:147 etiketto/ui/printer.py:370
+#: etiketto/ui/printer.py:151 etiketto/ui/printer.py:376
 msgid "Searching…"
 msgstr "Söker…"
 
-#: etiketto/ui/printer.py:150 etiketto/ui/printer.py:467
+#: etiketto/ui/printer.py:154 etiketto/ui/printer.py:473
 msgid "Printer details"
 msgstr "Skrivarinformation"
 
-#: etiketto/ui/printer.py:153
+#: etiketto/ui/printer.py:157
 msgid "Refresh"
 msgstr "Uppdatera"
 
-#: etiketto/ui/printer.py:157
+#: etiketto/ui/printer.py:161
 msgid "Search for printers"
 msgstr "Sök efter skrivare"
 
-#: etiketto/ui/printer.py:183
+#: etiketto/ui/printer.py:187
 msgid "Searching for printers…"
 msgstr "Söker efter skrivare…"
 
-#: etiketto/ui/printer.py:199
+#: etiketto/ui/printer.py:203
 msgid ""
 "Make sure the printer is switched on and in the same network, or enter its "
 "address below"
 msgstr "Kontrollera att skrivaren är påslagen och i samma nätverk, eller ange dess adress nedan"
 
-#: etiketto/ui/printer.py:205
+#: etiketto/ui/printer.py:209
 #, python-format
 msgid "Found %s"
 msgstr "Hittade %s"
 
-#: etiketto/ui/printer.py:213 etiketto/ui/printer.py:227
+#: etiketto/ui/printer.py:217 etiketto/ui/printer.py:231
 msgid "Choose a printer"
 msgstr "Välj en skrivare"
 
-#: etiketto/ui/printer.py:231 etiketto/ui/printing.py:475
-#: etiketto/ui/printing.py:701 etiketto/ui/sheets.py:206
+#: etiketto/ui/printer.py:235 etiketto/ui/printing.py:434
+#: etiketto/ui/printing.py:657 etiketto/ui/sheets.py:206
 #: etiketto/ui/sheets.py:365 etiketto/ui/symbols.py:79
 #: etiketto/ui/window.py:566
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: etiketto/ui/printer.py:255
+#: etiketto/ui/printer.py:259
 msgid "Connecting…"
 msgstr "Ansluter…"
 
-#: etiketto/ui/printer.py:313
+#: etiketto/ui/printer.py:319
 #, python-format
 msgid "The loaded roll is for “%s”"
 msgstr "Den isatta rullen hör till ”%s”"
 
-#: etiketto/ui/printer.py:314
+#: etiketto/ui/printer.py:320
 msgid "Switch"
 msgstr "Byt"
 
-#: etiketto/ui/printer.py:352
+#: etiketto/ui/printer.py:358
 msgid "Printer not reachable"
 msgstr "Skrivaren kan inte nås"
 
-#: etiketto/ui/printer.py:354 etiketto/ui/printer.py:368
+#: etiketto/ui/printer.py:360 etiketto/ui/printer.py:374
 msgid "Printer needs attention"
 msgstr "Skrivaren behöver uppmärksamhet"
 
-#: etiketto/ui/printer.py:383
+#: etiketto/ui/printer.py:389
 #, python-format
 msgid "%(left)s of %(total)s left"
 msgstr "%(left)s av %(total)s kvar"
 
-#: etiketto/ui/printer.py:394
+#: etiketto/ui/printer.py:400
 msgid "Reachable · the printer reports no status"
 msgstr "Nåbar · skrivaren rapporterar ingen status"
 
-#: etiketto/ui/printer.py:397
+#: etiketto/ui/printer.py:403
 msgid "Printing"
 msgstr "Skriver ut"
 
-#: etiketto/ui/printer.py:399
+#: etiketto/ui/printer.py:405
 #, python-format
 msgid "Ready · a label every %s"
 msgstr "Redo · en etikett var %s"
 
-#: etiketto/ui/printer.py:400
+#: etiketto/ui/printer.py:406
 msgid "Ready"
 msgstr "Redo"
 
-#: etiketto/ui/printer.py:403
+#: etiketto/ui/printer.py:409
 msgid "No roll loaded"
 msgstr "Ingen rulle isatt"
 
-#: etiketto/ui/printer.py:403
+#: etiketto/ui/printer.py:409
 msgid "No cassette inserted"
 msgstr "Ingen kassett isatt"
 
-#: etiketto/ui/printer.py:405
+#: etiketto/ui/printer.py:411
 #, python-format
 msgid "%s roll"
 msgstr "Rulle på %s"
 
-#: etiketto/ui/printer.py:405
+#: etiketto/ui/printer.py:411
 #, python-format
 msgid "%s cassette"
 msgstr "Kassett på %s"
 
-#: etiketto/ui/printer.py:424
+#: etiketto/ui/printer.py:430
 msgid "Model"
 msgstr "Modell"
 
-#: etiketto/ui/printer.py:425
+#: etiketto/ui/printer.py:431
 msgid "Address"
 msgstr "Adress"
 
-#: etiketto/ui/printer.py:426
+#: etiketto/ui/printer.py:432
 msgid "Firmware"
 msgstr "Fast programvara"
 
-#: etiketto/ui/printer.py:428
+#: etiketto/ui/printer.py:434
 msgid "Label distance"
 msgstr "Etikettavstånd"
 
-#: etiketto/ui/printer.py:429
+#: etiketto/ui/printer.py:435
 msgid "Remaining tape"
 msgstr "Återstående tejp"
 
-#: etiketto/ui/printer.py:436 etiketto/ui/printer.py:439
+#: etiketto/ui/printer.py:442 etiketto/ui/printer.py:445
 msgid "Roll"
 msgstr "Rulle"
 
-#: etiketto/ui/printer.py:440
+#: etiketto/ui/printer.py:446
 msgid "Cassette"
 msgstr "Kassett"
 
-#: etiketto/ui/printer.py:449
+#: etiketto/ui/printer.py:455
 msgid "Tape type"
 msgstr "Tejptyp"
 
-#: etiketto/ui/printer.py:450
+#: etiketto/ui/printer.py:456
 msgid "Printable width"
 msgstr "Utskrivbar bredd"
 
-#: etiketto/ui/printer.py:451
+#: etiketto/ui/printer.py:457
 msgid "Lot number"
 msgstr "Batchnummer"
 
-#: etiketto/ui/printer.py:452
+#: etiketto/ui/printer.py:458
 msgid "Serial number"
 msgstr "Serienummer"
 
-#: etiketto/ui/printer.py:454
+#: etiketto/ui/printer.py:460
 msgid "Probably made"
 msgstr "Troligen tillverkad"
 
-#: etiketto/ui/printer.py:468 etiketto/ui/printing.py:797
+#: etiketto/ui/printer.py:474 etiketto/ui/printing.py:753
 msgid "Close"
 msgstr "Stäng"
 
-#: etiketto/ui/printing.py:112
+#: etiketto/ui/printing.py:110
 msgid "This label sheet is unknown to this version – choose another one"
 msgstr "Det här etikettarket är okänt för den här versionen – välj ett annat"
 
-#: etiketto/ui/printing.py:135
+#: etiketto/ui/printing.py:133
 msgid "Serial labels cannot be printed on label sheets yet"
 msgstr "Serieetiketter kan ännu inte skrivas ut på etikettark"
 
-#: etiketto/ui/printing.py:139
+#: etiketto/ui/printing.py:137
 msgid "The data file is still being read. Try again in a moment."
 msgstr "Datafilen läses fortfarande. Försök igen om en stund."
 
-#: etiketto/ui/printing.py:146 etiketto/ui/printing.py:533
-#: etiketto/ui/printing.py:558
+#: etiketto/ui/printing.py:144 etiketto/ui/printing.py:489
+#: etiketto/ui/printing.py:514
 msgid "Print anyway"
 msgstr "Skriv ut ändå"
 
-#: etiketto/ui/printing.py:152
+#: etiketto/ui/printing.py:150
 msgid "Wrong roll"
 msgstr "Fel rulle"
 
-#: etiketto/ui/printing.py:154
+#: etiketto/ui/printing.py:152
 #, python-format
 msgid ""
 "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. "
 "The label would be scaled to the roll."
 msgstr "Etiketten är gjord för en rulle på %(label)s, men en rulle på %(tape)s är isatt. Etiketten skulle skalas till rullen."
 
-#: etiketto/ui/printing.py:164
+#: etiketto/ui/printing.py:162
 msgid "Wrong cassette"
 msgstr "Fel kassett"
 
-#: etiketto/ui/printing.py:166
+#: etiketto/ui/printing.py:164
 #, python-format
 msgid ""
 "The label is designed for %(label)s tape, but a %(tape)s cassette is "
 "inserted. The printer would scale it to the tape."
 msgstr "Etiketten är utformad för tejp på %(label)s, men en kassett på %(tape)s är isatt. Skrivaren skulle skala den till tejpen."
 
-#: etiketto/ui/printing.py:178 etiketto/ui/printing.py:192
+#: etiketto/ui/printing.py:176 etiketto/ui/printing.py:190
 msgid "Different labels loaded"
 msgstr "Andra etiketter isatta"
 
-#: etiketto/ui/printing.py:180
+#: etiketto/ui/printing.py:178
 #, python-format
 msgid ""
 "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label "
 "size, or load the matching roll."
 msgstr "Etiketten är %(size)s, men etiketter på %(loaded)s är isatta. Kontrollera etikettstorleken eller sätt i rätt rulle."
 
-#: etiketto/ui/printing.py:194
+#: etiketto/ui/printing.py:192
 #, python-format
 msgid ""
 "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
@@ -1017,110 +1017,98 @@ msgid ""
 "size and the gap."
 msgstr "Etiketten är %(size)s med ett mellanrum på %(gap)s, så en ny börjar var %(pitch)s. Skrivaren mätte en etikett var %(measured)s. Kontrollera etikettstorleken och mellanrummet."
 
-#: etiketto/ui/printing.py:268
+#: etiketto/ui/printing.py:254
 msgid "Labels"
 msgstr "Etiketter"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:262
 msgid "Print outlines"
 msgstr "Skriv ut konturer"
 
-#: etiketto/ui/printing.py:276
+#: etiketto/ui/printing.py:262
 msgid "To test on plain paper"
 msgstr "För att testa på vanligt papper"
 
-#: etiketto/ui/printing.py:303
+#: etiketto/ui/printing.py:289
 #, python-format
 msgid "Sheets: %d"
 msgstr "Ark: %d"
 
-#: etiketto/ui/printing.py:324
+#: etiketto/ui/printing.py:310
 msgid "Copies of each label"
 msgstr "Kopior av varje etikett"
 
-#: etiketto/ui/printing.py:324
+#: etiketto/ui/printing.py:310
 msgid "Copies"
 msgstr "Kopior"
 
-#: etiketto/ui/printing.py:333
+#: etiketto/ui/printing.py:319
 msgid "Cut"
 msgstr "Snitt"
 
-#: etiketto/ui/printing.py:339
+#: etiketto/ui/printing.py:325
 msgid "Colours"
 msgstr "Färger"
 
-#: etiketto/ui/printing.py:347
+#: etiketto/ui/printing.py:333
 msgid "Quality"
 msgstr "Kvalitet"
 
-#: etiketto/ui/printing.py:359
+#: etiketto/ui/printing.py:344
 msgid "From row"
 msgstr "Från rad"
 
-#: etiketto/ui/printing.py:360
+#: etiketto/ui/printing.py:345
 msgid "To row"
 msgstr "Till rad"
 
-#: etiketto/ui/printing.py:391
+#: etiketto/ui/printing.py:376
 msgid "Tape feed"
 msgstr "Tejpmatning"
 
-#: etiketto/ui/printing.py:397
+#: etiketto/ui/printing.py:382
 #, python-format
 msgid "%(unit)s of blank tape before and after each label"
 msgstr "%(unit)s tom tejp före och efter varje etikett"
 
-#: etiketto/ui/printing.py:409
-msgid "Print density"
-msgstr "Utskriftstäthet"
-
-#: etiketto/ui/printing.py:416
-msgid "Higher values print darker"
-msgstr "Högre värden ger mörkare utskrift"
-
-#: etiketto/ui/printing.py:423
-msgid "Label type"
-msgstr "Etikettyp"
-
-#: etiketto/ui/printing.py:430
+#: etiketto/ui/printing.py:389
 msgid "Colour adjustment"
 msgstr "Färgjustering"
 
-#: etiketto/ui/printing.py:433
+#: etiketto/ui/printing.py:392
 msgid "Reset"
 msgstr "Återställ"
 
-#: etiketto/ui/printing.py:459
+#: etiketto/ui/printing.py:418
 msgid "Not adjusted"
 msgstr "Inte justerad"
 
-#: etiketto/ui/printing.py:459
+#: etiketto/ui/printing.py:418
 msgid "Adjusted"
 msgstr "Justerad"
 
-#: etiketto/ui/printing.py:472
+#: etiketto/ui/printing.py:431
 msgid "Print serial labels"
 msgstr "Skriv ut serieetiketter"
 
-#: etiketto/ui/printing.py:472
+#: etiketto/ui/printing.py:431
 msgid "Print label"
 msgstr "Skriv ut etikett"
 
-#: etiketto/ui/printing.py:476 etiketto/ui/printing.py:784
+#: etiketto/ui/printing.py:435 etiketto/ui/printing.py:740
 #: etiketto/ui/window.py:143
 msgid "Print"
 msgstr "Skriv ut"
 
-#: etiketto/ui/printing.py:530
+#: etiketto/ui/printing.py:486
 msgid "Codes may not scan"
 msgstr "Koderna kanske inte går att skanna"
 
-#: etiketto/ui/printing.py:550
+#: etiketto/ui/printing.py:506
 msgid "Labels in the printer's margin"
 msgstr "Etiketter i skrivarens marginal"
 
-#: etiketto/ui/printing.py:552
+#: etiketto/ui/printing.py:508
 #, python-format
 msgid ""
 "The printer cannot print near the edges of the paper. The content of labels "
@@ -1128,63 +1116,63 @@ msgid ""
 "safety margin, or leave these positions out."
 msgstr "Skrivaren kan inte skriva ut nära papperets kanter. Innehållet i etiketterna %(positions)s når in i den marginalen och skulle skäras av. Öka säkerhetsmarginalen eller hoppa över de här positionerna."
 
-#: etiketto/ui/printing.py:570
+#: etiketto/ui/printing.py:526
 msgid "No printer yet – search for one or enter its address"
 msgstr "Ingen skrivare än – sök efter en eller ange dess adress"
 
-#: etiketto/ui/printing.py:574
+#: etiketto/ui/printing.py:530
 msgid "Printing…"
 msgstr "Skriver ut…"
 
-#: etiketto/ui/printing.py:637 etiketto/ui/printing.py:676
+#: etiketto/ui/printing.py:593 etiketto/ui/printing.py:632
 msgid "Printing serial labels"
 msgstr "Skriver ut serieetiketter"
 
-#: etiketto/ui/printing.py:638
+#: etiketto/ui/printing.py:594
 msgid "Stop"
 msgstr "Stoppa"
 
-#: etiketto/ui/printing.py:666
+#: etiketto/ui/printing.py:622
 msgid "Stopping after this label…"
 msgstr "Stoppar efter den här etiketten…"
 
-#: etiketto/ui/printing.py:673 etiketto/ui/printing.py:752
+#: etiketto/ui/printing.py:629 etiketto/ui/printing.py:708
 #, python-format
 msgid "Printing %(n)d/%(total)d…"
 msgstr "Skriver ut %(n)d/%(total)d…"
 
-#: etiketto/ui/printing.py:700
+#: etiketto/ui/printing.py:656
 msgid "Rows that cannot be printed"
 msgstr "Rader som inte kan skrivas ut"
 
-#: etiketto/ui/printing.py:703
+#: etiketto/ui/printing.py:659
 msgid "Print without these rows"
 msgstr "Skriv ut utan de här raderna"
 
-#: etiketto/ui/printing.py:727
+#: etiketto/ui/printing.py:683
 #, python-format
 msgid "Stopped after row %(row)d"
 msgstr "Stoppad efter rad %(row)d"
 
-#: etiketto/ui/printing.py:731
+#: etiketto/ui/printing.py:687
 #, python-format
 msgid "Printed row %(row)d"
 msgstr "Rad %(row)d utskriven"
 
-#: etiketto/ui/printing.py:733
+#: etiketto/ui/printing.py:689
 #, python-format
 msgid "Printed rows %(first)d to %(last)d"
 msgstr "Rad %(first)d till %(last)d utskrivna"
 
-#: etiketto/ui/printing.py:792
+#: etiketto/ui/printing.py:748
 msgid "Printing failed"
 msgstr "Utskriften misslyckades"
 
-#: etiketto/ui/printing.py:793
+#: etiketto/ui/printing.py:749
 msgid "Details"
 msgstr "Detaljer"
 
-#: etiketto/ui/printing.py:796 etiketto/ui/window.py:590
+#: etiketto/ui/printing.py:752 etiketto/ui/window.py:590
 msgid "Report"
 msgstr "Rapportera"
 
@@ -1265,7 +1253,7 @@ msgstr "Verkställ"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Etiketterna %s når in i marginalen som skrivaren inte kan skriva ut på"
 
-#: etiketto/ui/shipping.py:199 etiketto/ui/texts.py:195
+#: etiketto/ui/shipping.py:199 etiketto/ui/texts.py:190
 msgid "Shipping label"
 msgstr "Fraktetikett"
 
@@ -1417,801 +1405,793 @@ msgstr "Standard"
 msgid "High resolution (600 dpi)"
 msgstr "Hög upplösning (600 dpi)"
 
-#: etiketto/ui/texts.py:61
-msgid "Labels with gaps"
-msgstr "Etiketter med mellanrum"
-
-#: etiketto/ui/texts.py:62
-msgid "Labels with black marks"
-msgstr "Etiketter med svarta markeringar"
-
-#: etiketto/ui/texts.py:63
-msgid "Continuous roll"
-msgstr "Löpande rulle"
-
-#: etiketto/ui/texts.py:64
-msgid "Transparent labels"
-msgstr "Genomskinliga etiketter"
-
-#: etiketto/ui/texts.py:67
+#: etiketto/ui/texts.py:60
 msgid "Brightness"
 msgstr "Ljusstyrka"
 
-#: etiketto/ui/texts.py:68
+#: etiketto/ui/texts.py:61
 msgid "Red"
 msgstr "Röd"
 
-#: etiketto/ui/texts.py:69
+#: etiketto/ui/texts.py:62
 msgid "Green"
 msgstr "Grön"
 
-#: etiketto/ui/texts.py:70
+#: etiketto/ui/texts.py:63
 msgid "Blue"
 msgstr "Blå"
 
-#: etiketto/ui/texts.py:72
+#: etiketto/ui/texts.py:65
 msgid "Start"
 msgstr "Början"
 
-#: etiketto/ui/texts.py:72 etiketto/ui/texts.py:98
+#: etiketto/ui/texts.py:65 etiketto/ui/texts.py:93
 msgid "Centre"
 msgstr "Mitten"
 
-#: etiketto/ui/texts.py:72
+#: etiketto/ui/texts.py:65
 msgid "End"
 msgstr "Slutet"
 
-#: etiketto/ui/texts.py:73
+#: etiketto/ui/texts.py:66
 msgid "Across the roll"
 msgstr "Tvärs över rullen"
 
-#: etiketto/ui/texts.py:73
+#: etiketto/ui/texts.py:66
 msgid "Along the roll"
 msgstr "Längs rullen"
 
-#: etiketto/ui/texts.py:75
+#: etiketto/ui/texts.py:68
 msgid "Single label"
 msgstr "Enskild etikett"
 
-#: etiketto/ui/texts.py:75
+#: etiketto/ui/texts.py:68
 msgid "Label sheet"
 msgstr "Etikettark"
 
-#: etiketto/ui/texts.py:78
+#: etiketto/ui/texts.py:71
 msgid "Resolution"
 msgstr "Upplösning"
 
-#: etiketto/ui/texts.py:79
+#: etiketto/ui/texts.py:72
 msgid "Label sensor"
 msgstr "Etikettsensor"
 
-#: etiketto/ui/texts.py:80
+#: etiketto/ui/texts.py:73
 msgid "After printing"
 msgstr "Efter utskrift"
 
-#: etiketto/ui/texts.py:81
+#: etiketto/ui/texts.py:74
 msgid "Darkness"
 msgstr "Svärta"
 
-#: etiketto/ui/texts.py:82
+#: etiketto/ui/texts.py:75
+msgid "Print density"
+msgstr "Utskriftstäthet"
+
+#: etiketto/ui/texts.py:76
 msgid "Speed"
 msgstr "Hastighet"
 
-#: etiketto/ui/texts.py:83
+#: etiketto/ui/texts.py:77
 msgid "Print upside down"
 msgstr "Skriv ut upp och ner"
 
-#: etiketto/ui/texts.py:87
+#: etiketto/ui/texts.py:81
 msgid "As reported by the printer"
 msgstr "Som skrivaren rapporterar"
 
-#: etiketto/ui/texts.py:88
+#: etiketto/ui/texts.py:82
 msgid "As set on the printer"
 msgstr "Som inställt på skrivaren"
 
-#: etiketto/ui/texts.py:89
+#: etiketto/ui/texts.py:83
 msgid "Gap between labels"
 msgstr "Mellanrum mellan etiketter"
 
-#: etiketto/ui/texts.py:90
+#: etiketto/ui/texts.py:84
 msgid "Black mark"
 msgstr "Svart markering"
 
-#: etiketto/ui/texts.py:91
+#: etiketto/ui/texts.py:85
 msgid "Continuous media"
 msgstr "Löpande material"
 
-#: etiketto/ui/texts.py:92
+#: etiketto/ui/texts.py:86
+msgid "Transparent labels"
+msgstr "Genomskinliga etiketter"
+
+#: etiketto/ui/texts.py:87
 msgid "Tear off"
 msgstr "Riv av"
 
-#: etiketto/ui/texts.py:93
+#: etiketto/ui/texts.py:88
 msgid "Peel off"
 msgstr "Dra av"
 
-#: etiketto/ui/texts.py:94
+#: etiketto/ui/texts.py:89
 msgid "Cut off"
 msgstr "Skär av"
 
-#: etiketto/ui/texts.py:98
+#: etiketto/ui/texts.py:93
 msgid "Left"
 msgstr "Vänster"
 
-#: etiketto/ui/texts.py:98
+#: etiketto/ui/texts.py:93
 msgid "Right"
 msgstr "Höger"
 
-#: etiketto/ui/texts.py:103
+#: etiketto/ui/texts.py:98
 msgid "2D codes"
 msgstr "2D-koder"
 
-#: etiketto/ui/texts.py:105
+#: etiketto/ui/texts.py:100
 msgid "QR code"
 msgstr "QR-kod"
 
-#: etiketto/ui/texts.py:112
+#: etiketto/ui/texts.py:107
 msgid "Linear barcodes"
 msgstr "Linjära streckkoder"
 
-#: etiketto/ui/texts.py:127
+#: etiketto/ui/texts.py:122
 msgid ""
 "Application identifiers in brackets, e.g. "
 "(01)09501101530003(17)261231(10)AB12"
 msgstr "Applikationsidentifierare inom parentes, t.ex. (01)09501101530003(17)261231(10)AB12"
 
-#: etiketto/ui/texts.py:130
+#: etiketto/ui/texts.py:125
 msgid "Links, text, Wi-Fi access; phones read it"
 msgstr "Länkar, text, wifi-åtkomst; kan läsas av mobiler"
 
-#: etiketto/ui/texts.py:131
+#: etiketto/ui/texts.py:126
 msgid "Text or numbers in little space, e.g. on small parts"
 msgstr "Text eller siffror på liten yta, t.ex. på små delar"
 
-#: etiketto/ui/texts.py:132
+#: etiketto/ui/texts.py:127
 msgid "Much text, e.g. an address or a document number"
 msgstr "Mycket text, t.ex. en adress eller ett dokumentnummer"
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:128
 msgid "Text or numbers; needs no blank margin, e.g. on tickets"
 msgstr "Text eller siffror; behöver ingen tom marginal, t.ex. på biljetter"
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:129
 msgid "Latin letters, digits and punctuation"
 msgstr "Latinska bokstäver, siffror och skiljetecken"
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:130
 msgid "Capital letters, digits, spaces and - . $ / + %"
 msgstr "Versaler, siffror, mellanslag och - . $ / + %"
 
-#: etiketto/ui/texts.py:136
+#: etiketto/ui/texts.py:131
 msgid "Latin letters, digits and punctuation; shorter than Code 39"
 msgstr "Latinska bokstäver, siffror och skiljetecken; kortare än Code 39"
 
-#: etiketto/ui/texts.py:137
+#: etiketto/ui/texts.py:132
 msgid "12 digits, the check digit is added (or 13 with it)"
 msgstr "12 siffror, kontrollsiffran läggs till (eller 13 med den)"
 
-#: etiketto/ui/texts.py:138
+#: etiketto/ui/texts.py:133
 msgid "7 digits, the check digit is added (or 8 with it)"
 msgstr "7 siffror, kontrollsiffran läggs till (eller 8 med den)"
 
-#: etiketto/ui/texts.py:139
+#: etiketto/ui/texts.py:134
 msgid "11 digits, the check digit is added (or 12 with it)"
 msgstr "11 siffror, kontrollsiffran läggs till (eller 12 med den)"
 
-#: etiketto/ui/texts.py:140
+#: etiketto/ui/texts.py:135
 msgid "7 digits starting with 0 or 1, the check digit is added (or 8 with it)"
 msgstr "7 siffror som börjar med 0 eller 1, kontrollsiffran läggs till (eller 8 med den)"
 
-#: etiketto/ui/texts.py:141
+#: etiketto/ui/texts.py:136
 msgid ""
 "13 digits of a shipping carton's GTIN, the check digit is added (or 14 with "
 "it)"
 msgstr "13 siffror av en transportkartongs GTIN, kontrollsiffran läggs till (eller 14 med den)"
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:142
 msgid "Whole area, centred"
 msgstr "Hela området, centrerat"
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:142
 msgid "Fill the label, edges cut off"
 msgstr "Fyll etiketten, kanterna beskärs"
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:156
 #, python-format
 msgid "Not an image: %s"
 msgstr "Inte en bild: %s"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:174
 #, python-format
 msgid "%d %%"
 msgstr "%d %%"
 
 #. translators: print speed in inches per second, as label printers state it
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:177
 #, python-format
 msgid "%d in/s"
 msgstr "%d tum/s"
 
-#: etiketto/ui/texts.py:191
+#: etiketto/ui/texts.py:186
 msgid "Image"
 msgstr "Bild"
 
-#: etiketto/ui/texts.py:218
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Endless, %(width)s wide"
 msgstr "Löpande, %(width)s bred"
 
-#: etiketto/ui/texts.py:228
+#: etiketto/ui/texts.py:223
 msgid ""
 "Check that all of the label is inside the selection. Drag to move it or its "
 "edges, or draw a new one."
 msgstr "Kontrollera att hela etiketten ligger inom markeringen. Dra för att flytta den eller dess kanter, eller rita en ny."
 
-#: etiketto/ui/texts.py:232
+#: etiketto/ui/texts.py:227
 msgid ""
 "Several areas could be the label. Check the selection or try the next one."
 msgstr "Flera områden kan vara etiketten. Kontrollera markeringen eller prova nästa."
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:229
 msgid "Everything printed on the page is selected. Drag to choose the label."
 msgstr "Allt som är tryckt på sidan är markerat. Dra för att välja etiketten."
 
-#: etiketto/ui/texts.py:235
+#: etiketto/ui/texts.py:230
 msgid "Nothing is printed on this page."
 msgstr "Ingenting är tryckt på den här sidan."
 
-#: etiketto/ui/texts.py:240
+#: etiketto/ui/texts.py:235
 msgid "PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "PDF-filer kräver Poppler (poppler-glib), som inte är installerat"
 
-#: etiketto/ui/texts.py:251
+#: etiketto/ui/texts.py:246
 msgid "System printer (CUPS, IPP)"
 msgstr "Systemskrivare (CUPS, IPP)"
 
-#: etiketto/ui/texts.py:252
+#: etiketto/ui/texts.py:247
 msgid "Receipt printer (ESC/POS)"
 msgstr "Kvittoskrivare (ESC/POS)"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: etiketto/ui/texts.py:254
+#: etiketto/ui/texts.py:249
 #, python-format
 msgid "%s, continuous rolls"
 msgstr "%s, löpande rullar"
 
 #. translators: %s is a printer model, e.g. "Brother QL"
-#: etiketto/ui/texts.py:256
+#: etiketto/ui/texts.py:251
 #, python-format
 msgid "%s, die-cut labels"
 msgstr "%s, stansade etiketter"
 
-#: etiketto/ui/texts.py:263
+#: etiketto/ui/texts.py:258
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "Element %(n)d: koden är tom"
 
-#: etiketto/ui/texts.py:264
+#: etiketto/ui/texts.py:259
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "Element %(n)d: EAN-13 kräver exakt 12 siffror"
 
-#: etiketto/ui/texts.py:265
+#: etiketto/ui/texts.py:260
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Element %(n)d: EAN-13-kontrollsiffran är fel"
 
-#: etiketto/ui/texts.py:267
+#: etiketto/ui/texts.py:262
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Element %(n)d: Code 128 accepterar endast latinska bokstäver, siffror och skiljetecken"
 
-#: etiketto/ui/texts.py:269
+#: etiketto/ui/texts.py:264
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "Element %(n)d: EAN-8 kräver 7 siffror, eller 8 med kontrollsiffran"
 
-#: etiketto/ui/texts.py:270
+#: etiketto/ui/texts.py:265
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "Element %(n)d: UPC-A kräver 11 siffror, eller 12 med kontrollsiffran"
 
-#: etiketto/ui/texts.py:272
+#: etiketto/ui/texts.py:267
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "Element %(n)d: UPC-E kräver 7 siffror som börjar med 0 eller 1, eller 8 med kontrollsiffran"
 
-#: etiketto/ui/texts.py:274
+#: etiketto/ui/texts.py:269
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "Element %(n)d: ITF-14 kräver 13 siffror, eller 14 med kontrollsiffran"
 
-#: etiketto/ui/texts.py:275
+#: etiketto/ui/texts.py:270
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "Element %(n)d: kontrollsiffran är fel"
 
-#: etiketto/ui/texts.py:277
+#: etiketto/ui/texts.py:272
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "Element %(n)d: Code 39 accepterar endast versaler, siffror, mellanslag och - . $ / + %%"
 
-#: etiketto/ui/texts.py:280
+#: etiketto/ui/texts.py:275
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "Element %(n)d: Code 93 accepterar endast latinska bokstäver, siffror och skiljetecken"
 
-#: etiketto/ui/texts.py:283
+#: etiketto/ui/texts.py:278
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "Element %(n)d: GS1-data accepterar endast latinska bokstäver, siffror och skiljetecken"
 
-#: etiketto/ui/texts.py:286
+#: etiketto/ui/texts.py:281
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "Element %(n)d: GS1-data måste vara applikationsidentifierare inom parentes, var och en följd av sitt värde, t.ex. (01)09501101530003(10)AB12"
 
-#: etiketto/ui/texts.py:289
+#: etiketto/ui/texts.py:284
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "Element %(n)d: (%(ai)s) är ingen GS1-applikationsidentifierare"
 
-#: etiketto/ui/texts.py:291
+#: etiketto/ui/texts.py:286
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "Element %(n)d: värdet för applikationsidentifierare (%(ai)s) har fel längd"
 
-#: etiketto/ui/texts.py:294
+#: etiketto/ui/texts.py:289
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "Element %(n)d: kontrollsiffran för applikationsidentifierare (%(ai)s) är fel"
 
-#: etiketto/ui/texts.py:297
+#: etiketto/ui/texts.py:292
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "Element %(n)d: värdet för applikationsidentifierare (%(ai)s) är ogiltigt: ett datum, tal eller tecken som inte är tillåtet"
 
-#: etiketto/ui/texts.py:301
+#: etiketto/ui/texts.py:296
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "Element %(n)d: inget UPC-A-nummer förkortas till dessa UPC-E-siffror – kontrollera dem eller använd UPC-A"
 
-#: etiketto/ui/texts.py:305
+#: etiketto/ui/texts.py:300
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "Element %(n)d: skannrar inställda på Full ASCII läser ett $, /, + eller %% före en versal som ett annat tecken"
 
-#: etiketto/ui/texts.py:308
+#: etiketto/ui/texts.py:303
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Element %(n)d: innehållet är för långt för den här kodtypen"
 
-#: etiketto/ui/texts.py:309
+#: etiketto/ui/texts.py:304
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Element %(n)d: innehållet kan inte kodas i den här kodtypen"
 
-#: etiketto/ui/texts.py:311
+#: etiketto/ui/texts.py:306
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Element %(n)d: den här kodtypen kräver biblioteket Zint (zint-bindings), som inte är installerat"
 
-#: etiketto/ui/texts.py:314
+#: etiketto/ui/texts.py:309
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Element %(n)d: bilden kan inte läsas"
 
-#: etiketto/ui/texts.py:315
+#: etiketto/ui/texts.py:310
 #, python-format
 msgid "Element %(n)d: this symbol is not in the symbol library"
 msgstr "Element %(n)d: symbolen finns inte i symbolbiblioteket"
 
-#: etiketto/ui/texts.py:316
+#: etiketto/ui/texts.py:311
 #, python-format
 msgid "Element %(n)d: the document cannot be read"
 msgstr "Element %(n)d: dokumentet kan inte läsas"
 
-#: etiketto/ui/texts.py:318
+#: etiketto/ui/texts.py:313
 #, python-format
 msgid ""
 "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed"
 msgstr "Element %(n)d: PDF-filer kräver Poppler (poppler-glib), som inte är installerat"
 
-#: etiketto/ui/texts.py:320
+#: etiketto/ui/texts.py:315
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Element %(n)d kan inte ritas"
 
-#: etiketto/ui/texts.py:321
+#: etiketto/ui/texts.py:316
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "Säkerhetsmarginal, kant och kantavstånd lämnar inget utrymme – minska dem"
 
-#: etiketto/ui/texts.py:322
+#: etiketto/ui/texts.py:317
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Den fasta längden är kortare än avståndet – öka den"
 
-#: etiketto/ui/texts.py:323
+#: etiketto/ui/texts.py:318
 msgid "The background image cannot be read"
 msgstr "Bakgrundsbilden kan inte läsas"
 
-#: etiketto/ui/texts.py:325
+#: etiketto/ui/texts.py:320
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Element %(n)d: kodens moduler är bara en skrivarpunkt breda och kanske inte går att skanna – gör koden större"
 
-#: etiketto/ui/texts.py:329
+#: etiketto/ui/texts.py:324
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Element %(n)d: det tomma utrymme koden behöver runt sig får inte plats – gör koden större"
 
-#: etiketto/ui/texts.py:333
+#: etiketto/ui/texts.py:328
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Element %(n)d: koden får inte plats, inte ens med en skrivarpunkt per modul – gör etiketten större eller innehållet kortare"
 
-#: etiketto/ui/texts.py:336
+#: etiketto/ui/texts.py:331
 #, python-format
 msgid "Element %(n)d: %(name)s is not a known variable"
 msgstr "Element %(n)d: %(name)s är inte en känd variabel"
 
-#: etiketto/ui/texts.py:338
+#: etiketto/ui/texts.py:333
 #, python-format
 msgid "Element %(n)d: the date of %(name)s is before the year 1 or after 9999"
 msgstr "Element %(n)d: datumet för %(name)s ligger före år 1 eller efter 9999"
 
-#: etiketto/ui/texts.py:341
+#: etiketto/ui/texts.py:336
 #, python-format
 msgid "Element %(n)d: the variable %(name)s… is not closed – end it with }"
 msgstr "Element %(n)d: variabeln %(name)s… är inte stängd – avsluta den med }"
 
-#: etiketto/ui/texts.py:355
+#: etiketto/ui/texts.py:350
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Redan utskrivna ark: %(n)d av %(total)d."
 
-#: etiketto/ui/texts.py:357
+#: etiketto/ui/texts.py:352
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Redan utskrivna etiketter: %(n)d av %(total)d."
 
-#: etiketto/ui/texts.py:361
+#: etiketto/ui/texts.py:356
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Arken som fortfarande väntade i kön avbröts."
 
-#: etiketto/ui/texts.py:363
+#: etiketto/ui/texts.py:358
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Etiketterna som fortfarande väntade i kön avbröts."
 
-#: etiketto/ui/texts.py:372
+#: etiketto/ui/texts.py:367
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Skrivaren hittas inte. Kontrollera att den är påslagen och i samma nätverk, eller ange dess IP-adress."
 
-#: etiketto/ui/texts.py:376
+#: etiketto/ui/texts.py:371
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "Skrivaren hittas inte via USB. Kontrollera kabeln och att skrivaren är påslagen och vaken, och sök sedan igen."
 
-#: etiketto/ui/texts.py:379
+#: etiketto/ui/texts.py:374
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Skrivaren svarar inte. Kontrollera att den är påslagen och vaken."
 
-#: etiketto/ui/texts.py:381
+#: etiketto/ui/texts.py:376
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "Skrivaren tar inte emot mer data. Kontrollera om den visar ett problem, till exempel slut på etiketter eller ett öppet lock, och försök sedan igen."
 
-#: etiketto/ui/texts.py:385
+#: etiketto/ui/texts.py:380
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Skrivaren nekar anslutningen. Stäng av den och slå på den igen. Om webbgränssnittet har ett alternativ ”Port 9100”, slå på det."
 
-#: etiketto/ui/texts.py:388
+#: etiketto/ui/texts.py:383
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Ingen kassett är isatt. Sätt i en och försök igen."
 
-#: etiketto/ui/texts.py:389
+#: etiketto/ui/texts.py:384
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Skrivarens lock är öppet. Stäng det och försök igen."
 
-#: etiketto/ui/texts.py:390
+#: etiketto/ui/texts.py:385
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Etiketten har fastnat. Öppna locket, ta bort den och försök igen."
 
-#: etiketto/ui/texts.py:391
+#: etiketto/ui/texts.py:386
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Kassetten känns inte igen. Sätt i den igen eller prova en annan."
 
-#: etiketto/ui/texts.py:392
+#: etiketto/ui/texts.py:387
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Skrivaren är upptagen. Vänta en stund och försök igen."
 
-#: etiketto/ui/texts.py:393
+#: etiketto/ui/texts.py:388
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Etiketten är för lång för den här skrivaren: högst %(max)s."
 
-#: etiketto/ui/texts.py:394
+#: etiketto/ui/texts.py:389
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Etiketten är för bred för den här skrivaren: högst %(max)s."
 
-#: etiketto/ui/texts.py:395
+#: etiketto/ui/texts.py:390
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Skrivaren har slut på etiketter. Sätt i en ny rulle och försök igen."
 
-#: etiketto/ui/texts.py:396
+#: etiketto/ui/texts.py:391
 msgid "The print head is open. Close it and try again."
 msgstr "Skrivhuvudet är öppet. Stäng det och försök igen."
 
-#: etiketto/ui/texts.py:398
+#: etiketto/ui/texts.py:393
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Skrivaren hittar inte nästa etikett. Kontrollera att etiketterna är rätt isatta och går igenom etikettsensorn."
 
-#: etiketto/ui/texts.py:402
+#: etiketto/ui/texts.py:397
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Det är något fel på färgbandet. Kontrollera att det sitter rätt och motsvarar den utskriftsmetod som är inställd på skrivaren."
 
-#: etiketto/ui/texts.py:405
+#: etiketto/ui/texts.py:400
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Skrivaren är pausad. Återuppta den på dess display och försök igen."
 
-#: etiketto/ui/texts.py:406
+#: etiketto/ui/texts.py:401
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Skrivaren har slut på papper. Fyll på papper och försök igen."
 
-#: etiketto/ui/texts.py:408
+#: etiketto/ui/texts.py:403
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Papperet har fastnat. Ta bort det som skrivarens display visar och försök igen."
 
-#: etiketto/ui/texts.py:410
+#: etiketto/ui/texts.py:405
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Skrivaren har slut på toner eller bläck. Byt ut det och försök igen."
 
-#: etiketto/ui/texts.py:411
+#: etiketto/ui/texts.py:406
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Skrivaren kan inte skriva ut den här storleken. Välj en pappersstorlek som den erbjuder."
 
-#: etiketto/ui/texts.py:413
+#: etiketto/ui/texts.py:408
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Skrivaren tar inte emot något av de format som Etiketto kan skicka (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:416
+#: etiketto/ui/texts.py:411
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Skrivarens kö är pausad. Återuppta den i systemets skrivarinställningar och försök igen."
 
-#: etiketto/ui/texts.py:420
+#: etiketto/ui/texts.py:415
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Utskriftsjobbet hölls kvar i kön, till exempel tills det släpps eller ett lösenord anges. Kontrollera kön i systemets skrivarinställningar och försök igen."
 
-#: etiketto/ui/texts.py:424
+#: etiketto/ui/texts.py:419
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Utskriftsjobbet avbröts på skrivaren eller i kön."
 
-#: etiketto/ui/texts.py:425
+#: etiketto/ui/texts.py:420
 #, python-format
 msgid ""
 "The printer did not report its resolution in time. Choose it under “%s”."
 msgstr "Skrivaren rapporterade inte sin upplösning i tid. Välj den under ”%s”."
 
-#: etiketto/ui/texts.py:428
+#: etiketto/ui/texts.py:423
 msgid ""
 "The loaded roll does not match the label. Load a matching roll, or choose "
 "the label size or printer model of the roll that is loaded."
 msgstr "Den isatta rullen passar inte etiketten. Sätt i en passande rulle, eller välj etikettstorlek eller skrivarmodell för den isatta rullen."
 
-#: etiketto/ui/texts.py:431
+#: etiketto/ui/texts.py:426
 msgid "The printer's battery is low – charge it or connect the power adapter."
 msgstr "Skrivarens batteri är svagt – ladda det eller anslut nätadaptern."
 
-#: etiketto/ui/texts.py:432
+#: etiketto/ui/texts.py:427
 msgid ""
 "The print head is too hot. Wait until it has cooled down, then try again."
 msgstr "Skrivhuvudet är för varmt. Vänta tills det har svalnat och försök sedan igen."
 
-#: etiketto/ui/texts.py:434
+#: etiketto/ui/texts.py:429
 msgid ""
 "Etiketto cannot print on this printer model: it does not take the raster "
 "images Etiketto sends."
 msgstr "Etiketto kan inte skriva ut på den här skrivarmodellen: den tar inte emot rasterbilderna som Etiketto skickar."
 
-#: etiketto/ui/texts.py:438
+#: etiketto/ui/texts.py:433
 msgid "Etiketto does not know this printer model and cannot print on it yet."
 msgstr "Etiketto känner inte till den här skrivarmodellen och kan inte skriva ut på den än."
 
-#: etiketto/ui/texts.py:441
+#: etiketto/ui/texts.py:436
 msgid ""
 "The printer is in Editor Lite mode and shows up as a USB drive. Switch "
 "Editor Lite off on the printer (its lamp goes out), then search again."
 msgstr "Skrivaren är i läget Editor Lite och visas som en USB-enhet. Stäng av Editor Lite på skrivaren (lampan slocknar) och sök sedan igen."
 
-#: etiketto/ui/texts.py:445
+#: etiketto/ui/texts.py:440
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Etiketto får inte använda skrivarens USB-port. Lägg till din användare i gruppen ”lp” (sudo usermod -aG lp $USER) och logga sedan ut och in igen."
 
-#: etiketto/ui/texts.py:449
+#: etiketto/ui/texts.py:444
 msgid ""
 "The page is too large to make at the resolution the printer takes. Choose a "
 "smaller paper size, or print on a printer that takes PDF."
 msgstr "Sidan är för stor för att skapas i den upplösning som skrivaren tar emot. Välj ett mindre pappersformat eller skriv ut på en skrivare som tar emot PDF."
 
-#: etiketto/ui/texts.py:453
+#: etiketto/ui/texts.py:448
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "En kod får inte plats på etiketten med den här skrivarens upplösning och skulle skäras av. Gör etiketten större eller kodens innehåll kortare."
 
-#: etiketto/ui/texts.py:457
+#: etiketto/ui/texts.py:452
 msgid ""
 "Etiketto is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Etiketto får inte använda skrivarens serieport. Lägg till din användare i gruppen ”dialout” (sudo usermod -aG dialout $USER; på Arch Linux heter gruppen ”uucp”) och logga sedan ut och in igen."
 
-#: etiketto/ui/texts.py:462
+#: etiketto/ui/texts.py:457
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Skrivaren rapporterade ett problem. Stäng av den och slå på den igen och försök sedan en gång till."
 
-#: etiketto/ui/texts.py:473
+#: etiketto/ui/texts.py:468
 msgid "Printed"
 msgstr "Utskriven"
 
-#: etiketto/ui/texts.py:479
+#: etiketto/ui/texts.py:474
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Skickad till skrivaren – skrivs ut när det är dess tur"
 
-#: etiketto/ui/texts.py:481
+#: etiketto/ui/texts.py:476
 msgid "Sent to the printer – it did not confirm printing"
 msgstr "Skickat till skrivaren – den bekräftade inte utskriften"
 
-#: etiketto/ui/texts.py:485
+#: etiketto/ui/texts.py:480
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Utskrivet med ”%(used)s” eftersom den isatta rullen kräver det"
 
-#: etiketto/ui/texts.py:489
+#: etiketto/ui/texts.py:484
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Färgläget ”%(wanted)s” finns inte på den här skrivaren, utskrivet med ”%(used)s”"
 
-#: etiketto/ui/texts.py:499
+#: etiketto/ui/texts.py:494
 msgid "Warming up…"
 msgstr "Värmer upp…"
 
-#: etiketto/ui/texts.py:500
+#: etiketto/ui/texts.py:495
 msgid "Cooling down…"
 msgstr "Svalnar…"
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:496
 msgid "Cleaning…"
 msgstr "Rengör…"
 
-#: etiketto/ui/texts.py:502
+#: etiketto/ui/texts.py:497
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Dra över skrivarens panel för att skära av etiketten"
 
-#: etiketto/ui/texts.py:504
+#: etiketto/ui/texts.py:499
 msgid "Out of paper – load paper to continue"
 msgstr "Slut på papper – fyll på papper för att fortsätta"
 
-#: etiketto/ui/texts.py:505
+#: etiketto/ui/texts.py:500
 msgid "Cover open – close it to continue"
 msgstr "Locket är öppet – stäng det för att fortsätta"
 
-#: etiketto/ui/texts.py:506
+#: etiketto/ui/texts.py:501
 msgid "Paper jammed – remove it to continue"
 msgstr "Papperet har fastnat – ta bort det för att fortsätta"
 
-#: etiketto/ui/texts.py:517
+#: etiketto/ui/texts.py:512
 msgid "This label needs a newer version of Etiketto"
 msgstr "Den här etiketten kräver en nyare version av Etiketto"
 
-#: etiketto/ui/texts.py:519
+#: etiketto/ui/texts.py:514
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s är inte en Etiketto-etikett"
 
-#: etiketto/ui/texts.py:520 etiketto/ui/texts.py:540
+#: etiketto/ui/texts.py:515 etiketto/ui/texts.py:535
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Filen är skadad: %s"
 
-#: etiketto/ui/texts.py:527
+#: etiketto/ui/texts.py:522
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Datafilen %s finns inte längre. Välj den igen eller ta bort den."
 
-#: etiketto/ui/texts.py:531
+#: etiketto/ui/texts.py:526
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s har inget blad som heter %(sheet)s"
 
-#: etiketto/ui/texts.py:533
+#: etiketto/ui/texts.py:528
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s är ingen tabell. Använd en CSV-, ODS- eller XLSX-fil."
 
-#: etiketto/ui/texts.py:535
+#: etiketto/ui/texts.py:530
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s är för stor för serieetiketter. Dela upp den i mindre filer eller ta bort rader och kolumner som inte behövs."
 
-#: etiketto/ui/texts.py:538
+#: etiketto/ui/texts.py:533
 #, python-format
 msgid "%s contains no data."
 msgstr "%s innehåller inga data."
 
-#: etiketto/ui/texts.py:546
+#: etiketto/ui/texts.py:541
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Utskriften stoppades vid rad %(row)d. Skriv ut igen från rad %(row)d för att fortsätta."
 
-#: etiketto/ui/texts.py:550
+#: etiketto/ui/texts.py:545
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Redan utskrivna kopior av rad %(row)d: %(copies)d."
 
-#: etiketto/ui/texts.py:560
+#: etiketto/ui/texts.py:555
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kan inte spara %s: behörighet saknas för att skriva där"
 
-#: etiketto/ui/texts.py:562
+#: etiketto/ui/texts.py:557
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kan inte spara %s: disken är full"
 
-#: etiketto/ui/texts.py:572
+#: etiketto/ui/texts.py:567
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

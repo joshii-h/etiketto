@@ -262,8 +262,8 @@ please report how it works.
 - A label narrower than the print head is printed in its middle. One a
   little wider is cut to the middle: a B1 prints 48 mm of a 50 mm label.
   Keep 1 mm or more as [[ui:Safety margin]].
-- In the print dialog: [[ui:Print density]] (higher prints darker) and
-  [[ui:Label type]] (labels with gaps, black marks, a continuous roll or
+- In the printer group: [[ui:Print density]] (higher prints darker) and
+  [[ui:Label sensor]] (labels with gaps, black marks, a continuous roll or
   transparent labels, as loaded). Etiketto offers what the connected model
   takes and remembers the choice.
 

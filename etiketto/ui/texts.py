@@ -56,13 +56,6 @@ MODE_NAMES = {
     "red": _("Red and black"),
 }
 QUALITY_NAMES = {"standard": _("Standard"), "high": _("High resolution (600 dpi)")}
-# label materials (base.MEDIA_TYPES); unknown ones are shown by their name
-MEDIA_TYPE_NAMES = {
-    "gap": _("Labels with gaps"),
-    "black_mark": _("Labels with black marks"),
-    "continuous": _("Continuous roll"),
-    "transparent": _("Transparent labels"),
-}
 COLOR_ADJUST_ROWS = [
     ("brightness", _("Brightness")),
     ("red", _("Red")),
@@ -79,6 +72,7 @@ SETTING_TITLES = {
     "media": _("Label sensor"),
     "finish": _("After printing"),
     "darkness": _("Darkness"),
+    "density": _("Print density"),
     "speed": _("Speed"),
     "upside_down": _("Print upside down"),
 }
@@ -89,6 +83,7 @@ CHOICE_NAMES = {
     "gap": _("Gap between labels"),
     "mark": _("Black mark"),
     "continuous": _("Continuous media"),
+    "transparent": _("Transparent labels"),
     "tear": _("Tear off"),
     "peel": _("Peel off"),
     "cut": _("Cut off"),

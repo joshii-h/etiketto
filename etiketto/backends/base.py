@@ -109,28 +109,6 @@ Setting = Choice | Level | Toggle
 
 
 @dataclass(frozen=True)
-class Density:
-    """The print density (darkness) a printer takes per job: lowest to
-    highest step, and the one it uses by default."""
-
-    lowest: int
-    highest: int
-    default: int
-
-    def clamp(self, value: int) -> int:
-        """value within the range; 0 (or junk) is the default."""
-        if isinstance(value, bool) or not isinstance(value, int) or not value:
-            return self.default
-        return max(self.lowest, min(self.highest, value))
-
-
-# label materials a printer's sensor can be set to, by protocol-neutral name:
-# die-cut labels with gaps, labels with black marks on the back, endless
-# (continuous) rolls, transparent labels with gaps; the interface translates them
-MEDIA_TYPES = ("gap", "black_mark", "continuous", "transparent")
-
-
-@dataclass(frozen=True)
 class Capabilities:
     tape_widths_mm: tuple[float, ...]  # endless tape; empty for die-cut printers
     dpi: float  # resolution across the tape the preview is rendered at
@@ -165,12 +143,6 @@ class Capabilities:
     default_tape_mm: float | None = None
     # "feed": (smallest, largest, default) in mm
     feed_mm: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    # print density per job (None: the printer has none to set); the
-    # connected model may differ, see Backend.density()
-    density: Density | None = None
-    # label materials to choose from, the default first (see MEDIA_TYPES);
-    # empty: the printer finds out by itself. See Backend.media_types()
-    media_types: tuple[str, ...] = ()
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -323,8 +295,6 @@ class PrintOptions:
     # the printer as last asked, for backends whose models render differently;
     # not part of the request itself
     info: PrinterInfo | None = field(default=None, compare=False)
-    density: int = 0  # Capabilities.density step; 0 = the printer's default
-    media: str = ""  # one of the media types; empty = the backend's first
 
 
 @dataclass(frozen=True)
@@ -650,9 +620,10 @@ class Backend(ABC):
         return self.name
 
     def setting(self, options: PrintOptions, key: str) -> str | int | bool | None:
-        """The value of one of capabilities.settings for a job: what the
-        options carry if valid, else the default. KeyError for other keys."""
-        for setting in self.capabilities.settings:
+        """The value of one of the printer's settings for a job (settings()
+        of the printer in options.info): what the options carry if valid,
+        else the default. KeyError for other keys."""
+        for setting in self.settings(options.info):
             if setting.key == key:
                 return setting.value(options.settings.get(key))
         raise KeyError(key)
@@ -688,13 +659,16 @@ class Backend(ABC):
         """The "feed" extra of the connected printer: smallest, largest, default."""
         return self.capabilities.feed_mm
 
-    def density(self, info: PrinterInfo | None) -> Density | None:
-        """The print density range of the connected printer, else the documented one."""
-        return self.capabilities.density
+    def settings(self, info: PrinterInfo | None) -> tuple[Setting, ...]:
+        """The printer settings of the connected printer (a model may take
+        fewer label types or another density range), else the documented
+        ones (Capabilities.settings)."""
+        return self.capabilities.settings
 
-    def media_types(self, info: PrinterInfo | None) -> tuple[str, ...]:
-        """The label materials the connected printer takes, else the documented ones."""
-        return self.capabilities.media_types
+    def migrate_settings(self, entry: dict) -> None:
+        """Bring settings.json's entry of this printer up to date in place
+        (keys or values an earlier version stored); nothing by default."""
+        del entry  # noqa: B027 - most backends have nothing to migrate
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
         return Raster(self.capabilities.dpi)

@@ -119,6 +119,7 @@ class PrinterSettings:
         entry = printers.get(key)
         if not isinstance(entry, dict):
             entry = printers[key] = {}
+        self.backend.migrate_settings(entry)
         return entry
 
     def get(self, key, default=None):
@@ -142,8 +143,9 @@ class PrinterSettings:
         return ColorAdjust.from_dict(self.get("color_adjust"))
 
     def backend_settings(self) -> dict[str, object]:
-        """The values of the backend's own settings (Capabilities.settings)
-        for PrintOptions.settings; the backend checks them."""
+        """The values of the backend's own settings (Capabilities.settings;
+        a connected model has the same keys, maybe other values) for
+        PrintOptions.settings; the backend checks them (Backend.setting)."""
         keys = [setting.key for setting in self.backend.capabilities.settings]
         return {key: self.get(key) for key in keys if self.get(key) is not None}
 

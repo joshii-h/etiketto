@@ -55,6 +55,7 @@ class Printer:
         self.info: PrinterInfo | None = None
         self.generation = 0  # answers of older printer queries are dropped
         self.chooser: Adw.AlertDialog | None = None  # the open "Choose a printer" dialog
+        self._settings_shown: tuple[Setting, ...] = ()
 
     @property
     def host(self) -> str | None:
@@ -74,7 +75,10 @@ class Printer:
         self._host_row.set_show_apply_button(True)
         self._host_row.connect("apply", self._on_host_apply)
         group.add(self._host_row)
-        for setting in window.backend.capabilities.settings:
+        # the connected model's settings (a NIIMBOT model's label types and
+        # density range), else the documented ones
+        self._settings_shown = window.backend.settings(self.info)
+        for setting in self._settings_shown:
             group.add(self._setting_row(setting))
 
         group.add(
@@ -280,8 +284,10 @@ class Printer:
         if self._outdated(generation):
             return False
         self.info = info
-        self.update_row()
         window = self.window
+        if window.backend.settings(info) != self._settings_shown:
+            window.rebuild_sidebar()  # rows for what this model takes
+        self.update_row()
         # the printer's margins (labels that reach into them), its resolution
         # (reported now, or by a raw printer's query): the preview and its
         # code warnings at the resolution the label is printed at

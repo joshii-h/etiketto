@@ -29,8 +29,8 @@ from etiketto.backends.base import (
     LIMIT_SLACK_MM,
     Backend,
     Capabilities,
+    Choice,
     CoverOpen,
-    Density,
     FoundPrinter,
     HeadOpen,
     JobCanceled,
@@ -38,6 +38,7 @@ from etiketto.backends.base import (
     LabelSize,
     LabelTooLong,
     LabelTooWide,
+    Level,
     LowBattery,
     OutOfLabels,
     PaperJam,
@@ -51,6 +52,7 @@ from etiketto.backends.base import (
     ProgressCallback,
     Raster,
     RibbonError,
+    Setting,
     error_text,
     network_error,
     open_session,
@@ -134,8 +136,8 @@ INFO_FIRMWARE = 9
 CONNECTED_NEW = 2  # Connect answer: protocol 1
 CONNECTED_V3 = 3  # Connect answer: the status data tell the protocol
 
-# label types by Etiketto's media names (base.MEDIA_TYPES)
-LABEL_TYPES = {"gap": 1, "black_mark": 2, "continuous": 3, "transparent": 5}
+# label types by the values of the "media" setting (ui/texts.CHOICE_NAMES)
+LABEL_TYPES = {"gap": 1, "mark": 2, "continuous": 3, "transparent": 5}
 
 # error codes in 0xDB answers and in print status -> error class, text for bug reports
 ERRORS: dict[int, tuple[type[PrinterError], str]] = {
@@ -172,6 +174,20 @@ _sleep = time.sleep  # replaced in tests
 
 
 @dataclass(frozen=True)
+class Density:
+    """The print density (darkness) a model takes per job: lowest to
+    highest step, and the one it uses by default."""
+
+    lowest: int
+    highest: int
+    default: int
+
+    def level(self) -> Level:
+        """As the printer setting "density" (None: the default)."""
+        return Level("density", self.lowest, self.highest)
+
+
+@dataclass(frozen=True)
 class Model:
     """What a model can do, by the ids it reports (NIIMBOT's devices.json
     through niimbluelib; the widest label from Thermalith's printers.json)."""
@@ -191,12 +207,12 @@ class Model:
         return self.head_px * 25.4 / self.dpi
 
 
-GBT = ("gap", "black_mark", "transparent")
-GBCT = ("gap", "black_mark", "continuous", "transparent")
+GBT = ("gap", "mark", "transparent")
+GBCT = ("gap", "mark", "continuous", "transparent")
 GT = ("gap", "transparent")
 D5 = Density(1, 5, 3)
 D3 = Density(1, 3, 2)
-B21C2B_MEDIA = ("gap", "continuous", "transparent", "black_mark")
+B21C2B_MEDIA = ("gap", "continuous", "transparent", "mark")
 
 MODELS = (
     Model("B1", (4096,), DPI_203, 384, GBT, D5, "b1", 50),
@@ -894,9 +910,10 @@ class Niimbot(Backend):
         label_sizes=LABEL_SIZES,
         max_width_mm=max(model.widest_mm for model in MODELS),
         data_formats=("png",),
-        density=D5,
-        media_types=GBCT,
+        settings=(Choice("media", GBCT), D5.level()),
     )
+    # the connected model's density range and label types (settings())
+    query_before_render = True
 
     def __init__(self) -> None:
         self.model: Model | None = None  # of the printer last asked
@@ -909,13 +926,20 @@ class Niimbot(Backend):
             return "NIIMBOT " + info.model
         return self.name
 
-    def density(self, info: PrinterInfo | None) -> Density | None:
+    def settings(self, info: PrinterInfo | None) -> tuple[Setting, ...]:
+        """The label types and density range of the connected model."""
         model = self._model(info)
-        return model.density if model else self.capabilities.density
+        if model is None:
+            return self.capabilities.settings
+        return (Choice("media", model.media), model.density.level())
 
-    def media_types(self, info: PrinterInfo | None) -> tuple[str, ...]:
-        model = self._model(info)
-        return model.media if model else self.capabilities.media_types
+    def migrate_settings(self, entry: dict) -> None:
+        """Earlier versions stored the density as 0 for the default and the
+        label type with black marks as "black_mark"."""
+        if entry.get("density") == 0:
+            del entry["density"]
+        if entry.get("media") == "black_mark":
+            entry["media"] = "mark"
 
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
         """NIIMBOT printers on USB serial; nothing is sent to find them."""
@@ -1033,7 +1057,8 @@ def _job_for(
     if image.height > MAX_ROWS:
         limit = MAX_ROWS * 25.4 / model.dpi
         raise LabelTooLong("%d rows" % image.height, max_mm=round(limit, 1))
-    media = options.media if options.media in model.media else model.media[0]
-    return make_job(
-        image, model, task, copies, model.density.clamp(options.density), LABEL_TYPES[media]
-    )
+    media = Choice("media", model.media).value(options.settings.get("media"))
+    density = model.density.level().value(options.settings.get("density"))
+    if density is None:  # "as set on the printer": the model's default
+        density = model.density.default
+    return make_job(image, model, task, copies, density, LABEL_TYPES[media])

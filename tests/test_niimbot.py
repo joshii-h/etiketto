@@ -17,13 +17,14 @@ from PIL import Image, ImageDraw
 
 from etiketto.backends import get_backend, niimbot, serialport
 from etiketto.backends.base import (
+    Choice,
     CoverOpen,
-    Density,
     FoundPrinter,
     HeadOpen,
     JobCanceled,
     LabelTooLong,
     LabelTooWide,
+    Level,
     LowBattery,
     OutOfLabels,
     PaperJam,
@@ -38,6 +39,7 @@ from etiketto.backends.base import (
 )
 from etiketto.backends.niimbot import (
     MODELS,
+    Density,
     Niimbot,
     Packet,
     Reader,
@@ -349,9 +351,27 @@ def test_task_for_protocol(name, protocol, task):
     assert niimbot.task_for(niimbot.BY_NAME[name], protocol) == task
 
 
-def test_density_clamp():
-    density = Density(1, 5, 3)
-    assert [density.clamp(v) for v in (0, 1, 4, 9, -2, True, "x")] == [3, 1, 4, 5, 1, 3, 3]
+def test_density_as_a_level_setting():
+    level = Density(1, 5, 3).level()
+    assert level == Level("density", 1, 5)
+    assert [level.value(v) for v in (1, 4, 9, -2, True, "x", None)] == [
+        1,
+        4,
+        5,
+        1,
+        None,
+        None,
+        None,
+    ]
+
+
+def test_settings_of_earlier_versions_are_migrated():
+    entry = {"density": 0, "media": "black_mark", "host": "/dev/ttyACM0"}
+    Niimbot().migrate_settings(entry)
+    assert entry == {"media": "mark", "host": "/dev/ttyACM0"}
+    entry = {"density": 4, "media": "gap"}
+    Niimbot().migrate_settings(entry)
+    assert entry == {"density": 4, "media": "gap"}
 
 
 # --- the serial port ------------------------------------------------------------------
@@ -910,8 +930,7 @@ def test_query_an_unknown_model(fake):
     backend = Niimbot()
     info = backend.query("printer")
     assert info.model == "model 4660" and backend.display_name(info) == "NIIMBOT model 4660"
-    assert backend.density(info) == backend.capabilities.density  # the documented range
-    assert backend.media_types(info) == backend.capabilities.media_types
+    assert backend.settings(info) == backend.capabilities.settings  # the documented ones
     with pytest.raises(PrinterError, match="unknown NIIMBOT model id 4660"):
         backend.print_label(_image(), "printer", PrintOptions())
     assert 0x01 not in fake.commands()  # nothing printed
@@ -927,15 +946,19 @@ def test_query_a_d110_m_with_protocol_4(fake):
     assert info.model == "D110 M" and info.error == "battery"
     assert fake.commands()[:3] == [0xC1, 0xA5, 0x40]
     assert fake.sent(0xDC) == [b"\x04"]  # protocol 3 and up: heartbeat type 4
-    assert backend.density(info) == Density(1, 5, 3)
-    assert backend.media_types(info) == ("gap", "transparent")
+    assert backend.settings(info) == (
+        Choice("media", ("gap", "transparent")),
+        Level("density", 1, 5),
+    )
 
 
 def test_print_on_a_b1(fake):
     events = []
     image = _image(384, 240)  # 48 × 30 mm at 8 dots/mm
     image.info["niimbot_dpi"] = niimbot.DPI_203
-    Niimbot().print_label(image, "printer", PrintOptions(copies=2, density=4), events.append)
+    Niimbot().print_label(
+        image, "printer", PrintOptions(copies=2, settings={"density": 4}), events.append
+    )
     assert fake.commands() == START + [0x21, 0x23, 0x01, 0x03, 0x13, 0xE3] + [0xA3] * 4 + [0xF3]
     assert fake.sent(0x21) == [b"\x04"] and fake.sent(0x23) == [b"\x01"]
     assert fake.sent(0x01) == [b"\x00\x02\x00\x00\x00\x00\x00"]
@@ -959,7 +982,9 @@ def test_a_narrow_label_is_centred_on_the_head(fake):
 def test_print_on_a_d110(fake):
     fake.model_id = 2304
     image = _image(96, 320)  # 12 × 40 mm
-    Niimbot().print_label(image, "printer", PrintOptions(copies=3, density=5, media="continuous"))
+    Niimbot().print_label(
+        image, "printer", PrintOptions(copies=3, settings={"density": 5, "media": "continuous"})
+    )
     page = [0x20, 0x03, 0x13, 0x15, 0xE3]
     assert fake.commands() == START + [0x21, 0x23, 0x01] + page + [0xA3] * 6 + [0xF3]
     assert fake.sent(0x21) == [b"\x03"]  # D110: density 1 to 3
@@ -1008,7 +1033,7 @@ def test_print_on_a_b21(fake):
     events = []
     image = _image(384, 450)
     Niimbot().print_label(
-        image, "printer", PrintOptions(copies=2, media="black_mark"), events.append
+        image, "printer", PrintOptions(copies=2, settings={"media": "mark"}), events.append
     )
     page = [0x03, 0x13, 0x86, 0x86, 0xE3]  # check lines after rows 199 and 399
     assert fake.commands() == START + [0x21, 0x23, 0x01] + page * 2 + [0xF3] * 3
@@ -1121,7 +1146,9 @@ def test_print_on_a_b1_pro_with_protocol_4(fake):
     image = _image(567, 300)
     image.info["niimbot_dpi"] = niimbot.DPI_300
     backend = Niimbot()
-    backend.print_label(image, "printer", PrintOptions(density=2, media="transparent"))
+    backend.print_label(
+        image, "printer", PrintOptions(settings={"density": 2, "media": "transparent"})
+    )
     fake.wait_for(lambda: 0xDC in fake.commands())  # sent last, without an answer
     after_start = [0xA3, 0x13, 0xE3, 0xA3, 0xA3, 0xF3, 0xDC]  # no page start
     assert fake.commands() == START + [0x23, 0x21, 0x01] + after_start

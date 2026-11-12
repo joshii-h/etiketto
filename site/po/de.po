@@ -1200,15 +1200,15 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
-"In the print dialog: [[ui:Print density]] (higher prints darker) and "
-"[[ui:Label type]] (labels with gaps, black marks, a continuous roll or "
+"In the printer group: [[ui:Print density]] (higher prints darker) and "
+"[[ui:Label sensor]] (labels with gaps, black marks, a continuous roll or "
 "transparent labels, as loaded). Etiketto offers what the connected model "
 "takes and remembers the choice."
 msgstr ""
-"Im Druckdialog: [[ui:Print density]] (höher druckt dunkler) und [[ui:Label "
-"type]] (Etiketten mit Lücken, mit schwarzen Markierungen, Endlosrolle oder "
-"transparente Etiketten, wie eingelegt). Etiketto bietet an, was das "
-"angeschlossene Modell kann, und merkt sich die Wahl."
+"In der Druckergruppe: [[ui:Print density]] (höher druckt dunkler) und "
+"[[ui:Label sensor]] (Etiketten mit Lücken, mit schwarzen Markierungen, "
+"Endlosrolle oder transparente Etiketten, wie eingelegt). Etiketto bietet an, "
+"was das angeschlossene Modell kann, und merkt sich die Wahl."
 
 #. type: Title ###
 #: docs/printer.md
