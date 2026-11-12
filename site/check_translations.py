@@ -6,6 +6,8 @@
 Errors (exit code 1):
 - [[ui:…]] placeholders whose text is not a msgid of the app (po/etiketto.pot)
 - translations that drop, add or change [[ui:…]] placeholders
+- code blocks that are fuzzy (changed in English, the translation not) or
+  whose translation has another number of lines than the English
 
 Reported per language (errors only with --strict):
 - paragraphs that are untranslated or fuzzy (changed in English since the
@@ -14,7 +16,7 @@ Reported per language (errors only with --strict):
   (run `python3 site/build.py --update-po`)
 - interface terms the app itself has not translated (shown in English)
 
-Code blocks need no translation and are not counted.
+Code blocks need no translation and are not counted as paragraphs.
 """
 
 from __future__ import annotations
@@ -35,6 +37,23 @@ def placeholders(text: str) -> list[str]:
 
 def needs_translation(entry: dict) -> bool:
     return bool(entry["msgid"]) and "code block" not in entry.get("comment", "")
+
+
+def code_block_errors(lang: str, entries) -> int:
+    """Code blocks of a catalog that would show something else than the
+    English page: fuzzy, or translated with lines missing or added."""
+    errors = 0
+    for e in entries:
+        if not e["msgid"] or "code block" not in e.get("comment", ""):
+            continue
+        first = e["msgid"].splitlines()[0][:70]
+        if "fuzzy" in e["flags"]:
+            print("ERROR %s: fuzzy code block: %s" % (lang, first))
+            errors += 1
+        elif e["msgstr"] and e["msgstr"].count("\n") != e["msgid"].count("\n"):
+            print("ERROR %s: code block with other lines than the English: %s" % (lang, first))
+            errors += 1
+    return errors
 
 
 def main() -> int:
@@ -97,6 +116,8 @@ def main() -> int:
                 if translated and placeholders(e["msgstr"]) != placeholders(e["msgid"]):
                     print("ERROR %s: placeholders changed in: %s" % (lang, e["msgid"][:70]))
                     errors += 1
+
+            errors += code_block_errors(lang, committed.values())
 
             terms = build.catalog(build.APP_PO / (lang + ".po"))
             missing = sorted(t for t in used if t in app and t not in terms)

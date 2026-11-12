@@ -48,6 +48,8 @@ def test_check_sh_runs_what_the_ci_runs():
     dev = " ".join(project["dependency-groups"]["dev"])
     for tool in ("pytest", "ruff", "mypy", "bandit", "radon", "xenon", "pip-audit", "pyyaml"):
         assert tool in dev, tool
+    for loop in ("for po in po/*.po site/po/*.po; do", "for po in site/po/*.po; do"):
+        assert loop in check and loop in ci, loop  # the documentation's catalogs too
     assert ci.count("pip install -q -e . --group dev") == 2  # both jobs: the same tools
     assert ci.count('pip install -q --upgrade "pip>=25.1"') == 2  # --group needs it
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

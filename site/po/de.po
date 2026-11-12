@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 13:47+0100\n"
+"POT-Creation-Date: 2026-11-12 14:14+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2916,14 +2916,16 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "It prints with the choices last made in the app for that printer model: cut, "
-"colours, quality, chain printing, high resolution, tape feed and the printer "
-"settings. `--printer-defaults` takes the model's defaults for these instead; "
-"the printer's address and the [[ui:Safety margin]] stay as set in the app."
+"colours, quality, chain printing, high resolution, tape feed, the printer "
+"settings and [[ui:Print outlines]] on a label sheet.  `--printer-defaults` "
+"takes the model's defaults for these instead (no outlines); the printer's "
+"address and the [[ui:Safety margin]] stay as set in the app."
 msgstr ""
 "Es druckt mit der Wahl, die in der App zuletzt für dieses Druckermodell "
 "getroffen wurde: Schnitt, Farben, Qualität, Kettendruck, hohe Auflösung, "
-"Bandvorschub und die Druckereinstellungen. `--printer-defaults` nimmt dafür "
-"stattdessen die Standardwerte des Modells; die Adresse des Druckers und der "
+"Bandvorschub, die Druckereinstellungen und [[ui:Print outlines]] auf einem "
+"Etikettenbogen. `--printer-defaults` nimmt dafür stattdessen die "
+"Standardwerte des Modells (keine Umrisse); die Adresse des Druckers und der "
 "[[ui:Safety margin]] bleiben, wie in der App eingestellt."
 
 #. type: Bullet: '- '
@@ -2966,14 +2968,15 @@ msgstr ""
 msgid ""
 "`--dry-run` only checks and renders: it lists the texts of each label; `--"
 "output file.png` saves each label as [[ui:Export PNG…]] does: as printed, on "
-"the whole tape, with its resolution (`file-1.png`, `file-2.png` … if they "
-"differ; `-` writes the first to standard output)."
+"the whole tape, at most 600 dpi like the preview, with its resolution "
+"(`file-1.png`, `file-2.png` … if they differ; `-` writes the first to "
+"standard output)."
 msgstr ""
 "`--dry-run` prüft und zeichnet nur: Es listet die Texte jedes Etiketts auf; "
 "`--output datei.png` speichert jedes Etikett so, wie [[ui:Export PNG…]] es "
-"tut: wie gedruckt, auf dem ganzen Band, mit seiner Auflösung (`datei-1.png`,"
-" `datei-2.png` …, wenn sie sich unterscheiden; `-` schreibt das erste in die"
-" Standardausgabe)."
+"tut: wie gedruckt, auf dem ganzen Band, mit höchstens 600 dpi wie die "
+"Vorschau, mit seiner Auflösung (`datei-1.png`, `datei-2.png` …, wenn sie "
+"sich unterscheiden; `-` schreibt das erste in die Standardausgabe)."
 
 #. type: Plain text
 #: docs/use.md
@@ -3007,16 +3010,14 @@ msgstr ""
 
 #. type: Fenced code block (sh)
 #: docs/use.md
-#, fuzzy, no-wrap
-#| msgid ""
-#| "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
-#| "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
+#, no-wrap
 msgid ""
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@\n"
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
 msgstr ""
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@\n"
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
 
 #. type: Plain text

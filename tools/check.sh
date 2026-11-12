@@ -17,7 +17,8 @@ $PY/radon cc -s -n C etiketto
 $PY/xenon --max-absolute C --max-modules A --max-average A etiketto
 echo "== dependencies"; $PY/pip-audit --progress-spinner off .
 echo "== translations"
-for po in po/*.po; do msgfmt --check -o /dev/null "$po"; done
+# the app's catalogs and the documentation's (site/po)
+for po in po/*.po site/po/*.po; do msgfmt --check -o /dev/null "$po"; done
 # every string translated, nothing fuzzy; ALLOW_UNTRANSLATED=1 skips this
 # locally (e.g. before a translation round), the CI always checks it
 if [ "${ALLOW_UNTRANSLATED:-0}" = 1 ]; then
@@ -34,6 +35,21 @@ else
     echo "Untranslated strings (ALLOW_UNTRANSLATED=1 skips this check locally)."
     exit 1
   fi
+fi
+# the documentation: nothing fuzzy (a fuzzy entry, even a code block, shows
+# the English of before); a paragraph not translated yet shows in English
+for po in site/po/*.po; do
+  stats="$(msgfmt --statistics -o /dev/null "$po" 2>&1)"
+  case "$stats" in
+    *fuzzy*) echo "$po: $stats (run python3 site/check_translations.py)"; exit 1 ;;
+  esac
+done
+# its placeholders and code blocks against the English pages (needs po4a;
+# the CI's "Docs check" workflow runs it too)
+if command -v po4a > /dev/null; then
+  $PY/python site/check_translations.py
+else
+  echo "(documentation check skipped: po4a not installed)"
 fi
 echo "== metadata"
 appstreamcli validate --no-net --explain data/*.metainfo.xml

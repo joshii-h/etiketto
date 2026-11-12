@@ -96,19 +96,26 @@ jobs:
       - name: Translations
         working-directory: src
         run: |
-          for po in po/*.po; do
+          for po in po/*.po site/po/*.po; do
             echo "$po"; msgfmt --check --statistics -o /dev/null "$po"
           done
 
       - name: Translations complete
         working-directory: src
-        # every string translated, nothing fuzzy (tools/check.sh: same check)
+        # every string translated, nothing fuzzy; in the documentation's
+        # catalogs nothing fuzzy (tools/check.sh: same check)
         run: |
           fail=0
           for po in po/*.po; do
             stats="$(msgfmt --statistics -o /dev/null "$po" 2>&1)"
             case "$stats" in
               *untranslated*|*fuzzy*) echo "::error::$po: $stats"; fail=1 ;;
+            esac
+          done
+          for po in site/po/*.po; do
+            stats="$(msgfmt --statistics -o /dev/null "$po" 2>&1)"
+            case "$stats" in
+              *fuzzy*) echo "::error::$po: $stats"; fail=1 ;;
             esac
           done
           exit "$fail"
