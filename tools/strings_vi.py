@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "Phần tử %(n)d: nội dung quá dài cho loại mã này",
     "Element %(n)d: the content cannot be encoded in this type of code": "Phần tử %(n)d: không thể mã hóa nội dung bằng loại mã này",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "Phần tử %(n)d: loại mã này cần thư viện Zint (zint-bindings), nhưng thư viện chưa được cài đặt",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "Phần tử %(n)d: không có số UPC-A nào rút gọn thành các chữ số UPC-E này – hãy kiểm tra hoặc dùng UPC-A",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "Phần tử %(n)d: máy quét đặt ở chế độ Full ASCII đọc $, /, + hoặc %% đứng trước chữ in hoa thành một ký tự khác",
 }

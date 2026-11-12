@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "العنصر %(n)d: المحتوى طويل جدًا لهذا النوع من الرموز",
     "Element %(n)d: the content cannot be encoded in this type of code": "العنصر %(n)d: يتعذّر ترميز المحتوى في هذا النوع من الرموز",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "العنصر %(n)d: يتطلب هذا النوع من الرموز مكتبة Zint (zint-bindings)، وهي غير مثبّتة",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "العنصر %(n)d: لا يوجد رقم UPC-A يُختصر إلى أرقام UPC-E هذه – تحقق منها أو استخدم UPC-A",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "العنصر %(n)d: الماسحات المضبوطة على Full ASCII تقرأ $ أو / أو + أو %% قبل حرف كبير كحرف آخر",
 }

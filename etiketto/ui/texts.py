@@ -167,6 +167,14 @@ def warning_text(warning: RenderWarning) -> str:
             "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a date, "
             "number or character it does not allow"
         ),
+        "upce_form": _(
+            "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or "
+            "use UPC-A"
+        ),
+        "code39_full_ascii": _(
+            "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital "
+            "letter as another character"
+        ),
         "code_too_long": _("Element %(n)d: the content is too long for this type of code"),
         "code_invalid": _("Element %(n)d: the content cannot be encoded in this type of code"),
         "code_unavailable": _(

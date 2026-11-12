@@ -370,3 +370,95 @@ def test_features_are_checked(extra, code):
     with pytest.raises(LabelError) as info:
         Label.from_dict({"version": 2, **extra})
     assert info.value.code == code
+
+
+# --- text beyond ASCII, readings, odd input --------------------------------------
+
+# Latin-1 text a label may well carry: without an ECI, scanners guess at its
+# bytes and read "37°" as katakana; with ECI 26 (UTF-8) all of it comes back
+LATIN = [
+    "Größe: 5½ kg",
+    "Café ¡Olé!",
+    "Müller & Söhne AG, Zürich",
+    "Señor Nuñez",
+    "Ærøskøbing",
+    "Preis: £5 · 20°C",
+    "©2026 Firma»",
+    "Élève à l'école «Bât. É»",
+    "Zürich",
+    "Füsse",
+    "Gerät Nr. 12 – Lager",
+    "Ø 12 mm ±0,5",
+    "Strasse 5, 8000 Zürich",
+    "Küche",
+    "é",
+    "ü",
+    "Jörg Müller",
+    "naïve façade",
+    "Temp 37°",
+    "µF 100",
+    "Inventar-Nr. 0815 Büro 3.OG",
+    "Öl",
+    "Rüebli",
+    "CHF 5.– für Äpfel",
+    "Björn Ångström",
+]
+
+
+@pytest.mark.parametrize("symbology", ["datamatrix", "pdf417", "aztec"])
+def test_latin_text_reads_back_exactly(symbology):
+    zxingcpp = pytest.importorskip("zxingcpp")
+    for text in [*LATIN, "ÿ\x80", "caf\x85"]:  # C1 controls too
+        part = render_module.render_code(CodeElement(text, symbology=symbology), 500)
+        assert [r.text for r in zxingcpp.read_barcodes(_page(part))] == [text], text
+
+
+def test_code39_warns_about_full_ascii_pairs(make_label):
+    rendered = render(make_label(elements=[CodeElement("PART+A1", "code39")]), dpi=600)
+    assert rendered.warnings == [RenderWarning("code39_full_ascii", {"n": 1})]
+    plain = render(make_label(elements=[CodeElement("PART+1 $/", "code39")]), dpi=600)
+    assert plain.warnings == []
+
+
+@pytest.mark.parametrize("data", ["1631706", "1811004", "0421203"])
+def test_upce_digits_without_a_upca_number(data):
+    with pytest.raises(codes.CodeError) as info:
+        codes.encode(CodeElement(data, "upce"))
+    assert info.value.key == "upce_form"
+
+
+def test_gs1_values_with_round_brackets_in_square_bracket_syntax():
+    zxingcpp = pytest.importorskip("zxingcpp")
+    data = "[01]09501101530003[21]A(B)C"
+    for symbology in ("gs1_128", "gs1_datamatrix"):
+        part = render_module.render_code(CodeElement(data, symbology), 300)
+        found = zxingcpp.read_barcodes(_page(part))
+        assert [r.text for r in found] == ["(01)09501101530003(21)A(B)C"]
+        assert found[0].symbology_identifier == GS1_IDS[symbology]
+    assert codes.encode(CodeElement(data, "gs1_128")).text == "(01)09501101530003(21)A(B)C"
+    with pytest.raises(codes.CodeError) as info:
+        codes.encode(CodeElement("(21)A(B)C", "gs1_128"))
+    assert info.value.key == "gs1_syntax"
+
+
+def test_a_qr_code_too_long_warns():
+    with pytest.raises(codes.CodeError) as info:
+        codes.encode(CodeElement("x" * 8000))
+    assert info.value.key == "code_too_long"
+
+
+@pytest.mark.parametrize("symbology", SYMBOLOGIES)
+def test_lone_surrogates_are_refused(make_label, symbology):
+    rendered = render(make_label(elements=[CodeElement("a\ud800", symbology)]))
+    assert rendered.warnings == [RenderWarning("code_invalid", {"n": 1})]
+
+
+def test_text_wider_than_its_room_is_made_smaller():
+    ink = render_module._text_in("WWWWWWWW", 100, 50)
+    assert ink is not None and ink.width <= 50
+
+
+def test_ean_bars_without_their_digits(monkeypatch):
+    monkeypatch.setattr(render_module, "_ink", lambda *args: None)
+    part = render_module.render_code(CodeElement("400638133393", "ean13"), 300)
+    assert part.code_module >= 2 and ink_bbox(_page(part, 0), 255)

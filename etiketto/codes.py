@@ -117,12 +117,28 @@ def check(element: CodeElement) -> None:
     data, symbology = element.data, element.symbology
     if not data:
         raise CodeError("code_empty")
+    try:
+        data.encode("utf-8")
+    except UnicodeEncodeError:  # a lone surrogate: no text a code can carry
+        raise CodeError("code_invalid") from None
     if symbology in DIGITS:
         _check_digits(data, symbology)
     elif symbology in CHARSETS:
         chars, key = CHARSETS[symbology]
         if not chars.issuperset(data):
             raise CodeError(key)
+
+
+# Code 39 Full ASCII reads these pairs as one other character ("+A" is "a"):
+# a scanner set to it reads such content differently (warning, not error)
+CODE39_FULL_ASCII = re.compile(r"[$/+%][A-Z]")
+
+
+def notes(element: CodeElement) -> tuple[str, ...]:
+    """Content that encodes but may be read differently (warning keys)."""
+    if element.symbology == "code39" and CODE39_FULL_ASCII.search(element.data):
+        return ("code39_full_ascii",)
+    return ()
 
 
 def _check_digits(data: str, symbology: str) -> None:
@@ -159,7 +175,10 @@ def _segno(data: str) -> Symbol:
     """Never a Micro QR code (most phones cannot read those)."""
     import segno
 
-    matrix = segno.make(data, error="m", micro=False).matrix
+    try:
+        matrix = segno.make(data, error="m", micro=False).matrix
+    except segno.DataOverflowError:
+        raise CodeError("code_too_long") from None
     return Symbol(tuple("".join("1" if v else "0" for v in row) for row in matrix))
 
 
@@ -173,6 +192,8 @@ def _python_barcode(symbology: str, data: str) -> Symbol:
 # Zint's error numbers (libzint 2.15, backend/gs1.c) for GS1 data
 GS1_SYNTAX = {250, 252, 253, 254, 255, 256, 257, 258}
 GS1_ERRORS = {259: "gs1_length", 260: "gs1_ai"}
+UPCE_FORM = {271, 272, 273}  # digits no UPC-A number is zero-suppressed to
+ECI_SYMBOLOGIES = ("datamatrix", "pdf417", "aztec")
 ZINT_ERROR = re.compile(r"Error (\d+): (.*)")
 ZINT_AI = re.compile(r"AI \((\d+)\)")
 # rows of encoded_data: bit-packed, this many bytes each (ZINT_COLS_MAX / 8)
@@ -210,11 +231,16 @@ def _zint_symbol(zint, symbology: str, data: str, **options):
     symbol.symbology = getattr(zint.Symbology, names[symbology])
     symbol.warn_level = zint.WarningLevel.FAIL_ALL
     if symbology.startswith("gs1_"):
-        # AIs in brackets: "(01)09501101530003(17)260101"
-        symbol.input_mode = zint.InputMode.GS1 | zint.InputMode.GS1PARENS
+        # AIs in brackets: "(01)09501101530003(17)260101"; in square
+        # brackets "[01]…[21]A(B)", values may contain round ones
+        symbol.input_mode = zint.InputMode.GS1
+        if not data.startswith("["):
+            symbol.input_mode |= zint.InputMode.GS1PARENS
     else:
         symbol.input_mode = zint.InputMode.UNICODE
-        if not _latin1(data):  # beyond ISO 8859-1: say it is UTF-8 (ECI 26)
+        if not data.isascii() and symbology in ECI_SYMBOLOGIES:
+            # UTF-8, and say so (ECI 26): scanners guess at bytes without an
+            # ECI, and guess Latin-1 wrongly ("37°" as katakana)
             symbol.eci = 26
     if symbology in ("datamatrix", "gs1_datamatrix"):
         symbol.option_3 = zint.DataMatrixOptions.SQUARE
@@ -227,14 +253,6 @@ def _zint_symbol(zint, symbology: str, data: str, **options):
     except RuntimeError as e:
         raise _zint_error(str(e), symbology) from e
     return symbol
-
-
-def _latin1(data: str) -> bool:
-    try:
-        data.encode("latin-1")
-    except UnicodeEncodeError:
-        return False
-    return True
 
 
 def _zint_error(message: str, symbology: str) -> CodeError:
@@ -250,6 +268,8 @@ def _zint_error(message: str, symbology: str) -> CodeError:
         if ai and number == 261:
             key = "gs1_check" if "checksum" in text else "gs1_value"
             return CodeError(key, ai=ai.group(1))
+    if number in UPCE_FORM:
+        return CodeError("upce_form")
     if "check digit" in text:
         return CodeError("code_check")
     if "too long" in text:

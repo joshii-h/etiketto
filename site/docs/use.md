@@ -22,6 +22,13 @@ Elements are placed one after another along the label. Order them with
   Etiketto checks identifiers, lengths, dates and check digits and says
   which identifier is wrong. GS1-128 shows the identifiers in brackets
   below the bars.
+- A GS1 value with round brackets in it: write the identifiers in square
+  brackets, e.g. `[01]09501101530003[21]A(B)C`.
+- ITF-14 and GS1-128 on shipping cartons: GS1 asks for modules of at least
+  0.495 mm. On narrow labels they come out narrower: fine for your own
+  scanners, too small for carton labels read in logistics.
+- Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as
+  another character by scanners set to Full ASCII; Etiketto warns.
 - Content a code type cannot take is not changed silently: the element is
   crossed out and a warning says why.
 - Labels with a code type other than QR code, Code 128 and EAN-13 do not

@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "Elemento %(n)d: el contenido es demasiado largo para este tipo de código",
     "Element %(n)d: the content cannot be encoded in this type of code": "Elemento %(n)d: el contenido no se puede codificar en este tipo de código",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "Elemento %(n)d: este tipo de código necesita la biblioteca Zint (zint-bindings), que no está instalada",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "Elemento %(n)d: ningún número UPC-A se abrevia a estos dígitos UPC-E – revíselos o use UPC-A",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "Elemento %(n)d: los escáneres en modo Full ASCII leen un $, /, + o %% delante de una mayúscula como otro carácter",
 }

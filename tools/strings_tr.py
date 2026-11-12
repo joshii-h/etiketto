@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "Öge %(n)d: içerik bu kod türü için çok uzun",
     "Element %(n)d: the content cannot be encoded in this type of code": "Öge %(n)d: içerik bu kod türünde kodlanamıyor",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "Öge %(n)d: bu kod türü, yüklü olmayan Zint kitaplığını (zint-bindings) gerektirir",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "Öge %(n)d: hiçbir UPC-A numarası bu UPC-E rakamlarına kısalmıyor – rakamları denetleyin veya UPC-A kullanın",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "Öge %(n)d: Full ASCII'ye ayarlı tarayıcılar büyük harften önceki $, /, + veya %% işaretini başka bir karakter olarak okur",
 }

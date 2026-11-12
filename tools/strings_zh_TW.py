@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "元素 %(n)d：內容對此類條碼來說太長",
     "Element %(n)d: the content cannot be encoded in this type of code": "元素 %(n)d：此類條碼無法編碼此內容",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "元素 %(n)d：此類條碼需要 Zint 函式庫（zint-bindings），但尚未安裝",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "元素 %(n)d：沒有 UPC-A 號碼能縮短為這些 UPC-E 數字 – 請檢查數字或改用 UPC-A",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "元素 %(n)d：設為 Full ASCII 的掃描器會把大寫字母前的 $、/、+ 或 %% 讀成其他字元",
 }

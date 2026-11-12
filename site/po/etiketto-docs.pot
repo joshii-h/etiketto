@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 08:16+0100\n"
+"POT-Creation-Date: 2026-11-12 09:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -759,6 +759,24 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "GS1-128 and GS1 DataMatrix: application identifiers in brackets, each followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.  Etiketto checks identifiers, lengths, dates and check digits and says which identifier is wrong. GS1-128 shows the identifiers in brackets below the bars."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "A GS1 value with round brackets in it: write the identifiers in square brackets, e.g. `[01]09501101530003[21]A(B)C`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "ITF-14 and GS1-128 on shipping cartons: GS1 asks for modules of at least 0.495 mm. On narrow labels they come out narrower: fine for your own scanners, too small for carton labels read in logistics."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as another character by scanners set to Full ASCII; Etiketto warns."
 msgstr ""
 
 #. type: Bullet: '- '

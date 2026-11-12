@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "Elementti %(n)d: sisältö on liian pitkä tälle koodityypille",
     "Element %(n)d: the content cannot be encoded in this type of code": "Elementti %(n)d: sisältöä ei voi koodata tähän koodityyppiin",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "Elementti %(n)d: tämä koodityyppi vaatii Zint-kirjaston (zint-bindings), jota ei ole asennettu",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "Elementti %(n)d: mikään UPC-A-numero ei lyhene näiksi UPC-E-numeroiksi – tarkista ne tai käytä UPC-A:ta",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "Elementti %(n)d: Full ASCII -tilaan asetetut lukijat lukevat isoa kirjainta edeltävän $-, /-, +- tai %%-merkin toisena merkkinä",
 }

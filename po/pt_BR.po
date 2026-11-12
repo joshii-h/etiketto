@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 08:15+0100\n"
+"PO-Revision-Date: 2026-11-12 09:38+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -1027,264 +1027,278 @@ msgid ""
 "date, number or character it does not allow"
 msgstr "Elemento %(n)d: o valor do identificador de aplicação (%(ai)s) não é válido: contém uma data, um número ou um caractere não permitido"
 
-#: etiketto/ui/texts.py:170
+#: etiketto/ui/texts.py:171
+#, python-format
+msgid ""
+"Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
+"or use UPC-A"
+msgstr "Elemento %(n)d: nenhum número UPC-A se abrevia para estes dígitos UPC-E – confira-os ou use UPC-A"
+
+#: etiketto/ui/texts.py:175
+#, python-format
+msgid ""
+"Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
+"capital letter as another character"
+msgstr "Elemento %(n)d: leitores configurados para Full ASCII leem um $, /, + ou %% antes de uma maiúscula como outro caractere"
+
+#: etiketto/ui/texts.py:178
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Elemento %(n)d: o conteúdo é longo demais para este tipo de código"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Elemento %(n)d: o conteúdo não pode ser codificado neste tipo de código"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Elemento %(n)d: este tipo de código precisa da biblioteca Zint (zint-bindings), que não está instalada"
 
-#: etiketto/ui/texts.py:176
+#: etiketto/ui/texts.py:184
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Elemento %(n)d: não foi possível ler a imagem"
 
-#: etiketto/ui/texts.py:177
+#: etiketto/ui/texts.py:185
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Não foi possível desenhar o elemento %(n)d"
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:186
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "A margem de segurança, a borda e a margem lateral não deixam espaço – reduza-as"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:187
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "O comprimento fixo é menor que o espaçamento – aumente-o"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 msgid "The background image cannot be read"
 msgstr "Não foi possível ler a imagem de fundo"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Elemento %(n)d: os módulos do código têm apenas um ponto de impressão de largura e podem não ser lidos – aumente o código"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:194
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Elemento %(n)d: o espaço em branco de que o código precisa ao redor não cabe – aumente o código"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:198
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Elemento %(n)d: o código não cabe no seu espaço, nem com um ponto de impressão por módulo – aumente a etiqueta ou encurte o conteúdo"
 
-#: etiketto/ui/texts.py:205
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Folhas já impressas: %(n)d de %(total)d."
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:215
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Etiquetas já impressas: %(n)d de %(total)d."
 
-#: etiketto/ui/texts.py:211
+#: etiketto/ui/texts.py:219
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "As folhas que ainda aguardavam na fila foram canceladas."
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:221
 msgid "The labels still waiting in the queue were canceled."
 msgstr "As etiquetas que ainda aguardavam na fila foram canceladas."
 
-#: etiketto/ui/texts.py:222
+#: etiketto/ui/texts.py:230
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "A impressora não foi encontrada. Verifique se ela está ligada e na mesma rede, ou digite o endereço IP."
 
-#: etiketto/ui/texts.py:225
+#: etiketto/ui/texts.py:233
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "A impressora não responde. Verifique se ela está ligada e ativa."
 
-#: etiketto/ui/texts.py:227
+#: etiketto/ui/texts.py:235
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "A impressora recusa a conexão. Desligue-a e ligue-a novamente. Se a interface web oferecer uma opção “Port 9100”, ative-a."
 
-#: etiketto/ui/texts.py:230
+#: etiketto/ui/texts.py:238
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Nenhum cassete inserido. Insira um e tente novamente."
 
-#: etiketto/ui/texts.py:231
+#: etiketto/ui/texts.py:239
 msgid "The printer's cover is open. Close it and try again."
 msgstr "A tampa da impressora está aberta. Feche-a e tente novamente."
 
-#: etiketto/ui/texts.py:232
+#: etiketto/ui/texts.py:240
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "A etiqueta atolou. Abra a tampa, retire-a e tente novamente."
 
-#: etiketto/ui/texts.py:233
+#: etiketto/ui/texts.py:241
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "O cassete não foi reconhecido. Insira-o novamente ou tente outro."
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:242
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "A impressora está ocupada. Aguarde um momento e tente novamente."
 
-#: etiketto/ui/texts.py:235
+#: etiketto/ui/texts.py:243
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "A etiqueta é longa demais para esta impressora: no máximo %(max)s."
 
-#: etiketto/ui/texts.py:236
+#: etiketto/ui/texts.py:244
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "A etiqueta é larga demais para esta impressora: no máximo %(max)s."
 
-#: etiketto/ui/texts.py:237
+#: etiketto/ui/texts.py:245
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "A impressora está sem etiquetas. Coloque um novo rolo e tente novamente."
 
-#: etiketto/ui/texts.py:238
+#: etiketto/ui/texts.py:246
 msgid "The print head is open. Close it and try again."
 msgstr "O cabeçote de impressão está aberto. Feche-o e tente novamente."
 
-#: etiketto/ui/texts.py:240
+#: etiketto/ui/texts.py:248
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "A impressora não encontra a próxima etiqueta. Verifique se as etiquetas estão bem carregadas e passam pelo sensor de etiquetas."
 
-#: etiketto/ui/texts.py:244
+#: etiketto/ui/texts.py:252
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Há um problema com a fita. Verifique se ela está bem colocada e se corresponde ao método de impressão configurado na impressora."
 
-#: etiketto/ui/texts.py:247
+#: etiketto/ui/texts.py:255
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "A impressora está pausada. Retome-a no display e tente novamente."
 
-#: etiketto/ui/texts.py:248
+#: etiketto/ui/texts.py:256
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "A impressora está sem papel. Coloque papel e tente novamente."
 
-#: etiketto/ui/texts.py:250
+#: etiketto/ui/texts.py:258
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "O papel está atolado. Remova-o conforme indicado no display da impressora e tente novamente."
 
-#: etiketto/ui/texts.py:252
+#: etiketto/ui/texts.py:260
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "A impressora está sem toner ou tinta. Substitua e tente novamente."
 
-#: etiketto/ui/texts.py:253
+#: etiketto/ui/texts.py:261
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "A impressora não consegue imprimir este tamanho. Escolha um tamanho de papel que ela ofereça."
 
-#: etiketto/ui/texts.py:255
+#: etiketto/ui/texts.py:263
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "A impressora não aceita nenhum dos formatos que o Etiketto pode enviar (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:258
+#: etiketto/ui/texts.py:266
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "A fila da impressora está pausada. Retome-a nas configurações de impressora do sistema e tente novamente."
 
-#: etiketto/ui/texts.py:262
+#: etiketto/ui/texts.py:270
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "O trabalho de impressão ficou retido na fila, por exemplo até ser liberado ou até que uma senha seja digitada. Verifique a fila nas configurações de impressora do sistema e tente novamente."
 
-#: etiketto/ui/texts.py:266
+#: etiketto/ui/texts.py:274
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "O trabalho de impressão foi cancelado na impressora ou na fila."
 
-#: etiketto/ui/texts.py:268
+#: etiketto/ui/texts.py:276
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Um código não cabe na etiqueta com a resolução desta impressora e seria cortado. Aumente a etiqueta ou encurte o conteúdo do código."
 
-#: etiketto/ui/texts.py:272
+#: etiketto/ui/texts.py:280
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "A impressora relatou um problema. Desligue-a e ligue-a novamente e tente mais uma vez."
 
-#: etiketto/ui/texts.py:284
+#: etiketto/ui/texts.py:292
 msgid "Warming up…"
 msgstr "Aquecendo…"
 
-#: etiketto/ui/texts.py:285
+#: etiketto/ui/texts.py:293
 msgid "Cooling down…"
 msgstr "Resfriando…"
 
-#: etiketto/ui/texts.py:286
+#: etiketto/ui/texts.py:294
 msgid "Cleaning…"
 msgstr "Limpando…"
 
-#: etiketto/ui/texts.py:287
+#: etiketto/ui/texts.py:295
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Deslize o dedo no painel da impressora para cortar a etiqueta"
 
-#: etiketto/ui/texts.py:289
+#: etiketto/ui/texts.py:297
 msgid "Out of paper – load paper to continue"
 msgstr "Sem papel – coloque papel para continuar"
 
-#: etiketto/ui/texts.py:290
+#: etiketto/ui/texts.py:298
 msgid "Cover open – close it to continue"
 msgstr "Tampa aberta – feche-a para continuar"
 
-#: etiketto/ui/texts.py:291
+#: etiketto/ui/texts.py:299
 msgid "Paper jammed – remove it to continue"
 msgstr "Papel atolado – remova-o para continuar"
 
-#: etiketto/ui/texts.py:302
+#: etiketto/ui/texts.py:310
 msgid "This label needs a newer version of Etiketto"
 msgstr "Esta etiqueta precisa de uma versão mais recente do Etiketto"
 
-#: etiketto/ui/texts.py:304
+#: etiketto/ui/texts.py:312
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s não é uma etiqueta do Etiketto"
 
-#: etiketto/ui/texts.py:305
+#: etiketto/ui/texts.py:313
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "O arquivo está danificado: %s"
 
-#: etiketto/ui/texts.py:311
+#: etiketto/ui/texts.py:319
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Não foi possível salvar %s: sem permissão de gravação nesse local"
 
-#: etiketto/ui/texts.py:313
+#: etiketto/ui/texts.py:321
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Não foi possível salvar %s: o disco está cheio"
 
-#: etiketto/ui/texts.py:314
+#: etiketto/ui/texts.py:322
 #, python-format
 msgid "Cannot save %s"
 msgstr "Não foi possível salvar %s"
 
-#: etiketto/ui/texts.py:323
+#: etiketto/ui/texts.py:331
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

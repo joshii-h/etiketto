@@ -427,8 +427,11 @@ def render_code(element: CodeElement, height: int, width: int | None = None) -> 
     symbol = codes.encode(element)
     spec = codes.SPECS[element.symbology]
     if spec.layout in ("matrix", "stacked"):
-        return _matrix(element, symbol, spec, height, width)
-    return _barcode(element, symbol, spec, height, width)
+        img = _matrix(element, symbol, spec, height, width)
+    else:
+        img = _barcode(element, symbol, spec, height, width)
+    img.code_problems += codes.notes(element)  # type: ignore[attr-defined]
+    return img
 
 
 def render_element(element: Element, height: int, dpi: float) -> Image.Image:

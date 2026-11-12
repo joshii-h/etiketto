@@ -225,7 +225,11 @@ code sets. A new symbology needs an entry in `codes.SPECS`, in
 sample in `tests/test_codes.py` (decoded with zxing-cpp) and its input
 checks: content Zint would change silently (lower case in Code 39, a wrong
 check digit) is refused before it is encoded, with a warning key and its
-text in `ui/texts.warning_text()`.
+text in `ui/texts.warning_text()`. Data Matrix, PDF417 and Aztec carry text beyond
+ASCII as UTF-8 with ECI 26: without an ECI scanners guess at the bytes (and
+read Latin-1 "37°" as katakana). GS1 data in square brackets
+(`[01]…[21]A(B)`) is passed to Zint without its parentheses mode, so values
+may contain round brackets.
 
 ## Label sheets
 

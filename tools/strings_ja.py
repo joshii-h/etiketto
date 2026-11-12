@@ -302,4 +302,6 @@ TRANSLATIONS = {
     "Element %(n)d: the content is too long for this type of code": "要素 %(n)d: この種類のコードには内容が長すぎます",
     "Element %(n)d: the content cannot be encoded in this type of code": "要素 %(n)d: この内容はこの種類のコードではエンコードできません",
     "Element %(n)d: this type of code needs the Zint library (zint-bindings), which is not installed": "要素 %(n)d: この種類のコードには Zint ライブラリ (zint-bindings) が必要ですが、インストールされていません",
+    "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them or use UPC-A": "要素 %(n)d: この UPC-E の数字に短縮される UPC-A 番号はありません – 数字を確認するか UPC-A を使ってください",
+    "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a capital letter as another character": "要素 %(n)d: Full ASCII に設定したスキャナーは、英大文字の前の $、/、+、%% を別の文字として読み取ります",
 }

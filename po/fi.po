@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 08:15+0100\n"
+"PO-Revision-Date: 2026-11-12 09:38+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: fi\n"
 "Language: fi\n"
@@ -1027,264 +1027,278 @@ msgid ""
 "date, number or character it does not allow"
 msgstr "Elementti %(n)d: sovellustunnuksen (%(ai)s) arvo ei kelpaa: päivämäärä, luku tai merkki, jota se ei salli"
 
-#: etiketto/ui/texts.py:170
+#: etiketto/ui/texts.py:171
+#, python-format
+msgid ""
+"Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
+"or use UPC-A"
+msgstr "Elementti %(n)d: mikään UPC-A-numero ei lyhene näiksi UPC-E-numeroiksi – tarkista ne tai käytä UPC-A:ta"
+
+#: etiketto/ui/texts.py:175
+#, python-format
+msgid ""
+"Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
+"capital letter as another character"
+msgstr "Elementti %(n)d: Full ASCII -tilaan asetetut lukijat lukevat isoa kirjainta edeltävän $-, /-, +- tai %%-merkin toisena merkkinä"
+
+#: etiketto/ui/texts.py:178
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Elementti %(n)d: sisältö on liian pitkä tälle koodityypille"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:179
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Elementti %(n)d: sisältöä ei voi koodata tähän koodityyppiin"
 
-#: etiketto/ui/texts.py:173
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Elementti %(n)d: tämä koodityyppi vaatii Zint-kirjaston (zint-bindings), jota ei ole asennettu"
 
-#: etiketto/ui/texts.py:176
+#: etiketto/ui/texts.py:184
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Elementti %(n)d: kuvaa ei voi lukea"
 
-#: etiketto/ui/texts.py:177
+#: etiketto/ui/texts.py:185
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Elementtiä %(n)d ei voi piirtää"
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:186
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "Turvamarginaali, reunus ja reunaväli eivät jätä tilaa – pienennä niitä"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:187
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Kiinteä pituus on lyhyempi kuin väli – kasvata sitä"
 
-#: etiketto/ui/texts.py:180
+#: etiketto/ui/texts.py:188
 msgid "The background image cannot be read"
 msgstr "Taustakuvaa ei voi lukea"
 
-#: etiketto/ui/texts.py:182
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Elementti %(n)d: koodin moduulit ovat vain yhden tulostuspisteen levyisiä eivätkä ehkä skannaudu – suurenna koodia"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:194
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Elementti %(n)d: koodin ympärilleen tarvitsema tyhjä tila ei mahdu – suurenna koodia"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:198
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Elementti %(n)d: koodi ei mahdu paikkaansa edes yhdellä tulostuspisteellä moduulia kohden – suurenna tarraa tai lyhennä sisältöä"
 
-#: etiketto/ui/texts.py:205
+#: etiketto/ui/texts.py:213
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Jo tulostetut arkit: %(n)d/%(total)d."
 
-#: etiketto/ui/texts.py:207
+#: etiketto/ui/texts.py:215
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Jo tulostetut tarrat: %(n)d/%(total)d."
 
-#: etiketto/ui/texts.py:211
+#: etiketto/ui/texts.py:219
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Jonossa vielä odottaneet arkit peruttiin."
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:221
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Jonossa vielä odottaneet tarrat peruttiin."
 
-#: etiketto/ui/texts.py:222
+#: etiketto/ui/texts.py:230
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Tulostinta ei löydy. Varmista, että se on päällä ja samassa verkossa, tai syötä sen IP-osoite."
 
-#: etiketto/ui/texts.py:225
+#: etiketto/ui/texts.py:233
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Tulostin ei vastaa. Varmista, että se on päällä eikä lepotilassa."
 
-#: etiketto/ui/texts.py:227
+#: etiketto/ui/texts.py:235
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Tulostin torjuu yhteyden. Sammuta se ja käynnistä uudelleen. Jos sen verkkoliittymässä on ”Port 9100” -asetus, ota se käyttöön."
 
-#: etiketto/ui/texts.py:230
+#: etiketto/ui/texts.py:238
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Kasettia ei ole asetettu. Aseta kasetti ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:231
+#: etiketto/ui/texts.py:239
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Tulostimen kansi on auki. Sulje se ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:232
+#: etiketto/ui/texts.py:240
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Tarra on juuttunut. Avaa kansi, poista tarra ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:233
+#: etiketto/ui/texts.py:241
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Kasettia ei tunnisteta. Aseta se uudelleen tai kokeile toista."
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:242
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Tulostin on varattu. Odota hetki ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:235
+#: etiketto/ui/texts.py:243
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Tarra on liian pitkä tälle tulostimelle: enintään %(max)s."
 
-#: etiketto/ui/texts.py:236
+#: etiketto/ui/texts.py:244
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Tarra on liian leveä tälle tulostimelle: enintään %(max)s."
 
-#: etiketto/ui/texts.py:237
+#: etiketto/ui/texts.py:245
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Tulostimesta ovat tarrat loppu. Aseta uusi rulla ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:238
+#: etiketto/ui/texts.py:246
 msgid "The print head is open. Close it and try again."
 msgstr "Tulostuspää on auki. Sulje se ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:240
+#: etiketto/ui/texts.py:248
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Tulostin ei löydä seuraavaa tarraa. Tarkista, että tarrat on asetettu oikein ja kulkevat tarra-anturin kautta."
 
-#: etiketto/ui/texts.py:244
+#: etiketto/ui/texts.py:252
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Värinauhassa on ongelma. Tarkista, että se on asetettu oikein ja vastaa tulostimeen asetettua tulostustapaa."
 
-#: etiketto/ui/texts.py:247
+#: etiketto/ui/texts.py:255
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Tulostin on tauolla. Jatka sen näytöltä ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:248
+#: etiketto/ui/texts.py:256
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Tulostimesta on paperi loppu. Lisää paperia ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:250
+#: etiketto/ui/texts.py:258
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Paperi on jumissa. Poista se tulostimen näytön ohjeen mukaan ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:252
+#: etiketto/ui/texts.py:260
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Tulostimesta on väriaine tai muste loppu. Vaihda se ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:253
+#: etiketto/ui/texts.py:261
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Tulostin ei voi tulostaa tätä kokoa. Valitse paperikoko, jota se tukee."
 
-#: etiketto/ui/texts.py:255
+#: etiketto/ui/texts.py:263
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Tulostin ei hyväksy mitään muotoa, jonka Etiketto voi lähettää (PDF, PWG Raster, JPEG)."
 
-#: etiketto/ui/texts.py:258
+#: etiketto/ui/texts.py:266
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Tulostimen jono on tauolla. Jatka sitä järjestelmän tulostinasetuksissa ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:262
+#: etiketto/ui/texts.py:270
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Tulostustyö pidätettiin jonossa, esimerkiksi kunnes se vapautetaan tai salasana annetaan. Tarkista jono järjestelmän tulostinasetuksissa ja yritä uudelleen."
 
-#: etiketto/ui/texts.py:266
+#: etiketto/ui/texts.py:274
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Tulostustyö peruttiin tulostimessa tai jonossa."
 
-#: etiketto/ui/texts.py:268
+#: etiketto/ui/texts.py:276
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Koodi ei mahdu tarraan tämän tulostimen tarkkuudella ja leikkautuisi. Suurenna tarraa tai lyhennä koodin sisältöä."
 
-#: etiketto/ui/texts.py:272
+#: etiketto/ui/texts.py:280
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Tulostin ilmoitti ongelmasta. Sammuta se ja käynnistä uudelleen, ja yritä sitten vielä kerran."
 
-#: etiketto/ui/texts.py:284
+#: etiketto/ui/texts.py:292
 msgid "Warming up…"
 msgstr "Lämmitetään…"
 
-#: etiketto/ui/texts.py:285
+#: etiketto/ui/texts.py:293
 msgid "Cooling down…"
 msgstr "Jäähdytetään…"
 
-#: etiketto/ui/texts.py:286
+#: etiketto/ui/texts.py:294
 msgid "Cleaning…"
 msgstr "Puhdistetaan…"
 
-#: etiketto/ui/texts.py:287
+#: etiketto/ui/texts.py:295
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Leikkaa tarra pyyhkäisemällä tulostimen paneelia"
 
-#: etiketto/ui/texts.py:289
+#: etiketto/ui/texts.py:297
 msgid "Out of paper – load paper to continue"
 msgstr "Paperi loppu – jatka lisäämällä paperia"
 
-#: etiketto/ui/texts.py:290
+#: etiketto/ui/texts.py:298
 msgid "Cover open – close it to continue"
 msgstr "Kansi auki – jatka sulkemalla se"
 
-#: etiketto/ui/texts.py:291
+#: etiketto/ui/texts.py:299
 msgid "Paper jammed – remove it to continue"
 msgstr "Paperi jumissa – jatka poistamalla se"
 
-#: etiketto/ui/texts.py:302
+#: etiketto/ui/texts.py:310
 msgid "This label needs a newer version of Etiketto"
 msgstr "Tämä tarra vaatii uudemman Etiketto-version"
 
-#: etiketto/ui/texts.py:304
+#: etiketto/ui/texts.py:312
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s ei ole Etiketto-tarra"
 
-#: etiketto/ui/texts.py:305
+#: etiketto/ui/texts.py:313
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Tiedosto on vioittunut: %s"
 
-#: etiketto/ui/texts.py:311
+#: etiketto/ui/texts.py:319
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kohdetta %s ei voi tallentaa: ei kirjoitusoikeutta"
 
-#: etiketto/ui/texts.py:313
+#: etiketto/ui/texts.py:321
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kohdetta %s ei voi tallentaa: levy on täynnä"
 
-#: etiketto/ui/texts.py:314
+#: etiketto/ui/texts.py:322
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kohdetta %s ei voi tallentaa"
 
-#: etiketto/ui/texts.py:323
+#: etiketto/ui/texts.py:331
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

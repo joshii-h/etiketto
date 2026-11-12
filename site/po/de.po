@@ -1078,6 +1078,35 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
+"A GS1 value with round brackets in it: write the identifiers in square "
+"brackets, e.g. `[01]09501101530003[21]A(B)C`."
+msgstr ""
+"Ein GS1-Wert mit runden Klammern darin: die Datenbezeichner in eckige "
+"Klammern setzen, z. B. `[01]09501101530003[21]A(B)C`."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"ITF-14 and GS1-128 on shipping cartons: GS1 asks for modules of at least "
+"0.495 mm. On narrow labels they come out narrower: fine for your own "
+"scanners, too small for carton labels read in logistics."
+msgstr ""
+"ITF-14 und GS1-128 auf Versandkartons: GS1 verlangt Module von mindestens "
+"0,495 mm. Auf schmalen Etiketten werden sie schmaler: gut für die eigenen "
+"Scanner, zu klein für Kartonetiketten, die in der Logistik gelesen werden."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as another "
+"character by scanners set to Full ASCII; Etiketto warns."
+msgstr ""
+"Code 39: Ein `$`, `/`, `+` oder `%` vor einem Grossbuchstaben wird von "
+"Scannern im Full-ASCII-Modus als anderes Zeichen gelesen; Etiketto warnt."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
 "Content a code type cannot take is not changed silently: the element is "
 "crossed out and a warning says why."
 msgstr ""

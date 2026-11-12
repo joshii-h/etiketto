@@ -140,13 +140,18 @@ class App(Adw.Application):
             # translators: replace with your name to be credited in the About dialog
             translator_credits=_("translator-credits"),
         )
-        # draws most code types (etiketto.codes)
-        about.add_legal_section(
-            "Zint", "© 2009-2025 Robin Stuart and contributors", Gtk.License.BSD_3, None
-        )
-        about.add_legal_section(
-            "zint-bindings", "© 2024-2025 Anna Zhukova", Gtk.License.APACHE_2_0, None
-        )
+        # the code encoders (etiketto.codes); copyrights as their packages state them
+        for title, holder, license_type in (
+            ("Zint", "© 2009-2025 Robin Stuart and contributors", Gtk.License.BSD_3),
+            ("zint-bindings", "© 2024-2025 Anna Zhukova", Gtk.License.APACHE_2_0),
+            ("segno", "© 2016-2025 Lars Heuer", Gtk.License.BSD_3),
+            (
+                "python-barcode",
+                "© 2010-2013 Thorsten Weimann, © 2017-2023 Hugo Osvaldo Barrera et al.",
+                Gtk.License.MIT_X11,
+            ),
+        ):
+            about.add_legal_section(title, holder, license_type, None)
         about.present(self.get_active_window())
 
 
