@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "PDF-Dateien brauchen Poppler (poppler-glib), das nicht installiert ist",
     "Element %(n)d: the document cannot be read": "Element %(n)d: Das Dokument lässt sich nicht lesen",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "Element %(n)d: PDF-Dateien brauchen Poppler (poppler-glib), das nicht installiert ist",
+    "The whole document is stored in the label file, not only this page.": "Das ganze Dokument wird in der Etikettendatei gespeichert, nicht nur diese Seite.",
 }

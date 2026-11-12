@@ -5,7 +5,7 @@ the size they are printed: lines and barcodes stay sharp at any printer
 resolution and nothing is scaled after drawing. Vector content is drawn
 without anti-aliasing, so bars come out as whole black dots instead of grey
 edges a thermal printer would have to dither; lines thinner than a dot,
-which would vanish that way, get one dot. Images are enlarged by repeating
+which would vanish that way, get at least one black dot. Images are enlarged by repeating
 whole pixels (nearest neighbour), never smoothed; reduced, the pixels that
 fall together are averaged.
 """
@@ -37,12 +37,20 @@ TRUSTED_DPI = (100.0, 2400.0)
 # sharp drawing around it, is part of a line thinner than a dot
 THIN_INK = 240
 # drawn areas are kept for the preview, which draws again on every change;
-# large print renders are not kept
-CACHE_BYTES = 64 * 2**20
-CACHE_ITEM_BYTES = 24 * 2**20
+# large print renders are not kept (100 × 150 mm at 600 dpi takes 35 MB)
+CACHE_BYTES = 96 * 2**20
+CACHE_ITEM_BYTES = 40 * 2**20
 # file signatures of images: such a file is never a PDF, whatever follows
 IMAGE_MAGIC = (b"\x89PNG", b"\xff\xd8\xff", b"GIF8", b"BM", b"II*\x00", b"MM\x00*", b"RIFF")
 GREY_MODES = ("1", "L")
+ORIENTATION = 0x0112  # EXIF tag: how the image is to be turned
+# the copy of a PDF page is the same drawing, up to rounding: sharp, at most
+# this part of its dots differ; smooth, at most this part of its pixels
+# differ by more than SMOOTH_LEVELS (cairo writes numbers to a few
+# decimals, so edges and image pixels may move by a fraction of a dot)
+SHARP_SHARE = 0.0005
+SMOOTH_SHARE = 0.001
+SMOOTH_LEVELS = 2
 
 
 class SourceError(ValueError):
@@ -145,7 +153,8 @@ class _Cache:
 
 
 def _image_bytes(image: Image.Image) -> int:
-    return image.width * image.height * len(image.getbands())
+    """Memory of the pixels: Pillow keeps RGB (and 32 bit) in 4 bytes."""
+    return image.width * image.height * (1 if image.mode in ("1", "L", "P") else 4)
 
 
 # one decoded image (the frame in use): the preview and a print share it
@@ -250,9 +259,29 @@ def _on_paper(image: Image.Image) -> Image.Image:
         paper = Image.new(base, image.size, 255 if base == "L" else (255, 255, 255))
         paper.paste(image.convert(base), mask=image.getchannel("A"))
         return paper
-    if image.mode in GREY_MODES:
-        return image
+    if image.mode in (*GREY_MODES, "RGB"):
+        return image  # no copy
     return image.convert("RGB")
+
+
+def _decode_frame(raw: bytes, frame: int) -> tuple[Image.Image, int, float | None]:
+    """The frame on paper, the number of frames and the resolution. Only
+    one copy of the pixels where possible: an image that needs no turning
+    and no conversion is the decoded image itself."""
+    src: Image.Image = Image.open(io.BytesIO(raw))
+    frames = max(1, getattr(src, "n_frames", 1))
+    if frame:
+        src.seek(min(max(0, frame), frames - 1))
+    if src.width * src.height > MAX_SOURCE_PIXELS:
+        raise SourceError("too_large", "%d × %d pixels" % src.size)
+    dpi = _dpi(src.info)
+    src.load()
+    if src.getexif().get(ORIENTATION, 1) != 1:
+        src = ImageOps.exif_transpose(src)
+    image = _on_paper(src)
+    if frames > 1 and image is src:
+        image = src.copy()  # detached from the file, which stays open for its frames
+    return image, frames, dpi
 
 
 def _picture(data: str, frame: int) -> _Picture:
@@ -262,17 +291,8 @@ def _picture(data: str, frame: int) -> _Picture:
     if cached is not None:
         return cached
     _pictures.clear()  # the old image goes before the new one is decoded
-    raw = _decoded(data)
     try:
-        with Image.open(io.BytesIO(raw)) as src:
-            frames = max(1, getattr(src, "n_frames", 1))
-            if frame:
-                src.seek(min(max(0, frame), frames - 1))
-            if src.width * src.height > MAX_SOURCE_PIXELS:
-                raise SourceError("too_large", "%d × %d pixels" % src.size)
-            dpi = _dpi(src.info)
-            image = _on_paper(ImageOps.exif_transpose(src))
-            image.load()
+        image, frames, dpi = _decode_frame(_decoded(data), frame)
     except SourceError:
         raise
     except Image.DecompressionBombError as e:
@@ -405,20 +425,28 @@ TRANSPOSE = {
 
 def _draw_image(image: Image.Image, region, rotation: int, size, scale: float) -> Image.Image:
     x, y, w, h = region
-    box = (math.floor(x), math.floor(y), math.ceil(x + w), math.ceil(y + h))
-    part = image.crop(box)
+    box = (
+        math.floor(x),
+        math.floor(y),
+        min(image.width, math.ceil(x + w)),
+        min(image.height, math.ceil(y + h)),
+    )
+    if image.mode == "1" and scale < 1:  # averaging needs grey
+        image = image.crop(box).convert("L")
+        box = (0, 0, image.width, image.height)
+    # the size before turning; at least the size: the whole pixels of the
+    # crop may be a little smaller than the area, and cropping beyond the
+    # image would add black edges
+    across, along = (size[1], size[0]) if rotation % 180 else size
+    width, height = box[2] - box[0], box[3] - box[1]
+    scaled = (max(across, round(width * scale)), max(along, round(height * scale)))
+    # enlarging: whole pixels, bars stay sharp; reducing: the average of the
+    # pixels that fall together (no ringing around bars as with Lanczos).
+    # Resized straight from the area of the image: no copy of all of it.
+    resample = Image.Resampling.NEAREST if scale >= 1 else Image.Resampling.BOX
+    part = image.resize(scaled, resample, box=box)
     if rotation:
         part = part.transpose(TRANSPOSE[rotation])
-    # at least the size: the whole pixels of the crop may be a little smaller
-    # than the area, and cropping beyond the image would add black edges
-    scaled = (max(size[0], round(part.width * scale)), max(size[1], round(part.height * scale)))
-    # enlarging: whole pixels, bars stay sharp; reducing: the average of the
-    # pixels that fall together (no ringing around bars as with Lanczos)
-    if scale >= 1:
-        part = part.resize(scaled, Image.Resampling.NEAREST)
-    else:
-        part = part.convert("L" if part.mode == "1" else part.mode)
-        part = part.resize(scaled, Image.Resampling.BOX)
     left, top = (part.width - size[0]) // 2, (part.height - size[1]) // 2
     return part.crop((left, top, left + size[0], top + size[1]))
 
@@ -497,17 +525,26 @@ def _same_drawing(page_a, page_b) -> bool:
         size = (max(1, round(width * scale)), max(1, round(height * scale)))
         a = _render(page_a, region, 0, size, scale, smooth)
         b = _render(page_b, region, 0, size, scale, smooth)
-        if ImageChops.difference(a, b).getbbox() is not None:
+        levels, share = (SMOOTH_LEVELS, SMOOTH_SHARE) if smooth else (0, SHARP_SHARE)
+        if _differing(a, b, levels) > share * size[0] * size[1]:
             return False
     return True
+
+
+def _differing(a: Image.Image, b: Image.Image, levels: int) -> int:
+    """Pixels where a channel of a and b differs by more than levels."""
+    red, green, blue = ImageChops.difference(a, b).split()
+    most = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+    return sum(most.histogram()[levels + 1 :])
 
 
 def only_page(data: str, page: int) -> tuple[str, int]:
     """The file with only this page, as (data, page): the other pages of a
     carrier's document (receipts, customs forms, other labels) stay out of
-    the label file. A PDF page is copied only if the copy draws exactly
-    like the original, else the whole file is kept; a frame of a TIFF
-    becomes a PNG. Files of one page stay as they are."""
+    the label file. A PDF page is copied only if the copy draws like the
+    original (up to rounding, see SHARP_SHARE), else the whole file is
+    kept; a frame of a TIFF becomes a PNG. Files of one page stay as they
+    are."""
     info = page_info(data, page)
     if info.pages < 2:
         return data, page

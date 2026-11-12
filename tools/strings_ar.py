@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "تحتاج ملفات PDF إلى Poppler \u200f(poppler-glib)، وهو غير مثبّت",
     "Element %(n)d: the document cannot be read": "العنصر %(n)d: تعذّرت قراءة المستند",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "العنصر %(n)d: تحتاج ملفات PDF إلى Poppler \u200f(poppler-glib)، وهو غير مثبّت",
+    "The whole document is stored in the label file, not only this page.": "يُحفَظ المستند كاملًا في ملف الملصق، وليس هذه الصفحة فقط.",
 }

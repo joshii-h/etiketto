@@ -35,7 +35,7 @@ msgstr "Ancora nessun contenuto"
 msgid "Add text, an image or a code"
 msgstr "Aggiungi testo, un’immagine o un codice"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:484
 msgid "Text"
 msgstr "Testo"
 
@@ -95,7 +95,7 @@ msgstr "Scegli…"
 msgid "Area"
 msgstr "Area"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:287
 msgid "Scale"
 msgstr "Scala"
 
@@ -111,92 +111,92 @@ msgstr "Contenuto (link, testo, numero)"
 msgid "Colour"
 msgstr "Colore"
 
-#: etiketto/ui/files.py:64
+#: etiketto/ui/files.py:56
 msgid "Etiketto labels"
 msgstr "Etichette Etiketto"
 
-#: etiketto/ui/files.py:69
+#: etiketto/ui/files.py:61
 msgid "Images"
 msgstr "Immagini"
 
-#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:64 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "Scegli immagine"
 
-#: etiketto/ui/files.py:92
+#: etiketto/ui/files.py:84
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Impossibile aprire il modello %(name)s"
 
-#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:88 etiketto/ui/files.py:141 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "Impossibile aprire %s"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:98
 msgid "Open label"
 msgstr "Apri etichetta"
 
-#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
+#: etiketto/ui/files.py:108 etiketto/ui/files.py:130 etiketto/ui/files.py:211
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "Sono possibili solo file locali"
 
-#: etiketto/ui/files.py:123
+#: etiketto/ui/files.py:115
 msgid "PDF documents and images"
 msgstr "Documenti PDF e immagini"
 
-#: etiketto/ui/files.py:128
+#: etiketto/ui/files.py:120
 msgid "Open shipping label"
 msgstr "Apri etichetta di spedizione"
 
-#: etiketto/ui/files.py:195
+#: etiketto/ui/files.py:185
 msgid "label"
 msgstr "etichetta"
 
-#: etiketto/ui/files.py:239
+#: etiketto/ui/files.py:229
 msgid "Save label"
 msgstr "Salva etichetta"
 
-#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:234 etiketto/ui/window.py:120
 msgid "Save as template…"
 msgstr "Salva come modello…"
 
-#: etiketto/ui/files.py:262
+#: etiketto/ui/files.py:252
 #, python-format
 msgid "Saved %s"
 msgstr "%s salvato"
 
-#: etiketto/ui/files.py:272
+#: etiketto/ui/files.py:262
 msgid "Export PNG"
 msgstr "Esporta in PNG"
 
-#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
+#: etiketto/ui/files.py:270 etiketto/ui/window.py:401
 msgid "The preview cannot be drawn"
 msgstr "Impossibile disegnare l’anteprima"
 
-#: etiketto/ui/files.py:282
+#: etiketto/ui/files.py:272
 msgid "Exported"
 msgstr "Esportato"
 
-#: etiketto/ui/files.py:292
+#: etiketto/ui/files.py:282
 msgid "No templates yet – use “Save as template…”"
 msgstr "Ancora nessun modello – usa «Salva come modello…»"
 
-#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:41
+#: etiketto/ui/files.py:309 etiketto/ui/label_group.py:50
+#: etiketto/ui/window.py:42
 msgid "Label"
 msgstr "Etichetta"
 
-#: etiketto/ui/files.py:329
+#: etiketto/ui/files.py:319
 msgid "Discard changes?"
 msgstr "Scartare le modifiche?"
 
-#: etiketto/ui/files.py:330
+#: etiketto/ui/files.py:320
 msgid "The current label has unsaved changes."
 msgstr "L’etichetta attuale ha modifiche non salvate."
 
-#: etiketto/ui/files.py:332
+#: etiketto/ui/files.py:322
 msgid "Discard"
 msgstr "Scarta"
 
@@ -329,7 +329,7 @@ msgstr "Stampa su"
 msgid "Custom size"
 msgstr "Dimensione personalizzata"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:286
 msgid "Label size"
 msgstr "Dimensione etichetta"
 
@@ -473,7 +473,7 @@ msgstr "Scegli una stampante"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:415
+#: etiketto/ui/window.py:417
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -645,7 +645,7 @@ msgid "Print label"
 msgstr "Stampa etichetta"
 
 #: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
-#: etiketto/ui/window.py:107
+#: etiketto/ui/window.py:108
 msgid "Print"
 msgstr "Stampa"
 
@@ -701,7 +701,7 @@ msgstr "Stampa non riuscita"
 msgid "Details"
 msgstr "Dettagli"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:437
 msgid "Report"
 msgstr "Segnala"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "Fai clic su un’etichetta per escluderla o per stamparci di nuovo. Riguarda solo il primo foglio: i fogli successivi vengono riempiti completamente."
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:224
 msgid "Apply"
 msgstr "Applica"
 
@@ -782,35 +782,39 @@ msgstr "Applica"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Le etichette %s entrano nel margine in cui la stampante non può stampare"
 
-#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:197 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "Etichetta di spedizione"
 
-#: etiketto/ui/shipping.py:206
+#: etiketto/ui/shipping.py:224
 msgid "Create label"
 msgstr "Crea etichetta"
 
-#: etiketto/ui/shipping.py:235
+#: etiketto/ui/shipping.py:246
+msgid "The whole document is stored in the label file, not only this page."
+msgstr "Nel file dell’etichetta viene salvato l’intero documento, non solo questa pagina."
+
+#: etiketto/ui/shipping.py:262
 msgid "Rotate left"
 msgstr "Ruota a sinistra"
 
-#: etiketto/ui/shipping.py:236
+#: etiketto/ui/shipping.py:263
 msgid "Rotate right"
 msgstr "Ruota a destra"
 
-#: etiketto/ui/shipping.py:237
+#: etiketto/ui/shipping.py:264
 msgid "Find the label"
 msgstr "Trova l’etichetta"
 
-#: etiketto/ui/shipping.py:238
+#: etiketto/ui/shipping.py:265
 msgid "Whole page"
 msgstr "Pagina intera"
 
-#: etiketto/ui/shipping.py:239
+#: etiketto/ui/shipping.py:266
 msgid "Next suggestion"
 msgstr "Suggerimento successivo"
 
-#: etiketto/ui/shipping.py:249
+#: etiketto/ui/shipping.py:276
 msgid "Page"
 msgstr "Pagina"
 
@@ -1191,81 +1195,81 @@ msgid ""
 "paler colours."
 msgstr "Questa cassetta sembra di %(month)s %(year)d. La carta ZINK vecchia stampa colori più tenui."
 
-#: etiketto/ui/window.py:86
+#: etiketto/ui/window.py:87
 msgid "Open"
 msgstr "Apri"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:94
 msgid "Templates"
 msgstr "Modelli"
 
-#: etiketto/ui/window.py:99
+#: etiketto/ui/window.py:100
 msgid "Save"
 msgstr "Salva"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:117
 msgid "New label"
 msgstr "Nuova etichetta"
 
-#: etiketto/ui/window.py:117
+#: etiketto/ui/window.py:118
 msgid "Shipping label…"
 msgstr "Etichetta di spedizione…"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "Save as…"
 msgstr "Salva come…"
 
-#: etiketto/ui/window.py:120
+#: etiketto/ui/window.py:121
 msgid "Export PNG…"
 msgstr "Esporta in PNG…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Help"
 msgstr "Aiuto"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Report a problem…"
 msgstr "Segnala un problema…"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "About Etiketto"
 msgstr "Informazioni su Etiketto"
 
-#: etiketto/ui/window.py:331
+#: etiketto/ui/window.py:333
 msgid "Unsaved label"
 msgstr "Etichetta non salvata"
 
-#: etiketto/ui/window.py:375
+#: etiketto/ui/window.py:377
 msgid "content scaled down to fit"
 msgstr "contenuto ridotto per starci"
 
-#: etiketto/ui/window.py:377
+#: etiketto/ui/window.py:379
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Troppo lunga per questa stampante: al massimo %s"
 
-#: etiketto/ui/window.py:382
+#: etiketto/ui/window.py:384
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Troppo larga per questa stampante: al massimo %s"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:389
 #, python-format
 msgid "Problem: %s"
 msgstr "Problema: %s"
 
-#: etiketto/ui/window.py:462
+#: etiketto/ui/window.py:464
 msgid "The browser cannot be opened"
 msgstr "Impossibile aprire il browser"
 
-#: etiketto/ui/window.py:464
+#: etiketto/ui/window.py:466
 msgid "Copy link"
 msgstr "Copia collegamento"
 
-#: etiketto/ui/window.py:509
+#: etiketto/ui/window.py:511
 msgid "Only local files can be dropped"
 msgstr "Si possono trascinare solo file locali"
 
-#: etiketto/ui/window.py:527
+#: etiketto/ui/window.py:529
 msgid "Please wait until printing has finished"
 msgstr "Attendi la fine della stampa"

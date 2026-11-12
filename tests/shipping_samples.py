@@ -176,3 +176,40 @@ def page_pdf(draw, size=A4, pages: int = 1) -> bytes:
         ctx.show_page()
     surface.finish()
     return buf.getvalue()
+
+
+def raw_pdf(pages: int = 2, media=(0, 0, 595.32, 841.92), rotate: int = 0, crop=None) -> bytes:
+    """A PDF written by hand, as other programs write them: a page size in
+    other rounding or with an offset, turned (/Rotate) or cut (/CropBox);
+    on each page bars, a frame and a grey band."""
+    x0, y0 = media[0], media[1]
+    content = b"0 g %.2f %.2f 300 200 re S\n" % (x0 + 30, y0 + 500)
+    for i in range(40):
+        content += b"%.3f %.2f %.3f 80 re f\n" % (x0 + 40 + i * 6.3, y0 + 560, 1 + i % 3)
+    content += b"0.5 g %.2f %.2f 200 30 re f\n" % (x0 + 40, y0 + 420)
+    page_keys = b"/MediaBox [%s]" % b" ".join(b"%g" % v for v in media)
+    if rotate:
+        page_keys += b" /Rotate %d" % rotate
+    if crop:
+        page_keys += b" /CropBox [%s]" % b" ".join(b"%g" % v for v in crop)
+    objects = [b"<< /Type /Catalog /Pages 2 0 R >>"]
+    kids = b" ".join(b"%d 0 R" % (3 + 2 * i) for i in range(pages))
+    objects.append(b"<< /Type /Pages /Kids [%s] /Count %d >>" % (kids, pages))
+    for i in range(pages):
+        objects.append(
+            b"<< /Type /Page /Parent 2 0 R %s /Contents %d 0 R >>" % (page_keys, 4 + 2 * i)
+        )
+        objects.append(b"<< /Length %d >>\nstream\n%sendstream" % (len(content), content))
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for number, body in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n%s\nendobj\n" % (number, body)
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1)
+    out += b"".join(b"%010d 00000 n \n" % o for o in offsets)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        len(objects) + 1,
+        xref,
+    )
+    return bytes(out)

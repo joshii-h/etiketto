@@ -35,7 +35,7 @@ msgstr "अभी कोई सामग्री नहीं"
 msgid "Add text, an image or a code"
 msgstr "पाठ, छवि या कोड जोड़ें"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:484
 msgid "Text"
 msgstr "पाठ"
 
@@ -95,7 +95,7 @@ msgstr "चुनें…"
 msgid "Area"
 msgstr "क्षेत्र"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:287
 msgid "Scale"
 msgstr "स्केल"
 
@@ -111,92 +111,92 @@ msgstr "सामग्री (लिंक, पाठ, संख्या)"
 msgid "Colour"
 msgstr "रंग"
 
-#: etiketto/ui/files.py:64
+#: etiketto/ui/files.py:56
 msgid "Etiketto labels"
 msgstr "Etiketto लेबल"
 
-#: etiketto/ui/files.py:69
+#: etiketto/ui/files.py:61
 msgid "Images"
 msgstr "छवियाँ"
 
-#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:64 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "छवि चुनें"
 
-#: etiketto/ui/files.py:92
+#: etiketto/ui/files.py:84
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "टेम्पलेट %(name)s खोला नहीं जा सकता"
 
-#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:88 etiketto/ui/files.py:141 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s खोला नहीं जा सकता"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:98
 msgid "Open label"
 msgstr "लेबल खोलें"
 
-#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
+#: etiketto/ui/files.py:108 etiketto/ui/files.py:130 etiketto/ui/files.py:211
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "केवल स्थानीय फ़ाइलें इस्तेमाल की जा सकती हैं"
 
-#: etiketto/ui/files.py:123
+#: etiketto/ui/files.py:115
 msgid "PDF documents and images"
 msgstr "PDF दस्तावेज़ और छवियाँ"
 
-#: etiketto/ui/files.py:128
+#: etiketto/ui/files.py:120
 msgid "Open shipping label"
 msgstr "शिपिंग लेबल खोलें"
 
-#: etiketto/ui/files.py:195
+#: etiketto/ui/files.py:185
 msgid "label"
 msgstr "लेबल"
 
-#: etiketto/ui/files.py:239
+#: etiketto/ui/files.py:229
 msgid "Save label"
 msgstr "लेबल सहेजें"
 
-#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:234 etiketto/ui/window.py:120
 msgid "Save as template…"
 msgstr "टेम्पलेट के रूप में सहेजें…"
 
-#: etiketto/ui/files.py:262
+#: etiketto/ui/files.py:252
 #, python-format
 msgid "Saved %s"
 msgstr "%s सहेजा गया"
 
-#: etiketto/ui/files.py:272
+#: etiketto/ui/files.py:262
 msgid "Export PNG"
 msgstr "PNG में निर्यात करें"
 
-#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
+#: etiketto/ui/files.py:270 etiketto/ui/window.py:401
 msgid "The preview cannot be drawn"
 msgstr "पूर्वावलोकन नहीं बनाया जा सकता"
 
-#: etiketto/ui/files.py:282
+#: etiketto/ui/files.py:272
 msgid "Exported"
 msgstr "निर्यात किया गया"
 
-#: etiketto/ui/files.py:292
+#: etiketto/ui/files.py:282
 msgid "No templates yet – use “Save as template…”"
 msgstr "अभी कोई टेम्पलेट नहीं – “टेम्पलेट के रूप में सहेजें…” इस्तेमाल करें"
 
-#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:41
+#: etiketto/ui/files.py:309 etiketto/ui/label_group.py:50
+#: etiketto/ui/window.py:42
 msgid "Label"
 msgstr "लेबल"
 
-#: etiketto/ui/files.py:329
+#: etiketto/ui/files.py:319
 msgid "Discard changes?"
 msgstr "बदलाव छोड़ें?"
 
-#: etiketto/ui/files.py:330
+#: etiketto/ui/files.py:320
 msgid "The current label has unsaved changes."
 msgstr "मौजूदा लेबल में बिना सहेजे बदलाव हैं।"
 
-#: etiketto/ui/files.py:332
+#: etiketto/ui/files.py:322
 msgid "Discard"
 msgstr "छोड़ें"
 
@@ -329,7 +329,7 @@ msgstr "इस पर प्रिंट करें"
 msgid "Custom size"
 msgstr "कस्टम आकार"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:286
 msgid "Label size"
 msgstr "लेबल का आकार"
 
@@ -473,7 +473,7 @@ msgstr "प्रिंटर चुनें"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:415
+#: etiketto/ui/window.py:417
 msgid "Cancel"
 msgstr "रद्द करें"
 
@@ -645,7 +645,7 @@ msgid "Print label"
 msgstr "लेबल प्रिंट करें"
 
 #: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
-#: etiketto/ui/window.py:107
+#: etiketto/ui/window.py:108
 msgid "Print"
 msgstr "प्रिंट करें"
 
@@ -701,7 +701,7 @@ msgstr "प्रिंट विफल"
 msgid "Details"
 msgstr "विवरण"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:437
 msgid "Report"
 msgstr "रिपोर्ट करें"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "किसी लेबल को छोड़ने या उस पर फिर से प्रिंट करने के लिए उस पर क्लिक करें। केवल पहली शीट प्रभावित होती है: उसके बाद की शीटें पूरी भरी जाती हैं।"
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:224
 msgid "Apply"
 msgstr "लागू करें"
 
@@ -782,35 +782,39 @@ msgstr "लागू करें"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "लेबल %s उस हाशिये में जाते हैं जिस पर प्रिंटर प्रिंट नहीं कर सकता"
 
-#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:197 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "शिपिंग लेबल"
 
-#: etiketto/ui/shipping.py:206
+#: etiketto/ui/shipping.py:224
 msgid "Create label"
 msgstr "लेबल बनाएँ"
 
-#: etiketto/ui/shipping.py:235
+#: etiketto/ui/shipping.py:246
+msgid "The whole document is stored in the label file, not only this page."
+msgstr "लेबल फ़ाइल में पूरा दस्तावेज़ सहेजा जाता है, केवल यह पृष्ठ नहीं।"
+
+#: etiketto/ui/shipping.py:262
 msgid "Rotate left"
 msgstr "बाएँ घुमाएँ"
 
-#: etiketto/ui/shipping.py:236
+#: etiketto/ui/shipping.py:263
 msgid "Rotate right"
 msgstr "दाएँ घुमाएँ"
 
-#: etiketto/ui/shipping.py:237
+#: etiketto/ui/shipping.py:264
 msgid "Find the label"
 msgstr "लेबल खोजें"
 
-#: etiketto/ui/shipping.py:238
+#: etiketto/ui/shipping.py:265
 msgid "Whole page"
 msgstr "पूरा पृष्ठ"
 
-#: etiketto/ui/shipping.py:239
+#: etiketto/ui/shipping.py:266
 msgid "Next suggestion"
 msgstr "अगला सुझाव"
 
-#: etiketto/ui/shipping.py:249
+#: etiketto/ui/shipping.py:276
 msgid "Page"
 msgstr "पृष्ठ"
 
@@ -1191,81 +1195,81 @@ msgid ""
 "paler colours."
 msgstr "यह कैसेट शायद %(month)s %(year)d की है। पुराना ZINK कागज़ फीके रंग छापता है।"
 
-#: etiketto/ui/window.py:86
+#: etiketto/ui/window.py:87
 msgid "Open"
 msgstr "खोलें"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:94
 msgid "Templates"
 msgstr "टेम्पलेट"
 
-#: etiketto/ui/window.py:99
+#: etiketto/ui/window.py:100
 msgid "Save"
 msgstr "सहेजें"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:117
 msgid "New label"
 msgstr "नया लेबल"
 
-#: etiketto/ui/window.py:117
+#: etiketto/ui/window.py:118
 msgid "Shipping label…"
 msgstr "शिपिंग लेबल…"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "Save as…"
 msgstr "ऐसे सहेजें…"
 
-#: etiketto/ui/window.py:120
+#: etiketto/ui/window.py:121
 msgid "Export PNG…"
 msgstr "PNG में निर्यात करें…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Help"
 msgstr "सहायता"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Report a problem…"
 msgstr "समस्या की रिपोर्ट करें…"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "About Etiketto"
 msgstr "Etiketto के बारे में"
 
-#: etiketto/ui/window.py:331
+#: etiketto/ui/window.py:333
 msgid "Unsaved label"
 msgstr "बिना सहेजा लेबल"
 
-#: etiketto/ui/window.py:375
+#: etiketto/ui/window.py:377
 msgid "content scaled down to fit"
 msgstr "फ़िट करने के लिए सामग्री छोटी की गई"
 
-#: etiketto/ui/window.py:377
+#: etiketto/ui/window.py:379
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "इस प्रिंटर के लिए बहुत लंबा: अधिकतम %s"
 
-#: etiketto/ui/window.py:382
+#: etiketto/ui/window.py:384
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "इस प्रिंटर के लिए बहुत चौड़ा: अधिकतम %s"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:389
 #, python-format
 msgid "Problem: %s"
 msgstr "समस्या: %s"
 
-#: etiketto/ui/window.py:462
+#: etiketto/ui/window.py:464
 msgid "The browser cannot be opened"
 msgstr "ब्राउज़र खोला नहीं जा सकता"
 
-#: etiketto/ui/window.py:464
+#: etiketto/ui/window.py:466
 msgid "Copy link"
 msgstr "लिंक कॉपी करें"
 
-#: etiketto/ui/window.py:509
+#: etiketto/ui/window.py:511
 msgid "Only local files can be dropped"
 msgstr "केवल स्थानीय फ़ाइलें छोड़ी जा सकती हैं"
 
-#: etiketto/ui/window.py:527
+#: etiketto/ui/window.py:529
 msgid "Please wait until printing has finished"
 msgstr "कृपया प्रिंटिंग पूरी होने तक प्रतीक्षा करें"

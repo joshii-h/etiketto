@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "PDF dosyaları için Poppler (poppler-glib) gerekir, ancak kurulu değil",
     "Element %(n)d: the document cannot be read": "Öge %(n)d: belge okunamıyor",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "Öge %(n)d: PDF dosyaları için Poppler (poppler-glib) gerekir, ancak kurulu değil",
+    "The whole document is stored in the label file, not only this page.": "Etiket dosyasına yalnızca bu sayfa değil, belgenin tamamı kaydedilir.",
 }

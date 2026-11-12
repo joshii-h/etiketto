@@ -11,8 +11,9 @@ area; the user always checks and adjusts it.
   together than to the rest are blocks too, so a label with blank space
   inside is found whole.
 - Frames and blocks are scored alike: large, but not more of the sheet
-  than a label takes, about 2:3 like the common label sizes, with a
-  barcode; a frame counts a little more. If the next area that is not a
+  than a label takes (a framed one up to an A5 label on A4), about 2:3
+  like the common label sizes, with a barcode; a frame counts a little
+  more. Frames and blocks inside a label's frame are parts of it. If the next area that is not a
   part of the best one scores about as much, the user is asked to check.
 - If nothing on the page scores near all of its content (or a frame around
   all of it), the page is one label: everything printed is proposed.
@@ -44,6 +45,9 @@ PAD = 0.01  # blank paper kept around a block, as part of the page's shorter sid
 # a row or column with fewer ink pixels counts as blank
 MIN_LINE_INK, LINE_INK_SHARE = 3, 0.005
 MAX_AREA = 0.35  # a label takes at most about a quarter of a sheet, 100 × 200 mm a third
+# a printed frame is better evidence: a frame of an A5 label takes half of
+# an A4 sheet; a border around the whole page is no label
+MAX_FRAME_AREA = 0.6
 BARCODE_RUNS = 12  # a row through a linear barcode crosses at least this many bars
 BARCODE_HEIGHT = 0.025  # ... over at least this part of the page's height
 DOMINANT = 1.5  # the best area must score this much more than the next one
@@ -457,6 +461,20 @@ def _inside_share(a: Box, b: Box) -> float:
     return _common(a, b) / max(1, a.area)
 
 
+def _inside(a: Box, b: Box) -> bool:
+    """a lies in b, and b is larger (an area is not inside itself)."""
+    return b.area > a.area and _inside_share(a, b) >= SAME
+
+
+def _section(a: Box, b: Box, tol: int) -> bool:
+    """a is a part of frame b cut off by divider lines: inside it and on
+    at least two of its sides."""
+    if not _inside(a, b):
+        return False
+    sides = (a.x0 - b.x0, b.x1 - a.x1, a.y0 - b.y0, b.y1 - a.y1)
+    return sum(abs(d) <= tol for d in sides) >= 2
+
+
 def _certain(ranked: list[Candidate]) -> bool:
     """The best area scores clearly more than the next one that is not a
     part of it (a part of the label is no other label)."""
@@ -479,25 +497,32 @@ def _one_label(mask: Image.Image, content: Box, lines: list[Box]) -> Candidate |
     return Candidate(content, "content", score(mask, Block(content)))
 
 
-def _label_like(box: Box, size: tuple[int, int]) -> bool:
+def _label_like(box: Box, size: tuple[int, int], most: float = MAX_AREA) -> bool:
     """Large enough, and not more of the sheet than a label takes."""
     page = size[0] * size[1]
-    return MIN_AREA * page <= box.area <= MAX_AREA * page
+    return MIN_AREA * page <= box.area <= most * page
 
 
 def _ranked(mask: Image.Image, content: Box, lines: list[Box]) -> list[Candidate]:
     """Frames and blocks that could be the label, scored alike, best first;
     of areas that are about the same only the best is kept."""
     size = mask.size
-    found = [
-        Candidate(b, "frame", score(mask, Block(b)) * FRAME_BONUS)
-        for b in lines
-        if b.ratio() <= 2.6 and _label_like(b, size)
+    framed = [b for b in lines if b.ratio() <= 2.6 and _label_like(b, size, MAX_FRAME_AREA)]
+    # a frame inside a label's frame is a part of it (a section between
+    # divider lines, a box), and so is a block inside it; a section shares
+    # sides with any frame it is in, also one too large to be a candidate
+    tol = max(2, round(min(size) * 0.006))
+    outer = [
+        b
+        for b in framed
+        if not any(_inside(b, other) for other in framed)
+        and not any(_section(b, other, tol) for other in lines)
     ]
+    found = [Candidate(b, "frame", score(mask, Block(b)) * FRAME_BONUS) for b in outer]
     found += [
         Candidate(b.box, "block", score(mask, b))
         for b in set(blocks(mask, content))
-        if _label_like(b.box, size)
+        if _label_like(b.box, size) and not any(_inside(b.box, f) for f in outer)
     ]
     found.sort(key=lambda c: (c.score, c.how == "frame"), reverse=True)
     kept: list[Candidate] = []

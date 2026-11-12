@@ -35,7 +35,7 @@ msgstr "Ще немає вмісту"
 msgid "Add text, an image or a code"
 msgstr "Додайте текст, зображення або код"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:484
 msgid "Text"
 msgstr "Текст"
 
@@ -95,7 +95,7 @@ msgstr "Вибрати…"
 msgid "Area"
 msgstr "Область"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:287
 msgid "Scale"
 msgstr "Масштаб"
 
@@ -111,92 +111,92 @@ msgstr "Вміст (посилання, текст, номер)"
 msgid "Colour"
 msgstr "Колір"
 
-#: etiketto/ui/files.py:64
+#: etiketto/ui/files.py:56
 msgid "Etiketto labels"
 msgstr "Етикетки Etiketto"
 
-#: etiketto/ui/files.py:69
+#: etiketto/ui/files.py:61
 msgid "Images"
 msgstr "Зображення"
 
-#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:64 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "Вибрати зображення"
 
-#: etiketto/ui/files.py:92
+#: etiketto/ui/files.py:84
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "Не вдається відкрити шаблон %(name)s"
 
-#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:88 etiketto/ui/files.py:141 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "Не вдається відкрити %s"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:98
 msgid "Open label"
 msgstr "Відкрити етикетку"
 
-#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
+#: etiketto/ui/files.py:108 etiketto/ui/files.py:130 etiketto/ui/files.py:211
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "Можна використовувати лише локальні файли"
 
-#: etiketto/ui/files.py:123
+#: etiketto/ui/files.py:115
 msgid "PDF documents and images"
 msgstr "Документи PDF і зображення"
 
-#: etiketto/ui/files.py:128
+#: etiketto/ui/files.py:120
 msgid "Open shipping label"
 msgstr "Відкрити транспортну етикетку"
 
-#: etiketto/ui/files.py:195
+#: etiketto/ui/files.py:185
 msgid "label"
 msgstr "етикетка"
 
-#: etiketto/ui/files.py:239
+#: etiketto/ui/files.py:229
 msgid "Save label"
 msgstr "Зберегти етикетку"
 
-#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:234 etiketto/ui/window.py:120
 msgid "Save as template…"
 msgstr "Зберегти як шаблон…"
 
-#: etiketto/ui/files.py:262
+#: etiketto/ui/files.py:252
 #, python-format
 msgid "Saved %s"
 msgstr "Збережено %s"
 
-#: etiketto/ui/files.py:272
+#: etiketto/ui/files.py:262
 msgid "Export PNG"
 msgstr "Експортувати в PNG"
 
-#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
+#: etiketto/ui/files.py:270 etiketto/ui/window.py:401
 msgid "The preview cannot be drawn"
 msgstr "Не вдається намалювати попередній перегляд"
 
-#: etiketto/ui/files.py:282
+#: etiketto/ui/files.py:272
 msgid "Exported"
 msgstr "Експортовано"
 
-#: etiketto/ui/files.py:292
+#: etiketto/ui/files.py:282
 msgid "No templates yet – use “Save as template…”"
 msgstr "Ще немає шаблонів – скористайтеся «Зберегти як шаблон…»"
 
-#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:41
+#: etiketto/ui/files.py:309 etiketto/ui/label_group.py:50
+#: etiketto/ui/window.py:42
 msgid "Label"
 msgstr "Етикетка"
 
-#: etiketto/ui/files.py:329
+#: etiketto/ui/files.py:319
 msgid "Discard changes?"
 msgstr "Відкинути зміни?"
 
-#: etiketto/ui/files.py:330
+#: etiketto/ui/files.py:320
 msgid "The current label has unsaved changes."
 msgstr "Поточна етикетка має незбережені зміни."
 
-#: etiketto/ui/files.py:332
+#: etiketto/ui/files.py:322
 msgid "Discard"
 msgstr "Відкинути"
 
@@ -329,7 +329,7 @@ msgstr "Друк на"
 msgid "Custom size"
 msgstr "Власний розмір"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:286
 msgid "Label size"
 msgstr "Розмір етикетки"
 
@@ -473,7 +473,7 @@ msgstr "Виберіть принтер"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:415
+#: etiketto/ui/window.py:417
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -645,7 +645,7 @@ msgid "Print label"
 msgstr "Друк етикетки"
 
 #: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
-#: etiketto/ui/window.py:107
+#: etiketto/ui/window.py:108
 msgid "Print"
 msgstr "Друкувати"
 
@@ -701,7 +701,7 @@ msgstr "Не вдалося надрукувати"
 msgid "Details"
 msgstr "Подробиці"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:437
 msgid "Report"
 msgstr "Повідомити"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "Натисніть на етикетку, щоб пропустити її або знову друкувати на ній. Це стосується лише першого аркуша: наступні аркуші заповнюються повністю."
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:224
 msgid "Apply"
 msgstr "Застосувати"
 
@@ -782,35 +782,39 @@ msgstr "Застосувати"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "Етикетки %s заходять у поле, на якому принтер не може друкувати"
 
-#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:197 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "Транспортна етикетка"
 
-#: etiketto/ui/shipping.py:206
+#: etiketto/ui/shipping.py:224
 msgid "Create label"
 msgstr "Створити етикетку"
 
-#: etiketto/ui/shipping.py:235
+#: etiketto/ui/shipping.py:246
+msgid "The whole document is stored in the label file, not only this page."
+msgstr "У файлі етикетки зберігається весь документ, а не лише ця сторінка."
+
+#: etiketto/ui/shipping.py:262
 msgid "Rotate left"
 msgstr "Повернути ліворуч"
 
-#: etiketto/ui/shipping.py:236
+#: etiketto/ui/shipping.py:263
 msgid "Rotate right"
 msgstr "Повернути праворуч"
 
-#: etiketto/ui/shipping.py:237
+#: etiketto/ui/shipping.py:264
 msgid "Find the label"
 msgstr "Знайти етикетку"
 
-#: etiketto/ui/shipping.py:238
+#: etiketto/ui/shipping.py:265
 msgid "Whole page"
 msgstr "Уся сторінка"
 
-#: etiketto/ui/shipping.py:239
+#: etiketto/ui/shipping.py:266
 msgid "Next suggestion"
 msgstr "Наступний варіант"
 
-#: etiketto/ui/shipping.py:249
+#: etiketto/ui/shipping.py:276
 msgid "Page"
 msgstr "Сторінка"
 
@@ -1191,81 +1195,81 @@ msgid ""
 "paler colours."
 msgstr "Схоже, дата виготовлення касети: %(month)s %(year)d. Старий папір ZINK друкує блідіші кольори."
 
-#: etiketto/ui/window.py:86
+#: etiketto/ui/window.py:87
 msgid "Open"
 msgstr "Відкрити"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:94
 msgid "Templates"
 msgstr "Шаблони"
 
-#: etiketto/ui/window.py:99
+#: etiketto/ui/window.py:100
 msgid "Save"
 msgstr "Зберегти"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:117
 msgid "New label"
 msgstr "Нова етикетка"
 
-#: etiketto/ui/window.py:117
+#: etiketto/ui/window.py:118
 msgid "Shipping label…"
 msgstr "Транспортна етикетка…"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "Save as…"
 msgstr "Зберегти як…"
 
-#: etiketto/ui/window.py:120
+#: etiketto/ui/window.py:121
 msgid "Export PNG…"
 msgstr "Експортувати в PNG…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Help"
 msgstr "Довідка"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Report a problem…"
 msgstr "Повідомити про проблему…"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "About Etiketto"
 msgstr "Про Etiketto"
 
-#: etiketto/ui/window.py:331
+#: etiketto/ui/window.py:333
 msgid "Unsaved label"
 msgstr "Незбережена етикетка"
 
-#: etiketto/ui/window.py:375
+#: etiketto/ui/window.py:377
 msgid "content scaled down to fit"
 msgstr "вміст зменшено, щоб умістився"
 
-#: etiketto/ui/window.py:377
+#: etiketto/ui/window.py:379
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Задовга для цього принтера: щонайбільше %s"
 
-#: etiketto/ui/window.py:382
+#: etiketto/ui/window.py:384
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Надто широка для цього принтера: максимум %s"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:389
 #, python-format
 msgid "Problem: %s"
 msgstr "Проблема: %s"
 
-#: etiketto/ui/window.py:462
+#: etiketto/ui/window.py:464
 msgid "The browser cannot be opened"
 msgstr "Не вдається відкрити браузер"
 
-#: etiketto/ui/window.py:464
+#: etiketto/ui/window.py:466
 msgid "Copy link"
 msgstr "Копіювати посилання"
 
-#: etiketto/ui/window.py:509
+#: etiketto/ui/window.py:511
 msgid "Only local files can be dropped"
 msgstr "Перетягувати можна лише локальні файли"
 
-#: etiketto/ui/window.py:527
+#: etiketto/ui/window.py:529
 msgid "Please wait until printing has finished"
 msgstr "Зачекайте, доки завершиться друк"

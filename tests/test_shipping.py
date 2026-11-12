@@ -10,12 +10,15 @@ from __future__ import annotations
 
 import base64
 import io
+import shutil
+import subprocess
 
 import pytest
 from PIL import Image, ImageDraw
 from shipping_samples import (
     A4,
     LABEL,
+    _text,
     a4_pdf,
     draw_label,
     drawn_page,
@@ -24,6 +27,7 @@ from shipping_samples import (
     instructions,
     page_image,
     page_pdf,
+    raw_pdf,
 )
 
 from etiketto.backends import get_backend
@@ -337,7 +341,7 @@ def test_decompression_bomb(monkeypatch):
 
 def test_only_small_drawings_are_kept(monkeypatch):
     data = b64(encode(square_image()))
-    monkeypatch.setattr(source, "CACHE_ITEM_BYTES", 40 * 60 * 3)
+    monkeypatch.setattr(source, "CACHE_ITEM_BYTES", 40 * 60 * 4)  # RGB: 4 bytes a pixel
     small = source.draw(data, 0, detect.FULL, 0, (40, 60))
     assert source.draw(data, 0, detect.FULL, 0, (40, 60)) is small
     large = source.draw(data, 0, detect.FULL, 0, (80, 120))
@@ -464,6 +468,79 @@ def test_each_thread_has_its_own_document(pdf):
     thread.join()
     assert documents[0] is not documents[1]
     assert source._pdf(pdf) is documents[0]
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        {},
+        {"media": (0, 0, 612, 792)},
+        {"media": (10.5, 20.25, 605.5, 861.25)},
+        {"rotate": 90},
+        {"rotate": 180},
+        {"rotate": 270},
+        {"crop": (20, 30, 400, 700)},
+    ],
+    ids=[
+        "other rounding",
+        "letter",
+        "offset",
+        "rotate 90",
+        "rotate 180",
+        "rotate 270",
+        "crop box",
+    ],
+)
+@needs_poppler
+def test_only_the_page_of_pdfs_from_other_programs(kind):
+    """Copies drawn the same but for rounding (positions written to fewer
+    decimals) keep only the page."""
+    data = b64(raw_pdf(**kind))
+    copy, page = source.only_page(data, 1)
+    assert copy is not data and page == 0
+    original = source.page_info(data, 1)
+    info = source.page_info(copy)
+    assert info.pages == 1
+    assert (info.width, info.height) == pytest.approx((original.width, original.height))
+
+
+@needs_poppler
+@pytest.mark.skipif(not shutil.which("gs"), reason="Ghostscript missing")
+def test_only_the_page_of_a_ghostscript_pdf(tmp_path):
+    source_pdf, made = tmp_path / "in.pdf", tmp_path / "gs.pdf"
+    source_pdf.write_bytes(a4_pdf("top-left", pages=3))
+    command = ["gs", "-q", "-dBATCH", "-dNOPAUSE", "-dSAFER", "-sDEVICE=pdfwrite"]
+    subprocess.run([*command, "-sOutputFile=%s" % made, str(source_pdf)], check=True)
+    data = b64(made.read_bytes())
+    copy, page = source.only_page(data, 2)
+    assert copy is not data and source.page_info(copy).pages == 1
+
+
+def test_differing_pixels():
+    a = Image.new("RGB", (10, 10), "white")
+    b = a.copy()
+    b.putpixel((1, 1), (253, 255, 255))  # 2 levels: rounding
+    b.putpixel((2, 2), (0, 255, 255))
+    assert source._differing(a, b, 0) == 2
+    assert source._differing(a, b, 2) == 1
+
+
+def test_a_label_at_600_dpi_is_kept():
+    """100 × 150 mm at 24 dots/mm, as the preview of a 600 dpi printer draws it."""
+    data = b64(encode(square_image()))
+    box = (2400, 3600)
+    drawn = source.draw(data, 0, detect.FULL, 0, box)
+    assert source._image_bytes(drawn) == 2400 * 3600 * 4  # RGB takes 4 bytes a pixel
+    assert source.draw(data, 0, detect.FULL, 0, box) is drawn
+    grey = source.draw(b64(encode(square_image("L"))), 0, detect.FULL, 0, (20, 30))
+    assert source._image_bytes(grey) == 600
+
+
+def test_image_without_turning_is_not_copied(monkeypatch):
+    calls = []
+    monkeypatch.setattr(source.ImageOps, "exif_transpose", lambda image: calls.append(1))
+    source.page_info(b64(encode(square_image())))
+    assert calls == []
 
 
 @needs_poppler
@@ -705,6 +782,57 @@ def test_image_resolution_gives_the_page_size():
 def test_parts_of_the_label_do_not_make_it_uncertain():
     found = detect.detect(drawn_page(lambda c: gappy_label(c, 30, 30)), width_mm=210)
     assert found.certain and len(found.candidates) > 2
+
+
+A5 = (148 * 72 / 25.4, 210 * 72 / 25.4)
+A4_LANDSCAPE = (A4[1], A4[0])
+
+
+def test_framed_a5_label_in_the_upper_half():
+    """A frame may take half of the sheet (more than a block may)."""
+    w, h = A5[1] - 20, A5[0] - 20
+
+    def draw(c):
+        draw_label(c, 10, 10, w, h)
+        instructions(c, A4[1] / 2 + 40)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "frame" and found.certain
+    assert covers(found.crop, frac(10, 10, w, h), slack=0.02)
+
+
+def test_framed_a5_label_in_the_left_half_of_landscape_a4():
+    w, h = A5[0] - 20, A5[1] - 20
+
+    def draw(c):
+        draw_label(c, 10, 10, w, h)
+        _text(c, A5[0] + 30, 40, 40, 9, 60)
+
+    found = detect.detect(drawn_page(draw, A4_LANDSCAPE), width_mm=297)
+    assert found.how == "frame" and found.certain
+    assert covers(found.crop, frac(10, 10, w, h, A4_LANDSCAPE), slack=0.02)
+
+
+def test_framed_label_with_divider_lines_is_found_whole():
+    """The sections between divider lines are frames too; the frame
+    around them is the label."""
+    mm = 72 / 25.4
+    w, h = 100 * mm, 200 * mm
+
+    def draw(c):
+        draw_label(c, 30, 30, w, h)
+        _text(c, 340, 40, 40, 8, 40)
+
+    found = detect.detect(drawn_page(draw), width_mm=210)
+    assert found.how == "frame" and found.certain
+    assert covers(found.crop, frac(30, 30, w, h), slack=0.02)
+
+
+def test_section_of_a_frame():
+    frame = detect.Box(0, 0, 100, 200)
+    assert detect._section(detect.Box(0, 100, 100, 200), frame, 2)  # below a divider
+    assert not detect._section(detect.Box(20, 20, 80, 80), frame, 2)  # a box inside
+    assert not detect._section(frame, frame, 2)
 
 
 def test_only_small_blocks_fall_back_to_the_content():
@@ -981,19 +1109,56 @@ def test_render_on_tape_grows_with_the_area():
     assert rendered.image.width == pytest.approx(inner * w / h + 2 * mm_to_px(1.5, 100), abs=2)
 
 
+def bars_and_grey(grey_text: bool) -> Image.Image:
+    """A 300 dpi scan of a label: bars 3 dots wide, and grey text if asked."""
+    image = Image.new("L", (1200, 1800), 255)
+    draw = ImageDraw.Draw(image)
+    for x in range(100, 1100, 8):
+        draw.rectangle((x, 400, x + 2, 900), fill=0)
+    if grey_text:
+        for y in range(1000, 1700, 20):  # lines of 55 % grey, 6 dots high
+            draw.rectangle((100, y, 1100, y + 5), fill=140)
+    return image
+
+
+def mono_label(image: Image.Image):
+    element = PageElement(data=b64(encode(image)), name="label.png")
+    return targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 1.5)
+
+
 def test_reduced_image_is_black_and_white_on_a_mono_printer():
     """An image reduced to the label has grey edges; a black and white
     printer gets a threshold, not a dot pattern of dithered grey."""
-    image = Image.new("L", (1000, 1500), 255)
-    draw = ImageDraw.Draw(image)
-    for x in range(100, 900, 7):
-        draw.rectangle((x, 400, x + 2, 900), fill=0)
-    element = PageElement(data=b64(encode(image)), name="label.png")
-    label = targets.make_label(get_backend("cab"), element, targets.TARGETS[0], 1.5)
-    assert len(values(render(label, dpi=100, safe_mm=1.5).image)) > 2  # grey edges
-    assert values(render(label, dpi=100, safe_mm=1.5, mono=True).image) == {0, 255}
+    label = mono_label(bars_and_grey(False))
+    dpi = 203.2
+    assert len(values(render(label, dpi=dpi, safe_mm=1.5).image)) > 2  # grey edges
+    assert values(render(label, dpi=dpi, safe_mm=1.5, mono=True).image) == {0, 255}
     printed = get_backend("cab").prepare(label, PrintOptions(), 1.5)
     assert values(printed) == {0, 255}
+
+
+def test_grey_content_is_dithered_not_lost():
+    """Grey text lighter than the threshold would vanish: an area with grey
+    of its own keeps its greys for the printer's dithering."""
+    label = mono_label(bars_and_grey(True))
+    rendered = render(label, dpi=203.2, safe_mm=1.5, mono=True).image
+    assert len(values(rendered)) > 2
+    printed = get_backend("cab").prepare(label, PrintOptions(), 1.5).convert("L")
+    text = printed.crop((200, 1100, 1000, 1500)).tobytes()  # the grey lines
+    black = text.count(0) / len(text)
+    assert 0.05 < black < 0.5  # dithered dots, not blank paper and not solid black
+
+
+def test_bilevel():
+    from etiketto.render import bilevel
+
+    edges = Image.new("L", (100, 100), 255)
+    ImageDraw.Draw(edges).rectangle((10, 10, 50, 90), fill=0)
+    edges.putpixel((51, 50), 128)  # a smoothed edge
+    assert bilevel(edges)
+    band = edges.copy()
+    ImageDraw.Draw(band).rectangle((60, 10, 90, 90), fill=100)
+    assert not bilevel(band)
 
 
 @needs_poppler

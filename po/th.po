@@ -35,7 +35,7 @@ msgstr "ยังไม่มีเนื้อหา"
 msgid "Add text, an image or a code"
 msgstr "เพิ่มข้อความ รูปภาพ หรือรหัส"
 
-#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:482
+#: etiketto/ui/elements.py:52 etiketto/ui/texts.py:64 etiketto/ui/window.py:484
 msgid "Text"
 msgstr "ข้อความ"
 
@@ -95,7 +95,7 @@ msgstr "เลือก…"
 msgid "Area"
 msgstr "พื้นที่"
 
-#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:257
+#: etiketto/ui/elements.py:184 etiketto/ui/shipping.py:287
 msgid "Scale"
 msgstr "การปรับขนาด"
 
@@ -111,92 +111,92 @@ msgstr "เนื้อหา (ลิงก์ ข้อความ ตัว�
 msgid "Colour"
 msgstr "สี"
 
-#: etiketto/ui/files.py:64
+#: etiketto/ui/files.py:56
 msgid "Etiketto labels"
 msgstr "ฉลาก Etiketto"
 
-#: etiketto/ui/files.py:69
+#: etiketto/ui/files.py:61
 msgid "Images"
 msgstr "รูปภาพ"
 
-#: etiketto/ui/files.py:72 etiketto/ui/label_group.py:120
+#: etiketto/ui/files.py:64 etiketto/ui/label_group.py:120
 msgid "Choose image"
 msgstr "เลือกรูปภาพ"
 
-#: etiketto/ui/files.py:92
+#: etiketto/ui/files.py:84
 #, python-format
 msgid "Cannot open template %(name)s"
 msgstr "เปิดแม่แบบ %(name)s ไม่ได้"
 
-#: etiketto/ui/files.py:96 etiketto/ui/files.py:149 etiketto/ui/texts.py:112
+#: etiketto/ui/files.py:88 etiketto/ui/files.py:141 etiketto/ui/texts.py:112
 #, python-format
 msgid "Cannot open %s"
 msgstr "เปิด %s ไม่ได้"
 
-#: etiketto/ui/files.py:106
+#: etiketto/ui/files.py:98
 msgid "Open label"
 msgstr "เปิดฉลาก"
 
-#: etiketto/ui/files.py:116 etiketto/ui/files.py:138 etiketto/ui/files.py:221
+#: etiketto/ui/files.py:108 etiketto/ui/files.py:130 etiketto/ui/files.py:211
 #: etiketto/ui/texts.py:52
 msgid "Only local files can be used"
 msgstr "ใช้ได้เฉพาะไฟล์ในเครื่องเท่านั้น"
 
-#: etiketto/ui/files.py:123
+#: etiketto/ui/files.py:115
 msgid "PDF documents and images"
 msgstr "เอกสาร PDF และรูปภาพ"
 
-#: etiketto/ui/files.py:128
+#: etiketto/ui/files.py:120
 msgid "Open shipping label"
 msgstr "เปิดฉลากจัดส่ง"
 
-#: etiketto/ui/files.py:195
+#: etiketto/ui/files.py:185
 msgid "label"
 msgstr "ฉลาก"
 
-#: etiketto/ui/files.py:239
+#: etiketto/ui/files.py:229
 msgid "Save label"
 msgstr "บันทึกฉลาก"
 
-#: etiketto/ui/files.py:244 etiketto/ui/window.py:119
+#: etiketto/ui/files.py:234 etiketto/ui/window.py:120
 msgid "Save as template…"
 msgstr "บันทึกเป็นแม่แบบ…"
 
-#: etiketto/ui/files.py:262
+#: etiketto/ui/files.py:252
 #, python-format
 msgid "Saved %s"
 msgstr "บันทึก %s แล้ว"
 
-#: etiketto/ui/files.py:272
+#: etiketto/ui/files.py:262
 msgid "Export PNG"
 msgstr "ส่งออกเป็น PNG"
 
-#: etiketto/ui/files.py:280 etiketto/ui/window.py:399
+#: etiketto/ui/files.py:270 etiketto/ui/window.py:401
 msgid "The preview cannot be drawn"
 msgstr "วาดภาพตัวอย่างไม่ได้"
 
-#: etiketto/ui/files.py:282
+#: etiketto/ui/files.py:272
 msgid "Exported"
 msgstr "ส่งออกแล้ว"
 
-#: etiketto/ui/files.py:292
+#: etiketto/ui/files.py:282
 msgid "No templates yet – use “Save as template…”"
 msgstr "ยังไม่มีแม่แบบ – ใช้ “บันทึกเป็นแม่แบบ…”"
 
-#: etiketto/ui/files.py:319 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:41
+#: etiketto/ui/files.py:309 etiketto/ui/label_group.py:50
+#: etiketto/ui/window.py:42
 msgid "Label"
 msgstr "ฉลาก"
 
-#: etiketto/ui/files.py:329
+#: etiketto/ui/files.py:319
 msgid "Discard changes?"
 msgstr "ละทิ้งการเปลี่ยนแปลงหรือไม่?"
 
-#: etiketto/ui/files.py:330
+#: etiketto/ui/files.py:320
 msgid "The current label has unsaved changes."
 msgstr "ฉลากปัจจุบันมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก"
 
-#: etiketto/ui/files.py:332
+#: etiketto/ui/files.py:322
 msgid "Discard"
 msgstr "ละทิ้ง"
 
@@ -329,7 +329,7 @@ msgstr "พิมพ์ลงบน"
 msgid "Custom size"
 msgstr "ขนาดกำหนดเอง"
 
-#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:256
+#: etiketto/ui/label_group.py:200 etiketto/ui/shipping.py:286
 msgid "Label size"
 msgstr "ขนาดฉลาก"
 
@@ -473,7 +473,7 @@ msgstr "เลือกเครื่องพิมพ์"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:254
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:415
+#: etiketto/ui/window.py:417
 msgid "Cancel"
 msgstr "ยกเลิก"
 
@@ -645,7 +645,7 @@ msgid "Print label"
 msgstr "พิมพ์ฉลาก"
 
 #: etiketto/ui/printing.py:255 etiketto/ui/printing.py:356
-#: etiketto/ui/window.py:107
+#: etiketto/ui/window.py:108
 msgid "Print"
 msgstr "พิมพ์"
 
@@ -701,7 +701,7 @@ msgstr "พิมพ์ไม่สำเร็จ"
 msgid "Details"
 msgstr "รายละเอียด"
 
-#: etiketto/ui/printing.py:385 etiketto/ui/window.py:435
+#: etiketto/ui/printing.py:385 etiketto/ui/window.py:437
 msgid "Report"
 msgstr "รายงาน"
 
@@ -772,7 +772,7 @@ msgid ""
 "is affected: the sheets after it are filled completely."
 msgstr "คลิกที่ฉลากเพื่อข้ามหรือเพื่อกลับมาพิมพ์ลงบนฉลากนั้นอีกครั้ง มีผลเฉพาะแผ่นแรก: แผ่นถัดไปจะพิมพ์เต็มแผ่น"
 
-#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:206
+#: etiketto/ui/sheets.py:366 etiketto/ui/shipping.py:224
 msgid "Apply"
 msgstr "ใช้"
 
@@ -782,35 +782,39 @@ msgstr "ใช้"
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "ฉลาก %s ล้ำเข้าไปในขอบที่เครื่องพิมพ์พิมพ์ไม่ได้"
 
-#: etiketto/ui/shipping.py:181 etiketto/ui/texts.py:68
+#: etiketto/ui/shipping.py:197 etiketto/ui/texts.py:68
 msgid "Shipping label"
 msgstr "ฉลากจัดส่ง"
 
-#: etiketto/ui/shipping.py:206
+#: etiketto/ui/shipping.py:224
 msgid "Create label"
 msgstr "สร้างฉลาก"
 
-#: etiketto/ui/shipping.py:235
+#: etiketto/ui/shipping.py:246
+msgid "The whole document is stored in the label file, not only this page."
+msgstr "ไฟล์ฉลากจะเก็บเอกสารทั้งฉบับ ไม่ใช่เฉพาะหน้านี้"
+
+#: etiketto/ui/shipping.py:262
 msgid "Rotate left"
 msgstr "หมุนซ้าย"
 
-#: etiketto/ui/shipping.py:236
+#: etiketto/ui/shipping.py:263
 msgid "Rotate right"
 msgstr "หมุนขวา"
 
-#: etiketto/ui/shipping.py:237
+#: etiketto/ui/shipping.py:264
 msgid "Find the label"
 msgstr "ค้นหาฉลาก"
 
-#: etiketto/ui/shipping.py:238
+#: etiketto/ui/shipping.py:265
 msgid "Whole page"
 msgstr "ทั้งหน้า"
 
-#: etiketto/ui/shipping.py:239
+#: etiketto/ui/shipping.py:266
 msgid "Next suggestion"
 msgstr "คำแนะนำถัดไป"
 
-#: etiketto/ui/shipping.py:249
+#: etiketto/ui/shipping.py:276
 msgid "Page"
 msgstr "หน้า"
 
@@ -1191,81 +1195,81 @@ msgid ""
 "paler colours."
 msgstr "ตลับนี้น่าจะผลิตเมื่อ %(month)s %(year)d กระดาษ ZINK ที่เก่าจะพิมพ์สีได้จางลง"
 
-#: etiketto/ui/window.py:86
+#: etiketto/ui/window.py:87
 msgid "Open"
 msgstr "เปิด"
 
-#: etiketto/ui/window.py:93
+#: etiketto/ui/window.py:94
 msgid "Templates"
 msgstr "แม่แบบ"
 
-#: etiketto/ui/window.py:99
+#: etiketto/ui/window.py:100
 msgid "Save"
 msgstr "บันทึก"
 
-#: etiketto/ui/window.py:116
+#: etiketto/ui/window.py:117
 msgid "New label"
 msgstr "ฉลากใหม่"
 
-#: etiketto/ui/window.py:117
+#: etiketto/ui/window.py:118
 msgid "Shipping label…"
 msgstr "ฉลากจัดส่ง…"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "Save as…"
 msgstr "บันทึกเป็น…"
 
-#: etiketto/ui/window.py:120
+#: etiketto/ui/window.py:121
 msgid "Export PNG…"
 msgstr "ส่งออกเป็น PNG…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Help"
 msgstr "วิธีใช้"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Report a problem…"
 msgstr "รายงานปัญหา…"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "About Etiketto"
 msgstr "เกี่ยวกับ Etiketto"
 
-#: etiketto/ui/window.py:331
+#: etiketto/ui/window.py:333
 msgid "Unsaved label"
 msgstr "ฉลากที่ยังไม่บันทึก"
 
-#: etiketto/ui/window.py:375
+#: etiketto/ui/window.py:377
 msgid "content scaled down to fit"
 msgstr "ย่อเนื้อหาให้พอดีแล้ว"
 
-#: etiketto/ui/window.py:377
+#: etiketto/ui/window.py:379
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "ยาวเกินไปสำหรับเครื่องพิมพ์นี้: สูงสุด %s"
 
-#: etiketto/ui/window.py:382
+#: etiketto/ui/window.py:384
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "กว้างเกินไปสำหรับเครื่องพิมพ์นี้ สูงสุด %s"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:389
 #, python-format
 msgid "Problem: %s"
 msgstr "ปัญหา: %s"
 
-#: etiketto/ui/window.py:462
+#: etiketto/ui/window.py:464
 msgid "The browser cannot be opened"
 msgstr "เปิดเบราว์เซอร์ไม่ได้"
 
-#: etiketto/ui/window.py:464
+#: etiketto/ui/window.py:466
 msgid "Copy link"
 msgstr "คัดลอกลิงก์"
 
-#: etiketto/ui/window.py:509
+#: etiketto/ui/window.py:511
 msgid "Only local files can be dropped"
 msgstr "วางได้เฉพาะไฟล์ในเครื่องเท่านั้น"
 
-#: etiketto/ui/window.py:527
+#: etiketto/ui/window.py:529
 msgid "Please wait until printing has finished"
 msgstr "โปรดรอจนกว่าการพิมพ์จะเสร็จ"

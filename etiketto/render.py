@@ -16,7 +16,7 @@ from functools import lru_cache
 from types import MappingProxyType
 from typing import NamedTuple
 
-from PIL import Image, ImageColor, ImageDraw, ImageOps
+from PIL import Image, ImageChops, ImageColor, ImageDraw, ImageFilter, ImageOps
 
 from etiketto.model import CodeElement, Element, ImageElement, Label, PageElement, TextElement
 
@@ -226,10 +226,28 @@ def render_code(element: CodeElement, height: int) -> Image.Image:
     return img.resize((width, height), Image.Resampling.NEAREST)
 
 
-# on black and white printers a page area is printed at this threshold
-# instead of dithered: grey edges of a reduced barcode become clean bars
-# instead of a dot pattern
+# On black and white printers a page area that is black and white but for
+# the grey edges between black and white (a reduced barcode, smoothed text)
+# is printed at MONO_THRESHOLD instead of dithered: clean bars instead of a
+# dot pattern. An area with grey of its own (grey text, a shaded band: grey
+# pixels with no black and white around them, more than GREY_SHARE of the
+# area) is dithered like the rest of the label, so the grey stays visible.
 MONO_THRESHOLD = 128
+DARK, LIGHT = 40, 215
+GREY_SHARE = 0.02
+
+
+def _mask(image: Image.Image, test) -> Image.Image:
+    return image.point(lambda v: 255 if test(v) else 0)
+
+
+def bilevel(image: Image.Image) -> bool:
+    """Whether the grey image is black and white but for edges."""
+    grey = _mask(image, lambda v: DARK < v < LIGHT)
+    near_black = _mask(image.filter(ImageFilter.MinFilter(3)), lambda v: v <= DARK)
+    near_white = _mask(image.filter(ImageFilter.MaxFilter(3)), lambda v: v >= LIGHT)
+    own = ImageChops.subtract(grey, ImageChops.darker(near_black, near_white))
+    return own.histogram()[255] <= GREY_SHARE * image.width * image.height
 
 
 def render_page(
@@ -238,14 +256,16 @@ def render_page(
     """The area of the page drawn right at its size on the label: no scaling
     afterwards, so barcodes keep whole printer dots. width None: as wide as
     the area needs at the height (endless tape). mono: for a black and
-    white printer, only black and white."""
+    white printer, a black and white area without grey edges."""
     from etiketto.shipping.source import draw
 
     crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
     box = (width, height)
     image = draw(element.data, element.page, crop, element.rotation, box, element.fit)
     if mono:
-        image = image.convert("L").point(lambda v: 255 if v >= MONO_THRESHOLD else 0)
+        grey = image.convert("L")
+        if bilevel(grey):
+            image = grey.point(lambda v: 255 if v >= MONO_THRESHOLD else 0)
     return image.convert("RGBA")
 
 

@@ -20,6 +20,7 @@ from etiketto.model import CodeElement, Label, SheetChoice, TextElement  # noqa:
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
+from etiketto.shipping.source import clear_caches  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
 from etiketto.ui.i18n import _, docs_url  # noqa: E402
@@ -233,6 +234,7 @@ class Window(Adw.ApplicationWindow):
         printer_changed = label.printer != self.label.printer
         self.label = label
         self._last_sheet = None  # another label (new, opened): not its sheet
+        clear_caches()  # decoded documents of the label before
         self.adopts_tape = adopts_tape
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None

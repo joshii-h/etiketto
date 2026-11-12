@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "A PDF-fájlokhoz Poppler (poppler-glib) kell, amely nincs telepítve",
     "Element %(n)d: the document cannot be read": "%(n)d. elem: a dokumentum nem olvasható",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "%(n)d. elem: a PDF-fájlokhoz Poppler (poppler-glib) kell, amely nincs telepítve",
+    "The whole document is stored in the label file, not only this page.": "A címkefájlba a teljes dokumentum kerül, nem csak ez az oldal.",
 }

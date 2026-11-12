@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "Tệp PDF cần Poppler (poppler-glib), nhưng chưa được cài đặt",
     "Element %(n)d: the document cannot be read": "Phần tử %(n)d: không đọc được tài liệu",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "Phần tử %(n)d: tệp PDF cần Poppler (poppler-glib), nhưng chưa được cài đặt",
+    "The whole document is stored in the label file, not only this page.": "Toàn bộ tài liệu được lưu trong tệp nhãn, không chỉ trang này.",
 }

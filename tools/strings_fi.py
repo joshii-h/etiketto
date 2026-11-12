@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "PDF-tiedostot tarvitsevat Popplerin (poppler-glib), jota ei ole asennettu",
     "Element %(n)d: the document cannot be read": "Elementti %(n)d: asiakirjaa ei voi lukea",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "Elementti %(n)d: PDF-tiedostot tarvitsevat Popplerin (poppler-glib), jota ei ole asennettu",
+    "The whole document is stored in the label file, not only this page.": "Tarratiedostoon tallennetaan koko asiakirja, ei vain tämä sivu.",
 }

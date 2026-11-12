@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable
+from contextlib import contextmanager, suppress
 from typing import TYPE_CHECKING
 
 import gi
@@ -21,7 +22,13 @@ from etiketto.model import Label, PageElement  # noqa: E402
 from etiketto.render import render  # noqa: E402
 from etiketto.shipping import crop as cropping  # noqa: E402
 from etiketto.shipping import detect  # noqa: E402
-from etiketto.shipping.source import SourceError, page_info, preview  # noqa: E402
+from etiketto.shipping.source import (  # noqa: E402
+    SourceError,
+    clear_caches,
+    only_page,
+    page_info,
+    preview,
+)
 from etiketto.shipping.targets import Target, matching, targets_for, upright  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
@@ -54,6 +61,15 @@ CURSORS = {
 Done = Callable[[PageElement, Target | None], None]
 # the label with the area at the target (None: the size stays), for the preview
 MakeLabel = Callable[[PageElement, Target | None], Label]
+
+
+@contextmanager
+def signal_blocked(widget, handler: int):
+    widget.handler_block(handler)
+    try:
+        yield
+    finally:
+        widget.handler_unblock(handler)
 
 
 def cairo_surface(image: Image.Image) -> cairo.ImageSurface:
@@ -192,6 +208,8 @@ class ShippingDialog(Adw.Dialog):
         self.info = page_info(self.element.data, self.element.page)
         self._build()
         self._load_page(find=not edit)
+        # the decoded document and its drawings go with the dialog
+        self.connect("closed", lambda _d: clear_caches())
 
     def _tape(self) -> float:
         """Endless tape: the inserted tape, else the tape of the open label."""
@@ -224,6 +242,15 @@ class ShippingDialog(Adw.Dialog):
         self.result.add_css_class("label-preview")
         right.append(self.result)
         right.append(self._settings())
+        self.store_note = Gtk.Label(
+            label=_("The whole document is stored in the label file, not only this page."),
+            wrap=True,
+            xalign=0,
+            visible=False,
+        )
+        self.store_note.add_css_class("dim-label")
+        self.store_note.add_css_class("caption")
+        right.append(self.store_note)
         body = Gtk.Box(spacing=12, margin_start=12, margin_end=12, margin_top=6, margin_bottom=12)
         body.append(left)
         body.append(right)
@@ -248,7 +275,10 @@ class ShippingDialog(Adw.Dialog):
             pages = Adw.SpinRow.new_with_range(1, self.info.pages, 1)
             pages.set_title(_("Page"))
             pages.set_value(self.element.page + 1)
-            pages.connect("notify::value", lambda r, _p: self.set_page(int(r.get_value()) - 1))
+            self.page_changed = pages.connect(
+                "notify::value", lambda r, _p: self.set_page(int(r.get_value()) - 1)
+            )
+            self.page_row = pages
             group.add(pages)
         if self.targets and self.target:
             unit = self.window.unit
@@ -264,6 +294,7 @@ class ShippingDialog(Adw.Dialog):
         self.page_image = preview(self.element.data, self.element.page, PAGE_PX)
         self.page_width_mm = width_mm
         self.crop_view.set_page(self.page_image)
+        self._check_storage()
         if find:
             self.find()
         else:
@@ -271,6 +302,16 @@ class ShippingDialog(Adw.Dialog):
             self.next_button.set_sensitive(False)
             self.hint.set_text(detection_hint(None))
             self.update_result()
+
+    def _check_storage(self) -> None:
+        """What goes into the label file: only this page of the document if
+        it can be copied unchanged, else all of it (then a note says so)."""
+        data, page = self.element.data, self.element.page
+        self.stored = (data, page)
+        if self.info.pages > 1:
+            with suppress(SourceError):
+                self.stored = only_page(data, page)
+        self.store_note.set_visible(self.info.pages > 1 and self.stored[0] is data)
 
     def find(self) -> None:
         self.detection = detect.detect(self.page_image, self.page_width_mm)
@@ -316,6 +357,8 @@ class ShippingDialog(Adw.Dialog):
             self._load_page(find=True)
         except SourceError as e:
             self.element.page = previous
+            with signal_blocked(self.page_row, self.page_changed):
+                self.page_row.set_value(previous + 1)
             self.window.toast(source_error_text(e, self.element.name))
 
     def set_target(self, key: str) -> None:
@@ -350,5 +393,6 @@ class ShippingDialog(Adw.Dialog):
         self.result.set_paintable(texture)
 
     def finish(self) -> None:
+        self.element.data, self.element.page = self.stored
         self.on_done(self.element, self.target)
         self.close()

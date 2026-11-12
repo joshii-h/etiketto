@@ -70,11 +70,25 @@ def cab_window(window):
 
 
 def open_dialog(window, path) -> shipping.ShippingDialog:
-    window.files.shipping_from(path)
-    pump()
-    dialog = window.last_dialog
-    assert isinstance(dialog, shipping.ShippingDialog)
-    return dialog
+    """The dialog for path; other dialogs the window shows meanwhile (a
+    printer chooser after the search in the background) do not count."""
+    shown = []
+    present = window.present_dialog
+
+    def recording(dialog):
+        shown.append(dialog)
+        present(dialog)
+
+    window.present_dialog = recording
+    try:
+        window.files.shipping_from(path)
+        pump()
+    finally:
+        del window.present_dialog
+    dialogs = [d for d in shown if isinstance(d, shipping.ShippingDialog)]
+    assert len(dialogs) == 1
+    window.last_dialog = dialogs[0]
+    return dialogs[0]
 
 
 def sized(view, width=500, height=700):
@@ -423,8 +437,10 @@ def test_page_that_cannot_be_drawn(cab_window, sample_pdf, monkeypatch):
         raise SourceError("too_large")
 
     monkeypatch.setattr(shipping, "preview", too_large)
-    dialog.set_page(1)
+    row = one(dialog, Adw.SpinRow, title="Page")
+    row.set_value(2)
     assert dialog.element.page == 0 and dialog.element.crop == crop
+    assert row.get_value() == 1  # back on the page shown
     assert toast_titles(cab_window)[-1] == "Cannot open parcel.pdf"
     dialog.close()
 
@@ -449,3 +465,32 @@ def test_edit_keeps_only_the_page(cab_window, tmp_path):
     dialog.done_button.emit("clicked")
     pump()
     assert element.page == 0 and source.page_info(element.data).pages == 1
+
+
+@needs_poppler
+def test_note_when_the_whole_document_is_stored(cab_window, sample_pdf, monkeypatch):
+    dialog = open_dialog(cab_window, sample_pdf)
+    assert not dialog.store_note.get_visible()  # only the page is stored
+    dialog.close()
+    monkeypatch.setattr(shipping, "only_page", lambda data, page: (data, page))
+    dialog = open_dialog(cab_window, sample_pdf)
+    assert dialog.store_note.get_visible()
+    assert "whole document" in dialog.store_note.get_label()
+    data = dialog.element.data
+    dialog.finish()
+    pump()
+    assert cab_window.label.elements[0].data is data  # all pages
+
+
+def test_no_note_for_one_page(cab_window, sample_png):
+    dialog = open_dialog(cab_window, sample_png)
+    assert not dialog.store_note.get_visible()
+    dialog.close()
+
+
+def test_closing_the_dialog_frees_the_document(cab_window, sample_png):
+    dialog = open_dialog(cab_window, sample_png)
+    assert len(source._pictures) == 1
+    dialog.close()
+    pump()
+    assert len(source._pictures) == 0 and len(source._drawings) == 0

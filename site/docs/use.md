@@ -73,7 +73,9 @@ dropped onto the window) opens such a file and makes a new label of it.
 
 On label printers a PDF page is drawn right at the printer's resolution,
 without smoothing: bars and text come out as whole printer dots, so
-barcodes stay readable; lines thinner than a dot are printed one dot wide.
+barcodes stay readable. Lines thinner than a dot are printed at least one
+dot wide (sometimes two), and in black even if they are light grey or
+coloured; white lines thinner than a dot on black may vanish.
 The system printer gets the label compressed (JPEG in a PDF) or scaled to
 its resolution, which can soften the edges of bars: print one label and
 check that the barcode scans.
@@ -82,13 +84,15 @@ Images are enlarged by repeating pixels, evenly only by whole multiples
 (otherwise some pixels come out one dot wider than others); reduced, the
 pixels that fall together are averaged into grey. A scan or photo of a
 label should have at least the printer's resolution (200 to 300 dpi). On
-black-and-white printers the area is printed in pure black and white,
-without the dot pattern of grey.
+black-and-white printers an area that is black and white but for grey
+edges is printed in pure black and white, without a dot pattern; an area
+with grey of its own (grey text, shaded bands) keeps it as a dot pattern.
 
 The label file keeps the whole page the area was taken from, also outside
 the area (addresses, tracking numbers). Of a PDF with several pages only
 the chosen page is kept if it can be copied unchanged, otherwise the whole
-document; of a TIFF with several pages only the chosen page.
+document (the dialog then says so); of a TIFF with several pages only the
+chosen page.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
 along, otherwise install it from your distribution (see the README).

@@ -288,4 +288,5 @@ TRANSLATIONS = {
     "PDF files need Poppler (poppler-glib), which is not installed": "PDF-failid vajavad Popplerit (poppler-glib), mis pole paigaldatud",
     "Element %(n)d: the document cannot be read": "Element %(n)d: dokumenti ei saa lugeda",
     "Element %(n)d: PDF files need Poppler (poppler-glib), which is not installed": "Element %(n)d: PDF-failid vajavad Popplerit (poppler-glib), mis pole paigaldatud",
+    "The whole document is stored in the label file, not only this page.": "Sildifaili salvestatakse kogu dokument, mitte ainult see lehekülg.",
 }
