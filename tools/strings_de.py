@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "Der Akku des Druckers ist fast leer – aufladen oder das Netzteil anschliessen.",
     "do not ask the printer before rendering (its model, tape and resolution)": "den Drucker vor dem Rendern nicht abfragen (Modell, Band und Auflösung)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Zeile %(row)d kommt an Position %(position)d von Bogen %(sheet)d.",
+    "print density\x04Default": "Standard",
 }

@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "Батарея принтера разряжена – зарядите её или подключите блок питания.",
     "do not ask the printer before rendering (its model, tape and resolution)": "не опрашивать принтер перед отрисовкой (модель, лента и разрешение)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Строка %(row)d попадает в позицию %(position)d листа %(sheet)d.",
+    "print density\x04Default": "По умолчанию",
 }

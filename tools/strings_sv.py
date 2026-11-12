@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "Skrivarens batteri är svagt – ladda det eller anslut nätadaptern.",
     "do not ask the printer before rendering (its model, tape and resolution)": "fråga inte skrivaren före renderingen (modell, tejp och upplösning)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rad %(row)d hamnar på position %(position)d på ark %(sheet)d.",
+    "print density\x04Default": "Standard",
 }

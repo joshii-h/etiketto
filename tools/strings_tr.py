@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "Yazıcının pili zayıf – şarj edin veya güç adaptörünü takın.",
     "do not ask the printer before rendering (its model, tape and resolution)": "işlemeden önce yazıcıyı sorgulama (modeli, bandı ve çözünürlüğü)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d. satır %(sheet)d. sayfanın %(position)d. konumuna gelir.",
+    "print density\x04Default": "Varsayılan",
 }

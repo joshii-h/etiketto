@@ -15,7 +15,7 @@ from etiketto.render import RenderWarning
 from etiketto.shipping.detect import Detection
 from etiketto.shipping.source import SourceError
 from etiketto.shipping.targets import Target
-from etiketto.ui.i18n import _, isolate, month_name
+from etiketto.ui.i18n import _, isolate, month_name, pgettext
 from etiketto.units import Unit
 
 # cassettes older than this get a hint: old ZINK paper prints paler
@@ -167,7 +167,11 @@ def choice_name(value: str) -> str:
 
 
 def level_name(key: str, value: int | None) -> str:
-    """A step of a Level setting; None keeps the printer's own setting."""
+    """A step of a Level setting; None keeps the printer's own setting
+    (for the NIIMBOT density: the model's default, which Etiketto sends)."""
+    if value is None and key == "density":
+        # translators: the print density a NIIMBOT model uses by default
+        return pgettext("print density", "Default")
     if value is None:
         return CHOICE_NAMES["printer"]
     if key == "darkness":

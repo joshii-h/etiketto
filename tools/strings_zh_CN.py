@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "打印机电量不足 – 请充电或连接电源适配器。",
     "do not ask the printer before rendering (its model, tape and resolution)": "渲染前不询问打印机（型号、标签带和分辨率）",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "第 %(row)d 行位于第 %(sheet)d 张标签纸的第 %(position)d 个位置。",
+    "print density\x04Default": "默认",
 }

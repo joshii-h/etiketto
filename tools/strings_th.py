@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "แบตเตอรี่ของเครื่องพิมพ์เหลือน้อย – ชาร์จหรือต่ออะแดปเตอร์ไฟ",
     "do not ask the printer before rendering (its model, tape and resolution)": "ไม่ต้องถามเครื่องพิมพ์ก่อนเรนเดอร์ (รุ่น เทป และความละเอียด)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "แถว %(row)d อยู่ที่ตำแหน่ง %(position)d ของแผ่น %(sheet)d",
+    "print density\x04Default": "ค่าเริ่มต้น",
 }

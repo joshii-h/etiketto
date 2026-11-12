@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "Baterai printer lemah – isi daya atau sambungkan adaptor daya.",
     "do not ask the printer before rendering (its model, tape and resolution)": "jangan tanyakan printer sebelum merender (model, pita, dan resolusinya)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Baris %(row)d berada di posisi %(position)d pada lembar %(sheet)d.",
+    "print density\x04Default": "Bawaan",
 }

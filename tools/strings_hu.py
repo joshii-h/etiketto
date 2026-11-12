@@ -527,4 +527,5 @@ TRANSLATIONS = {
     "The printer's battery is low – charge it or connect the power adapter.": "A nyomtató akkumulátora lemerülőben van – töltse fel, vagy csatlakoztassa a hálózati adaptert.",
     "do not ask the printer before rendering (its model, tape and resolution)": "ne kérdezze le a nyomtatót a megjelenítés előtt (típus, szalag és felbontás)",
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "A(z) %(row)d. sor a(z) %(sheet)d. ív %(position)d. helyére kerül.",
+    "print density\x04Default": "Alapértelmezett",
 }

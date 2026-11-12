@@ -3702,7 +3702,7 @@ def test_niimbot_density_and_label_type_are_printer_settings(niimbot_window, nii
     sensor = one(win.sidebar, Adw.ComboRow, title="Label sensor")
     assert _items(sensor) == ["Gap between labels", "Transparent labels"]
     density = one(win.sidebar, Adw.ComboRow, title="Print density")
-    assert _items(density) == ["As set on the printer", "1", "2", "3"]
+    assert _items(density) == ["Default", "1", "2", "3"]  # the model's default
     sensor.set_selected(1)
     density.set_selected(3)
     saved = Settings.load().data["printers"]["niimbot"]
