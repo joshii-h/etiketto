@@ -428,10 +428,7 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "The loaded roll does not match the label. Load a matching roll, or choose "
             "the label size or printer model of the roll that is loaded."
         ),
-        "battery": _(
-            "The printer's batteries are low. Connect the power adapter or charge the "
-            "batteries, then try again."
-        ),
+        "battery": _("The printer's battery is low – charge it or connect the power adapter."),
         "overheat": _("The print head is too hot. Wait until it has cooled down, then try again."),
         "unsupported_model": _(
             "Etiketto cannot print on this printer model: it does not take the raster "

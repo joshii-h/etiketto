@@ -524,4 +524,5 @@ TRANSLATIONS = {
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s とメーカーのマニュアルに基づき、それらのコードを使わずに新たに記述; THIRD_PARTY_NOTICES.md を参照",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "このページは、プリンターが受け付ける解像度で作成するには大きすぎます。より小さい用紙サイズを選ぶか、PDF を受け付けるプリンターで印刷してください。",
     "Sent to the printer – it did not confirm printing": "プリンターに送信しました – 印刷の完了は確認されていません",
+    "The printer's battery is low – charge it or connect the power adapter.": "プリンターのバッテリー残量が少なくなっています – 充電するか電源アダプターを接続してください。",
 }

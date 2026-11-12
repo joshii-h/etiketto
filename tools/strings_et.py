@@ -524,4 +524,5 @@ TRANSLATIONS = {
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Projektidest %(projects)s ja tootjate juhenditest, kirjutatud uuesti ilma nende koodita; vt THIRD_PARTY_NOTICES.md",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Leht on liiga suur, et seda printeri toetatud eraldusvõimega luua. Vali väiksem paberisuurus või prindi printeriga, mis võtab vastu PDF-i.",
     "Sent to the printer – it did not confirm printing": "Saadetud printerisse – printer ei kinnitanud printimist",
+    "The printer's battery is low – charge it or connect the power adapter.": "Printeri aku on tühjenemas – lae seda või ühenda toiteadapter.",
 }

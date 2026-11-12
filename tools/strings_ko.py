@@ -524,4 +524,5 @@ TRANSLATIONS = {
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s 및 제조사 설명서를 바탕으로 해당 코드 없이 새로 작성함; THIRD_PARTY_NOTICES.md 참조",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "프린터가 받는 해상도로 만들기에는 페이지가 너무 큽니다. 더 작은 용지 크기를 선택하거나 PDF를 받는 프린터로 인쇄하세요.",
     "Sent to the printer – it did not confirm printing": "프린터로 보냈습니다 – 프린터가 인쇄를 확인하지 않았습니다",
+    "The printer's battery is low – charge it or connect the power adapter.": "프린터 배터리가 부족합니다 – 충전하거나 전원 어댑터를 연결하세요.",
 }

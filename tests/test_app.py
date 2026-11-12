@@ -3738,7 +3738,9 @@ def test_printers_without_density_have_no_such_rows(ready):
 def test_serial_port_and_battery_texts():
     text = texts.code_text("serial_permission", MILLIMETRES)
     assert "“dialout”" in text and "usermod -aG dialout" in text and "“uucp”" in text
-    assert texts.code_text("battery", MILLIMETRES).startswith("The printer's batteries are low.")
+    assert texts.code_text("battery", MILLIMETRES) == (
+        "The printer's battery is low – charge it or connect the power adapter."
+    )
     assert texts.MEDIA_TYPE_NAMES["black_mark"] == "Labels with black marks"
 
 

@@ -524,4 +524,5 @@ TRANSLATIONS = {
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "依據 %(projects)s 及製造商手冊重新撰寫，未使用其程式碼；請參閱 THIRD_PARTY_NOTICES.md",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "頁面太大，無法以印表機接受的解析度產生。請選擇較小的紙張尺寸，或使用接受 PDF 的印表機列印。",
     "Sent to the printer – it did not confirm printing": "已傳送到印表機 – 印表機未確認已列印",
+    "The printer's battery is low – charge it or connect the power adapter.": "印表機電量不足 – 請充電或連接電源變壓器。",
 }
