@@ -22,7 +22,7 @@ from urllib.parse import quote, unquote, urlsplit
 
 from PIL import Image
 
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     BadCassette,
@@ -41,7 +41,6 @@ from etiketto.backends.base import (
     PrinterError,
     PrinterInfo,
     PrinterNotFound,
-    PrinterStalled,
     PrinterTimeout,
     PrintMode,
     PrintOptions,
@@ -78,7 +77,6 @@ DEFAULT_TAPE_MM = 12  # the most common TZe width, for a new label
 # blank tape before and after a label: min, max, default; Brother's minimum
 # is 2 mm on the 128-pin models and 1 mm on the PT-P900 series (Model.min_feed_mm)
 FEED_MM = (1.0, 127.0, 2.0)
-SEND_CHUNK = 65536
 
 ESC = b"\x1b"
 INIT = ESC + b"@"
@@ -681,19 +679,23 @@ def editor_lite_plugged() -> Model | None:
 _browse = mdns.browse  # replaced in tests: they never search the network
 
 
+def min_rate(model: Model, high_res: bool) -> float:
+    """The fewest bytes a second a printing P-touch takes: lines at
+    MIN_SPEED_MM_S, one byte each (a compressed blank line is that small).
+    A job that trickles in slower than this counts as stalled."""
+    return MIN_SPEED_MM_S / 25.4 * model.dpi * (2 if high_res else 1)
+
+
 class _TcpLink:
     """A socket used like usb.Connection: sendall() fails only when the
     printer takes no data for the timeout (it stops reading while it prints
-    a page), a silent printer raises PrinterTimeout.
-
-    TODO: send through net.send_all like the raw and QL backends; it caps
-    the whole job at timeout + size / min_rate, and a P-touch takes data
-    only at printing pace (a few kB/s): needs a min_rate from the model's
-    speed (MIN_SPEED_MM_S) first."""
+    a page) or trickles below min_rate (net.send_all); a silent printer
+    raises PrinterTimeout."""
 
     def __init__(self, sock: socket.socket):
         self.sock = sock
         self.timeout = SOCKET_TIMEOUT
+        self.min_rate: float = usb.MIN_RATE  # set per job, see send_job()
         sock.settimeout(SOCKET_TIMEOUT)
 
     def settimeout(self, timeout: float) -> None:
@@ -701,13 +703,7 @@ class _TcpLink:
         self.sock.settimeout(timeout)
 
     def sendall(self, data: bytes) -> None:
-        view = memoryview(data)
-        while view:
-            try:
-                sent = self.sock.send(view[:SEND_CHUNK])
-            except TimeoutError as e:
-                raise PrinterStalled("printer took no data for %g s" % self.timeout) from e
-            view = view[sent:]
+        net.send_all(self.sock, data, self.timeout, self.min_rate)
 
     def recv(self, size: int) -> bytes:
         try:
@@ -797,6 +793,7 @@ class _Session:
         progress: ProgressCallback | None,
         waits: bool,
         network: bool,
+        rate: float = usb.MIN_RATE,
     ) -> bool:
         """The job, page by page; the printer may stop reading for as long
         as a page takes to print. `waits`: after each page, read the
@@ -804,6 +801,8 @@ class _Session:
         printer that does not report pages gets the rest without waiting.
         True if the printer reported every page printed."""
         copies = len(pieces) - 1
+        # the least the printer takes while it prints (TCP and USB alike)
+        self.link.min_rate = rate
         self.link.settimeout(timeout)
         try:
             self.link.sendall(pieces[0])
@@ -1092,7 +1091,9 @@ class PTouch(Backend):
             lines = columns(_fit(image, area[1], rendered_lpi, lpi), model, area[0])
             timeout = print_timeout(length_mm, settings.high_res)
             pieces = build_job(model, lines, settings, copies)
-            confirmed = s.send_job(model, pieces, timeout, progress, waits, not usb.is_usb(host))
+            rate = min_rate(model, settings.high_res)
+            on_network = not usb.is_usb(host)
+            confirmed = s.send_job(model, pieces, timeout, progress, waits, on_network, rate)
         if model.documented and not confirmed:
             # sent, but the printer did not say it printed: no "Printed"
             return PrintResult(unconfirmed=True)

@@ -21,7 +21,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from PIL import Image
 
-from etiketto.backends import ptouch, usb
+from etiketto.backends import net, ptouch, usb
 from etiketto.backends.base import (
     CassetteInfo,
     FoundPrinter,
@@ -1462,7 +1462,9 @@ def test_tcp_printer_that_reads_slowly(monkeypatch):
     monkeypatch.setattr(ptouch, "_connect", REAL_CONNECT)
     monkeypatch.setattr(ptouch, "PRINT_TIMEOUT", 0.5)  # each pause is shorter
     monkeypatch.setattr(ptouch, "MIN_SPEED_MM_S", 1e9)
-    monkeypatch.setattr(ptouch, "SEND_CHUNK", 4096)
+    # the page timeout short, the job's rate cap as for a real printer
+    monkeypatch.setattr(ptouch, "min_rate", lambda model, high_res: 1000.0)
+    monkeypatch.setattr(net, "CHUNK", 4096)
     image = Image.new("RGB", (1200, 150), "black")  # 70 bytes a line, uncompressed
     image.info["lpi"] = 360
     begin = time.monotonic()
@@ -1488,6 +1490,7 @@ def test_tcp_printer_that_takes_nothing_stalls():
             raise TimeoutError("timed out")
 
     link = ptouch._TcpLink(Stuck())
+    link.settimeout(0.2)
     with pytest.raises(PrinterError) as raised:
         link.sendall(b"x")
     assert raised.value.code == "stalled"
@@ -1564,3 +1567,28 @@ def test_settings_of_an_unknown_network_model(fake):
     info = backend.query("ptouch.local")
     assert backend.cut_modes(info) == ("full", "half", "none")  # the generic model's
     assert backend.extras(info) == ("chain", "high_res", "feed")
+
+
+def test_the_minimum_rate_follows_the_model():
+    """Lines at the slowest printing speed, one byte each: the cap of a job
+    that trickles; twice as many lines at high resolution."""
+    p750w = ptouch.model_by_name("PT-P750W")
+    assert ptouch.min_rate(p750w, False) == pytest.approx(10 / 25.4 * 180)
+    assert ptouch.min_rate(p750w, True) == pytest.approx(2 * 10 / 25.4 * 180)
+
+
+def test_a_job_goes_through_net_send_all_with_the_models_rate(monkeypatch):
+    sent = []
+    monkeypatch.setattr(
+        net, "send_all", lambda sock, data, timeout, rate: sent.append((len(data), timeout, rate))
+    )
+
+    class Sock:
+        def settimeout(self, timeout):
+            pass
+
+    link = ptouch._TcpLink(Sock())  # type: ignore[arg-type]
+    link.settimeout(7.0)
+    link.min_rate = 70.0
+    link.sendall(b"abc")
+    assert sent == [(3, 7.0, 70.0)]

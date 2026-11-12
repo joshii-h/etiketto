@@ -805,3 +805,41 @@ class TestContract(BackendContract):
         return SimpleNamespace(
             backend=VC500W(), fail=fail, printed=lambda: len(printer.device.prints())
         )
+
+
+def test_the_image_goes_through_net_send_all(monkeypatch):
+    """On TCP the job is sent with a timeout that counts from the last
+    progress (net.send_all), not one sendfile() under a single timeout."""
+    import threading
+
+    from etiketto.backends import net
+
+    server = socket.create_server(("127.0.0.1", 0))
+    got = bytearray()
+
+    def serve():
+        conn, _addr = server.accept()
+        with conn:
+            while chunk := conn.recv(65536):
+                got.extend(chunk)
+
+    thread = threading.Thread(target=serve, daemon=True)
+    thread.start()
+    calls = []
+    real = net.send_all
+    monkeypatch.setattr(
+        net,
+        "send_all",
+        lambda sock, data, timeout, rate: (
+            calls.append((len(data), timeout, rate)) or real(sock, data, timeout, rate)
+        ),
+    )
+    monkeypatch.setattr(mdns, "resolve_host", lambda host, family: "127.0.0.1")
+    connection = REAL_CONNECT("VC.local", server.getsockname()[1])
+    image = bytes(range(256)) * 2000
+    connection.send_file(io.BytesIO(image))
+    connection.close()
+    thread.join(5)
+    server.close()
+    assert calls == [(len(image), vc500w.SEND_TIMEOUT, vc500w.MIN_RATE)]
+    assert bytes(got) == image

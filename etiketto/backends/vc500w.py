@@ -20,7 +20,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     BadCassette,
@@ -52,6 +52,8 @@ from etiketto.render import PRINT_DPI
 
 DEFAULT_PORT = 9100
 PRINT_TIMEOUT = 180  # seconds without any change of the printer's stage
+SEND_TIMEOUT = 10.0  # sending the image on TCP: seconds without progress
+MIN_RATE = 8_000  # bytes a second: an image that trickles in slower stalled
 POLL_INTERVAL = 0.5  # like Brother's app
 SEND_RETRIES = 10  # answer code 1 (busy): try again, like Brother's app
 START_GRACE = 3.0  # seconds: a job that never shows BUSY counts as done after this
@@ -356,10 +358,16 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
         return _UsbLink(usb.connect(host, STANDARD_TIMEOUT, wait))
     from labelprinter.connection import Connection
 
-    # labelprinter opens an IPv4 socket. TODO: its send_file() is one
-    # sendall() under PRINT_TIMEOUT; net.send_all (progress-based timeout)
-    # would need a change in labelprinter or a link of our own like _UsbLink
-    return Connection(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
+    class Sending(Connection):
+        """labelprinter's connection, the job sent through net.send_all:
+        its send_file() is one sendfile() under the socket's timeout, which
+        then covers the whole image instead of the time without progress."""
+
+        def send_file(self, handle) -> None:
+            net.send_all(self._socket, handle.read(), SEND_TIMEOUT, MIN_RATE)
+
+    # labelprinter opens an IPv4 socket
+    return Sending(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
 
 
 STANDARD_TIMEOUT = 5.0  # an answer to a question, as labelprinter waits on TCP
