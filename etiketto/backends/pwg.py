@@ -7,6 +7,7 @@ different pixels).
 from __future__ import annotations
 
 import struct
+from collections.abc import Iterable
 
 from PIL import Image
 
@@ -77,11 +78,8 @@ def _line(row: bytes, step: int) -> bytes:
     return bytes(out)
 
 
-def encode(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -> bytes:
-    """A PWG Raster document for an "RGB" or "L" image: the page once, or
-    several times (copies for a printer that cannot make them itself)."""
-    if image.mode not in ("RGB", "L"):
-        image = image.convert("RGB")
+def _body(image: Image.Image) -> bytes:
+    """The compressed pixel rows of an "RGB" or "L" image."""
     step = 3 if image.mode == "RGB" else 1
     data = image.tobytes()
     stride = image.width * step
@@ -95,17 +93,53 @@ def encode(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -
         out.append(repeat - 1)  # line repeat count
         out += _line(rows[y], step)
         y += repeat
-    return SYNC + (header(image, dpi, media_name, pages) + bytes(out)) * pages
+    return bytes(out)
+
+
+def _usable(image: Image.Image) -> Image.Image:
+    return image if image.mode in ("RGB", "L") else image.convert("RGB")
+
+
+def encode(image: Image.Image, dpi: int, media_name: str = "", pages: int = 1) -> bytes:
+    """A PWG Raster document for an "RGB" or "L" image: the page once, or
+    several times (copies for a printer that cannot make them itself)."""
+    image = _usable(image)
+    return SYNC + (header(image, dpi, media_name, pages) + _body(image)) * pages
+
+
+def encode_pages(images: Iterable[Image.Image], dpi: int, total: int) -> bytes:
+    """A PWG Raster document of several pages (total of them), each
+    encoded when it comes."""
+    out = bytearray(SYNC)
+    for image in images:
+        image = _usable(image)
+        out += header(image, dpi, "", total) + _body(image)
+    return bytes(out)
 
 
 def decode(data: bytes) -> Image.Image:
     """The first page of a PWG Raster document (for tests and checks)."""
+    return decode_all(data, 1)[0]
+
+
+def decode_all(data: bytes, limit: int = 0) -> list[Image.Image]:
+    """The pages of a PWG Raster document, all or the first limit ones (for
+    tests and checks)."""
     if not data.startswith(SYNC):
         raise ValueError("not PWG Raster")
-    head = data[4 : 4 + HEADER_SIZE]
+    pages: list[Image.Image] = []
+    pos = 4
+    while pos < len(data) and (not limit or len(pages) < limit):
+        page, pos = _decode_page(data, pos)
+        pages.append(page)
+    return pages
+
+
+def _decode_page(data: bytes, start: int) -> tuple[Image.Image, int]:
+    head = data[start : start + HEADER_SIZE]
     width, height = struct.unpack_from(">II", head, 372)
     colors = struct.unpack_from(">I", head, 420)[0]
-    pos, rows = 4 + HEADER_SIZE, list[bytes]()
+    pos, rows = start + HEADER_SIZE, list[bytes]()
     while len(rows) < height:
         repeat = data[pos] + 1
         pos += 1
@@ -121,4 +155,5 @@ def decode(data: bytes) -> Image.Image:
                 row += data[pos : pos + count * colors]
                 pos += count * colors
         rows += [bytes(row)] * repeat
-    return Image.frombytes("RGB" if colors == 3 else "L", (width, height), b"".join(rows[:height]))
+    mode = "RGB" if colors == 3 else "L"
+    return Image.frombytes(mode, (width, height), b"".join(rows[:height])), pos

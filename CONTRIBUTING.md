@@ -191,8 +191,29 @@ interface first; please open an issue before you start.
    translation.
 
 Labels store the backend id in the `printer` field; files without it belong
-to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`. Printer settings (host, safety margin, cut, mode, colour
+to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`;
+labels on a label sheet (page printers) store `sheet`: its id, the
+positions on the first sheet and whether the content is turned. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
+
+## Label sheets
+
+The label sheets (`etiketto/sheets/templates.json`) are converted from the
+template database of [gLabels](https://github.com/j-evins/glabels-qt) (MIT
+license, Copyright (C) 2001-2026 Jaye Evins). To update them, check out
+gLabels and run the converter on its `templates` folder:
+
+```sh
+git clone --depth 1 https://github.com/j-evins/glabels-qt.git /tmp/glabels-qt
+python3 tools/glabels_templates.py /tmp/glabels-qt/templates
+```
+
+It rewrites `templates.json` and copies the license to
+`etiketto/sheets/LICENSE.glabels`; check the number of sheets it reports and
+run the tests (`tests/test_sheets.py` checks that every sheet is usable).
+A sheet that is missing or wrong belongs in gLabels, so that both projects
+profit; fixes to the converter belong here. Sheet ids (`"Avery L7160"`, brand
+and part number) are stored in `.etiketto` files: do not rename them.
 
 ## Code style
 
@@ -237,7 +258,8 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
-      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py etiketto/backends/*.py
+      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
+      etiketto/backends/*.py etiketto/sheets/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run

@@ -2101,6 +2101,10 @@ def test_a_partly_printed_job_says_how_many_labels_came_out():
         "Labels already printed: 2 of 5."
     )
     assert "already printed" not in texts.printer_error_text(PrinterError("x"), MILLIMETRES)
+    sheets = PrinterError("aborted", printed=10, copies=23, pages=True)
+    assert texts.printer_error_text(sheets, MILLIMETRES).endswith(
+        "Sheets already printed: 10 of 23."
+    )
 
 
 def test_a_busy_printer_with_canceled_queued_labels():

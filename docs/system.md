@@ -63,8 +63,9 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   paper, so the job is canceled with the paper size message; an ignored
   `copies` means it prints one, the others follow as below. [spec]
 - `Print-Job` with one page in the label's exact size: PDF if the printer
-  or CUPS takes it (Pillow's JPEG inside at quality 95 without chroma
-  subsampling, so that small text stays sharp), else PWG Raster, which
+  or CUPS takes it (one JPEG per page at quality 95 without chroma
+  subsampling, so that small text stays sharp; the page exactly the size in
+  millimetres, A4 is 595.276 × 841.89 pt), else PWG Raster, which
   every IPP Everywhere printer must take (8-bit sRGB or sGray, at 300 dpi
   or the next resolution the printer lists), else JPEG. `media-col`
   carries the size, `print-scaling=none` (if supported) keeps it at 100 %,
@@ -152,12 +153,64 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   and warns if it changes); the risk is someone in the same network
   pretending to be the printer and reading the label. [confirmed]
 - Checked with `ippeveprinter` (CUPS's simulated IPP Everywhere printer),
-  directly and through a CUPS queue. Through CUPS an A4 label arrives as a
-  595.276 × 841.89 pt PDF page (CUPS's filters write the exact A4 size);
-  sent directly it is Pillow's PDF, 595.2 × 841.92 pt (2480 × 3508 px at
-  300 dpi). An HP LaserJet Pro 4002 accepted the same
+  directly and through a CUPS queue. An A4 label arrives as a
+  595.276 × 841.89 pt PDF page, directly and through CUPS (2480 × 3508 px
+  at 300 dpi inside). An HP LaserJet Pro 4002 accepted the same
   job with `Validate-Job` (nothing printed). The PWG Raster pages convert
   with CUPS's own `pwgtopdf`. [confirmed]
+
+## Label sheets
+
+Several labels on one sheet of paper (A4, US Letter, others), placed as
+the gLabels template database says (`etiketto/sheets`, see below).
+
+- Each page is composed at 300 dpi: the paper's size from the template,
+  every label at its exact position (rounded to the pixel, 0.08 mm), round
+  labels, ellipses and CDs clipped to their shape (rectangles are printed to
+  their edges). Each position gets its own label image from a source
+  (`label_at(n)` for the n-th label of the job), so a mail merge can give
+  every position another row; printing copies is the source that always
+  returns the same label.
+- The positions to fill: the chosen ones on the first sheet (partly used
+  sheets), every position on the sheets after it. Up to 999 labels a job.
+- The pages go in `Print-Job`s of up to 10 pages each, every page once (no
+  `copies`): a PDF with a page each, or PWG Raster with `TotalPageCount`
+  set; 23 sheets are jobs of 10, 10 and 3 pages. Pages are composed one at
+  a time while the document is written: a job holds one page image at a
+  time, plus the encoded pages of that job (at most 10, as for copies
+  above). A printer that only takes JPEG gets one job per page. The jobs
+  take part in everything above: `Validate-Job` once before the first,
+  a busy printer asked again with the same document, the jobs sent and not
+  over canceled when a step fails; the message then counts sheets
+  ("Sheets already printed: 10 of 23."). Progress counts pages
+  (`job-impressions-completed`). [spec] [confirmed with ippeveprinter:
+  Avery L7160 with outlines, two pages, every label within a pixel of the
+  template]
+- Unprintable margins: `Get-Printer-Attributes` asks for
+  `media-col-ready` (the paper loaded) and `media-col-database` (each with
+  its `media-size` and `media-*-margin`, in hundredths of mm), and for the
+  `media-*-margin-supported` lists. The entry for the sheet's paper size
+  counts (loaded paper first); else the smallest margin the printer
+  supports for any paper, without 0 (borderless, only when asked for).
+  Borderless entries (all margins 0) are skipped. Etiketto never asks for
+  other margins, it warns: if the content of a label (the label inset by
+  the safety margin) reaches into the margin, the status line says which
+  positions, and printing asks first. [spec] [confirmed with ippeveprinter:
+  A4 3.4 mm left and right, 6.35 mm top and bottom]
+- Outlines (for a test on plain paper): 0.2 mm grey lines just inside each
+  label, the shape of the label (corner radius, ellipse, CD with hole).
+
+### The template database
+
+`etiketto/sheets/templates.json` is converted from gLabels' template files
+(`templates/*-templates.xml`, MIT license, Copyright (C) 2001-2026 Jaye
+Evins; license in `etiketto/sheets/LICENSE.glabels`) by
+`tools/glabels_templates.py`: lengths in mm, aliases (`equiv`) resolved,
+paper sizes from `paper-sizes.xml`. Left out: rolls, free-form labels
+(`Label-path`), templates with more than one kind of label, labels smaller
+than 5 mm, and a handful of templates whose labels lie off the page
+(typing errors in the database). gLabels gives a CD's hole as a radius;
+business-card CDs (a disc cut off at the sides) keep the disc's diameter.
 
 ## Problems the printer reports
 
@@ -180,6 +233,12 @@ error (RFC 8011 5.4.12). Keywords ending in `-low` (`toner-low`,
 
 ## Not done yet
 
-- The unprintable margin the printer reports (`media-col-ready`) is not
-  used for the safety margin yet; the documentation suggests 5 mm.
-- Label sheets (several labels on one page) come with label sheet support.
+- The unprintable margin the printer reports only warns on label sheets;
+  it does not set the safety margin of a single label (the documentation
+  suggests 5 mm).
+- Label sheets: the margins are matched to the paper size as it is, not
+  to a page the printer turns to portrait; a mail merge (a different label
+  at every position) is prepared in the page composer, not in the
+  interface yet.
+- Sheet templates of gLabels with labels of several kinds on one sheet, and
+  free-form labels, are not supported.

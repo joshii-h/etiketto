@@ -10,7 +10,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, GLib, GObject  # noqa: E402
+from gi.repository import Adw, GLib, GObject, Gtk  # noqa: E402
 
 from etiketto.model import (  # noqa: E402
     MAX_GAP_MM,
@@ -18,8 +18,10 @@ from etiketto.model import (  # noqa: E402
     MIN_SIZE_MM,
     MIN_TAPE_LENGTH_MM,
 )
+from etiketto.sheets import find  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
-from etiketto.ui.texts import ALIGNS, ORIENTATIONS  # noqa: E402
+from etiketto.ui.sheets import positions_text, sheet_summary  # noqa: E402
+from etiketto.ui.texts import ALIGNS, ORIENTATIONS, PRINT_ON  # noqa: E402
 from etiketto.ui.widgets import color_button, combo_row, flat_button, length_row  # noqa: E402
 
 if TYPE_CHECKING:
@@ -174,9 +176,21 @@ class LabelGroup(Adw.PreferencesGroup):
         return CUSTOM_SIZE
 
     def _add_size_rows(self) -> None:
-        """Die-cut labels: size (preset or by hand), gap, orientation, alignment."""
+        """Die-cut labels: size (preset or by hand), gap, orientation, alignment;
+        on a page printer a single label or a label sheet."""
         window = self.window
-        lab, caps, unit = window.label, window.backend.capabilities, window.unit
+        lab, caps = window.label, window.backend.capabilities
+        if caps.pages:
+            current = "sheet" if lab.sheet else "page"
+            self.add(combo_row(_("Print on"), PRINT_ON, current, self._on_print_on))
+        if caps.pages and lab.sheet:
+            self._add_sheet_rows()
+        else:
+            self._add_preset_rows(caps)
+        self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
+
+    def _add_preset_rows(self, caps) -> None:
+        unit = self.window.unit
         self._sizes = {
             _size_key(s.width_mm, s.height_mm): (s.width_mm, s.height_mm) for s in caps.label_sizes
         }
@@ -189,7 +203,55 @@ class LabelGroup(Adw.PreferencesGroup):
         self._add_width_height(caps)
         if not caps.pages:  # labels on a roll: gap and direction of the roll
             self._add_roll_rows()
-        self.add(combo_row(_("Alignment"), ALIGNS, lab.align, lambda v: window.change(align=v)))
+
+    # --- label sheets ------------------------------------------------------------------
+
+    def _on_print_on(self, key: str) -> None:
+        window = self.window
+        if (key == "sheet") == (window.label.sheet is not None):
+            return
+        if key == "page":
+            window.set_sheet(None)
+        else:
+            # idle: the combo row's popover closes first; the sidebar is rebuilt
+            GLib.idle_add(self._choose_sheet)
+
+    def _choose_sheet(self) -> bool:
+        self.window.choose_sheet()
+        return False
+
+    def _add_sheet_rows(self) -> None:
+        window = self.window
+        choice = window.label.sheet
+        assert choice
+        sheet = find(choice.id)
+        row = Adw.ActionRow(title=GLib.markup_escape_text(choice.id), activatable=True)
+        row.set_subtitle(
+            GLib.markup_escape_text(sheet_summary(sheet, window.unit))
+            if sheet
+            else _("Not in the list of sheets of this version")
+        )
+        row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
+        row.connect("activated", lambda _r: window.choose_sheet())
+        self.sheet_row = row
+        self.add(row)
+        if not sheet:
+            return
+        positions = Adw.ActionRow(
+            title=_("Positions"),
+            subtitle=positions_text(choice.positions, sheet.count),
+            activatable=True,
+        )
+        positions.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
+        positions.connect("activated", lambda _r: window.choose_positions())
+        self.positions_row = positions
+        self.add(positions)
+        turned = Adw.SwitchRow(
+            title=_("Turn the content"), subtitle=_("Read the label from its side")
+        )
+        turned.set_active(choice.rotated)
+        turned.connect("notify::active", lambda r, _p: window.set_sheet_rotated(r.get_active()))
+        self.add(turned)
 
     def _add_width_height(self, caps) -> None:
         width, height = self.window.label.media_size()

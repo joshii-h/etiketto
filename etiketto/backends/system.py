@@ -14,14 +14,15 @@ import io
 import ipaddress
 import ssl
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, replace
+from functools import partial
 from typing import Any
 from urllib.parse import quote, urlsplit
 
 from PIL import Image
 
-from etiketto.backends import ipp, mdns, pwg
+from etiketto.backends import ipp, mdns, pdf, pwg
 from etiketto.backends.base import (
     Backend,
     Capabilities,
@@ -30,6 +31,7 @@ from etiketto.backends.base import (
     JobCanceled,
     JobHeld,
     LabelSize,
+    Margins,
     MediaJam,
     NoFormat,
     OutOfPaper,
@@ -51,7 +53,7 @@ from etiketto.backends.base import (
     report_progress,
 )
 from etiketto.model import Label
-from etiketto.render import DEFAULT_SAFE_MM
+from etiketto.render import DEFAULT_SAFE_MM, render
 
 CUPS_URI = "ipp://localhost/"
 DPI = 300.0
@@ -131,6 +133,15 @@ PRINTER_ATTRIBUTES = [
     "operations-supported",
 ]
 STATE_ATTRIBUTES = ["printer-state", "printer-state-reasons"]
+MARGIN_SIDES = ("top", "right", "bottom", "left")
+# what the printer cannot print on: per paper size in media-col-ready (the
+# paper loaded) and media-col-database (all it knows), else the margins it
+# supports for any paper
+MARGIN_ATTRIBUTES = [
+    "media-col-ready",
+    "media-col-database",
+    *("media-%s-margin-supported" % side for side in MARGIN_SIDES),
+]
 
 
 # --- addresses ---------------------------------------------------------------------
@@ -299,6 +310,53 @@ def _user() -> ipp.Attribute:
     return ipp.Attribute(ipp.NAME, "requesting-user-name", [user])
 
 
+# --- unprintable margins -------------------------------------------------------------
+
+
+def _media_margins(collection: Any) -> Margins | None:
+    """The margins of one media-col entry, for its paper size; None for a
+    borderless entry (all margins 0: only used when asked for) or one
+    without a fixed size or without margins."""
+    if not isinstance(collection, dict):
+        return None
+    size = _value(collection, "media-size", dict, {})
+    width, height = _int(size, "x-dimension"), _int(size, "y-dimension")
+    sides = [_int(collection, "media-%s-margin" % side) for side in MARGIN_SIDES]
+    if not width or not height or None in sides or not any(sides):
+        return None
+    top, right, bottom, left = (v / 100 for v in sides if v is not None)
+    return Margins(top, right, bottom, left, size_mm=(width / 100, height / 100))
+
+
+def _smallest_margin(attrs: dict, side: str) -> int | None:
+    """The smallest margin but 0 (borderless, only when asked for)."""
+    values = [
+        v
+        for v in attrs.get("media-%s-margin-supported" % side) or []
+        if isinstance(v, int) and not isinstance(v, bool) and v >= 0
+    ]
+    if not values:
+        return None
+    return min((v for v in values if v), default=0)
+
+
+def margins(attrs: dict) -> tuple[Margins, ...]:
+    """The printer's unprintable margins: per paper size as media-col-ready
+    and media-col-database list them (loaded paper first), then for any
+    paper from media-*-margin-supported."""
+    found = [
+        m
+        for name in ("media-col-ready", "media-col-database")
+        for m in map(_media_margins, attrs.get(name) or [])
+        if m is not None
+    ]
+    sides = [_smallest_margin(attrs, side) for side in MARGIN_SIDES]
+    if None not in sides:
+        top, right, bottom, left = (v / 100 for v in sides if v is not None)
+        found.append(Margins(top, right, bottom, left))
+    return tuple(found)
+
+
 # --- page size -----------------------------------------------------------------------
 
 
@@ -372,21 +430,34 @@ def document_format(attrs: dict) -> str:
 def document(image: Image.Image, attrs: dict, pages: int = 1) -> tuple[bytes, str]:
     """The page in a format the printer takes: PDF, PWG Raster or JPEG.
     Only PWG Raster repeats the page (pages > 1)."""
+    return document_of([image], 1, attrs, pages)
+
+
+def document_of(
+    images: Iterable[Image.Image], count: int, attrs: dict, repeat: int = 1
+) -> tuple[bytes, str]:
+    """count pages in a format the printer takes: PDF or PWG Raster with all
+    of them, JPEG with the first (one job per page). PDF and PWG Raster
+    without loss, JPEG at its best quality, without chroma subsampling, so
+    that small text stays sharp. Each page is encoded when it comes. Only
+    PWG Raster repeats a single page (repeat > 1)."""
     mime = document_format(attrs)
-    buf = io.BytesIO()
     if mime == PDF:
-        # Pillow embeds RGB as JPEG: at its best quality, without chroma
-        # subsampling, so that small text stays sharp
-        image.convert("RGB").save(buf, format="PDF", resolution=DPI, quality=95, subsampling=0)
-    elif mime == PWG_RASTER:
-        return _pwg(image, attrs, pages), mime
-    else:
-        image.convert("RGB").save(buf, format="JPEG", quality=95, subsampling=0, dpi=(DPI, DPI))
+        return pdf.encode(images, DPI), mime
+    if mime == PWG_RASTER:
+        mode, dpi = _pwg_format(attrs)
+        pages = (_pwg_page(image, mode, dpi) for image in images)
+        if count == 1:
+            return pwg.encode(next(iter(pages)), dpi, pages=repeat), mime
+        return pwg.encode_pages(pages, dpi, count), mime
+    buf = io.BytesIO()
+    image = next(iter(images)).convert("RGB")
+    image.save(buf, format="JPEG", quality=95, subsampling=0, dpi=(DPI, DPI))
     return buf.getvalue(), mime
 
 
-def _pwg(image: Image.Image, attrs: dict, pages: int = 1) -> bytes:
-    """PWG Raster in a colour space and resolution the printer lists."""
+def _pwg_format(attrs: dict) -> tuple[str, int]:
+    """The colour space ("RGB" or "L") and resolution the printer lists."""
     types = _texts(attrs, "pwg-raster-document-type-supported")
     if not types or "srgb_8" in types:
         mode = "RGB"
@@ -394,11 +465,22 @@ def _pwg(image: Image.Image, attrs: dict, pages: int = 1) -> bytes:
         mode = "L"
     else:
         raise NoFormat("pwg-raster-document-type-supported: " + ", ".join(types))
-    dpi = _pwg_resolution(attrs.get("pwg-raster-document-resolution-supported") or [])
-    if dpi != DPI:
-        size = (round(image.width * dpi / DPI), round(image.height * dpi / DPI))
-        image = image.resize(size, Image.Resampling.LANCZOS)
-    return pwg.encode(image.convert(mode), dpi, pages=pages)
+    return mode, _pwg_resolution(attrs.get("pwg-raster-document-resolution-supported") or [])
+
+
+def _pwg_page(image: Image.Image, mode: str, dpi: int) -> Image.Image:
+    """The page at dpi: as it is if it was rendered at dpi (see
+    _at_resolution), else resized: pixel by pixel for a whole factor (600
+    dpi from 300: no grey edges where there were none), smoothly else."""
+    width_mm, height_mm = _size_mm(image)
+    size = (round(width_mm / 25.4 * dpi), round(height_mm / 25.4 * dpi))
+    if abs(image.width - size[0]) > 1 or abs(image.height - size[1]) > 1:
+        whole = dpi % DPI == 0
+        method = Image.Resampling.NEAREST if whole else Image.Resampling.LANCZOS
+        if whole:
+            size = (image.width * int(dpi // DPI), image.height * int(dpi // DPI))
+        image = image.resize(size, method)
+    return image.convert(mode)
 
 
 def _pwg_resolution(resolutions: list[Any]) -> int:
@@ -453,7 +535,7 @@ class SystemPrinter(Backend):
 
     def query(self, host: str) -> PrinterInfo:
         uri = printer_uri(host)
-        attrs = _printer_attributes(uri)
+        attrs = _printer_attributes(uri, PRINTER_ATTRIBUTES + MARGIN_ATTRIBUTES)
         state = _int(attrs, "printer-state", IDLE)
         error = state_error(attrs, _is_local_queue(uri))
         return PrinterInfo(
@@ -464,17 +546,30 @@ class SystemPrinter(Backend):
             state="ERROR" if error else ("BUSY" if state == PROCESSING else "IDLE"),
             error=error.code if error else "",
             firmware=_text(attrs, "printer-firmware-string-version"),
+            margins=margins(attrs),
         )
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
     ) -> Image.Image:
         """One page: x across the paper, y down the page. Its size in mm
-        travels with it (info), exact for paper sizes like A4."""
-        image = super().prepare(replace(label, auto_length=False), options, safe_mm)
+        travels with it (info), exact for paper sizes like A4; and how to
+        render it again at another resolution (info["render_at"](dpi)), for
+        a printer that takes PWG Raster at another one."""
+        return self._prepare_at(label, options, safe_mm, DPI)
+
+    def _prepare_at(
+        self, label: Label, options: PrintOptions, safe_mm: float, dpi: float
+    ) -> Image.Image:
+        label = replace(label, auto_length=False)
+        image = render(
+            label, dpi=dpi, safe_mm=safe_mm, min_length_mm=self.capabilities.min_length_mm
+        ).image
+        image = self.preview(image, options.mode)
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)
         image.info["size_mm"] = label.media_size()
+        image.info["render_at"] = partial(self._prepare_at, label, options, safe_mm)
         return image
 
     def print_label(
@@ -484,31 +579,86 @@ class SystemPrinter(Backend):
         options: PrintOptions,
         progress: ProgressCallback | None = None,
     ) -> PrintResult | None:
+        return self._print([image], host, max(1, options.copies), progress)
+
+    def print_pages(
+        self,
+        pages: Sequence[Image.Image],
+        host: str,
+        options: PrintOptions,
+        progress: ProgressCallback | None = None,
+    ) -> PrintResult | None:
+        """All pages in one job (one job per page for JPEG), each once."""
+        return self._print(pages, host, 1, progress)
+
+    def _print(
+        self,
+        pages: Sequence[Image.Image],
+        host: str,
+        copies: int,
+        progress: ProgressCallback | None,
+    ) -> PrintResult | None:
         uri = printer_uri(host)
         attrs = _printer_attributes(uri)
         problem = state_error(attrs, _is_local_queue(uri))
         if problem:
             raise problem
-        image, width, height = _page(image, attrs.get("media-size-supported") or [])
-        document_format(attrs)  # NoFormat before anything is sent
-        page = _Page(image, width, height)
-        return _Jobs(uri, attrs, page, max(1, options.copies), progress).run()
+        mime = document_format(attrs)  # NoFormat before anything is sent
+        if mime == PWG_RASTER:
+            pages = _at_resolution(pages, _pwg_format(attrs)[1])
+        turned, width, height = _page(pages[0], attrs.get("media-size-supported") or [])
+        if turned:
+            pages = _Turned(pages)
+        return _Jobs(uri, attrs, _Pages(pages, width, height), copies, progress).run()
 
 
-def _page(image: Image.Image, sizes: list[Any]) -> tuple[Image.Image, int, int]:
-    """The page and its size in hundredths of mm, turned to portrait if the
-    printer only takes it that way; UnsupportedSize if not at all."""
-    width_mm, height_mm = image.info.get("size_mm") or (
-        image.width / DPI * 25.4,
-        image.height / DPI * 25.4,
-    )
+def _at_resolution(pages: Sequence[Image.Image], dpi: int) -> Sequence[Image.Image]:
+    """The pages rendered again at dpi where they can be (a label, or the
+    pages of a label sheet): sharper than resized, and without grey edges
+    that were not there. Pages that cannot are resized when encoded."""
+    if dpi == DPI:
+        return pages
+    at_dpi = getattr(pages, "at_dpi", None)  # the pages of a label sheet
+    if at_dpi is not None:
+        return at_dpi(dpi) or pages
+    if len(pages) == 1 and callable(render_at := pages[0].info.get("render_at")):
+        return [render_at(dpi)]
+    return pages
+
+
+class _Turned(Sequence[Image.Image]):
+    """The pages, each turned to portrait when it is asked for."""
+
+    def __init__(self, pages: Sequence[Image.Image]):
+        self.pages = pages
+
+    def __len__(self) -> int:
+        return len(self.pages)
+
+    def __getitem__(self, index):
+        page = self.pages[index]
+        turned = page.rotate(90, expand=True)
+        width, height = _size_mm(page)
+        turned.info["size_mm"] = (height, width)
+        return turned
+
+
+def _size_mm(image: Image.Image) -> tuple[float, float]:
+    return image.info.get("size_mm") or (image.width / DPI * 25.4, image.height / DPI * 25.4)
+
+
+def _page(image: Image.Image, sizes: list[Any]) -> tuple[bool, int, int]:
+    """Whether the page has to be turned to portrait (the printer only
+    takes it that way) and its size in hundredths of mm; UnsupportedSize if
+    the printer does not take it at all."""
+    width_mm, height_mm = _size_mm(image)
     width, height = _hundredths(width_mm), _hundredths(height_mm)
     size = match_size(sizes, width, height)
     if size:
-        return image, size[0], size[1]
+        return False, size[0], size[1]
     size = match_size(sizes, height, width)
     if size:
-        return image.rotate(90, expand=True), size[0], size[1]
+        return True, size[0], size[1]
     raise UnsupportedSize("%g × %g mm not in media-size-supported" % (width_mm, height_mm))
 
 
@@ -579,8 +729,8 @@ def takes_copies(attrs: dict, copies: int) -> bool:
 
 
 @dataclass
-class _Page:
-    image: Image.Image
+class _Pages:
+    images: Sequence[Image.Image]
     width: int  # hundredths of mm, as the printer lists the size
     height: int
 
@@ -588,29 +738,40 @@ class _Page:
 class _Jobs:
     """Sends the copies: in one job if the printer makes copies itself,
     else the page repeated in jobs of up to PAGES_PER_JOB pages (PWG
-    Raster) or one job per copy. Each job is followed until it is done;
-    once one waits in the queue, the others are sent behind it without
-    waiting. If a step fails, the jobs sent and not over are canceled,
-    so that they do not print later on their own."""
+    Raster) or one job per copy. Several pages (label sheets, each once)
+    go in jobs of up to PAGES_PER_JOB pages, as JPEG one job per page: a
+    document is made in memory, so a long job is split. Each job is
+    followed until it is done; once one waits in the queue, the others are
+    sent behind it without waiting. If a step fails, the jobs sent and not
+    over are canceled, so that they do not print later on their own.
+    Progress counts copies, or pages."""
 
     def __init__(
-        self, uri: str, attrs: dict, page: _Page, copies: int, progress: ProgressCallback | None
+        self, uri: str, attrs: dict, pages: _Pages, copies: int, progress: ProgressCallback | None
     ):
-        self.uri, self.attrs, self.page = uri, attrs, page
+        self.uri, self.attrs, self.pages = uri, attrs, pages
         self.copies, self.progress = copies, progress
+        self.several = len(pages.images) > 1  # pages, each once
+        self.total = len(pages.images) if self.several else copies
         self.queued = False
         self.sent: list[int] = []  # job ids
         self.over: set[int] = set()  # nothing left to cancel: done, ended or canceled
-        self.printed = 0  # labels the printer said it finished
-        self._document: tuple[int, bytes, str] | None = None  # pages, data, format
+        self.printed = 0  # labels (or pages) the printer said it finished
+        # (first page, pages, repeats), data, format
+        self._document: tuple[tuple[int, int, int], bytes, str] | None = None
 
     def run(self) -> PrintResult | None:
         try:
-            self._send_all()
+            if self.several:
+                self._all_pages()
+            else:
+                self._send_all()
         except Exception as e:
             canceled = self._cancel_unfinished()
             if isinstance(e, PrinterError) and self.printed:
-                e.params.update(printed=self.printed, copies=self.copies)
+                e.params.update(printed=self.printed, copies=self.total)
+                if self.several:
+                    e.params["pages"] = True
             if isinstance(e, PrinterError) and canceled and self.queued:
                 e.params["queue_canceled"] = True
             raise
@@ -637,6 +798,13 @@ class _Jobs:
         if done < self.copies:
             self._one_by_one(done)
 
+    def _all_pages(self) -> None:
+        """The pages in order, each once."""
+        self._validate(0)
+        step = 1 if document_format(self.attrs) == JPEG else PAGES_PER_JOB
+        for first in range(0, self.total, step):
+            self._job(first, min(step, self.total - first), first=first)
+
     def _one_by_one(self, done: int) -> None:
         if document_format(self.attrs) == PWG_RASTER:
             for first in range(done, self.copies, PAGES_PER_JOB):
@@ -646,10 +814,16 @@ class _Jobs:
         for n in range(done, self.copies):
             self._job(n, 1)
 
-    def data(self, pages: int) -> tuple[bytes, str]:
-        """The document, made once for all jobs of the same size."""
-        if self._document is None or self._document[0] != pages:
-            self._document = (pages, *document(self.page.image, self.attrs, pages))
+    def data(self, first: int, count: int, repeat: int) -> tuple[bytes, str]:
+        """The document of count pages from the first one (one page:
+        repeated), made once for all jobs alike; the last one is let go
+        before the next is made."""
+        key = (first, count, repeat)
+        if self._document is None or self._document[0] != key:
+            self._document = None
+            images = self.pages.images
+            pages = (images[n] for n in range(first, first + count))
+            self._document = (key, *document_of(pages, count, self.attrs, repeat))
         return self._document[1], self._document[2]
 
     def _operation(self, mime: str) -> list[ipp.Attribute]:
@@ -660,7 +834,7 @@ class _Jobs:
         ]
 
     def _template(self, copies: int) -> list[ipp.Attribute]:
-        job = [_media(self.page.width, self.page.height)]
+        job = [_media(self.pages.width, self.pages.height)]
         if copies:
             job.insert(0, ipp.Attribute(ipp.INTEGER, "copies", [copies]))
         if "none" in _texts(self.attrs, "print-scaling-supported"):
@@ -690,11 +864,18 @@ class _Jobs:
             )
         return ignored
 
-    def _job(self, done: int, count: int, copies: int = 0, pages: int = 1) -> set[str]:
-        """Print-Job for count labels (copies or pages) after done ones; the
-        names of the attributes the printer ignored."""
-        report_progress(self.progress, done + 1, self.copies)
-        answer = self._print_job(pages, copies)
+    def _job(
+        self, done: int, count: int, copies: int = 0, pages: int = 1, first: int = 0
+    ) -> set[str]:
+        """Print-Job for count labels after done ones: copies of the page,
+        the page repeated pages times, or count pages from the first one;
+        the names of the attributes the printer ignored."""
+        report_progress(self.progress, done + 1, self.total)
+        if self.several:
+            data, mime = self.data(first, count, 1)
+        else:
+            data, mime = self.data(0, 1, pages)
+        answer = self._print_job(data, mime, copies)
         job_id = _int(answer.group(ipp.JOB_GROUP), "job-id")
         if job_id is not None:
             self.sent.append(job_id)
@@ -706,10 +887,9 @@ class _Jobs:
             self._wait(job_id, done, 1 if "copies" in ignored else count)
         return ignored
 
-    def _print_job(self, pages: int, copies: int) -> ipp.Response:
+    def _print_job(self, data: bytes, mime: str, copies: int) -> ipp.Response:
         """Print-Job; a printer that is busy (with the last job, or another
         computer's) makes no job and is asked again for up to BUSY_LIMIT."""
-        data, mime = self.data(pages)
         start = _clock()
         while True:
             answer = _send(
@@ -730,7 +910,7 @@ class _Jobs:
     def _wait(self, job_id: int, done: int, count: int) -> None:
         def report(completed: int, stage: str) -> None:
             self.printed = max(self.printed, done + min(count, completed))
-            report_progress(self.progress, done + min(count, completed + 1), self.copies, stage)
+            report_progress(self.progress, done + min(count, completed + 1), self.total, stage)
 
         watch = _Watch(self.uri, job_id, count)
         try:
@@ -741,7 +921,7 @@ class _Jobs:
         if not self.queued:
             self.over.add(job_id)
             self.printed = done + count
-            report_progress(self.progress, done + count, self.copies)
+            report_progress(self.progress, done + count, self.total)
 
 
 WAITING, DONE, QUEUED = "waiting", "done", "queued"

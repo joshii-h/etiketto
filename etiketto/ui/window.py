@@ -15,9 +15,11 @@ from PIL import Image  # noqa: E402
 
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
-from etiketto.backends.base import Backend  # noqa: E402
-from etiketto.model import CodeElement, Label, TextElement  # noqa: E402
+from etiketto.backends.base import Backend, margins_for  # noqa: E402
+from etiketto.model import CodeElement, Label, SheetChoice, TextElement  # noqa: E402
 from etiketto.render import Rendered, render  # noqa: E402
+from etiketto.sheets import Sheet, find  # noqa: E402
+from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
 from etiketto.ui.i18n import _, docs_url  # noqa: E402
@@ -26,6 +28,7 @@ from etiketto.ui.preview import Preview  # noqa: E402
 from etiketto.ui.printer import Printer  # noqa: E402
 from etiketto.ui.printing import PrintFlow  # noqa: E402
 from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
+from etiketto.ui.sheets import PositionsDialog, SheetChooser, margins_note  # noqa: E402
 from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
 
@@ -41,6 +44,7 @@ class Window(Adw.ApplicationWindow):
         # the start label and "New label" take the width of the inserted tape
         self.adopts_tape = True
         self._geometries: dict[str, dict] = {}  # label size per printer model
+        self._last_sheet: SheetChoice | None = None  # back to it after a single label
         self.rendered: Rendered | None = None
         self.expand_index = -1
         self.last_dialog = None
@@ -240,6 +244,87 @@ class Window(Adw.ApplicationWindow):
         if printer_changed:
             self.printer.refresh()
 
+    # --- label sheets ----------------------------------------------------------------
+
+    @property
+    def sheet(self) -> Sheet | None:
+        """The label sheet the label is printed on, if any (and known)."""
+        choice = self.label.sheet
+        if not choice or not self.backend.capabilities.pages:
+            return None
+        return find(choice.id)
+
+    def set_sheet(self, choice: SheetChoice | None) -> None:
+        """Print on this sheet (the label takes its label size), or None:
+        a single label again, in the size it had on the sheet."""
+        if self.label.sheet:
+            self._last_sheet = self.label.sheet
+        self.label.sheet = choice
+        self.label.use_sheet_size()
+        self._structure_changed()
+
+    def choose_sheet(self) -> None:
+        """The sheet chooser; back to the last sheet without asking when
+        "Label sheet" is chosen again."""
+        current = self.label.sheet
+        if current is None and self._last_sheet and find(self._last_sheet.id):
+            self.set_sheet(self._last_sheet)
+            return
+        chosen = []
+
+        def then(sheet: Sheet) -> None:
+            chosen.append(sheet)
+            rotated = bool(current and current.rotated)
+            same = current is not None and current.id == sheet.id
+            positions = current.positions if same and current else list(range(sheet.count))
+            self.set_sheet(SheetChoice(sheet.id, positions, rotated))
+
+        def closed(_dialog) -> None:
+            if not chosen and not self.label.sheet:
+                self.rebuild_sidebar()  # "Print on" back to a single label
+
+        chooser = SheetChooser(self, then, find(current.id) if current else None)
+        chooser.dialog.connect("closed", closed)
+        chooser.present()
+
+    def choose_positions(self) -> None:
+        sheet, choice = self.sheet, self.label.sheet
+        if not sheet or not choice:
+            return
+
+        def then(positions: list[int]) -> None:
+            choice.positions = positions
+            self._structure_changed()
+
+        margins = self.sheet_margins()
+        dialog = PositionsDialog(
+            self, sheet, choice.positions, margins.sides() if margins else None, then
+        )
+        dialog.present()
+
+    def set_sheet_rotated(self, rotated: bool) -> None:
+        if self.label.sheet and self.label.sheet.rotated != rotated:
+            self.label.sheet.rotated = rotated
+            self.label.use_sheet_size()
+            self.mark_changed()
+
+    def sheet_margins(self):
+        """The printer's unprintable margins for the sheet's paper, if known."""
+        sheet, info = self.sheet, self.printer.info
+        if not sheet or not info:
+            return None
+        return margins_for(info.margins, sheet.paper)
+
+    def positions_in_margins(self, positions=None) -> list[int]:
+        """Of the positions (by default the chosen ones on the first sheet),
+        those whose content the printer's margins would cut off."""
+        sheet, margins, choice = self.sheet, self.sheet_margins(), self.label.sheet
+        if not sheet or not margins or not choice:
+            return []
+        if positions is None:
+            positions = first_positions(sheet, choice.positions)
+        return in_margins(sheet, positions, margins.sides(), self.printer_settings.safe_mm)
+
     def update_title(self) -> None:
         name = self.path.name if self.path else _("Unsaved label")
         self.window_title.set_subtitle(("• " if self.dirty else "") + name)
@@ -256,7 +341,11 @@ class Window(Adw.ApplicationWindow):
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
         )
-        return rendered, backend.preview(rendered.image, self.print_flow.mode)
+        image = backend.preview(rendered.image, self.print_flow.mode)
+        sheet = self.sheet
+        if sheet and self.label.sheet:  # round labels and CDs: their shape
+            image = clip_preview(image, sheet, self.label.sheet.rotated)
+        return rendered, image
 
     def schedule_render(self) -> None:
         if self._render_source:
@@ -293,7 +382,14 @@ class Window(Adw.ApplicationWindow):
         if rendered.warnings:
             problems = "; ".join(warning_text(w) for w in rendered.warnings)
             info += " · " + _("Problem: %s") % problems
-        return info
+        return info + self._sheet_status()
+
+    def _sheet_status(self) -> str:
+        """ " · Avery L7160", and the labels the printer's margins cut off."""
+        if not self.label.sheet:
+            return ""
+        cut = self.positions_in_margins()
+        return " · " + self.label.sheet.id + (" · " + margins_note(cut) if cut else "")
 
     def _render_failed(self, error: Exception) -> None:
         self.rendered = None

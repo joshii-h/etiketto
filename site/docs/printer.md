@@ -129,8 +129,11 @@ label is printed as one page of exactly its size, unscaled.
   address or the name of its CUPS queue under
   [[ui:Host name or IP address]].
 - [[ui:Label size]]: the paper size, or [[ui:Custom size]].
+- [[ui:Print on]] [[ui:Label sheet]]: several labels on a sheet of
+  self-adhesive labels, see [Label sheets](sheets.md).
 - Most office printers cannot print the outer 4 to 5 mm of a page: set the
-  [[ui:Safety margin]] to 5 mm.
+  [[ui:Safety margin]] to 5 mm. On label sheets Etiketto warns when a
+  label reaches into what the printer reports.
 
 ### Problems { #system-problems }
 

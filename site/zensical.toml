@@ -14,7 +14,7 @@ site_dir = "site"
 extra_css = ["assets/extra.css"]
 # Page order; the titles come from each page's first heading, so they are
 # translated with the page.
-nav = ["index.md", "use.md", "printer.md", "contribute.md"]
+nav = ["index.md", "use.md", "sheets.md", "printer.md", "contribute.md"]
 
 [project.theme]
 language = "en"

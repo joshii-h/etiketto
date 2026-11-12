@@ -10,6 +10,7 @@ from etiketto.model import (
     ImageElement,
     Label,
     LabelError,
+    SheetChoice,
     TextElement,
 )
 
@@ -397,3 +398,61 @@ def test_absurdly_nested_json_is_no_label(tmp_path):
     with pytest.raises(LabelError) as info:
         Label.load(path)
     assert info.value.code == "not_label"
+
+
+# --- label sheets --------------------------------------------------------------------
+
+
+def test_a_label_sheet_is_saved_with_its_positions(tmp_path):
+    label = Label(printer="system", orientation="across", elements=[TextElement(text="A")])
+    label.sheet = SheetChoice("Avery L7160", [3, 4, 5], rotated=False)
+    label.use_sheet_size()
+    assert label.media_size() == (63.994, 38.1)
+    path = tmp_path / "sheet.etiketto"
+    label.save(path)
+    saved = json.loads(path.read_text())
+    assert saved["sheet"] == {"id": "Avery L7160", "positions": [3, 4, 5], "rotated": False}
+    loaded = Label.load(path)
+    assert loaded.sheet == label.sheet and loaded.media_size() == (63.994, 38.1)
+    assert Label.from_dict({"printer": "system"}).sheet is None  # older files
+
+
+def test_the_label_takes_its_sheets_size_also_turned():
+    data = {"printer": "system", "tape_mm": 10, "length_mm": 10}
+    data["sheet"] = {"id": "Zweckform 3475", "positions": [5, 5, 2, 10**6, -1], "rotated": 1}
+    label = Label.from_dict(data)
+    assert label.sheet == SheetChoice("Zweckform 3475", [2, 5], rotated=True)
+    assert label.media_size() == (36.026, 70.051)  # turned: as high as the sheet's is wide
+    assert label.sheet_size() == (36.026, 70.051)
+
+
+def test_a_sheet_this_version_does_not_know_keeps_the_saved_size():
+    data = {"printer": "system", "tape_mm": 40, "length_mm": 60}
+    data["sheet"] = {"id": "Future 1"}
+    label = Label.from_dict(data)
+    assert label.sheet == SheetChoice("Future 1") and label.sheet_size() is None
+    assert label.media_size() == (40, 60)
+
+
+def test_only_page_printers_print_on_sheets():
+    data = {"printer": "cab", "sheet": {"id": "Avery L7160"}}
+    assert Label.from_dict(data).sheet is None
+    label = Label(printer="system", orientation="across")
+    label.sheet = SheetChoice("Avery L7160", [0])
+    label.use_sheet_size()
+    system = label.geometry()
+    label.switch_printer("cab")
+    assert label.sheet is None
+    label.switch_printer("system", system)
+    assert label.sheet == SheetChoice("Avery L7160", [0])
+    assert system["sheet"] is not label.sheet  # a copy: later changes stay apart
+
+
+@pytest.mark.parametrize(
+    "sheet",
+    ["Avery L7160", {"id": 5}, {"id": "x", "positions": "1-3"}, {"id": "x", "positions": [True]}],
+)
+def test_a_broken_sheet_is_damaged(sheet):
+    with pytest.raises(LabelError) as caught:
+        Label.from_dict({"printer": "system", "sheet": sheet})
+    assert caught.value.code == "damaged"

@@ -8,6 +8,7 @@ from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from gi.repository import Adw, GLib, Gtk
+from PIL import Image
 
 from etiketto.backends.base import (
     ColorAdjust,
@@ -16,7 +17,9 @@ from etiketto.backends.base import (
     PrintResult,
     Progress,
 )
+from etiketto.sheets.layout import MAX_LABELS, LabelSource, Pages, SheetJob, first_positions
 from etiketto.ui.i18n import _, isolate
+from etiketto.ui.sheets import numbers_text
 from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
@@ -31,12 +34,19 @@ if TYPE_CHECKING:
     from etiketto.ui.window import Window
 
 
+def copies_of(image: Image.Image) -> LabelSource:
+    """The same label at every position of a sheet. (A mail merge gives
+    each position its own label instead: label_at(n) renders row n.)"""
+    return lambda _n: image
+
+
 class PrintFlow:
     """From the Print button to the result: checks, dialog, job, progress."""
 
     def __init__(self, window: Window):
         self.window = window
         self.busy = False
+        self.open_dialog: Adw.AlertDialog | None = None  # the print dialog, while open
 
     def _modes(self) -> tuple[PrintMode, ...]:
         return self.window.backend.modes(self.window.printer.info)
@@ -61,6 +71,9 @@ class PrintFlow:
             return
         if not window.label.elements and not window.label.background_image:
             window.toast(_("The label is empty"))
+            return
+        if window.label.sheet and not window.sheet:
+            window.toast(_("This label sheet is unknown to this version – choose another one"))
             return
         if tape := window.printer.other_tape():
             self._wrong_cassette_dialog(tape)
@@ -111,12 +124,62 @@ class PrintFlow:
         self.window.schedule_render()  # black and white shows grey
 
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print."""
-        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        """Copies, cut and mode for the print dialog, from the last print; on
+        a label sheet the number of labels (the chosen positions) and
+        whether to print the outlines."""
+        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        sheet, choice = self.window.sheet, self.window.label.sheet
+        if sheet and choice:
+            choices["copies"] = len(first_positions(sheet, choice.positions))
+            choices["outlines"] = bool(self.window.printer_settings.get("outlines", False))
+        return choices
+
+    def _sheet_rows(self, choices: dict) -> list[Gtk.Widget]:
+        labels = spin_row(
+            _("Labels"),
+            choices["copies"],
+            1,
+            MAX_LABELS,
+            1,
+            0,
+            lambda v: self._on_labels(choices, int(v)),
+        )
+        outlines = Adw.SwitchRow(title=_("Print outlines"), subtitle=_("To test on plain paper"))
+        outlines.set_active(choices["outlines"])
+        outlines.connect("notify::active", lambda r, _p: choices.update(outlines=r.get_active()))
+        return [labels, outlines]
+
+    def _on_labels(self, choices: dict, count: int) -> None:
+        choices.update(copies=count)
+        if self.open_dialog:
+            self.open_dialog.set_body(self._body(choices))
+
+    def sheet_job(self, choices: dict) -> SheetJob | None:
+        sheet, choice = self.window.sheet, self.window.label.sheet
+        if not sheet or not choice:
+            return None
+        return SheetJob(
+            sheet,
+            choices["copies"],
+            tuple(choice.positions),
+            choice.rotated,
+            choices.get("outlines", False),
+        )
+
+    def _body(self, choices: dict) -> str:
+        window = self.window
+        job = self.sheet_job(choices)
+        if job is None:
+            return window.size_text(window.rendered.length_mm if window.rendered else None)
+        sheets = _("Sheets: %d") % len(job.slots())
+        return " · ".join((window.size_text(), job.sheet.id, sheets))
 
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
-        cutter, no mode row with a single mode, colour correction if supported."""
+        cutter, no mode row with a single mode, colour correction if supported;
+        on a label sheet the number of labels and the outlines."""
+        if self.window.sheet:
+            return self._sheet_rows(choices)
         caps = self.window.backend.capabilities
         rows: list[Gtk.Widget] = [
             spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
@@ -179,8 +242,8 @@ class PrintFlow:
         if window.rendered is None:
             return
         choices = self.choices()
-        body = window.size_text(window.rendered.length_mm)
-        dialog = list_dialog(_("Print label"), self._rows(choices), body)
+        dialog = list_dialog(_("Print label"), self._rows(choices), self._body(choices))
+        self.open_dialog = dialog
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("print", _("Print"))
         dialog.set_response_appearance("print", Adw.ResponseAppearance.SUGGESTED)
@@ -189,25 +252,45 @@ class PrintFlow:
         window.present_dialog(dialog)
 
     def _on_response(self, result: str, choices: dict) -> None:
+        self.open_dialog = None
         if result != "print":
             return
         window = self.window
         settings = window.printer_settings
         settings.update(cut=choices["cut"], mode=choices["mode"])
-        self.start(
-            PrintOptions(
-                copies=choices["copies"],
-                cut=choices["cut"],
-                mode=choices["mode"],
-                color=settings.color_adjust,
-                data_format=settings.data_format,
-                gap_mm=window.label.gap_mm,
+        options = PrintOptions(
+            copies=choices["copies"],
+            cut=choices["cut"],
+            mode=choices["mode"],
+            color=settings.color_adjust,
+            data_format=settings.data_format,
+            gap_mm=window.label.gap_mm,
+        )
+        job = self.sheet_job(choices)
+        if job is None:
+            self.start(options)
+            return
+        settings.update(outlines=job.outlines)
+        cut = window.positions_in_margins({p for page in job.slots() for p in page})
+        if not cut:
+            self.start(options, job)
+            return
+        window.confirm(
+            _("Labels in the printer's margin"),
+            _(
+                "The printer cannot print near the edges of the paper. The content of "
+                "labels %(positions)s reaches into that margin and would be cut off. "
+                "Increase the safety margin, or leave these positions out."
             )
+            % {"positions": isolate(numbers_text(cut))},
+            "print",
+            _("Print anyway"),
+            lambda: self.start(options, job),
         )
 
     # --- job ----------------------------------------------------------------------
 
-    def start(self, options: PrintOptions) -> None:
+    def start(self, options: PrintOptions, job: SheetJob | None = None) -> None:
         window = self.window
         host = window.printer.host
         if not host:
@@ -230,7 +313,11 @@ class PrintFlow:
                 GLib.idle_add(self.done, e, _("The label cannot be prepared for printing."))
                 return
             try:
-                result = backend.print_label(image, host, options, progress)
+                if job is None:
+                    result = backend.print_label(image, host, options, progress)
+                else:
+                    pages = Pages(job, copies_of(image), backend.capabilities.dpi)
+                    result = backend.print_pages(pages, host, options, progress)
             except Exception as e:  # noqa: BLE001
                 GLib.idle_add(self.done, e)
                 return

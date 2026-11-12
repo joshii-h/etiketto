@@ -241,6 +241,8 @@ class Printer:
         self.info = info
         self.update_row()
         window = self.window
+        if window.sheet:  # the printer's margins: labels that reach into them
+            window.schedule_render()
         widths = window.backend.capabilities.tape_widths_mm
         fresh = window.adopts_tape and window.path is None and not window.dirty
         tape = self.other_tape()

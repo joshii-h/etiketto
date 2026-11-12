@@ -10,14 +10,16 @@ from types import SimpleNamespace
 
 import pytest
 from backend_contract import BackendContract
+from fake_backends import FakeMono
 from PIL import Image
 
-from etiketto.backends import get_backend, ipp, mdns, pwg, system
+from etiketto.backends import get_backend, ipp, mdns, pdf, pwg, system
 from etiketto.backends.base import (
     CoverOpen,
     FoundPrinter,
     JobCanceled,
     JobHeld,
+    Margins,
     MediaJam,
     NoFormat,
     OutOfPaper,
@@ -28,11 +30,15 @@ from etiketto.backends.base import (
     PrinterTimeout,
     PrintOptions,
     PrintResult,
+    Progress,
     QueuePaused,
     SuppliesEmpty,
     UnsupportedSize,
+    margins_for,
 )
 from etiketto.model import Label, TextElement
+from etiketto.sheets import find
+from etiketto.sheets.layout import Pages, SheetJob, px
 
 A4 = {"x-dimension": [21000], "y-dimension": [29700]}
 CUSTOM = {"x-dimension": [(7620, 21590)], "y-dimension": [(12700, 35560)]}  # like the HP
@@ -66,6 +72,7 @@ class FakeIpp:
         self.queues = [
             ("HP_Office", "HP LaserJet (Office)", "ipp://localhost:631/printers/HP_Office")
         ]
+        self.extra: list[ipp.Attribute] = []  # more printer attributes (margins)
         self.requests: list[tuple[int, str, dict, dict]] = []
         self.printed = 0
         self.documents: list[tuple[str, bytes]] = []
@@ -102,7 +109,7 @@ class FakeIpp:
         if sizes:
             attrs.append(ipp.Attribute(ipp.BEGIN_COLLECTION, "media-size-supported", sizes))
         attrs.append(ipp.Attribute(ipp.ENUM, "operations-supported", self.operations_supported))
-        return _answer(0, [(ipp.PRINTER_GROUP, attrs)])
+        return _answer(0, [(ipp.PRINTER_GROUP, attrs + self.extra)])
 
     def _unsupported(self) -> list:
         if not self.ignored:
@@ -1034,13 +1041,13 @@ def test_pending_time_counts_from_when_the_job_became_pending(fake):
 def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
     fake.copies_supported, fake.formats, fake.sizes = (1, 1), ["image/pwg-raster"], []
     made = []
-    original = system.document
+    original = system.document_of
 
-    def document(image, attrs, pages=1):
-        made.append(pages)
-        return original(image, attrs, pages)
+    def document_of(images, count, attrs, repeat=1):
+        made.append(repeat)
+        return original(images, count, attrs, repeat)
 
-    monkeypatch.setattr(system, "document", document)
+    monkeypatch.setattr(system, "document_of", document_of)
     events = []
     _print(_image(118, 59, size_mm=(10, 5)), copies=23, events=events)
     pages = [data.count(b"PwgRaster") for _mime, data in fake.documents]
@@ -1052,13 +1059,13 @@ def test_many_copies_as_pages_go_in_several_jobs(fake, monkeypatch):
 def test_the_document_is_made_once_for_all_copies(fake, monkeypatch):
     fake.copies_supported = (1, 1)
     made = []
-    original = system.document
+    original = system.document_of
 
-    def document(image, attrs, pages=1):
-        made.append(pages)
-        return original(image, attrs, pages)
+    def document_of(images, count, attrs, repeat=1):
+        made.append(repeat)
+        return original(images, count, attrs, repeat)
 
-    monkeypatch.setattr(system, "document", document)
+    monkeypatch.setattr(system, "document_of", document_of)
     _print(copies=4)
     assert made == [1] and len(fake.documents) == 4
     assert len({data for _mime, data in fake.documents}) == 1
@@ -1306,6 +1313,204 @@ def test_discover_without_cups(fake):
     assert get_backend("system").discover(timeout=0.01) == [
         FoundPrinter("Plain", "ipp://localhost/printers/Plain", "CUPS")
     ]
+
+
+# --- unprintable margins -----------------------------------------------------------------
+
+
+def _media_col(width, height, top, right, bottom, left, key="iso_a4_210x297mm"):
+    size = {
+        "x-dimension": ipp.Attribute(ipp.INTEGER, "x-dimension", [width]),
+        "y-dimension": ipp.Attribute(ipp.INTEGER, "y-dimension", [height]),
+    }
+    members = {"media-key": ipp.Attribute(ipp.KEYWORD, "media-key", [key])}
+    members["media-size"] = ipp.Attribute(ipp.BEGIN_COLLECTION, "media-size", [size])
+    for side, value in zip(system.MARGIN_SIDES, (top, right, bottom, left), strict=True):
+        name = "media-%s-margin" % side
+        members[name] = ipp.Attribute(ipp.INTEGER, name, [value])
+    return members
+
+
+def _margins_supported(values):
+    return [
+        ipp.Attribute(ipp.INTEGER, "media-%s-margin-supported" % side, values)
+        for side in system.MARGIN_SIDES
+    ]
+
+
+def test_query_reports_the_unprintable_margins_per_paper(fake):
+    """As ippeveprinter reports them: per paper in media-col-ready (loaded)
+    and media-col-database, borderless entries, and for any paper."""
+    fake.extra = [
+        ipp.Attribute(
+            ipp.BEGIN_COLLECTION,
+            "media-col-ready",
+            [_media_col(21590, 27940, 635, 635, 635, 635, "na_letter")],
+        ),
+        ipp.Attribute(
+            ipp.BEGIN_COLLECTION,
+            "media-col-database",
+            [
+                _media_col(21000, 29700, 0, 0, 0, 0, "borderless"),  # only when asked for
+                _media_col(21000, 29700, 635, 340, 635, 340),
+            ],
+        ),
+        *_margins_supported([0, 340, 635]),
+    ]
+    info = get_backend("system").query("HP_Office")
+    ops = fake.requests[0][2]
+    assert "media-col-database" in ops["requested-attributes"]
+    assert info.margins == (
+        Margins(6.35, 6.35, 6.35, 6.35, (215.9, 279.4)),
+        Margins(6.35, 3.4, 6.35, 3.4, (210, 297)),
+        Margins(3.4, 3.4, 3.4, 3.4),  # the smallest but borderless
+    )
+    assert margins_for(info.margins, (210, 297)) == info.margins[1]
+    assert margins_for(info.margins, (215.9, 279.4)).top == 6.35
+    assert margins_for(info.margins, (100, 150)) == info.margins[2]
+
+
+def test_margins_the_printer_does_not_say_are_unknown(fake):
+    assert get_backend("system").query("HP_Office").margins == ()
+    assert margins_for((), (210, 297)) is None
+    junk = {
+        "media-col-ready": ["text", {"media-size": [{"x-dimension": [(1, 2)]}]}],
+        "media-top-margin-supported": [True, -5, "x"],
+    }
+    assert system.margins(junk) == ()
+    only_borderless = {"media-%s-margin-supported" % side: [0] for side in system.MARGIN_SIDES}
+    assert system.margins(only_borderless) == (Margins(0, 0, 0, 0),)
+
+
+# --- several pages: label sheets ------------------------------------------------------
+
+
+def _pages(count, size_mm=(210, 297)):
+    pages = []
+    for n in range(count):
+        size = (248, 351) if size_mm[0] < size_mm[1] else (351, 248)
+        page = Image.new("RGB", size, (n * 40, 0, 0))  # 30 dpi: small and quick
+        page.info["size_mm"] = size_mm
+        pages.append(page)
+    return pages
+
+
+def test_pages_go_in_one_pdf_job(fake):
+    events = []
+    result = get_backend("system").print_pages(
+        _pages(3), "HP_Office", PrintOptions(copies=40), events.append
+    )
+    assert result is None
+    assert fake.operations().count(ipp.PRINT_JOB) == 1
+    assert "copies" not in fake.job()  # every page once: the labels are on them
+    mime, data = fake.documents[0]
+    assert mime == "application/pdf" and data.count(b"/Type /Page ") == 3
+    assert data.count(b"/MediaBox [0 0 595.276 841.890]") == 3  # exactly A4
+    assert events[0] == Progress(1, 3) and events[-1] == Progress(3, 3)
+
+
+def test_pages_in_pwg_raster(fake):
+    fake.formats = ["image/pwg-raster"]
+    fake.pwg_resolutions = [(600, 600, 3)]
+    get_backend("system").print_pages(_pages(2), "HP_Office", PrintOptions())
+    pages = pwg.decode_all(fake.documents[0][1])
+    assert [p.size for p in pages] == [(496, 702)] * 2  # at the printer's 600 dpi
+    assert pages[1].getpixel((10, 10)) == (40, 0, 0)
+    assert struct.unpack_from(">I", fake.documents[0][1], 4 + 452)[0] == 2  # TotalPageCount
+
+
+def test_pages_as_jpeg_are_one_job_each(fake):
+    fake.formats = ["image/jpeg"]
+    events = []
+    get_backend("system").print_pages(_pages(2), "HP_Office", PrintOptions(), events.append)
+    assert [mime for mime, _data in fake.documents] == ["image/jpeg"] * 2
+    assert events[-1] == Progress(2, 2)
+
+
+def test_landscape_pages_are_turned_each(fake):
+    fake.sizes, fake.formats = [A4], ["image/pwg-raster"]
+    get_backend("system").print_pages(_pages(2, (297, 210)), "HP_Office", PrintOptions())
+    assert all(p.width < p.height for p in pwg.decode_all(fake.documents[0][1]))
+    assert fake.job()["media-col"][0]["media-size"][0]["x-dimension"] == [21000]
+
+
+def test_pages_waiting_in_the_queue(fake):
+    fake.job_states = [3]  # pending behind other jobs
+    result = get_backend("system").print_pages(_pages(2), "HP_Office", PrintOptions())
+    assert result == PrintResult(queued=True)
+
+
+def test_a_sheet_from_the_composer_prints_page_by_page(fake):
+    sheet = find("Avery L7160")
+    label = Image.new("RGB", (px(sheet.width, 30), px(sheet.height, 30)), "black")
+    pages = Pages(SheetJob(sheet, 30, outlines=True), lambda n: label, 30)
+    get_backend("system").print_pages(pages, "HP_Office", PrintOptions())
+    assert fake.documents[0][1].count(b"/Type /Page ") == 2
+
+
+def test_many_pages_go_in_jobs_of_pages_per_job(fake):
+    events = []
+    get_backend("system").print_pages(_pages(23), "HP_Office", PrintOptions(), events.append)
+    pages = [data.count(b"/Type /Page ") for _mime, data in fake.documents]
+    assert pages == [10, 10, 3]  # a document is made in memory: never all of them at once
+    assert fake.operations().count(ipp.VALIDATE_JOB) == 1
+    assert "copies" not in fake.job()
+    assert events[-1] == Progress(23, 23)
+
+
+def test_pages_are_validated_before_anything_prints(fake):
+    fake.ignored = ["media-col"]
+    with pytest.raises(UnsupportedSize, match="Validate-Job"):
+        get_backend("system").print_pages(_pages(2), "HP_Office", PrintOptions())
+    assert ipp.PRINT_JOB not in fake.operations()
+
+
+def test_a_failed_sheet_job_cancels_the_rest_and_counts_sheets(fake):
+    fake.job_states = [(9, 10), (3, 0)]  # the first job done, the second waits in the queue
+    fake.print_errors = [0, 0, 0x0500]  # the third is refused
+    with pytest.raises(PrinterError, match="0x0500") as info:
+        get_backend("system").print_pages(_pages(23), "HP_Office", PrintOptions())
+    assert info.value.params == {
+        "printed": 10,
+        "copies": 23,
+        "pages": True,
+        "queue_canceled": True,
+    }
+    assert fake.canceled == [13]  # the one waiting in the queue: it must not print later
+
+
+def test_a_busy_printer_gets_the_same_pages_again(fake):
+    fake.print_errors = [system.BUSY, 0, 0]
+    get_backend("system").print_pages(_pages(12), "HP_Office", PrintOptions())
+    pages = [data.count(b"/Type /Page ") for _mime, data in fake.documents]
+    assert pages == [10, 2]  # the first ten once, after the busy answer
+
+
+def test_other_page_printers_print_page_by_page():
+    class Pages1(FakeMono):
+        pass
+
+    backend = Pages1()
+    events = []
+    pages = _pages(2)
+    backend.print_pages(pages, "mono.local", PrintOptions(copies=7), events.append)
+    assert [job[2].copies for job in backend.jobs] == [1, 1]
+    assert [job[0].getpixel((0, 0)) for job in backend.jobs] == [(0, 0, 0), (40, 0, 0)]
+    assert events == [Progress(1, 2), Progress(2, 2)]
+
+
+def test_pdf_is_well_formed():
+    data = pdf.encode(_pages(2, (100, 150)), 30)
+    assert data.startswith(b"%PDF-1.4") and data.endswith(b"%%EOF\n")
+    xref = int(data.rsplit(b"startxref\n", 1)[1].split(b"\n")[0])
+    lines = data[xref:].split(b"\n")
+    assert lines[0] == b"xref" and lines[1] == b"0 9"  # catalog, page tree, 3 per page
+    for number, line in enumerate(lines[3:11], 1):  # every object where xref says
+        offset = int(line[:10])
+        assert data[offset:].startswith(b"%d 0 obj" % number)
+    assert b"/MediaBox [0 0 283.465 425.197]" in data
+    plain = Image.new("RGB", (300, 150), "white")  # without a size: its pixels
+    assert b"/MediaBox [0 0 72.000 36.000]" in pdf.encode([plain], 300)
 
 
 # --- the contract every backend passes ------------------------------------------------------
