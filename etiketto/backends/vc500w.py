@@ -1,4 +1,4 @@
-"""Brother VC-500W: native protocol on TCP port 9100 (see docs/vc500w.md).
+"""Brother VC-500W: native protocol on TCP port 9100 or USB (see docs/vc500w.md).
 
 The connection and the answer parsing come from labelprinter; the print
 request is built here, so colour correction, the "bw" mode and the exact

@@ -39,19 +39,25 @@
 
   <description>
     <p>
-      Etiketto designs labels with text, images and codes, shows them exactly
-      as they will be printed and prints them over the network, on endless
-      tape or on die-cut labels. It talks to each printer in its own language.
+      Etiketto designs labels with text, images, symbols and codes, shows them
+      exactly as they will be printed and prints them over the network or USB:
+      on label printers with endless tape or die-cut labels, and on office
+      printers, one label per page or on label sheets. It talks to each
+      printer in its own language.
     </p>
     <p>Features:</p>
     <ul>
       <li>Finds the printer on the network by itself and shows its state</li>
       <li>Endless tape as long as the content or with a fixed length; die-cut labels in common or custom sizes</li>
-      <li>Text in any installed font, images and photos, over 7000 symbols, QR codes and barcodes</li>
+      <li>Text in any installed font, images and photos, over 7000 symbols</li>
+      <li>QR code, Data Matrix, PDF417, Aztec, Code 128, Code 39, Code 93, EAN, UPC, ITF-14 and GS1 codes, sharp at the printer's resolution</li>
+      <li>Variables in texts and codes: date, time, counter, copy number, random ID</li>
+      <li>Label sheets such as Avery or Zweckform on office printers: over 1700 sheets</li>
       <li>Serial labels: one label for each row of a CSV, ODS or XLSX file</li>
       <li>Background colours and images printed edge to edge, borders</li>
       <li>Shipping labels from a carrier's PDF or image: the label is found on the page and printed at 4 × 6 in, 100 × 150 mm or on a sheet</li>
       <li>Live preview at print resolution, millimetres or inches, templates, PNG export</li>
+      <li>A command line that prints label files without a window</li>
       <li>Printer problems explained in plain words, with a way to report a problem</li>
       <li>User documentation in English and German</li>
     </ul>
@@ -134,6 +140,14 @@
     <keyword>EOS2</keyword>
     <keyword>SQUIX</keyword>
     <keyword>NIIMBOT</keyword>
+    <keyword>P-touch</keyword>
+    <keyword>Zebra</keyword>
+    <keyword>ZPL</keyword>
+    <keyword>TSPL</keyword>
+    <keyword>DYMO</keyword>
+    <keyword>LabelWriter</keyword>
+    <keyword>label sheet</keyword>
+    <keyword>shipping label</keyword>
   </keywords>
 
   <branding>

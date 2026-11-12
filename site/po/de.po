@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:16+0100\n"
+"POT-Creation-Date: 2026-11-12 12:20+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -91,13 +91,15 @@ msgstr "Etiketto"
 #. type: Plain text
 #: docs/index.md
 msgid ""
-"Etiketto designs labels under Linux and prints them over the network, on "
-"endless tape or on die-cut labels. It talks to each printer in its own "
-"language."
+"Etiketto designs labels under Linux and prints them over the network or USB: "
+"on label printers with endless tape or die-cut labels, and on office "
+"printers, one label per page or on label sheets. It talks to each printer in "
+"its own language."
 msgstr ""
-"Etiketto gestaltet Etiketten unter Linux und druckt sie über das Netzwerk, "
-"auf Endlosband oder auf gestanzte Etiketten. Mit jedem Drucker spricht es in "
-"dessen eigener Sprache."
+"Etiketto gestaltet Etiketten unter Linux und druckt sie über das Netzwerk "
+"oder USB: auf Etikettendruckern mit Endlosband oder gestanzten Etiketten und"
+" auf Bürodruckern, ein Etikett pro Seite oder auf Etikettenbögen. Mit jedem "
+"Drucker spricht es in dessen eigener Sprache."
 
 #. type: Plain text
 #: docs/index.md
@@ -110,8 +112,12 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/index.md
-msgid "Text, images, QR codes and barcodes; backgrounds printed edge to edge"
-msgstr "Text, Bilder, QR-Codes und Barcodes; Hintergründe randlos gedruckt"
+msgid ""
+"Text, images, [symbols](use.md), QR codes and barcodes of many types; "
+"backgrounds printed edge to edge"
+msgstr ""
+"Text, Bilder, [Symbole](use.md), QR-Codes und Barcodes vieler Arten; "
+"Hintergründe randlos gedruckt"
 
 #. type: Bullet: '- '
 #: docs/index.md
@@ -127,10 +133,20 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 msgid ""
-"[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file"
+"[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX "
+"file; variables such as date and counter, and a command line"
 msgstr ""
 "[Serienetiketten](serial.md): ein Etikett für jede Zeile einer CSV-, ODS- "
-"oder XLSX-Datei"
+"oder XLSX-Datei; Variablen wie Datum und Zähler sowie eine Befehlszeile"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid ""
+"[Label sheets](sheets.md) on office printers, and shipping labels from a "
+"carrier's PDF"
+msgstr ""
+"[Etikettenbögen](sheets.md) auf Bürodruckern und Versandetiketten aus dem "
+"PDF eines Paketdienstes"
 
 #. type: Bullet: '- '
 #: docs/index.md

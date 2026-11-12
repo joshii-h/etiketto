@@ -1,5 +1,5 @@
 """cab label printers with a 4 inch print head (EOS2, EOS5, SQUIX 4, MACH 4S):
-JScript on TCP port 9100 (see docs/cab.md).
+JScript on TCP port 9100 or USB (see docs/cab.md).
 
 JScript is cab's own, publicly documented printer language ("JScript
 Programming Manual"). A job downloads the rendered label as a PNG in base 64

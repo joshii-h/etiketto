@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:16+0100\n"
+"POT-Creation-Date: 2026-11-12 12:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,7 +61,7 @@ msgstr ""
 #. type: Plain text
 #: docs/index.md
 #, markdown-text
-msgid "Etiketto designs labels under Linux and prints them over the network, on endless tape or on die-cut labels. It talks to each printer in its own language."
+msgid "Etiketto designs labels under Linux and prints them over the network or USB: on label printers with endless tape or die-cut labels, and on office printers, one label per page or on label sheets. It talks to each printer in its own language."
 msgstr ""
 
 #. type: Plain text
@@ -73,7 +73,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
-msgid "Text, images, QR codes and barcodes; backgrounds printed edge to edge"
+msgid "Text, images, [symbols](use.md), QR codes and barcodes of many types; backgrounds printed edge to edge"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -91,7 +91,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
-msgid "[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file"
+msgid "[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file; variables such as date and counter, and a command line"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "[Label sheets](sheets.md) on office printers, and shipping labels from a carrier's PDF"
 msgstr ""
 
 #. type: Bullet: '- '

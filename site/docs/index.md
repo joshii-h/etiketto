@@ -1,17 +1,21 @@
 # Etiketto
 
-Etiketto designs labels under Linux and prints them over the network, on
-endless tape or on die-cut labels. It talks to each printer in its own
-language.
+Etiketto designs labels under Linux and prints them over the network or
+USB: on label printers with endless tape or die-cut labels, and on office
+printers, one label per page or on label sheets. It talks to each printer
+in its own language.
 
 ![Main window](media/main.png#only-light)
 ![Main window](media/main-dark.png#only-dark)
 
-- Text, images, QR codes and barcodes; backgrounds printed edge to edge
+- Text, images, [symbols](use.md), QR codes and barcodes of many
+  types; backgrounds printed edge to edge
 - Preview at print resolution: what you see is what is printed
 - Endless tape as long as the content, or die-cut labels of any size
 - [Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX
-  file
+  file; variables such as date and counter, and a command line
+- [Label sheets](sheets.md) on office printers, and shipping labels from a
+  carrier's PDF
 - Finds the printer in the network, reads what is loaded and explains
   printer problems in plain words
 - 27 languages, follows the light or dark mode of the desktop
