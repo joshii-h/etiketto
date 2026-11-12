@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, gulungan bersambung",
     "%s, die-cut labels": "%s, label potong",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Gulungan yang terpasang tidak cocok dengan label. Pasang gulungan yang cocok, atau pilih ukuran label atau model pencetak untuk gulungan yang terpasang.",
+    "The loaded roll is for “%s”": "Gulungan yang terpasang untuk “%s”",
+    "Switch": "Beralih",
+    "No roll loaded": "Tidak ada gulungan terpasang",
+    "%s roll": "Gulungan %s",
+    "Roll": "Gulungan",
+    "Wrong roll": "Gulungan salah",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Label dirancang untuk gulungan %(label)s, tetapi yang terpasang gulungan %(tape)s. Label akan diskalakan ke gulungan.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Label berukuran %(size)s, tetapi yang terpasang label %(loaded)s. Periksa ukuran label, atau pasang gulungan yang cocok.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Dicetak dengan “%(used)s” karena gulungan yang terpasang memerlukannya",
 }

@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, непрерывные рулоны",
     "%s, die-cut labels": "%s, высечные этикетки",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Загруженный рулон не подходит к этикетке. Загрузите подходящий рулон или выберите размер этикетки или модель принтера для загруженного рулона.",
+    "The loaded roll is for “%s”": "Загруженный рулон подходит для «%s»",
+    "Switch": "Переключить",
+    "No roll loaded": "Рулон не загружен",
+    "%s roll": "Рулон %s",
+    "Roll": "Рулон",
+    "Wrong roll": "Неверный рулон",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Этикетка рассчитана на рулон %(label)s, но загружен рулон %(tape)s. Этикетка будет масштабирована под рулон.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Этикетка размером %(size)s, но загружены этикетки %(loaded)s. Проверьте размер этикетки или загрузите подходящий рулон.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Напечатано в режиме «%(used)s», так как этого требует загруженный рулон",
 }

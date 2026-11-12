@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, लगातार रोल",
     "%s, die-cut labels": "%s, पहले से कटे लेबल",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "लगाया गया रोल लेबल से मेल नहीं खाता। सही रोल लगाएँ, या लगाए गए रोल के अनुसार लेबल का आकार या प्रिंटर मॉडल चुनें।",
+    "The loaded roll is for “%s”": "लगाया गया रोल “%s” के लिए है",
+    "Switch": "बदलें",
+    "No roll loaded": "कोई रोल नहीं लगा है",
+    "%s roll": "%s रोल",
+    "Roll": "रोल",
+    "Wrong roll": "गलत रोल",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "लेबल %(label)s रोल के लिए बनाया गया है, पर %(tape)s रोल लगा है। लेबल को रोल के अनुसार छोटा-बड़ा किया जाएगा।",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "लेबल %(size)s का है, पर %(loaded)s के लेबल लगे हैं। लेबल का आकार जाँचें, या सही रोल लगाएँ।",
+    "Printed with “%(used)s”, as the loaded roll needs it": "“%(used)s” से प्रिंट किया गया, क्योंकि लगाए गए रोल को इसकी ज़रूरत है",
 }

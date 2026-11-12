@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s、長尺ロール",
     "%s, die-cut labels": "%s、ダイカットラベル",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "セットされたロールがラベルに合いません。合うロールをセットするか、セットされたロールに合うラベルサイズまたはプリンターの機種を選んでください。",
+    "The loaded roll is for “%s”": "セットされたロールは「%s」用です",
+    "Switch": "切り替え",
+    "No roll loaded": "ロールがセットされていません",
+    "%s roll": "%s ロール",
+    "Roll": "ロール",
+    "Wrong roll": "ロールが違います",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "ラベルは %(label)s ロール用にデザインされていますが、セットされているのは %(tape)s ロールです。ラベルはロールに合わせて拡大縮小されます。",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "ラベルは %(size)s ですが、セットされているのは %(loaded)s のラベルです。ラベルサイズを確認するか、合うロールをセットしてください。",
+    "Printed with “%(used)s”, as the loaded roll needs it": "セットされたロールに必要なため「%(used)s」で印刷しました",
 }

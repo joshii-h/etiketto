@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, rolos contínuos",
     "%s, die-cut labels": "%s, etiquetas pré-cortadas",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "O rolo colocado não corresponde à etiqueta. Coloque um rolo adequado ou escolha o tamanho da etiqueta ou o modelo da impressora do rolo colocado.",
+    "The loaded roll is for “%s”": "O rolo colocado é para “%s”",
+    "Switch": "Trocar",
+    "No roll loaded": "Nenhum rolo colocado",
+    "%s roll": "Rolo de %s",
+    "Roll": "Rolo",
+    "Wrong roll": "Rolo errado",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "A etiqueta foi criada para um rolo de %(label)s, mas está colocado um rolo de %(tape)s. A etiqueta seria ajustada ao rolo.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "A etiqueta tem %(size)s, mas estão colocadas etiquetas de %(loaded)s. Verifique o tamanho da etiqueta ou coloque o rolo adequado.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Impresso com “%(used)s”, como o rolo colocado exige",
 }

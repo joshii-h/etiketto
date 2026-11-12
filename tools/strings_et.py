@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, pidevad rullid",
     "%s, die-cut labels": "%s, väljalõigatud sildid",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Sisestatud rull ei sobi sildiga. Pane sisse sobiv rull või vali sisestatud rulli sildi suurus või printeri mudel.",
+    "The loaded roll is for “%s”": "Sisestatud rull sobib valikuga „%s“",
+    "Switch": "Vaheta",
+    "No roll loaded": "Rulli pole sisestatud",
+    "%s roll": "%s rull",
+    "Roll": "Rull",
+    "Wrong roll": "Vale rull",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Silt on kujundatud %(label)s rullile, kuid sisestatud on %(tape)s rull. Silt skaleeritaks rulli järgi.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Silt on %(size)s, kuid sisestatud on %(loaded)s sildid. Kontrolli sildi suurust või pane sisse sobiv rull.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Prinditi režiimiga „%(used)s“, sest sisestatud rull nõuab seda",
 }

@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, 연속 롤",
     "%s, die-cut labels": "%s, 다이컷 라벨",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "넣은 롤이 라벨과 맞지 않습니다. 맞는 롤을 넣거나, 넣은 롤에 맞는 라벨 크기나 프린터 모델을 선택하세요.",
+    "The loaded roll is for “%s”": "넣은 롤은 “%s”용입니다",
+    "Switch": "전환",
+    "No roll loaded": "넣은 롤 없음",
+    "%s roll": "%s 롤",
+    "Roll": "롤",
+    "Wrong roll": "잘못된 롤",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "라벨은 %(label)s 롤용으로 디자인되었지만 %(tape)s 롤이 들어 있습니다. 라벨이 롤에 맞게 크기 조정됩니다.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "라벨은 %(size)s이지만 %(loaded)s 라벨이 들어 있습니다. 라벨 크기를 확인하거나 맞는 롤을 넣으세요.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "넣은 롤에 필요하므로 “%(used)s”(으)로 인쇄했습니다",
 }

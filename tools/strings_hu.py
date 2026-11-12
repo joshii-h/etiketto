@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, folyamatos tekercsek",
     "%s, die-cut labels": "%s, stancolt címkék",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "A betöltött tekercs nem illik a címkéhez. Töltsön be megfelelő tekercset, vagy válassza ki a betöltött tekercs címkeméretét vagy nyomtatómodelljét.",
+    "The loaded roll is for “%s”": "A betöltött tekercs ehhez illik: „%s”",
+    "Switch": "Váltás",
+    "No roll loaded": "Nincs betöltött tekercs",
+    "%s roll": "%s tekercs",
+    "Roll": "Tekercs",
+    "Wrong roll": "Rossz tekercs",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "A címke %(label)s tekercsre készült, de %(tape)s tekercs van betöltve. A címke a tekercshez lenne méretezve.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "A címke mérete %(size)s, de %(loaded)s címkék vannak betöltve. Ellenőrizze a címkeméretet, vagy töltse be a megfelelő tekercset.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Nyomtatva ezzel: „%(used)s”, mert a betöltött tekercs ezt igényli",
 }

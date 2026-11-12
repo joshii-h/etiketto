@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s，連續標籤捲",
     "%s, die-cut labels": "%s，預切標籤",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "裝入的標籤捲與標籤不符。請裝入相符的標籤捲，或選擇與裝入的標籤捲相符的標籤尺寸或印表機型號。",
+    "The loaded roll is for “%s”": "裝入的標籤捲適用於「%s」",
+    "Switch": "切換",
+    "No roll loaded": "未裝入標籤捲",
+    "%s roll": "%s 標籤捲",
+    "Roll": "標籤捲",
+    "Wrong roll": "標籤捲不符",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "標籤是為 %(label)s 標籤捲設計的，但裝入的是 %(tape)s 標籤捲。標籤將縮放以符合標籤捲。",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "標籤為 %(size)s，但裝入的是 %(loaded)s 的標籤。請檢查標籤尺寸，或裝入相符的標籤捲。",
+    "Printed with “%(used)s”, as the loaded roll needs it": "因裝入的標籤捲需要，已改用「%(used)s」列印",
 }

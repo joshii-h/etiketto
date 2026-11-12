@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, sürekli rulolar",
     "%s, die-cut labels": "%s, kesimli etiketler",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Takılı rulo etikete uymuyor. Uygun bir rulo takın ya da takılı rulonun etiket boyutunu veya yazıcı modelini seçin.",
+    "The loaded roll is for “%s”": "Takılı rulo “%s” için",
+    "Switch": "Geç",
+    "No roll loaded": "Rulo takılı değil",
+    "%s roll": "%s rulo",
+    "Roll": "Rulo",
+    "Wrong roll": "Yanlış rulo",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Etiket %(label)s ruloya göre tasarlandı, ancak %(tape)s rulo takılı. Etiket ruloya göre ölçeklenecek.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Etiket %(size)s, ancak takılı etiketler %(loaded)s. Etiket boyutunu denetleyin ya da uygun ruloyu takın.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Takılı rulo gerektirdiği için “%(used)s” ile yazdırıldı",
 }

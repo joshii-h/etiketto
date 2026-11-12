@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, löpande rullar",
     "%s, die-cut labels": "%s, stansade etiketter",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Den isatta rullen passar inte etiketten. Sätt i en passande rulle, eller välj etikettstorlek eller skrivarmodell för den isatta rullen.",
+    "The loaded roll is for “%s”": "Den isatta rullen hör till ”%s”",
+    "Switch": "Byt",
+    "No roll loaded": "Ingen rulle isatt",
+    "%s roll": "Rulle på %s",
+    "Roll": "Rulle",
+    "Wrong roll": "Fel rulle",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Etiketten är gjord för en rulle på %(label)s, men en rulle på %(tape)s är isatt. Etiketten skulle skalas till rullen.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Etiketten är %(size)s, men etiketter på %(loaded)s är isatta. Kontrollera etikettstorleken eller sätt i rätt rulle.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Utskrivet med ”%(used)s” eftersom den isatta rullen kräver det",
 }

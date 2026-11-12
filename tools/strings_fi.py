@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, jatkuvat rullat",
     "%s, die-cut labels": "%s, stanssatut tarrat",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Asetettu rulla ei sovi tarraan. Aseta sopiva rulla tai valitse asetetun rullan tarrakoko tai tulostimen malli.",
+    "The loaded roll is for “%s”": "Asetettu rulla sopii kohteeseen ”%s”",
+    "Switch": "Vaihda",
+    "No roll loaded": "Rullaa ei ole asetettu",
+    "%s roll": "%s rulla",
+    "Roll": "Rulla",
+    "Wrong roll": "Väärä rulla",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Tarra on suunniteltu %(label)s rullalle, mutta asetettu rulla on %(tape)s. Tarra skaalattaisiin rullaan.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Tarran koko on %(size)s, mutta asetetut tarrat ovat %(loaded)s. Tarkista tarran koko tai aseta sopiva rulla.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Tulostettiin tilassa ”%(used)s”, koska asetettu rulla vaatii sen",
 }

@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, cuộn liên tục",
     "%s, die-cut labels": "%s, nhãn cắt sẵn",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Cuộn đang lắp không khớp với nhãn. Hãy lắp cuộn phù hợp, hoặc chọn kích thước nhãn hay kiểu máy in theo cuộn đang lắp.",
+    "The loaded roll is for “%s”": "Cuộn đang lắp dùng cho “%s”",
+    "Switch": "Chuyển",
+    "No roll loaded": "Chưa lắp cuộn",
+    "%s roll": "Cuộn %s",
+    "Roll": "Cuộn",
+    "Wrong roll": "Sai cuộn",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Nhãn được thiết kế cho cuộn %(label)s, nhưng đang lắp cuộn %(tape)s. Nhãn sẽ được co giãn theo cuộn.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Nhãn có kích thước %(size)s, nhưng đang lắp nhãn %(loaded)s. Hãy kiểm tra kích thước nhãn hoặc lắp cuộn phù hợp.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Đã in bằng “%(used)s” vì cuộn đang lắp cần như vậy",
 }

@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, ม้วนต่อเนื่อง",
     "%s, die-cut labels": "%s, ฉลากไดคัท",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "ม้วนที่ใส่อยู่ไม่ตรงกับฉลาก ใส่ม้วนที่ตรงกัน หรือเลือกขนาดฉลากหรือรุ่นเครื่องพิมพ์ให้ตรงกับม้วนที่ใส่อยู่",
+    "The loaded roll is for “%s”": "ม้วนที่ใส่อยู่ใช้กับ “%s”",
+    "Switch": "สลับ",
+    "No roll loaded": "ไม่ได้ใส่ม้วน",
+    "%s roll": "ม้วน %s",
+    "Roll": "ม้วน",
+    "Wrong roll": "ม้วนไม่ถูกต้อง",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "ฉลากนี้ออกแบบสำหรับม้วน %(label)s แต่ใส่ม้วน %(tape)s อยู่ ฉลากจะถูกปรับขนาดให้พอดีกับม้วน",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "ฉลากมีขนาด %(size)s แต่ใส่ฉลากขนาด %(loaded)s อยู่ ตรวจสอบขนาดฉลาก หรือใส่ม้วนที่ตรงกัน",
+    "Printed with “%(used)s”, as the loaded roll needs it": "พิมพ์ด้วย “%(used)s” เพราะม้วนที่ใส่อยู่ต้องใช้แบบนี้",
 }

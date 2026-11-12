@@ -246,4 +246,13 @@ TRANSLATIONS = {
     "%s, continuous rolls": "%s, безперервні рулони",
     "%s, die-cut labels": "%s, висічні етикетки",
     "The loaded roll does not match the label. Load a matching roll, or choose the label size or printer model of the roll that is loaded.": "Завантажений рулон не підходить до етикетки. Завантажте відповідний рулон або виберіть розмір етикетки чи модель принтера для завантаженого рулону.",
+    "The loaded roll is for “%s”": "Завантажений рулон підходить для «%s»",
+    "Switch": "Перемкнути",
+    "No roll loaded": "Рулон не завантажено",
+    "%s roll": "Рулон %s",
+    "Roll": "Рулон",
+    "Wrong roll": "Неправильний рулон",
+    "The label is designed for a %(label)s roll, but a %(tape)s roll is loaded. The label would be scaled to the roll.": "Етикетку розраховано на рулон %(label)s, але завантажено рулон %(tape)s. Етикетку буде масштабовано під рулон.",
+    "The label is %(size)s, but labels of %(loaded)s are loaded. Check the label size, or load the matching roll.": "Етикетка розміром %(size)s, але завантажено етикетки %(loaded)s. Перевірте розмір етикетки або завантажте відповідний рулон.",
+    "Printed with “%(used)s”, as the loaded roll needs it": "Надруковано в режимі «%(used)s», бо цього потребує завантажений рулон",
 }
