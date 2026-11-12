@@ -31,11 +31,13 @@ from etiketto.backends.base import (
     LabelSize,
     LabelTooLong,
     OutOfLabels,
+    OutOfPaper,
     PaperJam,
     PrinterBusy,
     PrinterError,
     PrinterInfo,
     PrinterNotFound,
+    PrinterStalled,
     PrinterTimeout,
     PrintMode,
     PrintOptions,
@@ -68,13 +70,18 @@ ESC = b"\x1b"
 STATUS_SIZE = 32
 STATUS_HEAD = b"\x80\x20\x42"  # print head mark, size, Brother
 STATUS_REQUEST = ESC + b"iS"
-# clears a half-received job: the printer drops NULs in command mode
-QUERY = b"\x00" * 400 + ESC + b"@" + STATUS_REQUEST
+# NULs clear a half-received command; no ESC @ here, it would stop a print
+QUERY = b"\x00" * 400 + STATUS_REQUEST
+CHUNK = 16384  # sent at a time on TCP; the stall timeout restarts with each
 
 # status type (byte 18) and phase (byte 19)
-REPLY, COMPLETED, ERROR_OCCURRED, NOTIFICATION, PHASE_CHANGE = 0x00, 0x01, 0x02, 0x05, 0x06
+REPLY, COMPLETED, ERROR_OCCURRED, TURNED_OFF = 0x00, 0x01, 0x02, 0x04
+NOTIFICATION, PHASE_CHANGE = 0x05, 0x06
 PHASE_WAITING, PHASE_PRINTING = 0x00, 0x01
+# media type in the print information; the status of the QL-710W, QL-720NW
+# and QL-800 series reports 0x4A and 0x4B instead
 CONTINUOUS_TYPE, DIE_CUT_TYPE = 0x0A, 0x0B
+CONTINUOUS_TYPES, DIE_CUT_TYPES = (0x0A, 0x4A), (0x0B, 0x4B)
 
 BLACK = PrintMode("black", DPI)
 RED = PrintMode("red", DPI)  # red and black on DK-22251 (QL-8xx only)
@@ -94,26 +101,32 @@ class Model:
     name: str
     min_dots: int = 150  # shortest label along the feed
     max_dots: int = 11811  # longest label (1 m)
-    bytes_per_row: int = 90  # 720 pins; 162 = 1296 pins on the 4 inch models
-    offset_r: int = 0  # added to the roll's right offset
+    wide: bool = False  # 1296 pins (162 bytes a line) instead of 720 (90)
     mode_setting: bool = True  # knows ESC i a (else always in raster mode)
     cutting: bool = True
     expanded: bool = True  # knows ESC i K (cut at end, 600 dpi, two colours)
-    compression: bool = True  # takes PackBits lines
+    compression: bool = True  # takes PackBits lines over USB and the network
     two_color: bool = False
     invalidate: int = 200  # NULs that clear the command buffer
-    # 600 dpi along the feed, a bit of ESC i K (brother_ql's dpi_600 option)
-    high_res: bool = True
+    high_res: bool = True  # 600 dpi along the feed (a bit of ESC i K)
+    round12_margin: bool = False  # 35 dots feed margin for 12 mm round labels
+
+    @property
+    def bytes_per_row(self) -> int:
+        return 162 if self.wide else 90
 
 
 def _old(name: str, min_dots: int = 150, **flags) -> Model:
-    """The models without ESC i a and compression."""
-    return Model(name, min_dots, mode_setting=False, compression=False, **flags)
+    """The QL-500 to QL-700: no ESC i a, no PackBits, the feed margin of
+    12 mm round labels."""
+    flags.setdefault("high_res", False)
+    return Model(
+        name, min_dots, mode_setting=False, compression=False, round12_margin=True, **flags
+    )
 
 
-def _wide(name: str, min_dots: int, max_dots: int) -> Model:
-    """The 4 inch models: 1296 pins, 44 dots further right."""
-    return Model(name, min_dots, max_dots, bytes_per_row=162, offset_r=44)
+def _wide(name: str, min_dots: int, max_dots: int, **flags) -> Model:
+    return Model(name, min_dots, max_dots, wide=True, **flags)
 
 
 def _two_color(name: str, compression: bool = True) -> Model:
@@ -123,34 +136,36 @@ def _two_color(name: str, compression: bool = True) -> Model:
 MODELS = {
     model.name: model
     for model in (
-        _old("QL-500", 295, cutting=False, expanded=False, high_res=False),
+        _old("QL-500", 295, cutting=False, expanded=False),
         _old("QL-550", 295),
         _old("QL-560", 295),
-        _old("QL-570"),
-        Model("QL-580N"),
-        Model("QL-600"),
-        Model("QL-650TD", 295),
-        _old("QL-700"),
+        _old("QL-570", high_res=True),
+        Model("QL-580N", round12_margin=True),
+        Model("QL-600", high_res=False),  # only in the fork: nothing known
+        # PackBits only over its serial port, which Etiketto does not use
+        Model("QL-650TD", 295, compression=False, high_res=False),
+        _old("QL-700", high_res=True),
         Model("QL-710W"),
         Model("QL-720NW"),
         _two_color("QL-800", compression=False),
         _two_color("QL-810W"),
         _two_color("QL-820NWB"),
-        _wide("QL-1050", 295, 35433),
-        _wide("QL-1060N", 295, 35433),
-        _wide("QL-1100", 301, 35434),
-        _wide("QL-1100NWB", 301, 35434),
-        _wide("QL-1110NWB", 301, 35434),
-        _wide("QL-1115NWB", 301, 35434),
+        _wide("QL-1050", 295, 35433, high_res=False),
+        _wide("QL-1060N", 295, 35433, high_res=False),
+        _wide("QL-1100", 301, 35434, invalidate=350),
+        _wide("QL-1100NWB", 301, 35434, invalidate=350),
+        _wide("QL-1110NWB", 301, 35434, invalidate=350),
+        _wide("QL-1115NWB", 301, 35434, invalidate=350),
     )
 }
 # an unknown model: what every model takes (no compression, no 600 dpi, the
 # longest minimum length); wide rolls only fit the 4 inch models
 NARROW = Model("QL", 301, compression=False, invalidate=400, high_res=False)
-WIDE = replace(NARROW, max_dots=35433, bytes_per_row=162, offset_r=44)
+WIDE = replace(NARROW, max_dots=35433, wide=True)
 
-# model code in status byte 4, from Brother's raster command references
-# [assumed: not in brother_ql, not checked on a printer]
+# model code in status byte 4 (Brother's raster command references); the
+# QL-500 and QL-550 share 0x4F: taken as the QL-500, which has no cutter,
+# unless the USB device ID or the network name says QL-550
 MODEL_CODES = {
     0x4F: "QL-500",
     0x31: "QL-560",
@@ -184,16 +199,19 @@ def model_named(text: str) -> Model | None:
 
 @dataclass(frozen=True)
 class Media:
-    """A DK roll: width × length in mm as the status reports it (length 0:
-    continuous), the printable dots across and along, the right offset in
-    dots and the feed margin (ESC i d)."""
+    """A DK roll: the size printed on the box (length 0: continuous), the
+    printable dots across and along, the right margin in pins on the 720 and
+    the 1296 pin head, the feed margin (ESC i d) and other lengths the
+    status of some models reports."""
 
     name: str
     width_mm: int
     length_mm: int
     dots: tuple[int, int]
     offset_r: int
-    feed_margin: int
+    offset_wide: int
+    feed_margin: int = 0
+    lengths: tuple[int, ...] = ()
     round: bool = False
 
     @property
@@ -204,41 +222,51 @@ class Media:
     def wide(self) -> bool:
         return self.dots[0] + self.offset_r > 720
 
+    def offset(self, model: Model) -> int:
+        return self.offset_wide if model.wide else self.offset_r
+
+    def margin(self, model: Model) -> int:
+        if self.name == "d12":
+            return 35 if model.round12_margin else 0
+        return self.feed_margin
+
     def size(self) -> LabelSize:
         return LabelSize(self.width_mm, self.length_mm)
 
 
+# Brother's raster command references; the 18 mm roll only in brother_ql's fork
 CONTINUOUS = (
-    Media("12", 12, 0, (106, 0), 29, 35),
-    Media("18", 18, 0, (234, 0), 171, 14),
-    Media("29", 29, 0, (306, 0), 6, 35),
-    Media("38", 38, 0, (413, 0), 12, 35),
-    Media("50", 50, 0, (554, 0), 12, 35),
-    Media("54", 54, 0, (590, 0), 0, 35),
-    Media("62", 62, 0, (696, 0), 12, 35),
-    Media("102", 102, 0, (1164, 0), 12, 35),
-    Media("103", 104, 0, (1200, 0), 12, 35),
+    Media("12", 12, 0, (106, 0), 29, 74, 35),
+    Media("18", 18, 0, (234, 0), 171, 215, 14),
+    Media("29", 29, 0, (306, 0), 6, 50, 35),
+    Media("38", 38, 0, (413, 0), 12, 56, 35),
+    Media("50", 50, 0, (554, 0), 12, 56, 35),
+    Media("54", 54, 0, (590, 0), 0, 44, 35),
+    Media("62", 62, 0, (696, 0), 12, 56, 35),
+    Media("90", 90, 0, (1027, 0), 12, 56, 35),  # QL-1100 series [assumed: geometry]
+    Media("102", 102, 0, (1164, 0), 12, 56, 35),
+    Media("103", 104, 0, (1200, 0), 12, 38, 35),
 )
 # the first is the default label size in the interface
 DIE_CUT = (
-    Media("62x29", 62, 29, (696, 271), 12, 0),
-    Media("29x90", 29, 90, (306, 991), 6, 0),
-    Media("62x100", 62, 100, (696, 1109), 12, 0),
-    Media("17x54", 17, 54, (165, 566), 0, 0),
-    Media("17x87", 17, 87, (165, 956), 0, 0),
-    Media("23x23", 23, 23, (202, 202), 42, 0),
-    Media("29x42", 29, 42, (306, 425), 6, 0),
-    Media("39x90", 38, 90, (413, 991), 12, 0),
-    Media("39x48", 39, 48, (425, 495), 6, 0),
-    Media("52x29", 52, 29, (578, 271), 0, 0),
-    Media("54x29", 54, 29, (598, 271), 60, 0),
-    Media("60x86", 60, 87, (672, 954), 18, 0),
-    Media("102x51", 102, 51, (1164, 526), 12, 0),
-    Media("102x152", 102, 153, (1164, 1660), 12, 0),
-    Media("103x164", 104, 164, (1200, 1822), 12, 0),
-    Media("d12", 12, 12, (94, 94), 113, 35, round=True),
-    Media("d24", 24, 24, (236, 236), 42, 0, round=True),
-    Media("d58", 58, 58, (618, 618), 51, 0, round=True),
+    Media("62x29", 62, 29, (696, 271), 12, 56),
+    Media("29x90", 29, 90, (306, 991), 6, 50),
+    Media("62x100", 62, 100, (696, 1109), 12, 56),
+    Media("17x54", 17, 54, (165, 566), 0, 44),
+    Media("17x87", 17, 87, (165, 956), 0, 44),
+    Media("23x23", 23, 23, (236, 202), 42, 85),
+    Media("29x42", 29, 42, (306, 425), 6, 50),
+    Media("38x90", 38, 90, (413, 991), 12, 56),
+    Media("39x48", 39, 48, (425, 495), 6, 50),
+    Media("52x29", 52, 29, (578, 271), 0, 44),
+    Media("54x29", 54, 29, (602, 271), 59, 59),
+    Media("60x86", 60, 86, (672, 954), 24, 68, lengths=(87,)),
+    Media("102x51", 102, 51, (1164, 526), 12, 56),
+    Media("102x152", 102, 152, (1164, 1660), 12, 56, lengths=(153,)),
+    Media("103x164", 104, 164, (1200, 1822), 12, 38),
+    Media("d12", 12, 12, (94, 94), 113, 156, round=True),
+    Media("d24", 24, 24, (236, 236), 42, 85, round=True),
+    Media("d58", 58, 58, (618, 618), 51, 94, round=True),
 )
 DK_GAP_MM = 3.0  # between two die-cut labels on the roll [assumed]
 # on DK-22251 the red parts print red; it reports itself as 62 mm continuous
@@ -250,11 +278,13 @@ def continuous_media(width_mm: float) -> Media | None:
 
 
 def die_cut_media(width_mm: float, length_mm: float) -> Media | None:
+    """By the size on the box or a length some model reports instead."""
     return next(
         (
             m
             for m in DIE_CUT
-            if abs(m.width_mm - width_mm) < 0.5 and abs(m.length_mm - length_mm) < 0.5
+            if abs(m.width_mm - width_mm) < 0.5
+            and any(abs(n - length_mm) < 0.5 for n in (m.length_mm, *m.lengths))
         ),
         None,
     )
@@ -278,11 +308,15 @@ class Status:
     @property
     def media(self) -> Media | None:
         """The loaded roll, None if there is none or it is not known."""
-        if self.media_type == CONTINUOUS_TYPE:
+        if self.media_type in CONTINUOUS_TYPES:
             return continuous_media(self.media_width)
-        if self.media_type == DIE_CUT_TYPE:
+        if self.media_type in DIE_CUT_TYPES:
             return die_cut_media(self.media_width, self.media_length)
         return None
+
+    @property
+    def continuous(self) -> bool:
+        return self.media_type in CONTINUOUS_TYPES
 
     @property
     def model(self) -> Model | None:
@@ -328,12 +362,18 @@ STATUS_ERRORS: tuple[tuple[int, int, type[PrinterError], str], ...] = (
 
 
 def status_error(status: Status) -> PrinterError | None:
-    """The first problem the status reports, or None."""
+    """The first problem the status reports, or None. "Media cannot be fed"
+    on a continuous roll is its end (Brother: also when the media end is
+    detected)."""
     for byte, bit, cls, text in STATUS_ERRORS:
         if (status.error1 if byte == 1 else status.error2) & bit:
+            if (byte, bit) == (2, 0x40) and status.continuous:
+                cls, text = OutOfPaper, "end of the continuous roll"
             return cls("status %s: %s" % (status.raw.hex(), text))
     if status.status_type == ERROR_OCCURRED:
         return PrinterError("status %s: error without a reason" % status.raw.hex())
+    if status.status_type == TURNED_OFF:
+        return PrinterError("status %s: printer turned off" % status.raw.hex())
     return None
 
 
@@ -456,17 +496,21 @@ class Job:
     cut: str = "full"  # "full" after every label, "end" after the last, "none"
     high_res: bool = False
     compress: bool = False
+    length_mm: int | None = None  # die-cut: the length the status reported, if any
 
 
 def _print_info(job: Job, page: int) -> bytes:
     media = job.media
-    flags = 0x80 | 0x02 | 0x04 | 0x08 | 0x40  # kind, width, length valid; quality first
+    flags = 0x80 | 0x02 | 0x04 | 0x08  # media type, width and length valid
+    if job.red is None:
+        flags |= 0x40  # quality first (Brother: not for two colours)
     kind = DIE_CUT_TYPE if media.die_cut else CONTINUOUS_TYPE
+    length = media.length_mm if job.length_mm is None else job.length_mm
     lines = len(job.black).to_bytes(4, "little")
     return (
         ESC
         + b"iz"
-        + bytes((flags, kind, media.width_mm, media.length_mm))
+        + bytes((flags, kind, media.width_mm, length))
         + lines
         + (b"\x01\x00" if page else b"\x00\x00")
     )
@@ -484,7 +528,7 @@ def _page_setup(job: Job) -> bytes:
     if model.expanded:
         flags = (0x08 if cut != "none" else 0) | (0x40 if job.high_res else 0)
         out += ESC + b"iK" + bytes((flags | (0x01 if job.red is not None else 0),))
-    out += ESC + b"id" + job.media.feed_margin.to_bytes(2, "little")
+    out += ESC + b"id" + job.media.margin(model).to_bytes(2, "little")
     if job.compress:
         out += b"M\x02"
     return out
@@ -524,6 +568,21 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
     return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
 
 
+def send_chunked(link, data: bytes, stall: float = SOCKET_TIMEOUT, chunk: int = CHUNK) -> None:
+    """All of data to a socket, a piece at a time: a printer whose buffer
+    is full takes nothing for a while, so the timeout is for each piece
+    (socket.sendall's timeout covers the whole call). PrinterStalled once
+    the printer took nothing for `stall` seconds. usb.Connection.sendall
+    does the same on USB."""
+    link.settimeout(stall)
+    view = memoryview(data)
+    for start in range(0, len(view), chunk):
+        try:
+            link.sendall(view[start : start + chunk])
+        except TimeoutError as e:
+            raise PrinterStalled("printer took no data for %g s" % stall) from e
+
+
 def map_error(error: Exception) -> PrinterError:
     mapped = network_error(error)
     if mapped:
@@ -543,20 +602,26 @@ class _Session:
         self.on_usb = on_usb
         self.buffer = b""
         self.junk = 0
+        self.answered = False  # the printer answered a status request
 
     def send(self, data: bytes) -> None:
-        self.link.sendall(data)
+        if isinstance(self.link, socket.socket):
+            send_chunked(self.link, data)
+        else:  # usb.Connection has its own progress-based timeout
+            self.link.sendall(data)
 
     def ask(self) -> Status | None:
         """The printer's status; None if it does not answer on the network
         (older models only answer on USB [assumed])."""
         self.send(QUERY)
         try:
-            return self.read(STATUS_WAIT)
+            status = self.read(STATUS_WAIT)
         except PrinterTimeout:
             if self.on_usb:
                 raise
             return None
+        self.answered = True
+        return status
 
     def poll(self) -> Status:
         """The status while a job may run: no NULs, they would end it."""
@@ -642,7 +707,7 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
         try:
             status = s.read(max(0.0, deadline - _clock()))
         except PrinterTimeout as e:
-            if not notified:
+            if not notified or _finished(s):
                 break
             e.params.update(printed=done, copies=copies)
             raise
@@ -656,6 +721,16 @@ def _wait_done(s: _Session, progress: ProgressCallback | None, copies: int) -> N
             if done < copies:
                 report_progress(progress, done + 1, copies)
     report_progress(progress, copies, copies)
+
+
+def _finished(s: _Session) -> bool:
+    """Notices stopped coming: asked once, a printer waiting for data
+    without an error has printed the job."""
+    try:
+        status = s.poll()
+    except PrinterError:
+        return False
+    return status.phase == PHASE_WAITING and status_error(status) is None
 
 
 # --- geometry ---------------------------------------------------------------------
@@ -731,16 +806,25 @@ class _Plan:
     image: Image.Image  # printer orientation, printable area, final resolution
     two_color: bool
     high_res: bool
+    length_mm: int | None = None  # die-cut: as the status reported it
+
+
+# what was learned about a printer, by host, for both backends: the model
+# its network name says, and whether the red and black roll is loaded (the
+# status does not tell; a job of the wrong kind is refused)
+_found_models: dict[str, Model] = {}
+_two_color_rolls: dict[str, bool] = {}
 
 
 class _BrotherQL(Backend):
     """What both kinds of rolls share: connection, status, the job."""
 
     die_cut = False
+    # one printer, one setup: host, cut, colours and quality for both kinds
+    settings_id = "brother_ql"
 
     def __init__(self, port: int = DEFAULT_PORT):
         self.port = port
-        self.models: dict[str, Model] = {}  # host -> model found by the search
 
     # --- the printer ---------------------------------------------------------
 
@@ -749,13 +833,19 @@ class _BrotherQL(Backend):
             return "Brother " + info.model
         return self.name
 
-    def model_for(self, host: str, status: Status | None) -> Model | None:
+    def cut_modes(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """None for a model without a cutter (QL-500)."""
+        model = MODELS.get(info.model) if info else None
+        return () if model and not model.cutting else self.capabilities.cut_modes
+
+    @staticmethod
+    def model_for(host: str, status: Status | None) -> Model | None:
         """From the USB address, the network search, then the status code."""
         if usb.is_usb(host):
             found = model_named(unquote(urlsplit(host).path))
             if found:
                 return found
-        return self.models.get(host) or (status.model if status else None)
+        return _found_models.get(host) or (status.model if status else None)
 
     def discover(self, timeout: float = 3.0) -> list[FoundPrinter]:
         """QL printers on USB, then on the network."""
@@ -772,37 +862,34 @@ class _BrotherQL(Backend):
                 hosts.add(printer.host)
                 model = model_named(printer.name)
                 if model:
-                    self.models[printer.host] = model
+                    _found_models[printer.host] = model
                 found.append(printer)
         return found
 
     def query(self, host: str) -> PrinterInfo:
         with session(host, self.port) as s:
             status = s.ask()
-        return self.info(self.model_for(host, status), status)
+        return self.info(self.model_for(host, status), status, host)
 
-    def info(self, model: Model | None, status: Status | None) -> PrinterInfo:
+    def info(self, model: Model | None, status: Status | None, host: str = "") -> PrinterInfo:
         name = model.name if model else "QL"
         if status is None:  # connected, but no answer
             return PrinterInfo(name, None, None, None, "UNKNOWN")
         media, error = self._loaded(status)
-        state = "ERROR" if error else "BUSY" if status.phase == PHASE_PRINTING else "IDLE"
         info = PrinterInfo(
             name,
             None,
             None,
             None,
-            state,
+            _state(status, error),
             error=error.code if error else "",
-            modes=_modes(model, media),
-            qualities=QUALITIES if model and model.high_res else QUALITIES[:1],
+            modes=_modes(model, media, _two_color_rolls.get(host)),
+            qualities=_qualities(model),
         )
+        if status.media and not media:  # the other kind: the other backend fits
+            info.media_backend = BrotherQL.id if self.die_cut else BrotherQLDieCut.id
         if media:
-            info.cassette = CassetteInfo(printable_mm=round(media.dots[0] / DPI * 25.4, 1))
-            if media.die_cut:
-                info.pitch_mm = media.length_mm + DK_GAP_MM
-            else:
-                info.tape_mm = media.width_mm
+            _describe(info, media)
         return info
 
     def _loaded(self, status: Status) -> tuple[Media | None, PrinterError | None]:
@@ -834,18 +921,22 @@ class _BrotherQL(Backend):
         made_for = self.label_media(image)
         media = _roll(made_for, status)
         model = self.model_for(host, status) or (WIDE if media.wide else NARROW)
-        two_color = options.mode == RED.id and model.two_color and media == RED_ROLL
+        two_color = False
+        if model.two_color and media == RED_ROLL:
+            # the roll decides once it is known, else the choice in the dialog
+            two_color = _two_color_rolls.get(host, options.mode == RED.id)
         high_res = options.quality == "high" and model.high_res and not two_color
         scale = _scale(image)
         printed = self.fit(self.to_printer(image), made_for, media)
         printed = _resolution(printed, scale, high_res)
         if not media.die_cut:
             printed = _length_checked(printed, model, high_res)
-        return _Plan(model, media, printed, two_color, high_res)
+        length = status.media_length if status and media.die_cut else None
+        return _Plan(model, media, printed, two_color, high_res, length)
 
     def job(self, plan: _Plan, options: PrintOptions) -> Job:
         black, red = ink(plan.image, plan.two_color)
-        offset = plan.media.offset_r + plan.model.offset_r
+        offset = plan.media.offset(plan.model)
         return Job(
             model=plan.model,
             media=plan.media,
@@ -855,6 +946,7 @@ class _BrotherQL(Backend):
             cut=options.cut if options.cut in self.capabilities.cut_modes else "full",
             high_res=plan.high_res,
             compress=plan.model.compression,
+            length_mm=plan.length_mm,
         )
 
     def print_label(
@@ -871,14 +963,64 @@ class _BrotherQL(Backend):
                 status = _wait_idle(s, _checked(status))
             plan = self.plan(image, options, host, status)
             report_progress(progress, 1, copies)
-            s.send(build_job(self.job(plan, options)))
-            if status is None:  # a printer that does not answer: sent is all we know
-                report_progress(progress, copies, copies)
-            else:
-                _wait_done(s, progress, copies)
-        if options.mode == RED.id and not plan.two_color:
-            return PrintResult(mode=BLACK.id)
+            try:
+                self._send(s, plan, options, progress)
+            except WrongMedia as e:
+                if e.params.get("printed") or not _other_roll_kind(plan, status):
+                    raise
+                # the 62 mm roll is the other one (red and black or plain):
+                # the printer refused the job before printing, send it the
+                # other way [assumed: refused before anything is printed]
+                _two_color_rolls[host] = not plan.two_color
+                plan = self.plan(image, options, host, status)
+                self._send(s, plan, options, progress)
+        if status is not None and plan.media == RED_ROLL and plan.model.two_color:
+            _two_color_rolls[host] = plan.two_color
+        return _result(options, plan)
+
+    def _send(self, s: _Session, plan: _Plan, options: PrintOptions, progress) -> None:
+        s.send(build_job(self.job(plan, options)))
+        if s.answered:
+            _wait_done(s, progress, max(1, options.copies))
+        else:  # a printer that does not answer: sent is all we know
+            report_progress(progress, max(1, options.copies), max(1, options.copies))
+
+
+def _state(status: Status, error: PrinterError | None) -> str:
+    if error:
+        return "ERROR"
+    return "BUSY" if status.phase == PHASE_PRINTING else "IDLE"
+
+
+def _qualities(model: Model | None) -> tuple[str, ...]:
+    return QUALITIES if model and model.high_res else QUALITIES[:1]
+
+
+def _describe(info: PrinterInfo, media: Media) -> None:
+    """The loaded roll in the printer's info."""
+    info.cassette = CassetteInfo(printable_mm=round(media.dots[0] / DPI * 25.4, 1))
+    if media.die_cut:
+        info.label_mm = (media.width_mm, media.length_mm)
+        info.pitch_mm = media.length_mm + DK_GAP_MM
+    else:
+        info.tape_mm = media.width_mm
+
+
+def _other_roll_kind(plan: _Plan, status: Status | None) -> bool:
+    """A refused job on the 62 mm roll of a two-colour model: the roll is
+    the other kind than the job."""
+    return status is not None and plan.model.two_color and plan.media == RED_ROLL
+
+
+def _result(options: PrintOptions, plan: _Plan) -> PrintResult | None:
+    """What differs from the choice in the dialog, and why."""
+    used = RED.id if plan.two_color else BLACK.id
+    wanted = options.mode if options.mode in (RED.id, BLACK.id) else BLACK.id
+    if used == wanted:
         return None
+    # the roll decided; on a model without two colours red is not available
+    reason = "roll" if plan.model.two_color and plan.media == RED_ROLL else ""
+    return PrintResult(mode=used, reason=reason)
 
 
 def _roll(made_for: Media, status: Status | None) -> Media:
@@ -891,11 +1033,16 @@ def _roll(made_for: Media, status: Status | None) -> Media:
     return media
 
 
-def _modes(model: Model | None, media: Media | None) -> tuple[PrintMode, ...]:
-    """Red and black: a QL-8xx with the 62 mm roll (DK-22251 or plain)."""
-    if model and model.two_color and media == RED_ROLL:
+def _modes(
+    model: Model | None, media: Media | None, two_color_roll: bool | None = None
+) -> tuple[PrintMode, ...]:
+    """Red and black: a QL-8xx with the 62 mm roll (DK-22251 or plain);
+    once a job showed which roll it is, only what that roll prints."""
+    if not (model and model.two_color and media == RED_ROLL):
+        return (BLACK,)
+    if two_color_roll is None:
         return (BLACK, RED)
-    return (BLACK,)
+    return (RED,) if two_color_roll else (BLACK,)
 
 
 def _is_ql(name: str) -> bool:
@@ -922,6 +1069,7 @@ class BrotherQL(_BrotherQL):
         min_length_mm=MIN_LENGTH_MM,
         max_length_mm=MAX_LENGTH_MM,
         qualities=QUALITIES,
+        media="roll",
     )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:

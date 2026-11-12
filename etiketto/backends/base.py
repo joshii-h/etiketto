@@ -71,6 +71,8 @@ class Capabilities:
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
     # print qualities ("standard", "high"); empty or one: the interface offers no choice
     qualities: tuple[str, ...] = ()
+    # continuous tape comes as a "cassette" (VC-500W) or a "roll" (Brother QL)
+    media: str = "cassette"
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -128,6 +130,11 @@ class PrinterInfo:
     cassette: CassetteInfo | None = None
     pitch_mm: float | None = None  # die-cut: measured distance from label to label
     qualities: tuple[str, ...] = ()  # print qualities of the connected model; empty = unknown
+    # die-cut: the size of the loaded labels (width, height), if the printer knows it
+    label_mm: tuple[float, float] | None = None
+    # the id of another backend that fits the loaded media (e.g. die-cut
+    # labels loaded while the label is for continuous rolls); "" = none
+    media_backend: str = ""
 
 
 # --- a print job ------------------------------------------------------------
@@ -184,6 +191,9 @@ class PrintResult:
     # the job waits in the printer's queue: it prints when its turn comes,
     # nothing went wrong (yet)
     queued: bool = False
+    # why the mode differs: "roll" = the loaded roll needs it; "" = the
+    # printer does not have the requested mode
+    reason: str = ""
 
 
 @dataclass(frozen=True)
@@ -425,6 +435,16 @@ class Backend(ABC):
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""
         return (info.modes if info else ()) or self.capabilities.modes
+
+    @property
+    def settings_id(self) -> str:
+        """The key of this backend's settings; backends for the same printer
+        (one per kind of media) share one."""
+        return self.id
+
+    def cut_modes(self, info: PrinterInfo | None) -> tuple[str, ...]:
+        """Cut modes of the connected printer, else the documented ones."""
+        return self.capabilities.cut_modes
 
     def qualities(self, info: PrinterInfo | None) -> tuple[str, ...]:
         """Print qualities of the connected printer, else the documented ones."""

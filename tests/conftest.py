@@ -14,9 +14,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from gi.repository import Gio, GLib
 from PIL import Image, ImageChops
 
-from etiketto.backends import brother_ql, cab, get_backend, usb, vc500w
+from etiketto.backends import brother_ql, cab, get_backend, ipp, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -56,17 +57,31 @@ def ink_bbox(image: Image.Image, background) -> tuple[int, int, int, int] | None
 
 
 @pytest.fixture(autouse=True)
-def _no_network(monkeypatch):
-    """Safety net: no test may open a real connection to the printer."""
+def _no_network(request, monkeypatch):
+    """Safety net: no test may open a real connection to the printer, nor
+    look for printers on the network or in CUPS: windows of earlier tests
+    may still be searching, and their answers must not depend on (or reach
+    into) the machine the tests run on."""
 
     def refuse(*_args, **_kwargs):
         raise AssertionError("network access to the printer in a test")
+
+    def no_system_bus(*_args, **_kwargs):
+        raise GLib.Error("no system bus in tests")
+
+    def no_ipp(uri, body, timeout):
+        raise ConnectionRefusedError("no IPP in tests: %s" % uri)
 
     monkeypatch.setattr(vc500w, "_connect", refuse)
     monkeypatch.setattr(cab, "_connect", refuse)
     monkeypatch.setattr(brother_ql, "_connect", refuse)
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
+    # Avahi (mDNS search and .local names) is on the system bus; test_mdns
+    # puts a fake bus in its place
+    monkeypatch.setattr(Gio, "bus_get_sync", no_system_bus)
+    if request.module.__name__ != "test_ipp":  # it talks to its own local server
+        monkeypatch.setattr(ipp, "send", no_ipp)
 
 
 # --- fake VC-500W on the protocol level ------------------------------------

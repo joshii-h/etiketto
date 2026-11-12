@@ -31,6 +31,7 @@ from etiketto.backends.base import (
     LabelTooLong,
     LabelTooWide,
     OutOfLabels,
+    OutOfPaper,
     PaperJam,
     PrinterBusy,
     PrinterError,
@@ -83,13 +84,17 @@ class FakeQL:
     A page is recorded at 0x0C or 0x1A; with `notify` the printer reports
     each page (phase change, printing completed, phase change)."""
 
-    def __init__(self, model=0x41, width=62, kind=0x0A, length=0):
+    def __init__(self, model=0x41, width=62, kind=0x4A, length=0):
         self.model, self.width, self.kind, self.length = model, width, kind, length
         self.err1 = self.err2 = 0
         self.busy = 0  # status requests that still show another job printing
         self.notify = True
         self.silent = False  # answers nothing at all
         self.fail_on_page = None  # an error packet instead of this page's notices
+        # the 62 mm roll: True red and black, False plain; a job of the other
+        # kind (ESC i K bit 0) is refused with "replace media"; None: any
+        self.red_roll = None
+        self.refused = 0
         self.buffer = b""
         self.out = b""
         self.pages: list[dict] = []
@@ -178,6 +183,13 @@ class FakeQL:
 
     def _page_done(self, last: bool) -> None:
         number = len(self.pages)
+        expanded = [c for c in self.page["commands"] if c.startswith(ESC + b"iK")]
+        two_color = bool(expanded and expanded[-1][3] & 0x01)
+        if self.red_roll is not None and two_color != self.red_roll:
+            self.refused += 1
+            self.page = self._new_page()
+            self.out += packet(self.model, 0, 0x01, self.width, self.kind, self.length, 0x02)
+            return
         self.pages.append(self.page)
         commands = [c for c in self.page["commands"] if not c.startswith(ESC + b"ia")]
         self.page = self._new_page()
@@ -216,6 +228,13 @@ class FakeLink:
 
     def close(self) -> None:
         self.closed = True
+
+
+@pytest.fixture(autouse=True)
+def _forget(monkeypatch):
+    """What the backend learned about printers stays in the test."""
+    monkeypatch.setattr(ql, "_found_models", {})
+    monkeypatch.setattr(ql, "_two_color_rolls", {})
 
 
 @pytest.fixture
@@ -263,7 +282,7 @@ BLANK_62 = Image.new("1", (696, 20), 0)
 
 def _job(model, media=None, rows=None, **kwargs) -> bytes:
     media = media or ql.continuous_media(62)
-    black = rows if rows is not None else ql.raster_rows(BLANK_62, model, 12 + model.offset_r)
+    black = rows if rows is not None else ql.raster_rows(BLANK_62, model, media.offset(model))
     return ql.build_job(ql.Job(model, media, black, **kwargs))
 
 
@@ -351,7 +370,7 @@ def test_golden_ql1100_wide_rows_and_offset():
     media = ql.continuous_media(102)
     image = Image.new("1", (1164, 1), 0)
     image.putpixel((0, 0), 255)
-    rows = ql.raster_rows(image, model, media.offset_r + model.offset_r)
+    rows = ql.raster_rows(image, model, media.offset(model))
     # 1296 pins: the image starts 1296 - 1164 - 56 = 76 dots from the left,
     # mirrored to pin 1219: byte 152, bit 7 - 3
     expected = bytearray(162)
@@ -393,8 +412,8 @@ def test_raster_rows_refuse_an_image_wider_than_the_head():
 
 def test_every_roll_fits_the_print_head():
     for media in ql.CONTINUOUS + ql.DIE_CUT:
-        pins = 1296 if media.wide else 720
-        assert media.dots[0] + media.offset_r <= pins, media
+        assert media.dots[0] + media.offset_wide <= 1296, media
+        assert media.wide or media.dots[0] + media.offset_r <= 720, media
         assert media.wide == (media.width_mm > 62)
     assert ql.die_cut_media(39, 48).name == "39x48"
     assert ql.die_cut_media(10, 10) is None and ql.continuous_media(13) is None
@@ -482,7 +501,7 @@ def test_media_from_status(fields, name):
         (0x80, 0, PrinterError),
         (0, 0x01, WrongMedia),
         (0, 0x10, CoverOpen),
-        (0, 0x40, PaperJam),
+        (0, 0x40, OutOfPaper),  # on a continuous roll: its end
         (0, 0x80, PrinterError),
         (0x01, 0x10, OutOfLabels),  # the first one counts
     ],
@@ -570,7 +589,7 @@ def test_model_table():
     assert not models["QL-700"].mode_setting and not models["QL-700"].compression
     assert models["QL-800"].two_color and not models["QL-800"].compression
     assert models["QL-820NWB"].invalidate == 400 and models["QL-720NW"].invalidate == 200
-    assert models["QL-1100"].bytes_per_row == 162 and models["QL-1100"].offset_r == 44
+    assert models["QL-1100"].bytes_per_row == 162 and models["QL-1100"].invalidate == 350
     assert not ql.NARROW.compression and not ql.NARROW.high_res
     assert ql.WIDE.bytes_per_row == 162
     assert all(name in models for name in ql.MODEL_CODES.values())
@@ -613,7 +632,8 @@ def test_query_continuous_roll(printer):
     assert info.qualities == ("standard", "high")
     assert info.cassette.printable_mm == 58.9 and not info.error
     assert BrotherQL().display_name(info) == "Brother QL-820NWB"
-    assert printer.device.nuls == 400 and printer.device.inits == 1
+    # no ESC @ in a status query: it would stop a print
+    assert printer.device.nuls == 400 and printer.device.inits == 0
     assert printer.links[0].closed and printer.calls == [("ql.local", 9100, usb.BUSY_WAIT)]
 
 
@@ -875,11 +895,31 @@ def test_a_printer_that_stops_reporting(printer, monkeypatch):
         if len(device.pages) == 2:
             # the answer to the job's status request, the first page's notices
             device.out = device.out[: 32 * 3]
+            device.busy = 1  # asked once more, the printer is still printing
 
     monkeypatch.setattr(device, "_page_done", only_first)
     with pytest.raises(PrinterTimeout) as raised:
         backend.print_label(image, "ql.local", options)
     assert raised.value.params == {"printed": 1, "copies": 2}
+    assert device.requests == 3  # the query, the job's own, once more
+
+
+def test_notices_stop_but_the_printer_is_done(printer, monkeypatch):
+    device = printer.device
+    backend = BrotherQL()
+    options = PrintOptions(copies=2)
+    image = backend.prepare(_continuous(), options)
+    real_done = device._page_done
+
+    def only_first(last):
+        real_done(last)
+        if len(device.pages) == 2:
+            device.out = device.out[: 32 * 3]
+
+    monkeypatch.setattr(device, "_page_done", only_first)
+    events = []
+    backend.print_label(image, "ql.local", options, events.append)  # waiting, no error
+    assert events[-1].copy == 2 and device.requests == 3
 
 
 def test_a_printer_without_notices(printer):
@@ -1093,3 +1133,247 @@ def test_die_cut_image_without_its_size(printer):
     printer.device.kind, printer.device.length = 0x0B, 29
     BrotherQLDieCut().print_label(Image.new("RGB", (732, 343)), "ql.local", PrintOptions())
     assert len(printer.device.pages[0]["black"]) == 271
+
+
+# --- what Brother's references say (review against them) ------------------------------
+
+
+@pytest.mark.parametrize(
+    "kind, name",
+    [(0x0A, "62"), (0x4A, "62"), (0x0B, "62x29"), (0x4B, "62x29"), (0x1A, None)],
+)
+def test_both_media_type_codes(kind, name):
+    """QL-1100 and the old series report 0x0A/0x0B, the QL-710W, QL-720NW
+    and QL-800 series 0x4A/0x4B."""
+    length = 29 if kind & 0x0F == 0x0B else 0
+    media = ql.parse_status(packet(kind=kind, length=length)).media
+    assert (media.name if media else None) == name
+
+
+def test_high_resolution_models():
+    with_600 = {name for name, model in ql.MODELS.items() if model.high_res}
+    assert with_600 == {
+        "QL-570",
+        "QL-580N",
+        "QL-700",
+        "QL-710W",
+        "QL-720NW",
+        "QL-800",
+        "QL-810W",
+        "QL-820NWB",
+        "QL-1100",
+        "QL-1100NWB",
+        "QL-1110NWB",
+        "QL-1115NWB",
+    }
+
+
+@pytest.mark.parametrize(
+    "width, length, name",
+    [
+        (60, 86, "60x86"),
+        (60, 87, "60x86"),
+        (102, 152, "102x152"),
+        (102, 153, "102x152"),
+        (38, 90, "38x90"),
+    ],
+)
+def test_die_cut_lengths_of_all_references(width, length, name):
+    assert ql.die_cut_media(width, length).name == name
+
+
+def test_label_sizes_as_on_the_box():
+    sizes = BrotherQLDieCut.capabilities.label_sizes
+    assert (60, 86) in [(s.width_mm, s.height_mm) for s in sizes]
+    assert (102, 152) in [(s.width_mm, s.height_mm) for s in sizes]
+
+
+def test_print_info_uses_the_reported_length(printer):
+    device = printer.device
+    device.model, device.kind, device.width, device.length = 0x43, 0x0B, 60, 87  # QL-1100
+    backend = BrotherQLDieCut()
+    label = _die_cut(60, 86)
+    label.background = "#000000"
+    backend.print_label(backend.prepare(label, PrintOptions()), "ql.local", PrintOptions())
+    info = next(c for c in device.pages[0]["commands"] if c.startswith(ESC + b"iz"))
+    assert info[5:7] == bytes((60, 87))
+    assert _sent_rows(device.pages[0]).getbbox()[2] == 1296 - 68  # right margin 68 pins
+
+
+def test_ninety_mm_roll_on_the_wide_models(printer):
+    device = printer.device
+    device.model, device.kind, device.width = 0x44, 0x0A, 90  # QL-1110NWB
+    info = BrotherQL().query("ql.local")
+    assert info.tape_mm == 90 and 90 in BrotherQL.capabilities.tape_widths_mm
+
+
+@pytest.mark.parametrize(
+    "model, media, offset",
+    [
+        ("QL-1100", "103", 38),
+        ("QL-1100", "62", 56),
+        ("QL-1050", "12", 74),
+        ("QL-820NWB", "60x86", 24),
+        ("QL-820NWB", "54x29", 59),
+        ("QL-700", "23x23", 42),
+    ],
+)
+def test_right_margins_from_brother(model, media, offset):
+    found = next(m for m in ql.CONTINUOUS + ql.DIE_CUT if m.name == media)
+    assert found.offset(ql.MODELS[model]) == offset
+    assert ql.die_cut_media(23, 23).dots == (236, 202)
+
+
+def test_feed_margin_of_12_mm_round_labels():
+    d12 = ql.die_cut_media(12, 12)
+    assert d12.margin(ql.MODELS["QL-700"]) == 35
+    assert d12.margin(ql.MODELS["QL-580N"]) == 35
+    assert d12.margin(ql.MODELS["QL-820NWB"]) == 0
+    assert d12.margin(ql.MODELS["QL-1100"]) == 0
+
+
+def test_no_compression_on_the_ql650td_and_invalidate_lengths():
+    assert not ql.MODELS["QL-650TD"].compression
+    job = _job(ql.MODELS["QL-1100"], ql.continuous_media(102), rows=[bytes(162)])
+    assert job.startswith(ESC + b"ia\x01" + b"\x00" * 350 + ESC + b"@")
+
+
+def test_quality_first_not_with_two_colours():
+    rows = [bytes(90)]
+    red = ql.build_job(ql.Job(ql.MODELS["QL-800"], ql.RED_ROLL, rows, rows))
+    black = ql.build_job(ql.Job(ql.MODELS["QL-800"], ql.RED_ROLL, rows))
+    assert ESC + b"iz\x8e" in red and ESC + b"iz\xce" in black
+
+
+def test_end_of_continuous_roll_and_turned_off():
+    end = ql.status_error(ql.parse_status(packet(err2=0x40, kind=0x4A)))
+    assert type(end) is OutOfPaper
+    stuck = ql.status_error(ql.parse_status(packet(err2=0x40, kind=0x4B, length=29)))
+    assert type(stuck) is PaperJam
+    off = ql.status_error(ql.parse_status(packet(status_type=0x04)))
+    assert type(off) is PrinterError and "turned off" in off.details
+
+
+def test_shared_model_code_is_the_ql500():
+    assert ql.parse_status(packet(model=0x4F)).model.name == "QL-500"
+    info = BrotherQL().info(ql.MODELS["QL-500"], ql.parse_status(packet(model=0x4F)))
+    assert BrotherQL().cut_modes(info) == ()  # no cutter: no cut row
+    assert BrotherQL().cut_modes(None) == ("full", "end", "none")
+    ql550 = BrotherQL().info(ql.MODELS["QL-550"], ql.parse_status(packet(model=0x4F)))
+    assert BrotherQL().cut_modes(ql550) == ("full", "end", "none")
+
+
+def test_both_backends_share_the_settings_and_the_search(printer, monkeypatch):
+    assert BrotherQL().settings_id == BrotherQLDieCut().settings_id == "brother_ql"
+    found = [FoundPrinter("Brother QL-720NW", "QL720.local", "192.0.2.5")]
+    monkeypatch.setattr(mdns, "browse", lambda service_type, match, timeout: found)
+    BrotherQL().discover(timeout=0.01)
+    assert BrotherQLDieCut().query("QL720.local").model == "QL-720NW"
+
+
+def test_the_other_kind_of_roll_offers_the_other_backend(printer):
+    device = printer.device
+    device.kind, device.length = 0x4B, 29
+    info = BrotherQL().query("ql.local")
+    assert info.error == "wrong_media" and info.media_backend == "brother_ql_diecut"
+    die_cut = BrotherQLDieCut().query("ql.local")
+    assert not die_cut.media_backend and die_cut.label_mm == (62, 29)
+    device.kind, device.length = 0x4A, 0
+    assert BrotherQLDieCut().query("ql.local").media_backend == "brother_ql"
+
+
+def test_the_red_and_black_roll_needs_a_two_colour_job(printer):
+    device = printer.device
+    device.red_roll = True
+    backend = BrotherQL()
+    options = PrintOptions(mode="black")
+    result = backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert result == PrintResult(mode="red", reason="roll")
+    assert device.refused == 1 and device.printed() == 1
+    assert ESC + b"iK\x09" in device.pages[0]["commands"]
+    # remembered: only red and black from now on, no second refusal
+    assert [m.id for m in backend.query("ql.local").modes] == ["red"]
+    backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert device.refused == 1 and device.printed() == 2
+
+
+def test_a_plain_roll_with_red_and_black_chosen(printer):
+    device = printer.device
+    device.red_roll = False
+    backend = BrotherQL()
+    options = PrintOptions(mode="red", quality="high")
+    result = backend.print_label(backend.prepare(_continuous(), options), "ql.local", options)
+    assert result == PrintResult(mode="black", reason="roll")
+    assert ESC + b"iK\x48" in device.pages[0]["commands"]  # 600 dpi again in black
+    assert [m.id for m in backend.query("ql.local").modes] == ["black"]
+
+
+def test_a_refused_job_on_another_roll_is_an_error(printer):
+    device = printer.device
+    device.model, device.red_roll = 0x37, True  # a QL-720NW never prints two colours
+    backend = BrotherQL()
+    with pytest.raises(WrongMedia):
+        backend.print_label(
+            backend.prepare(_continuous(), PrintOptions()), "ql.local", PrintOptions()
+        )
+    assert device.refused == 1
+
+
+def test_red_on_a_model_without_two_colours():
+    plan = SimpleNamespace(two_color=False, model=ql.MODELS["QL-720NW"], media=ql.RED_ROLL)
+    assert ql._result(PrintOptions(mode="red"), plan) == PrintResult(mode="black")
+    assert ql._result(PrintOptions(mode="vivid"), plan) is None
+
+
+class Pipe:
+    """A socket whose other end reads slowly or not at all."""
+
+    def __init__(self, read: bool):
+        self.ours, self.theirs = socket.socketpair()
+        self.ours.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
+        self.got = bytearray()
+        if read:
+            threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        while chunk := self.theirs.recv(65536):
+            self.got += chunk
+
+    def close(self):
+        self.ours.close()
+        self.theirs.close()
+
+
+def test_send_in_pieces():
+    pipe = Pipe(read=True)
+    data = bytes(range(256)) * 2000
+    ql.send_chunked(pipe.ours, data, stall=5, chunk=1000)
+    pipe.ours.shutdown(socket.SHUT_WR)
+    for _ in range(200):
+        if len(pipe.got) == len(data):
+            break
+        threading.Event().wait(0.01)
+    assert bytes(pipe.got) == data
+    pipe.close()
+
+
+def test_a_printer_with_a_full_buffer_stalls():
+    pipe = Pipe(read=False)
+    from etiketto.backends.base import PrinterStalled
+
+    with pytest.raises(PrinterStalled):
+        ql.send_chunked(pipe.ours, bytes(10_000_000), stall=0.2)
+    pipe.close()
+
+
+def test_sessions_on_tcp_send_in_pieces(monkeypatch):
+    sent = []
+    pipe = Pipe(read=True)
+    monkeypatch.setattr(ql, "send_chunked", lambda link, data: sent.append(len(data)))
+    ql._Session(pipe.ours, False).send(b"job")
+    assert sent == [3]
+    pipe.close()
+
+
+def test_no_answer_when_asked_whether_the_job_is_done():
+    assert not ql._finished(ql._Session(Chunks(), False))

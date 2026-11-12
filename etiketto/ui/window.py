@@ -65,6 +65,9 @@ class Window(Adw.ApplicationWindow):
         self._install_actions()
         self._install_drop_target()
         self.connect("close-request", self._on_close_request)
+        # a search or query still running must not touch a closed window's
+        # settings (they would overwrite those of a newer window)
+        self.connect("destroy", lambda _w: self.printer._next_generation())
 
         self.rebuild_sidebar()
         self.update_title()
@@ -328,6 +331,10 @@ class Window(Adw.ApplicationWindow):
 
     def toast(self, text: str) -> None:
         self._add_toast(text, 4)
+
+    def offer(self, text: str, button: str, then) -> None:
+        """A toast with an action the user may take."""
+        self._add_toast(text, 8, button, then)
 
     def error(self, text: str, details: str | None = None) -> None:
         """A toast for problems, with a button to report them; the details

@@ -55,8 +55,11 @@ class PrintFlow:
         saved = self.window.printer_settings.get("quality")
         return saved if saved in ids else (ids or ("",))[0]
 
+    def _cut_modes(self) -> tuple[str, ...]:
+        return self.window.backend.cut_modes(self.window.printer.info)
+
     def _cut(self) -> str:
-        cut_modes = self.window.backend.capabilities.cut_modes
+        cut_modes = self._cut_modes()
         saved = self.window.printer_settings.get("cut", "full")
         return saved if saved in cut_modes else (cut_modes or ("",))[0]
 
@@ -71,6 +74,8 @@ class PrintFlow:
             return
         if tape := window.printer.other_tape():
             self._wrong_cassette_dialog(tape)
+        elif size := window.printer.other_label_size():
+            self._other_size_dialog(size)
         elif pitch := window.printer.other_pitch():
             self._wrong_labels_dialog(pitch)
         else:
@@ -81,6 +86,19 @@ class PrintFlow:
 
     def _wrong_cassette_dialog(self, inserted_mm: float) -> None:
         unit, label = self.window.unit, self.window.label
+        if self.window.backend.capabilities.media == "roll":
+            self._warn(
+                _("Wrong roll"),
+                _(
+                    "The label is designed for a %(label)s roll, but a %(tape)s roll is "
+                    "loaded. The label would be scaled to the roll."
+                )
+                % {
+                    "label": isolate(unit.tape_name(label.tape_mm)),
+                    "tape": isolate(unit.tape_name(inserted_mm)),
+                },
+            )
+            return
         self._warn(
             _("Wrong cassette"),
             _(
@@ -90,6 +108,20 @@ class PrintFlow:
             % {
                 "label": isolate(unit.tape_name(label.tape_mm)),
                 "tape": isolate(unit.tape_name(inserted_mm)),
+            },
+        )
+
+    def _other_size_dialog(self, loaded: tuple[float, float]) -> None:
+        unit, label = self.window.unit, self.window.label
+        self._warn(
+            _("Different labels loaded"),
+            _(
+                "The label is %(size)s, but labels of %(loaded)s are loaded. Check the "
+                "label size, or load the matching roll."
+            )
+            % {
+                "size": isolate(unit.size(*label.media_size())),
+                "loaded": isolate(unit.size(*loaded)),
             },
         )
 
@@ -128,8 +160,9 @@ class PrintFlow:
         rows: list[Gtk.Widget] = [
             spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
         ]
-        if caps.cut_modes:
-            cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
+        cut_modes = self._cut_modes()
+        if cut_modes:
+            cuts = [(key, name) for key, name in CUT_MODES if key in cut_modes]
             rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
         modes = [(m.id, MODE_NAMES.get(m.id, m.id)) for m in self._modes()]
         if len(modes) > 1:
@@ -292,6 +325,10 @@ class PrintFlow:
             return _("Sent to the printer – it prints when its turn comes")
         if not (options and result and result.mode and result.mode != options.mode):
             return _("Printed")
+        if result.reason == "roll":
+            return _("Printed with “%(used)s”, as the loaded roll needs it") % {
+                "used": MODE_NAMES.get(result.mode, result.mode)
+            }
         return _(
             "Colour mode “%(wanted)s” is not available on this printer, printed with “%(used)s”"
         ) % {

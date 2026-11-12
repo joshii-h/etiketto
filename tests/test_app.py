@@ -11,6 +11,7 @@ import errno
 import html
 import io
 import json
+from dataclasses import replace
 from datetime import date, timedelta
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
@@ -2222,6 +2223,7 @@ def test_ql_print_dialog_offers_cut_colours_and_quality(ql_window, ql_env):
         "50 mm",
         "54 mm",
         "62 mm",
+        "90 mm",
         "102 mm",
         "104 mm",
     ]
@@ -2241,8 +2243,8 @@ def test_ql_print_dialog_offers_cut_colours_and_quality(ql_window, ql_env):
     assert pump(lambda: not win.print_flow.busy)
     options = ql_env.prints[0][2]
     assert (options.cut, options.mode, options.quality) == ("end", "red", "high")
-    saved = win.printer_settings
-    assert [saved.get(key) for key in ("cut", "mode", "quality")] == ["end", "red", "high"]
+    saved = Settings.load().data["printers"]["brother_ql"]
+    assert (saved["cut"], saved["mode"], saved["quality"]) == ("end", "red", "high")
     assert win.print_flow.choices()["quality"] == "high"
 
 
@@ -2258,8 +2260,9 @@ def test_ql_without_two_colours_or_high_resolution(ql_window, ql_env):
     assert pump(lambda: win.printer.info is ql_env.info)
     win.print_flow.on_print()
     box = win.last_dialog.get_extra_child()
-    assert [box.get_row_at_index(i).get_title() for i in range(2)] == ["Copies", "Cut"]
-    assert box.get_row_at_index(2) is None
+    # no cutter on the QL-500: no cut row
+    assert box.get_row_at_index(0).get_title() == "Copies"
+    assert box.get_row_at_index(1) is None
 
 
 def test_ql_that_does_not_report_its_state(ql_window, ql_env):
@@ -2288,3 +2291,89 @@ def test_ql_die_cut_labels(ql_window, ql_env):
     assert win.label.media_size() == (62, 29)
     size = one(win.sidebar, Adw.ComboRow, title="Label size")
     assert _items(size)[:3] == ["62 × 29 mm", "29 × 90 mm", "62 × 100 mm"]
+    # one printer, one setup: the host found for continuous rolls is used
+    assert win.printer_settings.host == "QL820.local"
+
+
+def _plain(text: str) -> str:
+    """Without the marks that isolate names and numbers in a sentence."""
+    return text.replace("\u2068", "").replace("\u2069", "")
+
+
+def test_ql_roll_texts(ql_window, ql_env):
+    win = ql_window
+    assert _plain(win.printer.row.get_subtitle()) == "62 mm roll"
+    assert ("Roll", "62 mm") in [(t, _plain(v)) for t, v in win.printer.details()]
+    ql_env.info = PrinterInfo("QL-820NWB", None, None, None, "IDLE")
+    win.printer.refresh()
+    assert pump(lambda: win.printer.info is ql_env.info)
+    assert win.printer.row.get_subtitle() == "No roll loaded"
+    ql_env.info = PrinterInfo("QL-820NWB", 29, None, None, "IDLE")
+    win.printer.refresh()
+    assert pump(lambda: win.printer.info is ql_env.info)
+    win.print_flow.on_print()
+    dialog = win.last_dialog
+    assert dialog.get_heading() == "Wrong roll"
+    assert _plain(dialog.get_body()) == (
+        "The label is designed for a 62 mm roll, but a 29 mm roll is loaded. "
+        "The label would be scaled to the roll."
+    )
+
+
+def test_ql_die_cut_labels_of_another_size(ql_window, ql_env):
+    win = ql_window
+    ql_env.info = PrinterInfo(
+        "QL-820NWB", None, None, None, "IDLE", label_mm=(29, 90), pitch_mm=93
+    )
+    win.set_backend("brother_ql_diecut")
+    assert pump(lambda: win.printer.info is ql_env.info)
+    assert ("Roll", "29 × 90 mm") in [(t, _plain(v)) for t, v in win.printer.details()]
+    win.print_flow.on_print()
+    dialog = win.last_dialog
+    assert dialog.get_heading() == "Different labels loaded"
+    assert _plain(dialog.get_body()) == (
+        "The label is 62 × 29 mm, but labels of 29 × 90 mm are loaded. Check the "
+        "label size, or load the matching roll."
+    )
+    win.label.set_media_size(29, 90)  # the same size: no warning
+    win.print_flow.on_print()
+    assert win.last_dialog.get_heading() == "Print label"
+
+
+def test_ql_offers_the_kind_of_the_loaded_roll(ql_window, ql_env):
+    win = ql_window
+    ql_env.info = PrinterInfo(
+        "QL-820NWB",
+        None,
+        None,
+        None,
+        "ERROR",
+        error="wrong_media",
+        media_backend="brother_ql_diecut",
+    )
+    win.toast_log.clear()
+    win.printer.refresh()
+    assert pump(lambda: win.printer.info is ql_env.info)
+    toast = win.toast_log[-1]
+    assert toast.get_title() == "The loaded roll is for “Brother QL, die-cut labels”"
+    assert toast.get_button_label() == "Switch"
+    toast.emit("button-clicked")
+    assert win.label.printer == "brother_ql_diecut"
+    # an unknown entry or the current one: nothing to offer
+    count = len(win.toast_log)
+    win.printer._offer_other_media(replace(ql_env.info, media_backend="no-such"))
+    win.printer._offer_other_media(replace(ql_env.info, media_backend="brother_ql_diecut"))
+    assert len(win.toast_log) == count
+
+
+def test_ql_says_when_the_roll_decided_the_colours(ql_window, ql_env, monkeypatch):
+    win = ql_window
+    backend = win.backend
+    monkeypatch.setattr(
+        backend,
+        "print_label",
+        lambda image, host, options, progress=None: PrintResult(mode="red", reason="roll"),
+    )
+    win.print_flow.start(PrintOptions(mode="black"))
+    assert pump(lambda: not win.print_flow.busy)
+    assert toast_titles(win)[-1] == "Printed with “Red and black”, as the loaded roll needs it"

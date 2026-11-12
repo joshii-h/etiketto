@@ -81,9 +81,10 @@ class PrinterSettings:
         printers = data.get("printers")
         if not isinstance(printers, dict):
             printers = data["printers"] = {}
-        entry = printers.get(self.backend.id)
+        key = self.backend.settings_id
+        entry = printers.get(key)
         if not isinstance(entry, dict):
-            entry = printers[self.backend.id] = {}
+            entry = printers[key] = {}
         return entry
 
     def get(self, key, default=None):
