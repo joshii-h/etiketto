@@ -2241,8 +2241,8 @@ def test_ql_print_dialog_offers_cut_colours_and_quality(ql_window, ql_env):
     assert pump(lambda: not win.print_flow.busy)
     options = ql_env.prints[0][2]
     assert (options.cut, options.mode, options.quality) == ("end", "red", "high")
-    saved = Settings.load().data["printers"]["brother_ql"]
-    assert (saved["cut"], saved["mode"], saved["quality"]) == ("end", "red", "high")
+    saved = win.printer_settings
+    assert [saved.get(key) for key in ("cut", "mode", "quality")] == ["end", "red", "high"]
     assert win.print_flow.choices()["quality"] == "high"
 
 
