@@ -158,6 +158,9 @@ interface first; please open an issue before you start.
      (`report_progress()` from `base.py` does that if a callback was given).
      Return a `PrintResult` if something differed from the request (e.g.
      another mode was used), else `None`.
+     Serial labels call `print_label` once per row, one after the other, so
+     return only when the printer has taken the job (better: printed it)
+     and can take the next one.
    - Override `raster()` if the printer needs a different resolution, the
      exact tape height in pixels or background beyond the tape edges (bleed),
      `configured_host()` if there is a CLI configuration to read, and
@@ -191,7 +194,16 @@ interface first; please open an issue before you start.
    translation.
 
 Labels store the backend id in the `printer` field; files without it belong
-to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`. Printer settings (host, safety margin, cut, mode, colour
+to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`.
+Serial labels store the path of their data file in `data_file` (relative to
+the label file if the data file lies in its folder or below, else absolute)
+and the sheet in `data_sheet`, never the data itself. Such a file is written
+as format version 2 with `"features": ["serial"]` (a label with variables or
+a counter lists `"variables"`, both may be listed): version 1 readers refuse
+it as "newer" instead of printing `{Name}`, and a reader refuses features it
+does not know. A new feature adds a name to `model.FEATURES`, not a version;
+a label without features stays version 1 and opens everywhere. Templates
+never keep the data file. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 
 ## Code style
@@ -210,16 +222,20 @@ text), never a raw `KeyError`, `zipfile` or XML error.
 
 - `etiketto/model.py`: `.etiketto` label files, `LabelError`.
 - `etiketto/merge/`: data rows for serial labels from CSV, ODS and XLSX
-  files (`read_table()`), and the `{column}` placeholders in label texts
-  (`fill()`, which never uses `str.format()` on user data). It raises
-  `MergeError` with the codes `not_table`, `damaged`, `too_large` and
-  `empty`; the limits (file size, number of zip entries, unpacked size of
-  each zip member, rows, columns, cells) are in `etiketto/merge/limits.py`.
-  Hidden cells of merged ranges are empty in ODS and XLSX alike. XML parts with a
-  document type or entity declaration are refused before parsing, and large
-  parts are parsed as a stream. The readers use only the standard library
-  (`csv`, `zipfile`, `xml.etree`); no third-party code is included or
-  adapted, so nothing needs credit.
+  files (`read_table()`, `read_book()` with the sheet names), and the
+  `{column}` placeholders in label texts (`fill()`, which never uses
+  `str.format()` on user data). It raises `MergeError` with the codes
+  `not_table`, `damaged`, `too_large` and `empty`; the limits (file size,
+  number of zip entries, unpacked size of each zip member, rows, columns,
+  cells) are in `etiketto/merge/limits.py`. Only plain files are read (a
+  named pipe would block). Hidden cells of merged ranges are empty in ODS
+  and XLSX alike. XML parts with a document type or entity declaration are
+  refused before parsing, and large parts are parsed as a stream. The
+  readers use only the standard library (`csv`, `zipfile`, `xml.etree`); no
+  third-party code is included or adapted, so nothing needs credit.
+- `etiketto/serial.py` fills a copy of the label from a row (texts and code
+  contents) and prints a series: one job per row through the backend's
+  `print_label`, stoppable between two labels.
 - Property tests (`tests/test_properties.py`, `tests/test_merge.py`) feed
   random input to these readers: keep them passing when you change one.
 
@@ -259,7 +275,8 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
-      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py etiketto/backends/*.py
+      --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
+      etiketto/backends/*.py etiketto/merge/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run

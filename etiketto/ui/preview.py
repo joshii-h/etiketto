@@ -48,9 +48,10 @@ class Preview(Gtk.Box):
 
     def _build_status(self) -> Gtk.Box:
         box = Gtk.Box(spacing=12, margin_start=12, margin_end=12, margin_top=6, margin_bottom=6)
-        self.status = Gtk.Label(xalign=0, hexpand=True)
+        self.status = Gtk.Label(xalign=0, hexpand=True, wrap=True)
         self.status.add_css_class("dim-label")
         box.append(self.status)
+        box.append(self._build_rows())
         box.append(flat_button("zoom-fit-best-symbolic", _("Fit to window"), self.set_zoom))
         box.append(
             flat_button(
@@ -61,6 +62,34 @@ class Preview(Gtk.Box):
             flat_button("zoom-in-symbolic", _("Zoom in"), lambda: self.set_zoom(self.zoom * 1.25))
         )
         return box
+
+    def _build_rows(self) -> Gtk.Box:
+        """Serial labels: which row the preview shows, and buttons to step
+        through the rows (actions win.row-first, …, of the window)."""
+        self.rows = Gtk.Box(spacing=2, visible=False)
+        buttons = (
+            ("go-first-symbolic", _("First row"), "first"),
+            ("go-previous-symbolic", _("Previous row"), "previous"),
+            ("go-next-symbolic", _("Next row"), "next"),
+            ("go-last-symbolic", _("Last row"), "last"),
+        )
+        for icon, tip, step in buttons:
+            button = Gtk.Button(icon_name=icon, tooltip_text=tip, valign=Gtk.Align.CENTER)
+            button.add_css_class("flat")
+            button.set_action_name("win.row-" + step)
+            self.rows.append(button)
+            if step == "previous":
+                self.row_label = Gtk.Label(margin_start=6, margin_end=6)
+                self.row_label.add_css_class("numeric")
+                self.rows.append(self.row_label)
+        return self.rows
+
+    def show_row(self, number: int, count: int) -> None:
+        self.row_label.set_text(_("Row %(n)d of %(total)d") % {"n": number, "total": count})
+        self.rows.set_visible(True)
+
+    def hide_row(self) -> None:
+        self.rows.set_visible(False)
 
     def show_image(self, image, length_mm: float, height_mm: float, text: str) -> None:
         """Show a rendered preview image and its status text."""

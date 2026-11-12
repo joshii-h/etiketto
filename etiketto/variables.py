@@ -31,10 +31,15 @@ both apart for good. Both share one syntax: "{{" and "}}" are literal braces.
 
 Columns and variables are filled in one pass (expand(text, values,
 columns)), never one after the other: a column pass first would turn
-"{{=date}}" into "{=date}" and the variable pass would then fill it in.
+"{{=date}}" into "{=date}" and the variable pass would then fill it in. A
+value is inserted as it is and never looked at again: a cell holding
+"{=date}" or "{{" prints exactly that.
 
-A text without "{=" (and without columns to fill) stays exactly as it is,
-"{{" included: labels saved before variables existed print as before.
+"{{" and "}}" are literal braces only in a text with something to fill: a
+variable ("{=" anywhere) or, with a data file, a column placeholder. A text
+with neither stays exactly as it is, "{{" included, with or without a data
+file: labels saved before variables existed print as before. "{ =x}" (a
+space before the "=") is neither a variable nor a column.
 
 Deliberately not str.format(): texts come from label files, and format()
 would evaluate "{0.__class__}" or pad to "{:>99999999}". A format here is
@@ -306,12 +311,13 @@ _PROBE = Values(datetime(2000, 1, 1, 12), random=lambda n: bytes(n))
 
 
 def expand(
-    text: str, values: Values, columns: Mapping[str, str] | None = None
+    text: str, values: Values | None, columns: Mapping[str, str] | None = None
 ) -> tuple[str, list[str]]:
     """`text` with its variables (and, if given, the "{Column}" placeholders
     of serial labels) filled in, and the placeholders that could not be:
-    they stay in the text as they are, so the label shows them."""
-    if columns is None and "{=" not in text:
+    they stay in the text as they are, so the label shows them. Without
+    `values` the variables stay as they are and are not reported."""
+    if "{=" not in text and (columns is None or not column_names(text)):
         return text, []
     unknown: list[str] = []
 
@@ -320,18 +326,38 @@ def expand(
         if marker is None:  # "{{" or "}}"
             return whole[0]
         if marker:
+            if values is None:
+                return whole
             value = resolve(spec, values)
         else:
-            value = None if columns is None else columns.get(spec.strip())
-            if value is None and columns is None:
-                return whole  # plain braces, no serial labels: not a placeholder
+            key = _column(spec)
+            if not key or columns is None:
+                return whole  # plain braces, or no serial labels: not a placeholder
+            value = columns.get(key)
         if value is None:
             unknown.append(whole)
             return whole
         return value
 
+    # re.sub never scans what replace_token returned: values are not filled again
     result = _TOKEN.sub(replace_token, text)
-    return result, unknown + _unclosed(text)
+    return result, unknown + (_unclosed(text) if values is not None else [])
+
+
+def _column(spec: str) -> str:
+    """The column "{spec}" names, "" for none: names are compared without
+    surrounding spaces, and one starting with "=" would be a variable."""
+    key = spec.strip()
+    return "" if key.startswith("=") else key
+
+
+def column_names(text: str) -> list[str]:
+    """The columns `text` refers to as "{Column}", each once, in order."""
+    found: dict[str, None] = {}
+    for match in _TOKEN.finditer(text):
+        if match.group(1) == "" and (key := _column(match.group(2))):
+            found[key] = None
+    return list(found)
 
 
 def _unclosed(text: str) -> list[str]:
@@ -400,15 +426,19 @@ def varies_per_copy(label: Label) -> bool:
     return not PER_COPY.isdisjoint(label_names(label))
 
 
-def expand_label(label: Label, values: Values) -> tuple[Label, list[RenderWarning]]:
-    """A copy of the label with its variables filled in (the label stays as
-    it is), and a warning for each variable that could not be."""
+def expand_label(
+    label: Label, values: Values | None, columns: Mapping[str, str] | None = None
+) -> tuple[Label, list[RenderWarning]]:
+    """A copy of the label with its variables and, if `columns` (a row of a
+    data file) is given, its column placeholders filled in, in one pass;
+    the label stays as it is. A warning for each variable that could not be
+    filled in; columns that are missing the interface names on its own."""
     warnings: list[RenderWarning] = []
     elements: list[Element] = []
     for index, element in enumerate(label.elements, 1):
         content = _content(element)
-        if content is not None and "{=" in content:
-            content, unknown = expand(content, values)
+        if content is not None and ("{=" in content or (columns is not None and "{" in content)):
+            content, unknown = expand(content, values, columns)
             warnings += [
                 # a placeholder ends with "}", a variable not closed does not
                 RenderWarning(
@@ -416,6 +446,7 @@ def expand_label(label: Label, values: Values) -> tuple[Label, list[RenderWarnin
                     {"n": index, "name": u},
                 )
                 for u in unknown
+                if u.startswith("{=") and values is not None
             ]
             element = _with_content(element, content)
         elements.append(element)

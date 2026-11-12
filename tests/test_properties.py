@@ -24,7 +24,7 @@ json_values = st.recursive(
     ),
     max_leaves=20,
 )
-FIELDS = list(Label.__dataclass_fields__) + ["version"]
+FIELDS = list(Label.__dataclass_fields__) + ["version", "features"]
 ELEMENT_FIELDS = [
     *("kind", "text", "font", "bold", "italic", "size_pt", "color", "align"),
     *("data", "name", "symbology"),

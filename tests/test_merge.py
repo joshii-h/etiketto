@@ -9,19 +9,24 @@ Table or a MergeError, nothing else.
 from __future__ import annotations
 
 import io
+import os
+import struct
 import time
 import zipfile
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from etiketto.merge import (
+    Book,
     MergeError,
     Table,
     fill,
     limits,
+    ods,
     placeholders,
+    read_book,
     read_table,
     sheet_names,
 )
@@ -211,6 +216,42 @@ def test_csv_quoted_fields(tmp_path):
 def test_csv_single_column(tmp_path):
     path = write(tmp_path, "a.csv", "Name\nAnna\nBen\n")
     assert read_table(path) == Table(["Name"], [{"Name": "Anna"}, {"Name": "Ben"}])
+    # a header without a delimiter: the commas of the values do not split them
+    path = write(tmp_path, "b.csv", "Name\nAnna\nBert, Jr.\nCarl\n")
+    assert [r["Name"] for r in read_table(path).rows] == ["Anna", "Bert, Jr.", "Carl"]
+
+
+def test_csv_header_is_the_first_filled_record(tmp_path):
+    """A quoted name may hold a line break or a delimiter; lines of spaces
+    before the header are no header."""
+    path = write(tmp_path, "a.csv", '"Name\nlang";Ort\nAnna;Bern\n')
+    assert read_table(path).columns == ["Name\nlang", "Ort"]
+    path = write(tmp_path, "b.csv", '"Name, Vorname";Ort\n"Muster, Anna";Bern\n')
+    assert read_table(path).columns == ["Name, Vorname", "Ort"]
+    path = write(tmp_path, "c.csv", "\n\n  \nName;Ort\nAnna;Bern\n")
+    assert read_table(path) == Table(["Name", "Ort"], [{"Name": "Anna", "Ort": "Bern"}])
+
+
+def test_csv_sep_line_from_excel(tmp_path):
+    path = write(tmp_path, "a.csv", "sep=;\r\nName;Wert\r\nx,1;2\r\n")
+    assert read_table(path) == Table(["Name", "Wert"], [{"Name": "x,1", "Wert": "2"}])
+    path = write(tmp_path, "b.csv", "sep=|\nA|B\n1|2\n")
+    assert read_table(path).rows == [{"A": "1", "B": "2"}]
+    # only a line of its own: a header that starts so is a header
+    path = write(tmp_path, "c.csv", "sep=1;Name\nx;Anna\n")
+    assert read_table(path).columns == ["sep=1", "Name"]
+    assert code_of(write(tmp_path, "d.csv", "sep=;")) == "empty"
+
+
+def test_csv_sniffed_delimiter_must_be_in_the_header(tmp_path, monkeypatch):
+    import csv
+
+    class Comma:
+        delimiter = ","
+
+    monkeypatch.setattr(csv.Sniffer, "sniff", lambda *args, **kwargs: Comma)
+    path = write(tmp_path, "a.csv", "A;B\n1,5;2\n")
+    assert read_table(path).rows == [{"A": "1,5", "B": "2"}]
 
 
 def test_csv_when_sniffing_fails_the_most_common_delimiter_wins(tmp_path, monkeypatch):
@@ -254,10 +295,26 @@ def test_csv_without_content_is_empty(tmp_path, data):
     [
         b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR",
         b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"x" * 100,  # old .xls (OLE2)
+        b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n",
+        b"\xff\xd8\xff\xe0 JFIF",
+        b"\x1f\x8b\x08\x00",
+        b'<?xml version="1.0"?><office:document><a>1,2</a></office:document>',
+        b"GIF89a\x01\x00",
+        b"RIFF\x24\x00\x00\x00WAVEfmt ",
+        b"BZh91AY&SY\x00",
+        b"Rar!\x1a\x07\x00",
+        b"a,b\n1,\x00\n",  # a NUL byte: no text
+        "a,b\n1,2\n".encode("utf-16-le"),  # UTF-16 without a BOM
     ],
 )
 def test_binary_files_are_not_tables(tmp_path, data):
     assert code_of(write(tmp_path, "a.csv", data)) == "not_table"
+
+
+@pytest.mark.parametrize("start", ["GIF8", "RIFF", "BZh", "Rar!", "%PDF-Nr"])
+def test_headers_that_start_like_a_signature_are_read(tmp_path, start):
+    path = write(tmp_path, "a.csv", "%s;Name\n1;Anna\n" % start)
+    assert read_table(path).columns == [start, "Name"]
 
 
 def test_csv_with_an_absurdly_long_field_is_damaged(tmp_path):
@@ -293,7 +350,34 @@ def test_row_column_and_cell_limits(tmp_path, monkeypatch):
     monkeypatch.setattr(limits, "MAX_COLUMNS", 3)
     assert code_of(write(tmp_path, "c.csv", "A,B,C,D\n")) == "too_large"
     monkeypatch.setattr(limits, "MAX_CELLS", 5)
-    assert code_of(write(tmp_path, "d.csv", "A,B\n1,2\n3,4\n")) == "too_large"
+    assert code_of(write(tmp_path, "d.csv", "A,B\n1,2\n3,4\n5\n")) == "too_large"
+    # the header row is not counted: 2 rows of 2 cells fit 4, as 4 rows fit MAX_ROWS
+    monkeypatch.setattr(limits, "MAX_CELLS", 4)
+    assert len(read_table(write(tmp_path, "e.csv", "A,B\n1,2\n3,4\n")).rows) == 2
+
+
+def test_cells_are_rows_times_columns(tmp_path, monkeypatch):
+    """Every row gets every column: one wide row makes the table that large,
+    however few cells are filled."""
+    monkeypatch.setattr(limits, "MAX_CELLS", 10)
+    assert len(read_table(write(tmp_path, "a.csv", "A,B\n" + "x\n" * 5)).rows) == 5
+    assert code_of(write(tmp_path, "b.csv", "A,B,C\n" + "x\n" * 4)) == "too_large"
+
+
+def test_reading_can_be_cancelled(tmp_path):
+    import threading
+
+    cancel = threading.Event()
+    path = write(tmp_path, "a.csv", "A\n1\n")
+    assert read_table(path, cancel=cancel).rows == [{"A": "1"}]
+    cancel.set()
+    with pytest.raises(MergeError) as info:
+        read_table(path, cancel=cancel)
+    assert info.value.code == "cancelled"
+    ods_path = make_ods(tmp_path, ods_table("T", row(text("A")), row(text("1"))))
+    with pytest.raises(MergeError, match="cancelled"):
+        read_book(ods_path, cancel=cancel)
+    assert read_book(ods_path).table.rows == [{"A": "1"}]  # only that read
 
 
 # --- ODS ----------------------------------------------------------------------
@@ -534,8 +618,39 @@ def test_zip_with_a_huge_central_directory_is_refused_before_reading_it(tmp_path
     end = data.rindex(b"PK\x05\x06")
     data[end + 12 : end + 16] = (10**8).to_bytes(4, "little")
     assert code_of(write(tmp_path, "b.zip", bytes(data))) == "too_large"
-    data[end + 12 : end + 16] = b"\xff" * 4  # ZIP64: left to zipfile, which finds no record
-    assert code_of(write(tmp_path, "c.zip", bytes(data))) == "damaged"
+    data[end + 12 : end + 16] = b"\xff" * 4  # "see the ZIP64 record", but there is none
+    assert code_of(write(tmp_path, "c.zip", bytes(data))) == "too_large"
+
+
+def zip64(entries: int, record: bool = True, prepend: bytes = b"") -> bytes:
+    """An archive whose end record claims 1 entry and whose ZIP64 record,
+    which zipfile believes, claims `entries`; the directory holds them."""
+    entry = (
+        struct.pack("<4s4B4HL2L5H2L", b"PK\x01\x02", 20, 3, 20, 0, *[0] * 7, 1, *[0] * 6) + b"a"
+    )
+    directory = entry * entries
+    start = 4  # offsets do not count what was put before the archive
+    record_data = struct.pack(
+        "<4sQ2H2L4Q", b"PK\x06\x06", 44, 45, 45, 0, 0, entries, entries, len(directory), 4
+    )
+    if not record:
+        record_data = b"\x00" * len(record_data)
+    locator = struct.pack("<4sLQL", b"PK\x06\x07", 0, start + len(directory), 1)
+    end = struct.pack("<4s4H2LH", b"PK\x05\x06", 0, 0, 1, 1, 46, 4, 0)
+    return prepend + b"PK\x03\x04" + directory + record_data + locator + end
+
+
+def test_zip64_entry_count_is_checked(tmp_path, monkeypatch):
+    monkeypatch.setattr(limits, "MAX_ZIP_ENTRIES", 50)
+    assert code_of(write(tmp_path, "a.xlsx", zip64(51))) == "too_large"
+    # something before the archive: zipfile finds the record before the locator
+    assert (
+        code_of(write(tmp_path, "b.xlsx", zip64(51, prepend=b"PK\x03\x04" + b"x" * 100)))
+        == "too_large"
+    )
+    assert code_of(write(tmp_path, "c.xlsx", zip64(51, record=False))) == "damaged"
+    # few entries: the archive is read (and is no spreadsheet)
+    assert code_of(write(tmp_path, "d.xlsx", zip64(3))) in ("damaged", "not_table")
 
 
 def test_zip_that_is_neither_ods_nor_xlsx(tmp_path):
@@ -890,6 +1005,232 @@ def test_xlsx_merged_ranges_cannot_make_reading_slow(tmp_path, monkeypatch):
     assert code_of(path) == "too_large"  # more ranges than cells allowed
 
 
+def test_xlsx_escaped_characters(tmp_path):
+    path = make_xlsx(
+        tmp_path,
+        xrow(inline("A1", "A"), inline("B1", "B"))
+        + xrow(inline("A2", "a_x000D_\nb_x0000_\t"), '<c r="B2" t="s"><v>0</v></c>')
+        + xrow('<c r="A3" t="str"><v>x_x000D_y</v></c>'),
+        shared=["<t>_x005F_x000D_ and _xD800_ and _x00e9_</t>"],
+    )
+    assert read_table(path).rows == [
+        {"A": "a\nb\t", "B": "_x000D_ and _xD800_ and é"},
+        {"A": "xy", "B": ""},
+    ]
+
+
+def test_xml_memory_limits(tmp_path, monkeypatch):
+    """Elements outside rows are dropped as they end and counted; a row,
+    nesting and the small parts have limits of their own."""
+    header = xrow(inline("A1", "A")) + xrow(num("A2", "1"))
+    filler = "<a/>" * 50
+    sheet = f'<worksheet xmlns="{MAIN}"><cols>{filler}</cols><sheetData>{header}</sheetData></worksheet>'
+    extra = {"xl/worksheets/sheet1.xml": sheet}
+    path = make_xlsx(tmp_path, header, extra=extra)
+    assert read_table(path).rows == [{"A": "1"}]
+    monkeypatch.setattr(limits, "MAX_OTHER_ELEMENTS", 40)
+    assert code_of(path) == "too_large"
+    monkeypatch.setattr(limits, "MAX_ROW_ELEMENTS", 5)
+    wide = xrow(*(num("A%d" % i, "1") for i in range(1, 3)))  # 2 cells, 2 values
+    assert read_table(make_xlsx(tmp_path, header + wide, name="b.xlsx")).columns == ["A"]
+    many = "<row>" + "<c/>" * 6 + "</row>"
+    assert code_of(make_xlsx(tmp_path, header + many, name="c.xlsx")) == "too_large"
+    monkeypatch.setattr(limits, "MAX_DEPTH", 8)
+    deep = "<x>" * 8 + "</x>" * 8
+    assert code_of(make_xlsx(tmp_path, header + deep, name="d.xlsx")) == "too_large"
+    deep_ods = make_ods(tmp_path, content=ods_content(ods_table("T", row(text(deep)))))
+    assert code_of(deep_ods) == "too_large"
+    monkeypatch.setattr(limits, "MAX_PART_BYTES", 100)
+    assert code_of(make_xlsx(tmp_path, header, name="e.xlsx")) == "too_large"  # workbook.xml
+
+
+def test_tags_attributes_and_names_are_bounded(tmp_path, monkeypatch):
+    """The parser keeps a start tag whole and every name it has seen: long
+    tags, many attributes and many distinct names are refused."""
+    header = xrow(inline("A1", "A")) + xrow(num("A2", "1"))
+
+    def sheet(before: str = "", rows: str = "") -> dict[str, str]:
+        data = (
+            f'<worksheet {before} xmlns="{MAIN}"><sheetData>{header}{rows}</sheetData></worksheet>'
+        )
+        return {"xl/worksheets/sheet1.xml": data}
+
+    monkeypatch.setattr(limits, "MAX_TAG_BYTES", 64 * 1024)
+    long_tag = " ".join('a%d="%s"' % (i, ">" * 1000) for i in range(70))  # ">" is allowed
+    assert code_of(make_xlsx(tmp_path, header, extra=sheet(long_tag))) == "too_large"
+    monkeypatch.setattr(limits, "MAX_ATTRIBUTES", 3)
+    attrs = 'a="" b="" c="" d=""'
+    assert code_of(make_xlsx(tmp_path, header, extra=sheet(attrs), name="b.xlsx")) == "too_large"
+    monkeypatch.setattr(limits, "MAX_NAMES", 12)
+    names = "".join('<row a%d=""/>' % i for i in range(12))
+    path = make_xlsx(tmp_path, header, extra=sheet(rows=names), name="c.xlsx")
+    assert code_of(path) == "too_large"
+    assert read_table(make_xlsx(tmp_path, header, name="d.xlsx")).rows == [{"A": "1"}]
+    monkeypatch.setattr(limits, "MAX_ELEMENTS", 8)
+    assert (
+        code_of(make_xlsx(tmp_path, header + xrow(num("A3", "2")), name="e.xlsx")) == "too_large"
+    )
+
+
+def read_all(data: bytes, chunk: int) -> None:
+    stream = GuardedStream(io.BytesIO(data), 10**7)
+    stream.CHUNK = chunk
+    while stream.read(chunk):
+        pass
+
+
+@pytest.mark.parametrize("chunk", [1, 2, 3, 7, 400])  # reads shorter than the limit, as in use
+def test_tags_are_measured_across_reads_and_quotes(monkeypatch, chunk):
+    """A tag ends at the first ">" outside quotes, wherever the reads split
+    it; comments, CDATA and processing instructions end at their own marks."""
+    monkeypatch.setattr(limits, "MAX_TAG_BYTES", 500)
+    fine = (
+        b'<?xml version="1.0"?><a b=">" c=\'">\'>'
+        + b"x>" * 1000
+        + b"</a>"
+        + b"<!-- <b> ' \" -- -> --><![CDATA[ <c d=' ]]><e/>"
+        + b"<f "
+        + b'g=">" ' * 70
+        + b"/>"  # 420 bytes
+    )
+    read_all(fine, chunk)
+    for long in (
+        b"<a " + b'b=">" ' * 100 + b"/>",
+        b"<a " + b"b='>' " * 100 + b"/>",
+        b'<a b="' + b">" * 600 + b'"/>',
+        b"<a " + b"b " * 300 + b"/>",
+        b"</a" + b" " * 600 + b">",
+    ):
+        with pytest.raises(MergeError, match="tag longer"):
+            read_all(b"<r>" + long, chunk)
+    for long in (b"<!--" + b"x" * 600 + b"-->", b"<?pi " + b"x?" * 300 + b"?>"):
+        with pytest.raises(MergeError, match="comment or processing instruction longer"):
+            read_all(b"<r>" + long, chunk)
+    # the parser passes CDATA on in pieces, as text: not held whole
+    read_all(b"<r><![CDATA[" + b"]>" * 300 + b"]]></r>", chunk)
+
+
+@pytest.mark.parametrize("markup", [b"<?a?>", b"<!---->", b"<![CDATA[]]>"])
+def test_floods_of_comments_are_refused_quickly(tmp_path, markup):
+    header = xrow(inline("A1", "A")) + xrow(num("A2", "1"))
+    flood = markup.decode() * 20_000
+    data = f'<worksheet xmlns="{MAIN}"><sheetData>{header}</sheetData><x>{flood}</x></worksheet>'
+    start = time.monotonic()
+    path = make_xlsx(tmp_path, header, extra={"xl/worksheets/sheet1.xml": data})
+    assert code_of(path) == "too_large"
+    assert time.monotonic() - start < 2
+    few = f'<worksheet xmlns="{MAIN}"><sheetData>{header}</sheetData>{markup.decode() * 50}</worksheet>'
+    path = make_xlsx(tmp_path, header, extra={"xl/worksheets/sheet1.xml": few}, name="b.xlsx")
+    assert read_table(path).rows == [{"A": "1"}]
+
+
+def test_cancel_is_seen_between_reads():
+    import threading
+
+    from etiketto.merge.table import cancellable
+
+    cancel = threading.Event()
+    stream = GuardedStream(io.BytesIO(b"<a/>" * 100_000), 10**7)
+    with cancellable(cancel):
+        stream.read(1000)
+        cancel.set()
+        with pytest.raises(MergeError, match="cancelled"):
+            stream.read(1000)
+
+
+def test_long_tags_of_real_files_are_read(tmp_path):
+    """Conditional formats over many ranges: a long sqref (XLSX), a long
+    target range address (ODS)."""
+    sqref = " ".join("R%d" % i for i in range(2, 30000, 2))  # about 100 KB
+    cf = f'<conditionalFormatting sqref="{sqref}"><cfRule type="cellIs" priority="1"/></conditionalFormatting>'
+    header = xrow(inline("A1", "A")) + xrow(num("A2", "1"))
+    data = f'<worksheet xmlns="{MAIN}"><sheetData>{header}</sheetData>{cf}</worksheet>'
+    path = make_xlsx(tmp_path, header, extra={"xl/worksheets/sheet1.xml": data})
+    assert read_table(path).rows == [{"A": "1"}]
+    target = " ".join("T.A%d:T.A%d" % (i, i) for i in range(1, 30000))  # about 400 KB
+    formats = (
+        '<calcext:conditional-formats><calcext:conditional-format calcext:target-range-address="'
+        + target
+        + '"/></calcext:conditional-formats>'
+    )
+    table = ods_table("T", row(text("A")), row(text("1"))).replace(
+        "</table:table>", formats + "</table:table>"
+    )
+    assert read_table(make_ods(tmp_path, table)).rows == [{"A": "1"}]
+
+
+def test_empty_rows_are_counted(tmp_path, monkeypatch):
+    monkeypatch.setattr(limits, "MAX_ROW_TAGS", 4)
+    header = xrow(inline("A1", "A")) + xrow(num("A2", "1"))
+    assert read_table(make_xlsx(tmp_path, header + "<row/>" * 2)).rows == [{"A": "1"}]
+    assert code_of(make_xlsx(tmp_path, header + "<row/>" * 3, name="b.xlsx")) == "too_large"
+    rows = [row(text("A")), row(text("1"))] + ["<table:table-row/>"] * 3
+    assert code_of(make_ods(tmp_path, ods_table("T", *rows))) == "too_large"
+    # counted per sheet
+    path = make_ods(tmp_path, ods_table("T", *rows[:4]), ods_table("U", *rows[:4]), name="b.ods")
+    assert len(read_book(path).sheets) == 2
+
+
+def test_sheet_count_is_limited(tmp_path, monkeypatch):
+    monkeypatch.setattr(limits, "MAX_SHEETS", 2)
+    sheets = [xrow(inline("A1", "A"))] * 3
+    assert code_of(make_xlsx(tmp_path, *sheets)) == "too_large"
+    tables = [ods_table("T%d" % i, row(text("A"))) for i in range(3)]
+    with pytest.raises(MergeError, match="sheets"):
+        read_book(make_ods(tmp_path, *tables))
+    assert len(read_book(make_ods(tmp_path, *tables[:2], name="b.ods")).sheets) == 2
+
+
+@pytest.mark.parametrize(
+    ("code", "raw", "shown"),
+    [
+        ("00000", "12", "00012"),
+        ("000.0", "-1.25", "-001.3"),
+        ("0,", "1234567", "1235"),
+        ("#,##0,,", "1234567", "1"),
+        ("#,##0", "1234567", "1234567"),  # no thousands separator
+        ("# ?/?", "0.5", "0.5"),  # fractions: General
+        ("# ??/??", "2.25", "2.25"),
+        ("[m]:ss", "0.1", "144:00"),
+        ("[mm]", "0.001", "01"),
+        ("[s]", "0.01", "864"),
+        ("[s].00", "0.000011", "0.95"),
+        ("[h]:mm", "0.25", "6:00"),
+        ("[hh]:mm", "1.25", "30:00"),
+        ("[h]:mm", "1e300", "1E+300"),  # Excel shows "#####"
+        ("", "0.30000000000000004", "0.3"),
+        ("", "123456.78901234", "123456.78901"),
+        ("", "4006381333931", "4006381333931"),  # whole numbers keep their digits
+        ("", "1.5e20", "1.5E+20"),
+        ("", "0.00001", "1E-05"),
+    ],
+)
+def test_number_formats(code, raw, shown):
+    from etiketto.merge.numfmt import display
+
+    assert display(raw, code, False) == shown
+
+
+def test_xlsx_styles_are_streamed(tmp_path, monkeypatch):
+    """Only the first cellXfs counts (not cellStyleXfs); fonts and fills of
+    tens of thousands of styles are dropped as they are read."""
+    fonts = "<fonts>" + '<font><b/><sz val="11"/></font>' * 3000 + "</fonts>"
+    styles = (
+        '<numFmts><numFmt numFmtId="164" formatCode="0.000"/></numFmts>'
+        + '<dxfs><dxf><numFmt numFmtId="164" formatCode="0.0%"/></dxf></dxfs>'  # not a cell style
+        + '<numFmts><numFmt numFmtId="164" formatCode="0.0"/></numFmts>'  # a second list: ignored
+        + fonts
+        + '<cellStyleXfs><xf numFmtId="14"/><xf numFmtId="14"/></cellStyleXfs>'
+        + '<cellXfs><xf numFmtId="0"><alignment wrapText="1"/></xf><xf numFmtId="164"/></cellXfs>'
+        + '<cellXfs><xf numFmtId="14"/><xf numFmtId="14"/></cellXfs>'
+    )
+    sheet = xrow(inline("A1", "A"), inline("B1", "B")) + xrow(num("A2", "2", 0), num("B2", "2", 1))
+    path = make_xlsx(tmp_path, sheet, styles=styles)
+    assert read_table(path).rows == [{"A": "2", "B": "2.000"}]
+    monkeypatch.setattr(limits, "MAX_STYLES", 1)
+    assert code_of(path) == "too_large"
+
+
 def test_xlsx_empty_sheet(tmp_path):
     assert code_of(make_xlsx(tmp_path, "")) == "empty"
 
@@ -905,6 +1246,69 @@ def test_xlsx_style_without_number_formats(tmp_path):
 def test_xlsx_other_elements_in_rows_are_ignored(tmp_path):
     cells = xrow(inline("A1", "A"), "<extLst/>", inline("B1", "B"))
     assert read_table(make_xlsx(tmp_path, cells)).columns == ["A", "B"]
+
+
+# --- the whole book: sheets and rows at once ---------------------------------------
+
+
+def test_book_of_a_csv_file(tmp_path):
+    book = read_book(write(tmp_path, "a.csv", "A\n1\n"))
+    assert book == Book(Table(["A"], [{"A": "1"}]), [], "")
+
+
+def test_book_of_an_ods_file_in_one_pass(tmp_path, monkeypatch):
+    path = make_ods(
+        tmp_path,
+        ods_table("Erste", row(text("A")), row(text("1"))),
+        ods_table("Zweite", row(text("B")), row(text("2"))),
+        ods_table("Dritte", row(text("C"))),
+    )
+    assert read_book(path) == Book(
+        Table(["A"], [{"A": "1"}]), ["Erste", "Zweite", "Dritte"], "Erste"
+    )
+    assert read_book(path, "Zweite").table.rows == [{"B": "2"}]
+    parsed = []
+    events = ods.events
+    monkeypatch.setattr(
+        ods, "events", lambda zf, name, records: parsed.append(name) or events(zf, name, records)
+    )
+    assert read_book(path, "Zweite").sheets == ["Erste", "Zweite", "Dritte"]
+    assert parsed == ["content.xml"]
+
+
+def test_book_of_a_sheet_that_is_gone_is_the_first_one(tmp_path):
+    ods_path = make_ods(
+        tmp_path,
+        ods_table("Erste", row(text("A")), row(text("1"))),
+        ods_table("Zweite", row(text("B"))),
+    )
+    book = read_book(ods_path, "Renamed")
+    assert (book.sheet, book.table.rows) == ("Erste", [{"A": "1"}])
+    xlsx_path = make_xlsx(
+        tmp_path, xrow(inline("A1", "A")), xrow(inline("A1", "B")), names=("Eins", "Zwei")
+    )
+    assert read_book(xlsx_path, "Zwei") == Book(Table(["B"], []), ["Eins", "Zwei"], "Zwei")
+    assert read_book(xlsx_path, "Drei").sheet == "Eins"
+
+
+def test_book_without_sheets(tmp_path):
+    with pytest.raises(MergeError) as info:
+        read_book(make_ods(tmp_path, content=ods_content()), "Any")
+    assert info.value.code == "not_table"
+    with pytest.raises(MergeError) as info:
+        read_book(make_xlsx(tmp_path, name="none.xlsx"))
+    assert info.value.code == "not_table"
+
+
+def test_only_plain_files_are_read(tmp_path):
+    """A named pipe would block the reading thread for ever."""
+    os.mkfifo(tmp_path / "pipe.csv")
+    with pytest.raises(MergeError) as info:
+        read_book(tmp_path / "pipe.csv")
+    assert info.value.code == "not_table"
+    assert code_of(tmp_path) == "not_table"  # a folder
+    with pytest.raises(FileNotFoundError):
+        read_book(tmp_path / "gone.csv")
 
 
 # --- property tests -----------------------------------------------------------
@@ -1042,7 +1446,9 @@ def test_fill_replaces_known_names():
     assert fill("{Name} from {City}", row_) == "Anna from Bern"
     assert fill("{ Name }", row_) == "Anna"
     assert fill("{Unknown} {Name}", row_) == "{Unknown} Anna"
-    assert fill("{{Name}} {{ and }}", row_) == "{Name} { and }"
+    # braces are escaped only in a text with something to fill
+    assert fill("{{Name}} {{ and }}", row_) == "{{Name}} {{ and }}"
+    assert fill("{{Name}} {{ and }} {City}", row_) == "{Name} { and } Bern"
     assert fill("{{{Name}}}", row_) == "{Anna}"
     assert fill("{Name", row_) == "{Name"
     assert fill("a } b {", row_) == "a } b {"
@@ -1056,6 +1462,34 @@ def test_fill_does_not_evaluate_format_specs():
     assert fill("{0}", row_) == "{0}"
     # a value with braces is inserted as it is, not filled again
     assert fill("{Name}", {"Name": "{Name}"}) == "{Name}"
+
+
+def test_fill_is_one_pass():
+    """Values are never looked at again: placeholders, variables and doubled
+    braces in a cell print as they are."""
+    row_ = {"Name": "{=date} {Other} {{ }}", "Other": "x"}
+    assert fill("{Name}", row_) == "{=date} {Other} {{ }}"
+    assert fill("{{{Name}}}", row_) == "{{=date} {Other} {{ }}}"
+
+
+def test_braces_are_escapes_only_with_something_to_fill():
+    """The same text prints the same with and without a data file: "{{"
+    stays as it is in a text without placeholders and variables."""
+    assert fill("a {{b}}", {}) == "a {{b}}"
+    assert fill("a {{b}}", {"b": "x"}) == "a {{b}}"
+    assert fill("a {{b}} {}", {"b": "x"}) == "a {{b}} {}"
+    # a variable counts, as in variables.expand(): "{{=date}}" is the escape
+    assert fill("{{=date}}", {}) == "{=date}"
+    assert fill("{=date} {{x}}", {}) == "{=date} {x}"
+
+
+def test_variables_are_never_columns():
+    """{=date}, {=counter:0001} … belong to variables; a column of that name
+    does not fill them, and they are no column names."""
+    row = {"=date": "column", "Name": "Anna", "= x": "y"}
+    text = "{=date} {= x} {=counter:0001} {{=date}} {Name}"
+    assert fill(text, row) == "{=date} {= x} {=counter:0001} {=date} Anna"
+    assert placeholders(text) == ["Name"]
 
 
 def test_placeholders():
@@ -1082,5 +1516,6 @@ def test_fill_never_raises(text_, row_):
     value=st.text(max_size=10),
 )
 def test_fill_inserts_any_value(name, value):
+    assume(not name.strip().startswith("="))  # a variable, never a column
     if name.strip():
         assert fill("<{%s}>" % name, {name.strip(): value}) == "<%s>" % value

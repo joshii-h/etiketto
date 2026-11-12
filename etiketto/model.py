@@ -25,7 +25,9 @@ FORMAT_VERSION = 2
 # "variables": {=date}, {=counter} … in texts and codes, and the counter
 # fields; older versions would print "{=date}" as it is and drop the counter
 # when they save
-FEATURES = frozenset({"variables"})
+# "serial": a linked data file whose rows fill {Column} placeholders; older
+# versions would print "{Name}" as it is
+FEATURES = frozenset({"serial", "variables"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -125,6 +127,11 @@ class Label:
     # how much it goes up per label; printing moves counter_next on
     counter_next: int = 1
     counter_step: int = 1
+    # serial labels: the data file whose rows fill the {column} placeholders,
+    # never its content. In memory an absolute path; in the file relative to
+    # the label file if it lies beside it or below (see save() and load()).
+    data_file: str = ""
+    data_sheet: str = ""  # "" = the first sheet
 
     # --- die-cut labels ----------------------------------------------------
 
@@ -208,7 +215,8 @@ class Label:
 
     def features(self) -> list[str]:
         """What a reader must understand to print this label as meant."""
-        return ["variables"] if self._uses_variables() else []
+        features = ["serial"] if self.data_file else []
+        return features + (["variables"] if self._uses_variables() else [])
 
     def _uses_variables(self) -> bool:
         if (self.counter_next, self.counter_step) != (1, 1):
@@ -291,9 +299,16 @@ class Label:
         self.border_color = _str(self.border_color, "border_color")
         self.counter_next = _int(self.counter_next, 0, MAX_COUNTER, "counter_next")
         self.counter_step = _int(self.counter_step, 1, MAX_COUNTER_STEP, "counter_step")
+        self.data_file = _str(self.data_file, "data_file")
+        if "\x00" in self.data_file:  # no path can contain it
+            raise _damaged("invalid data_file")
+        self.data_sheet = _str(self.data_sheet, "data_sheet")
 
     def save(self, path: str | Path) -> None:
-        write_file(path, json.dumps(self.to_dict(), indent=1, ensure_ascii=False).encode())
+        path = Path(path)
+        data = self.to_dict()
+        data["data_file"] = stored_data_path(self.data_file, path.parent)
+        write_file(path, json.dumps(data, indent=1, ensure_ascii=False).encode())
 
     @staticmethod
     def store_counter(path: str | Path, counter_next: int) -> None:
@@ -332,7 +347,50 @@ class Label:
             data = json.loads(raw.decode("utf-8"))
         except (ValueError, RecursionError) as e:  # no JSON, not UTF-8, absurdly nested
             raise LabelError("not_label", str(e) or type(e).__name__) from e
-        return cls.from_dict(data)
+        label = cls.from_dict(data)
+        label.data_file = resolved_data_path(label.data_file, Path(path).parent)
+        return label
+
+
+# --- the link to a data file --------------------------------------------------
+
+
+def stored_data_path(data_file: str, directory: Path) -> str:
+    """How a label file in `directory` refers to the data file: relative if
+    the data file lies in that directory or below (both can be moved or
+    shared together), else absolute."""
+    if not data_file:
+        return ""
+    target = Path(data_file).absolute()
+    if target.is_relative_to(directory.absolute()):
+        return target.relative_to(directory.absolute()).as_posix()
+    return str(target)
+
+
+# what a data file is called; a label names one of these or is asked about
+TABLE_SUFFIXES = (".csv", ".tsv", ".txt", ".ods", ".xlsx")
+
+
+def data_inside(data_file: str, label_file: Path | None) -> bool:
+    """May the data file be read without asking when the label is opened?
+    Only a table (by its suffix) in the label file's folder or below, also
+    after following links, and not in a hidden folder: a label from
+    elsewhere could name any file ("../../.ssh/id_rsa", "/etc/passwd", a
+    link to them) and show its lines as rows."""
+    if not data_file or label_file is None:
+        return False
+    folder = label_file.absolute().parent.resolve()
+    target = Path(data_file).resolve()
+    if not target.is_relative_to(folder) or target.suffix.lower() not in TABLE_SUFFIXES:
+        return False
+    return not any(part.startswith(".") for part in target.relative_to(folder).parts)
+
+
+def resolved_data_path(data_file: str, directory: Path) -> str:
+    """The absolute path of a data file named in a label file in `directory`."""
+    if not data_file:
+        return ""
+    return os.path.normpath(directory.absolute() / data_file)
 
 
 # --- files ------------------------------------------------------------------

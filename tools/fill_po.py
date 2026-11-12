@@ -83,7 +83,7 @@ def build(lang):
             ctxt_line = "msgctxt " + context.group(1)
         if key not in table:
             missing.append(key)
-        esc = table.get(key, "").replace("\\", "\\\\").replace('"', '\\"')
+        esc = table.get(key, "").replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
         comments = "\n".join(line for line in block.splitlines() if line.startswith("#"))
         out.append('%s\n%smsgid %smsgstr "%s"\n' % (comments, ctxt_line, m.group(1), esc))
     (ROOT / "po" / ("%s.po" % lang)).write_text("\n".join(out), encoding="utf-8")

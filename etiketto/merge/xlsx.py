@@ -14,7 +14,7 @@ from xml.etree import ElementTree as ET
 
 from etiketto.merge import limits
 from etiketto.merge.numfmt import BUILTIN, display
-from etiketto.merge.safexml import drop, events, local, parse
+from etiketto.merge.safexml import events, local, parse
 from etiketto.merge.table import (
     Builder,
     MergeError,
@@ -32,6 +32,14 @@ _STYLES = "xl/styles.xml"
 _REFERENCE = re.compile(r"([A-Za-z]{1,3})([0-9]+)")
 _EXCEL_COLUMNS = 16384  # A to XFD
 _EXCEL_ROWS = 1048576
+# OOXML writes characters XML cannot hold as _xHHHH_ (a line feed in a
+# Windows text "_x000D_"); "_x005F_" is the underscore that escapes this
+_ESCAPE = re.compile(r"_x([0-9A-Fa-f]{4})_")
+# control characters such an escape may bring ("_x0000_"), but tab and line feed
+_CONTROLS = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+_SHEET_RECORDS = frozenset({"row", "mergeCell"})
+_STRING_RECORDS = frozenset({"si"})
+_STYLE_RECORDS = frozenset({"numFmt", "xf"})
 
 
 @dataclass
@@ -46,6 +54,8 @@ def _workbook(zf: zipfile.ZipFile) -> _Workbook:
     for elem in parse(zf, WORKBOOK).iter():
         name = local(elem.tag)
         if name == "sheet":
+            if len(book.names) >= limits.MAX_SHEETS:
+                raise too_large("more than %d sheets" % limits.MAX_SHEETS)
             book.names.append(elem.get("name", ""))
             book.ids.append(_attribute(elem, "id"))  # r:id
         elif name == "workbookPr":
@@ -61,6 +71,13 @@ def sheet_names(zf: zipfile.ZipFile) -> list[str]:
     return _workbook(zf).names
 
 
+def read_book(zf: zipfile.ZipFile, wanted: str | None) -> tuple[list[str], Table]:
+    """The names of all sheets and the table of the wanted one, or of the
+    first if there is none of that name."""
+    names = sheet_names(zf)
+    return names, read(zf, wanted if wanted in names else None)
+
+
 def read(zf: zipfile.ZipFile, wanted: str | int | None) -> Table:
     book = _workbook(zf)
     index = next((i for i, name in enumerate(book.names) if matches(wanted, i, name)), None)
@@ -71,20 +88,21 @@ def read(zf: zipfile.ZipFile, wanted: str | int | None) -> Table:
     cells = _Cells(_shared_strings(zf, present), _formats(zf, present), book.date1904)
     builder = Builder()
     merged: list[str] = []  # <mergeCells> follows <sheetData>
-    number = 0
-    for event, elem, parent in events(zf, part):
+    number = tags = 0
+    for event, elem in events(zf, part, _SHEET_RECORDS):
         if event != "end":
             continue
         name = local(elem.tag)
         if name == "row":
+            tags += 1
+            if tags > limits.MAX_ROW_TAGS:
+                raise too_large("more than %d rows in the sheet" % limits.MAX_ROW_TAGS)
             number = _row_number(elem.get("r"), number + 1)
             builder.add(cells.row(elem), key=number)
-            drop(elem, parent)
         elif name == "mergeCell":
             if len(merged) >= limits.MAX_CELLS:
                 raise too_large("more than %d merged ranges" % limits.MAX_CELLS)
             merged.append(elem.get("ref", ""))
-            drop(elem, parent)
     for reference in merged:
         builder.blank(*_range(reference))
     return builder.table()
@@ -137,12 +155,11 @@ def _shared_strings(zf: zipfile.ZipFile, present: set[str]) -> list[str]:
     strings: list[str] = []
     if _SHARED_STRINGS not in present:
         return strings
-    for event, elem, parent in events(zf, _SHARED_STRINGS):
+    for event, elem in events(zf, _SHARED_STRINGS, _STRING_RECORDS):
         if event == "end" and local(elem.tag) == "si":
             if len(strings) >= limits.MAX_CELLS:
                 raise too_large("more than %d shared strings" % limits.MAX_CELLS)
             strings.append(_rich_text(elem))
-            drop(elem, parent)
     return strings
 
 
@@ -154,22 +171,65 @@ def _rich_text(elem: ET.Element) -> str:
 
 
 def _t_text(elem: ET.Element) -> str:
-    return "".join(t.text or "" for t in elem if local(t.tag) == "t")
+    return unescape("".join(t.text or "" for t in elem if local(t.tag) == "t"))
+
+
+def unescape(text: str) -> str:
+    """Characters written as "_xHHHH_" ("_x000D_": a carriage return) as such;
+    "_x005F_" escapes the underscore ("_x005F_x000D_" stays "_x000D_"). A
+    code that is no character (a lone surrogate) stays as it is. Control
+    characters are dropped, tab and line feed kept: a carriage return before
+    a line feed (Windows) would show as a box on the label."""
+    if "_x" not in text:
+        return _CONTROLS.sub("", text)
+
+    def character(match: re.Match[str]) -> str:
+        code = int(match.group(1), 16)
+        return match.group(0) if 0xD800 <= code <= 0xDFFF else chr(code)
+
+    return _CONTROLS.sub("", _ESCAPE.sub(character, text))
 
 
 def _formats(zf: zipfile.ZipFile, present: set[str]) -> list[str]:
-    """The number format code of each cell style (cellXfs), "" = General."""
+    """The number format code of each cell style (cellXfs), "" = General.
+    styles.xml is streamed: heavily formatted workbooks have tens of
+    thousands of styles (fonts, fills, borders) that are not needed."""
     if _STYLES not in present:
         return []
-    root = parse(zf, _STYLES)
-    custom = {
-        elem.get("numFmtId"): elem.get("formatCode", "")
-        for elem in root.iter()
-        if local(elem.tag) == "numFmt"
-    }
-    styles = next((list(elem) for elem in root.iter() if local(elem.tag) == "cellXfs"), [])
-    numbers = (xf.get("numFmtId", "0") for xf in styles)
-    return [custom.get(number) or BUILTIN.get(number, "") for number in numbers]
+    styles = _Styles()
+    for event, elem in events(zf, _STYLES, _STYLE_RECORDS):
+        styles.see(event, elem)
+    return [styles.custom.get(number) or BUILTIN.get(number, "") for number in styles.numbers]
+
+
+class _Styles:
+    """What styles.xml says about number formats: the custom formats of
+    <numFmts> (not those of differential formats, <dxf>) and the format
+    of each cell style in the first <cellXfs> (not <cellStyleXfs>)."""
+
+    def __init__(self) -> None:
+        self.custom: dict[str | None, str] = {}
+        self.numbers: list[str] = []
+        self.open = ""  # "numFmts" or "cellXfs" while inside it
+        self.done: set[str] = set()  # lists read: only the first counts
+
+    def see(self, event: str, elem: ET.Element) -> None:
+        name = local(elem.tag)
+        if name in ("numFmts", "cellXfs"):
+            first = name not in self.done
+            self.open = name if event == "start" and first else ""
+            if event == "end":
+                self.done.add(name)
+        elif event == "end" and self.open:
+            self._item(name, elem)
+
+    def _item(self, name: str, elem: ET.Element) -> None:
+        if name == "numFmt" and self.open == "numFmts":
+            self.custom[elem.get("numFmtId")] = elem.get("formatCode", "")
+        elif name == "xf" and self.open == "cellXfs":
+            if len(self.numbers) >= limits.MAX_STYLES:
+                raise too_large("more than %d cell styles" % limits.MAX_STYLES)
+            self.numbers.append(elem.get("numFmtId", "0"))
 
 
 class _Cells:
@@ -202,8 +262,8 @@ class _Cells:
             return ""
         if kind == "n":
             return display(raw, self._format(cell.get("s")), self.date1904)
-        convert = {"s": self._shared, "b": _boolean, "d": iso_text}.get(kind)
-        return convert(raw) if convert else raw  # "str" (formula), "e" (error)
+        convert = {"s": self._shared, "b": _boolean, "d": iso_text, "str": unescape}.get(kind)
+        return convert(raw) if convert else raw  # "e" (error)
 
     def _shared(self, raw: str) -> str:
         index = int(raw)

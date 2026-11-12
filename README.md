@@ -40,6 +40,8 @@ media and the cutter of cab printers.
 | Text with any font, colour and size | Copies, cut mode, vivid or normal colours |
 | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/cable-de-dark.png"><img src="docs/screenshots/cable-de.png" alt="German interface, 12 mm cable label"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/die-cut-dark.png"><img src="docs/screenshots/die-cut.png" alt="Die-cut 57 × 32 mm label for a cab printer"></picture> |
 | German interface (27 languages in total), 12 mm cable label | Die-cut label on a cab EOS2: QR code and text on 57 × 32 mm |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/serial-dark.png"><img src="docs/screenshots/serial.png" alt="Serial labels: placeholders filled from a CSV file"></picture> | |
+| Serial labels: `{Name}` and `{Code}` filled from each row of a CSV file | |
 
 Screenshots use the default GNOME style; Etiketto follows your desktop's light or dark mode and accent colour.
 
@@ -59,12 +61,16 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   across copies), copy number, random ID and UUID
 - Command line: `etiketto print` prints a label file without a window or
   display, with copies, counter start and texts set per job
+- Serial labels: placeholders such as `{Name}` in texts and codes, filled
+  from each row of a CSV, ODS or XLSX file; step through the rows in the
+  preview and print all of them, or a range, on any printer
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
   *Report a problem* prepares an issue with all the details
-- Save labels as `.etiketto` files (images embedded) and reuse them as templates
-- Drag and drop images or `.etiketto` files onto the window
+- Save labels as `.etiketto` files (images embedded; a data file for serial
+  labels is linked, not embedded) and reuse them as templates
+- Drag and drop images, data files or `.etiketto` files onto the window
 - Export as PNG
 
 What each printer adds is listed under [Supported printers](#supported-printers).
@@ -141,6 +147,7 @@ changes what `{=date}` means.
 etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--set NAME=VALUE ...] [--set-literal NAME=VALUE ...]
                     [--counter-start N] [--no-save-counter]
+                    [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
 etiketto --version | --help
@@ -153,6 +160,9 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--no-save-counter` prints a read-only label without saving the counter
 (the next print repeats the numbers). Without
 `--host` the printer set in the app is used, or the only one found.
+`--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
+(by default the label's own data file, if it lies beside it), `--sheet`
+and `--rows 3-10` choose which; the counter goes on from row to row.
 `--dry-run` lists the texts of every label and with `--output` saves the
 PNG images the printer would get (`-`: the first on standard output).
 The label file is locked while printing, so two prints of one file never
@@ -161,7 +171,7 @@ and saving. The counter is saved also after a printer error, Ctrl+C,
 SIGTERM or SIGHUP. Exit codes: 0 printed, 1 printer problem, 2 wrong
 arguments, 3 file problem (also still locked after 60 s) or output not
 written, 4 label cannot be printed (empty, unknown or unclosed variable,
-date out of range), 5 the counter cannot be saved (checked before
+date out of range, unknown column, a code a row cannot make), 5 the counter cannot be saved (checked before
 printing; or printed, but saving failed), 130 interrupted.
 
 In the Flatpak, hand the file over with `--file-forwarding`:

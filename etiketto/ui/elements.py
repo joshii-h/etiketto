@@ -13,6 +13,7 @@ gi.require_version("Pango", "1.0")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from etiketto.model import ImageElement, TextElement  # noqa: E402
+from etiketto.ui.data import column_button  # noqa: E402
 from etiketto.ui.i18n import _  # noqa: E402
 from etiketto.ui.texts import SYMBOLOGIES, TEXT_ALIGNS, element_icon, element_title  # noqa: E402
 from etiketto.ui.variables import (  # noqa: E402
@@ -98,7 +99,9 @@ class ElementsGroup(Adw.PreferencesGroup):
             row.add_suffix(button)
 
     def _text_rows(self, row: Adw.ExpanderRow, element: TextElement, set_attr) -> None:
-        row.add_row(self._text_view_row(element, set_attr, self.window.open_url))
+        row.add_row(
+            self._text_view_row(element, set_attr, self.window.open_url, self.window.data.columns)
+        )
         row.add_row(self._font_row(element, set_attr))
         size = spin_row(
             _("Size"),
@@ -126,7 +129,11 @@ class ElementsGroup(Adw.PreferencesGroup):
         return name
 
     @staticmethod
-    def _text_view_row(element: TextElement, set_attr, open_url) -> Adw.PreferencesRow:
+    def _text_view_row(
+        element: TextElement, set_attr, open_url, columns: list[str]
+    ) -> Adw.PreferencesRow:
+        """The text, a button to insert variables and, with a data file, one
+        to insert its columns."""
         view = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, accepts_tab=False)
         view.set_top_margin(8)
         view.set_bottom_margin(8)
@@ -142,9 +149,12 @@ class ElementsGroup(Adw.PreferencesGroup):
         frame = Gtk.Frame(child=view, hexpand=True)
         box = Gtk.Box(spacing=6, margin_start=12, margin_end=6, margin_top=8, margin_bottom=8)
         box.append(frame)
-        button = variable_button(lambda p: insert_into_text_view(view, p), open_url)
-        button.set_valign(Gtk.Align.START)
-        box.append(button)
+        buttons = [variable_button(lambda p: insert_into_text_view(view, p), open_url)]
+        if columns:
+            buttons.append(column_button(columns, lambda p: insert_into_text_view(view, p)))
+        for button in buttons:
+            button.set_valign(Gtk.Align.START)
+            box.append(button)
         return Adw.PreferencesRow(activatable=False, child=box)
 
     @staticmethod
@@ -193,6 +203,8 @@ class ElementsGroup(Adw.PreferencesGroup):
         data.add_suffix(
             variable_button(lambda p: insert_into_entry(data, p), self.window.open_url)
         )
+        if columns := self.window.data.columns:
+            data.add_suffix(column_button(columns, lambda p: insert_into_entry(data, p)))
         row.add_row(data)
         color = Adw.ActionRow(title=_("Colour"))
         color.add_suffix(color_button(element.color, lambda v: set_attr(color=v)))

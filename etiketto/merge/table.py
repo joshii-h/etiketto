@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import bisect
 import re
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 
 from etiketto.merge import limits
@@ -12,13 +16,34 @@ from etiketto.merge import limits
 class MergeError(ValueError):
     """A file that cannot be used as data for serial labels. code:
     "not_table" (no CSV, ODS or XLSX file, or no such sheet), "damaged" (one
-    of them, but broken), "too_large" (over a limit in limits.py) or "empty"
-    (no filled cell); the message is English detail for bug reports, the
+    of them, but broken), "too_large" (over a limit in limits.py), "empty"
+    (no filled cell) or "cancelled" (cancel was set); the message is English detail for bug reports, the
     interface shows its own translated text."""
 
     def __init__(self, code: str, detail: str):
         super().__init__(detail)
         self.code = code
+
+
+# set while a file is read: the reading thread stops when the event is set
+_CANCEL: ContextVar[threading.Event | None] = ContextVar("cancel", default=None)
+
+
+@contextmanager
+def cancellable(cancel: threading.Event | None) -> Iterator[None]:
+    """Readers called inside stop with MergeError("cancelled") once `cancel`
+    is set; it is looked at for each row and every few thousand XML elements."""
+    token = _CANCEL.set(cancel)
+    try:
+        yield
+    finally:
+        _CANCEL.reset(token)
+
+
+def check_cancelled() -> None:
+    cancel = _CANCEL.get()
+    if cancel is not None and cancel.is_set():
+        raise MergeError("cancelled", "reading was cancelled")
 
 
 def damaged(detail: str) -> MergeError:
@@ -97,9 +122,10 @@ def _unique(index: int, name: str, taken: set[str]) -> str:
 
 
 def _filled_length(cells: list[str]) -> int:
-    """The length without the empty cells at the end."""
+    """The length without the empty cells at the end; a cell of spaces is
+    empty too (a row of them is no header)."""
     end = len(cells)
-    while end and not cells[end - 1]:
+    while end and not cells[end - 1].strip():
         end -= 1
     return end
 
@@ -121,13 +147,15 @@ class Builder:
     def add(self, cells: list[str], repeat: int = 1, key: int | None = None) -> None:
         """A row (`repeat` times); `key` (its number in the file) lets
         blank() find it again."""
+        check_cancelled()
         end = _filled_length(cells)
         if not end:
             return
         if end > limits.MAX_COLUMNS:
             raise too_large("more than %d columns" % limits.MAX_COLUMNS)
+        # the header row is no data row: neither limit counts it
+        self._cells += end * (repeat if self._data_rows >= 0 else repeat - 1)
         self._data_rows += repeat
-        self._cells += end * repeat
         if self._data_rows > limits.MAX_ROWS or self._cells > limits.MAX_CELLS:
             raise too_large("more than %d rows or %d cells" % (limits.MAX_ROWS, limits.MAX_CELLS))
         stored = cells[:end]
@@ -163,6 +191,9 @@ class Builder:
         (header, repeat), *rest = filled
         if repeat > 1:
             rest.insert(0, (header, repeat - 1))
+        # every row gets every column: one long row makes all of them wide
+        if self._width * sum(count for _cells, count in rest) > limits.MAX_CELLS:
+            raise too_large("more than %d cells (rows times columns)" % limits.MAX_CELLS)
         columns = column_names(self._padded(header))
         rows: list[dict[str, str]] = []
         for cells, count in rest:

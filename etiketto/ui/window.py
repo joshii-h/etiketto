@@ -20,6 +20,8 @@ from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend  # noqa: E402
 from etiketto.model import MAX_COUNTER, CodeElement, Label, TextElement  # noqa: E402
 from etiketto.render import Rendered, render  # noqa: E402
+from etiketto.serial import unknown_columns  # noqa: E402
+from etiketto.ui.data import DATA_SUFFIXES, STEPS, DataGroup, DataSource  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
 from etiketto.ui.i18n import _, docs_url  # noqa: E402
@@ -66,11 +68,13 @@ class Window(Adw.ApplicationWindow):
         self.printer = Printer(self)
         self.print_flow = PrintFlow(self)
         self.files = Files(self)
+        self.data = DataSource(self)
 
         self.toasts = Adw.ToastOverlay()
         toolbar = Adw.ToolbarView()
         toolbar.add_top_bar(self._build_header())
         self.banner = Adw.Banner(revealed=False)  # printer stage while printing
+        self.banner.connect("button-clicked", lambda _b: self.print_flow.stop())
         toolbar.add_top_bar(self.banner)
         toolbar.set_content(self._build_body())
         self.toasts.set_child(toolbar)
@@ -82,6 +86,7 @@ class Window(Adw.ApplicationWindow):
 
         self.rebuild_sidebar()
         self.update_title()
+        self.update_rows()
         self.schedule_render()
         if not GLib.getenv("ETIKETTO_SCREENSHOT"):
             self.printer.refresh()
@@ -126,6 +131,8 @@ class Window(Adw.ApplicationWindow):
         menu.append(_("New label"), "win.new")
         menu.append(_("Save as…"), "win.save-as")
         menu.append(_("Save as template…"), "win.save-template")
+        menu.append(_("Data for serial labels…"), "win.choose-data")
+        menu.append(_("Forget allowed data files"), "win.forget-data")
         menu.append(_("Export PNG…"), "win.export")
         menu.append(_("Help"), "win.help")
         menu.append(_("Report a problem…"), "win.report")
@@ -163,6 +170,7 @@ class Window(Adw.ApplicationWindow):
             self.label_group,
             self.elements_group,
             self.counter_group,
+            DataGroup(self),
         ]
         for group in self._groups:
             self.sidebar.add(group)
@@ -293,9 +301,33 @@ class Window(Adw.ApplicationWindow):
         self.expand_index = -1
         self.rebuild_sidebar()
         self.update_title()
+        self.data.follow_label()
         self.schedule_render()
         if printer_changed:
             self.printer.refresh()
+
+    def data_changed(self, rebuild: bool = True) -> None:
+        """The data file was read, failed or removed, or another row is shown."""
+        if rebuild:  # the group shows the file, the elements the columns to insert
+            self.rebuild_sidebar()
+        self.update_rows()
+        self.schedule_render()
+
+    def update_rows(self) -> None:
+        """The row buttons under the preview: only with rows to step through."""
+        data = self.data
+        cursor = data.cursor
+        if data.active:
+            self.preview.show_row(cursor.number, cursor.count)
+        else:
+            self.preview.hide_row()
+        for step in STEPS:
+            action = self.lookup_action("row-" + step)
+            if action:
+                back = step in ("first", "previous")
+                action.set_enabled(
+                    data.active and not (cursor.at_start if back else cursor.at_end)
+                )
 
     def update_title(self) -> None:
         name = self.path.name if self.path else _("Unsaved label")
@@ -307,7 +339,7 @@ class Window(Adw.ApplicationWindow):
         """The label rendered for the current printer model and safety margin,
         and the image of it as the printer would print it (preview, export)."""
         backend = self.backend
-        label, warnings = expand_label(self.label, self.preview_values())
+        label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
         rendered = render(
             label,
             dpi=backend.capabilities.dpi,
@@ -345,23 +377,30 @@ class Window(Adw.ApplicationWindow):
         return False
 
     def _status_text(self, rendered: Rendered) -> str:
-        caps = self.backend.capabilities
-        info = self.size_text(rendered.length_mm)
+        parts = [self.size_text(rendered.length_mm)]
         if rendered.overflow:
-            info += " · " + _("content scaled down to fit")
-        if caps.max_length_mm and caps.too_long(rendered.length_mm):
-            info += " · " + _("Too long for this printer: at most %s") % self.unit.format(
-                caps.max_length_mm
-            )
-        width = self.label.media_size()[0]
-        if not caps.continuous and caps.max_width_mm and caps.too_wide(width):
-            info += " · " + _("Too wide for this printer: at most %s") % self.unit.format(
-                caps.max_width_mm
-            )
+            parts.append(_("content scaled down to fit"))
+        parts.extend(self._limit_texts(rendered))
         if rendered.warnings:
             problems = "; ".join(warning_text(w) for w in rendered.warnings)
-            info += " · " + _("Problem: %s") % problems
-        return info
+            parts.append(_("Problem: %s") % problems)
+        if unknown := unknown_columns(self.label, self.data.columns) if self.data.active else []:
+            names = ", ".join("{%s}" % name for name in unknown)
+            parts.append(_("No such column: %s") % names)
+        return " · ".join(parts)
+
+    def _limit_texts(self, rendered: Rendered) -> list[str]:
+        """What exceeds the printer's limits."""
+        caps = self.backend.capabilities
+        texts = []
+        if caps.max_length_mm and caps.too_long(rendered.length_mm):
+            limit = self.unit.format(caps.max_length_mm)
+            texts.append(_("Too long for this printer: at most %s") % limit)
+        width = self.label.media_size()[0]
+        if not caps.continuous and caps.max_width_mm and caps.too_wide(width):
+            limit = self.unit.format(caps.max_width_mm)
+            texts.append(_("Too wide for this printer: at most %s") % limit)
+        return texts
 
     def _render_failed(self, error: Exception) -> None:
         self.rendered = None
@@ -450,11 +489,16 @@ class Window(Adw.ApplicationWindow):
             "add-text": lambda *_a: self.add_element(TextElement(text=_("Text"))),
             "add-image": lambda *_a: self.files.choose_image(self.add_element),
             "add-code": lambda *_a: self.add_element(CodeElement()),
+            "choose-data": self.data.choose,
+            "forget-data": self.data.forget_allowed,
         }
+        for step in STEPS:
+            actions["row-" + step] = lambda *_a, s=step: self.data.step(s)
         for name, callback in actions.items():
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", callback)
             self.add_action(action)
+        self.data.update_forget_action()
         template = Gio.SimpleAction.new("open-template", GLib.VariantType.new("s"))
         template.connect("activate", self.files.open_template)
         self.add_action(template)
@@ -466,6 +510,10 @@ class Window(Adw.ApplicationWindow):
         app.set_accels_for_action("win.print", ["<Control>p"])
         app.set_accels_for_action("win.help", ["F1"])
         app.set_accels_for_action("win.new", ["<Control>n"])
+        app.set_accels_for_action("win.row-first", ["<Alt>Home"])
+        app.set_accels_for_action("win.row-previous", ["<Alt>Page_Up"])
+        app.set_accels_for_action("win.row-next", ["<Alt>Page_Down"])
+        app.set_accels_for_action("win.row-last", ["<Alt>End"])
 
     def _install_drop_target(self) -> None:
         target = Gtk.DropTarget.new(Gio.File, Gdk.DragAction.COPY)
@@ -479,6 +527,9 @@ class Window(Adw.ApplicationWindow):
         path = Path(file.get_path())
         if path.suffix == ".etiketto":
             self.files.confirm_discard(lambda: self.files.open_file(path))
+            return True
+        if path.suffix.lower() in DATA_SUFFIXES:
+            self.data.attach(path)
             return True
         try:
             self.add_element(image_from_path(path))

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import copy
 import threading
+from collections.abc import Sequence
 from dataclasses import replace
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from gi.repository import Adw, GLib, Gtk
@@ -17,21 +19,35 @@ from etiketto.backends.base import (
     Progress,
 )
 from etiketto.job import Job, PrepareFailed
+from etiketto.merge import MergeError
 from etiketto.model import Label
+from etiketto.serial import (
+    Series,
+    SeriesError,
+    SeriesProgress,
+    SeriesResult,
+    UnprintableRows,
+    print_series,
+    row_span,
+)
 from etiketto.ui.i18n import _, isolate
 from etiketto.ui.texts import (
     COLOR_ADJUST_ROWS,
     CUT_MODES,
     MODE_NAMES,
+    data_error_text,
     error_details,
     printed_text,
     printer_error_text,
     stage_text,
 )
 from etiketto.ui.widgets import combo_row, list_dialog, spin_row
+from etiketto.variables import Values
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
+
+ROWS_LISTED = 20  # rows named in a message; more are "…"
 
 
 class PrintFlow:
@@ -41,6 +57,7 @@ class PrintFlow:
         self.window = window
         self.busy = False
         self._printing: Label | None = None
+        self._stop = threading.Event()  # serial labels: stop after the current one
 
     def _modes(self) -> tuple[PrintMode, ...]:
         return self.window.backend.modes(self.window.printer.info)
@@ -66,12 +83,28 @@ class PrintFlow:
         if not window.label.elements and not window.label.background_image:
             window.toast(_("The label is empty"))
             return
+        if problem := self._data_problem():
+            window.toast(problem)
+            return
         if tape := window.printer.other_tape():
             self._wrong_cassette_dialog(tape)
         elif pitch := window.printer.other_pitch():
             self._wrong_labels_dialog(pitch)
         else:
             self.dialog()
+
+    def _data_problem(self) -> str | None:
+        """Why a linked data file cannot be printed from: a label with its
+        placeholders unfilled is never what was wanted."""
+        data = self.window.data
+        if data.path is None or data.active:
+            return None
+        if data.state == "loading":
+            return _("The data file is still being read. Try again in a moment.")
+        if data.state == "unread":
+            return data.status()
+        error = data.error or MergeError("empty", "no data rows")
+        return data_error_text(error, data.path.name)
 
     def _warn(self, heading: str, body: str) -> None:
         self.window.confirm(heading, body, "print", _("Print anyway"), self.dialog)
@@ -115,9 +148,13 @@ class PrintFlow:
         self.window.schedule_render()  # black and white shows grey
 
     def choices(self) -> dict:
-        """Copies, cut and mode for the print dialog, from the last print."""
+        """Copies, cut and mode for the print dialog, from the last print;
+        with a data file the rows to print, all of them."""
         self._plan_copies(1)
-        return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        choices = {"copies": 1, "cut": self._cut(), "mode": self.mode}
+        if self.window.data.active:
+            choices.update(first=1, last=len(self.window.data.rows))
+        return choices
 
     def _plan_copies(self, copies: int) -> None:
         """{=copies} in the preview: as many as the dialog would print."""
@@ -134,9 +171,12 @@ class PrintFlow:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported."""
         caps = self.window.backend.capabilities
+        copies = _("Copies of each label") if self.window.data.active else _("Copies")
         rows: list[Gtk.Widget] = [
-            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: self._set_copies(choices, int(v)))
+            spin_row(copies, 1, 1, 99, 1, 0, lambda v: self._set_copies(choices, int(v)))
         ]
+        if self.window.data.active:
+            rows.extend(self._row_range(choices))
         if caps.cut_modes:
             cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
             rows.append(combo_row(_("Cut"), cuts, choices["cut"], lambda v: choices.update(cut=v)))
@@ -150,6 +190,27 @@ class PrintFlow:
         if caps.supports_color_adjust:
             rows.append(self._color_adjust_row())
         return rows
+
+    @staticmethod
+    def _row_range(choices: dict) -> list[Adw.SpinRow]:
+        """From and to which row of the data file; the other end follows."""
+        count = choices["last"]
+        first = spin_row(_("From row"), 1, 1, count, 1, 0, lambda v: None)
+        last = spin_row(_("To row"), count, 1, count, 1, 0, lambda v: None)
+
+        def changed(_row, _pspec) -> None:
+            choices.update(first=int(first.get_value()), last=int(last.get_value()))
+
+        def follow(row, _pspec, other, later: bool) -> None:
+            value = row.get_value()
+            if (other.get_value() < value) if later else (other.get_value() > value):
+                other.set_value(value)
+
+        first.connect("notify::value", follow, last, True)
+        last.connect("notify::value", follow, first, False)
+        for row in (first, last):
+            row.connect("notify::value", changed)
+        return [first, last]
 
     def _color_adjust_row(self) -> Adw.ExpanderRow:
         """Brightness and colour balance, a printer setting kept in settings.json."""
@@ -196,7 +257,8 @@ class PrintFlow:
             return
         choices = self.choices()
         body = window.size_text(window.rendered.length_mm)
-        dialog = list_dialog(_("Print label"), self._rows(choices), body)
+        heading = _("Print serial labels") if window.data.active else _("Print label")
+        dialog = list_dialog(heading, self._rows(choices), body)
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("print", _("Print"))
         dialog.set_response_appearance("print", Adw.ResponseAppearance.SUGGESTED)
@@ -211,24 +273,39 @@ class PrintFlow:
         window = self.window
         settings = window.printer_settings
         settings.update(cut=choices["cut"], mode=choices["mode"])
-        self.start(
-            PrintOptions(
-                copies=choices["copies"],
-                cut=choices["cut"],
-                mode=choices["mode"],
-                color=settings.color_adjust,
-                data_format=settings.data_format,
-                gap_mm=window.label.gap_mm,
-            )
+        options = PrintOptions(
+            copies=choices["copies"],
+            cut=choices["cut"],
+            mode=choices["mode"],
+            color=settings.color_adjust,
+            data_format=settings.data_format,
+            gap_mm=window.label.gap_mm,
         )
+        if window.data.active:
+            count = len(window.data.rows)
+            self.start_series(options, row_span(choices["first"], choices["last"], count))
+        else:
+            self.start(options)
 
     # --- job ----------------------------------------------------------------------
 
-    def start(self, options: PrintOptions) -> None:
+    def _begin(self) -> str | None:
+        """The printer's address, the interface switched to printing; None
+        (and a hint) if there is no printer yet."""
         window = self.window
         host = window.printer.host
         if not host:
             window.toast(_("No printer yet – search for one or enter its address"))
+            return None
+        self.busy = True
+        window.print_button.set_sensitive(False)
+        window.print_button.set_label(_("Printing…"))
+        return host
+
+    def start(self, options: PrintOptions) -> None:
+        window = self.window
+        host = self._begin()
+        if not host:
             return
         window.sync_counter()  # the command line may have printed from the file
         job = Job(
@@ -238,9 +315,6 @@ class PrintFlow:
             window.printer_settings.safe_mm,
         )
         self._printing = window.label  # the counter moves on in this label only
-        self.busy = True
-        window.print_button.set_sensitive(False)
-        window.print_button.set_label(_("Printing…"))
 
         def progress(event: Progress):
             GLib.idle_add(self.progress, event)
@@ -261,6 +335,142 @@ class PrintFlow:
 
         threading.Thread(target=work, name="etiketto-print", daemon=True).start()
 
+    def start_series(self, options: PrintOptions, indexes: Sequence[int]) -> None:
+        """One label per row in `indexes`; a Stop button in the banner ends
+        the series after the label being printed."""
+        window = self.window
+        # the file may have been read again, with fewer rows, since the dialog
+        indexes = [index for index in indexes if 0 <= index < len(window.data.rows)]
+        if not indexes:
+            window.toast(_("No rows to print"))
+            return
+        host = self._begin()
+        if not host:
+            return
+        backend = window.backend
+        window.sync_counter()  # the command line may have printed from the file
+        label = copy.deepcopy(window.label)
+        series = Series(
+            label,
+            window.data.rows,
+            indexes,
+            options,
+            window.printer_settings.safe_mm,
+            Values.for_label(label, datetime.now(), options.copies),
+        )
+        self._printing = window.label  # the counter moves on in this label only
+        self._stop.clear()
+        window.banner.set_title(GLib.markup_escape_text(_("Printing serial labels")))
+        window.banner.set_button_label(_("Stop"))
+        window.banner.set_revealed(True)
+
+        def progress(event: SeriesProgress):
+            GLib.idle_add(self.series_progress, event)
+
+        def work():
+            try:
+                outcome = print_series(backend, host, series, progress, self._stop)
+            except UnprintableRows as e:
+                GLib.idle_add(self.series_refused, e, options, series.indexes)
+                return
+            except SeriesError as e:
+                GLib.idle_add(self.series_failed, e)
+                return
+            except Exception as e:  # noqa: BLE001 - a bug: end the job, offer a report
+                GLib.idle_add(self.done, e)
+                return
+            GLib.idle_add(self.series_done, outcome, options)
+
+        threading.Thread(target=work, name="etiketto-print", daemon=True).start()
+
+    def stop(self) -> None:
+        """Stop a series after the label being printed."""
+        if not self.busy:
+            return
+        self._stop.set()
+        banner = self.window.banner
+        banner.set_title(GLib.markup_escape_text(_("Stopping after this label…")))
+        banner.set_button_label(None)
+
+    def series_progress(self, event: SeriesProgress) -> bool:
+        if self.busy:
+            window = self.window
+            window.print_button.set_label(
+                _("Printing %(n)d/%(total)d…") % {"n": event.label, "total": event.labels}
+            )
+            if not self._stop.is_set():
+                text = stage_text(event.event.stage) or _("Printing serial labels")
+                window.banner.set_title(GLib.markup_escape_text(text))
+        return False
+
+    def series_refused(
+        self, error: UnprintableRows, options: PrintOptions, indexes: Sequence[int]
+    ) -> bool:
+        """Codes of some rows cannot be drawn: nothing printed yet. Print the
+        other rows, or correct the data file first."""
+        self._finish()
+        bad = set(error.rows)
+        shown = ", ".join(str(row) for row in error.rows[:ROWS_LISTED])
+        if len(error.rows) > ROWS_LISTED:
+            shown += ", …"
+        body = (
+            _(
+                "The barcode or QR code of these rows cannot be made from their values, for "
+                "example an EAN-13 with letters or an empty cell. Correct the data file and read "
+                "it again, or print without these rows."
+            )
+            + "\n\n"
+            + _("Rows: %s") % shown
+        )
+        others = [index for index in indexes if index + 1 not in bad]
+        dialog = Adw.AlertDialog(heading=_("Rows that cannot be printed"), body=body)
+        dialog.add_response("cancel", _("Cancel"))
+        if others:
+            dialog.add_response("skip", _("Print without these rows"))
+            dialog.set_response_appearance("skip", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("cancel")
+
+        def response(_dialog, result: str) -> None:
+            if result == "skip":
+                self.start_series(options, others)
+
+        dialog.connect("response", response)
+        self.window.present_dialog(dialog)
+        return False
+
+    def _count_series(self, outcome: SeriesResult) -> None:
+        """The numbers of the labels printed are used up, also on failure."""
+        if outcome.counter is not None and outcome.labels and self.window.label is self._printing:
+            self.window.set_counter_next(outcome.counter)
+
+    def series_done(self, outcome: SeriesResult, options: PrintOptions) -> bool:
+        self._finish()
+        self._count_series(outcome)
+        if not outcome.printed:  # nothing to print: print_series() was given no rows
+            return False
+        first, last = outcome.printed[0], outcome.printed[-1]
+        if outcome.stopped:
+            text = _("Stopped after row %(row)d") % {"row": last}
+        elif outcome.result and outcome.result.mode and outcome.result.mode != options.mode:
+            text = printed_text(options, outcome.result)
+        elif first == last:
+            text = _("Printed row %(row)d") % {"row": first}
+        else:
+            text = _("Printed rows %(first)d to %(last)d") % {"first": first, "last": last}
+        self.window.toast(text)
+        return False
+
+    def series_failed(self, error: SeriesError) -> bool:
+        self._finish()
+        self._count_series(error.outcome)
+        if error.preparing:
+            message = _("The label cannot be prepared for printing.")
+        else:
+            message = printer_error_text(error.error, self.window.unit)
+        where = _("Printing stopped at row %(row)d. To continue, print again from row %(row)d.")
+        self.failed(error.error, message + "\n\n" + where % {"row": error.row})
+        return False
+
     def progress(self, event: Progress) -> bool:
         if self.busy:
             window = self.window
@@ -280,10 +490,7 @@ class PrintFlow:
         result: PrintResult | None = None,
     ) -> bool:
         window = self.window
-        self.busy = False
-        window.print_button.set_sensitive(True)
-        window.print_button.set_label(_("Print"))
-        window.banner.set_revealed(False)
+        self._finish()
         counter = job.next_counter() if job and job.printed else None
         # the printed numbers are used up, also on failure; not in a label
         # opened while printing
@@ -293,8 +500,17 @@ class PrintFlow:
             self.failed(error, message or printer_error_text(error, window.unit))
         else:
             window.toast(printed_text(job.options if job else None, result))
-        window.printer.refresh()
         return False
+
+    def _finish(self) -> None:
+        """The interface back from printing; the printer's state afresh."""
+        window = self.window
+        self.busy = False
+        window.print_button.set_sensitive(True)
+        window.print_button.set_label(_("Print"))
+        window.banner.set_revealed(False)
+        window.banner.set_button_label(None)
+        window.printer.refresh()
 
     def failed(self, error: Exception, message: str) -> None:
         """A dialog: what happened and what to do, the original text on request."""

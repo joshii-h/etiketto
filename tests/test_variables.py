@@ -16,6 +16,7 @@ from etiketto.render import RenderWarning
 from etiketto.variables import (
     ID_ALPHABET,
     Values,
+    column_names,
     expand,
     expand_label,
     label_names,
@@ -421,3 +422,33 @@ def test_hours_into_the_repeated_hour_at_the_end_of_summer_time(zurich):
     assert shift(second, "").strftime("%z") == "+0100"
     assert shift(second, "-1h").strftime("%H:%M %z") == "02:30 +0200"
     assert shift(second, "+1d").strftime("%d %H:%M %z") == "26 02:30 +0100"
+
+
+# --- columns and variables in one pass (serial labels) --------------------------------
+
+
+def test_columns_and_variables_are_filled_in_one_pass():
+    values = Values(NOW_FOR_COLUMNS, counter=7)
+    row = {"Name": "{=counter} {{", "City": "Bern"}
+    text, unknown = expand("{Name}/{=counter}/{City}/{Price}/{{x}}", values, row)
+    assert text == "{=counter} {{/7/Bern/{Price}/{x}"  # a value is never filled in again
+    assert unknown == ["{Price}"]
+    # braces are escapes only in a text with something to fill
+    assert expand("a {{b}}", values, row) == ("a {{b}}", [])
+    assert expand("a {{b}} {}", values, row) == ("a {{b}} {}", [])
+    assert expand("{{b}} {City}", values, row) == ("{b} Bern", [])
+    # "{ =x}" is neither a variable nor a column; without values variables stay
+    assert expand("{ =x} {City}", values, {"=x": "no", "City": "Bern"}) == ("{ =x} Bern", [])
+    assert expand("{=counter} {City}", None, row) == ("{=counter} Bern", [])
+
+
+def test_column_placeholders_are_named_but_not_warnings():
+    label = Label(elements=[TextElement(text="{Name} {Gone} {=nope}")])
+    filled, warnings = expand_label(label, Values(NOW_FOR_COLUMNS), {"Name": "Anna"})
+    assert filled.elements[0].text == "Anna {Gone} {=nope}"
+    assert [w.params["name"] for w in warnings] == ["{=nope}"]
+    assert expand_label(label, None, {"Name": "Anna"})[1] == []
+    assert column_names("{A} {=b} {{C}} { A }{ } {D}") == ["A", "D"]
+
+
+NOW_FOR_COLUMNS = datetime(2026, 3, 1, 9, 30)

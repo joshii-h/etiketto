@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 02:40+0100\n"
+"POT-Creation-Date: 2026-11-12 07:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,6 +86,12 @@ msgstr ""
 #: docs/index.md
 #, markdown-text
 msgid "Endless tape as long as the content, or die-cut labels of any size"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/index.md
+#, markdown-text
+msgid "[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -594,6 +600,210 @@ msgid "Something else? [[ui:Report a problem…]] in the main menu (also offered
 msgstr ""
 
 #. type: Title #
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Serial labels"
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "One label for each row of a table: inventory numbers, shelf labels, name badges, addresses. The label holds placeholders such as `{Name}`; each printed label shows the values of its row."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "![Serial labels](media/serial.png#only-light)  ![Serial labels](media/serial-dark.png#only-dark)"
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Data file"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Data for serial labels…]] in the main menu, [[ui:Choose…]] under [[ui:Serial labels]], or drop the file onto the window."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "CSV (comma, semicolon or tab), ODS (LibreOffice) or XLSX (Excel). The first filled row holds the column names."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "A title above the column names counts as the first row: delete it, or put the table on a sheet of its own."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "ODS: cells as LibreOffice shows them, dates as `2026-11-11`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "XLSX: numbers with their decimals, leading zeros and percent signs, dates as `2026-11-11`. Thousands separators and text in the number format, such as a currency, are left out. Dates in the East Asian built-in formats come out as numbers."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Empty rows are left out. The hidden cells of merged cells are empty."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Several sheets: choose one under [[ui:Sheet]]."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Read again]] after the file was changed in the spreadsheet program."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Up to 100 000 rows, 1000 columns, 2 000 000 cells (rows times columns, without the row of column names) and 50 MB."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "The label file stores where the data file is, never its content. If the data file lies in the same folder as the label (or below it), both can be moved or shared together. If it is missing when the label is opened, Etiketto says so: choose it again or remove it."
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "A data file is read without asking only if it is a table (`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a hidden folder. Any other data file is read only after asking, once for each label file: a label from someone else could name any file.  [[ui:Forget allowed data files]] in the main menu makes Etiketto ask again. Templates keep the placeholders but not the data file. Older versions of Etiketto refuse labels with a data file instead of printing the placeholders."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Placeholders"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Insert column]] next to a text or the content of a code adds `{Column}` at the cursor; typing it works as well."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Placeholders work in texts and in QR codes and barcodes, for example `https://example.org/item/{Number}`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "`{{` and `}}` print a single brace in a text with placeholders; in a text without any they stay as they are. So `{{Name}}` alone prints `{{Name}}`, and `{{Name}} {Name}` prints `{Name} Anna`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Values are printed as they are, even if they contain braces."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "A placeholder without a column of that name is printed as it is; the line under the preview names it."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Before printing, the codes of every row are checked: an EAN-13 needs 12 or 13 digits, an empty cell gives no code. Rows that fail are named; print without them or correct the data file."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Variables such as `{=counter}` or `{=date}` work together with the placeholders; the counter goes on from row to row."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Preview"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "The buttons under the preview step through the rows: [[ui:First row]], [[ui:Previous row]], [[ui:Next row]] and [[ui:Last row]], or Alt+Page Up, Alt+Page Down, Alt+Home and Alt+End."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Rows are counted without the row of column names."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Export PNG…]] saves the row that is shown."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md docs/use.md
+#, markdown-text, no-wrap
+msgid "Print"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Print]] prints one label for each row. [[ui:From row]] and [[ui:To row]] limit the rows (all of them by default), [[ui:Copies of each label]] sets how many of each are printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "Every label is a print job of its own, so this works on every printer."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "[[ui:Stop]] in the bar above the window ends the series after the label being printed; the first label is always printed."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/serial.md
+#, markdown-text
+msgid "If the printer reports a problem, printing stops at that row. Solve the problem, then print again starting from that row."
+msgstr ""
+
+#. type: Title ##
+#: docs/serial.md
+#, markdown-text, no-wrap
+msgid "Command line"
+msgstr ""
+
+#. type: Plain text
+#: docs/serial.md
+#, markdown-text
+msgid "`etiketto print shelf.etiketto --data items.csv --rows 3-10` prints rows 3 to 10 without opening a window; see [Command line](use.md#command-line).  With `--dry-run` each line of the listing starts with the row number."
+msgstr ""
+
+#. type: Title #
 #: docs/use.md
 #, markdown-text, no-wrap
 msgid "Design and print"
@@ -737,12 +947,6 @@ msgstr ""
 msgid "[[ui:Safety margin]] (printer setting, default 1.5 mm): content and border keep this distance from the label edges. Printers lose a little at the edges, and long labels can run slightly askew. If text is cut off at the edge, increase it."
 msgstr ""
 
-#. type: Title ##
-#: docs/use.md
-#, markdown-text, no-wrap
-msgid "Print"
-msgstr ""
-
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
@@ -817,7 +1021,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without variables print exactly as typed."
+msgid "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without variables (and without the placeholders of [serial labels](serial.md))  print exactly as typed."
 msgstr ""
 
 #. type: Plain text
@@ -853,6 +1057,7 @@ msgid ""
 "etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
 "etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
 "etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
+"etiketto print shelf.etiketto --data items.csv --rows 3-10\n"
 "etiketto list-printers\n"
 "etiketto --version\n"
 msgstr ""
@@ -878,13 +1083,19 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
+msgid "Serial labels: one label for each row of the data file, `--copies` of each; `--data` gives the data file (by default the label's own, if it lies in the label's folder), `--sheet` the sheet, `--rows` the rows (`3-10`, `5`, `7-` to the last). The counter goes on from row to row.  A placeholder without a column or a code a row cannot make stops the print before the first label. See [Serial labels](serial.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
 msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves the PNG images as the printer would get them (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output)."
 msgstr ""
 
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong arguments, 3 label file cannot be read, still locked by another print or output not written, 4 the label cannot be printed (empty, unknown or unclosed variable, date before the year 1 or after 9999), 5 the counter cannot be saved (nothing printed; or printed, but saving failed), 130 interrupted."
+msgid "Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong arguments, 3 label file cannot be read, still locked by another print or output not written, 4 the label cannot be printed (empty, unknown or unclosed variable, date before the year 1 or after 9999, unknown column, a code a row cannot make), 5 the counter cannot be saved (nothing printed; or printed, but saving failed), 130 interrupted."
 msgstr ""
 
 #. type: Plain text

@@ -15,7 +15,7 @@ from collections.abc import Callable, Iterator
 from xml.etree import ElementTree as ET
 
 from etiketto.merge import limits
-from etiketto.merge.safexml import drop, events
+from etiketto.merge.safexml import events
 from etiketto.merge.table import Builder, MergeError, Table, iso_text, matches, too_large
 
 _TABLE = "{urn:oasis:names:tc:opendocument:xmlns:table:1.0}"
@@ -25,6 +25,7 @@ _TEXT = "{urn:oasis:names:tc:opendocument:xmlns:text:1.0}"
 TABLE, ROW = _TABLE + "table", _TABLE + "table-row"
 CELL, COVERED = _TABLE + "table-cell", _TABLE + "covered-table-cell"
 PARAGRAPH = _TEXT + "p"
+_RECORDS = frozenset({"table-row"})
 
 
 class _Sheets:
@@ -36,14 +37,18 @@ class _Sheets:
         self.names: list[str] = []
         self.depth = 0
         self.selected = False
+        self.found = False
 
     def table(self, event: str, elem: ET.Element) -> bool:
         """Track a table start or end; True when the wanted sheet is complete."""
         if event == "start":
             self.depth += 1
             if self.depth == 1:
+                if len(self.names) >= limits.MAX_SHEETS:
+                    raise too_large("more than %d sheets" % limits.MAX_SHEETS)
                 self.names.append(elem.get(_TABLE + "name", ""))
                 self.selected = matches(self.wanted, len(self.names) - 1, self.names[-1])
+                self.found = self.found or self.selected
             return False
         self.depth -= 1
         return self.depth == 0 and self.selected
@@ -65,15 +70,36 @@ def read(zf: zipfile.ZipFile, wanted: str | int | None) -> Table:
     return builder.table()
 
 
-def _rows(zf: zipfile.ZipFile, sheets: _Sheets) -> Iterator[ET.Element]:
-    for event, elem, parent in events(zf, "content.xml"):
+def read_book(zf: zipfile.ZipFile, wanted: str | None) -> tuple[list[str], Table]:
+    """The names of all sheets and the table of the wanted one (the first
+    if there is none of that name), in one pass over content.xml when the
+    sheet exists."""
+    sheets = _Sheets(wanted)
+    builder = Builder()
+    for row in _rows(zf, sheets, stop=False):
+        builder.add(_cells(row), _count(row.get(_TABLE + "number-rows-repeated")))
+    if sheets.found:
+        return sheets.names, builder.table()
+    if wanted is None:
+        raise MergeError("not_table", "no sheets")
+    return read_book(zf, None)
+
+
+def _rows(zf: zipfile.ZipFile, sheets: _Sheets, stop: bool = True) -> Iterator[ET.Element]:
+    """The rows of the selected sheet; with `stop` False the rest of the
+    file is read too, for the names of the sheets after it."""
+    tags = 0  # rows of the sheet, filled or not
+    for event, elem in events(zf, "content.xml", _RECORDS):
         if elem.tag == TABLE:
-            if sheets.table(event, elem):
+            if sheets.table(event, elem) and stop:
                 return
+            tags = 0 if sheets.depth == 1 and event == "start" else tags
         elif event == "end" and elem.tag == ROW:
+            tags += 1
+            if tags > limits.MAX_ROW_TAGS:
+                raise too_large("more than %d rows" % limits.MAX_ROW_TAGS)
             if sheets.selected and sheets.depth == 1:
                 yield elem
-            drop(elem, parent)
 
 
 def _cells(row: ET.Element) -> list[str]:

@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from etiketto import model
 from etiketto.model import (
@@ -46,7 +48,7 @@ def test_roundtrip(tmp_path, png_b64):
     assert Label.load(path) == label
     assert [p.name for p in tmp_path.iterdir()] == ["a.etiketto"]  # no temporary file left
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["version"] == 1  # nothing an older Etiketto would get wrong
+    assert data["version"] == 1 and "features" not in data  # opens in every version
     assert [e["kind"] for e in data["elements"]] == ["text", "image", "code"]
 
 
@@ -201,6 +203,9 @@ def test_not_a_document(data):
         ({"background_image": "abc"}, "damaged"),
         ({"background_image": [1, 2]}, "damaged"),
         ({"margin_mm": "1"}, "damaged"),
+        ({"data_file": 5}, "damaged"),
+        ({"data_file": "a\x00b.csv"}, "damaged"),
+        ({"data_sheet": None}, "damaged"),
     ],
 )
 def test_error_codes(data, code):
@@ -399,3 +404,121 @@ def test_absurdly_nested_json_is_no_label(tmp_path):
     with pytest.raises(LabelError) as info:
         Label.load(path)
     assert info.value.code == "not_label"
+
+
+# --- the link to a data file for serial labels ----------------------------------------
+
+
+def test_data_file_beside_the_label_is_stored_relative(tmp_path):
+    (tmp_path / "data").mkdir()
+    label = Label(tape_mm=25, data_file=str(tmp_path / "data" / "rows.csv"), data_sheet="Mai")
+    label.save(tmp_path / "a.etiketto")
+    stored = json.loads((tmp_path / "a.etiketto").read_text(encoding="utf-8"))
+    assert (stored["data_file"], stored["data_sheet"]) == ("data/rows.csv", "Mai")
+    assert label.data_file == str(tmp_path / "data" / "rows.csv")  # saving changes nothing
+    loaded = Label.load(tmp_path / "a.etiketto")
+    assert loaded.data_file == str(tmp_path / "data" / "rows.csv")
+    assert loaded.data_sheet == "Mai"
+
+
+def test_moving_label_and_data_together_keeps_the_link(tmp_path):
+    (tmp_path / "old").mkdir()
+    label = Label(tape_mm=25, data_file=str(tmp_path / "old" / "rows.csv"))
+    label.save(tmp_path / "old" / "a.etiketto")
+    (tmp_path / "old").rename(tmp_path / "new")
+    loaded = Label.load(tmp_path / "new" / "a.etiketto")
+    assert loaded.data_file == str(tmp_path / "new" / "rows.csv")
+
+
+def test_data_file_elsewhere_is_stored_absolute(tmp_path):
+    (tmp_path / "labels").mkdir()
+    data_file = str(tmp_path / "rows.csv")
+    label = Label(tape_mm=25, data_file=data_file)
+    label.save(tmp_path / "labels" / "a.etiketto")
+    stored = json.loads((tmp_path / "labels" / "a.etiketto").read_text(encoding="utf-8"))
+    assert stored["data_file"] == data_file
+    assert Label.load(tmp_path / "labels" / "a.etiketto").data_file == data_file
+
+
+def test_without_data_file(tmp_path):
+    Label(tape_mm=25).save(tmp_path / "a.etiketto")
+    stored = json.loads((tmp_path / "a.etiketto").read_text(encoding="utf-8"))
+    assert (stored["data_file"], stored["data_sheet"]) == ("", "")
+    assert Label.load(tmp_path / "a.etiketto").data_file == ""
+
+
+def test_data_file_written_by_hand(tmp_path):
+    """Relative paths may climb out of the label's folder, as written by hand."""
+    path = tmp_path / "labels" / "a.etiketto"
+    path.parent.mkdir()
+    path.write_text(json.dumps({"tape_mm": 25, "data_file": "../shared/./rows.csv"}))
+    assert Label.load(path).data_file == str(tmp_path / "shared" / "rows.csv")
+    assert model.stored_data_path("", tmp_path) == ""
+    assert model.resolved_data_path("", tmp_path) == ""
+
+
+def test_a_data_file_is_a_feature_older_versions_refuse(tmp_path):
+    """Version 1 readers refuse version 2 ("newer") instead of printing
+    "{Name}" as it is; newer readers refuse features they do not know."""
+    path = tmp_path / "a.etiketto"
+    Label(tape_mm=25, data_file=str(tmp_path / "rows.csv")).save(path)
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    assert (stored["version"], stored["features"]) == (FORMAT_VERSION, ["serial"])
+    assert Label.load(path).data_file == str(tmp_path / "rows.csv")
+    with pytest.raises(LabelError) as info:
+        Label.from_dict({"version": 2, "features": ["serial", "teleport"]})
+    assert info.value.code == "newer" and "teleport" in str(info.value)
+    for bad in ("serial", [1], {"serial": 1}):
+        with pytest.raises(LabelError) as info:
+            Label.from_dict({"version": 2, "features": bad})
+        assert info.value.code == "damaged"
+
+
+@given(data_file=st.text(max_size=20), sheet=st.text(max_size=5))
+def test_version_2_is_never_written_without_features(data_file, sheet):
+    """Readers rely on it: version 2 means "look at features"; a label with
+    no feature stays version 1, which every version opens."""
+    data = Label(data_file=data_file, data_sheet=sheet).to_dict()
+    assert (data["version"] == 2) == bool(data.get("features"))
+    assert (data["version"] == 1) == ("features" not in data)
+    assert set(data.get("features", [])) <= model.FEATURES
+
+
+def test_data_inside_the_label_folder(tmp_path):
+    label_file = tmp_path / "labels" / "a.etiketto"
+    (tmp_path / "labels" / "data").mkdir(parents=True)
+    assert model.data_inside(str(tmp_path / "labels" / "data" / "rows.csv"), label_file)
+    assert model.data_inside(str(tmp_path / "labels" / "rows.csv"), label_file)
+    assert not model.data_inside(str(tmp_path / "rows.csv"), label_file)
+    assert not model.data_inside("/etc/passwd", label_file)
+    assert not model.data_inside("", label_file)
+    assert not model.data_inside(str(tmp_path / "labels" / "rows.csv"), None)
+    # a link inside the folder that leads out of it
+    (tmp_path / "labels" / "out").symlink_to(tmp_path, target_is_directory=True)
+    assert not model.data_inside(str(tmp_path / "labels" / "out" / "rows.csv"), label_file)
+    # no hidden folders, only tables
+    assert not model.data_inside(str(tmp_path / "labels" / ".ssh" / "id.csv"), label_file)
+    assert not model.data_inside(str(tmp_path / "labels" / "id_rsa"), label_file)
+    assert model.data_inside(str(tmp_path / "labels" / "data" / "Rows.XLSX"), label_file)
+
+
+def test_files_of_older_versions_have_no_data_file():
+    label = Label.from_dict({"tape_mm": 25})
+    assert (label.data_file, label.data_sheet) == ("", "")
+
+
+def test_a_label_with_both_features(tmp_path):
+    path = tmp_path / "both.etiketto"
+    label = Label(
+        tape_mm=25,
+        elements=[TextElement(text="{Name} {=date}")],
+        data_file=str(tmp_path / "rows.csv"),
+    )
+    label.save(path)
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    assert (stored["version"], stored["features"]) == (2, ["serial", "variables"])
+    assert Label.load(path) == label
+    Label.store_counter(path, 9)  # the command line keeps what it does not change
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    assert stored["features"] == ["serial", "variables"] and stored["counter_next"] == 9
+    assert {"serial", "variables"} == model.FEATURES

@@ -10,6 +10,8 @@ language.
 - Text, images, QR codes and barcodes; backgrounds printed edge to edge
 - Preview at print resolution: what you see is what is printed
 - Endless tape as long as the content, or die-cut labels of any size
+- [Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX
+  file
 - Finds the printer in the network, reads what is loaded and explains
   printer problems in plain words
 - 27 languages, follows the light or dark mode of the desktop

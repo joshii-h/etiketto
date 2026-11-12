@@ -793,3 +793,123 @@ def test_an_element_that_cannot_be_drawn_is_not_printed(mono, label_file, monkey
     assert run("print", path, "--host", "h") == cli.EXIT_LABEL
     assert err(capsys) == "etiketto: Element 1 cannot be drawn\n"
     assert mono.jobs == []
+
+
+# --- serial labels -------------------------------------------------------------
+
+
+@pytest.fixture
+def rows_csv(tmp_path):
+    path = tmp_path / "rows.csv"
+    path.write_text("Name;EAN\nScrews;4006381333931\nWashers;400638133393\nFuses;12x\n")
+    return path
+
+
+def test_rows_argument():
+    assert cli._rows("3-10") == (3, 10)
+    assert cli._rows("5") == (5, 5)
+    assert cli._rows(" 7- ") == (7, cli.ALL_ROWS)
+    assert cli._rows("-4") == (1, 4)
+    for bad in ("", "-", "0", "4-2", "a-b", "1-2-3"):
+        with pytest.raises(Exception, match="expected rows"):
+            cli._rows(bad)
+
+
+def test_serial_dry_run_fills_rows_and_variables_in_one_pass(
+    mono, label_file, rows_csv, tmp_path, capsys
+):
+    rows_csv.write_text("Name\n{=counter}\nB\nC\n")  # a value is never filled in
+    path = label_file(TextElement(text="{Name} {=counter} {{x}}"), counter_next=5)
+    assert (
+        run("print", path, "--data", rows_csv, "--rows", "1-2", "--copies", "2", "--dry-run") == 0
+    )
+    assert capsys.readouterr().out.splitlines() == [
+        "1\t1\t{=counter} 5 {x}",
+        "1\t2\t{=counter} 6 {x}",
+        "2\t1\tB 7 {x}",
+        "2\t2\tB 8 {x}",
+    ]
+    out = tmp_path / "o.png"
+    assert run("print", path, "--data", rows_csv, "--rows", "3", "--dry-run", "--output", out) == 0
+    assert out.exists()
+
+
+def test_serial_print_continues_the_counter_across_rows(mono, label_file, rows_csv, capsys):
+    rows_csv.write_text("Name\nA\nB\nC\n")
+    path = label_file(TextElement(text="{=counter} {Name}"), counter_next=1)
+    assert run("print", path, "--host", "h", "--data", rows_csv, "--copies", "2") == 0
+    assert contents(mono) == [["1 A"], ["2 A"], ["3 B"], ["4 B"], ["5 C"], ["6 C"]]
+    assert Label.load(path).counter_next == 7
+
+
+def test_serial_print_without_variables_sends_copies_per_row(mono, label_file, rows_csv):
+    rows_csv.write_text("Name\nA\nB\n")
+    path = label_file(TextElement(text="{Name}"))
+    assert run("print", path, "--host", "h", "--data", rows_csv, "--copies", "3") == 0
+    assert contents(mono) == [["A"], ["B"]]  # one render per row, the printer copies it
+    assert len(mono.jobs) == 6
+
+
+def test_serial_printer_problem_names_the_row_and_saves_the_numbers(
+    mono, label_file, rows_csv, monkeypatch, capsys
+):
+    rows_csv.write_text("Name\nA\nB\nC\n")
+    path = label_file(TextElement(text="{=counter} {Name}"), counter_next=1)
+    real = Recording.print_label
+    calls = []
+
+    def third_fails(image, host, options, progress=None):
+        calls.append(1)
+        if len(calls) == 3:
+            raise PaperJam("jam")
+        return real(mono, image, host, options, progress)
+
+    monkeypatch.setattr(mono, "print_label", third_fails)
+    assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_PRINTER
+    assert err(capsys).endswith(
+        "Printing stopped at row 3. To continue, print again from row 3.\n"
+    )
+    assert Label.load(path).counter_next == 3
+
+
+def test_serial_ctrl_c_saves_the_counter(mono, label_file, rows_csv, monkeypatch, capsys):
+    rows_csv.write_text("Name\nA\nB\nC\n")
+    path = label_file(TextElement(text="{=counter}{Name}"), counter_next=1)
+
+    def ctrl_c():
+        raise KeyboardInterrupt
+
+    interrupt_at(mono, monkeypatch, 2, ctrl_c)
+    assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_INTERRUPTED
+    assert Label.load(path).counter_next == 3  # one printed, the second maybe
+
+
+def test_serial_problems_are_refused(mono, label_file, rows_csv, tmp_path, capsys):
+    path = label_file(CodeElement(data="{EAN}", symbology="ean13"), TextElement(text="{Name}"))
+    assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_LABEL
+    assert err(capsys).endswith("Rows: 3\n")
+    assert run("print", path, "--host", "h", "--data", rows_csv, "--rows", "1-2") == 0
+    path = label_file(TextElement(text="{Price}"))
+    assert run("print", path, "--host", "h", "--data", rows_csv) == cli.EXIT_LABEL
+    assert err(capsys) == "etiketto: No such column: {Price}\n"
+    assert run("print", path, "--data", tmp_path / "gone.csv") == cli.EXIT_FILE
+    assert "gone.csv is not there any more" in err(capsys)
+    assert run("print", path, "--data", rows_csv, "--rows", "9-") == cli.EXIT_USAGE
+    assert err(capsys) == "etiketto: No rows to print\n"
+    assert run("print", path, "--rows", "1") == cli.EXIT_USAGE
+    assert "--sheet and --rows need a data file" in err(capsys)
+    assert run("print", path, "--data", rows_csv, "--sheet", "Mai") == cli.EXIT_USAGE
+    assert err(capsys) == "etiketto: rows.csv has no sheet named Mai\n"
+
+
+def test_serial_label_with_its_own_data_file(mono, label_file, rows_csv, tmp_path, capsys):
+    path = label_file(TextElement(text="{Name}"), data_file=str(rows_csv))
+    assert run("print", path, "--dry-run") == 0
+    assert capsys.readouterr().out.splitlines()[0] == "1\t1\tScrews"
+    (tmp_path / "labels").mkdir()
+    elsewhere = tmp_path / "labels" / "x.etiketto"
+    Label.load(path).save(elsewhere)  # the data file is now outside its folder
+    assert run("print", elsewhere, "--dry-run") == cli.EXIT_USAGE
+    assert "outside its folder" in err(capsys)
+    assert run("print", elsewhere, "--dry-run", "--data", rows_csv, "--rows", "2") == 0
+    assert capsys.readouterr().out == "2\t1\tWashers\n"
