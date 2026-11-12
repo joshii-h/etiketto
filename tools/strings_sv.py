@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Felkorrigering",
     "How much of the code may be damaged and still be read": "Hur mycket av koden som får vara skadat och ändå kunna läsas",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d sträcker sig utanför etikettens kant och klipps av där – flytta det eller gör det mindre",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "utskriftsmetod för en termoskrivare som har inställningen: printer (som inställt på skrivaren), transfer (med färgband) eller direct (direkttermisk, utan färgband); som standard den som valts i appen, även med --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: den här skrivarmodellen har ingen inställning för utskriftsmetod: %s",
+    "Print method set on the printer": "Utskriftsmetod inställd på skrivaren",
+    "Print method": "Utskriftsmetod",
+    "Thermal transfer (ribbon)": "Termotransfer (färgband)",
+    "Thermal direct": "Direkttermisk",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Skrivaren hittar inget färgband. Lägg i ett färgband och försök igen. Etiketter som skrivs ut utan färgband behöver ”%(direct)s” under ”%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Ett färgband är ilagt, men skrivaren skriver ut utan det (direkttermisk). För etiketter som behöver färgbandet väljer du ”%(transfer)s” under ”%(method)s”, eller tar ut färgbandet.",
 }

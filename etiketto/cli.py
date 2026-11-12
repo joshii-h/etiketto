@@ -39,10 +39,12 @@ from typing import IO, NamedTuple
 
 from etiketto import __version__
 from etiketto.backends import backends, get_backend
-from etiketto.backends.base import Backend, PrinterError, PrinterInfo
+from etiketto.backends.base import Backend, PrinterError, PrinterInfo, PrintOptions
+from etiketto.backends.cab import METHODS  # the choices of the printer setting "method"
 from etiketto.job import Job, PrepareFailed
 from etiketto.merge import MergeError, read_book
 from etiketto.model import (
+    PITCH_TOLERANCE_MM,
     CodeElement,
     Label,
     LabelError,
@@ -68,6 +70,7 @@ from etiketto.ui.settings import PrinterSettings, Settings
 from etiketto.ui.texts import (
     data_error_text,
     label_error_text,
+    other_pitch_text,
     printed_remark,
     printer_error_text,
     save_error_text,
@@ -205,6 +208,15 @@ def parser() -> argparse.ArgumentParser:
             "print with the printer model's defaults instead of the cut, colours, quality, "
             "extras (chain printing, high resolution, tape feed), printer settings and label "
             "sheet outlines last chosen in the app; the address and the safety margin stay"
+        ),
+    )
+    print_.add_argument(
+        "--print-method",
+        choices=METHODS,
+        help=_(
+            "print method of a thermal printer that has the setting: printer (as set on the "
+            "printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by "
+            "default the one chosen in the app, also with --printer-defaults"
         ),
     )
     print_.add_argument(
@@ -699,13 +711,14 @@ def _job(args, settings: Settings | None, now: datetime | None):
         _backend(args.printer)  # a clear message for unknown ids
         label.switch_printer(args.printer)
     backend = _backend(label.printer)
+    _check_flags(args, backend)
     settings = settings or Settings.load()
     printer = settings.printer(backend)
     if args.counter_start is not None:
         label.counter_next = args.counter_start
     overrides = apply_assignments(label, args.assignments, bool(args.data or label.data_file))
     choices = _choices(args, settings, backend)
-    options = _options(backend, choices, args.copies, label.gap_mm)
+    options = _flagged(args, _options(backend, choices, args.copies, label.gap_mm))
     values = Values.for_label(
         label, overrides.now or now or datetime.now(), args.copies, custom=overrides.custom
     )
@@ -724,6 +737,23 @@ def _choices(args, settings: Settings, backend: Backend) -> PrinterSettings:
     settings, a label sheet's outlines) a job takes: the ones last made in
     the app, or with --printer-defaults the printer model's defaults."""
     return Settings({}).printer(backend) if args.printer_defaults else settings.printer(backend)
+
+
+def _check_flags(args, backend: Backend) -> None:
+    """--print-method only for a printer that has the setting."""
+    if args.print_method and not any(s.key == "method" for s in backend.settings(None)):
+        raise CliError(
+            _("--print-method: this printer model has no print method setting: %s") % backend.id,
+            EXIT_USAGE,
+        )
+
+
+def _flagged(args, options: PrintOptions) -> PrintOptions:
+    """The printer settings given on the command line on top of the
+    choices (--print-method)."""
+    if not args.print_method:
+        return options
+    return replace(options, settings={**options.settings, "method": args.print_method})
 
 
 def _checked(job: Job, series: Series | None) -> None:
@@ -877,11 +907,26 @@ def _for_the_printer(
     )
     if info is None:
         return series
-    options = _choices(args, settings, job.backend).options(
-        info, job.options.copies, job.options.gap_mm, host=host
+    _check_pitch(job, info, settings)
+    options = _flagged(
+        args,
+        _choices(args, settings, job.backend).options(
+            info, job.options.copies, job.options.gap_mm, host=host
+        ),
     )
     job.options = options
     return replace(series, options=options) if series else None
+
+
+def _check_pitch(job: Job, info: PrinterInfo, settings: Settings) -> None:
+    """Die-cut labels: a roll whose measured label distance is not the
+    label's gets a hint, as the window warns; printed anyway."""
+    caps, label = job.backend.capabilities, job.label
+    if caps.continuous or caps.pages or not info.pitch_mm:
+        return
+    if abs(info.pitch_mm - label.pitch_mm()) > PITCH_TOLERANCE_MM:
+        text = other_pitch_text(label, info.pitch_mm, unit_for(settings.units))
+        _say(text.replace("\u2068", "").replace("\u2069", ""))  # no bidi marks
 
 
 QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer

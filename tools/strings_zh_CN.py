@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "纠错",
     "How much of the code may be damaged and still be read": "代码可损坏多少仍能被读取",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "元素 %(n)d 超出标签边缘，会在那里被裁掉 – 请移动它或将它缩小",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "带此设置的热敏打印机的打印方式：printer（按打印机上的设置）、transfer（使用碳带）或 direct（热敏直打，无碳带）；默认为应用中选择的方式，使用 --printer-defaults 时也是如此",
+    "--print-method: this printer model has no print method setting: %s": "--print-method：此打印机型号没有打印方式设置：%s",
+    "Print method set on the printer": "打印机上设置的打印方式",
+    "Print method": "打印方式",
+    "Thermal transfer (ribbon)": "热转印（碳带）",
+    "Thermal direct": "热敏直打",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "打印机找不到碳带。请装入碳带后重试。无需碳带打印的标签需要在“%(method)s”中选择“%(direct)s”。",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "已装入碳带，但打印机不使用碳带打印（热敏直打）。需要碳带的标签请在“%(method)s”中选择“%(transfer)s”，或取出碳带。",
 }

@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "오류 정정",
     "How much of the code may be damaged and still be read": "코드가 얼마나 손상되어도 읽을 수 있는지",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "요소 %(n)d이(가) 라벨 가장자리를 넘어 그곳에서 잘립니다 – 옮기거나 작게 하세요",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "이 설정이 있는 감열 프린터의 인쇄 방식: printer(프린터에 설정된 대로), transfer(리본 사용) 또는 direct(직접 감열, 리본 없음). 기본값은 앱에서 선택한 방식이며 --printer-defaults를 써도 같습니다",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: 이 프린터 모델에는 인쇄 방식 설정이 없습니다: %s",
+    "Print method set on the printer": "프린터에 설정된 인쇄 방식",
+    "Print method": "인쇄 방식",
+    "Thermal transfer (ribbon)": "열전사(리본)",
+    "Thermal direct": "직접 감열",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "프린터가 리본을 찾지 못합니다. 리본을 끼우고 다시 시도하십시오. 리본 없이 인쇄하는 라벨은 “%(method)s”에서 “%(direct)s”을(를) 선택해야 합니다.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "리본이 끼워져 있지만 프린터가 리본 없이 인쇄합니다(직접 감열). 리본이 필요한 라벨은 “%(method)s”에서 “%(transfer)s”을(를) 선택하거나 리본을 빼십시오.",
 }

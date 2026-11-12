@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "誤り訂正",
     "How much of the code may be damaged and still be read": "コードのどれだけが損傷しても読み取れるか",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "要素 %(n)d がラベルの端からはみ出し、そこで切れます – 移動するか小さくしてください",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "この設定があるサーマルプリンターの印刷方式: printer（プリンターの設定どおり）、transfer（リボンを使う）、direct（ダイレクトサーマル、リボンなし）。既定はアプリで選んだ方式で、--printer-defaults でも同じです",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: このプリンター機種には印刷方式の設定がありません: %s",
+    "Print method set on the printer": "プリンターで設定した印刷方式",
+    "Print method": "印刷方式",
+    "Thermal transfer (ribbon)": "熱転写（リボン）",
+    "Thermal direct": "ダイレクトサーマル",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "プリンターがリボンを検出できません。リボンをセットして、もう一度お試しください。リボンなしで印刷するラベルには「%(method)s」で「%(direct)s」を選んでください。",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "リボンがセットされていますが、プリンターはリボンなしで印刷しています（ダイレクトサーマル）。リボンが必要なラベルには「%(method)s」で「%(transfer)s」を選ぶか、リボンを取り外してください。",
 }

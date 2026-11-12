@@ -14,6 +14,7 @@ from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from etiketto.backends import backends, get_backend  # noqa: E402
 from etiketto.backends.base import Choice, PrinterInfo, Setting, Toggle  # noqa: E402
+from etiketto.model import PITCH_TOLERANCE_MM  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
@@ -36,9 +37,6 @@ from etiketto.units import default_unit  # noqa: E402
 
 if TYPE_CHECKING:
     from etiketto.ui.window import Window
-
-# a measured label distance this far from the label's own is a different roll
-PITCH_TOLERANCE_MM = 1.0
 
 
 class Printer:
@@ -433,6 +431,11 @@ class Printer:
             (_("Firmware"), info.firmware),
             self._media_row(info),
             (_("Label distance"), unit.format(info.pitch_mm) if info.pitch_mm else ""),
+            # Etiketto's own choice (the printer setting) may differ for a job
+            (
+                _("Print method set on the printer"),
+                choice_name(info.print_method) if info.print_method else "",
+            ),
             (_("Remaining tape"), self._remaining_text(info) or ""),
         ]
 

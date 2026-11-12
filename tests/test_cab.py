@@ -5,7 +5,9 @@ with firmware 5.47.7 gave."""
 from __future__ import annotations
 
 import base64
+import http.server
 import io
+import json
 import re
 import socket
 import threading
@@ -31,12 +33,15 @@ from etiketto.backends.base import (
     PrinterTimeout,
     PrintOptions,
     RibbonError,
+    RibbonInDirectMode,
+    RibbonOut,
 )
 from etiketto.backends.cab import Cab
 from etiketto.model import Label, TextElement
 from etiketto.render import mm_to_px
 
 REAL_CONNECT = cab._connect  # before the autouse fixture replaces it
+REAL_FETCH_SETUP = cab._fetch_setup
 MAX_SLEEPS = 5000
 
 
@@ -56,6 +61,8 @@ class FakeCab:
         self.closed = 0
         self.cancelled = 0
         self.silent = False  # never answer
+        self.setup: bytes | None = None  # the web interface's setup tree; None: no answer
+        self.web: list[str] = []  # hosts whose web interface was asked
 
     def status(self) -> bytes:
         if self.busy_polls:
@@ -134,7 +141,12 @@ def printer(monkeypatch):
         if len(sleeps) > MAX_SLEEPS:
             raise AssertionError("endless polling")
 
+    def fetch_setup(host):
+        device.web.append(host)
+        return device.setup
+
     monkeypatch.setattr(cab, "_connect", connect)
+    monkeypatch.setattr(cab, "_fetch_setup", fetch_setup)
     monkeypatch.setattr(cab, "_sleep", sleep)
     monkeypatch.setattr(cab, "_clock", lambda: now[0])
     return SimpleNamespace(
@@ -196,8 +208,8 @@ def test_parse_status_refuses_other_answers(raw):
         ("P", OutOfLabels),
         ("D", HeadOpen),
         ("E", LabelNotFound),
-        ("F", RibbonError),
-        ("R", RibbonError),
+        ("F", RibbonOut),
+        ("R", RibbonInDirectMode),
         ("W", PrinterError),
         ("q", PrinterError),  # unknown: still an error
     ],
@@ -653,3 +665,268 @@ def test_a_job_on_tcp_goes_through_net_send_all(monkeypatch):
     ours.close()
     theirs.close()
     assert calls == [len(job)] and bytes(got) == job
+
+
+# --- print method ------------------------------------------------------------------
+
+
+def _setup_tree(transfer="Off", speed="50 mm/s", options=("Off", "On")) -> dict:
+    """The parts of /cgi-bin/get?cmd=1 that matter, as an EOS2/300 with
+    firmware 5.47.7 sends them (radio buttons and lists: the shown texts,
+    the values and the selected text)."""
+
+    def radio(selection):
+        return {"type": "radio", "selection": selection, "options": list(options)}
+
+    speeds = ["30 mm/s", "40 mm/s", "50 mm/s", "75 mm/s", "100 mm/s", "125 mm/s", "150 mm/s"]
+    return {
+        "id": "ID_SETUP",
+        "submenu": [
+            {
+                "id": "ID_PRINTING",
+                "submenu": [
+                    {"id": "ID_HEAT_LEVEL", "editor": {"type": "slider", "value": 0}},
+                    {
+                        "id": "ID_PRINT_SPEED",
+                        "editor": {
+                            "type": "selectbox",
+                            "selection": speed,
+                            "list": speeds,
+                            "values": speeds,
+                        },
+                    },
+                ],
+            },
+            {
+                "id": "ID_RIBBON",
+                "submenu": [
+                    {
+                        "id": "ID_TRANSFER_PRINT",
+                        "editor": dict(radio(transfer), values=["false", "true"]),
+                    }
+                ],
+            },
+        ],
+    }
+
+
+def _setup(**kwargs) -> bytes:
+    return json.dumps(_setup_tree(**kwargs)).encode()
+
+
+def test_print_method_is_a_printer_setting(backend):
+    setting, upside_down = backend.settings(None)
+    assert setting.key == "method" and setting.choices == ("printer", "transfer", "direct")
+    assert upside_down.key == "upside_down" and upside_down.value(None) is False
+    # the default keeps the printer's own setting, as before the setting existed
+    assert backend.setting(PrintOptions(), "method") == "printer"
+    assert backend.setting(PrintOptions(settings={"method": "ribbon"}), "method") == "printer"
+    assert backend.setting(PrintOptions(settings={"method": "direct"}), "method") == "direct"
+
+
+@pytest.mark.parametrize(
+    "method, speed, line",
+    [("transfer", 50, "H 50,0,T"), ("direct", 100, "H 100,0,D"), ("transfer", 30, "H 30,0,T")],
+)
+def test_job_with_a_print_method(method, speed, line):
+    """H after J, before S (as the manual's examples); heat 0 adds nothing
+    to the heat set on the printer."""
+    job = cab.build_job(Image.new("RGB", (600, 300), "white"), 12.0, 3.0, 1, method, speed)
+    _png, commands = _job_parts(job)
+    assert commands == [
+        "m m",
+        "J",
+        line,
+        "S l1;0,0,25,28,50",
+        "I:Label;0,0,0;ETIKETTO",
+        "A 1",
+    ]
+
+
+def test_job_as_set_on_the_printer_sends_no_h():
+    image = Image.new("RGB", (600, 300), "white")
+    assert cab.build_job(image, 12.0, 3.0, 1, "printer") == cab.build_job(image, 12.0, 3.0, 1)
+    _png, commands = _job_parts(cab.build_job(image, 12.0, 3.0, 1, "junk"))
+    assert not any(c.startswith("H") for c in commands)
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (_setup(), cab.Setup("direct", 50)),
+        (_setup(transfer="On", speed="125 mm/s"), cab.Setup("transfer", 125)),
+        # a printer set to German: the texts differ, the values do not
+        (_setup(transfer="Ein", options=("Aus", "Ein")), cab.Setup("transfer", 50)),
+        (_setup(speed="2 in/s"), cab.Setup("direct", None)),  # inches: not used
+        (_setup(transfer="Maybe"), cab.Setup("", 50)),  # not one of the options
+        (None, cab.Setup()),
+        (b"", cab.Setup()),
+        (b"{", cab.Setup()),
+        (b"<html>login</html>", cab.Setup()),
+        (b"[1, 2]", cab.Setup()),
+        (b'{"submenu": [{"id": "ID_PRINT_SPEED", "editor": 3}, 5]}', cab.Setup()),
+        (b'{"submenu": {"id": "x"}}', cab.Setup()),
+    ],
+)
+def test_parse_setup(data, expected):
+    assert cab.parse_setup(data) == expected
+
+
+def test_parse_setup_ignores_broken_entries():
+    tree = _setup_tree()
+    speed = tree["submenu"][0]["submenu"][1]["editor"]
+    speed["values"] = speed["values"][:2]  # the selected one has no value
+    radio = tree["submenu"][1]["submenu"][0]["editor"]
+    radio["options"] = "Off"
+    assert cab.parse_setup(json.dumps(tree).encode()) == cab.Setup()
+
+
+def test_parse_setup_of_a_tree_nested_too_deep():
+    tree: dict = {"id": "ID_TRANSFER_PRINT", "editor": _setup_tree()["submenu"][1]}
+    for _ in range(30):
+        tree = {"submenu": [tree]}
+    assert cab.parse_setup(json.dumps(tree).encode()) == cab.Setup()
+
+
+def test_query_reports_the_print_method_set_on_the_printer(backend, printer):
+    assert backend.query("printer04.local").print_method == ""  # no web interface
+    printer.device.setup = _setup()
+    assert backend.query("printer04.local").print_method == "direct"
+    printer.device.setup = _setup(transfer="On")
+    assert backend.query("printer04.local").print_method == "transfer"
+    assert printer.device.web == ["printer04.local"] * 3
+
+
+@pytest.mark.parametrize(
+    "setup, line",
+    [
+        (None, "H 50,0,T"),  # web interface off: cab's default speed
+        (_setup(speed="100 mm/s"), "H 100,0,T"),  # the printer's own speed
+        (_setup(speed="2 in/s"), "H 50,0,T"),
+    ],
+)
+def test_print_with_thermal_transfer(backend, printer, setup, line):
+    printer.device.setup = setup
+    image = backend.prepare(_label(50, 25), PrintOptions())
+    backend.print_label(image, "h", PrintOptions(settings={"method": "transfer"}))
+    _png, commands = _job_parts(printer.device.jobs[0])
+    assert commands[2:4] == [line, "S l1;0,0,25,28,50"]
+    assert printer.device.web == ["h"]
+
+
+def test_print_thermal_direct(backend, printer):
+    printer.device.setup = _setup(transfer="On", speed="75 mm/s")
+    backend.print_label(
+        Image.new("RGB", (600, 300), "white"), "h", PrintOptions(settings={"method": "direct"})
+    )
+    _png, commands = _job_parts(printer.device.jobs[0])
+    assert commands[2] == "H 75,0,D"
+
+
+def test_print_as_set_on_the_printer_asks_no_web_interface(backend, printer):
+    printer.device.setup = _setup(transfer="On")
+    backend.print_label(Image.new("RGB", (600, 300), "white"), "h", PrintOptions())
+    _png, commands = _job_parts(printer.device.jobs[0])
+    assert commands[2] == "S l1;0,0,25,28,50"
+    assert printer.device.web == []
+
+
+@pytest.mark.parametrize(
+    "error, cls, code",
+    [("F", RibbonOut, "ribbon_out"), ("R", RibbonInDirectMode, "ribbon_direct")],
+)
+def test_ribbon_errors_while_printing(backend, printer, monkeypatch, error, cls, code):
+    """Thermal transfer without a ribbon, or thermal direct with one: the
+    printer stops, the job is cancelled, the error names the problem."""
+    states = iter([b"Y-000000N", b"Y%s000001N" % error.encode()])
+    monkeypatch.setattr(FakeCab, "status", lambda self: next(states))
+    options = PrintOptions(settings={"method": "transfer"})
+    with pytest.raises(cls) as raised:
+        backend.print_label(Image.new("RGB", (600, 300), "white"), "h", options)
+    assert isinstance(raised.value, RibbonError) and raised.value.code == code
+    assert printer.device.requests[-1] == b"\x1bc"
+
+
+class _SetupHandler(http.server.BaseHTTPRequestHandler):
+    status = 200
+    body = b""
+    paths: list[str] = []
+
+    def do_GET(self):  # noqa: N802 - the name http.server calls
+        type(self).paths.append(self.path)
+        self.send_response(self.status)
+        self.send_header("Content-Length", str(len(self.body)))
+        self.end_headers()
+        self.wfile.write(self.body)
+
+    def log_message(self, *_args):
+        pass
+
+
+@pytest.fixture
+def web(monkeypatch):
+    """A web interface on 127.0.0.1 that answers with _SetupHandler.body."""
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SetupHandler)
+    monkeypatch.setattr(cab, "WEB_PORT", server.server_address[1])
+    monkeypatch.setattr(_SetupHandler, "paths", [])
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield _SetupHandler
+    server.shutdown()
+    server.server_close()
+
+
+def test_fetch_setup_reads_the_web_interface(web, monkeypatch):
+    monkeypatch.setattr(web, "body", _setup())
+    assert REAL_FETCH_SETUP("127.0.0.1") == _setup()
+    assert web.paths == ["/cgi-bin/get?cmd=1"]
+
+
+def test_fetch_setup_behind_a_password(web, monkeypatch):
+    monkeypatch.setattr(web, "status", 401)
+    monkeypatch.setattr(web, "body", b"login")
+    assert REAL_FETCH_SETUP("127.0.0.1") is None
+
+
+def test_fetch_setup_without_a_web_interface(monkeypatch):
+    with socket.socket() as unused:
+        unused.bind(("127.0.0.1", 0))
+        port = unused.getsockname()[1]
+    monkeypatch.setattr(cab, "WEB_PORT", port)  # nothing listens: refused
+    assert REAL_FETCH_SETUP("127.0.0.1") is None
+    assert REAL_FETCH_SETUP("bad\x00host") is None  # cannot be resolved
+
+
+def test_fetch_setup_not_on_usb(monkeypatch):
+    def resolve(host):
+        raise AssertionError("resolved %s" % host)
+
+    monkeypatch.setattr(mdns, "resolve_host", resolve)
+    assert REAL_FETCH_SETUP("usb://cab/EOS2%2F300?serial=1") is None
+
+
+def test_job_upside_down():
+    """O R turns the whole label by 180° (as cablabel sends it for an
+    EOS2); O directly after S, as the manual asks."""
+    image = Image.new("RGB", (480, 223), "white")
+    job = cab.build_job(image, 12.0, 4.0, 1, "transfer", 50, upside_down=True)
+    _png, commands = _job_parts(job)
+    assert commands == [
+        "m m",
+        "J",
+        "H 50,0,T",
+        "S l1;0,0,18.58,22.58,40",
+        "O R",
+        "I:Label;0,0,0;ETIKETTO",
+        "A 1",
+    ]
+
+
+@pytest.mark.parametrize("value, sent", [(True, True), (False, False), ("yes", False)])
+def test_print_upside_down(backend, printer, value, sent):
+    options = PrintOptions(settings={"upside_down": value})
+    backend.print_label(Image.new("RGB", (600, 300), "white"), "h", options)
+    _png, commands = _job_parts(printer.device.jobs[0])
+    assert ("O R" in commands) is sent
+    if sent:
+        assert commands[commands.index("O R") - 1].startswith("S l1;")

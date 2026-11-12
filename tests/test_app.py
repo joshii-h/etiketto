@@ -48,6 +48,8 @@ from etiketto.backends.base import (  # noqa: E402
     PrintOptions,
     PrintResult,
     Progress,
+    RibbonInDirectMode,
+    RibbonOut,
     UsbNotFound,
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
@@ -2023,6 +2025,53 @@ def test_cab_details_and_report(cab_window):
     assert "label every ? mm" in win.printer.description()
 
 
+def test_cab_print_method(cab_window, cab_env):
+    """Thermal transfer or direct per printer, kept in settings.json and
+    sent with the print; the printer's own setting in the details."""
+    win = cab_window
+    method = one(win.sidebar, Adw.ComboRow, title="Print method")
+    assert _items(method) == [
+        "As set on the printer",
+        "Thermal transfer (ribbon)",
+        "Thermal direct",
+    ]
+    assert _selected(method) == "As set on the printer"
+    method.set_selected(1)
+    assert Settings.load().data["printers"]["cab"]["method"] == "transfer"
+    win.print_flow.on_print()
+    win.last_dialog.emit("response", "print")
+    assert pump(lambda: not win.print_flow.busy)
+    assert cab_env.prints[0][2].settings == {"method": "transfer"}
+    upside_down = one(win.sidebar, Adw.SwitchRow, title="Print upside down")
+    assert not upside_down.get_active()
+    assert "Print method set on the printer" not in dict(win.printer.details())
+    win.printer.info.print_method = "direct"
+    assert dict(win.printer.details())["Print method set on the printer"] == "Thermal direct"
+
+
+@pytest.mark.parametrize(
+    "error, start, hint",
+    [
+        (
+            RibbonOut("ESC s YF000001N: out of ribbon"),
+            "The printer finds no ribbon.",
+            "“Thermal direct” under “Print method”",
+        ),
+        (
+            RibbonInDirectMode("ESC s YR000001N: ribbon detected in thermal direct mode"),
+            "A ribbon is loaded, but the printer prints without it",
+            "“Thermal transfer (ribbon)” under “Print method”",
+        ),
+    ],
+)
+def test_cab_ribbon_errors_name_the_print_method(cab_window, error, start, hint):
+    cab_window.print_flow.done(error)
+    dialog = cab_window.get_visible_dialog()
+    assert dialog.get_heading() == "Printing failed"
+    assert dialog.get_body().startswith(start) and hint in dialog.get_body()
+    assert dialog.get_extra_child().get_child().get_label() == error.details
+
+
 def test_cab_back_to_tape_after_a_preset(cab_window):
     win = cab_window
     one(win.sidebar, Adw.ComboRow, title="Label size").set_selected(4)  # 100 × 50 mm
@@ -2081,6 +2130,8 @@ def test_switching_back_restores_the_size(window):
         ("head_open", "The print head is open."),
         ("label_not_found", "The printer cannot find the next label."),
         ("ribbon", "There is a problem with the ribbon."),
+        ("ribbon_out", "The printer finds no ribbon. Load a ribbon and try again."),
+        ("ribbon_direct", "A ribbon is loaded, but the printer prints without it"),
         ("paused", "The printer is paused."),
     ],
 )
@@ -3753,6 +3804,9 @@ def test_serial_port_and_battery_texts():
         "The printer's battery is low – charge it or connect the power adapter."
     )
     assert texts.choice_name("transparent") == "Transparent labels"
+    assert texts.choice_name("transfer") == "Thermal transfer (ribbon)"
+    assert texts.choice_name("direct") == "Thermal direct"
+    assert texts.setting_title("method") == "Print method"
 
 
 def test_third_party_notices_and_the_about_dialog_name_the_same():

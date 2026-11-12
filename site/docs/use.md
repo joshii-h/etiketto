@@ -401,6 +401,13 @@ etiketto --version
   `--printer-defaults` takes the model's defaults for these instead (no
   outlines); the printer's address and the [[ui:Safety margin]] stay as
   set in the app.
+- `--print-method printer|transfer|direct` sets the
+  [[ui:Print method]] of a thermal printer that has it for this print
+  (as set on the printer, with a ribbon, thermal direct), also with
+  `--printer-defaults`.
+- A roll whose label distance, as the printer measured it, is not the
+  label's height plus [[ui:Gap]] gets a hint, as in the window; the label
+  is printed anyway.
 - Some printers are asked before the label is drawn, because it depends
   on what they report (the tape, the resolution); a printer that does not
   answer within 5 s (2 s for `--dry-run`) gets the label drawn without.

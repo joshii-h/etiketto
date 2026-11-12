@@ -176,8 +176,15 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 - Labels: die-cut labels with a gap, label sensor "Gap Sensor". Etiketto
   sets the sensor for each job. Continuous media and a cutter are not
   supported yet.
-- Print method (thermal direct or with ribbon), heat, speed and tear-off
-  position stay as set on the printer.
+- [[ui:Print method]]: [[ui:As set on the printer]] keeps the printer's
+  own setting. [[ui:Thermal transfer (ribbon)]] for labels printed with a
+  ribbon, [[ui:Thermal direct]] for labels that print without one. The
+  printer then prints at the speed set on it, if its web interface tells
+  it, else at 50 mm/s. [[ui:Printer details]] show the method set on the
+  printer.
+- [[ui:Print upside down]]: the label comes out turned by 180°, as
+  the manufacturer's label software prints it.
+- Heat and tear-off position stay as set on the printer.
 
 ### Problems { #cab-problems }
 
@@ -192,7 +199,11 @@ SQUIX 4 and MACH 4S, at 203, 300 or 600 dpi. Developed with an EOS2/300.
 - Next label not found: labels not threaded through the label sensor, or
   labels without gaps (continuous media is not supported yet).
 - Ribbon problem: no ribbon in thermal transfer mode, or a ribbon in thermal
-  direct mode.
+  direct mode. Load or remove the ribbon, or choose the other
+  [[ui:Print method]].
+- Labels with a ribbon print blank or smeared, the ribbon does not move:
+  the printer is set to thermal direct. Choose
+  [[ui:Thermal transfer (ribbon)]] under [[ui:Print method]].
 - Paused: resume the printer on its display.
 - Print too pale or too dark: change the heat level in the printer's setup.
 

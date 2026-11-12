@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "การแก้ไขข้อผิดพลาด",
     "How much of the code may be damaged and still be read": "โค้ดเสียหายได้มากเท่าใดแล้วยังอ่านได้",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "องค์ประกอบ %(n)d ล้ำขอบฉลากและถูกตัดออกตรงนั้น – ย้ายหรือทำให้เล็กลง",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "วิธีพิมพ์ของเครื่องพิมพ์ความร้อนที่มีการตั้งค่านี้: printer (ตามที่ตั้งไว้ในเครื่องพิมพ์), transfer (ใช้ริบบอน) หรือ direct (ความร้อนโดยตรง ไม่ใช้ริบบอน) ค่าเริ่มต้นคือวิธีที่เลือกไว้ในแอป แม้ใช้ --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: เครื่องพิมพ์รุ่นนี้ไม่มีการตั้งค่าวิธีพิมพ์: %s",
+    "Print method set on the printer": "วิธีพิมพ์ที่ตั้งไว้บนเครื่องพิมพ์",
+    "Print method": "วิธีพิมพ์",
+    "Thermal transfer (ribbon)": "ถ่ายโอนความร้อน (ริบบอน)",
+    "Thermal direct": "ความร้อนโดยตรง",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "เครื่องพิมพ์หาริบบอนไม่พบ ใส่ริบบอนแล้วลองอีกครั้ง ฉลากที่พิมพ์โดยไม่ใช้ริบบอนต้องเลือก “%(direct)s” ที่ “%(method)s”",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "ใส่ริบบอนไว้แล้ว แต่เครื่องพิมพ์พิมพ์โดยไม่ใช้ริบบอน (ความร้อนโดยตรง) สำหรับฉลากที่ต้องใช้ริบบอน ให้เลือก “%(transfer)s” ที่ “%(method)s” หรือถอดริบบอนออก",
 }

@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Korekcja błędów",
     "How much of the code may be damaged and still be read": "Jaka część kodu może być uszkodzona, a kod nadal da się odczytać",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d wystaje poza krawędź etykiety i jest tam ucinany – przesuń go lub zmniejsz",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metoda druku drukarki termicznej, która ma to ustawienie: printer (jak ustawiono w drukarce), transfer (z taśmą barwiącą) lub direct (termiczny bezpośredni, bez taśmy); domyślnie wybrana w aplikacji, także z --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: ten model drukarki nie ma ustawienia metody druku: %s",
+    "Print method set on the printer": "Metoda druku ustawiona w drukarce",
+    "Print method": "Metoda druku",
+    "Thermal transfer (ribbon)": "Termotransfer (taśma barwiąca)",
+    "Thermal direct": "Termiczny bezpośredni",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Drukarka nie znajduje taśmy barwiącej. Załóż taśmę i spróbuj ponownie. Etykiety drukowane bez taśmy wymagają opcji „%(direct)s” w „%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Taśma barwiąca jest założona, ale drukarka drukuje bez niej (termiczny bezpośredni). Dla etykiet wymagających taśmy wybierz „%(transfer)s” w „%(method)s” albo wyjmij taśmę.",
 }

@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Correção de erros",
     "How much of the code may be damaged and still be read": "Quanto do código pode estar danificado e ainda ser lido",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "O elemento %(n)d ultrapassa a borda da etiqueta e é cortado ali – mova-o ou diminua-o",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "método de impressão de uma impressora térmica que tenha essa configuração: printer (conforme configurado na impressora), transfer (com fita) ou direct (térmica direta, sem fita); por padrão o escolhido no aplicativo, também com --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: este modelo de impressora não tem configuração de método de impressão: %s",
+    "Print method set on the printer": "Método de impressão configurado na impressora",
+    "Print method": "Método de impressão",
+    "Thermal transfer (ribbon)": "Transferência térmica (fita)",
+    "Thermal direct": "Térmica direta",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "A impressora não encontra fita. Coloque uma fita e tente de novo. Etiquetas que imprimem sem fita precisam de “%(direct)s” em “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Há uma fita colocada, mas a impressora imprime sem ela (térmica direta). Para etiquetas que precisam da fita, escolha “%(transfer)s” em “%(method)s”, ou retire a fita.",
 }

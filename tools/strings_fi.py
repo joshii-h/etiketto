@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Virheenkorjaus",
     "How much of the code may be damaged and still be read": "Kuinka suuri osa koodista saa olla vahingoittunut ja silti luettavissa",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Elementti %(n)d ulottuu tarran reunan yli ja leikkautuu siinä pois – siirrä sitä tai pienennä sitä",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "lämpötulostimen tulostustapa, jos tulostimessa on tämä asetus: printer (tulostimen asetusten mukaan), transfer (värinauhalla) tai direct (suoralämpö, ilman värinauhaa); oletuksena sovelluksessa valittu, myös valitsimella --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: tässä tulostinmallissa ei ole tulostustavan asetusta: %s",
+    "Print method set on the printer": "Tulostimeen asetettu tulostustapa",
+    "Print method": "Tulostustapa",
+    "Thermal transfer (ribbon)": "Lämpösiirto (värinauha)",
+    "Thermal direct": "Suoralämpö",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Tulostin ei löydä värinauhaa. Aseta värinauha ja yritä uudelleen. Ilman värinauhaa tulostuvat tarrat tarvitsevat asetuksen ”%(direct)s” kohdassa ”%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Värinauha on asetettu, mutta tulostin tulostaa ilman sitä (suoralämpö). Valitse värinauhaa tarvitseville tarroille ”%(transfer)s” kohdassa ”%(method)s” tai poista värinauha.",
 }

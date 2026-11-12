@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Fehlerkorrektur",
     "How much of the code may be damaged and still be read": "Wie viel des Codes beschädigt sein darf und trotzdem gelesen wird",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d reicht über den Rand des Etiketts hinaus und wird dort abgeschnitten – es verschieben oder kleiner machen",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "Druckverfahren eines Thermodruckers, der diese Einstellung hat: printer (wie am Drucker eingestellt), transfer (mit Farbband) oder direct (Thermodirekt, ohne Farbband); standardmässig das in der App gewählte, auch mit --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: Dieses Druckermodell hat keine Einstellung für das Druckverfahren: %s",
+    "Print method set on the printer": "Am Drucker eingestelltes Druckverfahren",
+    "Print method": "Druckverfahren",
+    "Thermal transfer (ribbon)": "Thermotransfer (Farbband)",
+    "Thermal direct": "Thermodirekt",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Der Drucker findet kein Farbband. Legen Sie ein Farbband ein und versuchen Sie es erneut. Etiketten, die ohne Farbband drucken, brauchen „%(direct)s“ unter „%(method)s“.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Ein Farbband ist eingelegt, aber der Drucker druckt ohne (Thermodirekt). Für Etiketten, die das Farbband brauchen, wählen Sie „%(transfer)s“ unter „%(method)s“, oder nehmen Sie das Farbband heraus.",
 }

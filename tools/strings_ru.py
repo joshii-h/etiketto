@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Коррекция ошибок",
     "How much of the code may be damaged and still be read": "Какая часть кода может быть повреждена, чтобы он всё ещё читался",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Элемент %(n)d выходит за край этикетки и там обрезается – сдвиньте его или уменьшите",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "способ печати термопринтера, у которого есть эта настройка: printer (как настроено на принтере), transfer (с красящей лентой) или direct (прямая термопечать, без ленты); по умолчанию выбранный в приложении, также с --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: у этой модели принтера нет настройки способа печати: %s",
+    "Print method set on the printer": "Способ печати, заданный на принтере",
+    "Print method": "Способ печати",
+    "Thermal transfer (ribbon)": "Термотрансферная (лента)",
+    "Thermal direct": "Прямая термопечать",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Принтер не находит красящую ленту. Вставьте ленту и повторите попытку. Для этикеток, которые печатаются без ленты, выберите «%(direct)s» в разделе «%(method)s».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Красящая лента вставлена, но принтер печатает без неё (прямая термопечать). Для этикеток, которым нужна лента, выберите «%(transfer)s» в разделе «%(method)s» или выньте ленту.",
 }

@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Hibajavítás",
     "How much of the code may be damaged and still be read": "A kód mekkora része sérülhet úgy, hogy még olvasható legyen",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "A(z) %(n)d. elem túlnyúlik a címke szélén, és ott levágódik – mozgassa el vagy kicsinyítse",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "a beállítással rendelkező hőnyomtató nyomtatási módja: printer (ahogy a nyomtatón be van állítva), transfer (festékszalaggal) vagy direct (direkt termál, festékszalag nélkül); alapértelmezés szerint az alkalmazásban választott, --printer-defaults mellett is",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: ennek a nyomtatótípusnak nincs nyomtatási mód beállítása: %s",
+    "Print method set on the printer": "A nyomtatón beállított nyomtatási mód",
+    "Print method": "Nyomtatási mód",
+    "Thermal transfer (ribbon)": "Hőtranszfer (festékszalag)",
+    "Thermal direct": "Direkt termál",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "A nyomtató nem talál festékszalagot. Helyezzen be festékszalagot, és próbálja újra. A festékszalag nélkül nyomtatott címkékhez a(z) „%(method)s” beállításnál „%(direct)s” kell.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Festékszalag van behelyezve, de a nyomtató nélküle nyomtat (direkt termál). A festékszalagot igénylő címkékhez válassza a(z) „%(method)s” beállításnál ezt: „%(transfer)s”, vagy vegye ki a festékszalagot.",
 }

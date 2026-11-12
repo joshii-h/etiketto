@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "त्रुटि सुधार",
     "How much of the code may be damaged and still be read": "कोड का कितना हिस्सा खराब होने पर भी पढ़ा जा सकता है",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "तत्व %(n)d लेबल के किनारे से बाहर जाता है और वहाँ कट जाता है – इसे खिसकाएँ या छोटा करें",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "इस सेटिंग वाले थर्मल प्रिंटर की प्रिंट विधि: printer (जैसा प्रिंटर पर सेट है), transfer (रिबन के साथ) या direct (डायरेक्ट थर्मल, बिना रिबन); डिफ़ॉल्ट रूप से ऐप में चुनी गई विधि, --printer-defaults के साथ भी",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: इस प्रिंटर मॉडल में प्रिंट विधि की सेटिंग नहीं है: %s",
+    "Print method set on the printer": "प्रिंटर पर सेट प्रिंट विधि",
+    "Print method": "प्रिंट विधि",
+    "Thermal transfer (ribbon)": "थर्मल ट्रांसफ़र (रिबन)",
+    "Thermal direct": "डायरेक्ट थर्मल",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "प्रिंटर को रिबन नहीं मिल रहा। रिबन लगाएँ और फिर से कोशिश करें। बिना रिबन के छपने वाले लेबल के लिए “%(method)s” में “%(direct)s” चाहिए।",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "रिबन लगा है, पर प्रिंटर उसके बिना प्रिंट करता है (डायरेक्ट थर्मल)। रिबन की ज़रूरत वाले लेबल के लिए “%(method)s” में “%(transfer)s” चुनें, या रिबन निकाल दें।",
 }

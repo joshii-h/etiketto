@@ -22,6 +22,7 @@ from etiketto.backends import register, unregister
 from etiketto.backends.base import (
     FoundPrinter,
     PaperJam,
+    PrinterInfo,
     PrinterTimeout,
     PrintOptions,
     PrintResult,
@@ -1277,3 +1278,81 @@ def test_a_dry_run_output_stops_at_a_row_whose_code_does_not_fit(mono, tmp_path,
     assert err(capsys).startswith("etiketto: A code does not fit")
     assert sorted(p.name for p in tmp_path.glob("o-*.png")) == ["o-1.png", "o-2.png"]
     assert run("print", path, "--data", rows, "--dry-run") == cli.EXIT_OK
+
+
+# --- print method (thermal printers) ---------------------------------------------------
+
+
+@pytest.fixture
+def cab_cli(monkeypatch, mono, tmp_path):
+    """The cab backend with faked query and print; a 50 × 25 mm label for it,
+    the app's choice "thermal direct" in settings.json."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("cab")
+    printed: list = []
+    info = PrinterInfo("EOS2/300", None, None, None, "IDLE", dpi=304.8, pitch_mm=28.0)
+    monkeypatch.setattr(backend, "query", lambda host: info)
+    monkeypatch.setattr(
+        backend,
+        "print_label",
+        lambda image, host, options, progress=None: printed.append(options),
+    )
+    Settings({"printers": {"cab": {"host": "h", "method": "direct"}}}).save()
+    label = Label(printer="cab", auto_length=False, orientation="across")
+    label.set_media_size(50, 25)
+    label.elements = [TextElement(text="x")]
+    path = tmp_path / "cab.etiketto"
+    label.save(path)
+    return SimpleNamespace(path=path, printed=printed, info=info)
+
+
+@pytest.mark.parametrize(
+    "flags, settings",
+    [
+        ([], {"method": "direct"}),  # as chosen in the app
+        (["--print-method", "transfer"], {"method": "transfer"}),
+        (["--print-method", "printer"], {"method": "printer"}),
+        (["--printer-defaults"], {}),  # the default: as set on the printer
+        (["--printer-defaults", "--print-method", "transfer"], {"method": "transfer"}),
+        (["--no-query", "--print-method", "transfer"], {"method": "transfer"}),
+        (["--no-query", "--printer-defaults"], {}),
+    ],
+)
+def test_print_method_on_the_command_line(cab_cli, flags, settings):
+    assert run("print", cab_cli.path, *flags) == 0
+    (options,) = cab_cli.printed
+    assert dict(options.settings) == settings
+
+
+def test_print_method_only_for_printers_that_have_it(mono, label_file, capsys):
+    path = label_file(TextElement(text="x"))
+    assert run("print", path, "--host", "h", "--print-method", "direct") == cli.EXIT_USAGE
+    assert "has no print method setting: fake-mono" in err(capsys)
+    assert mono.prepared == []
+
+
+def test_print_method_must_be_one_of_the_choices(capsys):
+    assert cli.main(["print", "x.etiketto", "--print-method", "ribbon"]) == cli.EXIT_USAGE
+    assert "invalid choice" in err(capsys)
+
+
+def test_a_roll_with_another_label_distance_gets_a_hint(cab_cli, capsys):
+    """The label starts a new one every 28 mm (25 + 3 mm gap); the printer
+    measured 20 mm: said, as the window warns, and printed anyway."""
+    assert run("print", cab_cli.path) == 0
+    assert "measured" not in err(capsys)  # 28 mm: the same roll
+    cab_cli.info.pitch_mm = 28.9  # the sensor measures in whole mm
+    assert run("print", cab_cli.path, "--dry-run") == 0
+    assert "measured" not in err(capsys)
+    cab_cli.info.pitch_mm = 20.0
+    assert run("print", cab_cli.path) == 0
+    assert err(capsys) == (
+        "etiketto: The label is 50 × 25 mm with a gap of 3.0 mm, so a new one starts "
+        "every 28.0 mm. The printer measured a label every 20.0 mm. Check the label "
+        "size and the gap.\n"
+    )
+    assert len(cab_cli.printed) == 2
+    cab_cli.info.pitch_mm = None  # not synchronised: nothing to compare
+    assert run("print", cab_cli.path) == 0
+    assert "measured" not in err(capsys)

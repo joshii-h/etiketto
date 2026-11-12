@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Correction d’erreurs",
     "How much of the code may be damaged and still be read": "La part du code qui peut être abîmée tout en restant lisible",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "L’élément %(n)d dépasse le bord de l’étiquette et y est coupé – déplacez-le ou réduisez-le",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "mode d’impression d’une imprimante thermique qui a ce réglage : printer (comme réglé sur l’imprimante), transfer (avec ruban) ou direct (thermique direct, sans ruban) ; par défaut celui choisi dans l’application, même avec --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method : ce modèle d’imprimante n’a pas de réglage de mode d’impression : %s",
+    "Print method set on the printer": "Mode d’impression réglé sur l’imprimante",
+    "Print method": "Mode d’impression",
+    "Thermal transfer (ribbon)": "Transfert thermique (ruban)",
+    "Thermal direct": "Thermique direct",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "L’imprimante ne trouve pas de ruban. Chargez un ruban et réessayez. Les étiquettes qui s’impriment sans ruban demandent « %(direct)s » sous « %(method)s ».",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Un ruban est chargé, mais l’imprimante imprime sans lui (thermique direct). Pour les étiquettes qui ont besoin du ruban, choisissez « %(transfer)s » sous « %(method)s », ou retirez le ruban.",
 }

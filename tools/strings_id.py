@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Koreksi kesalahan",
     "How much of the code may be damaged and still be read": "Seberapa banyak kode boleh rusak dan masih terbaca",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Elemen %(n)d melewati tepi label dan terpotong di sana – pindahkan atau perkecil",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metode cetak printer termal yang memiliki pengaturan ini: printer (sesuai pengaturan printer), transfer (dengan pita) atau direct (termal langsung, tanpa pita); secara bawaan metode yang dipilih di aplikasi, juga dengan --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: model printer ini tidak memiliki pengaturan metode cetak: %s",
+    "Print method set on the printer": "Metode cetak yang diatur pada printer",
+    "Print method": "Metode cetak",
+    "Thermal transfer (ribbon)": "Transfer termal (pita)",
+    "Thermal direct": "Termal langsung",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Printer tidak menemukan pita. Pasang pita lalu coba lagi. Label yang dicetak tanpa pita memerlukan “%(direct)s” di “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Pita terpasang, tetapi printer mencetak tanpa pita (termal langsung). Untuk label yang memerlukan pita, pilih “%(transfer)s” di “%(method)s”, atau lepaskan pitanya.",
 }

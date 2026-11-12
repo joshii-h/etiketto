@@ -82,6 +82,7 @@ SETTING_TITLES = {
     "density": _("Print density"),
     "speed": _("Speed"),
     "upside_down": _("Print upside down"),
+    "method": _("Print method"),
 }
 # their values by protocol name; resolutions are shown as "203 dpi"
 CHOICE_NAMES = {
@@ -94,6 +95,14 @@ CHOICE_NAMES = {
     "tear": _("Tear off"),
     "peel": _("Peel off"),
     "cut": _("Cut off"),
+    "transfer": _("Thermal transfer (ribbon)"),
+    "direct": _("Thermal direct"),
+}
+# the print method setting and its choices, named in the ribbon errors
+_METHOD_NAMES = {
+    "method": SETTING_TITLES["method"],
+    "transfer": CHOICE_NAMES["transfer"],
+    "direct": CHOICE_NAMES["direct"],
 }
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
@@ -432,6 +441,20 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
     return text
 
 
+def other_pitch_text(label, measured_mm: float, unit: Unit) -> str:
+    """The roll in the printer has another label distance than the label."""
+    return _(
+        "The label is %(size)s with a gap of %(gap)s, so a new one starts every "
+        "%(pitch)s. The printer measured a label every %(measured)s. Check the "
+        "label size and the gap."
+    ) % {
+        "size": isolate(unit.size(*label.media_size())),
+        "gap": isolate(unit.format(label.gap_mm)),
+        "pitch": isolate(unit.format(label.pitch_mm())),
+        "measured": isolate(unit.format(measured_mm)),
+    }
+
+
 def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
     """The text for a PrinterError code (also PrinterInfo.error); max_mm
     is the limit of "too_long" and "too_wide"."""
@@ -470,6 +493,21 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "There is a problem with the ribbon. Check that it is inserted correctly and "
             "matches the print method set on the printer."
         ),
+        # translators: %(direct)s is the choice “Thermal direct”, %(method)s the
+        # setting “Print method”
+        "ribbon_out": _(
+            "The printer finds no ribbon. Load a ribbon and try again. Labels that print "
+            "without one need “%(direct)s” under “%(method)s”."
+        )
+        % _METHOD_NAMES,
+        # translators: %(transfer)s is the choice “Thermal transfer (ribbon)”,
+        # %(method)s the setting “Print method”
+        "ribbon_direct": _(
+            "A ribbon is loaded, but the printer prints without it (thermal direct). For "
+            "labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or "
+            "remove the ribbon."
+        )
+        % _METHOD_NAMES,
         "paused": _("The printer is paused. Resume it on its display and try again."),
         "out_of_paper": _("The printer is out of paper. Load paper and try again."),
         "media_jam": _(

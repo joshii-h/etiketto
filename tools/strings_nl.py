@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Foutcorrectie",
     "How much of the code may be damaged and still be read": "Hoeveel van de code beschadigd mag zijn en toch gelezen wordt",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d steekt buiten de rand van het etiket en wordt daar afgesneden – verplaats het of maak het kleiner",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "printmethode van een thermische printer die deze instelling heeft: printer (zoals ingesteld op de printer), transfer (met lint) of direct (direct thermisch, zonder lint); standaard de in de app gekozen methode, ook met --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: dit printermodel heeft geen instelling voor de printmethode: %s",
+    "Print method set on the printer": "Op de printer ingestelde printmethode",
+    "Print method": "Printmethode",
+    "Thermal transfer (ribbon)": "Thermisch transfer (lint)",
+    "Thermal direct": "Direct thermisch",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "De printer vindt geen lint. Plaats een lint en probeer het opnieuw. Etiketten die zonder lint printen, hebben „%(direct)s” nodig onder „%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Er is een lint geplaatst, maar de printer print zonder (direct thermisch). Kies voor etiketten die het lint nodig hebben „%(transfer)s” onder „%(method)s”, of verwijder het lint.",
 }

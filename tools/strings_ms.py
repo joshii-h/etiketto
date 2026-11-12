@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Pembetulan ralat",
     "How much of the code may be damaged and still be read": "Berapa banyak kod boleh rosak dan masih boleh dibaca",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Elemen %(n)d melepasi tepi label dan terpotong di situ – alihkannya atau kecilkannya",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "kaedah cetakan pencetak terma yang mempunyai tetapan ini: printer (seperti ditetapkan pada pencetak), transfer (dengan reben) atau direct (terma terus, tanpa reben); secara lalai kaedah yang dipilih dalam aplikasi, juga dengan --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: model pencetak ini tiada tetapan kaedah cetakan: %s",
+    "Print method set on the printer": "Kaedah cetakan yang ditetapkan pada pencetak",
+    "Print method": "Kaedah cetakan",
+    "Thermal transfer (ribbon)": "Pindahan terma (reben)",
+    "Thermal direct": "Terma terus",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Pencetak tidak menemui reben. Masukkan reben dan cuba lagi. Label yang dicetak tanpa reben memerlukan “%(direct)s” di bawah “%(method)s”.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Reben dimasukkan, tetapi pencetak mencetak tanpanya (terma terus). Untuk label yang memerlukan reben, pilih “%(transfer)s” di bawah “%(method)s”, atau keluarkan reben.",
 }

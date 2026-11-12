@@ -668,4 +668,12 @@ TRANSLATIONS = {
     "Error correction": "Veaparandus",
     "How much of the code may be damaged and still be read": "Kui suur osa koodist võib olla kahjustatud ja ikka loetav",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d ulatub üle sildi serva ja lõigatakse seal ära – nihuta seda või muuda see väiksemaks",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "termoprinteri prindimeetod, kui printeril on see seadistus: printer (nagu printeris seadistatud), transfer (värvilindiga) või direct (otsetermo, ilma värvilindita); vaikimisi rakenduses valitud meetod, ka koos --printer-defaults",
+    "--print-method: this printer model has no print method setting: %s": "--print-method: sellel printerimudelil pole prindimeetodi seadistust: %s",
+    "Print method set on the printer": "Printeris seatud prindimeetod",
+    "Print method": "Prindimeetod",
+    "Thermal transfer (ribbon)": "Termosiire (värvilint)",
+    "Thermal direct": "Otsetermo",
+    "The printer finds no ribbon. Load a ribbon and try again. Labels that print without one need “%(direct)s” under “%(method)s”.": "Printer ei leia värvilinti. Paigalda värvilint ja proovi uuesti. Ilma värvilindita prinditavad sildid vajavad jaotises „%(method)s“ valikut „%(direct)s“.",
+    "A ribbon is loaded, but the printer prints without it (thermal direct). For labels that need the ribbon choose “%(transfer)s” under “%(method)s”, or remove the ribbon.": "Värvilint on paigaldatud, kuid printer prindib ilma selleta (otsetermo). Värvilinti vajavate siltide jaoks vali jaotises „%(method)s“ valik „%(transfer)s“ või eemalda värvilint.",
 }
