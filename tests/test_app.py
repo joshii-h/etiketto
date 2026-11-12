@@ -362,8 +362,20 @@ def test_text_element_widgets(window):
 def test_code_element_widgets(window):
     window.add_element(CodeElement(data="x"))
     element = window.label.elements[1]
-    one(window.sidebar, Adw.ComboRow, title="Type").set_selected(1)
+    kind = one(window.sidebar, Adw.ComboRow, title="Type")
+    assert kind.get_subtitle() == "Links, text, Wi-Fi access; phones read it"
+    keys = [key for key, _name in texts.SYMBOLOGIES]
+    kind.set_selected(keys.index("gs1_128"))
+    assert element.symbology == "gs1_128"
+    assert kind.get_subtitle().startswith("Application identifiers in brackets")
+    kind.set_selected(keys.index("code128"))
     assert element.symbology == "code128"
+    assert kind.get_subtitle() == "Latin letters, digits and punctuation"
+    kind.activate()  # the list opens with a heading above each group
+    pump()
+    labels = find(kind, Gtk.Label)
+    headings = {label.get_label() for label in labels if label.has_css_class("heading")}
+    assert {"2D codes", "Linear barcodes", "GS1"} <= headings
     one(window.sidebar, Adw.EntryRow, title="Content (link, text, number)").set_text("ABC")
     assert element.data == "ABC"
     colour_row = one(window.sidebar, Adw.ActionRow, title="Colour")
@@ -1282,6 +1294,27 @@ def test_warning_texts():
         "The background image cannot be read"
     )
     assert texts.warning_text(RenderWarning("from_the_future")) == "from_the_future"
+    gs1 = RenderWarning("gs1_check", {"n": 1, "ai": "01"})
+    assert texts.warning_text(gs1) == (
+        "Element 1: the check digit of application identifier (01) is wrong"
+    )
+    code39 = texts.warning_text(RenderWarning("code39_charset", {"n": 3}))
+    assert code39.endswith("spaces and - . $ / + %")  # %% in the message
+
+
+def test_every_code_problem_has_a_text_and_every_type_help():
+    from etiketto import codes, model
+    from etiketto.render import RenderWarning
+
+    keys = {key for _length, key in codes.DIGITS.values()}
+    keys |= {key for _chars, key in codes.CHARSETS.values()}
+    keys |= {"code_empty", "code_check", "ean13_check", "gs1_syntax", "gs1_value"}
+    keys |= {"gs1_check", "code_too_long", "code_invalid", "code_unavailable"}
+    keys |= set(codes.GS1_ERRORS.values())
+    for key in keys:
+        assert texts.warning_text(RenderWarning(key, {"n": 1, "ai": "10"})) != key
+    assert set(texts.SYMBOLOGY_HELP) == {key for key, _name in texts.SYMBOLOGIES}
+    assert sorted(key for key, _name in texts.SYMBOLOGIES) == sorted(model.SYMBOLOGIES)
 
 
 @pytest.mark.parametrize(

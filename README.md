@@ -64,8 +64,12 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Text with any installed font, bold/italic, colour, multiple lines, size
   fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
-- QR codes, Code 128 and EAN-13 barcodes, every module a whole number of
-  printer dots, pure black and white, never resampled on printers with
+- Codes: QR code, Data Matrix, PDF417, Aztec; Code 128, Code 39, Code 93,
+  EAN-13, EAN-8, UPC-A, UPC-E, ITF-14 (with bearer bars); GS1-128 and GS1
+  DataMatrix with the application identifiers checked (check digits, dates,
+  lengths) and in brackets in the text below the bars
+- Every module of a code a whole number of printer dots, with the quiet
+  zone its standard asks for, pure black and white, never resampled on printers with
   square dots (except on a colour page too large to send without loss,
   over 8 MB: then JPEG); the VC-500W prints its vivid and colour modes at
   another number of lines per inch along the tape, so there the label is
@@ -180,6 +184,15 @@ written anew; no code of theirs is included.
 Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
+
+Most code types are encoded by [Zint](https://zint.org.uk) (libzint,
+Copyright (C) 2009-2025 Robin Stuart and contributors, BSD-3-Clause) through
+[zint-bindings](https://github.com/bindreams/zint-bindings) (Anna Zhukova,
+Apache-2.0); Etiketto takes Zint's modules and draws them itself. The
+Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Etiketto/zint/LICENSE`.
+QR codes come from [segno](https://github.com/heuer/segno) (BSD-3-Clause),
+Code 128 and EAN-13 from
+[python-barcode](https://github.com/WhyNotHugo/python-barcode) (MIT).
 
 The label sheet templates come from the template database of
 [gLabels](https://github.com/j-evins/glabels-qt) by Jaye Evins, MIT license,

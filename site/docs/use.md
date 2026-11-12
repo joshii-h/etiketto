@@ -11,7 +11,29 @@ Elements are placed one after another along the label. Order them with
 - **Text**: any installed font, colour, several lines. [[ui:Size]] 0 fills
   the label height, otherwise fixed in pt.
 - **Image**: photos and graphics; drag and drop works too.
-- **Code**: QR code, Code 128 or EAN-13.
+- **Code**: [[ui:Type]] offers 2D codes (QR code, Data Matrix, PDF417,
+  Aztec), linear barcodes (Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A,
+  UPC-E, ITF-14) and GS1 codes (GS1-128, GS1 DataMatrix). Below the type it
+  says what the type is for and what it accepts.
+- EAN, UPC and ITF-14: enter the digits without the check digit, it is
+  added; with it, it is checked.
+- GS1-128 and GS1 DataMatrix: application identifiers in brackets, each
+  followed by its value, e.g. `(01)09501101530003(17)261231(10)AB12`.
+  Etiketto checks identifiers, lengths, dates and check digits and says
+  which identifier is wrong. GS1-128 shows the identifiers in brackets
+  below the bars.
+- A GS1 value with round brackets in it: write the identifiers in square
+  brackets, e.g. `[01]09501101530003[21]A(B)C`.
+- ITF-14 and GS1-128 on shipping cartons: GS1 asks for modules of at least
+  0.495 mm. On narrow labels they come out narrower: fine for your own
+  scanners, too small for carton labels read in logistics.
+- Code 39: a `$`, `/`, `+` or `%` before a capital letter is read as
+  another character by scanners set to Full ASCII; Etiketto warns.
+- Content a code type cannot take is not changed silently: the element is
+  crossed out and a warning says why.
+- Labels with a code type other than QR code, Code 128 and EAN-13 do not
+  open in earlier versions of Etiketto: they say the label needs a newer
+  version.
 - Codes print sharp on every printer: each bar and square is a whole
   number of printer dots, as close to the designed width as the element's
   space allows, with the blank margin a scanner needs. The code may come
@@ -19,6 +41,9 @@ Elements are placed one after another along the label. Order them with
 - A code whose bars are only one printer dot wide, or without room for its
   blank margin, may not scan: Etiketto warns before printing, make the
   code larger. A code that does not fit at all is not printed.
+- QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now
+  marked as UTF-8, so scanners read them correctly. Labels made with
+  earlier versions print such a QR code with a slightly different pattern.
 - Labels made with earlier versions: QR codes come out up to about a
   third smaller (their blank margin is now inside the element), barcodes
   slightly wider.

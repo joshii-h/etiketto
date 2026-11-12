@@ -18,6 +18,8 @@ from typing import NamedTuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
+from etiketto import codes
+from etiketto.codes import CodeError
 from etiketto.model import CodeElement, Element, ImageElement, Label, TextElement
 
 # Resolution of the vivid print mode (labelprinter: 317 lpi)
@@ -32,22 +34,14 @@ DEFAULT_SAFE_MM = 1.5
 
 class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
-    translated message (keys: code_empty, ean13_digits, ean13_check,
-    code128_charset, image_unreadable, element_failed, no_room,
-    fixed_too_short, background_unreadable, code_thin, code_quiet,
-    code_too_big)."""
+    translated message (keys: image_unreadable, element_failed, no_room,
+    fixed_too_short, background_unreadable; codes that cannot be encoded:
+    see etiketto.codes.CodeError; codes that may not scan or do not fit:
+    code_thin, code_quiet, code_too_big)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
     params: Mapping[str, object] = MappingProxyType({})
-
-
-class CodeError(ValueError):
-    """The content cannot be encoded in the chosen symbology."""
-
-    def __init__(self, key: str):
-        super().__init__(key)
-        self.key = key
 
 
 @dataclass
@@ -166,48 +160,45 @@ def render_image(element: ImageElement, height: int) -> Image.Image:
     return _scaled(element.data, height).copy()
 
 
-def _ean13_ok(data: str) -> bool:
-    digits = [int(c) for c in data[:12]]
-    check = (10 - sum(d * (3 if i % 2 else 1) for i, d in enumerate(digits)) % 10) % 10
-    return int(data[12]) == check
-
-
-# what Code 128 (sets A and B) can encode: printable ASCII
-CODE128_CHARS = frozenset(map(chr, range(32, 127)))
-
-
 def check_code(element: CodeElement) -> None:
-    """Raise CodeError if the content cannot be encoded (python-barcode would
+    """Raise CodeError if the content cannot be encoded (the libraries would
     silently drop characters or replace a wrong check digit)."""
-    data = element.data
-    if not data:
-        raise CodeError("code_empty")
-    if element.symbology == "ean13":
-        if not data.isascii() or not data.isdigit() or len(data) not in (12, 13):
-            raise CodeError("ean13_digits")
-        if len(data) == 13 and not _ean13_ok(data):
-            raise CodeError("ean13_check")
-    elif element.symbology == "code128" and not CODE128_CHARS.issuperset(data):
-        raise CodeError("code128_charset")
+    codes.check(element)
 
 
-# A code's design, in mm at its designed size; the element's height scales
-# all of it (and so gives its width). Each module is then drawn a whole
-# number of device pixels wide (see _module): a printer gets every bar and
-# space exactly, no resampling ever touches a code. The quiet zone the
-# symbology asks for is part of the element.
+# A barcode's design, in mm at its designed size; the element's height
+# scales all of it (and so gives its width). Each module is then drawn a
+# whole number of device pixels wide (see _module): a printer gets every bar
+# and space exactly, no resampling ever touches a code. The quiet zone the
+# symbology asks for (codes.SPECS) is part of the element.
 BAR_MODULE_MM = 0.3  # narrowest bar or space
 BAR_TOP_MM = 1.0  # above the bars
 BAR_HEIGHT_MM = 10.0
 BAR_TEXT_GAP_MM = 0.3  # between the bars and the human-readable text (its ink)
 BAR_TEXT_PT = 8.0
 BAR_TOTAL_MM = 16.3  # the whole element: the text below the bars, then space
-EAN_GUARD_MODULES = 5  # EAN-13 guard bars reach this much below the others
-# quiet zones in modules (left, right): ISO/IEC 15417 (Code 128), ISO/IEC
-# 15420 (EAN-13), ISO/IEC 18004 (QR code)
-QUIET = {"code128": (10, 10), "ean13": (11, 7), "qr": (4, 4)}
-EAN_GUARDS = ((0, 3), (45, 50), (92, 95))  # start, centre and end guard: modules
+EAN_GUARD_MODULES = 5  # EAN/UPC guard bars reach this much below the others
+# quiet zones in modules (left, right; 2D codes on every side)
+QUIET = {symbology: spec.quiet for symbology, spec in codes.SPECS.items()}
+# EAN/UPC (GS1 General Specifications): the guard bars (modules, longer than
+# the others; UPC-A: with the first and last digit's bars) and where the
+# digits go: under the modules (first, after last), or "left"/"right" of the
+# bars, in the quiet zone
+EAN_LAYOUTS = {
+    "ean13": (
+        ((0, 3), (45, 50), (92, 95)),
+        ((0, 1, "left"), (1, 7, (3, 45)), (7, 13, (50, 92))),
+    ),
+    "ean8": (((0, 3), (31, 36), (64, 67)), ((0, 4, (3, 31)), (4, 8, (36, 64)))),
+    "upca": (
+        ((0, 10), (45, 50), (85, 95)),
+        ((0, 1, "left"), (1, 6, (10, 45)), (6, 11, (50, 85)), (11, 12, "right")),
+    ),
+    "upce": (((0, 3), (45, 51)), ((0, 1, "left"), (1, 7, (3, 45)), (7, 8, "right"))),
+}
+EAN_GUARDS = EAN_LAYOUTS["ean13"][0]
 THIN_MODULE = 2  # pixels: a code with narrower modules may not scan (warning code_thin)
+PROBLEMS = ("code_too_big", "code_quiet", "code_thin")  # in this order, each once
 
 
 @dataclass(frozen=True)
@@ -226,15 +217,21 @@ def _module(designed: float, modules: int, quiet: tuple[int, int], box: int) -> 
     fit in box pixels. The module: the designed width (pixels) rounded to
     the nearest if the code and its quiet zone fit in the box with it, else
     the widest whole module with which they fit (box // all modules), at
-    least 1. The start (the first module, in pixels): the code and its
-    quiet zone centred in the box; if the quiet zone does not fit, the code
-    alone centred; if not even that fits, 0 (the rest is cut off).
-    Problems: code_too_big (not even 1-pixel modules fit), code_quiet (they
-    fit, their quiet zone does not), code_thin (1-pixel modules)."""
+    least 1. Where it starts and what is wrong: see _fit_at()."""
     total = modules + sum(quiet)
     module = max(1, round(designed))
     if module * total > box:
         module = max(1, box // total)
+    return _fit_at(module, modules, quiet, box)
+
+
+def _fit_at(module: int, modules: int, quiet: tuple[int, int], box: int) -> _Fit:
+    """The start (the first module, in pixels): the code and its quiet zone
+    centred in the box; if the quiet zone does not fit, the code alone
+    centred; if not even that fits, 0 (the rest is cut off).
+    Problems: code_too_big (not even the modules fit), code_quiet (they
+    fit, their quiet zone does not), code_thin (1-pixel modules)."""
+    total = modules + sum(quiet)
     problems = []
     if module * modules > box:
         problems.append("code_too_big")
@@ -247,6 +244,13 @@ def _module(designed: float, modules: int, quiet: tuple[int, int], box: int) -> 
     else:
         start = max(0, (box - module * modules) // 2)
     return _Fit(module, start, tuple(problems))
+
+
+def _problems(*fits: _Fit) -> tuple[str, ...]:
+    found = {problem for fit in fits for problem in fit.problems}
+    if "code_too_big" in found:
+        found.discard("code_quiet")  # it does not fit at all: that says it
+    return tuple(problem for problem in PROBLEMS if problem in found)
 
 
 def code_problems(part: Image.Image) -> tuple[str, ...]:
@@ -265,22 +269,36 @@ def _dark(element: CodeElement, mask: Image.Image, fit: _Fit) -> Image.Image:
     return img
 
 
-def _qr(element: CodeElement, box: int) -> Image.Image:
-    """Square modules of a whole number of pixels with a quiet zone of four
-    modules, centred in box x box pixels. Never a Micro QR code (most
-    phones cannot read those)."""
-    import segno
-
-    matrix = segno.make(element.data, error="m", micro=False).matrix
-    count = len(matrix)
-    fit = _module(box / (count + sum(QUIET["qr"])), count, QUIET["qr"], box)
-    side = count * fit.module
-    modules = Image.frombytes("L", (count, count), b"".join(bytes(row) for row in matrix))
-    code = modules.point(lambda v: 255 if v else 0).resize((side, side), Image.Resampling.NEAREST)
-    size = max(box, side)
-    mask = Image.new("L", (size, size), 0)
-    mask.paste(code, (fit.start, fit.start))
-    return _dark(element, mask, fit)
+def _matrix(
+    element: CodeElement, symbol: codes.Symbol, spec: codes.Spec, height: int, width: int | None
+) -> Image.Image:
+    """A 2D code: square modules of a whole number of pixels with their
+    quiet zone on every side, centred. A square code (QR, Data Matrix,
+    Aztec) in height x height pixels (or width x width, if less); PDF417
+    height pixels high, as wide as its modules (or width pixels)."""
+    quiet = (spec.quiet[0], spec.quiet[0])
+    tall, wide = len(symbol.rows) * spec.row_modules, symbol.width
+    if spec.layout == "matrix":
+        height = width = height if width is None else min(height, width)
+    module = _module(height / (tall + sum(quiet)), tall, quiet, height).module
+    if width is None:
+        width = (wide + sum(quiet)) * module
+    else:
+        module = min(module, _module(width / (wide + sum(quiet)), wide, quiet, width).module)
+    across, down = _fit_at(module, wide, quiet, width), _fit_at(module, tall, quiet, height)
+    mask = Image.new(
+        "L",
+        (max(width, across.start + wide * module), max(height, down.start + tall * module)),
+        0,
+    )
+    draw = ImageDraw.Draw(mask)
+    row_px = spec.row_modules * module
+    for index, row in enumerate(symbol.rows):
+        top = down.start + index * row_px
+        for start, end in _runs(row):
+            x0, x1 = across.start + start * module, across.start + end * module
+            draw.rectangle((x0, top, x1 - 1, top + row_px - 1), 255)
+    return _dark(element, mask, _Fit(module, across.start, _problems(across, down)))
 
 
 def _ink(text: str, size_px: float) -> Image.Image | None:
@@ -303,14 +321,23 @@ def _text_in(text: str, size_px: float, width: int) -> Image.Image | None:
     return ink
 
 
-def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Image:
+def _linear_pattern(symbol: codes.Symbol, spec: codes.Spec) -> tuple[str, tuple[int, int]]:
+    """The modules to draw in a row and the quiet zone outside them. ITF-14:
+    its quiet zones lie inside the bearer bars, so bearers and quiet zones
+    are part of the drawn modules."""
+    pattern = symbol.rows[0]
+    if spec.layout != "itf14":
+        return pattern, spec.quiet
+    bearer, (left, right) = "1" * codes.ITF14_BEARER, spec.quiet
+    return bearer + "0" * left + pattern + "0" * right + bearer, (0, 0)
+
+
+def _barcode(
+    element: CodeElement, symbol: codes.Symbol, spec: codes.Spec, height: int, width: int | None
+) -> Image.Image:
     """Bars of whole-pixel modules with their quiet zones, centred in the
     element, the text below them."""
-    import barcode
-
-    code = barcode.get_barcode_class(element.symbology)(element.data)
-    pattern = "".join(code.build())
-    quiet = QUIET[element.symbology]
+    pattern, quiet = _linear_pattern(symbol, spec)
     designed_modules = sum(quiet) + len(pattern)
     scale = height / BAR_TOTAL_MM  # pixels per designed mm
     if width is None:  # as wide as designed, and as the code at 1-pixel modules
@@ -321,31 +348,40 @@ def _barcode(element: CodeElement, height: int, width: int | None) -> Image.Imag
     bars_h = max(1, round(BAR_HEIGHT_MM * scale))
     mask = Image.new("L", (max(width, left + module * len(pattern)), height), 0)
     draw = ImageDraw.Draw(mask)
-    guards = element.symbology == "ean13"
+    guards = EAN_LAYOUTS[spec.layout][0] if spec.layout in EAN_LAYOUTS else ()
     for start, end in _runs(pattern):
-        long = guards and any(a <= start < b for a, b in EAN_GUARDS)
+        long = any(a <= start < b for a, b in guards)
         bottom = top + bars_h + (EAN_GUARD_MODULES * module if long else 0)
         draw.rectangle((left + start * module, top, left + end * module - 1, bottom - 1), 255)
+    if spec.layout == "itf14":  # the bearer bars above and below
+        thick = codes.ITF14_BEARER * module
+        right = left + len(pattern) * module - 1
+        draw.rectangle((left, top, right, top + thick - 1), 255)
+        draw.rectangle((left, top + bars_h - thick, right, top + bars_h - 1), 255)
     y = top + bars_h + round(BAR_TEXT_GAP_MM * scale)
     size = BAR_TEXT_PT / 72 * 25.4 * scale
-    if guards:
-        _ean_text(mask, code.get_fullcode(), size, left, module, y)
+    if spec.layout in EAN_LAYOUTS:
+        _ean_text(mask, symbol.text, spec, size, (left, module, len(pattern)), y)
     else:
-        text = _text_in(code.get_fullcode(), size, mask.width)
+        text = _text_in(symbol.text, size, mask.width)
         if text is not None:
             _paste_text(mask, text, left + (module * len(pattern) - text.width) // 2, y)
     return _dark(element, mask, fit)
 
 
-def _ean_text(mask: Image.Image, digits: str, size: float, left: int, module: int, y: int):
-    """EAN-13's digits as the standard places them: the first left of the
-    bars, then six under each half, between the guard bars."""
-    places = (
-        (digits[0], None, (QUIET["ean13"][0] - 1) * module),
-        (digits[1:7], (3, 45), 40 * module),
-        (digits[7:], (50, 92), 40 * module),
-    )
-    # one size for all three: as designed, or smaller if one would not fit
+def _ean_text(mask: Image.Image, digits: str, spec: codes.Spec, size: float, bars, y: int):
+    """EAN/UPC digits as the GS1 specification places them: between the
+    guard bars, the first (and UPC's last) in the quiet zone beside them.
+    bars: (the first module's pixel, the module, the number of modules)."""
+    left, module, count = bars
+    places: list[tuple[str, str | tuple[int, int], int]] = []
+    for first, end, place in EAN_LAYOUTS[spec.layout][1]:
+        if isinstance(place, str):  # beside the bars, in the quiet zone
+            quiet = spec.quiet[0 if place == "left" else 1]
+            places.append((digits[first:end], place, (quiet - 1) * module))
+        else:
+            places.append((digits[first:end], place, (place[1] - place[0] - 2) * module))
+    # one size for all: as designed, or smaller if one would not fit
     for text_, _place, room in places:
         ink = _ink(text_, size)
         if ink is not None and ink.width > room:
@@ -354,11 +390,13 @@ def _ean_text(mask: Image.Image, digits: str, size: float, left: int, module: in
         ink = _ink(text_, size)
         if ink is None:
             continue
-        if place is None:  # the first digit: left of the bars
-            _paste_text(mask, ink, left - module - ink.width, y)
+        if place == "left":
+            x = left - module - ink.width
+        elif isinstance(place, str):
+            x = left + (count + 1) * module
         else:
-            middle = left + (place[0] + place[1]) * module // 2
-            _paste_text(mask, ink, middle - ink.width // 2, y)
+            x = left + (place[0] + place[1]) * module // 2 - ink.width // 2
+        _paste_text(mask, ink, x, y)
 
 
 def _paste_text(mask: Image.Image, text: Image.Image, x: int, y: int) -> None:
@@ -382,14 +420,18 @@ def _runs(pattern: str) -> list[tuple[int, int]]:
 
 def render_code(element: CodeElement, height: int, width: int | None = None) -> Image.Image:
     """The code in its colour on transparent, 1 bit, each module a whole
-    number of pixels, the quiet zone inside: a QR code height pixels square
-    (or as wide as width, if less), a barcode height pixels high and as
-    wide as its design (or width pixels). What is wrong with it:
-    code_problems()."""
-    check_code(element)
-    if element.symbology == "qr":
-        return _qr(element, height if width is None else min(height, width))
-    return _barcode(element, height, width)
+    number of pixels, the quiet zone inside: a square 2D code height pixels
+    square (or as wide as width, if less), a barcode or PDF417 height pixels
+    high and as wide as its design (or width pixels). What is wrong with
+    it: code_problems()."""
+    symbol = codes.encode(element)
+    spec = codes.SPECS[element.symbology]
+    if spec.layout in ("matrix", "stacked"):
+        img = _matrix(element, symbol, spec, height, width)
+    else:
+        img = _barcode(element, symbol, spec, height, width)
+    img.code_problems += codes.notes(element)  # type: ignore[attr-defined]
+    return img
 
 
 def render_element(element: Element, height: int, dpi: float) -> Image.Image:
@@ -445,7 +487,7 @@ def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings
 
 def _element_warning(element: Element, index: int, error: Exception) -> RenderWarning:
     if isinstance(error, CodeError):
-        return RenderWarning(error.key, {"n": index})
+        return RenderWarning(error.key, {"n": index, **error.params})
     if isinstance(element, ImageElement):
         return RenderWarning("image_unreadable", {"n": index})
     return RenderWarning("element_failed", {"n": index})
