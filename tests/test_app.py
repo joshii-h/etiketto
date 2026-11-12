@@ -3884,3 +3884,21 @@ def test_the_preview_follows_the_print_area_the_printer_reports(
     assert pump(lambda: win.rendered_geometry != before)
     assert win.rendered_geometry[0] == before[0]  # the same resolution
     assert win.rendered_geometry[1].tape_px == 50
+
+
+def test_the_preview_renders_in_a_thread_and_shows_only_the_latest(window):
+    """render_preview() returns at once; the result shows when it is done,
+    an older render that ends later is dropped."""
+    window.label.elements[0].text = "first"
+    window.render_preview()
+    first = window._render_generation
+    window.label.elements[0].text = "second, much longer than the first one"
+    window.render_preview()
+    assert window._render_generation == first + 1
+    expected = window.render_image()[0].image.size  # what the current label gives
+    assert pump(lambda: window.rendered is not None and window.rendered.image.size == expected)
+    pump(timeout=0.3)  # the first render, done later or earlier, changes nothing
+    assert window.rendered.image.size == expected
+    stale = window.rendered
+    window._show_render(first, (None, None), None)  # an older one, late: ignored
+    assert window.rendered is stale

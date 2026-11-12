@@ -436,7 +436,7 @@ def render_now(win) -> None:
     if win._render_source:
         GLib.source_remove(win._render_source)
         win._render_source = 0
-    win.render_preview()
+    win.render_preview(wait=True)
 
 
 def toast_titles(win) -> list[str]:

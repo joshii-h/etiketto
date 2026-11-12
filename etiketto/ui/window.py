@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import threading
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -72,6 +74,7 @@ class Window(Adw.ApplicationWindow):
         self.expand_index = -1
         self.last_dialog = None
         self._render_source = 0
+        self._render_generation = 0  # a render shows only if no newer one started
         self._render_error: str | None = None
         self._groups: list[Gtk.Widget] = []
         # random variables ({=uuid}, {=id}) keep their preview value while editing
@@ -469,20 +472,30 @@ class Window(Adw.ApplicationWindow):
         """The label rendered for the current printer model and safety margin,
         at the resolution it is printed at (codes and thin lines differ),
         and the image of it as the printer would print it (preview, export)."""
+        return self._render_work()()
+
+    def _render_work(self) -> Callable[[], tuple[Rendered, Image.Image]]:
+        """What a render needs, taken from the window now (a copy of the
+        label filled in, the options, the sheet), and a function that
+        renders it without touching the window: it may run in a thread."""
         backend = self.backend
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
         options = self.render_options()
         self.rendered_geometry = self.render_geometry()
         self.rendered_dpi = backend.render_dpi(label.tape_mm, options, PREVIEW_MAX_DPI)
-        rendered = backend.render_label(
-            label, options, self.printer_settings.safe_mm, PREVIEW_MAX_DPI, bleed=False
-        )
-        rendered.warnings[:0] = warnings
-        image = backend.preview(self._on_tape(rendered.image, label), self.print_flow.mode)
-        sheet = self.sheet
-        if sheet and self.label.sheet:  # round labels and CDs: their shape
-            image = clip_preview(image, sheet, self.label.sheet.rotated)
-        return rendered, image
+        safe_mm, mode, sheet = self.printer_settings.safe_mm, self.print_flow.mode, self.sheet
+        choice = self.label.sheet
+        tape = round(label.tape_mm / 25.4 * self.rendered_dpi)
+
+        def work() -> tuple[Rendered, Image.Image]:
+            rendered = backend.render_label(label, options, safe_mm, PREVIEW_MAX_DPI, bleed=False)
+            rendered.warnings[:0] = warnings
+            image = backend.preview(self._on_tape(rendered.image, label, tape), mode)
+            if sheet and choice:  # round labels and CDs: their shape
+                image = clip_preview(image, sheet, choice.rotated)
+            return rendered, image
+
+        return work
 
     def render_geometry(self) -> tuple:
         """What a render for the next print depends on besides the label:
@@ -503,13 +516,13 @@ class Window(Adw.ApplicationWindow):
         rendered.warnings[:0] = warnings
         return rendered
 
-    def _on_tape(self, image: Image.Image, label: Label) -> Image.Image:
+    def _on_tape(self, image: Image.Image, label: Label, tape: int) -> Image.Image:
         """Endless tape: the render covers only what the head prints (a
         P-touch's or QL's printable width); preview and export show the
-        whole tape, the strip on the label's background in its middle."""
+        whole tape (`tape` pixels), the strip on the label's background in
+        its middle."""
         if not self.backend.capabilities.continuous:
             return image
-        tape = round(label.tape_mm / 25.4 * self.rendered_dpi) if self.rendered_dpi else 0
         if image.height >= tape:
             return image
         whole = Image.new("RGB", (image.width, tape), _color_of(label.background))
@@ -530,13 +543,42 @@ class Window(Adw.ApplicationWindow):
             GLib.source_remove(self._render_source)
         self._render_source = GLib.timeout_add(120, self.render_preview)
 
-    def render_preview(self) -> bool:
+    def render_preview(self, wait: bool = False) -> bool:
+        """Render the preview in a thread (a large label at 600 dpi takes a
+        while; the window stays responsive), shown when it is done unless a
+        newer render was started meanwhile; `wait`: here and now."""
         self._render_source = 0
+        self._render_generation += 1
+        generation = self._render_generation
         try:
-            self.rendered, image = self.render_image()
+            work = self._render_work()
         except Exception as e:  # noqa: BLE001 - keep the app usable, offer a report
             self._render_failed(e)
             return False
+
+        def run() -> tuple:
+            try:
+                return work(), None
+            except Exception as e:  # noqa: BLE001 - shown in the main loop
+                return None, e
+
+        if wait:
+            self._show_render(generation, *run())
+        else:
+            threading.Thread(
+                target=lambda: GLib.idle_add(self._show_render, generation, *run()),
+                name="etiketto-preview",
+                daemon=True,
+            ).start()
+        return False
+
+    def _show_render(self, generation: int, result, error: Exception | None) -> bool:
+        if generation != self._render_generation:  # a newer render follows
+            return False
+        if error is not None:
+            self._render_failed(error)
+            return False
+        self.rendered, image = result
         self._render_error = None
         self.preview.show_image(
             image, self.rendered.length_mm, self.label.tape_mm, self._status_text(self.rendered)

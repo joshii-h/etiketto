@@ -664,19 +664,36 @@ def test_valid_codes_render_without_warnings(make_label):
 
 
 def test_text_fit_shrinks_when_estimate_is_too_big(monkeypatch):
-    # block height not proportional to the size: the first estimate overshoots
-    sizes = []
+    """Block height not proportional to the size: the first estimate
+    overshoots. Sizes are tried by measuring only; the text is drawn once."""
+    measured = []
+    drawn = []
+
+    def fake_height(element, size_px):
+        measured.append(size_px)
+        return round(size_px + 40)
 
     def fake_block(element, size_px):
-        sizes.append(size_px)
+        drawn.append(size_px)
         return Image.new("RGBA", (10, round(size_px + 40)))
 
+    monkeypatch.setattr(render_module, "_height_at", fake_height)
     monkeypatch.setattr(render_module, "_text_block", fake_block)
     block = render_module.render_text(TextElement(text="x"), 100, 317)
     assert block.height <= 100
-    assert sizes[1] == pytest.approx(100 * 100 / 140)  # linear estimate from the probe
-    assert len(sizes) > 2 and sizes[-1] < sizes[1]
+    assert measured[1] == pytest.approx(100 * 100 / 140)  # linear estimate from the probe
+    assert len(measured) > 2 and measured[-1] < measured[1]
     assert block.height > 100 * 0.9  # shrinks in small steps, not more than needed
+    assert drawn == [measured[-1]]  # drawn once
+
+
+def test_text_sizes_are_measured_once():
+    render_module._measured.cache_clear()
+    element = TextElement(text="Measured once", font="Sans")
+    render_module.render_text(element, 200, 600)
+    misses = render_module._measured.cache_info().misses
+    render_module.render_text(element, 200, 600)  # the next render while editing
+    assert render_module._measured.cache_info().misses == misses
 
 
 # --- exact print geometry: tape height and bleed ---------------------------------

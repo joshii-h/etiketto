@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from functools import lru_cache, partial
 from types import MappingProxyType
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageOps
 
@@ -90,9 +90,9 @@ def _color(value: str, fallback: str = "#000000") -> tuple[int, int, int]:
 # --- elements ---------------------------------------------------------------
 
 
-def _text_block(element: TextElement, size_px: float, antialias: bool = True) -> Image.Image:
-    """Lay out text with Pango (font fallback, emoji, kerning) into RGBA;
-    without anti-aliasing every pixel is either ink or not."""
+def _layout(element: TextElement, size_px: float, antialias: bool):
+    """A Pango layout of the text (font fallback, emoji, kerning) on a
+    measuring surface, and its logical extents in pixels."""
     import cairo
     import gi
 
@@ -122,6 +122,41 @@ def _text_block(element: TextElement, size_px: float, antialias: bool = True) ->
     # a trailing newline (easy to type) would add an empty line and halve the text
     layout.set_text(element.text.rstrip("\n") or " ", -1)
     _ink, logical = layout.get_pixel_extents()
+    return layout, logical
+
+
+@lru_cache(maxsize=512)
+def _measured(
+    text: str,
+    font: str,
+    bold: bool,
+    italic: bool,
+    align: Literal["left", "center", "right"],
+    size_px: float,
+) -> int:
+    """The height of the laid out text at size_px, without drawing it;
+    kept, as fitting a text to the tape asks for the same sizes on every
+    render while the label is edited."""
+    element = TextElement(text=text, font=font, bold=bold, italic=italic, align=align)
+    return max(1, _layout(element, size_px, True)[1].height)
+
+
+def _height_at(element: TextElement, size_px: float) -> int:
+    return _measured(
+        element.text, element.font, element.bold, element.italic, element.align, size_px
+    )
+
+
+def _text_block(element: TextElement, size_px: float, antialias: bool = True) -> Image.Image:
+    """The text drawn with Pango into RGBA; without anti-aliasing every
+    pixel is either ink or not."""
+    import cairo
+    import gi
+
+    gi.require_version("PangoCairo", "1.0")
+    from gi.repository import PangoCairo
+
+    layout, logical = _layout(element, size_px, antialias)
     width = max(1, logical.width)
     height = max(1, logical.height)
 
@@ -147,15 +182,14 @@ def _text_block(element: TextElement, size_px: float, antialias: bool = True) ->
 def render_text(element: TextElement, height: int, dpi: float) -> Image.Image:
     if element.size_pt > 0:
         return _text_block(element, element.size_pt / 72 * dpi)
-    # Fit to the tape: the block height scales about linearly with font size
+    # Fit to the tape: the block height scales about linearly with font
+    # size; the size is found by measuring (no drawing), the text is drawn
+    # once, at the end
     probe = 100.0
-    block = _text_block(element, probe)
-    size = probe * height / max(1, block.height)
-    block = _text_block(element, size)
-    while block.height > height and size > 1:
+    size = probe * height / _height_at(element, probe)
+    while _height_at(element, size) > height and size > 1:
         size *= 0.97
-        block = _text_block(element, size)
-    return block
+    return _text_block(element, size)
 
 
 # Decoding a large photo (base64 + EXIF + resample) takes far longer than the
