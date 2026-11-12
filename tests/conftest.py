@@ -100,9 +100,10 @@ def _no_network(request, monkeypatch):
     monkeypatch.setattr(cab, "_connect", refusal("printer"))
     monkeypatch.setattr(brother_ql, "_connect", refusal("printer"))
     monkeypatch.setattr(ptouch, "_connect", refusal("printer"))
-    monkeypatch.setattr(ptouch, "_browse", lambda *_args, **_kwargs: [])  # nor search the network
+    monkeypatch.setattr(ptouch, "_browse", refusal("mDNS"))  # nor search the network
     monkeypatch.setattr(raw, "_connect", refusal("printer"))  # ZPL, EPL2, TSPL, ESC/POS, DYMO
     # nor search the real network for them (mDNS)
+    # (raw printers: no search finds nothing; their tests rely on that)
     monkeypatch.setattr(raw, "_browse", lambda *_args, **_kwargs: [])
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
@@ -117,16 +118,17 @@ def _no_network(request, monkeypatch):
     assert not violations, "network access in a test: %s" % ", ".join(violations)
 
 
-# serial ports a printer (or anything else) may sit on: never opened in a test;
-# the fake serial printers are pseudo terminals (/dev/pts/N)
-REAL_SERIAL = re.compile(r"^/dev/(tty(ACM|USB)\d*|serial/)")
+# serial ports and USB printer devices (/dev/usb/lp*) a printer (or anything
+# else) may sit on: never opened in a test; the fake printers are pseudo
+# terminals (/dev/pts/N) or files in tmp_path
+REAL_SERIAL = re.compile(r"^/dev/(tty(ACM|USB)\d*|serial/|usb/lp\d*)")
 _real_open = os.open
 
 
 def _guarded_open(path, flags, *args, **kwargs):
     name = os.fsdecode(path) if isinstance(path, (str, bytes, os.PathLike)) else ""
     if name and (REAL_SERIAL.match(name) or REAL_SERIAL.match(os.path.realpath(name))):
-        raise AssertionError("a test opened the serial port %s" % name)
+        raise AssertionError("a test opened the printer device %s" % name)
     return _real_open(path, flags, *args, **kwargs)
 
 

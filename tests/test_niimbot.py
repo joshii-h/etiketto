@@ -499,7 +499,7 @@ def test_device_path_follows_a_stable_name(tmp_path, monkeypatch):
 
 def test_the_tests_never_open_a_real_serial_port():
     for path in ("/dev/ttyACM0", "/dev/ttyUSB0", "/dev/serial/by-id/usb-x"):
-        with pytest.raises(AssertionError, match="serial port"):
+        with pytest.raises(AssertionError, match="printer device"):
             os.open(path, os.O_RDWR)
 
 

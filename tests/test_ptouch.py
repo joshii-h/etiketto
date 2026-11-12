@@ -1518,10 +1518,10 @@ def test_map_error():
 
 def test_tests_never_reach_the_network():
     """conftest's guard is in place for every test of this module: a
-    connection is refused (calling it would fail the test), a search finds
-    nothing."""
+    connection and a search of the network are refused (calling them would
+    fail the test); tests that need a search bring their own."""
     assert ptouch._connect.__name__ == "refuse"
-    assert ptouch._browse("_pdl-datastream._tcp", lambda name: True, 0.01) == []
+    assert ptouch._browse.__name__ == "refuse"
 
 
 def test_label_files_with_small_tape(tmp_path):

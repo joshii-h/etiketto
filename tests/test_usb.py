@@ -653,3 +653,10 @@ def test_the_device_wait_is_applied_once(device, monkeypatch):
     connection = usb.Connection(path, timeout=0.5, wait=1.0)
     connection.close()
     assert deadlines and deadlines[0] <= start + 1.05  # not 0.3 + 1.0
+
+
+def test_tests_never_open_a_real_usb_printer():
+    """conftest refuses /dev/usb/lp* like the serial ports: a test that
+    reached the machine's printer would fail."""
+    with pytest.raises(AssertionError, match="/dev/usb/lp0"):
+        os.open("/dev/usb/lp0", os.O_RDWR)
