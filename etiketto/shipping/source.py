@@ -185,11 +185,20 @@ def cached(key: tuple, make: Callable[[], Image.Image]) -> Image.Image:
 
 
 def clear_caches() -> None:
-    """Forget decoded files and drawings (tests; the memory after a label)."""
+    """Forget decoded files and drawings (tests; the memory after a label).
+    Other threads drop their documents at their next drop_stale_documents()."""
     _generation[0] += 1
     _pictures.clear()
     _drawings.clear()
-    _threads.__dict__.clear()
+    drop_stale_documents()
+
+
+def drop_stale_documents() -> None:
+    """This thread's documents go if they were opened before the last
+    clear_caches() (window.PreviewWorker calls it before each render)."""
+    if getattr(_threads, "generation", None) != _generation[0]:
+        _threads.__dict__.clear()
+        _threads.generation = _generation[0]
 
 
 # --- PDF documents --------------------------------------------------------------
@@ -207,6 +216,7 @@ def _open_pdf(raw: bytes) -> Any:
 
 def _pdf(data: str) -> Any:
     """This thread's Poppler document of the file (the last one it used)."""
+    drop_stale_documents()
     cached = getattr(_threads, "pdf", None)
     if cached is not None and cached[0] == data:
         return cached[1]

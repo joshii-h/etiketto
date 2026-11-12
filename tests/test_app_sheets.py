@@ -614,3 +614,38 @@ def test_a_stopped_series_keeps_the_printers_remark(office):
     assert toast_titles(win)[-1] == (
         "Stopped after row 2 · Sent to the printer – it prints when its turn comes"
     )
+
+
+def test_an_a3_page_at_600_dpi_is_previewed_and_refused_when_printed(
+    office, system_env, monkeypatch
+):
+    """An A3 page on a printer reporting 600 dpi (70 megapixels): the
+    preview is drawn as fine as it fits, Print opens its dialog, and the
+    print says the page is too large (not "cannot be drawn")."""
+    from etiketto.backends import system
+
+    win = office
+    a3 = Label(printer="system", orientation="across", auto_length=False)
+    a3.set_media_size(297, 420)
+    a3.elements = [TextElement(text="A3 Plakat")]
+    win.set_label(a3, None)
+    system_env.info = PrinterInfo("Office A3", None, None, None, "IDLE", dpi=600)
+    win.printer.info = system_env.info
+    render_now(win)
+    assert win.rendered is not None and win._render_error is None
+    assert win.preview.status.get_text().startswith("297 × 420 mm")
+    assert win.print_dpi() == system.fitting_dpi(297, 420)
+
+    def print_label(image, host, options, progress=None):
+        system.check_page_size(image, 600)  # as the real print does
+        system_env.labels.append(image)
+
+    monkeypatch.setattr(win.backend, "print_label", print_label)
+    win.print_flow.on_print()
+    assert win.last_dialog.get_heading() == "Print label"
+    respond(win.last_dialog, "print")
+    assert pump(lambda: not win.print_flow.busy)
+    dialog = win.get_visible_dialog()
+    assert dialog.get_heading() == "Printing failed"
+    assert dialog.get_body().startswith("The page is too large")
+    assert system_env.labels == []

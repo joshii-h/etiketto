@@ -3829,8 +3829,9 @@ def ptouch_window_12mm(make_window, ptouch_env):
 
 def test_preview_and_export_show_the_whole_tape(ptouch_window_12mm, tmp_path):
     """A P-touch prints 9 of 12 mm (its pins): the preview and the PNG
-    show the whole 12 mm tape, the printed strip in its middle on the
-    label's background, not a strip of 9 mm."""
+    show the whole 12 mm tape, not a strip of 9 mm: the printed strip
+    (with the label's background) in its middle, the tape the pins do not
+    reach white at its edges."""
     win = ptouch_window_12mm
     win.label.background = "#000080"  # printed black by the mono P-touch, on the strip
     render_now(win)
@@ -3891,13 +3892,15 @@ def test_the_preview_follows_the_print_area_the_printer_reports(
     assert win.rendered_geometry[1].tape_px == 50
 
 
-def test_the_preview_renders_in_its_thread_and_shows_only_the_latest(window):
+def test_the_preview_renders_in_its_thread_and_ends_with_the_latest(window):
     """render_preview() returns at once and the preview's one thread renders;
-    an edit while it renders drops that result; the thread is kept."""
+    after an edit while it renders the preview ends with the label as it
+    is now (see test_a_render_overtaken_by_typing_is_still_shown); the
+    thread is kept."""
     window.label.elements[0].text = "first"
     window.render_preview()
     window.label.elements[0].text = "second, much longer than the first one"
-    window.schedule_render()  # the edit: the first result is not shown
+    window.schedule_render()  # the edit: the first result is not the current one
     assert not window.preview_current
     expected = window.render_image()[0].image.size
     assert pump(lambda: window.preview_current, timeout=5)
@@ -3974,3 +3977,187 @@ def test_a_closed_window_ends_its_preview_thread(make_window):
     win._on_destroy(win)  # and when destroyed (twice is fine)
     thread.join(5)
     assert stopped and not thread.is_alive()
+
+
+def _blocking_render(win, monkeypatch):
+    """The backend's render waits for the returned event (once started:
+    `started` is set); the render is the real one afterwards."""
+    import threading
+
+    started, release = threading.Event(), threading.Event()
+    real = win.backend.render_label
+
+    def slow(*args, **kwargs):
+        if threading.current_thread().name == "etiketto-preview" and not release.is_set():
+            started.set()
+            release.wait(5)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(win.backend, "render_label", slow)
+    return started, release
+
+
+def test_a_render_overtaken_by_typing_is_still_shown(window, monkeypatch):
+    """A slow label while typing goes on: the render running when the next
+    edit comes is shown when it is done (the preview stays live), then the
+    one for the label as it is now; nothing older than what is shown."""
+    started, release = _blocking_render(window, monkeypatch)
+    window.label.elements[0].text = "first"
+    window.render_preview()
+    first = window._render_generation
+    assert started.wait(5)
+    window.label.elements[0].text = "second, longer than the first one"
+    window.schedule_render()  # typing goes on: the running render is not dropped
+    shown = []
+    real_show = window.preview.show_image
+    monkeypatch.setattr(
+        window.preview, "show_image", lambda *a: shown.append(a[0].size) or real_show(*a)
+    )
+    release.set()
+    assert pump(lambda: window._shown_generation == first, timeout=5)
+    assert not window.preview_current  # the edit's render is still to come
+    assert len(shown) == 1
+    assert pump(lambda: window.preview_current, timeout=5)
+    assert len(shown) == 2 and shown[1][0] > shown[0][0]
+    # nothing older than what is shown; a failure an edit has overtaken is
+    # not shown either (the newer render shows it if it still fails)
+    window._show_render(first, None, RuntimeError("old"))
+    current = window._render_generation
+    window._render_generation += 2  # a render requested, then an edit
+    window._show_render(current + 1, None, RuntimeError("overtaken"))
+    assert len(shown) == 2 and window._render_error is None and window.toast_log == []
+
+
+def test_a_render_of_the_label_before_is_not_shown(window, monkeypatch):
+    """Another label opened while a render of the one before runs: that
+    render is not shown, not even for a moment."""
+    started, release = _blocking_render(window, monkeypatch)
+    window.render_preview()
+    assert started.wait(5)
+    shown = []
+    monkeypatch.setattr(window.preview, "show_image", lambda *a: shown.append(a))
+    other = Label(printer=window.label.printer, tape_mm=window.label.tape_mm)
+    other.elements = [TextElement(text="other")]
+    window.set_label(other, None)
+    release.set()
+    assert pump(lambda: window.preview_current, timeout=5)
+    assert len(shown) == 1  # only the new label's
+
+
+def test_a_closed_window_shows_no_render_still_running(make_window, monkeypatch):
+    """Destroyed while its thread renders: the result is not shown, a
+    failure raises no toast, and nothing renders any more."""
+    win = make_window()
+    started, release = _blocking_render(win, monkeypatch)
+    win.render_preview()
+    assert started.wait(5)
+    shown = []
+    monkeypatch.setattr(win.preview, "show_image", lambda *a: shown.append(a))
+    win.schedule_render()  # an edit just before: its render does not start
+    win._on_destroy(win)
+    assert win._render_source == 0
+    release.set()
+    win.preview_worker.thread.join(5)
+    pump()
+    assert shown == [] and win.toast_log == []
+    win._show_render(win._render_generation, None, RuntimeError("late"))
+    assert win.toast_log == []
+    win.schedule_render()
+    assert win.render_preview() is False and win._render_source == 0
+    assert not win.preview_worker.thread.is_alive()
+
+
+def test_the_preview_worker_starts_again_after_stop_or_a_fatal_error():
+    """A request after stop() (a close that did not happen) or after the
+    thread ended on a BaseException is rendered by a new thread."""
+    from etiketto.ui.window import PreviewWorker
+
+    shown = []
+    worker = PreviewWorker(
+        lambda generation, result, error: shown.append((result, error)) or False
+    )
+    worker.submit(1, lambda: "one")
+    assert pump(lambda: len(shown) == 1, timeout=5)
+    first = worker.thread
+    worker.stop()
+    assert not first.is_alive()
+    worker.submit(2, lambda: "two")
+    assert pump(lambda: len(shown) == 2, timeout=5)
+    assert shown[1] == ("two", None) and worker.thread is not first
+
+    def fatal():
+        raise SystemExit(3)
+
+    worker.submit(3, fatal)
+    assert pump(lambda: len(shown) == 3, timeout=5)
+    assert shown[2][0] is None and isinstance(shown[2][1], SystemExit)
+    worker.thread.join(5)
+    assert not worker.thread.is_alive()  # it ended
+    worker.submit(4, lambda: "four")
+    assert pump(lambda: len(shown) == 4, timeout=5)
+    assert shown[3] == ("four", None)
+    worker.stop()
+
+
+def test_the_preview_thread_drops_the_documents_of_the_label_before(window):
+    """A new label: the preview's thread forgets what it decoded for the
+    label before (Poppler documents) at once, not at its next render."""
+    import gc
+    import weakref
+
+    from etiketto.shipping import source
+
+    class Document:
+        pass
+
+    kept = []
+
+    def keep():
+        document = Document()
+        source.drop_stale_documents()
+        source._threads.pdf = ("data", document)
+        kept.append(weakref.ref(document))
+        return None, None
+
+    window.preview_worker.submit(-1, keep)  # older than anything: not shown
+    assert pump(lambda: bool(kept), timeout=5)
+    assert kept[0]() is not None
+    window.set_label(Label(printer=window.label.printer, elements=[]), None)
+    if window._render_source:  # no render: the thread drops them on its own
+        GLib.source_remove(window._render_source)
+        window._render_source = 0
+    assert pump(lambda: gc.collect() is not None and kept[0]() is None, timeout=5)
+
+
+def test_print_does_nothing_more_when_the_render_fails(ready, gui_env, monkeypatch):
+    """The render for the print fails: its message is shown (as for the
+    preview), no dialog opens, nothing is printed."""
+
+    def broken(*_args, **_kwargs):
+        raise RuntimeError("kaputt")
+
+    ready.label.elements[0].text = "edited"
+    ready.schedule_render()
+    monkeypatch.setattr(ready.backend, "render_label", broken)
+    ready.print_flow.on_print()
+    assert ready.rendered is None
+    assert ready.preview.status.get_text() == "The preview cannot be drawn"
+    assert ready.get_visible_dialog() is None and gui_env.prints == []
+    assert toast_titles(ready)[-1] == "The preview cannot be drawn"
+
+
+def test_a_fixed_length_in_high_quality_shows_the_users_length(window):
+    """QL high quality renders pixel pairs (20.5 mm: 20.55 mm): the status
+    line and the print dialog say the length set (20 mm, as at standard
+    quality), not one rounded up from the pixels (21 mm)."""
+    window.set_backend("brother_ql")
+    window.printer_settings.update(quality="high")
+    window.label.auto_length = False
+    window.label.length_mm = 20.5
+    render_now(window)
+    assert window.rendered.image.width % 2 == 0
+    assert window.rendered.length_mm == 20.5
+    status = window.preview.status.get_text()
+    assert window.size_text(20.5) in status and window.size_text(20.55) not in status
+    body = window.print_flow._body(window.print_flow.choices())
+    assert body == window.size_text(20.5)

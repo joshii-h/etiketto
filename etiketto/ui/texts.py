@@ -506,7 +506,7 @@ def stage_text(stage: str) -> str | None:
     }.get(stage)
 
 
-def error_details(error: Exception) -> str:
+def error_details(error: BaseException) -> str:
     """The original error for bug reports: "ValueError: bad value"."""
     return "%s: %s" % (type(error).__name__, error)
 
