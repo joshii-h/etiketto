@@ -2,6 +2,7 @@
 
     etiketto                         the application
     etiketto print FILE [options]    print a label file
+    etiketto print FILE --data ROWS  one label for each row of a data file
     etiketto list-printers           printers found on the network
     etiketto --version, --help
 
@@ -29,7 +30,7 @@ import signal
 import sys
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 from typing import IO, NamedTuple
@@ -38,22 +39,35 @@ from etiketto import __version__
 from etiketto.backends import backends, get_backend
 from etiketto.backends.base import Backend, PrinterError, PrintOptions
 from etiketto.job import Job, PrepareFailed
+from etiketto.merge import MergeError, read_book
 from etiketto.model import (
     CodeElement,
     Label,
     LabelError,
     LockTimeout,
     TextElement,
+    data_inside,
     locked,
     writable,
+)
+from etiketto.serial import (
+    Series,
+    SeriesError,
+    SeriesResult,
+    print_series,
+    row_span,
+    unknown_columns,
+    unprintable_rows,
 )
 from etiketto.ui.i18n import _
 from etiketto.ui.settings import PrinterSettings, Settings
 from etiketto.ui.texts import (
+    data_error_text,
     label_error_text,
     printed_remark,
     printer_error_text,
     save_error_text,
+    series_stop_text,
     warning_text,
 )
 from etiketto.units import unit_for
@@ -110,6 +124,24 @@ def _number(lower: int, upper: int):
         return value
 
     return parse
+
+
+_ROWS = re.compile(r"\s*(\d*)\s*(-?)\s*(\d*)\s*\Z")
+ALL_ROWS = 10**9
+
+
+def _rows(text: str) -> tuple[int, int]:
+    """ "3-10", "5", "7-" (to the last), "-4" (from the first): rows counted
+    from 1, both included."""
+    match = _ROWS.match(text)
+    first, dash, last = match.groups() if match else ("", "", "")
+    if not match or not (first or last) or (not dash and not first):
+        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+    start = int(first) if first else 1
+    end = int(last) if last else (ALL_ROWS if dash else start)
+    if start < 1 or end < start:
+        raise argparse.ArgumentTypeError(_("expected rows such as 3-10, 5 or 7-: %s") % text)
+    return start, end
 
 
 def parser() -> argparse.ArgumentParser:
@@ -169,6 +201,24 @@ def parser() -> argparse.ArgumentParser:
             "do not save the next counter value in the label (a read-only file);"
             " the next print starts from the same number"
         ),
+    )
+    print_.add_argument(
+        "--data",
+        metavar="FILE",
+        type=Path,
+        help=_(
+            "serial labels: one label for each row of this CSV, ODS or XLSX file;"
+            " by default the data file of the label"
+        ),
+    )
+    print_.add_argument(
+        "--sheet", metavar="NAME", help=_("the sheet of the data file, by default the first")
+    )
+    print_.add_argument(
+        "--rows",
+        metavar="FROM-TO",
+        type=_rows,
+        help=_("only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"),
     )
     print_.add_argument(
         "--dry-run", action="store_true", help=_("check and render only, do not print")
@@ -239,7 +289,9 @@ def _set_date(overrides: Overrides, value: str) -> None:
         ) from None
 
 
-def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
+def apply_assignments(
+    label: Label, assignments: list[Assignment], serial: bool = False
+) -> Overrides:
     """--set NAME=VALUE: the text of elements with that name, else the
     variable {=NAME}; "date" sets the moment {=date} and {=time} start from.
     The element texts are set first: a variable used only in a new text
@@ -249,9 +301,10 @@ def apply_assignments(label: Label, assignments: list[Assignment]) -> Overrides:
     for assignment in assignments:
         name, value, literal = assignment
         # "{=" as it is, in a text (a variable's value is never filled in).
-        # Only a text with "{=" is expanded at all: other braces ('{"a":1}'
-        # in a QR code) stay as they are and must not be doubled.
-        if literal and "{=" in value:
+        # Only a text with "{=" is expanded at all, or every text of a
+        # serial label (`serial`): other braces ('{"a":1}' in a QR code)
+        # stay as they are and must not be doubled.
+        if literal and ("{=" in value or (serial and ("{" in value or "}" in value))):
             value = value.replace("{", "{{").replace("}", "}}")
         if not _set_element(label, name, value):
             rest.append(assignment)
@@ -403,6 +456,40 @@ def _dry_run(job: Job, output: str | None, unit) -> int:
     return EXIT_OK
 
 
+def _dry_run_series(series: Series, output: str | None, unit) -> int:
+    """As _dry_run(), for each row: the listing starts with the row number,
+    --output saves one image per label in turn (name-1.png, name-2.png …).
+    A job is made for one row at a time, never for all of them at once."""
+    backend = series_backend(series)
+    values = series.first_values()
+
+    def job(position: int, index: int) -> Job:
+        start = replace(values, counter=values.counter + values.step * position * values.copies)
+        return Job(
+            backend, series.label, series.options, series.safe_mm, start, series.rows[index]
+        )
+
+    try:
+        if output == "-":
+            first = job(0, series.indexes[0])
+            _write_png(first.image(next(first.labels())[1]), "-")
+            return EXIT_OK
+        renders = job(0, series.indexes[0]).renders * len(series.indexes)  # the same for each row
+        targets = _output_paths(output, renders) if output else None
+        for position, index in enumerate(series.indexes):
+            row_job = job(position, index)
+            for copy, label in row_job.labels():
+                if targets:
+                    _write_png(row_job.image(label), next(targets))
+                elif copy == 1 and position == 0:
+                    row_job.image(label)
+                fields = [str(index + 1), str(copy)] + [_one_line(t) for t in _contents(label)]
+                _out("\t".join(fields))
+    except PrepareFailed as e:
+        raise _prepare_failed(e, unit) from None
+    return EXIT_OK
+
+
 def _one_line(text: str) -> str:
     """A field of the listing: no tab or line break of its own."""
     return re.sub(r"[\t\n\r]", " ", text)
@@ -432,9 +519,8 @@ def _host(args, backend: Backend, settings: PrinterSettings) -> str:
     )
 
 
-def _save_counter(path: Path, job: Job) -> int:
-    counter = job.next_counter()
-    if counter is None or not job.printed:
+def _save_counter(path: Path, counter: int | None, printed: int) -> int:
+    if counter is None or not printed:
         return EXIT_OK
     try:
         Label.store_counter(path, counter)
@@ -524,11 +610,51 @@ def _send(args, job: Job, host: str, unit) -> int:
             raise CliError(printer_error_text(e, unit), EXIT_PRINTER) from None
         finally:
             with _uninterrupted():
-                saved = EXIT_OK if args.no_save_counter else _save_counter(args.file, job)
+                saved = (
+                    EXIT_OK
+                    if args.no_save_counter
+                    else _save_counter(args.file, job.next_counter(), job.printed)
+                )
     remark = printed_remark(job.options, result)
     if remark:  # queued, or printed in another mode: say so
         _say(remark)
     return saved
+
+
+def _send_series(args, series: Series, host: str, unit) -> int:
+    """Print one label per row, and save the next counter value whatever
+    happens, as _send() does."""
+    outcome = SeriesResult()
+    with _interruptible():
+        try:
+            # the codes were checked before the file was locked for printing
+            print_series(series_backend(series), host, series, outcome=outcome, check=False)
+        except KeyboardInterrupt:
+            raise CliError(_("Interrupted"), EXIT_INTERRUPTED) from None
+        except SeriesError as e:
+            if e.preparing and isinstance(e.error, PrinterError):  # a code too large
+                message, code = printer_error_text(e.error, unit), EXIT_LABEL
+            elif e.preparing:
+                message, code = _("The label cannot be prepared for printing."), EXIT_LABEL
+            else:
+                message, code = printer_error_text(e.error, unit), EXIT_PRINTER
+            where = series_stop_text(e.row, e.copies_printed)
+            raise CliError(message + " " + where, code) from None
+        finally:
+            with _uninterrupted():
+                saved = (
+                    EXIT_OK
+                    if args.no_save_counter
+                    else _save_counter(args.file, outcome.counter, outcome.labels)
+                )
+    remark = printed_remark(series.options, outcome.result)
+    if remark:
+        _say(remark)
+    return saved
+
+
+def series_backend(series: Series) -> Backend:
+    return _backend(series.label.printer)
 
 
 def _options(backend: Backend, printer: PrinterSettings, copies: int, gap_mm: float):
@@ -557,14 +683,74 @@ def _job(args, settings: Settings | None, now: datetime | None):
     printer = settings.printer(backend)
     if args.counter_start is not None:
         label.counter_next = args.counter_start
-    overrides = apply_assignments(label, args.assignments)
+    overrides = apply_assignments(label, args.assignments, bool(args.data or label.data_file))
     options = _options(backend, printer, args.copies, label.gap_mm)
     values = Values.for_label(
         label, overrides.now or now or datetime.now(), args.copies, custom=overrides.custom
     )
-    job = Job(backend, label, options, printer.safe_mm, values)
+    rows, indexes = _data(args, label)
+    columns = rows[indexes[0]] if rows else None
+    job = Job(backend, label, options, printer.safe_mm, values, columns)
     _check(job)
-    return job, printer, settings
+    series = None
+    if rows:
+        series = Series(label, rows, indexes, options, printer.safe_mm, values)
+        _check_rows(series)
+    return job, printer, settings, series
+
+
+def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
+    """The rows of a serial label: --data, else the label's data file;
+    [] for a label without one. A data file the label names is read only
+    if it lies in the label's folder (as the window does without asking):
+    a label from elsewhere could name any file."""
+    path = args.data
+    if path is None and label.data_file:
+        if not data_inside(label.data_file, args.file):
+            raise CliError(
+                _("The label uses a data file outside its folder: give it with --data"),
+                EXIT_USAGE,
+            )
+        path = Path(label.data_file)
+    if path is None:
+        if args.sheet or args.rows:
+            raise CliError(_("--sheet and --rows need a data file (--data)"), EXIT_USAGE)
+        return [], []
+    own = label.data_file and Path(label.data_file).resolve() == path.resolve()
+    # the label's sheet goes with its own data file, also given with --data
+    sheet = args.sheet or (label.data_sheet if own else "")
+    try:
+        book = read_book(path, sheet)
+    except (OSError, MergeError) as e:
+        raise CliError(data_error_text(e, _name(path)), EXIT_FILE) from None
+    if sheet and book.sheet != sheet:  # never another sheet than the one asked for
+        raise CliError(data_error_text(MergeError("no_sheet", sheet), _name(path)), EXIT_USAGE)
+    rows = book.table.rows
+    first, last = args.rows or (1, ALL_ROWS)
+    indexes = list(row_span(first, last, len(rows)))
+    if not indexes:
+        raise CliError(_("No rows to print"), EXIT_USAGE)
+    return rows, indexes
+
+
+def _check_rows(series: Series) -> None:
+    """Placeholders without a column and codes that cannot be drawn would
+    print wrongly: refused, as variables are."""
+    if unknown := unknown_columns(series.label, list(series.rows[0])):
+        names = ", ".join("{%s}" % name for name in unknown)
+        raise CliError(_("No such column: %s") % names, EXIT_LABEL)
+    if bad := unprintable_rows(series.label, series.rows, series.indexes, series.values):
+        shown = ", ".join(str(row) for row in bad[:20]) + (", …" if len(bad) > 20 else "")
+        raise CliError(
+            _(
+                "The barcode or QR code of these rows cannot be made from their values, for "
+                "example an EAN-13 with letters or an empty cell. Correct the data file and read "
+                "it again, or print without these rows."
+            )
+            + " "
+            + _("Rows: %s") % shown,
+            EXIT_LABEL,
+        )
 
 
 @contextlib.contextmanager
@@ -587,18 +773,26 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
     if args.output:
         _check_output(args.output)
     if args.dry_run:  # writes nothing back: no lock
-        job, _printer, settings = _job(args, settings, now)
-        return _dry_run(job, args.output, unit_for(settings.units))
+        job, _printer, settings, series = _job(args, settings, now)
+        unit = unit_for(settings.units)
+        if series:
+            return _dry_run_series(series, args.output, unit)
+        return _dry_run(job, args.output, unit)
     if args.no_save_counter:  # nothing written back: no lock, no write check
-        job, printer, settings = _job(args, settings, now)
+        job, printer, settings, series = _job(args, settings, now)
         if job.next_counter() is not None:
             _say(_("The next counter value is not saved: the next print repeats the numbers"))
-        return _send(args, job, _host(args, job.backend, printer), unit_for(settings.units))
+        return _print(args, job, series, _host(args, job.backend, printer), settings)
     with _locked(args.file):  # from reading the counter until the next one is saved
-        job, printer, settings = _job(args, settings, now)
+        job, printer, settings, series = _job(args, settings, now)
         _check_writable(args.file, job)
         host = _host(args, job.backend, printer)
-        return _send(args, job, host, unit_for(settings.units))
+        return _print(args, job, series, host, settings)
+
+
+def _print(args, job: Job, series: Series | None, host: str, settings: Settings) -> int:
+    unit = unit_for(settings.units)
+    return _send_series(args, series, host, unit) if series else _send(args, job, host, unit)
 
 
 # --- list-printers ----------------------------------------------------------

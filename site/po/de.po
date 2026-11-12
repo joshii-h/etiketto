@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 10:04+0100\n"
+"POT-Creation-Date: 2026-11-12 10:11+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -123,6 +123,14 @@ msgstr "Vorschau in Druckauflösung: Gedruckt wird, was zu sehen ist"
 msgid "Endless tape as long as the content, or die-cut labels of any size"
 msgstr ""
 "Endlosband so lang wie der Inhalt, oder gestanzte Etiketten in jeder Grösse"
+
+#. type: Bullet: '- '
+#: docs/index.md
+msgid ""
+"[Serial labels](serial.md): one label for each row of a CSV, ODS or XLSX file"
+msgstr ""
+"[Serienetiketten](serial.md): ein Etikett für jede Zeile einer CSV-, ODS- "
+"oder XLSX-Datei"
 
 #. type: Bullet: '- '
 #: docs/index.md
@@ -890,6 +898,313 @@ msgstr ""
 "Version, System und Drucker. Vor dem Absenden ist alles sichtbar."
 
 #. type: Title #
+#: docs/serial.md
+#, no-wrap
+msgid "Serial labels"
+msgstr "Serienetiketten"
+
+#. type: Plain text
+#: docs/serial.md
+msgid ""
+"One label for each row of a table: inventory numbers, shelf labels, name "
+"badges, addresses. The label holds placeholders such as `{Name}`; each "
+"printed label shows the values of its row."
+msgstr ""
+"Ein Etikett für jede Zeile einer Tabelle: Inventarnummern, Regaletiketten, "
+"Namensschilder, Adressen. Das Etikett enthält Platzhalter wie `{Name}`; "
+"jedes gedruckte Etikett zeigt die Werte seiner Zeile."
+
+#. type: Plain text
+#: docs/serial.md
+msgid ""
+"![Serial labels](media/serial.png#only-light)  ![Serial labels](media/serial-"
+"dark.png#only-dark)"
+msgstr ""
+"![Serienetiketten](media/serial.png#only-light)  ![Serienetiketten](media/"
+"serial-dark.png#only-dark)"
+
+#. type: Title ##
+#: docs/serial.md
+#, no-wrap
+msgid "Data file"
+msgstr "Datendatei"
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"[[ui:Data for serial labels…]] in the main menu, [[ui:Choose…]] under "
+"[[ui:Serial labels]], or drop the file onto the window."
+msgstr ""
+"[[ui:Data for serial labels…]] im Hauptmenü, [[ui:Choose…]] unter "
+"[[ui:Serial labels]] oder die Datei auf das Fenster ziehen."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"CSV (comma, semicolon or tab), ODS (LibreOffice) or XLSX (Excel). The first "
+"filled row holds the column names."
+msgstr ""
+"CSV (Komma, Semikolon oder Tabulator), ODS (LibreOffice) oder XLSX (Excel). "
+"Die erste gefüllte Zeile enthält die Spaltennamen."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"A title above the column names counts as the first row: delete it, or put "
+"the table on a sheet of its own."
+msgstr ""
+"Ein Titel über den Spaltennamen zählt als erste Zeile: ihn löschen oder die "
+"Tabelle auf ein eigenes Blatt legen."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "ODS: cells as LibreOffice shows them, dates as `2026-11-11`."
+msgstr "ODS: Zellen so, wie LibreOffice sie zeigt, Daten als `2026-11-11`."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"XLSX: numbers with their decimals, leading zeros and percent signs, dates as "
+"`2026-11-11`. Thousands separators and text in the number format, such as a "
+"currency, are left out. Dates in the East Asian built-in formats come out as "
+"numbers."
+msgstr ""
+"XLSX: Zahlen mit ihren Nachkommastellen, führenden Nullen und "
+"Prozentzeichen, Daten als `2026-11-11`. Tausendertrennzeichen und Text im "
+"Zahlenformat, etwa eine Währung, fallen weg. Daten in den ostasiatischen "
+"vordefinierten Formaten erscheinen als Zahlen."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "Empty rows are left out. The hidden cells of merged cells are empty."
+msgstr ""
+"Leere Zeilen werden ausgelassen. Die verdeckten Zellen verbundener Zellen "
+"sind leer."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"Several sheets: choose one under [[ui:Sheet]]. If the sheet saved with the "
+"label is no longer there, nothing is printed until another one is chosen."
+msgstr ""
+"Mehrere Blätter: unter [[ui:Sheet]] eines wählen. Gibt es das mit dem "
+"Etikett gespeicherte Blatt nicht mehr, wird nichts gedruckt, bis ein anderes "
+"gewählt ist."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"[[ui:Read again]] after the file was changed in the spreadsheet program."
+msgstr ""
+"[[ui:Read again]], nachdem die Datei in der Tabellenkalkulation geändert "
+"wurde."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"Up to 100 000 rows, 1000 columns, 2 000 000 cells (rows times columns, "
+"without the row of column names) and 50 MB."
+msgstr ""
+"Bis zu 100 000 Zeilen, 1000 Spalten, 2 000 000 Zellen (Zeilen mal Spalten, "
+"ohne die Zeile mit den Spaltennamen) und 50 MB."
+
+#. type: Plain text
+#: docs/serial.md
+msgid ""
+"The label file stores where the data file is, never its content. If the data "
+"file lies in the same folder as the label (or below it), both can be moved "
+"or shared together. If it is missing when the label is opened, Etiketto says "
+"so: choose it again or remove it."
+msgstr ""
+"Die Etikettendatei speichert, wo die Datendatei liegt, nie ihren Inhalt. "
+"Liegt die Datendatei im selben Ordner wie das Etikett (oder darunter), "
+"lassen sich beide zusammen verschieben oder weitergeben. Fehlt sie beim "
+"Öffnen des Etiketts, sagt Etiketto das: sie erneut wählen oder entfernen."
+
+#. type: Plain text
+#: docs/serial.md
+msgid ""
+"A data file is read without asking only if it is a table (`.csv`, `.tsv`, "
+"`.txt`, `.ods`, `.xlsx`) in the label's folder or below, and not in a hidden "
+"folder. Any other data file is read only after asking, once for each label "
+"file: a label from someone else could name any file.  [[ui:Forget allowed "
+"data files]] in the main menu makes Etiketto ask again. Templates keep the "
+"placeholders but not the data file. Older versions of Etiketto refuse labels "
+"with a data file instead of printing the placeholders."
+msgstr ""
+"Eine Datendatei wird nur dann ohne Rückfrage gelesen, wenn sie eine Tabelle "
+"(`.csv`, `.tsv`, `.txt`, `.ods`, `.xlsx`) im Ordner des Etiketts oder "
+"darunter ist und nicht in einem versteckten Ordner liegt. Jede andere "
+"Datendatei wird erst nach einer Rückfrage gelesen, einmal für jede "
+"Etikettendatei: Ein Etikett von jemand anderem könnte jede beliebige Datei "
+"nennen. [[ui:Forget allowed data files]] im Hauptmenü lässt Etiketto wieder "
+"nachfragen. Vorlagen behalten die Platzhalter, aber nicht die Datendatei. "
+"Ältere Versionen von Etiketto lehnen Etiketten mit einer Datendatei ab, "
+"statt die Platzhalter zu drucken."
+
+#. type: Title ##
+#: docs/serial.md
+#, no-wrap
+msgid "Placeholders"
+msgstr "Platzhalter"
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"[[ui:Insert column]] next to a text or the content of a code adds `{Column}` "
+"at the cursor; typing it works as well."
+msgstr ""
+"[[ui:Insert column]] neben einem Text oder dem Inhalt eines Codes fügt "
+"`{Spalte}` an der Schreibmarke ein; eintippen geht auch."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"Placeholders work in texts and in QR codes and barcodes, for example "
+"`https://example.org/item/{Number}`."
+msgstr ""
+"Platzhalter funktionieren in Texten sowie in QR-Codes und Barcodes, zum "
+"Beispiel `https://example.org/item/{Nummer}`."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"With a data file `{{` and `}}` print a single brace, in every text and code: "
+"`{{Name}}` prints `{Name}`. Other braces need doubling too, for example JSON "
+"in a QR code: `{{\"id\":{Number}}}`. Without a data file texts print as "
+"typed."
+msgstr ""
+"Mit einer Datendatei drucken `{{` und `}}` eine einzelne Klammer, in jedem "
+"Text und Code: `{{Name}}` druckt `{Name}`. Auch andere Klammern müssen "
+"verdoppelt werden, zum Beispiel JSON in einem QR-Code: `{{\"id\":{Number}}}"
+"`. Ohne Datendatei werden Texte gedruckt, wie sie eingegeben wurden."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "Values are printed as they are, even if they contain braces."
+msgstr ""
+"Werte werden gedruckt, wie sie sind, auch wenn sie geschweifte Klammern "
+"enthalten."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"A placeholder without a column of that name is printed as it is; the line "
+"under the preview names it."
+msgstr ""
+"Ein Platzhalter ohne Spalte dieses Namens wird so gedruckt, wie er ist; die "
+"Zeile unter der Vorschau nennt ihn."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"Before printing, the codes of every row are checked: an EAN-13 needs 12 or "
+"13 digits, an empty cell gives no code. Rows that fail are named; print "
+"without them or correct the data file."
+msgstr ""
+"Vor dem Drucken werden die Codes jeder Zeile geprüft: Ein EAN-13 braucht 12 "
+"oder 13 Ziffern, eine leere Zelle ergibt keinen Code. Fehlerhafte Zeilen "
+"werden genannt; ohne sie drucken oder die Datendatei korrigieren."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"Variables such as `{=counter}` or `{=date}` work together with the "
+"placeholders; the counter goes on from row to row."
+msgstr ""
+"Variablen wie `{=counter}` oder `{=date}` funktionieren zusammen mit den "
+"Platzhaltern; der Zähler zählt von Zeile zu Zeile weiter."
+
+#. type: Title ##
+#: docs/serial.md
+#, no-wrap
+msgid "Preview"
+msgstr "Vorschau"
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"The buttons under the preview step through the rows: [[ui:First row]], "
+"[[ui:Previous row]], [[ui:Next row]] and [[ui:Last row]], or Alt+Page Up, "
+"Alt+Page Down, Alt+Home and Alt+End."
+msgstr ""
+"Die Knöpfe unter der Vorschau blättern durch die Zeilen: [[ui:First row]], "
+"[[ui:Previous row]], [[ui:Next row]] und [[ui:Last row]], oder Alt+Bild auf, "
+"Alt+Bild ab, Alt+Pos1 und Alt+Ende."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "Rows are counted without the row of column names."
+msgstr "Die Zeilen werden ohne die Zeile mit den Spaltennamen gezählt."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "[[ui:Export PNG…]] saves the row that is shown."
+msgstr "[[ui:Export PNG…]] speichert die angezeigte Zeile."
+
+#. type: Title ##
+#: docs/serial.md docs/use.md
+#, no-wrap
+msgid "Print"
+msgstr "Drucken"
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"[[ui:Print]] prints one label for each row. [[ui:From row]] and [[ui:To "
+"row]] limit the rows (all of them by default), [[ui:Copies of each label]] "
+"sets how many of each are printed."
+msgstr ""
+"[[ui:Print]] druckt ein Etikett für jede Zeile. [[ui:From row]] und [[ui:To "
+"row]] begrenzen die Zeilen (anfangs alle), [[ui:Copies of each label]] legt "
+"fest, wie viele von jedem gedruckt werden."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid "Every label is a print job of its own, so this works on every printer."
+msgstr ""
+"Jedes Etikett ist ein eigener Druckauftrag, deshalb funktioniert das mit "
+"jedem Drucker."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"[[ui:Stop]] in the bar above the window ends the series after the label "
+"being printed; the first label is always printed."
+msgstr ""
+"[[ui:Stop]] in der Leiste oben im Fenster beendet die Serie nach dem "
+"Etikett, das gerade gedruckt wird; das erste Etikett wird immer gedruckt."
+
+#. type: Bullet: '- '
+#: docs/serial.md
+msgid ""
+"If the printer reports a problem, printing stops at that row; the message "
+"says how many copies of it were already printed. Solve the problem, then "
+"print again starting from that row."
+msgstr ""
+"Meldet der Drucker ein Problem, hält der Druck bei dieser Zeile an; die "
+"Meldung sagt, wie viele Exemplare davon schon gedruckt sind. Das Problem "
+"beheben, dann ab dieser Zeile erneut drucken."
+
+#. type: Title ##
+#: docs/serial.md
+#, no-wrap
+msgid "Command line"
+msgstr "Befehlszeile"
+
+#. type: Plain text
+#: docs/serial.md
+msgid ""
+"`etiketto print shelf.etiketto --data items.csv --rows 3-10` prints rows 3 "
+"to 10 without opening a window; see [Command line](use.md#command-line).  "
+"With `--dry-run` each line of the listing starts with the row number."
+msgstr ""
+"`etiketto print shelf.etiketto --data items.csv --rows 3-10` druckt die "
+"Zeilen 3 bis 10, ohne ein Fenster zu öffnen; siehe [Befehlszeile]"
+"(use.md#command-line). Mit `--dry-run` beginnt jede Zeile der Auflistung mit "
+"der Zeilennummer."
+
+#. type: Title #
 #: docs/sheets.md
 #, no-wrap
 msgid "Label sheets { #sheets }"
@@ -1607,12 +1922,6 @@ msgstr ""
 "innert Monaten. Für ein Paket unterwegs genügt das; für Etiketten, die "
 "halten müssen, Thermotransfer-Etiketten mit Farbband verwenden."
 
-#. type: Title ##
-#: docs/use.md
-#, no-wrap
-msgid "Print"
-msgstr "Drucken"
-
 #. type: Plain text
 #: docs/use.md
 msgid ""
@@ -1729,11 +2038,13 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without "
-"variables print exactly as typed."
+"variables print exactly as typed, unless the label has a data file for "
+"[serial labels](serial.md): then `{{` and `}}` always print one brace."
 msgstr ""
 "Um eine geschweifte Klammer zu drucken, verdoppeln Sie sie: `{{=date}}` "
 "druckt `{=date}`. Texte ohne Variablen werden genau so gedruckt, wie sie "
-"eingegeben wurden."
+"eingegeben wurden, ausser das Etikett hat eine Datendatei für "
+"[Serienetiketten](serial.md): Dann drucken `{{` und `}}` immer eine Klammer."
 
 #. type: Plain text
 #: docs/use.md
@@ -1781,6 +2092,7 @@ msgid ""
 "etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
 "etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
 "etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
+"etiketto print shelf.etiketto --data items.csv --rows 3-10\n"
 "etiketto list-printers\n"
 "etiketto --version\n"
 msgstr ""
@@ -1789,6 +2101,7 @@ msgstr ""
 "etiketto print label.etiketto --set title=\"Batch 7\" --set lot=A12\n"
 "etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print\n"
 "etiketto print label.etiketto --copies 3 --dry-run --output preview.png\n"
+"etiketto print shelf.etiketto --data items.csv --rows 3-10\n"
 "etiketto list-printers\n"
 "etiketto --version\n"
 
@@ -1842,6 +2155,24 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
+"Serial labels: one label for each row of the data file, `--copies` of each; "
+"`--data` gives the data file (by default the label's own, if it lies in the "
+"label's folder), `--sheet` the sheet, `--rows` the rows (`3-10`, `5`, `7-` "
+"to the last). The counter goes on from row to row.  A placeholder without a "
+"column or a code a row cannot make stops the print before the first label. "
+"See [Serial labels](serial.md)."
+msgstr ""
+"Serienetiketten: ein Etikett für jede Zeile der Datendatei, `--copies` von "
+"jedem; `--data` nennt die Datendatei (sonst die des Etiketts, wenn sie im "
+"Ordner des Etiketts liegt), `--sheet` das Blatt, `--rows` die Zeilen "
+"(`3-10`, `5`, `7-` bis zur letzten). Der Zähler zählt von Zeile zu Zeile "
+"weiter. Ein Platzhalter ohne Spalte oder ein Code, den eine Zeile nicht "
+"ergibt, bricht den Druck vor dem ersten Etikett ab. Siehe [Serienetiketten]"
+"(serial.md)."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
 "`--dry-run` only checks and renders: it lists the texts of each label; `--"
 "output file.png` saves the PNG images as the printer would get them "
 "(`file-1.png`, `file-2.png` … if they differ; `-` writes the first to "
@@ -1858,17 +2189,17 @@ msgid ""
 "Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong "
 "arguments, 3 label file cannot be read, still locked by another print or "
 "output not written, 4 the label cannot be printed (empty, unknown or "
-"unclosed variable, date before the year 1 or after 9999), 5 the counter "
-"cannot be saved (nothing printed; or printed, but saving failed), 130 "
-"interrupted."
+"unclosed variable, date before the year 1 or after 9999, unknown column, a "
+"code a row cannot make), 5 the counter cannot be saved (nothing printed; or "
+"printed, but saving failed), 130 interrupted."
 msgstr ""
 "Exit-Codes: 0 gedruckt, 1 Problem mit dem Drucker oder kein Drucker "
 "gefunden, 2 falsche Argumente, 3 Etikettendatei nicht lesbar, noch von einem "
 "anderen Druck gesperrt oder Ausgabe nicht geschrieben, 4 das Etikett lässt "
 "sich nicht drucken (leer, unbekannte oder nicht geschlossene Variable, Datum "
-"vor dem Jahr 1 oder nach 9999), 5 der Zähler lässt sich nicht speichern "
-"(nichts gedruckt; oder gedruckt, aber das Speichern scheiterte), 130 "
-"abgebrochen."
+"vor dem Jahr 1 oder nach 9999, unbekannte Spalte, ein Code, den eine Zeile "
+"nicht ergibt), 5 der Zähler lässt sich nicht speichern (nichts gedruckt; "
+"oder gedruckt, aber das Speichern scheiterte), 130 abgebrochen."
 
 #. type: Plain text
 #: docs/use.md

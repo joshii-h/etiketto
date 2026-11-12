@@ -539,3 +539,18 @@ def test_the_preview_is_never_finer_than_600_dpi(make_window, system_env):
     win = _code_window(make_window, system_env, 1200)
     assert win.print_dpi() == 600
     assert win.rendered.image.width == round(60 / 25.4 * 600)
+
+
+def test_serial_labels_are_not_printed_on_sheets_yet(office, system_env, tmp_path):
+    win = office
+    label = Label(printer="system", orientation="across", elements=[TextElement(text="{Name}")])
+    label.sheet = SheetChoice("Avery L7160", list(range(21)))
+    win.set_label(label, None)
+    rows = tmp_path / "rows.csv"
+    rows.write_text("Name\nA\nB\n", encoding="utf-8")
+    win.data.attach(rows)
+    assert pump(lambda: win.data.state != "loading") and win.data.active
+    render_now(win)
+    win.print_flow.on_print()
+    assert toast_titles(win)[-1] == "Serial labels cannot be printed on label sheets yet"
+    assert not win.print_flow.busy and system_env.pages == [] and system_env.labels == []

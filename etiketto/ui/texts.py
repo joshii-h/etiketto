@@ -9,6 +9,7 @@ from pathlib import Path
 from PIL import Image
 
 from etiketto.backends.base import PrinterError, PrinterInfo, PrintOptions, PrintResult
+from etiketto.merge import MergeError
 from etiketto.model import ImageElement, LabelError, PageElement, SymbolElement, TextElement
 from etiketto.render import RenderWarning
 from etiketto.shipping.detect import Detection
@@ -399,6 +400,40 @@ def label_error_text(error: LabelError, name: str) -> str:
     if error.code == "not_label":
         return _("%s is not an Etiketto label") % name
     return _("The file is damaged: %s") % name
+
+
+def data_error_text(error: Exception, name: str) -> str:
+    """Why a data file for serial labels cannot be used: a MergeError code
+    or an OSError while reading it."""
+    if isinstance(error, FileNotFoundError):
+        return _("The data file %s is not there any more. Choose it again or remove it.") % name
+    if not isinstance(error, MergeError):
+        return _("Cannot open %s") % name
+    if error.code == "no_sheet":  # the detail is the sheet's name
+        return _("%(file)s has no sheet named %(sheet)s") % {"file": name, "sheet": str(error)}
+    texts = {
+        "not_table": _("%s is not a table. Use a CSV, ODS or XLSX file."),
+        "too_large": _(
+            "%s is too large for serial labels. Split it into smaller files or remove "
+            "rows and columns that are not needed."
+        ),
+        "empty": _("%s contains no data."),
+    }
+    return texts.get(error.code, _("The file is damaged: %s")) % name
+
+
+def series_stop_text(row: int, copies_printed: int = 0) -> str:
+    """Where a series stopped and how to go on; with the copies of that row
+    the printer had already printed, so none is printed twice by mistake."""
+    text = _("Printing stopped at row %(row)d. To continue, print again from row %(row)d.") % {
+        "row": row
+    }
+    if copies_printed:
+        text += " " + _("Copies of row %(row)d already printed: %(copies)d.") % {
+            "row": row,
+            "copies": copies_printed,
+        }
+    return text
 
 
 def save_error_text(error: OSError, name: str) -> str:

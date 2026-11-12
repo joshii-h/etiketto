@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -229,14 +230,21 @@ class Files:
         self._pick_save_path(_("Save label"), ".etiketto", self.write, self._label_filter())
 
     def save_template(self, *_args) -> None:
-        """Store a copy as template; the open file and its state stay as they are."""
+        """Store a copy as template; the open file and its state stay as they
+        are. A template keeps the placeholders but not the data file: each
+        use chooses its own, and a template passed on names no path of
+        this computer (the home folder, a user name)."""
         self._pick_save_path(
             _("Save as template…"),
             ".etiketto",
-            self._save_label,
+            self._save_template,
             self._label_filter(),
             folder=config.TEMPLATE_DIR,
         )
+
+    def _save_template(self, path: Path) -> bool:
+        label = dataclasses.replace(self.window.label, data_file="", data_sheet="")
+        return self._save(label.save, path, _("Saved %s") % path.name)
 
     def _save(self, save, path: Path, done: str) -> bool:
         """save(path), then the toast `done`; or tell the user why it failed."""

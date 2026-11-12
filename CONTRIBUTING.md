@@ -157,6 +157,9 @@ extension of the interface first; please open an issue before you start.
      (`report_progress()` from `base.py` does that if a callback was given).
      Return a `PrintResult` if something differed from the request (e.g.
      another mode was used), else `None`.
+     Serial labels call `print_label` once per row, one after the other, so
+     return only when the printer has taken the job (better: printed it)
+     and can take the next one.
    - Override `raster()` if the printer needs a different resolution, the
      exact tape height in pixels or background beyond the tape edges (bleed),
      `configured_host()` if there is a CLI configuration to read, and
@@ -197,22 +200,34 @@ extension of the interface first; please open an issue before you start.
 Labels store the backend id in the `printer` field; files without it belong
 to the VC-500W. Die-cut labels also store `gap_mm` and `orientation`;
 labels on a label sheet (page printers) store `sheet`: its id, the
-positions on the first sheet and whether the content is turned. Printer settings (host, safety margin, cut, mode, colour
+positions on the first sheet and whether the content is turned.
+Serial labels store the path of their data file in `data_file` (relative to
+the label file if the data file lies in its folder or below, else absolute)
+and the sheet in `data_sheet`, never the data itself. Templates never keep
+the data file. Printer settings (host, safety margin, cut, mode, colour
 adjustment) are kept per backend in `settings.json` under `printers.<id>`.
 
-Codes store their type in `symbology` (`model.SYMBOLOGIES`). A label with a
-type added after the first versions (`model.BARCODES`: Data Matrix, PDF417,
-Aztec, Code 39, Code 93, EAN-8, UPC-A, UPC-E, ITF-14, GS1-128, GS1
-DataMatrix) is written as format version 2 with `"features": ["barcodes"]`:
-version 1 readers refuse it as "newer" instead of calling it damaged, and a
-reader refuses features it does not know. A label without features stays
-version 1 and opens everywhere. A new feature adds a name to
-`model.FEATURES`, not a version.
+Format version 2: a file lists the `"features"` it needs, a reader refuses
+features it does not know ("needs a newer version") instead of printing the
+label wrongly; version 1 readers refuse every version 2 file as "newer". A
+label without features stays version 1 and opens everywhere. A new feature
+adds a name to `model.FEATURES` and a line to `Label.features()`, not a
+version. The features (`model.FEATURES`):
 
-TODO at integration: the branch `mail-merge` brings the feature `"serial"`.
-When it meets this one, keep the single `FORMAT_VERSION = 2`, `FEATURES =
-{"barcodes", "symbols", "variables", "serial"}` and one `Label.features()`
-that lists all of them; the tests for each feature stay.
+- `"barcodes"`: a code of a type added after the first versions
+  (`model.BARCODES`: Data Matrix, PDF417, Aztec, Code 39, Code 93, EAN-8,
+  UPC-A, UPC-E, ITF-14, GS1-128, GS1 DataMatrix); codes store their type in
+  `symbology` (`model.SYMBOLOGIES`). Version 1 readers would call the file
+  damaged.
+- `"symbols"`: a symbol element (see Symbols below).
+- `"serial"`: a linked data file (`data_file`); older versions would print
+  `{Name}` as it is.
+- `"variables"`: variables (`{=date}`, `{=counter}` …) in texts or codes, or
+  a counter other than the default; older versions would print `{=date}` as
+  it is and drop the counter when they save.
+
+Shipping labels (element kind `page`) need no feature: versions before them
+refuse the unknown element kind as "newer" already.
 
 ## Codes
 
@@ -304,6 +319,32 @@ ones before by the unknown element kind `symbol` (see
 - Commit messages in English, imperative mood, a short first line
   ("Fix cut mode for multiple copies"), details in the body.
 
+## Untrusted input
+
+Label files and data files come from anywhere, so they are read
+defensively: within size limits, and every malformed file raises one
+exception type with a code (the interface turns the code into a translated
+text), never a raw `KeyError`, `zipfile` or XML error.
+
+- `etiketto/model.py`: `.etiketto` label files, `LabelError`.
+- `etiketto/merge/`: data rows for serial labels from CSV, ODS and XLSX
+  files (`read_table()`, `read_book()` with the sheet names), and the
+  `{column}` placeholders in label texts (`fill()`, which never uses
+  `str.format()` on user data). It raises `MergeError` with the codes
+  `not_table`, `damaged`, `too_large` and `empty`; the limits (file size,
+  number of zip entries, unpacked size of each zip member, rows, columns,
+  cells) are in `etiketto/merge/limits.py`. Only plain files are read (a
+  named pipe would block). Hidden cells of merged ranges are empty in ODS
+  and XLSX alike. XML parts with a document type or entity declaration are
+  refused before parsing, and large parts are parsed as a stream. The
+  readers use only the standard library (`csv`, `zipfile`, `xml.etree`); no
+  third-party code is included or adapted, so nothing needs credit.
+- `etiketto/serial.py` fills a copy of the label from a row (texts and code
+  contents) and prints a series: one job per row through the backend's
+  `print_label`, stoppable between two labels.
+- Property tests (`tests/test_properties.py`, `tests/test_merge.py`) feed
+  random input to these readers: keep them passing when you change one.
+
 ## User interface
 
 - Follow the [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/)
@@ -344,8 +385,8 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
       --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
-      etiketto/backends/*.py etiketto/sheets/*.py etiketto/shipping/*.py \
-      etiketto/symbols/*.py
+      etiketto/backends/*.py etiketto/merge/*.py etiketto/sheets/*.py \
+      etiketto/shipping/*.py etiketto/symbols/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run

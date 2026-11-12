@@ -16,3 +16,4 @@ colour      party     -        readme
 sticker     sticker   -        readme
 cable-de    cable     -        readme:de
 die-cut     shelf     -        readme docs
+serial      serial    expand   readme docs

@@ -51,6 +51,7 @@ from etiketto.backends.base import (  # noqa: E402
 )
 from etiketto.model import CodeElement, ImageElement, Label, TextElement  # noqa: E402
 from etiketto.render import mm_to_px, render  # noqa: E402
+from etiketto.serial import SeriesProgress  # noqa: E402
 from etiketto.ui import i18n, preview, texts, widgets  # noqa: E402
 from etiketto.ui import settings as config  # noqa: E402
 from etiketto.ui import window as ui_window  # noqa: E402
@@ -2426,3 +2427,705 @@ def test_a_read_only_label_is_not_saved_over(window, tmp_path):
         assert not window.dirty and window.path == tmp_path / "copy.etiketto"
     finally:
         path.chmod(0o644)
+
+
+# --- serial labels ----------------------------------------------------------------
+
+
+@pytest.fixture
+def rows_csv(tmp_path):
+    path = tmp_path / "rows.csv"
+    path.write_text("Name;Code\nScrews;B-1\nWashers;B-2\nFuses;C-1\n", encoding="utf-8")
+    return path
+
+
+def loaded(win) -> bool:
+    return pump(lambda: win.data.state != "loading")
+
+
+def attach(win, path):
+    win.data.attach(path)
+    assert loaded(win)
+    render_now(win)
+
+
+def row_titles(win) -> list[str]:
+    group = win._groups[-1]
+    return [row.get_title() for row in find(group, Adw.PreferencesRow) if row.get_title()]
+
+
+def preview_text(win) -> str:
+    return win.data.current_label().elements[0].text
+
+
+def test_no_data_file(window):
+    assert window.data.state == "none" and not window.data.active
+    assert row_titles(window) == ["No data file"]
+    assert not window.preview.rows.get_visible()
+    assert not window.lookup_action("row-next").get_enabled()
+    assert window.data.current_label() is window.label
+    window.data.load()  # nothing linked: nothing to read
+    assert window.data.state == "none"
+
+
+def test_choose_data_file(window, file_dialog, rows_csv):
+    file_dialog.result = cancelled()
+    window.activate_action("win.choose-data", None)
+    file_dialog.result = "https://example.org/rows.csv"
+    window.activate_action("win.choose-data", None)
+    assert toast_titles(window) == ["Only local files can be used"]
+    assert window.data.path is None and not window.dirty
+    filters = file_dialog.instances[-1].kwargs["filters"]
+    assert filters.get_item(0).get_name() == "Tables (CSV, ODS, XLSX)"
+
+    file_dialog.result = rows_csv
+    button = [b for b in find(window._groups[-1], Gtk.Button) if b.get_label() == "Choose…"][0]
+    button.emit("clicked")
+    assert window.data.state == "loading" and window.dirty
+    assert one(window._groups[-1], Adw.ActionRow, title="rows.csv").get_subtitle() == "Reading…"
+    assert loaded(window)
+    assert window.label.data_file == str(rows_csv)
+    assert row_titles(window) == ["rows.csv", "Columns"]
+    file_row = one(window._groups[-1], Adw.ActionRow, title="rows.csv")
+    assert file_row.get_subtitle() == "Rows: 3 · Columns: 2"
+    assert one(window._groups[-1], Adw.ActionRow, title="Columns").get_subtitle() == "Name, Code"
+
+
+def test_stepping_through_the_rows(window, rows_csv):
+    window.label.elements[0].text = "{Name}"
+    attach(window, rows_csv)
+    preview = window.preview
+    assert preview.rows.get_visible() and preview.row_label.get_text() == "Row 1 of 3"
+    assert preview_text(window) == "Screws"
+    enabled = {s: window.lookup_action("row-" + s).get_enabled() for s in ("first", "next")}
+    assert enabled == {"first": False, "next": True}
+    window.activate_action("win.row-next", None)
+    assert preview.row_label.get_text() == "Row 2 of 3" and preview_text(window) == "Washers"
+    window.activate_action("win.row-last", None)
+    assert preview_text(window) == "Fuses"
+    assert not window.lookup_action("row-last").get_enabled()
+    assert window.lookup_action("row-previous").get_enabled()
+    window.activate_action("win.row-previous", None)
+    window.activate_action("win.row-first", None)
+    assert preview_text(window) == "Screws"
+    assert window.label.elements[0].text == "{Name}"  # the label keeps its placeholder
+    render_now(window)
+    assert window.rendered is not None
+
+
+def test_unknown_columns_are_named_in_the_status(window, rows_csv):
+    window.label.elements[0].text = "{Name} {Price} {Price}"
+    attach(window, rows_csv)
+    assert window.preview.status.get_text().endswith(" · No such column: {Price}")
+
+
+def test_insert_a_column_into_a_text(window, rows_csv):
+    assert not find(window.sidebar, Gtk.MenuButton, tooltip="Insert column")
+    attach(window, rows_csv)
+    button = one(window.sidebar, Gtk.MenuButton, tooltip="Insert column")
+    menu = button.get_menu_model()
+    assert [menu.get_item_attribute_value(i, "label").unpack() for i in range(2)] == [
+        "Name",
+        "Code",
+    ]
+    view = one(window.sidebar, Gtk.TextView)
+    buffer = view.get_buffer()
+    buffer.place_cursor(buffer.get_end_iter())
+    button.activate_action("data.insert", GLib.Variant.new_string("Name"))
+    assert window.label.elements[0].text == "Label{Name}"
+    render_now(window)
+    assert preview_text(window) == "LabelScrews"
+
+
+def test_insert_a_column_into_a_code(window, rows_csv):
+    window.add_element(CodeElement(data="https://x/"))
+    attach(window, rows_csv)
+    entry = one(window.sidebar, Adw.EntryRow, title="Content (link, text, number)")
+    entry.set_position(-1)
+    button = one(entry, Gtk.MenuButton, tooltip="Insert column")
+    button.activate_action("data.insert", GLib.Variant.new_string("Code"))
+    assert window.label.elements[1].data == "https://x/{Code}"
+    assert window.data.current_label().elements[1].data == "https://x/B-1"
+
+
+def test_columns_with_braces_cannot_be_inserted(window, tmp_path):
+    path = tmp_path / "b.csv"
+    path.write_text("a{b},Ok\n1,2\n")
+    attach(window, path)
+    menu = one(window.sidebar, Gtk.MenuButton, tooltip="Insert column").get_menu_model()
+    assert menu.get_n_items() == 1
+
+
+def test_many_columns_are_shortened_in_the_group(window, tmp_path):
+    path = tmp_path / "wide.csv"
+    path.write_text(",".join("C%d" % i for i in range(15)) + "\n" + ",".join("x" * 15) + "\n")
+    attach(window, path)
+    columns = one(window._groups[-1], Adw.ActionRow, title="Columns").get_subtitle()
+    assert columns.startswith("C0, C1,") and columns.endswith("C11, …")
+
+
+def make_book(tmp_path):
+    from test_merge import make_ods, ods_table, row, text
+
+    return make_ods(
+        tmp_path,
+        ods_table("Mai", row(text("Name")), row(text("Anna")), row(text("Ben"))),
+        ods_table("Juni", row(text("Name")), row(text("Cleo"))),
+        name="book.ods",
+    )
+
+
+def test_sheets_to_choose_from(window, tmp_path):
+    window.label.elements[0].text = "{Name}"
+    attach(window, make_book(tmp_path))
+    sheet = one(window._groups[-1], Adw.ComboRow, title="Sheet")
+    assert sheet.get_selected() == 0
+    window.activate_action("win.row-next", None)
+    assert preview_text(window) == "Ben"
+    sheet.set_selected(1)
+    assert window.label.data_sheet == "Juni"
+    assert loaded(window)
+    assert preview_text(window) == "Cleo" and window.data.cursor.number == 1
+    one(window._groups[-1], Adw.ComboRow, title="Sheet").set_selected(1)  # the same: nothing
+    assert window.data.state == "ready"
+    window.data.choose_sheet("Juni")
+    assert window.data.state == "ready"
+
+
+def test_read_again_keeps_the_row(window, rows_csv):
+    window.label.elements[0].text = "{Name}"
+    attach(window, rows_csv)
+    window.activate_action("win.row-last", None)
+    rows_csv.write_text("Name\nA\nB\nC\nD\n")
+    one(window._groups[-1], Gtk.Button, tooltip="Read again").emit("clicked")
+    assert loaded(window)
+    assert window.data.cursor.number == 3 and preview_text(window) == "C"
+    assert window.preview.row_label.get_text() == "Row 3 of 4"
+
+
+def test_remove_the_data_file(window, rows_csv):
+    attach(window, rows_csv)
+    window.dirty = False
+    one(window._groups[-1], Gtk.Button, tooltip="Remove data file").emit("clicked")
+    assert window.label.data_file == window.label.data_sheet == ""
+    assert window.data.state == "none" and window.dirty
+    assert row_titles(window) == ["No data file"]
+    assert not window.preview.rows.get_visible()
+
+
+def test_answers_of_an_older_read_are_dropped(window, rows_csv, tmp_path):
+    attach(window, rows_csv)
+    book = window.data.book
+    window.data.load()
+    window.data.load()
+    stale = window.data._generation - 1
+    window.data._loaded(stale, book)
+    window.data._failed(stale, OSError("old"))
+    assert window.data.state == "loading"
+    assert loaded(window) and window.data.state == "ready"
+    window.data.remove()  # a read still running is of no use now
+    window.data._loaded(window.data._generation - 1, book)
+    assert window.data.state == "none"
+
+
+@pytest.mark.parametrize(
+    "content, text, report",
+    [
+        (b"\x00\x01\x02", "bad.csv is not a table. Use a CSV, ODS or XLSX file.", False),
+        (b"", "bad.csv contains no data.", False),
+        (b"PK\x03\x04" + b"\x00" * 30, "The file is damaged: bad.csv", True),
+    ],
+)
+def test_data_files_that_cannot_be_used(window, tmp_path, content, text, report):
+    (tmp_path / "bad.csv").write_bytes(content)
+    attach(window, tmp_path / "bad.csv")
+    assert window.data.state == "failed" and not window.data.active
+    toast = window.toast_log[-1]
+    assert toast.get_title() == text
+    assert (toast.get_button_label() == "Report") is report
+    file_row = one(window._groups[-1], Adw.ActionRow, title="bad.csv")
+    assert file_row.get_subtitle() == text and file_row.has_css_class("error")
+    assert not window.preview.rows.get_visible()
+
+
+def test_too_large_data_file(window, rows_csv, monkeypatch):
+    from etiketto.merge import limits
+
+    monkeypatch.setattr(limits, "MAX_ROWS", 2)
+    attach(window, rows_csv)
+    assert toast_titles(window)[-1].startswith("rows.csv is too large for serial labels.")
+
+
+def test_data_file_is_saved_with_the_label_and_read_on_open(window, rows_csv, tmp_path):
+    window.label.elements[0].text = "{Code}"
+    attach(window, rows_csv)
+    window.files.write(tmp_path / "shelf.etiketto")
+    stored = json.loads((tmp_path / "shelf.etiketto").read_text(encoding="utf-8"))
+    assert stored["data_file"] == "rows.csv"
+    assert "Screws" not in (tmp_path / "shelf.etiketto").read_text()  # never the data
+
+    window.files.new()
+    assert window.data.state == "none" and window.data.path is None
+    window.files.open_file(tmp_path / "shelf.etiketto")
+    assert loaded(window)
+    assert window.data.state == "ready" and preview_text(window) == "B-1"
+    assert not window.dirty
+
+
+def test_missing_data_file_on_open_is_said_gently(window, rows_csv, tmp_path):
+    attach(window, rows_csv)
+    window.files.write(tmp_path / "shelf.etiketto")
+    rows_csv.unlink()
+    window.files.open_file(tmp_path / "shelf.etiketto")
+    assert loaded(window)
+    toast = window.toast_log[-1]
+    assert toast.get_title() == (
+        "The data file rows.csv is not there any more. Choose it again or remove it."
+    )
+    assert not toast.get_button_label()  # nothing to report
+    assert window.label.data_file == str(rows_csv)  # the link stays until removed
+    assert one(window._groups[-1], Gtk.Button, tooltip="Choose another file")
+
+
+def test_drop_a_data_file(window, rows_csv):
+    assert drop(window, Gio.File.new_for_path(str(rows_csv))) is True
+    assert loaded(window) and window.data.state == "ready"
+
+
+# --- printing serial labels --------------------------------------------------------------
+
+
+@pytest.fixture
+def series(ready, rows_csv):
+    ready.label.elements[0].text = "{Name}"
+    attach(ready, rows_csv)
+    return ready
+
+
+def printed_names(gui_env) -> list[int]:
+    """The rows printed, told apart by their width (each name has its own)."""
+    return [image.width for image, _host, _options in gui_env.prints]
+
+
+def test_print_serial_labels(series, gui_env):
+    series.print_flow.on_print()
+    dialog = series.last_dialog
+    assert dialog.get_heading() == "Print serial labels"
+    box = dialog.get_extra_child()
+    copies, first, last = (box.get_row_at_index(i) for i in range(3))
+    assert copies.get_title() == "Copies of each label"
+    assert (first.get_title(), first.get_value()) == ("From row", 1)
+    assert (last.get_title(), last.get_value()) == ("To row", 3)
+    copies.set_value(2)
+    first.set_value(2)
+    dialog.emit("response", "print")
+    assert series.banner.get_revealed()
+    assert series.banner.get_button_label() == "Stop"
+    assert pump(lambda: not series.print_flow.busy)
+    assert len(gui_env.prints) == 2
+    assert {options.copies for _image, _host, options in gui_env.prints} == {2}
+    assert toast_titles(series)[-1] == "Printed rows 2 to 3"
+    series.print_flow.start_series(PrintOptions(), range(2, 3))
+    assert pump(lambda: not series.print_flow.busy)
+    assert toast_titles(series)[-1] == "Printed row 3"
+    assert not series.banner.get_revealed() and not series.banner.get_button_label()
+    assert series.print_button.get_label() == "Print"
+
+
+def test_row_range_ends_follow_each_other(series):
+    series.print_flow.on_print()
+    box = series.last_dialog.get_extra_child()
+    first, last = box.get_row_at_index(1), box.get_row_at_index(2)
+    last.set_value(1)
+    first.set_value(3)
+    assert last.get_value() == 3
+    last.set_value(2)
+    assert first.get_value() == 2
+    respond(series.last_dialog, "cancel")
+
+
+def test_each_row_is_printed_with_its_values(series, gui_env, monkeypatch):
+    prepared = []
+    prepare = gui_env.backend.prepare
+    monkeypatch.setattr(
+        gui_env.backend,
+        "prepare",
+        lambda label, options, safe_mm: (
+            prepared.append(label.elements[0].text) or prepare(label, options, safe_mm)
+        ),
+    )
+    series.print_flow.start_series(PrintOptions(), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    assert prepared == ["Screws", "Washers", "Fuses"]
+
+
+def test_stop_a_series(series, gui_env, monkeypatch):
+    print_label = gui_env.backend.print_label
+
+    def slow(image, host, options, progress=None):
+        series.print_flow._stop.set()  # what the Stop button does, from the worker
+        return print_label(image, host, options, progress)
+
+    monkeypatch.setattr(gui_env.backend, "print_label", slow)
+    series.print_flow.start_series(PrintOptions(), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    assert len(gui_env.prints) == 1
+    assert toast_titles(series)[-1] == "Stopped after row 1"
+
+
+def test_stop_button(series):
+    banner = series.banner
+    series.print_flow.stop()  # not printing: nothing to stop
+    assert not series.print_flow._stop.is_set()
+    series.print_flow.busy = True
+    banner.set_button_label("Stop")
+    banner.emit("button-clicked")
+    assert series.print_flow._stop.is_set()
+    assert banner.get_title() == "Stopping after this label…"
+    assert not banner.get_button_label()
+    series.print_flow.series_progress(SeriesProgress(2, 3, 2, Progress(1, 1, "PREHEATING")))
+    assert banner.get_title() == "Stopping after this label…"  # stays until the end
+    assert series.print_button.get_label() == "Printing 2/3…"
+
+
+def test_series_progress_shows_printer_stages(series):
+    series.print_flow.busy = True
+    series.print_flow.series_progress(SeriesProgress(1, 3, 1, Progress(1, 1, "PREHEATING")))
+    assert series.banner.get_title() == "Warming up…"
+    series.print_flow.series_progress(SeriesProgress(2, 3, 2, Progress(1, 1, "")))
+    assert series.banner.get_title() == "Printing serial labels"
+    series.print_flow.busy = False
+    series.print_flow.series_progress(SeriesProgress(3, 3, 3, Progress(1, 1, "")))
+    assert series.print_button.get_label() == "Printing 2/3…"  # late event: ignored
+
+
+@pytest.mark.parametrize("fail_at", [1, 2])
+def test_series_printer_problem(series, gui_env, monkeypatch, fail_at):
+    print_label = gui_env.backend.print_label
+
+    def failing(image, host, options, progress=None):
+        if len(gui_env.prints) + 1 == fail_at:
+            raise PaperJam("JAM")
+        return print_label(image, host, options, progress)
+
+    monkeypatch.setattr(gui_env.backend, "print_label", failing)
+    series.print_flow.start_series(PrintOptions(), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    dialog = series.get_visible_dialog()
+    assert dialog.get_heading() == "Printing failed"
+    assert dialog.get_body() == (
+        "The label is jammed. Open the cover, remove it and try again.\n\nPrinting stopped "
+        "at row %d. To continue, print again from row %d." % (fail_at, fail_at)
+    )
+    respond(dialog, "close")
+
+
+def test_series_label_that_cannot_be_prepared(series, gui_env, monkeypatch):
+    def broken(label, options, safe_mm):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(gui_env.backend, "prepare", broken)
+    series.print_flow.start_series(PrintOptions(), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    dialog = series.get_visible_dialog()
+    assert dialog.get_body().startswith(
+        "The label cannot be prepared for printing.\n\nPrinting stopped at row 1."
+    )
+    respond(dialog, "close")
+
+
+def test_series_with_another_mode_is_reported(series, gui_env):
+    gui_env.print_result = PrintResult(mode="color")
+    series.print_flow.start_series(PrintOptions(mode="vivid"), range(2))
+    assert pump(lambda: not series.print_flow.busy)
+    assert toast_titles(series)[-1].startswith("Colour mode “Vivid” is not available")
+
+
+def test_series_without_printer(window, rows_csv, gui_env):
+    attach(window, rows_csv)
+    window.print_flow.start_series(PrintOptions(), range(3))
+    assert toast_titles(window)[-1] == "No printer yet – search for one or enter its address"
+    assert not window.print_flow.busy and gui_env.prints == []
+
+
+def test_no_printing_while_the_data_file_cannot_be_used(ready, rows_csv, tmp_path):
+    ready.data.attach(rows_csv)
+    assert ready.data.state == "loading"
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1] == "The data file is still being read. Try again in a moment."
+    assert loaded(ready)
+    (tmp_path / "header.csv").write_text("Name\n")
+    attach(ready, tmp_path / "header.csv")
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1] == "header.csv contains no data."
+    (tmp_path / "header.csv").unlink()
+    ready.data.load()
+    assert loaded(ready)
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1].startswith("The data file header.csv is not there any more.")
+    assert ready.get_visible_dialog() is None
+
+
+def test_data_error_texts():
+    from etiketto.merge import MergeError
+
+    assert texts.data_error_text(PermissionError("no"), "a.csv") == "Cannot open a.csv"
+    assert texts.data_error_text(MergeError("other", ""), "a.csv") == "The file is damaged: a.csv"
+
+
+# --- review fixes: serial labels --------------------------------------------------------
+
+
+def test_column_names_are_shown_as_text(window, tmp_path):
+    """Markup and underscores in column names are text: no link, no bold,
+    no mnemonic that swallows the underscore."""
+    path = tmp_path / "m.csv"
+    path.write_text("first_name,A&B,<b>x</b>\n1,2,3\n")
+    attach(window, path)
+    row = one(window._groups[-1], Adw.ActionRow, title="Columns")
+    assert row.get_subtitle() == "first_name, A&amp;B, &lt;b&gt;x&lt;/b&gt;"
+    menu = one(window.sidebar, Gtk.MenuButton, tooltip="Insert column").get_menu_model()
+    labels = [menu.get_item_attribute_value(i, "label").unpack() for i in range(3)]
+    assert labels == ["first__name", "A&B", "<b>x</b>"]
+
+
+def test_sheet_row_waits_while_reading(window, tmp_path):
+    attach(window, make_book(tmp_path))
+    window.data.load()
+    assert not one(window._groups[-1], Adw.ComboRow, title="Sheet").get_sensitive()
+    assert loaded(window)
+    assert one(window._groups[-1], Adw.ComboRow, title="Sheet").get_sensitive()
+
+
+def test_a_new_read_cancels_the_running_one(window, rows_csv):
+    attach(window, rows_csv)
+    window.data.load()
+    first = window.data._cancel
+    window.data.load()
+    assert first.is_set() and not window.data._cancel.is_set()
+    window.data.remove()
+    assert window.data._cancel.is_set()
+
+
+def foreign_label(tmp_path, data_file: str):
+    folder = tmp_path / "share"
+    folder.mkdir()
+    data = Label(elements=[TextElement(text="{Name}")]).to_dict()
+    data["data_file"] = data_file
+    (folder / "x.etiketto").write_text(json.dumps(data))
+    return folder / "x.etiketto"
+
+
+def test_data_file_outside_the_label_folder_is_read_only_when_agreed(ready, tmp_path):
+    secret = tmp_path / "secret.csv"
+    secret.write_text("Name\nhidden\n")
+    ready.files.open_file(foreign_label(tmp_path, "../secret.csv"))
+    assert ready.data.state == "unread" and not ready.data.active
+    dialog = ready.last_dialog
+    assert dialog.get_heading() == "Read the data file?"
+    assert str(secret) in dialog.get_body()
+    assert one(ready._groups[-1], Adw.ActionRow, title="secret.csv").get_subtitle() == (
+        "Not read: outside the label&apos;s folder"
+    )
+    respond(dialog, "cancel")
+    assert ready.data.state == "unread"
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1] == "Not read: outside the label&apos;s folder"  # escaped
+    respond(dialog, "read")
+    assert loaded(ready) and ready.data.rows == [{"Name": "hidden"}]
+
+
+def test_agreeing_late_does_not_read_for_another_label(window, tmp_path):
+    (tmp_path / "secret.csv").write_text("Name\nhidden\n")
+    window.files.open_file(foreign_label(tmp_path, "../secret.csv"))
+    dialog = window.last_dialog
+    window.files.new()
+    respond(dialog, "read")
+    assert window.data.state == "none"
+
+
+def test_template_has_no_data_file(window, rows_csv, tmp_path):
+    attach(window, rows_csv)
+    window.files._save_template(tmp_path / "t.etiketto")
+    stored = json.loads((tmp_path / "t.etiketto").read_text(encoding="utf-8"))
+    assert (stored["data_file"], stored["data_sheet"]) == ("", "")
+    assert window.label.data_file == str(rows_csv)  # the open label keeps it
+
+
+@pytest.fixture
+def ean_series(ready, tmp_path):
+    path = tmp_path / "ean.csv"
+    path.write_text("Name;EAN\nA;4006381333931\nB;12x\nC;\nD;400638133393\n")
+    ready.add_element(CodeElement(data="{EAN}", symbology="ean13"))
+    attach(ready, path)
+    return ready
+
+
+def test_rows_whose_codes_cannot_be_drawn_are_named_before_printing(ean_series, gui_env):
+    ean_series.print_flow.start_series(PrintOptions(), range(4))
+    assert pump(lambda: not ean_series.print_flow.busy)
+    dialog = ean_series.get_visible_dialog()
+    assert dialog.get_heading() == "Rows that cannot be printed"
+    assert dialog.get_body().endswith("\n\nRows: 2, 3")
+    assert gui_env.prints == []  # nothing printed
+    respond(dialog, "skip")
+    assert pump(lambda: not ean_series.print_flow.busy)
+    assert len(gui_env.prints) == 2
+    assert toast_titles(ean_series)[-1] == "Printed rows 1 to 4"
+
+
+def test_only_unprintable_rows_offer_no_skipping(ean_series, gui_env, monkeypatch):
+    from etiketto.ui import printing
+
+    monkeypatch.setattr(printing, "ROWS_LISTED", 1)
+    ean_series.print_flow.start_series(PrintOptions(), range(1, 3))
+    assert pump(lambda: not ean_series.print_flow.busy)
+    dialog = ean_series.get_visible_dialog()
+    assert dialog.get_body().endswith("Rows: 2, …")
+    assert not dialog.has_response("skip")
+    respond(dialog, "cancel")
+    assert gui_env.prints == []
+
+
+def test_an_empty_row_range_prints_nothing(series, gui_env):
+    series.print_flow.start_series(PrintOptions(), range(0))
+    assert toast_titles(series)[-1] == "No rows to print"
+    assert not series.print_flow.busy and gui_env.prints == []
+    from etiketto.serial import SeriesResult
+
+    assert series.print_flow.series_done(SeriesResult([]), PrintOptions()) is False
+
+
+def test_only_tables_in_visible_folders_are_read_without_asking(window, tmp_path):
+    folder = tmp_path / "share"
+    (folder / ".hidden").mkdir(parents=True)
+    (folder / ".hidden" / "a.csv").write_text("Name\nA\n")
+    (folder / "notes.md").write_text("Name\nA\n")
+    (folder / "ok.txt").write_text("Name\nA\n")
+    label = Label(elements=[TextElement(text="{Name}")])
+    for name, state in (("ok.txt", "ready"), (".hidden/a.csv", "unread"), ("notes.md", "unread")):
+        label.data_file = str(folder / name)
+        label.save(folder / "x.etiketto")
+        window.files.open_file(folder / "x.etiketto")
+        assert loaded(window) and window.data.state == state, name
+
+
+def test_a_link_shows_where_it_leads(window, tmp_path):
+    secret = tmp_path / "secret.txt"
+    secret.write_text("Name\nhidden\n")
+    folder = tmp_path / "share"
+    folder.mkdir()
+    (folder / "data.csv").symlink_to(secret)
+    label = Label(elements=[TextElement(text="{Name}")], data_file=str(folder / "data.csv"))
+    label.save(folder / "x.etiketto")
+    window.files.open_file(folder / "x.etiketto")
+    assert window.data.state == "unread"
+    assert "%s\n→ %s" % (folder / "data.csv", secret) in window.last_dialog.get_body()
+
+
+def test_agreed_data_files_are_not_asked_about_again(window, tmp_path):
+    (tmp_path / "secret.csv").write_text("Name\nhidden\n")
+    path = foreign_label(tmp_path, "../secret.csv")
+    window.files.open_file(path)
+    respond(window.last_dialog, "read")
+    assert loaded(window) and window.data.state == "ready"
+    stored = json.loads(config.SETTINGS_FILE.read_text())["trusted_data"]
+    assert stored == [[str(path.resolve()), str((tmp_path / "secret.csv").resolve())]]
+    dialog = window.last_dialog
+    window.files.open_file(path)
+    assert loaded(window) and window.data.state == "ready"
+    assert window.last_dialog is dialog  # not asked again
+    window.settings.data["trusted_data"] = "junk"
+    assert not window.settings.trusts_data(path, tmp_path / "secret.csv")
+
+
+def test_rows_that_are_gone_are_not_printed(series, gui_env):
+    series.print_flow.start_series(PrintOptions(), [1, 2, 7, -1])
+    assert pump(lambda: not series.print_flow.busy)
+    assert len(gui_env.prints) == 2
+    assert toast_titles(series)[-1] == "Printed rows 2 to 3"
+
+
+def test_an_unexpected_error_ends_the_series(series, gui_env, monkeypatch):
+    from etiketto.ui import printing
+
+    def broken(*args, **kwargs):
+        raise KeyError("bug")
+
+    monkeypatch.setattr(printing, "print_series", broken)
+    series.print_flow.start_series(PrintOptions(), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    assert series.get_visible_dialog().get_heading() == "Printing failed"
+    assert series.print_button.get_sensitive()
+    respond(series.get_visible_dialog(), "close")
+
+
+def test_settings_are_only_for_this_user(window):
+    window.settings.save()
+    assert config.SETTINGS_FILE.stat().st_mode & 0o777 == 0o600
+
+
+def test_forget_allowed_data_files(window, tmp_path):
+    action = window.lookup_action("forget-data")
+    assert not action.get_enabled()
+    (tmp_path / "secret.csv").write_text("Name\nhidden\n")
+    path = foreign_label(tmp_path, "../secret.csv")
+    window.files.open_file(path)
+    respond(window.last_dialog, "read")
+    assert loaded(window) and action.get_enabled()
+    window.activate_action("win.forget-data", None)
+    assert not action.get_enabled()
+    assert toast_titles(window)[-1].startswith("Etiketto asks again")
+    assert "trusted_data" not in json.loads(config.SETTINGS_FILE.read_text())
+    window.files.open_file(path)
+    assert window.data.state == "unread"
+
+
+def test_late_search_results_for_a_printer_model_that_is_gone(window):
+    window.label.printer = "gone"  # e.g. a model a finished test registered
+    assert window.printer.discovered([]) is False
+
+
+def test_a_series_moves_the_counter_on(series, gui_env):
+    series.label.elements[0].text = "{=counter} {Name}"
+    series.label.counter_next = 4
+    series.print_flow.start_series(PrintOptions(copies=2), range(3))
+    assert pump(lambda: not series.print_flow.busy)
+    assert len(gui_env.prints) == 6
+    assert series.label.counter_next == 10
+
+
+def test_preview_fills_row_and_variables_in_one_pass(window, tmp_path):
+    path = tmp_path / "v.csv"
+    path.write_text("Name\n{=counter}\n")
+    window.label.elements[0].text = "{Name} {=counter} {{x}}"
+    window.label.counter_next = 3
+    attach(window, path)
+    assert window.data.current_label().elements[0].text == "{=counter} 3 {x}"
+
+
+def test_a_saved_sheet_that_is_gone_is_not_replaced(ready, tmp_path):
+    ready.label.elements[0].text = "{Name}"
+    ready.data.attach(make_book(tmp_path))
+    assert loaded(ready)
+    ready.label.data_sheet = "August"  # renamed in the spreadsheet since
+    ready.data.load()
+    assert loaded(ready)
+    assert ready.data.state == "failed" and not ready.data.active
+    assert toast_titles(ready)[-1] == "book.ods has no sheet named August"
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1] == "book.ods has no sheet named August"
+    sheet = one(ready._groups[-1], Adw.ComboRow, title="Sheet")
+    assert sheet.get_selected() == 2  # "August", after "Mai" and "Juni"
+    sheet.set_selected(2)  # the same: nothing to read
+    assert ready.data.state == "failed"
+    sheet.set_selected(0)  # the first one, chosen on purpose
+    assert loaded(ready) and ready.data.state == "ready"
+    assert ready.label.data_sheet == "Mai" and preview_text(ready) == "Anna"
+
+
+def test_series_stop_text():
+    assert texts.series_stop_text(3) == (
+        "Printing stopped at row 3. To continue, print again from row 3."
+    )
+    assert texts.series_stop_text(3, 2).endswith(" Copies of row 3 already printed: 2.")

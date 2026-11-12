@@ -48,6 +48,7 @@
       <li>Finds the printer on the network by itself and shows its state</li>
       <li>Endless tape as long as the content or with a fixed length; die-cut labels in common or custom sizes</li>
       <li>Text in any installed font, images and photos, over 7000 symbols, QR codes and barcodes</li>
+      <li>Serial labels: one label for each row of a CSV, ODS or XLSX file</li>
       <li>Background colours and images printed edge to edge, borders</li>
       <li>Shipping labels from a carrier's PDF or image: the label is found on the page and printed at 4 × 6 in, 100 × 150 mm or on a sheet</li>
       <li>Live preview at print resolution, millimetres or inches, templates, PNG export</li>

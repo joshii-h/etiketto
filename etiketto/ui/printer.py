@@ -154,7 +154,7 @@ class Printer:
         threading.Thread(target=work, name="etiketto-discover", daemon=True).start()
 
     def discovered(self, found, generation: int | None = None) -> bool:
-        if self._outdated(generation):
+        if self._outdated(generation) or not self._known_printer():
             return False
         if not found:
             self.update_row(
@@ -231,6 +231,11 @@ class Printer:
     def _next_generation(self) -> int:
         self.generation += 1  # a pending status answer or search is outdated now
         return self.generation
+
+    def _known_printer(self) -> bool:
+        """False for a window whose printer model is gone (a late answer to
+        a window of a test that registered a model of its own)."""
+        return self.window.label.printer in {backend.id for backend in backends()}
 
     def _outdated(self, generation: int | None) -> bool:
         return generation is not None and generation != self.generation

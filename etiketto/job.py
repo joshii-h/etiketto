@@ -10,7 +10,7 @@ same image, or from one render per position.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import replace
 from datetime import datetime
 
@@ -52,6 +52,7 @@ class Job:
         options: PrintOptions,
         safe_mm: float = DEFAULT_SAFE_MM,
         values: Values | None = None,
+        columns: Mapping[str, str] | None = None,
         sheet: SheetJob | None = None,
     ):
         """sheet: print on label sheets; options.copies is then the number
@@ -62,6 +63,7 @@ class Job:
         self.options = options
         self.safe_mm = safe_mm
         self.values = values or Values.for_label(label, datetime.now(), options.copies)
+        self.columns = columns  # serial labels: the row the placeholders are filled from
         self.printed = 0
         # the first label is filled in once: its UUID is the same in the
         # check and the print; the others are made as they are needed, a
@@ -72,9 +74,9 @@ class Job:
         """The label of the given copy with its variables filled in, and the
         variables that could not be."""
         if copy != 1:
-            return expand_label(self.label, self.values.for_copy(copy))
+            return expand_label(self.label, self.values.for_copy(copy), self.columns)
         if self._first is None:
-            self._first = expand_label(self.label, self.values)
+            self._first = expand_label(self.label, self.values, self.columns)
         return self._first
 
     @property

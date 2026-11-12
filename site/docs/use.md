@@ -221,7 +221,8 @@ text and in the QR code is the same number. The preview shows the values
 the next print uses.
 
 To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without
-variables print exactly as typed.
+variables print exactly as typed, unless the label has a data file for
+[serial labels](serial.md): then `{{` and `}}` always print one brace.
 
 Dates and times are in the computer's time zone. `+1d` keeps the time of
 day, also when summer time starts or ends; `+2h` counts real hours. `%z`
@@ -242,6 +243,7 @@ etiketto print label.etiketto --copies 5 --counter-start 100
 etiketto print label.etiketto --set title="Batch 7" --set lot=A12
 etiketto print label.etiketto --printer system --host ipp://printer.local/ipp/print
 etiketto print label.etiketto --copies 3 --dry-run --output preview.png
+etiketto print shelf.etiketto --data items.csv --rows 3-10
 etiketto list-printers
 etiketto --version
 ```
@@ -262,6 +264,12 @@ etiketto --version
   repeats the numbers. The label file is locked while printing: a second
   `etiketto print` of the same file waits. The window reads the saved
   number again before printing and saving.
+- Serial labels: one label for each row of the data file, `--copies` of
+  each; `--data` gives the data file (by default the label's own, if it
+  lies in the label's folder), `--sheet` the sheet, `--rows` the rows
+  (`3-10`, `5`, `7-` to the last). The counter goes on from row to row.
+  A placeholder without a column or a code a row cannot make stops the
+  print before the first label. See [Serial labels](serial.md).
 - `--dry-run` only checks and renders: it lists the texts of each label;
   `--output file.png` saves the PNG images as the printer would get them
   (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to
@@ -270,7 +278,8 @@ etiketto --version
 Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong
 arguments, 3 label file cannot be read, still locked by another print or
 output not written, 4 the label cannot be printed (empty, unknown or
-unclosed variable, date before the year 1 or after 9999), 5 the counter
+unclosed variable, date before the year 1 or after 9999, unknown column,
+a code a row cannot make), 5 the counter
 cannot be saved (nothing printed; or printed, but saving failed),
 130 interrupted.
 

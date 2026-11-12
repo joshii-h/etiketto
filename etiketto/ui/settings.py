@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from gi.repository import GLib
@@ -34,6 +35,14 @@ def migrate(data: dict) -> dict:
     return data
 
 
+MAX_TRUSTED_DATA = 200  # label and data file pairs the user agreed to read
+
+
+def _data_pair(label_file: Path, data_file: Path) -> list[str]:
+    """As stored: both resolved, so a link changed later is asked about again."""
+    return [str(label_file.absolute().resolve()), str(data_file.resolve())]
+
+
 class Settings:
     """settings.json: a dict, saved after each change."""
 
@@ -51,7 +60,11 @@ class Settings:
     def save(self) -> None:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         tmp = SETTINGS_FILE.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self.data, indent=1), encoding="utf-8")
+        tmp.unlink(missing_ok=True)  # a leftover could have other permissions
+        # only for this user: it names files and printers of this computer
+        descriptor = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with open(descriptor, "w", encoding="utf-8") as file:
+            file.write(json.dumps(self.data, indent=1))
         tmp.replace(SETTINGS_FILE)
 
     @property
@@ -61,6 +74,27 @@ class Settings:
     def set_units(self, value) -> None:
         self.data["units"] = value
         self.save()
+
+    def trusts_data(self, label_file: Path, data_file: Path) -> bool:
+        """Did the user agree to read this data file for this label file?"""
+        return _data_pair(label_file, data_file) in self._trusted()
+
+    def trust_data(self, label_file: Path, data_file: Path) -> None:
+        pairs = [p for p in self._trusted() if p != _data_pair(label_file, data_file)]
+        pairs.append(_data_pair(label_file, data_file))
+        self.data["trusted_data"] = pairs[-MAX_TRUSTED_DATA:]
+        self.save()
+
+    def has_trusted_data(self) -> bool:
+        return bool(self._trusted())
+
+    def forget_trusted_data(self) -> None:
+        self.data.pop("trusted_data", None)
+        self.save()
+
+    def _trusted(self) -> list[list[str]]:
+        pairs = self.data.get("trusted_data")
+        return [p for p in pairs if isinstance(p, list)] if isinstance(pairs, list) else []
 
     def printer(self, backend: Backend) -> PrinterSettings:
         return PrinterSettings(self, backend)
