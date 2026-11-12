@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "A linha %(row)d fica na posição %(position)d da folha %(sheet)d.",
     "print density\x04Default": "Predefinida",
     "Ideas for the variables (counter, date, UUID), no code": "Ideias para as variáveis (contador, data, UUID), sem código",
+    "Waiting for the printer's answer…": "A aguardar a resposta da impressora…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "imprimir com as predefinições do modelo de impressora em vez do corte, modo, qualidade e definições da impressora escolhidos por último na aplicação",
 }

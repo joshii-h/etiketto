@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rida %(row)d läheb lehe %(sheet)d kohale %(position)d.",
     "print density\x04Default": "Vaikimisi",
     "Ideas for the variables (counter, date, UUID), no code": "Ideed muutujate jaoks (loendur, kuupäev, UUID), koodi ei kasutata",
+    "Waiting for the printer's answer…": "Ootan printeri vastust…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "prindi printerimudeli vaikeväärtustega, mitte rakenduses viimati valitud lõike, režiimi, kvaliteedi ja printeriseadetega",
 }

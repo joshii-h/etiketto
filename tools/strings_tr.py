@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d. satır %(sheet)d. sayfanın %(position)d. konumuna gelir.",
     "print density\x04Default": "Varsayılan",
     "Ideas for the variables (counter, date, UUID), no code": "Değişkenler için fikirler (sayaç, tarih, UUID), kod içermez",
+    "Waiting for the printer's answer…": "Yazıcının yanıtı bekleniyor…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "uygulamada en son seçilen kesim, mod, kalite ve yazıcı ayarları yerine yazıcı modelinin varsayılanlarıyla yazdır",
 }

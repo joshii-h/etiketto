@@ -7,6 +7,7 @@ import io
 import json
 import subprocess  # nosec B404 - runs this checkout's CLI without a display
 import sys
+import time
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -1012,7 +1013,9 @@ def test_the_printer_is_asked_before_rendering_where_it_matters(mono, label_file
     assert cli.ask_printer(mono, "h") is None
 
 
-def test_a_printer_that_answers_too_late_is_not_waited_for(mono, monkeypatch):
+def test_a_late_answer_is_not_used_but_given_time_to_end(mono, monkeypatch, capsys):
+    """After `wait` the answer is not used; the question still running gets
+    `finish` seconds to end (the user is told), then it is left behind."""
     import threading
 
     monkeypatch.setattr(mono, "query_before_render", True, raising=False)
@@ -1023,7 +1026,41 @@ def test_a_printer_that_answers_too_late_is_not_waited_for(mono, monkeypatch):
     )
     threading.Timer(0.2, release.set).start()
     assert cli.ask_printer(mono, "h", wait=0.05) is None  # too late: not used
-    assert done == ["h"]  # but waited for: nothing runs while printing
+    assert done == ["h"]  # but it ended before the print
+    assert "Waiting for the printer's answer" in capsys.readouterr().err
+    release.clear()
+    done.clear()
+    started = time.monotonic()
+    assert cli.ask_printer(mono, "h", wait=0.05, finish=0.1) is None
+    assert time.monotonic() - started < 1 and done == []  # bounded: left behind
+    release.set()
+
+
+def test_the_check_runs_for_the_printer_that_answered(mono, label_file, monkeypatch):
+    """The warnings are the render's for the printer that was asked (a
+    P-touch PT-2300 renders for its own head): the check comes after."""
+    path = label_file(TextElement(text="x"))
+    monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    checked = []
+    real = cli._check
+    monkeypatch.setattr(cli, "_check", lambda job: checked.append(job.options.info) or real(job))
+    assert run("print", path, "--host", "h") == 0
+    assert checked == [mono.info]
+    assert run("print", path, "--host", "h", "--dry-run") == 0
+    assert checked == [mono.info, mono.info]
+
+
+def test_printer_defaults_instead_of_the_apps_choices(tmp_path, monkeypatch):
+    from etiketto.backends import get_backend
+    from etiketto.ui.settings import Settings
+
+    ptouch = get_backend("ptouch")
+    settings = Settings({"printers": {"ptouch": {"cut": "half", "chain": True}}})
+    args = cli.parser().parse_args(["print", "x.etiketto"])
+    assert cli._choices(args, settings, ptouch).options().chain is True
+    args = cli.parser().parse_args(["print", "x.etiketto", "--printer-defaults"])
+    options = cli._choices(args, settings, ptouch).options()
+    assert (options.chain, options.cut) == (False, "full")
 
 
 def test_label_sheets_on_the_command_line(tmp_path, monkeypatch):
@@ -1074,3 +1111,15 @@ def test_a_dry_run_asks_the_printer_too(mono, label_file, monkeypatch, capsys):
     assert run("print", path, "--dry-run", "--host", "h", "--no-query") == 0
     assert run("print", path, "--dry-run") == 0  # no printer known: nothing to ask
     assert mono.queries == ["h"]
+
+
+def test_a_dry_run_waits_briefly_and_never_blocks(mono, label_file, monkeypatch):
+    path = label_file(TextElement(text="x"))
+    monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    asked = []
+    monkeypatch.setattr(
+        cli, "ask_printer", lambda backend, host, wait, finish: asked.append((wait, finish))
+    )
+    assert run("print", path, "--dry-run", "--host", "h") == 0
+    assert run("print", path, "--host", "h") == 0
+    assert asked == [(cli.DRY_RUN_WAIT, 0.0), (cli.QUERY_WAIT, cli.QUERY_FINISH)]

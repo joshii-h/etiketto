@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:24+0100\n"
+"POT-Creation-Date: 2026-11-12 12:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1882,7 +1882,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Some printers are asked before the label is drawn, because it depends on what they report (the tape, the resolution); a printer that does not answer within 5 s gets the label drawn without. `--no-query` skips the question."
+msgid "It prints with the choices last made in the app for that printer model: cut, colours, quality, chain printing, high resolution, tape feed and the printer settings. `--printer-defaults` takes the model's defaults instead."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "Some printers are asked before the label is drawn, because it depends on what they report (the tape, the resolution); a printer that does not answer within 5 s (2 s for `--dry-run`) gets the label drawn without.  `--no-query` skips the question."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1906,7 +1912,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "In the Flatpak the label file has to be handed over with `--file-forwarding`; write images to standard output:"
+msgid "In the Flatpak the label file has to be handed over with `--file-forwarding`, a data file too (each between `@@`; the label's own data file is only reached when handed over); write images to standard output:"
 msgstr ""
 
 #. type: Fenced code block (sh)
@@ -1914,6 +1920,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@\n"
+"flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@\n"
 "flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png\n"
 msgstr ""
 

@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Строка %(row)d попадает в позицию %(position)d листа %(sheet)d.",
     "print density\x04Default": "По умолчанию",
     "Ideas for the variables (counter, date, UUID), no code": "Идеи для переменных (счётчик, дата, UUID), без кода",
+    "Waiting for the printer's answer…": "Ожидание ответа принтера…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "печатать с настройками модели принтера по умолчанию вместо обрезки, режима, качества и настроек принтера, выбранных в приложении последними",
 }

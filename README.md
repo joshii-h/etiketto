@@ -198,6 +198,7 @@ changes what `{=date}` means.
 etiketto print FILE [--printer ID] [--host ADDR] [--copies N]
                     [--set NAME=VALUE ...] [--set-literal NAME=VALUE ...]
                     [--counter-start N] [--no-save-counter] [--no-query]
+                    [--printer-defaults]
                     [--data FILE [--sheet NAME] [--rows FROM-TO]]
                     [--dry-run [--output out.png]]
 etiketto list-printers [--printer ID]
@@ -211,10 +212,17 @@ value as it is). `--set date=2026-12-31` prints with another date.
 `--no-save-counter` prints a read-only label without saving the counter
 (the next print repeats the numbers). Without
 `--host` the printer set in the app is used, or the only one found.
+It prints with the choices last made in the app for that printer model:
+cut, colours, quality, the P-touch's chain printing, high resolution and
+tape feed, and the printer settings (label sensor, darkness …);
+`--printer-defaults` takes the model's defaults instead.
 Printers whose label depends on what they report are asked first, for at
 most 5 s (P-touch: model and tape; NIIMBOT: model, label types and density
-range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution); `--no-query`
-skips that. A label set up for a label sheet prints on it as in the
+range; cab, ZPL, EPL2, TSPL, ESC/POS, DYMO: the resolution; a dry run waits
+2 s); the label is then checked for that printer. A question still on its
+way after that gets up to 10 s more to end before printing (Etiketto says
+so); what it brings later still sets the resolution the label is drawn at.
+`--no-query` skips the question. A label set up for a label sheet prints on it as in the
 window: each copy (with `--data`, each copy of each row) at the next of
 the chosen positions.
 `--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
@@ -231,10 +239,13 @@ written, 4 label cannot be printed (empty, unknown or unclosed variable,
 date out of range, unknown column, a code a row cannot make), 5 the counter cannot be saved (checked before
 printing; or printed, but saving failed), 130 interrupted.
 
-In the Flatpak, hand the file over with `--file-forwarding`:
+In the Flatpak, hand the files over with `--file-forwarding`: the label
+and a data file, each between `@@`; the label's own data file is only
+reached if it is handed over too:
 
 ```sh
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
+flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@ --data @@ rows.csv @@
 ```
 
 ## How labels are laid out

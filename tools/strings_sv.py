@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rad %(row)d hamnar på position %(position)d på ark %(sheet)d.",
     "print density\x04Default": "Standard",
     "Ideas for the variables (counter, date, UUID), no code": "Idéer till variablerna (räknare, datum, UUID), ingen kod",
+    "Waiting for the printer's answer…": "Väntar på skrivarens svar…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "skriv ut med skrivarmodellens standardvärden i stället för den skärning, det läge, den kvalitet och de skrivarinställningar som senast valdes i appen",
 }

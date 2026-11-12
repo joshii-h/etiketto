@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 12:15+0100\n"
+"PO-Revision-Date: 2026-11-12 12:44+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: it\n"
 "Language: it\n"
@@ -92,171 +92,181 @@ msgstr "come --set, ma il valore è usato così com’è: le parentesi graffe no
 msgid "counter of the first label, instead of the one saved in the label"
 msgstr "contatore della prima etichetta, invece di quello salvato nell’etichetta"
 
-#: etiketto/cli.py:203
+#: etiketto/cli.py:204
+msgid ""
+"print with the printer model's defaults instead of the cut, mode, quality "
+"and printer settings last chosen in the app"
+msgstr "stampa con i valori predefiniti del modello di stampante invece di taglio, modalità, qualità e impostazioni scelti per ultimi nell’app"
+
+#: etiketto/cli.py:211
 msgid ""
 "do not ask the printer before rendering (its model, tape and resolution)"
 msgstr "non interrogare la stampante prima del rendering (modello, nastro e risoluzione)"
 
-#: etiketto/cli.py:209
+#: etiketto/cli.py:217
 msgid ""
 "do not save the next counter value in the label (a read-only file); the next "
 "print starts from the same number"
 msgstr "non salvare il prossimo valore del contatore nell’etichetta (un file di sola lettura); la prossima stampa riparte dallo stesso numero"
 
-#: etiketto/cli.py:218
+#: etiketto/cli.py:226
 msgid ""
 "serial labels: one label for each row of this CSV, ODS or XLSX file; by "
 "default the data file of the label"
 msgstr "etichette in serie: un’etichetta per ogni riga di questo file CSV, ODS o XLSX; per impostazione predefinita il file di dati dell’etichetta"
 
-#: etiketto/cli.py:223
+#: etiketto/cli.py:231
 msgid "the sheet of the data file, by default the first"
 msgstr "il foglio del file di dati, per impostazione predefinita il primo"
 
-#: etiketto/cli.py:229
+#: etiketto/cli.py:237
 msgid "only these rows of the data file, e.g. 3-10, 5 or 7- (counted from 1)"
 msgstr "solo queste righe del file di dati, ad es. 3-10, 5 o 7- (contate da 1)"
 
-#: etiketto/cli.py:232
+#: etiketto/cli.py:240
 msgid "check and render only, do not print"
 msgstr "controlla e genera soltanto, non stampare"
 
-#: etiketto/cli.py:238
+#: etiketto/cli.py:246
 msgid ""
 "with --dry-run: save the images as the printer would get them, as PNG (- for "
 "stdout: the first only)"
 msgstr "con --dry-run: salva le immagini in PNG come le riceverebbe la stampante (- per stdout: solo la prima)"
 
-#: etiketto/cli.py:244
+#: etiketto/cli.py:252
 msgid "list the printers found on the network"
 msgstr "elenca le stampanti trovate in rete"
 
-#: etiketto/cli.py:245
+#: etiketto/cli.py:253
 msgid "List the printers found on the network: model, address, name."
 msgstr "Elenca le stampanti trovate in rete: modello, indirizzo, nome."
 
-#: etiketto/cli.py:247
+#: etiketto/cli.py:255
 #, python-format
 msgid "only this printer model: %s"
 msgstr "solo questo modello di stampante: %s"
 
-#: etiketto/cli.py:266
+#: etiketto/cli.py:274
 #, python-format
 msgid "Unknown printer model: %s"
 msgstr "Modello di stampante sconosciuto: %s"
 
-#: etiketto/cli.py:273 etiketto/ui/files.py:89 etiketto/ui/files.py:142
+#: etiketto/cli.py:281 etiketto/ui/files.py:89 etiketto/ui/files.py:142
 #: etiketto/ui/texts.py:240 etiketto/ui/texts.py:528
 #, python-format
 msgid "Cannot open %s"
 msgstr "Impossibile aprire %s"
 
-#: etiketto/cli.py:295
+#: etiketto/cli.py:303
 #, python-format
 msgid "%s is not a date, expected e.g. 2026-12-31 or 2026-12-31T08:30"
 msgstr "%s non è una data, atteso ad es. 2026-12-31 o 2026-12-31T08:30"
 
-#: etiketto/cli.py:325
+#: etiketto/cli.py:333
 #, python-format
 msgid "{=%s} is filled in when printing and cannot be set"
 msgstr "{=%s} viene compilato durante la stampa e non può essere impostato"
 
-#: etiketto/cli.py:330
+#: etiketto/cli.py:338
 #, python-format
 msgid "The label has no element or variable named %s"
 msgstr "L’etichetta non ha alcun elemento o variabile chiamato %s"
 
-#: etiketto/cli.py:354 etiketto/ui/printing.py:99
+#: etiketto/cli.py:362 etiketto/ui/printing.py:99
 msgid "The label is empty"
 msgstr "L’etichetta è vuota"
 
-#: etiketto/cli.py:387
+#: etiketto/cli.py:395
 msgid "Cannot write the output"
 msgstr "Impossibile scrivere l’output"
 
-#: etiketto/cli.py:418
+#: etiketto/cli.py:426
 msgid "--output writes PNG images: give a name ending in .png"
 msgstr "--output scrive immagini PNG: indica un nome che termina con .png"
 
-#: etiketto/cli.py:442 etiketto/cli.py:646 etiketto/ui/printing.py:538
+#: etiketto/cli.py:450 etiketto/cli.py:654 etiketto/ui/printing.py:538
 #: etiketto/ui/printing.py:699
 msgid "The label cannot be prepared for printing."
 msgstr "Impossibile preparare l’etichetta per la stampa."
 
-#: etiketto/cli.py:524
+#: etiketto/cli.py:532
 msgid "No printer found – give its address with --host"
 msgstr "Nessuna stampante trovata – indica il suo indirizzo con --host"
 
-#: etiketto/cli.py:526
+#: etiketto/cli.py:534
 msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Trovate più stampanti – scegline una con --host (etiketto list-printers)"
 
-#: etiketto/cli.py:537 etiketto/ui/texts.py:571
+#: etiketto/cli.py:545 etiketto/ui/texts.py:571
 #, python-format
 msgid "Cannot save %s"
 msgstr "Impossibile salvare %s"
 
-#: etiketto/cli.py:539
+#: etiketto/cli.py:547
 msgid "the labels were printed, but the next counter value was not saved"
 msgstr "le etichette sono state stampate, ma il prossimo valore del contatore non è stato salvato"
 
-#: etiketto/cli.py:554
+#: etiketto/cli.py:562
 msgid "nothing was printed: the next counter value could not be saved"
 msgstr "non è stato stampato nulla: il prossimo valore del contatore non potrebbe essere salvato"
 
-#: etiketto/cli.py:614 etiketto/cli.py:641 etiketto/cli.py:899
+#: etiketto/cli.py:622 etiketto/cli.py:649 etiketto/cli.py:947
 msgid "Interrupted"
 msgstr "Interrotto"
 
-#: etiketto/cli.py:724
+#: etiketto/cli.py:745
 msgid "The label uses a data file outside its folder: give it with --data"
 msgstr "L’etichetta usa un file di dati fuori dalla sua cartella: indicalo con --data"
 
-#: etiketto/cli.py:730
+#: etiketto/cli.py:751
 msgid "--sheet and --rows need a data file (--data)"
 msgstr "--sheet e --rows richiedono un file di dati (--data)"
 
-#: etiketto/cli.py:750 etiketto/ui/printing.py:570
+#: etiketto/cli.py:771 etiketto/ui/printing.py:570
 msgid "No rows to print"
 msgstr "Nessuna riga da stampare"
 
-#: etiketto/cli.py:759 etiketto/ui/window.py:520
+#: etiketto/cli.py:780 etiketto/ui/window.py:520
 #, python-format
 msgid "No such column: %s"
 msgstr "Colonna inesistente: %s"
 
-#: etiketto/cli.py:764 etiketto/ui/printing.py:649
+#: etiketto/cli.py:785 etiketto/ui/printing.py:649
 msgid ""
 "The barcode or QR code of these rows cannot be made from their values, for "
 "example an EAN-13 with letters or an empty cell. Correct the data file and "
 "read it again, or print without these rows."
 msgstr "Il codice a barre o il codice QR di queste righe non può essere creato dai loro valori, ad esempio un EAN-13 con lettere o una cella vuota. Correggi il file di dati e rileggilo, oppure stampa senza queste righe."
 
-#: etiketto/cli.py:769 etiketto/ui/printing.py:654
+#: etiketto/cli.py:790 etiketto/ui/printing.py:654
 #, python-format
 msgid "Rows: %s"
 msgstr "Righe: %s"
 
-#: etiketto/cli.py:777
+#: etiketto/cli.py:798
 #, python-format
 msgid "Waiting for another print of %s to finish…"
 msgstr "In attesa che finisca un’altra stampa di %s…"
 
-#: etiketto/cli.py:784
+#: etiketto/cli.py:805
 #, python-format
 msgid "%s is still locked by another print – try again later"
 msgstr "%s è ancora bloccato da un’altra stampa – riprova più tardi"
 
-#: etiketto/cli.py:790
+#: etiketto/cli.py:811
 msgid "--output needs --dry-run"
 msgstr "--output richiede --dry-run"
 
-#: etiketto/cli.py:804
+#: etiketto/cli.py:828
 msgid "The next counter value is not saved: the next print repeats the numbers"
 msgstr "Il prossimo valore del contatore non viene salvato: la prossima stampa ripeterà i numeri"
 
-#: etiketto/cli.py:875 etiketto/ui/printer.py:201
+#: etiketto/cli.py:905
+msgid "Waiting for the printer's answer…"
+msgstr "In attesa della risposta della stampante…"
+
+#: etiketto/cli.py:923 etiketto/ui/printer.py:201
 msgid "No printer found"
 msgstr "Nessuna stampante trovata"
 

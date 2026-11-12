@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Baris %(row)d diletakkan pada kedudukan %(position)d helaian %(sheet)d.",
     "print density\x04Default": "Lalai",
     "Ideas for the variables (counter, date, UUID), no code": "Idea untuk pemboleh ubah (pembilang, tarikh, UUID), tanpa kod",
+    "Waiting for the printer's answer…": "Menunggu jawapan pencetak…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "cetak dengan lalai model pencetak, bukan potongan, mod, kualiti dan tetapan pencetak yang terakhir dipilih dalam aplikasi",
 }

@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "第 %(row)d 列位於第 %(sheet)d 張標籤紙的第 %(position)d 個位置。",
     "print density\x04Default": "預設",
     "Ideas for the variables (counter, date, UUID), no code": "變數（計數器、日期、UUID）的構想，不含其程式碼",
+    "Waiting for the printer's answer…": "正在等候印表機的回應…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "使用印表機型號的預設值列印，而非應用程式中最後選擇的裁切、模式、品質和印表機設定",
 }

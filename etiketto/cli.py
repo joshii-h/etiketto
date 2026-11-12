@@ -198,6 +198,14 @@ def parser() -> argparse.ArgumentParser:
         help=_("counter of the first label, instead of the one saved in the label"),
     )
     print_.add_argument(
+        "--printer-defaults",
+        action="store_true",
+        help=_(
+            "print with the printer model's defaults instead of the cut, mode, quality and "
+            "printer settings last chosen in the app"
+        ),
+    )
+    print_.add_argument(
         "--no-query",
         action="store_true",
         help=_("do not ask the printer before rendering (its model, tape and resolution)"),
@@ -684,7 +692,7 @@ def _job(args, settings: Settings | None, now: datetime | None):
     if args.counter_start is not None:
         label.counter_next = args.counter_start
     overrides = apply_assignments(label, args.assignments, bool(args.data or label.data_file))
-    options = _options(backend, printer, args.copies, label.gap_mm)
+    options = _options(backend, _choices(args, settings, backend), args.copies, label.gap_mm)
     values = Values.for_label(
         label, overrides.now or now or datetime.now(), args.copies, custom=overrides.custom
     )
@@ -692,12 +700,25 @@ def _job(args, settings: Settings | None, now: datetime | None):
     columns = rows[indexes[0]] if rows else None
     sheet = _sheet_job(label, backend, printer, args.copies * max(1, len(indexes)))
     job = Job(backend, label, options, printer.safe_mm, values, columns, sheet)
-    _check(job)
     series = None
     if rows:
         series = Series(label, rows, indexes, options, printer.safe_mm, values, sheet)
-        _check_rows(series)
     return job, printer, settings, series
+
+
+def _choices(args, settings: Settings, backend: Backend) -> PrinterSettings:
+    """Whose print choices (cut, mode, quality, the extras, the printer
+    settings) a job takes: the ones last made in the app, or with
+    --printer-defaults the printer model's defaults."""
+    return Settings({}).printer(backend) if args.printer_defaults else settings.printer(backend)
+
+
+def _checked(job: Job, series: Series | None) -> None:
+    """The job's problems, after the printer was asked: the warnings are
+    those of the render for that printer (its resolution, tape)."""
+    _check(job)
+    if series:
+        _check_rows(series)
 
 
 def _sheet_job(label: Label, backend: Backend, printer: PrinterSettings, count: int):
@@ -792,8 +813,11 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
         _check_output(args.output)
     if args.dry_run:  # writes nothing back: no lock
         job, printer, settings, series = _job(args, settings, now)
-        # rendered as the print would be, if the printer is known
-        series = _for_the_printer(args, job, series, args.host or printer.host or "", settings)
+        # rendered as the print would be, if the printer is known; a dry run
+        # waits for it only briefly (DRY_RUN_WAIT): it prints nothing
+        host = args.host or printer.host or ""
+        series = _for_the_printer(args, job, series, host, settings, DRY_RUN_WAIT, 0.0)
+        _checked(job, series)
         unit = unit_for(settings.units)
         if series:
             return _dry_run_series(series, args.output, unit)
@@ -813,19 +837,33 @@ def print_command(args, settings: Settings | None = None, now: datetime | None =
 def _print(args, job: Job, series: Series | None, host: str, settings: Settings) -> int:
     unit = unit_for(settings.units)
     series = _for_the_printer(args, job, series, host, settings)
+    _checked(job, series)
     return _send_series(args, series, host, unit) if series else _send(args, job, host, unit)
 
 
 def _for_the_printer(
-    args, job: Job, series: Series | None, host: str, settings: Settings
+    args,
+    job: Job,
+    series: Series | None,
+    host: str,
+    settings: Settings,
+    wait: float | None = None,
+    finish: float | None = None,
 ) -> Series | None:
     """The job's options for what the printer reports (ask_printer(), unless
     --no-query): rendered for its model, tape and resolution, with the
     extras it has. The series, if any, with the same options."""
-    info = None if args.no_query or not host else ask_printer(job.backend, host)
+    if args.no_query or not host:
+        return series
+    info = ask_printer(
+        job.backend,
+        host,
+        QUERY_WAIT if wait is None else wait,
+        QUERY_FINISH if finish is None else finish,
+    )
     if info is None:
         return series
-    options = settings.printer(job.backend).options(
+    options = _choices(args, settings, job.backend).options(
         info, job.options.copies, job.options.gap_mm, host=host
     )
     job.options = options
@@ -833,14 +871,24 @@ def _for_the_printer(
 
 
 QUERY_WAIT = 5.0  # seconds the command line waits for the printer's answer
+DRY_RUN_WAIT = 2.0  # a dry run prints nothing: it waits less
+# a question still on its way after QUERY_WAIT is given this long to end
+# before printing (a USB printer takes one session at a time)
+QUERY_FINISH = 10.0
 
 
-def ask_printer(backend: Backend, host: str, wait: float = QUERY_WAIT) -> PrinterInfo | None:
+def ask_printer(
+    backend: Backend, host: str, wait: float = QUERY_WAIT, finish: float = QUERY_FINISH
+) -> PrinterInfo | None:
     """What the printer reports, for backends whose render depends on it
     (Backend.query_before_render); None if they do not, or the printer does
-    not answer within `wait` (the print then reports what is wrong). A
-    later answer is not used, but waited for: the query ends (bounded by
-    the backend's timeouts) before anything is printed."""
+    not answer within `wait` seconds (the print then says what is wrong).
+    A question still running then is given `finish` seconds more to end
+    (and the user is told), so that no second session meets it; after that
+    it is left to end by itself (the backend's timeouts end it; the print's
+    own session waits for a busy USB printer). Its late answer is not used
+    here, but what the query stores in the backend (the resolution a raw
+    printer reported) is there for the print's render."""
     if not backend.query_before_render:
         return None
     answer: list[PrinterInfo] = []
@@ -853,9 +901,9 @@ def ask_printer(backend: Backend, host: str, wait: float = QUERY_WAIT) -> Printe
     thread.start()
     thread.join(wait)
     answered = answer[0] if answer else None
-    # never print while the question is still on its way (a USB printer
-    # takes one session at a time): its own timeouts end it
-    thread.join()
+    if thread.is_alive() and finish > 0:
+        _say(_("Waiting for the printer's answer…"))
+        thread.join(finish)
     return answered
 
 

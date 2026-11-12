@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "الصف %(row)d يأتي في الموضع %(position)d من الورقة %(sheet)d.",
     "print density\x04Default": "افتراضي",
     "Ideas for the variables (counter, date, UUID), no code": "أفكار للمتغيرات (العدّاد والتاريخ وUUID)، دون شيفرة",
+    "Waiting for the printer's answer…": "في انتظار رد الطابعة…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "اطبع بالإعدادات الافتراضية لطراز الطابعة بدلًا من القص والوضع والجودة وإعدادات الطابعة المختارة آخر مرة في التطبيق",
 }

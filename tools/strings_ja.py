@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "行 %(row)d はシート %(sheet)d の位置 %(position)d に入ります。",
     "print density\x04Default": "標準",
     "Ideas for the variables (counter, date, UUID), no code": "変数（カウンター、日付、UUID）のアイデア。コードは含まれていません",
+    "Waiting for the printer's answer…": "プリンターの応答を待っています…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "アプリで最後に選んだカット、モード、品質、プリンター設定ではなく、プリンター機種の既定値で印刷する",
 }

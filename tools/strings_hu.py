@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "A(z) %(row)d. sor a(z) %(sheet)d. ív %(position)d. helyére kerül.",
     "print density\x04Default": "Alapértelmezett",
     "Ideas for the variables (counter, date, UUID), no code": "Ötletek a változókhoz (számláló, dátum, UUID), kód nélkül",
+    "Waiting for the printer's answer…": "Várakozás a nyomtató válaszára…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "nyomtatás a nyomtatótípus alapértékeivel az alkalmazásban legutóbb választott vágás, mód, minőség és nyomtatóbeállítások helyett",
 }

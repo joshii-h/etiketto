@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "%(row)d행은 %(sheet)d번째 시트의 %(position)d번 위치에 들어갑니다.",
     "print density\x04Default": "기본값",
     "Ideas for the variables (counter, date, UUID), no code": "변수(카운터, 날짜, UUID)에 대한 아이디어, 코드는 포함되지 않음",
+    "Waiting for the printer's answer…": "프린터의 응답을 기다리는 중…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "앱에서 마지막으로 선택한 절단, 모드, 품질, 프린터 설정 대신 프린터 모델의 기본값으로 인쇄",
 }

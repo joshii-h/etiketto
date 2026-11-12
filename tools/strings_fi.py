@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "Rivi %(row)d tulee arkin %(sheet)d paikkaan %(position)d.",
     "print density\x04Default": "Oletus",
     "Ideas for the variables (counter, date, UUID), no code": "Ideoita muuttujiin (laskuri, päivämäärä, UUID), ei koodia",
+    "Waiting for the printer's answer…": "Odotetaan tulostimen vastausta…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "tulosta tulostinmallin oletuksilla eikä sovelluksessa viimeksi valituilla leikkauksella, tilalla, laadulla ja tulostinasetuksilla",
 }

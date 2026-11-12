@@ -520,4 +520,6 @@ TRANSLATIONS = {
     "Row %(row)d goes at position %(position)d of sheet %(sheet)d.": "पंक्ति %(row)d शीट %(sheet)d की स्थिति %(position)d पर आती है।",
     "print density\x04Default": "डिफ़ॉल्ट",
     "Ideas for the variables (counter, date, UUID), no code": "वेरिएबल के लिए विचार (काउंटर, तारीख़, UUID), कोई कोड नहीं",
+    "Waiting for the printer's answer…": "प्रिंटर के उत्तर की प्रतीक्षा…",
+    "print with the printer model's defaults instead of the cut, mode, quality and printer settings last chosen in the app": "ऐप में पिछली बार चुने गए कट, मोड, गुणवत्ता और प्रिंटर सेटिंग की जगह प्रिंटर मॉडल की डिफ़ॉल्ट सेटिंग से प्रिंट करें",
 }
