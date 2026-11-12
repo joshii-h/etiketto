@@ -792,6 +792,19 @@ def test_print_refuses_a_code_128_too_long(ready):
     assert ready.get_visible_dialog() is None
 
 
+def test_print_decides_on_what_is_typed_not_the_last_render(ready):
+    from etiketto.render import CODE128_MAX
+
+    code = CodeElement(data="A" * CODE128_MAX, symbology="code128")
+    ready.set_label(Label(tape_mm=25, elements=[code]), None)
+    render_now(ready)
+    code.data += "A"  # the 201st character, printed before the preview catches up
+    ready.schedule_render()
+    ready.print_flow.on_print()
+    assert "Code 128" in toast_titles(ready)[-1]
+    assert ready.get_visible_dialog() is None
+
+
 def test_print_background_only_is_not_empty(ready, tmp_path):
     ready.set_label(
         Label(

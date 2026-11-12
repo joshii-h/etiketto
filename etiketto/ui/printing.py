@@ -83,6 +83,7 @@ class PrintFlow:
 
     def on_print(self, *_args) -> None:
         window = self.window
+        window.render_pending()  # decide on what is typed, not on the last render
         if self.busy or not window.rendered:
             return
         if problem := self._refusal():

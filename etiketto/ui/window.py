@@ -363,6 +363,12 @@ class Window(Adw.ApplicationWindow):
             GLib.source_remove(self._render_source)
         self._render_source = GLib.timeout_add(120, self.render_preview)
 
+    def render_pending(self) -> None:
+        """Draw a change still waiting for the render delay, now."""
+        if self._render_source:
+            GLib.source_remove(self._render_source)
+            self.render_preview()
+
     def render_preview(self) -> bool:
         self._render_source = 0
         try:

@@ -416,7 +416,8 @@ def test_barcodes_transparent_background_and_colour(symbology, data):
         CodeElement(data=data, symbology=symbology, color="#ff0000"), 100
     )
     assert part.height == 100 and part.width > 100
-    alphas = {p[3] for p in pixels(part)}
+    bars = part.crop((0, 0, part.width, 60))  # the digits below are drawn as text
+    alphas = {p[3] for p in pixels(bars)}
     assert alphas == {0, 255}
     opaque = [p for p in pixels(part) if p[3] == 255]
     assert all(p[0] > 150 and p[1] < 100 and p[2] < 100 for p in opaque[:50])
@@ -605,7 +606,7 @@ def test_only_common_image_formats_are_read(make_label, tmp_path, monkeypatch):
 
 
 def test_decompression_bomb_warnings_refuse_the_image(make_label, png_b64, monkeypatch):
-    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 150)  # 20 x 10 is over it, under twice
+    monkeypatch.setattr(render_module, "IMAGE_FILE_PIXELS", 150)  # 20 x 10 is over it
     rendered = render(make_label(elements=[ImageElement(data=png_b64((20, 10), "blue"))]))
     assert [w.key for w in rendered.warnings] == ["image_unreadable"]
 
@@ -727,13 +728,13 @@ def test_header_sizes_are_kept_by_hash_and_few():
     for data in files:
         assert cache.get(data) == (40, 10)
     assert len(cache._entries) == 2
-    assert all(isinstance(k, bytes) and len(k) == 16 for k in cache._entries)
+    assert all(k == (hash(d), len(d)) for k, d in zip(cache._entries, files[1:], strict=True))
 
 
 def test_no_warning_filter_for_bombs(png_b64, monkeypatch):
     import warnings
 
-    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 150)
+    monkeypatch.setattr(render_module, "IMAGE_FILE_PIXELS", 150)
     before = list(warnings.filters)
     with warnings.catch_warnings(record=True), pytest.raises(Image.DecompressionBombError):
         render_module._decode(png_b64((20, 10), "blue"))
@@ -752,29 +753,35 @@ def test_rgba_images_are_not_converted_again(monkeypatch):
     assert converted == []
 
 
-def test_fitted_images_are_cached(make_label, png_b64, monkeypatch):
-    label = make_label(
-        elements=[ImageElement(data=png_b64((200, 10), "red"))], auto_length=False, length_mm=20
-    )
-    render_module._fitted_cached.cache_clear()
+def test_fitted_images_are_scaled_from_a_cached_copy(make_label, png_b64, monkeypatch):
+    """Typing in a label scaled down to its length changes the size every
+    time: the image is scaled from the cached full-height copy, the file is
+    not decoded and scaled again."""
+    data = png_b64((200, 10), "red")
+    label = make_label(elements=[ImageElement(data=data)], auto_length=False, length_mm=20)
     render(label)
-    fitted = []
-    real = render_module._fit_image
-    monkeypatch.setattr(render_module, "_fit_image", lambda *a: fitted.append(a) or real(*a))
-    render(label)  # the window renders again: nothing resized again
-    assert fitted == []
+    work = []
+    for name in ("_decode", "_scale"):
+        real = getattr(render_module, name)
+        monkeypatch.setattr(
+            render_module, name, lambda *a, real=real, name=name: work.append(name) or real(*a)
+        )
+    for length in (21, 22, 23):  # every key a new length
+        label.length_mm = length
+        render(label)
+    assert work == []
 
 
 def test_codes_count_and_are_made_once(make_label, monkeypatch):
     made = []
-    real = render_module._make_code_image
-    monkeypatch.setattr(render_module, "_make_code_image", lambda *a: made.append(a) or real(*a))
+    real = render_module._make_qr
+    monkeypatch.setattr(render_module, "_make_qr", lambda *a: made.append(a) or real(*a))
     same = [CodeElement(data="https://example.org")] * 5
     with render_module.limited(10**9):
         render(make_label(elements=same))
     assert len(made) == 1
-    many = [CodeElement(data="CODE-%03d" % n, symbology="code128") for n in range(40)]
-    with render_module.limited(200_000), pytest.raises(render_module.RenderTooLarge):
+    many = [CodeElement(data="https://example.org/%03d" % n) for n in range(40)]
+    with render_module.limited(10_000), pytest.raises(render_module.RenderTooLarge):
         render(make_label(elements=many))
 
 
@@ -794,3 +801,102 @@ def test_warm_up_draws_a_text():
 
 def test_warning_keys_are_documented():
     assert "code128_long" in render_module.RenderWarning.__doc__
+
+
+# --- the fifth review --------------------------------------------------------------------
+
+
+def _runs(row: list[int]) -> list[int]:
+    lengths, current, count = [], row[0], 0
+    for value in row:
+        if value == current:
+            count += 1
+        else:
+            lengths.append(count)
+            current, count = value, 1
+    return lengths + [count]
+
+
+@pytest.mark.parametrize("height", [47, 70, 141, 200])
+def test_bars_are_whole_modules(height):
+    element = CodeElement(data="ABC-12345", symbology="code128")
+    image = render_module.render_code(element, height)
+    bars = render_module._bars(element)
+    per = image.width // len(bars.modules)
+    assert per >= 1
+    row = [image.getpixel((x, 2))[3] for x in range(image.width)]
+    first = next(x for x, a in enumerate(row) if a)
+    last = max(x for x, a in enumerate(row) if a)
+    inner = _runs([1 if a else 0 for a in row[first : last + 1]])
+    assert all(length % per == 0 for length in inner)  # every bar and gap whole modules
+    assert set(row) <= {0, 255}
+
+
+def test_squeezed_bars_are_warned_about(make_label):
+    long_code = CodeElement(data="A" * 120, symbology="code128")
+    label = make_label(elements=[long_code], auto_length=False, length_mm=20)
+    keys = [w.key for w in render(label, 100).warnings]
+    assert "barcode_narrow" in keys
+    from etiketto.ui.texts import warning_text
+
+    assert "Element 1" in warning_text(render(label, 100).warnings[0])
+    wide = make_label(elements=[CodeElement(data="ABC", symbology="code128")])
+    assert render(wide, 300).warnings == []
+
+
+def test_barcodes_are_kept_as_modules_not_images():
+    element = CodeElement(data="4006381333931", symbology="ean13")
+    bars = render_module._bars(element)
+    assert set(bars.modules) == {"0", "1"} and bars.text == "4006381333931"
+    assert bars.modules.startswith("0" * 11) and bars.modules.endswith("0" * 7)
+
+
+def _png_with_exif_after_the_image(orientation: int) -> str:
+    import struct
+    import zlib
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (60, 30), "red").save(buffer, "PNG")
+    png = buffer.getvalue()
+    exif = Image.Exif()
+    exif[0x0112] = orientation
+    payload = exif.tobytes()
+    chunk = struct.pack(">I", len(payload)) + b"eXIf" + payload
+    chunk += struct.pack(">I", zlib.crc32(b"eXIf" + payload) & 0xFFFFFFFF)
+    end = png.rindex(b"IEND") - 4  # before the IEND chunk, after the image data
+    return _file(png[:end] + chunk + png[end:])
+
+
+def test_png_exif_after_the_image_data_is_ignored_alike():
+    data = _png_with_exif_after_the_image(6)
+    assert render_module._header_size(data) == (60, 30)
+    assert render_module._decode(data).size == (60, 30)
+
+
+def test_tiff_is_turned_by_pillow_when_opened():
+    """_orientation() leaves TIFF to Pillow: if an older Pillow (the minimum
+    is 10) did not turn it on opening, this fails."""
+    data = _image_file("TIFF", 6)
+    with render_module._opened(data) as src:
+        assert src.size == (10, 40)
+    decoded = render_module._decode(data)
+    assert decoded.size == (10, 40)
+
+
+def test_no_pillow_bomb_warning_for_large_files(make_label, monkeypatch):
+    import warnings
+
+    monkeypatch.setattr(render_module, "IMAGE_FILE_PIXELS", 100)
+    with warnings.catch_warnings(record=True) as seen:
+        warnings.simplefilter("always")
+        rendered = render(make_label(elements=[ImageElement(data=_image_file("PNG", 1))]))
+    assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+    assert not [w for w in seen if issubclass(w.category, Image.DecompressionBombWarning)]
+    assert Image.MAX_IMAGE_PIXELS is None  # Pillow's own check is ours now
+
+
+def test_header_size_cache_keys_on_hash_and_length():
+    data = _image_file("PNG", 1)
+    cache = render_module._SizeCache()
+    cache.get(data)
+    assert list(cache._entries) == [(hash(data), len(data))]
