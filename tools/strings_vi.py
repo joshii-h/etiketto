@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "Đầu in quá nóng. Hãy đợi đến khi nguội, rồi thử lại.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto không thể in trên mẫu máy in này: máy không nhận ảnh raster mà Etiketto gửi.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Máy in đang ở chế độ Editor Lite và hiện ra như một ổ USB. Hãy tắt Editor Lite trên máy in (đèn của nó tắt), rồi tìm lại.",
+    "FLe tape": "Băng FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto chưa biết mẫu máy in này và chưa thể in trên nó.",
 }

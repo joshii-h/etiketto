@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "De printkop is te heet. Wacht tot hij is afgekoeld en probeer het opnieuw.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto kan niet afdrukken op dit printermodel: het neemt de rasterafbeeldingen die Etiketto stuurt niet aan.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "De printer staat in de modus Editor Lite en verschijnt als USB-station. Zet Editor Lite op de printer uit (het lampje gaat uit) en zoek opnieuw.",
+    "FLe tape": "FLe-tape",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto kent dit printermodel niet en kan er nog niet op afdrukken.",
 }

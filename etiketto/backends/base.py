@@ -72,6 +72,9 @@ class Capabilities:
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
     extras: tuple[str, ...] = ()  # of EXTRAS: what the interface offers on top
+    # endless tape: the width of a new label when no tape is known; None:
+    # 50 mm if the printer takes it, else the widest
+    default_tape_mm: float | None = None
     # "feed": (smallest, largest, default) in mm
     feed_mm: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
@@ -180,6 +183,9 @@ class PrintOptions:
     chain: bool = False
     high_res: bool = False
     feed_mm: float | None = None  # None: the backend's default
+    # the printer as last asked, for backends whose models render differently;
+    # not part of the request itself
+    info: PrinterInfo | None = field(default=None, compare=False)
 
 
 @dataclass(frozen=True)
@@ -348,9 +354,15 @@ class Overheated(PrinterError):
 
 
 class UnsupportedModel(PrinterError):
-    """A model of the printer family that Etiketto cannot print on."""
+    """A model of the printer family that cannot print what Etiketto sends."""
 
     code = "unsupported_model"
+
+
+class UnknownModel(PrinterError):
+    """A printer of the family whose model Etiketto does not know."""
+
+    code = "unknown_model"
 
 
 class EditorLite(PrinterError):

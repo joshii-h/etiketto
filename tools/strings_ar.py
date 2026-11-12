@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "رأس الطباعة ساخن جدًا. انتظر حتى يبرد، ثم حاول مرة أخرى.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "لا يستطيع Etiketto الطباعة على طراز الطابعة هذا: فهو لا يقبل الصور النقطية التي يرسلها Etiketto.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "الطابعة في وضع Editor Lite وتظهر كمحرك أقراص USB. أوقف Editor Lite في الطابعة (ينطفئ مصباحه)، ثم ابحث مرة أخرى.",
+    "FLe tape": "شريط FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "لا يعرف Etiketto طراز الطابعة هذا ولا يستطيع الطباعة عليه بعد.",
 }

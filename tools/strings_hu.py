@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "A nyomtatófej túl forró. Várja meg, amíg lehűl, majd próbálja újra.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Az Etiketto nem tud nyomtatni ezen a nyomtatótípuson: nem fogadja az Etiketto által küldött raszterképeket.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "A nyomtató Editor Lite módban van, és USB-meghajtóként jelenik meg. Kapcsolja ki az Editor Lite módot a nyomtatón (a lámpája kialszik), majd keressen újra.",
+    "FLe tape": "FLe szalag",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Az Etiketto nem ismeri ezt a nyomtatótípust, és még nem tud nyomtatni rajta.",
 }

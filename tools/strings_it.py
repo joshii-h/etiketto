@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "La testina di stampa è troppo calda. Attendi che si raffreddi, poi riprova.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto non può stampare su questo modello di stampante: non accetta le immagini raster inviate da Etiketto.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "La stampante è in modalità Editor Lite e appare come unità USB. Disattiva Editor Lite sulla stampante (la spia si spegne), poi cerca di nuovo.",
+    "FLe tape": "Nastro FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto non conosce questo modello di stampante e non può ancora stamparci.",
 }

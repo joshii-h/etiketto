@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "Друкувальна головка надто гаряча. Зачекайте, доки вона охолоне, потім повторіть спробу.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto не може друкувати на цій моделі принтера: вона не приймає растрові зображення, які надсилає Etiketto.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Принтер у режимі Editor Lite і видимий як USB-накопичувач. Вимкніть Editor Lite на принтері (його індикатор згасне), потім повторіть пошук.",
+    "FLe tape": "Стрічка FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto не знає цієї моделі принтера й поки не може на ній друкувати.",
 }

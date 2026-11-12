@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "Kepala cetak terlalu panas. Tunggu sampai dingin, lalu coba lagi.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto tidak dapat mencetak pada model printer ini: printer tidak menerima gambar raster yang dikirim Etiketto.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Printer dalam mode Editor Lite dan tampil sebagai drive USB. Matikan Editor Lite pada printer (lampunya padam), lalu cari lagi.",
+    "FLe tape": "Pita FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto belum mengenal model printer ini dan belum dapat mencetak padanya.",
 }

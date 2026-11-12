@@ -2229,6 +2229,7 @@ def test_ptouch_printer(make_window, ptouch_env):
     assert pump(lambda: not win.print_flow.busy)
     _image, host, options = ptouch_env.prints[0]
     assert host == "usb://Brother/PT-P710BT"
+    assert options.info is ptouch_env.info  # rendered for the model as asked
     assert (options.cut, options.chain, options.high_res, options.feed_mm) == (
         "full",
         True,
@@ -2251,7 +2252,7 @@ def test_ptouch_feed_setting_is_checked(make_window, ptouch_env):
     win = make_window()
     win.set_backend("ptouch")
     win.printer.info = None
-    for junk, expected in ((True, 2.0), ("x", 2.0), (500, 127.0), (0.5, 2.0), (3, 3.0)):
+    for junk, expected in ((True, 2.0), ("x", 2.0), (500, 127.0), (0.5, 1.0), (3, 3.0)):
         win.printer_settings.update(feed_mm=junk, chain="yes")
         choices = win.print_flow.choices()
         assert choices["feed_mm"] == expected and choices["chain"] is False

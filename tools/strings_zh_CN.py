@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "打印头过热。请等待冷却后重试。",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto 无法在此打印机型号上打印：它不接受 Etiketto 发送的光栅图像。",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "打印机处于 Editor Lite 模式，显示为 USB 驱动器。请在打印机上关闭 Editor Lite（指示灯熄灭），然后重新搜索。",
+    "FLe tape": "FLe 色带",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto 尚不认识此打印机型号，暂时无法在其上打印。",
 }

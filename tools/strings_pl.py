@@ -254,4 +254,6 @@ TRANSLATIONS = {
     "The print head is too hot. Wait until it has cooled down, then try again.": "Głowica drukująca jest za gorąca. Poczekaj, aż ostygnie, a następnie spróbuj ponownie.",
     "Etiketto cannot print on this printer model: it does not take the raster images Etiketto sends.": "Etiketto nie może drukować na tym modelu drukarki: nie przyjmuje on obrazów rastrowych wysyłanych przez Etiketto.",
     "The printer is in Editor Lite mode and shows up as a USB drive. Switch Editor Lite off on the printer (its lamp goes out), then search again.": "Drukarka jest w trybie Editor Lite i widnieje jako dysk USB. Wyłącz Editor Lite na drukarce (jej lampka zgaśnie), a następnie wyszukaj ponownie.",
+    "FLe tape": "Taśma FLe",
+    "Etiketto does not know this printer model and cannot print on it yet.": "Etiketto nie zna tego modelu drukarki i nie może jeszcze na nim drukować.",
 }

@@ -32,6 +32,7 @@ MEDIA_NAMES = {
     "laminated": _("Laminated tape"),
     "non_laminated": _("Non-laminated tape"),
     "fabric": _("Fabric tape"),
+    "fle": _("FLe tape"),
     "flexible": _("Flexible ID tape"),
     "satin": _("Satin tape"),
     "heat_shrink_2": _("Heat-shrink tube 2:1"),
@@ -199,6 +200,9 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
         "unsupported_model": _(
             "Etiketto cannot print on this printer model: it does not take the raster "
             "images Etiketto sends."
+        ),
+        "unknown_model": _(
+            "Etiketto does not know this printer model and cannot print on it yet."
         ),
         "editor_lite": _(
             "The printer is in Editor Lite mode and shows up as a USB drive. Switch "

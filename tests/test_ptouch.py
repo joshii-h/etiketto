@@ -10,6 +10,7 @@ import os
 import select
 import socket
 import threading
+import time
 import tty
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +23,7 @@ from PIL import Image
 
 from etiketto.backends import ptouch, usb
 from etiketto.backends.base import (
+    CassetteInfo,
     FoundPrinter,
     PrinterError,
     PrinterInfo,
@@ -37,7 +39,8 @@ from etiketto.backends.ptouch import (
     TZE_560,
     JobSettings,
     PTouch,
-    build_jobs,
+    build_job,
+    documented_page,
     model_by_name,
     model_by_usb_id,
     packbits,
@@ -149,7 +152,7 @@ class FakePTouch:
         if len(b) < 3:
             return 0
         code = chr(b[2])
-        size = {"S": 3, "a": 4, "R": 4, "M": 4, "A": 4, "K": 4, "d": 5, "z": 13}[code]
+        size = {"S": 3, "a": 4, "!": 4, "R": 4, "M": 4, "A": 4, "K": 4, "d": 5, "z": 13}[code]
         if len(b) < size:
             return 0
         if code == "S":
@@ -182,7 +185,7 @@ class FakePTouch:
 
 
 class FakeLink:
-    """A socket to the fake printer, in memory; silent means a timeout."""
+    """A link to the fake printer, in memory; silent means a timeout."""
 
     def __init__(self, printer: FakePTouch, chunk: int = 7):
         self.printer = printer
@@ -195,8 +198,8 @@ class FakeLink:
 
     def recv(self, size: int) -> bytes:
         out = self.printer.out
-        if not out:
-            raise TimeoutError("timed out")
+        if not out:  # like _TcpLink and usb.Connection
+            raise PrinterTimeout("printer did not answer")
         piece = bytes(out[: min(size, self.chunk)])
         del out[: len(piece)]
         return piece
@@ -279,55 +282,75 @@ def test_packbits_roundtrip_runs(values):
     assert unpackbits(packbits(data)) == data
 
 
-# --- pins and tapes ----------------------------------------------------------------------
+# --- pins and tapes: Brother's tables ------------------------------------------------------
 
-# the blank pins after the print area, as Brother's tables give them
-RIGHT_128 = {3.5: 52, 6: 48, 9: 39, 12: 29, 18: 8, 24: 0}
-RIGHT_560 = {3.5: 264, 6: 256, 9: 235, 12: 213, 18: 171, 24: 128, 36: 61}
-HSE_RIGHT_128 = {
-    (0x11, 6): 48,
-    (0x11, 9): 38,
-    (0x11, 12): 29,
-    (0x11, 18): 9,
-    (0x11, 24): 0,
-    (0x17, 5): 52,
-    (0x17, 9): 40,
-    (0x17, 11): 37,
-    (0x17, 21): 2,
-}
+# Brother's raster references, 2.3.5 "Raster line": (tape, pins for left
+# margin, print area pins, pins for right margin); the right margin is at the
+# first byte of a raster line
+BROTHER_TZE_128 = [
+    (3.5, 52, 24, 52),
+    (6, 48, 32, 48),
+    (9, 39, 50, 39),
+    (12, 29, 70, 29),
+    (18, 8, 112, 8),
+    (24, 0, 128, 0),
+]
+BROTHER_TZE_560 = [
+    (3.5, 248, 48, 264),
+    (6, 240, 64, 256),
+    (9, 219, 106, 235),
+    (12, 197, 150, 213),
+    (18, 155, 234, 171),
+    (24, 112, 320, 128),
+    (36, 45, 454, 61),
+]
+# heat-shrink tube: (media, width in the status, left, print, right)
+BROTHER_HSE_128 = [
+    (0x11, 6, 50, 28, 50),
+    (0x11, 9, 40, 48, 40),
+    (0x11, 12, 31, 66, 31),
+    (0x11, 18, 11, 106, 11),
+    (0x11, 24, 0, 128, 0),
+    (0x17, 5, 54, 20, 54),
+    (0x17, 9, 42, 44, 42),
+    (0x17, 11, 39, 50, 39),
+    (0x17, 21, 4, 120, 4),
+]
+BROTHER_HSE_560 = [
+    (0x11, 6, 244, 56, 260),
+    (0x11, 9, 224, 96, 240),
+    (0x11, 12, 206, 132, 222),
+    (0x11, 18, 166, 212, 182),
+    (0x11, 24, 144, 256, 160),
+    (0x17, 5, 252, 40, 268),
+    (0x17, 9, 228, 88, 244),
+    (0x17, 11, 222, 100, 238),
+    (0x17, 21, 152, 240, 168),
+    (0x17, 31, 92, 360, 108),
+]
 
 
-def test_tze_tables_fill_the_head():
-    assert set(TZE_128) == set(RIGHT_128) and set(TZE_560) == set(RIGHT_560)
-    for width, (left, pins) in TZE_128.items():
-        assert left + pins + RIGHT_128[width] == 128
-        assert left == RIGHT_128[width]  # centred on the 128-pin head
-    for width, (left, pins) in TZE_560.items():
-        assert left + pins + RIGHT_560[width] == 560
-        # the PT-P900 centres the print area at pin 272, not 280
-        assert left * 2 + pins == 2 * 272
+@pytest.mark.parametrize(
+    "table, head, brother", [(TZE_128, 128, BROTHER_TZE_128), (TZE_560, 560, BROTHER_TZE_560)]
+)
+def test_tze_print_area_is_brothers(table, head, brother):
+    assert set(table) == {row[0] for row in brother}
+    for tape, left, pins, right in brother:
+        assert left + pins + right == head
+        assert table[tape] == (right, pins)  # counted from the first byte
 
 
-def test_heat_shrink_tables_fill_the_head():
-    assert set(HSE_128) == set(HSE_RIGHT_128)
-    for key, (left, pins) in HSE_128.items():
-        assert left + pins + HSE_RIGHT_128[key] == 128
-    right_560 = {
-        (0x11, 6): 243,
-        (0x11, 9): 223,
-        (0x11, 12): 205,
-        (0x11, 18): 165,
-        (0x11, 24): 143,
-        (0x17, 5): 251,
-        (0x17, 9): 227,
-        (0x17, 11): 221,
-        (0x17, 21): 151,
-        (0x17, 31): 91,
-    }
-    assert set(HSE_560) == set(right_560)
-    for key, (left, pins) in HSE_560.items():
-        assert left + pins + right_560[key] == 560
-    assert HSE_560[(0x17, 31)] == (109, 360)  # only the wide head takes 31 mm tube
+@pytest.mark.parametrize(
+    "table, head, brother", [(HSE_128, 128, BROTHER_HSE_128), (HSE_560, 560, BROTHER_HSE_560)]
+)
+def test_heat_shrink_print_area(table, head, brother):
+    assert set(table) == {(m, w) for m, w, *_ in brother}
+    for media, width, left, pins, right in brother:
+        assert left + pins + right == head
+        before, printable = table[(media, width)]
+        assert printable == pins
+        # ptouch's position, corrected on printers: 1 or 2 pins off Brother's
+        assert 0 <= before - right <= 2 and before + pins <= head
 
 
 def test_print_area_per_head():
@@ -335,13 +358,15 @@ def test_print_area_per_head():
     assert print_area(p750w, 12) == (29, 70)
     assert print_area(p750w, 3.5) == (52, 24)
     assert print_area(p750w, 36) is None  # no 36 mm tape in a 128-pin printer
-    assert print_area(p900w, 36) == (45, 454)
+    assert print_area(p900w, 36) == (61, 454)
+    assert print_area(p900w, 24) == (128, 320)
     assert print_area(p750w, 12, 0x11) == (33, 66)  # heat-shrink tube 2:1
     assert print_area(p750w, 11, 0x17) == (41, 50)
     assert print_area(p750w, 31, 0x17) is None
     assert print_area(p900w, 31, 0x17) == (109, 360)
-    # no heat-shrink tube on the PT-P710BT
+    # no heat-shrink tube on the PT-P710BT and PT-P910BT
     assert print_area(model("PT-P710BT"), 12, 0x11) is None
+    assert print_area(model("PT-P910BT"), 12, 0x11) is None
     # other heads: Brother's width at their resolution, centred, at most the head
     assert print_area(model("PT-2300"), 12) == (21, 70)
     assert print_area(model("PT-2300"), 24) == (0, 112)
@@ -357,9 +382,17 @@ def test_columns_put_image_rows_on_pins():
     assert lines[1] == bytes(3) + b"\x04" + bytes(12)  # pin 29: byte 3, bit 2
     # pin 30 and pin 98 (byte 12, bit 5)
     assert lines[2] == bytes(3) + b"\x02" + bytes(8) + b"\x20" + bytes(3)
+
+
+def test_columns_on_the_p900_head():
+    """Brother: the right margin (213 pins on 12 mm) is at the first byte,
+    the left margin (197 pins) at the last."""
     p900w = model("PT-P900W")
-    lines = ptouch.columns(strip([0], height=150), p900w, 197)
-    assert len(lines[0]) == 70 and lines[0][24] == 0x04 and sum(lines[0]) == 4
+    full = Image.new("L", (1, 150), 0)  # all ink
+    (line,) = ptouch.columns(full, p900w, *print_area(p900w, 12)[:1])
+    bits = "".join(f"{b:08b}" for b in line)
+    assert len(bits) == 560
+    assert bits.index("1") == 213 and bits.rindex("1") == 560 - 197 - 1
 
 
 def test_columns_threshold_grey():
@@ -371,11 +404,10 @@ def test_columns_threshold_grey():
 
 
 def test_quirk_padding():
-    # PT-2730: 48 blank columns first; PT-1230PC: 32 blank, at least 77 columns
+    # PT-2730: 48 blank columns first [assumed]; PT-1230PC: no quirk applied
     lines = ptouch.columns(strip([0]), model("PT-2730"), 29)
     assert len(lines) == 49 and not any(b"".join(lines[:48])) and any(lines[48])
-    lines = ptouch.columns(strip([0]), model("PT-1230PC"), 29)
-    assert len(lines) == 77 and any(lines[32]) and not any(b"".join(lines[33:]))
+    assert len(ptouch.columns(strip([0]), model("PT-1230PC"), 29)) == 1
 
 
 # --- the job, byte for byte --------------------------------------------------------------
@@ -391,17 +423,43 @@ def two_lines(left=29, line_bytes=16) -> list[bytes]:
     return [bytes(line_bytes), bytes(marked)]
 
 
+def job(*args) -> bytes:
+    return b"".join(build_job(*args))
+
+
+def test_brothers_examples():
+    """The command examples of Brother's references, byte for byte."""
+    # print information for 100 mm on 24 mm tape: 0x84, n2 0, n3 24, 0x2AA lines
+    settings = JobSettings(width=24, media=1)
+    page = documented_page(model("PT-P750W"), [bytes(16)] * 0x2AA, settings)
+    assert page.startswith(
+        ESC + b"ia\x01" + bytes.fromhex("1b697a 84 00 18 00 aa 02 00 00 00 00".replace(" ", ""))
+    )
+    # PT-P900 series: half cut, no chain printing; 1 mm margin at 360 dpi
+    settings = JobSettings(cut="half", width=24, media=1, feed_dots=14)
+    page = documented_page(model("PT-P900W"), [bytes(70)], settings)
+    assert ESC + b"iK\x0c" in page and ESC + b"id\x0e\x00" in page
+    assert (
+        ptouch.job_settings(
+            model("PT-P900W"), PrintOptions(feed_mm=1), parse_status(status_frame(width=24))
+        ).feed_dots
+        == 14
+    )
+    # PackBits: Brother's example (2.2.3 compression)
+    raw = bytes(20) + bytes.fromhex("222223babfa2222b")
+    assert packbits(raw) == bytes.fromhex("ed00ff2205 23babfa2222b".replace(" ", ""))
+
+
 def test_golden_documented_128():
     """PT-P750W: Brother's sequence with PackBits and Z for empty lines."""
-    job = build_jobs(model("PT-P750W"), two_lines(), SETTINGS, 1)
-    assert job == [
-        bytes(200)
+    assert job(model("PT-P750W"), two_lines(), SETTINGS, 1) == (
+        bytes(100)
         + ESC
         + b"@"
         + ESC
         + b"ia\x01"
         + ESC
-        + b"iz\x86\x00\x0c\x00\x02\x00\x00\x00\x00\x00"
+        + b"iz\x84\x00\x0c\x00\x02\x00\x00\x00\x00\x00"
         + ESC
         + b"iM\x40"
         + ESC
@@ -414,49 +472,44 @@ def test_golden_documented_128():
         + b"Z"
         + b"G\x06\x00\xfe\x00\x00\x04\xf5\x00"
         + b"\x1a"
-    ]
+    )
 
 
-def test_golden_documented_two_pages_half_cut_chain_high_res():
+def test_golden_documented_two_pages_half_cut_chain_high_res_tube():
     settings = JobSettings(
         cut="half", chain=True, high_res=True, feed_dots=28, width=9, media=0x11
     )
-    (job,) = build_jobs(model("PT-E550W"), [LINE_29], settings, 2)
+    pieces = build_job(model("PT-E550W"), [LINE_29], settings, 2)
     page = ESC + b"iM\x00" + ESC + b"iK\x44" + ESC + b"id\x1c\x00" + b"M\x02" + b"G\x06\x00"
     page += b"\xfe\x00\x00\x04\xf5\x00"
-    info = ESC + b"iz\x86\x11\x09\x00\x01\x00\x00\x00"
-    assert job == (
-        bytes(200)
+    info = ESC + b"ia\x01" + ESC + b"iz\x86\x11\x09\x00\x01\x00\x00\x00"
+    assert pieces == [
+        bytes(100) + ESC + b"@",
+        info + b"\x00\x00" + page + b"\x0c",
+        info + b"\x01\x00" + page + b"\x1a",
+    ]
+
+
+def test_golden_documented_560_uncompressed():
+    """PT-P900W: 70 bytes per line, no compression, empty lines in full,
+    n9 = 2 on a single page."""
+    settings = JobSettings(cut="none", feed_dots=14, width=24, media=1)
+    marked = bytearray(70)
+    marked[16] = 0x80  # pin 128, Brother's right margin on 24 mm
+    assert job(model("PT-P900W"), two_lines(128, 70), settings, 1) == (
+        bytes(100)
         + ESC
         + b"@"
         + ESC
         + b"ia\x01"
-        + info
-        + b"\x00\x00"
-        + page
-        + b"\x0c"
-        + info
-        + b"\x01\x00"
-        + page
-        + b"\x1a"
-    )
-
-
-def test_golden_documented_560_uncompressed():
-    """PT-P900W: 70 bytes per line, no compression, empty lines in full."""
-    settings = JobSettings(cut="none", feed_dots=28, width=24, media=1)
-    (job,) = build_jobs(model("PT-P900W"), two_lines(112, 70), settings, 1)
-    marked = bytearray(70)
-    marked[14] = 0x80
-    assert job.endswith(
-        ESC
-        + b"iz\x86\x00\x18\x00\x02\x00\x00\x00\x00\x00"
+        + ESC
+        + b"iz\x84\x00\x18\x00\x02\x00\x00\x00\x02\x00"
         + ESC
         + b"iM\x00"
         + ESC
         + b"iK\x08"
         + ESC
-        + b"id\x1c\x00"
+        + b"id\x0e\x00"
         + b"M\x00"
         + b"G\x46\x00"
         + bytes(70)
@@ -466,10 +519,32 @@ def test_golden_documented_560_uncompressed():
     )
 
 
+def test_p900_page_numbers_and_high_res():
+    """n9: 0, 1, ..., 2 on the last page; high resolution on laminated tape
+    with n2 = 09h."""
+    settings = JobSettings(cut="full", high_res=True, feed_dots=28, width=12, media=1)
+    pieces = build_job(model("PT-P900"), [bytes(70)], settings, 3)
+    infos = [p[p.index(ESC + b"iz") + 3 : p.index(ESC + b"iz") + 13] for p in pieces[1:]]
+    assert [i[1] for i in infos] == [0x09] * 3 and [i[8] for i in infos] == [0, 1, 2]
+    assert all(ESC + b"iK\x48" in p for p in pieces[1:])
+
+
+def test_p910bt_and_p710bt_get_status_notifications():
+    """ESC i ! 00 on every page, right after ESC i a (PT-P910BT, PT-P710BT);
+    no ESC i A on the PT-P710BT."""
+    for name, size in (("PT-P910BT", 70), ("PT-P710BT", 16)):
+        pieces = build_job(model(name), [bytes(size)], SETTINGS, 2)
+        assert all(
+            p.startswith(ESC + b"ia\x01" + ESC + b"i!\x00" + ESC + b"iz") for p in pieces[1:]
+        )
+    assert ESC + b"iA" not in job(model("PT-P710BT"), [bytes(16)], SETTINGS, 1)
+    assert ESC + b"iA\x01" in job(model("PT-P750W"), [bytes(16)], SETTINGS, 1)
+    assert ESC + b"i!" not in job(model("PT-P750W"), [bytes(16)], SETTINGS, 1)
+
+
 def test_golden_legacy_packbits():
     """PT-2420PC: M 02 before ESC i R, each line one literal piece."""
-    jobs = build_jobs(model("PT-2420PC"), two_lines(), SETTINGS, 1)
-    assert jobs == [
+    assert job(model("PT-2420PC"), two_lines(), SETTINGS, 1) == (
         bytes(100)
         + ESC
         + b"@"
@@ -481,25 +556,27 @@ def test_golden_legacy_packbits():
         + b"G\x11\x00\x0f"
         + LINE_29
         + b"\x1a"
+    )
+
+
+def test_golden_legacy_copies_are_one_job():
+    """PT-2430PC: initialised once, 0C between the copies, 1A at the end."""
+    page = ESC + b"iM\x40" + b"G\x10\x00" + LINE_29
+    assert build_job(model("PT-2430PC"), [LINE_29], SETTINGS, 2) == [
+        bytes(100) + ESC + b"@" + ESC + b"iR\x01",
+        page + b"\x0c",
+        page + b"\x1a",
     ]
-
-
-def test_golden_legacy_plain_with_cutter_and_copies():
-    """PT-2430PC: plain lines, auto cut; a job per copy."""
-    jobs = build_jobs(model("PT-2430PC"), [LINE_29], SETTINGS, 2)
-    job = bytes(100) + ESC + b"@" + ESC + b"iR\x01" + ESC + b"iM\x40" + b"G\x10\x00" + LINE_29
-    assert jobs == [job + b"\x1a", job + b"\x1a"]
-    # without cut: one strip, the last one fed out; chain printing: not even that
-    jobs = build_jobs(model("PT-2430PC"), [LINE_29], JobSettings(cut="none"), 2)
-    assert [j[-1:] for j in jobs] == [b"\x0c", b"\x1a"] and ESC + b"iM" not in jobs[0]
-    jobs = build_jobs(model("PT-2430PC"), [LINE_29], JobSettings(cut="none", chain=True), 2)
-    assert [j[-1:] for j in jobs] == [b"\x0c", b"\x0c"]
+    # without cut no ESC i M; chain printing: 0C at the end too
+    pieces = build_job(model("PT-2430PC"), [LINE_29], JobSettings(cut="none"), 2)
+    assert [p[-1:] for p in pieces[1:]] == [b"\x0c", b"\x1a"] and ESC + b"iM" not in pieces[1]
+    pieces = build_job(model("PT-2430PC"), [LINE_29], JobSettings(cut="none", chain=True), 2)
+    assert [p[-1:] for p in pieces[1:]] == [b"\x0c", b"\x0c"]
 
 
 def test_golden_p700():
     """PT-P700: ESC i a instead of ESC i R, PackBits, cutter."""
-    (job,) = build_jobs(model("PT-P700"), [LINE_29], SETTINGS, 1)
-    assert job == (
+    assert job(model("PT-P700"), [LINE_29], SETTINGS, 1) == (
         bytes(100)
         + ESC
         + b"@"
@@ -515,16 +592,11 @@ def test_golden_p700():
 
 
 def test_golden_d460bt():
-    """PT-D460BT: print information with n9 = 2, the fixed margin bytes, chain via ESC i K."""
+    """PT-D460BT: print information with n9 = 2, the fixed margin bytes,
+    chain printing via ESC i K, 1A after every label."""
     settings = JobSettings(cut="full", chain=True, width=12, media=1)
-    (job,) = build_jobs(model("PT-D460BT"), [LINE_29], settings, 1)
-    assert job == (
-        bytes(100)
-        + ESC
-        + b"@"
-        + ESC
-        + b"ia\x01"
-        + ESC
+    page = (
+        ESC
         + b"iz\x00\x00\x0c\x00\x01\x00\x00\x00\x02\x00"
         + ESC
         + b"id\x01\x00M\x00"
@@ -534,14 +606,18 @@ def test_golden_d460bt():
         + b"iK\x00"
         + b"G\x10\x00"
         + LINE_29
-        + b"\x1a"  # chain printing here is ESC i K 00, the end stays 1A
+        + b"\x1a"
     )
+    assert build_job(model("PT-D460BT"), [LINE_29], settings, 2) == [
+        bytes(100) + ESC + b"@" + ESC + b"ia\x01",
+        page,
+        page,
+    ]
 
 
 def test_golden_info_command():
     """PT-D450: ESC i z without valid flags, n9 = 0; no cutter."""
-    (job,) = build_jobs(model("PT-D450"), [LINE_29], SETTINGS, 1)
-    assert job == (
+    assert job(model("PT-D450"), [LINE_29], SETTINGS, 1) == (
         bytes(100)
         + ESC
         + b"@"
@@ -561,10 +637,9 @@ def test_every_model_job_reads_back():
         printer = FakePTouch(line_bytes=m.line_bytes)
         left, pins = print_area(m, 12) or (0, m.pins)
         lines = ptouch.columns(strip([0], [], [pins - 1], height=pins), m, left)
-        for job in build_jobs(m, lines, JobSettings(cut="none"), 3):
-            printer.feed(job)
+        printer.feed(job(m, lines, JobSettings(cut="none"), 3))
         assert not printer.buffer, m.name
-        assert len(printer.pages) == 3, m.name
+        assert len(printer.pages) == 3 and printer.inits == 1, m.name
         first = printer.pages[0]["lines"]
         assert first[m.lead_px] == lines[m.lead_px], m.name
         assert len(first) == len(lines)
@@ -573,21 +648,23 @@ def test_every_model_job_reads_back():
 # --- settings for the model --------------------------------------------------------------
 
 
+def info_for(name, tape=12, media="laminated"):
+    return PrinterInfo(name, tape, None, None, "IDLE", cassette=CassetteInfo(media=media))
+
+
 def test_cut_modes_and_extras_per_model():
     backend = PTouch()
-
-    def info(name):
-        return PrinterInfo(name, 12, None, None, "IDLE")
-
     assert backend.cut_modes(None) == ("full", "half", "none")
-    assert backend.cut_modes(info("PT-P750W")) == ("full", "half", "none")
-    assert backend.cut_modes(info("PT-P710BT")) == ("full", "none")  # no half cut
-    assert backend.cut_modes(info("PT-P700")) == ("full", "none")
-    assert backend.cut_modes(info("PT-2420PC")) == ()  # a cutter lever only
+    assert backend.cut_modes(info_for("PT-P750W")) == ("full", "half", "none")
+    assert backend.cut_modes(info_for("PT-P710BT")) == ("full", "none")  # no half cut
+    assert backend.cut_modes(info_for("PT-P700")) == ("full", "none")
+    assert backend.cut_modes(info_for("PT-2420PC")) == ()  # a cutter lever only
     assert backend.extras(None) == ("chain", "high_res", "feed")
-    assert backend.extras(info("PT-P950NW")) == ("chain", "high_res", "feed")
-    assert backend.extras(info("PT-D460BT")) == ("chain",)
-    assert backend.extras(info("Something else")) == ("chain", "high_res", "feed")
+    assert backend.extras(info_for("PT-P950NW")) == ("chain", "high_res", "feed")
+    assert backend.extras(info_for("PT-P910BT")) == ("chain", "feed")  # no high resolution
+    assert backend.extras(info_for("PT-D460BT")) == ("chain",)
+    assert backend.extras(info_for("Something else")) == ("chain", "high_res", "feed")
+    assert backend.extras(info_for("P-touch", 36)) == ("chain", "high_res", "feed")
 
 
 def test_job_settings_follow_the_model():
@@ -597,14 +674,29 @@ def test_job_settings_follow_the_model():
     assert plain == JobSettings("full", False, False, 14, 24, 1)
     wanted = PrintOptions(cut="half", chain=True, high_res=True, feed_mm=5.0)
     assert ptouch.job_settings(p750w, wanted, status) == JobSettings("half", True, True, 70, 24, 1)
-    # what the model cannot do is left out; the feed stays within 2 to 127 mm
+    # what the model cannot do is left out
     assert ptouch.job_settings(model("PT-P710BT"), wanted, status).cut == "full"
     assert ptouch.job_settings(model("PT-2420PC"), wanted, status) == JobSettings(
         "none", True, False, 35, 24, 1
     )
+    # Brother's margins: 2 mm (14 dots) at least at 180 dpi, 1 mm (14 dots)
+    # at 360 dpi, 127 mm at most; doubled at high resolution
     assert ptouch.job_settings(p750w, PrintOptions(feed_mm=0.1), status).feed_dots == 14
     assert ptouch.job_settings(p750w, PrintOptions(feed_mm=500), status).feed_dots == 900
-    assert ptouch.job_settings(model("PT-P900W"), PrintOptions(), status).feed_dots == 28
+    p900 = model("PT-P900")
+    assert ptouch.job_settings(p900, PrintOptions(feed_mm=0.1), status).feed_dots == 14
+    assert ptouch.job_settings(p900, PrintOptions(feed_mm=127), status).feed_dots == 1800
+    hi = ptouch.job_settings(p900, PrintOptions(feed_mm=1, high_res=True), status)
+    assert hi.high_res and hi.feed_dots == 28
+    assert (
+        ptouch.job_settings(p900, PrintOptions(feed_mm=127, high_res=True), status).feed_dots
+        == 3600
+    )
+    # PT-P900 series: high resolution on laminated tape only; PT-P910BT never
+    tube = parse_status(status_frame(width=12, media=0x11))
+    assert not ptouch.job_settings(p900, wanted, tube).high_res
+    assert ptouch.job_settings(p750w, wanted, tube).high_res
+    assert not ptouch.job_settings(model("PT-P910BT"), wanted, status).high_res
 
 
 # --- status ------------------------------------------------------------------------------
@@ -637,7 +729,7 @@ def test_parse_status():
         (0, 0x08, "generic"),
         (0, 0x10, "cover_open"),
         (0, 0x20, "overheat"),
-        (0, 0x40, "jam"),
+        (0, 0x40, "label_not_found"),  # PT-P900 series: black marking not detected
         (0, 0x80, "generic"),
         (0x08, 0x10, "cover_open"),  # what to fix first
         (0x01, 0x20, "no_cassette"),
@@ -647,6 +739,24 @@ def test_status_errors(err1, err2, code):
     error = status_error(parse_status(status_frame(err1=err1, err2=err2)))
     assert error is not None and error.code == code
     assert "80 20 42" in error.details  # the raw status for bug reports
+
+
+@pytest.mark.parametrize(
+    "extended, code",
+    [
+        (0x10, "no_cassette"),
+        (0x1D, "generic"),
+        (0x1E, "generic"),
+        (0x21, "bad_cassette"),
+        (0x55, "generic"),
+    ],
+)
+def test_extended_errors(extended, code):
+    """PT-P900 series: status byte 7."""
+    frame = bytearray(status_frame())
+    frame[7] = extended
+    error = status_error(parse_status(bytes(frame)))
+    assert error is not None and error.code == code
 
 
 def test_status_without_error_bits():
@@ -710,8 +820,14 @@ def test_model_names():
 def test_usb_ids():
     assert model_by_usb_id(0x2061).name == "PT-P700"
     assert model_by_usb_id(0x2062).name == "PT-P750W"
-    # ptouch-print: Editor Lite mode, ptouch: the PT-P750W; on usblp it prints
-    assert model_by_usb_id(0x2065).name == "PT-P750W"
+    # Brother (Appendix A): 2062 is the PT-P750W; 2065 is its Editor Lite drive
+    assert model_by_usb_id(0x2065) is None
+    assert ptouch.EDITOR_LITE[3].usb_ids == (0x2065,)
+    # Brother's IDs of the documented models
+    brother = {0x2060: "PT-E550W", 0x20AF: "PT-P710BT", 0x2083: "PT-P900", 0x2086: "PT-P950NW"}
+    for usb_id, name in brother.items():
+        assert model_by_usb_id(usb_id).name == name
+    assert model_by_usb_id(0x20C7).name == "PT-P910BT"
     assert model_by_usb_id(0x2085).name == "PT-P900W"
     assert model_by_usb_id(0x20B0) is None  # the VC-500W
     assert model_by_usb_id(None) is None
@@ -768,9 +884,8 @@ def test_query_unknown_network_model(fake):
     info = PTouch().query("ptouch.local")
     assert info.model == "P-touch" and info.tape_mm == 12
     fake.printer.width = 36
-    backend = PTouch()
-    backend.query("ptouch.local")
-    assert backend.model.pins == 560  # 36 mm only fits the wide head
+    info = PTouch().query("ptouch.local")
+    assert ptouch.model_of(info).pins == 560  # 36 mm only fits the wide head
 
 
 def test_print(fake):
@@ -816,11 +931,23 @@ def test_print_refits_for_the_inserted_tape(fake):
     backend.print_label(image, "ptouch.local", PrintOptions())
     (page,) = fake.printer.pages
     assert page["z"][2] == 9
-    # the next render is for the printer now known, and its heat-shrink tube
-    fake.printer.width, fake.printer.media = 12, 0x11
-    backend.query("ptouch.local")
-    assert backend.raster(12, PrintOptions()).width_px == 66
-    assert backend.raster(9, PrintOptions()).width_px == 50  # a tape, not the tube
+    # rendered for the printer as asked (PrintOptions.info), and its tube
+    fake.printer.width, fake.printer.media = 11, 0x17
+    info = backend.query("ptouch.local")
+    assert info.tape_mm == 12
+    assert backend.raster(12, PrintOptions(info=info)).width_px == 50  # 11.2 mm tube
+    assert backend.raster(9, PrintOptions(info=info)).width_px == 50  # 9 mm tape
+    assert backend.raster(6, PrintOptions(info=info)).width_px == 32
+
+
+def test_backend_keeps_no_printer_state(fake):
+    """One backend serves every window: a query changes nothing for others."""
+    backend = PTouch()
+    before = backend.raster(12, PrintOptions())
+    fake.printer.code, fake.printer.line_bytes = 0x69, 70
+    info = backend.query("ptouch.local")
+    assert backend.raster(12, PrintOptions()) == before
+    assert backend.raster(12, PrintOptions(info=info)).width_px == 150
 
 
 def test_print_errors(fake):
@@ -859,18 +986,69 @@ def test_silent_printer_times_out(fake):
     with pytest.raises(PrinterError) as raised:
         backend.print_label(image, "ptouch.local", PrintOptions())
     assert raised.value.code == "timeout"
-    assert ptouch.PRINT_TIMEOUT in fake.links[-1].timeouts
+    length = image.width / 180 * 25.4
+    assert ptouch.print_timeout(length, False) in fake.links[-1].timeouts
 
 
-def test_answer_after_switching_to_raster_is_dropped(fake):
+def test_print_timeout_grows_with_the_label():
+    assert ptouch.print_timeout(0, False) == ptouch.PRINT_TIMEOUT
+    assert ptouch.print_timeout(1000, False) == ptouch.PRINT_TIMEOUT + 100
+    assert ptouch.print_timeout(1000, True) == ptouch.PRINT_TIMEOUT + 200
+
+
+def test_network_printer_without_status_prints_without_waiting(fake):
+    """Brother documents no status over TCP: without one, the job goes out
+    for the label's tape and nothing is waited for."""
+    backend = PTouch()
+    image = backend.prepare(label(9), PrintOptions())
+    fake.printer.status = lambda kind=0: b""  # never answers
+    events = []
+    backend.print_label(image, "ptouch.local", PrintOptions(copies=2), events.append)
+    pages = fake.printer.pages
+    assert len(pages) == 2 and pages[0]["z"][0] == 0x84 and pages[0]["z"][2] == 9
+    assert events == [Progress(1, 2), Progress(2, 2)]
+    # the status query itself still says the printer does not answer
+    with pytest.raises(PrinterError) as raised:
+        backend.query("ptouch.local")
+    assert raised.value.code == "timeout"
+
+
+def test_usb_printer_without_status_is_an_error(fake, monkeypatch):
+    """On USB the status is documented: no answer is a problem, not a reason
+    to print blind."""
+    monkeypatch.setattr(ptouch, "_usb_model", lambda address: model("PT-P750W"))
+    fake.printer.status = lambda kind=0: b""
+    image = PTouch().prepare(label(12), PrintOptions())
+    with pytest.raises(PrinterError) as raised:
+        PTouch().print_label(image, "usb://Brother/PT-P750W", PrintOptions())
+    assert raised.value.code == "timeout" and not fake.printer.pages
+
+
+def test_tube_is_at_most_500_mm(fake):
+    fake.printer.width, fake.printer.media = 12, 0x11
+    backend = PTouch()
+    image = Image.new("RGB", (round(600 / 25.4 * 180), 66), "white")
+    image.info["lpi"] = 180
+    with pytest.raises(PrinterError) as raised:
+        backend.print_label(image, "ptouch.local", PrintOptions())
+    assert raised.value.code == "too_long" and raised.value.params["max_mm"] == 500
+    image = image.crop((0, 0, round(400 / 25.4 * 180), 66))
+    backend.print_label(image, "ptouch.local", PrintOptions())
+    assert fake.printer.pages[0]["z"][:2] == b"\x86\x11"
+
+
+def test_answer_after_switching_to_raster_is_dropped(fake, monkeypatch):
+    """PT-P700 (ptouch-print's P700 flag): the answer is read and dropped."""
+    monkeypatch.setattr(ptouch, "_usb_model", lambda address: model("PT-P700"))
     fake.printer.answers_raster = True
+    fake.printer.completes = False
     backend = PTouch()
     image = backend.prepare(label(12), PrintOptions())
-    backend.print_label(image, "ptouch.local", PrintOptions(copies=2))  # PT-P750W: p700_init
-    assert len(fake.printer.pages) == 2
+    backend.print_label(image, "usb://Brother/PT-P700", PrintOptions(copies=2))
+    assert len(fake.printer.pages) == 2 and not fake.printer.out
     assert ptouch.REPLY_WAIT in fake.links[-1].timeouts
     fake.printer.answers_raster = False  # and none at all is fine too
-    backend.print_label(image, "ptouch.local", PrintOptions())
+    backend.print_label(image, "usb://Brother/PT-P700", PrintOptions())
     assert len(fake.printer.pages) == 3
 
 
@@ -889,8 +1067,15 @@ def test_raster_for_each_tape():
     )
     # 36 mm: only the PT-P900 series takes it, at 360 dpi
     assert backend.raster(36, PrintOptions()) == ptouch.Raster(360, tape_px=454, width_px=454)
-    backend.model = model("PT-P750W")
-    assert backend.raster(36, PrintOptions()).width_px == 128  # the whole head
+    p750w = PrintOptions(info=info_for("PT-P750W"))
+    assert backend.raster(36, p750w).width_px == 128  # the whole head
+    # PT-P900 series: high resolution on laminated tape only, none on the PT-P910BT
+    p900 = info_for("PT-P900")
+    assert backend.raster(12, PrintOptions(high_res=True, info=p900)).dpi == 720
+    tube = info_for("PT-P900", media="heat_shrink_2")
+    assert backend.raster(12, PrintOptions(high_res=True, info=tube)).dpi == 360
+    p910 = info_for("PT-P910BT")
+    assert backend.raster(12, PrintOptions(high_res=True, info=p910)).dpi == 360
 
 
 # --- refused models ----------------------------------------------------------------------
@@ -905,7 +1090,7 @@ def test_unsupported_models_are_refused(fake, monkeypatch):
     monkeypatch.setattr(ptouch, "_usb_model", lambda address: None)
     with pytest.raises(PrinterError) as raised:
         PTouch().query("usb://Brother/PT-X2")
-    assert raised.value.code == "unsupported_model"
+    assert raised.value.code == "unknown_model"
     lite = ptouch.EDITOR_LITE[2]
     monkeypatch.setattr(ptouch, "_usb_model", lambda address: lite)
     with pytest.raises(PrinterError) as raised:
@@ -1102,11 +1287,88 @@ def test_tcp_query_and_print(tcp_printer):
     info = backend.query("127.0.0.1")
     assert (info.model, info.tape_mm) == ("PT-P900W", 12)
     assert info.cassette.printable_mm == 10.6  # 150 pins at 360 dpi
-    image = backend.prepare(label(12), PrintOptions())
+    image = backend.prepare(label(12), PrintOptions(info=info))
     assert image.height == 150 and image.info["lpi"] == 360
     backend.print_label(image, "127.0.0.1", PrintOptions(copies=2, cut="none"))
     pages = tcp_printer.printer.pages
     assert len(pages) == 2 and pages[0]["compression"] == 0 and pages[0]["M"] == b"\x00"
+
+
+def test_tcp_printer_that_reads_slowly(monkeypatch):
+    """The printer takes the job in pieces with pauses (it prints while it
+    reads): sending goes on as long as each pause is shorter than the
+    timeout, even when the whole job takes much longer."""
+    server = socket.create_server(("127.0.0.1", 0))
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+    printer = FakePTouch(code=0x69, line_bytes=70)
+    pauses = []
+
+    def serve():
+        conn, _addr = server.accept()
+        with conn:
+            data = b""
+            while ESC + b"iS" not in data:
+                data += conn.recv(4096)
+            printer.feed(data)
+            conn.sendall(bytes(printer.out))
+            printer.out.clear()
+            conn.settimeout(2)
+            try:
+                while chunk := conn.recv(8192):
+                    time.sleep(0.1)  # printing: not reading
+                    pauses.append(len(chunk))
+                    printer.feed(chunk)
+                    if printer.out:
+                        conn.sendall(bytes(printer.out))
+                        printer.out.clear()
+            except OSError:
+                pass
+
+    thread = threading.Thread(target=serve, daemon=True)
+    thread.start()
+    connect = socket.create_connection
+
+    def small_buffers(address, timeout):
+        sock = connect(address, timeout)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
+        return sock
+
+    monkeypatch.setattr(ptouch.socket, "create_connection", small_buffers)
+    monkeypatch.setattr(ptouch, "_connect", REAL_CONNECT)
+    monkeypatch.setattr(ptouch, "PRINT_TIMEOUT", 0.5)  # each pause is shorter
+    monkeypatch.setattr(ptouch, "MIN_SPEED_MM_S", 1e9)
+    monkeypatch.setattr(ptouch, "SEND_CHUNK", 4096)
+    image = Image.new("RGB", (1200, 150), "black")  # 70 bytes a line, uncompressed
+    image.info["lpi"] = 360
+    begin = time.monotonic()
+    PTouch(port=server.getsockname()[1]).print_label(
+        image, "127.0.0.1", PrintOptions(copies=2, cut="none")
+    )
+    took = time.monotonic() - begin
+    thread.join(5)
+    server.close()
+    assert len(printer.pages) == 2
+    assert took > 2 * ptouch.PRINT_TIMEOUT  # far longer than one timeout
+
+
+def test_tcp_printer_that_takes_nothing_stalls():
+    class Stuck:
+        def settimeout(self, timeout):
+            pass
+
+        def send(self, data):
+            raise TimeoutError("timed out")
+
+        def recv(self, size):
+            raise TimeoutError("timed out")
+
+    link = ptouch._TcpLink(Stuck())
+    with pytest.raises(PrinterError) as raised:
+        link.sendall(b"x")
+    assert raised.value.code == "stalled"
+    with pytest.raises(PrinterError) as raised:
+        link.recv(1)
+    assert raised.value.code == "timeout"
 
 
 def test_tcp_port_closed(monkeypatch):
@@ -1139,12 +1401,14 @@ def test_label_files_with_small_tape(tmp_path):
     assert lab.tape_mm == 3.5
     lab.save(tmp_path / "small.etiketto")
     assert Label.load(tmp_path / "small.etiketto").tape_mm == 3.5
-    assert Label.new_for("ptouch").tape_mm == 36  # nothing inserted: the widest tape
+    # nothing inserted: 12 mm, the most common tape (not the widest)
+    assert Label.new_for("ptouch").tape_mm == 12
+    assert isinstance(Label.new_for("ptouch").tape_mm, int)
     assert Path(tmp_path / "small.etiketto").exists()
 
 
 def test_print_on_an_older_model(fake, monkeypatch):
-    """PT-2430PC: a job per copy, nothing to wait for afterwards."""
+    """PT-2430PC: one job for both copies, nothing to wait for afterwards."""
     monkeypatch.setattr(ptouch, "_usb_model", lambda address: model("PT-2430PC"))
     fake.printer.completes = False  # and it would not say anything anyway
     backend = PTouch()
@@ -1153,8 +1417,8 @@ def test_print_on_an_older_model(fake, monkeypatch):
     backend.print_label(image, "usb://Brother/PT-2430PC", PrintOptions(copies=2), events.append)
     assert events == [Progress(1, 2), Progress(2, 2)]
     pages = fake.printer.pages
-    assert [p["end"] for p in pages] == [0x1A, 0x1A] and pages[0]["M"] == b"\x40"
-    assert fake.printer.inits == 3  # the status query, then each copy
+    assert [p["end"] for p in pages] == [0x0C, 0x1A] and pages[0]["M"] == b"\x40"
+    assert fake.printer.inits == 2  # the status query, then the job once
 
 
 def test_print_without_an_answer_to_raster_mode(fake):
