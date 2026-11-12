@@ -372,40 +372,87 @@ def _again(element: Element, image: Image.Image, how, room) -> Image.Image:
 # --- from the flowing layout ----------------------------------------------------------
 
 
-def adopt(label: Label, dpi: float, safe_mm: float = flow.DEFAULT_SAFE_MM) -> None:
+def adopt(
+    label: Label,
+    dpi: float,
+    safe_mm: float = flow.DEFAULT_SAFE_MM,
+    mono: bool = False,
+    red: bool = False,
+) -> None:
     """Give each element of a label that was laid out one after another the
     position and size it had there, so switching to the free layout moves
     nothing: a text gets the size it was drawn at, a code its module (and a
     linear code its bars' height), an image, a symbol and a shape the size
-    they were drawn at. Only the elements matter, not the label's layout."""
+    they were drawn at. Only the elements matter, not the label's layout.
+    mono, red: as the label is rendered (render()), so a text reduced to
+    fit a label of fixed length keeps the ink it had in the preview."""
     flowing = replace(label, layout="flow")
     warnings: list[RenderWarning] = []
     frame = flow._frame(flowing, dpi, safe_mm, None, 0, warnings)
-    inks = Inks()
+    inks = _inks(flowing, mono, red)
     parts = flow._parts(flowing, frame, dpi, warnings, flow._room(flowing, frame, dpi, 0), inks)
+    # the size each text got before it was reduced to fit (a text drawn
+    # again in black and white no longer tells); None: not a drawn text
+    sizes = [_size_px(part) for part in parts]
     length, parts, gaps, _ = flow._fit_length(flowing, parts, frame, dpi, warnings, 0, inks)
+    # a text of a label of fixed length that fits is drawn only now (_LaterText)
+    parts = [flow._drawn(part) for part in parts]
     places = flow._positions(length, flowing, parts, gaps, frame)
-    for element, part, place in zip(label.elements, parts, places, strict=True):
-        _adopt(element, part, place, dpi)
+    for element, part, place, size in zip(label.elements, parts, places, sizes, strict=True):
+        _adopt(element, part, place, (dpi, inks, size))
 
 
-def _drawn_size(element: TextElement, part: Image.Image, dpi: float) -> float:
+def _size_px(part) -> float | None:
+    if isinstance(part, Image.Image):
+        return part.info.get("size_px")
+    return part.size_px  # a _LaterText
+
+
+def _drawn_size(element: TextElement, part: Image.Image, dpi: float, size: float) -> float:
     """The size (pixels) a text was drawn at, also when it was reduced to
     fit a label of fixed length afterwards (its height tells by how much)."""
-    size = part.info["size_px"]
     wrap = mm_to_px(element.max_width_mm, dpi) if element.max_width_mm > 0 else None
     height = typeset.size_of(element, size, dpi, antialias=True, wrap_px=wrap)[1]
     return size * part.height / max(1, height)
 
 
-def _adopt_size(element: Element, part: Image.Image, dpi: float) -> None:
+MATCH_TRIES = 4  # layouts of a text to find the size its ink had
+
+
+def _matched_size(element: TextElement, part: Image.Image, how) -> float:
+    """The size (points, to a hundredth) at which the free layout draws the
+    text with the ink it had: its drawn size first, then corrected by how
+    much its ink's long side differs (a text reduced to fit a label of
+    fixed length was resampled, or drawn a pixel larger or smaller)."""
+    dpi, inks, size = how
+    pt = round(_drawn_size(element, part, dpi, size) / dpi * 72, 2)
+    target = ink_box(part)
+    if not target:
+        return pt
+    axis = 0 if target[2] - target[0] >= target[3] - target[1] else 1
+    want = target[axis + 2] - target[axis]
+    best = (math.inf, pt)
+    for _ in range(MATCH_TRIES):
+        got = ink_box(text_part(replace(element, size_pt=pt), dpi, inks).image)
+        if not got:  # nothing drawn at that size: keep the best so far
+            break
+        have = got[axis + 2] - got[axis]
+        best = min(best, (abs(have - want), pt))
+        if have == want:
+            break
+        pt = round(pt * want / have, 2)
+    return best[1]
+
+
+def _adopt_size(element: Element, part: Image.Image, how) -> None:
     """The size the element was drawn at, as its size in the free layout."""
+    dpi = how[0]
 
     def mm(px: float) -> float:
         return round(px_to_mm(px, dpi), 2)  # type: ignore[arg-type]
 
-    if isinstance(element, TextElement) and "size_px" in part.info:
-        element.size_pt = round(_drawn_size(element, part, dpi) / dpi * 72, 2)
+    if isinstance(element, TextElement) and how[2]:
+        element.size_pt = _matched_size(element, part, how)
     elif isinstance(element, CodeElement) and hasattr(part, "code_module"):
         element.module_mm = mm(part.code_module)
         if codes.SPECS[element.symbology].layout not in _MATRIX:
@@ -418,7 +465,9 @@ def _adopt_size(element: Element, part: Image.Image, dpi: float) -> None:
         element.width_mm, element.height_mm = mm(part.width), mm(part.height)
 
 
-def _adopt(element: Element, part: Image.Image, place: tuple[int, int], dpi: float) -> None:
+def _adopt(element: Element, part: Image.Image, place: tuple[int, int], how) -> None:
+    dpi = how[0]
+
     def mm(px: float) -> float:
         return round(px_to_mm(px, dpi), 2)  # type: ignore[arg-type]
 
@@ -426,5 +475,5 @@ def _adopt(element: Element, part: Image.Image, place: tuple[int, int], dpi: flo
     if isinstance(element, (TextElement, CodeElement)):
         box = ink_box(part) or (0, 0, 0, 0)
         x, y = x + box[0], y + box[1]
-    _adopt_size(element, part, dpi)
+    _adopt_size(element, part, how)
     element.x_mm, element.y_mm = mm(max(0, x)), mm(max(0, y))

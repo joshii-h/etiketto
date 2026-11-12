@@ -66,6 +66,29 @@ def test_switching_keeps_the_places(window):
     assert window.label.layout == "flow"
 
 
+def _ink(image):
+    return image.convert("L").point(lambda v: 255 if v < 128 else 0).getbbox()
+
+
+@pytest.mark.parametrize("text", ["Shelf", "Example Clinic Maintenance 2027 und 2028"])
+def test_switching_a_die_cut_label(window, text):
+    """A label of fixed length on a black-and-white printer: a text that
+    fits (drawn only once its size is known) and one reduced to fit are
+    taken over as the preview showed them."""
+    window.set_backend("cab")
+    assert not window.label.auto_length
+    element = window.label.elements[0]
+    element.text = text
+    render_now(window)
+    flowing = window.rendered.image.copy()
+    to_free(window)
+    assert window.label.layout == "free" and element.size_pt > 0
+    render_now(window)
+    placed = window.rendered.image
+    assert placed.size == flowing.size
+    assert all(abs(a - b) <= 1 for a, b in zip(_ink(placed), _ink(flowing), strict=True))
+
+
 def test_switching_again_keeps_what_was_set(window):
     element = window.label.elements[0]
     element.x_mm, element.y_mm = 3.0, 4.0

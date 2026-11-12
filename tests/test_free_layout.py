@@ -20,6 +20,7 @@ from tavletta.model import (
     LabelError,
     PageElement,
     ShapeElement,
+    SheetChoice,
     SymbolElement,
     TextElement,
 )
@@ -425,6 +426,111 @@ def test_adopt_keeps_the_places(png_b64):
         1 for a, b in zip(dark(placed).tobytes(), dark(flowing).tobytes(), strict=True) if a != b
     )
     assert differing < 0.02 * placed.width * placed.height
+
+
+def _ql_die_cut(*elements) -> Label:
+    label = Label(printer="brother_ql_diecut", auto_length=False, orientation="across")
+    label.set_media_size(62, 29)
+    label.elements = list(elements)
+    return label
+
+
+def _on_a_sheet(*elements) -> Label:
+    label = Label(printer="system", orientation="across", auto_length=False)
+    label.sheet = SheetChoice("Avery L7160", [0])
+    label.use_sheet_size()
+    label.elements = list(elements)
+    return label
+
+
+def _ink_of(label: Label, mono_: bool) -> tuple[int, int, int, int]:
+    return box(render(label, dpi=DPI, mono=mono_).image)
+
+
+def _adopted(label: Label, mono_: bool) -> tuple:
+    """The ink one after another and in the free layout after adopt()."""
+    flowing = _ink_of(label, mono_)
+    freelayout.adopt(label, DPI, mono=mono_)
+    label.layout = "free"
+    return flowing, _ink_of(label, mono_)
+
+
+@pytest.mark.parametrize("make", [cab_label, _ql_die_cut, _on_a_sheet])
+@pytest.mark.parametrize("mono_", [False, True])
+def test_adopt_on_a_label_of_fixed_length(make, mono_):
+    """A die-cut label or one on a sheet: a text that fits is drawn only
+    once its size is known; adopt() takes it over drawn (it failed on
+    `_LaterText` before)."""
+    label = make(TextElement(text="Shelf", size_pt=12), CodeElement(data="1"))
+    label.layout, label.auto_length = "flow", False
+    flowing, placed = _adopted(label, mono_)
+    text = label.elements[0]
+    assert text.size_pt == pytest.approx(12, abs=0.2) and text.x_mm > 0
+    assert all(abs(a - b) <= 1 for a, b in zip(placed, flowing, strict=True))
+
+
+@pytest.mark.parametrize("size", [0, 12, 30])
+@pytest.mark.parametrize("mono_", [False, True])
+def test_adopt_keeps_the_ink_of_a_text_reduced_to_fit(size, mono_):
+    """A text too long for the fixed length is reduced (resampled in
+    colour, laid out again in black and white): the free layout draws it
+    with the same ink, a dot off at most."""
+    text = TextElement(text="Example Clinic Maintenance 2027", size_pt=size)
+    label = cab_label(text, layout="flow", auto_length=False)
+    flowing, placed = _adopted(label, mono_)
+    assert text.size_pt < 8
+    assert all(abs(a - b) <= 1 for a, b in zip(placed, flowing, strict=True))
+
+
+def test_adopt_keeps_a_text_that_failed():
+    """A text that could not be drawn (a placeholder) keeps its size."""
+    text = TextElement(text="Shelf", size_pt=0)
+    label = cab_label(text, layout="flow", auto_length=True)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(flow, "render_element", _fails)
+        freelayout.adopt(label, DPI)
+    assert text.size_pt == 0 and (text.x_mm, text.y_mm) != (0, 0)
+
+
+def test_matched_size_without_ink():
+    """A text without ink (spaces) keeps the size it was drawn at; one that
+    shows no ink when drawn again too."""
+    blank = Image.new("RGBA", (40, 20))
+    blank.info["size_px"] = 20.0
+    how = (DPI, flow.Inks(), 20.0)
+    size = freelayout._matched_size(TextElement(text="   "), blank, how)
+    assert size == pytest.approx(20.0 / DPI * 72 * 20 / _height("   ", 20.0), abs=0.01)
+    inked = Image.new("RGBA", (40, 20), (0, 0, 0, 255))
+    assert freelayout._matched_size(TextElement(text="   "), inked, how) > 0
+
+
+def _height(text: str, size: float) -> int:
+    return typeset.size_of(TextElement(text=text), size, DPI, antialias=True, wrap_px=None)[1]
+
+
+def _fails(*_args, **_kwargs):
+    raise ValueError("broken")
+
+
+def test_drawn_again_in_other_inks(monkeypatch):
+    """_again(): the element in other inks if it comes out the same size,
+    else (or if it fails) as it was drawn; too large stays an error."""
+    element = SymbolElement(path=SQUARE, size_mm=2)
+    image = Image.new("RGBA", (24, 24))
+    how = (DPI, flow.Inks(mono=True), (1, 1))
+    assert freelayout._again(element, image, how, (100, 100)).size == (24, 24)
+    assert freelayout._again(element, image, how, (100, 100)) is not image
+    small = Image.new("RGBA", (5, 5))
+    assert freelayout._again(element, small, how, (100, 100)) is small
+    monkeypatch.setattr(freelayout, "element_part", _fails)
+    assert freelayout._again(element, image, how, (100, 100)) is image
+
+    def too_large(*_args, **_kwargs):
+        raise flow.RenderTooLarge("too large")
+
+    monkeypatch.setattr(freelayout, "element_part", too_large)
+    with pytest.raises(flow.RenderTooLarge):
+        freelayout._again(element, image, how, (100, 100))
 
 
 # --- the command line ---------------------------------------------------------------------------

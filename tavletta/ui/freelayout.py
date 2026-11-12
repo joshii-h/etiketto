@@ -62,7 +62,14 @@ def set_layout(window: Window, layout: str) -> None:
         return
     if layout == "free" and all(e.x_mm == 0 and e.y_mm == 0 for e in label.elements):
         expanded, _warnings = expand_label(label, window.preview_values(), window.data.row)
-        freelayout.adopt(expanded, window.print_dpi(), window.printer_settings.safe_mm)
+        mode = window.print_flow.mode
+        freelayout.adopt(
+            expanded,
+            window.print_dpi(),
+            window.printer_settings.safe_mm,
+            mono=window.backend.renders_mono(mode),
+            red=window.backend.renders_red(mode),
+        )
         for element, placed in zip(label.elements, expanded.elements, strict=True):
             for name in ADOPTED:
                 if hasattr(element, name):
