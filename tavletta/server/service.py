@@ -51,6 +51,7 @@ from tavletta.model import (
     Label,
     LabelError,
     LockTimeout,
+    PageElement,
     TextElement,
     data_inside,
     locked,
@@ -352,6 +353,7 @@ class Service:
         printers: Mapping[str, NamedPrinter] | None = None,
         discover: bool = False,
         max_labels: int = 10_000,
+        allow_pdf_pages: bool = False,
     ):
         self.labels = LabelsDir(labels_dir)
         # fnmatch patterns, spaces around them dropped; () allows any
@@ -360,6 +362,8 @@ class Service:
         self.named = dict(printers) if printers is not None else None
         self.discovery = discover  # search the network (off unless --discover)
         self.max_labels = max_labels  # copies times rows of one job
+        # pages (PDFs, images) in label_content: off unless --allow-pdf-pages
+        self.allow_pdf_pages = allow_pdf_pages
         self._settings = settings
         self._clock = clock
         self.jobs = JobQueue(self._failed)
@@ -687,6 +691,12 @@ class Service:
             ) from None
         # a label sent along may name any file: its data come with the request
         label.data_file, label.data_sheet = "", ""
+        if not self.allow_pdf_pages and any(isinstance(e, PageElement) for e in label.elements):
+            raise ApiError(
+                422,
+                "pages_not_allowed",
+                _("Document pages in label_content are not allowed (--allow-pdf-pages)"),
+            )
         return label
 
     # --- filling in -----------------------------------------------------------
@@ -1179,12 +1189,12 @@ def _too_large() -> ApiError:
 
 
 def _too_long(text: str) -> bool:
-    return len(text) > MAX_TEXT or text.count("\n") > MAX_LINES
+    return len(text) > MAX_TEXT or text.count("\n") >= MAX_LINES  # lines: one more
 
 
 def _check_pictures(label: Label) -> None:
-    """Images and codes take long to draw: at most MAX_PICTURES of them."""
-    pictures = sum(isinstance(e, (ImageElement, CodeElement)) for e in label.elements)
+    """Images, codes and pages take long to draw: at most MAX_PICTURES of them."""
+    pictures = sum(isinstance(e, (ImageElement, CodeElement, PageElement)) for e in label.elements)
     if pictures > MAX_PICTURES:
         raise ApiError(
             413,

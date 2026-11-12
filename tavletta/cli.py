@@ -328,6 +328,14 @@ def _server_options(command: argparse.ArgumentParser) -> None:
         action="store_true",
         help=_("search the network for printers (off by default)"),
     )
+    command.add_argument(
+        "--allow-pdf-pages",
+        action="store_true",
+        help=_(
+            "allow document pages (PDF, images) in labels sent with the request; PDFs are"
+            " then drawn in a separate process with limits (off by default)"
+        ),
+    )
 
 
 def _server_parsers(commands) -> None:

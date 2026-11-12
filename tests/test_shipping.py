@@ -37,7 +37,7 @@ from shipping_samples import (
 from tavletta.backends import get_backend
 from tavletta.backends.base import PrintOptions
 from tavletta.model import Label, LabelError, PageElement, TextElement
-from tavletta.render import mm_to_px, render
+from tavletta.render import Inks, mm_to_px, render
 from tavletta.shipping import crop as cropping
 from tavletta.shipping import detect, source, targets
 from tavletta.shipping.source import SourceError
@@ -393,8 +393,8 @@ def test_image_decoded_across_a_clear_is_not_kept(monkeypatch):
     data = b64(encode(square_image()))
     real = source._decode_frame
 
-    def clearing(raw, frame):
-        result = real(raw, frame)
+    def clearing(raw, frame, max_pixels):
+        result = real(raw, frame, max_pixels)
         source.clear_caches()  # the dialog closes meanwhile
         return result
 
@@ -1580,8 +1580,10 @@ def test_page_area_stays_sharp_next_to_another_element(pdf):
     assert render(label, dpi=dpi, safe_mm=1.5).overflow
     frame = rendering._frame(label, dpi, 1.5, None, 0, [])
     room = rendering._room(label, frame, dpi, 0)
-    parts = rendering._parts(label, frame, dpi, [], room, False)
-    _length, scaled, _gap, overflow = rendering._fit_length(label, parts, frame, dpi, [], 0, False)
+    parts = rendering._parts(label, frame, dpi, [], room, Inks())
+    _length, scaled, _gap, overflow = rendering._fit_length(
+        label, parts, frame, dpi, [], 0, Inks()
+    )
     assert overflow and scaled[0].width < parts[0].width
     assert values(scaled[0]) == {0, 255}
 
@@ -1595,6 +1597,6 @@ def test_smaller_falls_back_to_reducing(monkeypatch):
         raise SourceError("unreadable")
 
     monkeypatch.setattr(rendering, "render_page", broken)
-    scaled = rendering._smaller(PageElement(data="x"), part, 0.5, False)
+    scaled = rendering._smaller(PageElement(data="x"), part, 0.5, Inks())
     assert scaled.size == (50, 25)
-    assert rendering._smaller(TextElement(), part, 0.5, False).size == (50, 25)
+    assert rendering._smaller(TextElement(), part, 0.5, Inks()).size == (50, 25)

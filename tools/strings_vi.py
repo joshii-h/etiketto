@@ -791,4 +791,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Không phải mẫu địa chỉ máy in hợp lệ: %s",
     "A chosen token must not look like a made one (etk_…)": "Mã truy cập tự chọn không được trông giống mã được tạo (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta trong tiếng Romansh nghĩa là tấm bảng nhỏ (từ tavla, bảng/tấm ván). Đọc là tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "cho phép trang tài liệu (PDF, hình ảnh) trong nhãn gửi kèm yêu cầu; khi đó PDF được vẽ trong một tiến trình riêng có giới hạn (mặc định tắt)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "Không cho phép trang tài liệu trong label_content (--allow-pdf-pages)",
 }

@@ -181,9 +181,9 @@ def test_ordered_dithering_is_a_regular_pattern():
 def test_auto_mode_thresholds_drawings_and_dithers_photos():
     drawing = Image.new("RGBA", (40, 40), "white")
     ImageDraw.Draw(drawing).rectangle((10, 10, 30, 30), fill="black")
-    assert imagefx.is_drawing(drawing.convert("L"))
+    assert imagefx.picture_kind(drawing.convert("L")) != "photo"
     photo = Image.open(io.BytesIO(base64.b64decode(gradient()))).convert("RGBA")
-    assert not imagefx.is_drawing(photo.convert("L"))
+    assert imagefx.picture_kind(photo.convert("L")) == "photo"
     auto = imagefx.black_and_white(photo, "auto")
     assert auto.tobytes() == imagefx.black_and_white(photo, "dither").tobytes()
     logo = imagefx.black_and_white(drawing, "auto")
@@ -1054,7 +1054,7 @@ def test_colour_emoji_in_mono_text_are_dithered_not_blown_out():
 def test_a_flat_grey_logo_is_a_drawing():
     logo = Image.new("RGB", (60, 60), "white")
     ImageDraw.Draw(logo).rectangle((10, 10, 49, 49), fill=(128, 128, 128))
-    assert imagefx.is_drawing(logo.convert("L"))
+    assert imagefx.picture_kind(logo.convert("L")) != "photo"
     out = imagefx.black_and_white(logo.convert("RGBA"), "auto").convert("L")
     assert out.crop((12, 12, 48, 48)).getextrema() == (0, 0)  # solid, not dithered
 
@@ -1206,9 +1206,9 @@ def test_a_flat_logo_saved_as_jpeg_is_a_drawing():
     logo.save(buf, "JPEG", quality=70)
     jpeg = Image.open(io.BytesIO(buf.getvalue())).convert("L")
     assert len(set(jpeg.histogram())) > 20  # noisy tones
-    assert imagefx.is_drawing(jpeg)
+    assert imagefx.picture_kind(jpeg) != "photo"
     photo = Image.open(io.BytesIO(base64.b64decode(gradient((256, 40))))).convert("L")
-    assert not imagefx.is_drawing(photo)
+    assert imagefx.picture_kind(photo) == "photo"
 
 
 def test_a_reduced_mono_text_comes_close_to_its_size():
@@ -1336,15 +1336,18 @@ def test_photos_and_gradients_are_no_drawings():
     from PIL import ImageFilter
 
     sunset = Image.open(Path(__file__).parent.parent / "docs/examples/sunset.png")
-    assert not imagefx.is_drawing(sunset.convert("L"))
+    assert imagefx.picture_kind(sunset.convert("L")) == "photo"
     flower = Image.open(Path(__file__).parent.parent / "docs/examples/flower.png").convert("RGBA")
-    assert not imagefx.is_drawing(flower.convert("L"), flower.getchannel("A").point(imagefx.HALF))
+    assert (
+        imagefx.picture_kind(flower.convert("L"), flower.getchannel("A").point(imagefx.HALF))
+        == "photo"
+    )
     smooth = Image.linear_gradient("L").resize((200, 100)).point(lambda v: 64 + v // 2)
-    assert not imagefx.is_drawing(smooth)
+    assert imagefx.picture_kind(smooth) == "photo"
     noise = Image.effect_noise((200, 200), 60).filter(ImageFilter.GaussianBlur(4))
-    assert not imagefx.is_drawing(noise)
+    assert imagefx.picture_kind(noise) == "photo"
     dark = Image.radial_gradient("L").resize((200, 200)).point(lambda v: v // 3)
-    assert not imagefx.is_drawing(dark)
+    assert imagefx.picture_kind(dark) == "photo"
 
 
 def test_the_sticker_flower_is_dithered_not_a_blob():

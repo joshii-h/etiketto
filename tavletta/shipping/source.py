@@ -24,12 +24,17 @@ from typing import Any
 
 from PIL import Image, ImageChops, ImageFilter, ImageOps
 
+from tavletta.imagefx import IMAGE_FORMATS
+
 POINTS_PER_MM = 72 / 25.4
 # a drawn area may not exceed this; a label of 1 m × 1 m at 600 dpi would
 MAX_PIXELS = 80_000_000
 # nor a decoded image: an A4 scan at 600 dpi has 35 million pixels. Checked
 # before decoding, independent of Pillow's own limit for decompression bombs.
 MAX_SOURCE_PIXELS = 50_000_000
+# a PDF drawn within render limits (the print server) has at most this
+# many bytes; it is read and drawn in a process of its own (pdfchild)
+LIMITED_PDF_BYTES = 10 * 2**20
 # the resolution an image file states is believed in this range; below it,
 # it is mostly a program's default (72 or 96), not the scanner's
 TRUSTED_DPI = (100.0, 2400.0)
@@ -111,13 +116,28 @@ def _decoded(data: str) -> bytes:
         raise SourceError("unreadable", str(e)) from e
 
 
-def _starts_as_pdf(data: str) -> bool:
-    """Whether the file is a PDF, from its first kilobyte only."""
+def starts_as_pdf(data: str) -> bool:
+    """Whether the file (base64) is a PDF, from its first kilobyte only."""
     head = data[:1368]  # 1026 bytes; base64 comes in groups of four characters
     try:
         return is_pdf(base64.b64decode(head[: len(head) // 4 * 4]))
     except (binascii.Error, ValueError):
         return False
+
+
+def _limits() -> Any:
+    """The render limits of this thread (the print server), if any: then
+    nothing is kept between renders, image files are decoded within the
+    image budget, and PDFs are read and drawn by a child process (pdfchild)."""
+    from tavletta import render  # render imports this module when it draws a page
+
+    return render.active_limits()
+
+
+def _too_large(detail: str) -> Exception:
+    from tavletta.render import RenderTooLarge
+
+    return RenderTooLarge(detail)
 
 
 # --- caches ---------------------------------------------------------------------
@@ -298,15 +318,18 @@ def _on_paper(image: Image.Image) -> Image.Image:
     return image.convert("RGB")
 
 
-def _decode_frame(raw: bytes, frame: int) -> tuple[Image.Image, int, float | None]:
+def _decode_frame(
+    raw: bytes, frame: int, max_pixels: int | None = None
+) -> tuple[Image.Image, int, float | None]:
     """The frame on paper, the number of frames and the resolution. Only
     one copy of the pixels where possible: an image that needs no turning
-    and no conversion is the decoded image itself."""
-    src: Image.Image = Image.open(io.BytesIO(raw))
+    and no conversion is the decoded image itself. Only the formats image
+    elements take (IMAGE_FORMATS): never EPS (Ghostscript would run it)."""
+    src: Image.Image = Image.open(io.BytesIO(raw), formats=IMAGE_FORMATS)
     frames = max(1, getattr(src, "n_frames", 1))
     if frame:
         src.seek(min(max(0, frame), frames - 1))
-    if src.width * src.height > MAX_SOURCE_PIXELS:
+    if src.width * src.height > (max_pixels or MAX_SOURCE_PIXELS):
         raise SourceError("too_large", "%d × %d pixels" % src.size)
     dpi = _dpi(src.info)
     src.load()
@@ -323,33 +346,57 @@ def _picture(data: str, frame: int, keep: bool = True) -> _Picture:
     kept if keep is False). Not kept either if the caches were cleared
     while it was decoded (a closed dialog's document stays freed)."""
     key = (data, frame)
+    limits = _limits()
+    if limits is not None:  # once per render (render._per_render), never kept
+        from tavletta.render import _per_render
+
+        return _per_render("page", key, lambda: _limited_picture(data, frame, limits))
     cached = _pictures.get(key)
     if cached is not None:
         return cached
     generation = _generation[0]
     if keep:
         _pictures.clear()  # the old image goes before the new one is decoded
+    picture = _load_picture(data, frame)
+    if keep and generation == _generation[0]:
+        _pictures.put(key, picture)
+    return picture
+
+
+def _load_picture(data: str, frame: int, max_pixels: int | None = None) -> _Picture:
     try:
-        image, frames, dpi = _decode_frame(_decoded(data), frame)
+        image, frames, dpi = _decode_frame(_decoded(data), frame, max_pixels)
     except SourceError:
         raise
     except Image.DecompressionBombError as e:
         raise SourceError("too_large", str(e)) from e
     except Exception as e:  # noqa: BLE001 - PIL raises many kinds
         raise SourceError("unreadable", str(e)) from e
-    picture = _Picture(image, frames, dpi)
-    if keep and generation == _generation[0]:
-        _pictures.put(key, picture)
-    return picture
+    return _Picture(image, frames, dpi)
+
+
+def _limited_picture(data: str, frame: int, limits) -> _Picture:
+    """Within render limits: decoded within the image budget (a frame of a
+    TIFF may be larger than the first, which render._source_budget counted)."""
+    try:
+        return _load_picture(data, frame, min(MAX_SOURCE_PIXELS, limits.image_pixels))
+    except SourceError as e:
+        if e.code == "too_large":
+            raise _too_large(str(e)) from None
+        raise
 
 
 def page_info(data: str, page: int = 0) -> PageInfo:
     """Size of a page and the number of pages; SourceError if unusable. A
     page after the last is the last."""
-    if not _starts_as_pdf(data):
+    if not starts_as_pdf(data):
         picture = _picture(data, page)
         image = picture.image
         return PageInfo(image.width, image.height, picture.frames, False, picture.dpi)
+    if _limits() is not None:
+        from tavletta.render import _per_render
+
+        return _per_render("pdf_info", (data, page), lambda: _child_info(data, page))
     pdf_page, count = _pdf_page(_pdf(data), page)
     width, height = pdf_page.get_size()
     if width <= 0 or height <= 0:
@@ -513,24 +560,84 @@ def draw(
 ) -> Image.Image:
     """The area of the page, turned and drawn into box (see fitted()): RGB
     for PDF pages, an image's own mode (1, L or RGB) for images. Cached
-    while small: the preview draws the label again on every change."""
+    while small: the preview draws the label again on every change; not
+    within render limits (see _limits())."""
     key = (data, page, tuple(crop), rotation, box, fit, sharp)
-    cached = _drawings.get(key)
+    limits = _limits()
+    if limits is not None and starts_as_pdf(data):
+        return _child_draw(data, page, (tuple(crop), rotation, box, fit, sharp), limits.pixels)
+    cached = _drawings.get(key) if limits is None else None
     if cached is not None:
         return cached
     info = page_info(data, page)
     region = area(crop, info.width, info.height)
     width, height, scale = fitted(turned(region[2], region[3], rotation), box, fit)
     _check_size((width, height))
+    if limits is not None:
+        from tavletta.render import check_size
+
+        check_size(width, height)
     if info.pdf:
         pdf_page, _count = _pdf_page(_pdf(data), page)
         image = _draw_pdf(pdf_page, region, rotation, (width, height), scale, sharp)
     else:
         picture = _picture(data, page).image
         image = _draw_image(picture, region, rotation, (width, height), scale, sharp)
-    if _image_bytes(image) <= CACHE_ITEM_BYTES:
+    if limits is None and _image_bytes(image) <= CACHE_ITEM_BYTES:
         _drawings.put(key, image)
     return image
+
+
+# --- PDFs within render limits --------------------------------------------------
+
+
+def _child_raw(data: str) -> bytes:
+    raw = _decoded(data)
+    if len(raw) > LIMITED_PDF_BYTES:
+        raise _too_large("a PDF of %d bytes" % len(raw))
+    return raw
+
+
+def _child(raw: bytes, request: dict) -> tuple[dict, bytes]:
+    """pdfchild's answer to the request; its limits broken: RenderTooLarge."""
+    from tavletta.shipping import pdfchild
+
+    try:
+        answer, body = pdfchild.ask(raw, request)
+    except pdfchild.ChildLimit as e:
+        raise _too_large(str(e)) from None
+    except pdfchild.ChildFailed as e:
+        raise SourceError("unreadable", str(e)) from None
+    if "error" in answer:
+        if answer["error"] == "too_large":
+            raise _too_large(answer.get("detail", ""))
+        raise SourceError(str(answer["error"]), answer.get("detail", ""))
+    return answer, body
+
+
+def _child_info(data: str, page: int) -> PageInfo:
+    answer, _body = _child(_child_raw(data), {"op": "info", "page": page})
+    return PageInfo(float(answer["width"]), float(answer["height"]), int(answer["pages"]), True)
+
+
+def _child_draw(data: str, page: int, how: tuple, max_pixels: int) -> Image.Image:
+    """draw() of a PDF page by pdfchild; how: crop, rotation, box, fit, sharp."""
+    crop, rotation, box, fit, sharp = how
+    request = {
+        "op": "draw",
+        "page": page,
+        "crop": list(crop),
+        "rotation": rotation,
+        "box": list(box),
+        "fit": fit,
+        "sharp": sharp,
+        "max_pixels": min(max_pixels, MAX_PIXELS),
+    }
+    answer, body = _child(_child_raw(data), request)
+    size = (int(answer["width"]), int(answer["height"]))
+    if size[0] * size[1] * 3 != len(body):
+        raise SourceError("unreadable", "a drawing of %d bytes for %d × %d" % (len(body), *size))
+    return Image.frombytes("RGB", size, body)
 
 
 def preview(data: str, page: int, longest_px: int) -> Image.Image:
@@ -628,7 +735,7 @@ def only_page(data: str, page: int) -> tuple[str, int]:
     original (up to rounding, see SHARP_SHARE), else the whole file is
     kept; a frame of a TIFF becomes a PNG. Files of one page stay as they
     are."""
-    if not _starts_as_pdf(data):
+    if not starts_as_pdf(data):
         # decoded for this only, not kept: this runs in the background, and
         # the image of the preview stays the one in the cache
         picture = _picture(data, page, keep=False)

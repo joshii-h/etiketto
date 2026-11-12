@@ -791,4 +791,6 @@ TRANSLATIONS = {
     "Not a valid printer address pattern: %s": "Geen geldig printeradrespatroon: %s",
     "A chosen token must not look like a made one (etk_…)": "Een gekozen token mag niet op een aangemaakt token lijken (etk_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta is Reto-Romaans voor een klein tafeltje of plankje (van tavla, tafel/plank). Uitspraak: tav-LET-ta.",
+    "allow document pages (PDF, images) in labels sent with the request; PDFs are then drawn in a separate process with limits (off by default)": "documentpagina's (PDF, afbeeldingen) toestaan in labels die met het verzoek worden meegestuurd; PDF's worden dan in een apart proces met limieten getekend (standaard uit)",
+    "Document pages in label_content are not allowed (--allow-pdf-pages)": "Documentpagina's zijn niet toegestaan in label_content (--allow-pdf-pages)",
 }

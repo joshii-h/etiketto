@@ -96,6 +96,7 @@ def _service(args, printers):
         printers=printers,
         discover=args.discover,
         max_labels=args.max_labels,
+        allow_pdf_pages=args.allow_pdf_pages,
     )
 
 

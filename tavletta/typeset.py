@@ -148,7 +148,12 @@ def layout(
     exact: bool = False,
 ) -> Pango.Layout:
     """exact: glyphs where the font puts them, not each on a whole pixel
-    (the free layout: as wide as other label designers draw a text)."""
+    (the free layout: as wide as other label designers draw a text).
+    Within limits (the print server) a text too long or of too many lines,
+    as it is filled in, fails here (RenderTooLarge), before Pango sees it."""
+    from tavletta.render import check_text  # render imports this module
+
+    check_text(_shown(element))
     desc = Pango.FontDescription()
     # the family as it is: from_string() would read "Source Sans 3" as the
     # family "Source Sans" at size 3

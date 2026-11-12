@@ -62,6 +62,10 @@ class RenderTooLarge(ValueError):
     """An image would exceed the limits set with limited()."""
 
 
+TEXT_CHARS = 5000  # characters of a text or code within limits (as the server's MAX_TEXT)
+TEXT_LINES = 100  # lines of a text within limits (MAX_LINES)
+
+
 @dataclass(frozen=True)
 class Limits:
     pixels: int  # of any one image made while rendering
@@ -69,6 +73,11 @@ class Limits:
     # what every render within these limits holds while it runs (the
     # server's render slots, so print jobs share them with previews)
     slot: Callable[[], contextlib.AbstractContextManager] | None = None
+    # of any one text or code as it is drawn, its variables and columns
+    # filled in (the server checks what is sent before; filled in, a short
+    # text can grow a thousandfold)
+    text_chars: int = TEXT_CHARS
+    text_lines: int = TEXT_LINES
 
     @property
     def image_pixels(self) -> int:
@@ -106,7 +115,22 @@ def check_size(width: int, height: int) -> None:
         raise RenderTooLarge("%d x %d pixels" % (width, height))
 
 
-_check_size = check_size
+def active_limits() -> Limits | None:
+    """The limits renders in this thread are within (limited()), if any."""
+    return _LIMITS.get()
+
+
+def check_text(text: str, lines: bool = True) -> None:
+    """Within limits: a text (lines: and its lines) or a code's content
+    may be drawn as it is filled in (RenderTooLarge). Checked before
+    Pango lays it out: a text of thousands of lines takes gigabytes."""
+    limits = _LIMITS.get()
+    if limits is None:
+        return
+    if len(text) > limits.text_chars:
+        raise RenderTooLarge("%d characters" % len(text))
+    if lines and text.count("\n") >= limits.text_lines:
+        raise RenderTooLarge("%d lines" % (text.count("\n") + 1))
 
 
 def warm_up() -> None:
@@ -373,10 +397,7 @@ def _largest(fits, low: float, high: float) -> float:
 # a warning filter to keep it quiet would not be safe in threads.
 IMAGE_FILE_PIXELS = 80_000_000
 Image.MAX_IMAGE_PIXELS = None
-# image files a label may embed: what Pillow decodes itself, quickly. Not
-# EPS (Ghostscript would run it), not ICO/ICNS/CUR (decoded when opened,
-# before their size can be checked), not the dozens of rarer formats.
-IMAGE_FORMATS = ("PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF")
+IMAGE_FORMATS = imagefx.IMAGE_FORMATS  # image files a label may embed
 # within limits: decoded images of the render running in this thread,
 # each image once however often the label uses it; never kept afterwards
 _RENDER_CACHE: ContextVar[dict | None] = ContextVar("render_cache", default=None)
@@ -401,16 +422,16 @@ def image_size(data: str) -> tuple[int, int]:
 
 def _decode(data: str) -> Image.Image:
     with _opened(data) as src:
-        _check_size(*src.size)  # before anything is unpacked
+        check_size(*src.size)  # before anything is unpacked
         image = ImageOps.exif_transpose(src)
-        _check_size(*image.size)  # a format may know its size only now
+        check_size(*image.size)  # a format may know its size only now
         return image.convert("RGBA")
 
 
 def _scale(data: str, height: int) -> Image.Image:
     img = _decoded(data)
     width = max(1, round(img.width * height / img.height))
-    _check_size(width, height)
+    check_size(width, height)
     return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
@@ -423,7 +444,7 @@ def _cut_image(data: str, crop: tuple, rotation: int, mirror: bool, flip: bool) 
 def _scale_cut(data: str, cut: tuple, height: int) -> Image.Image:
     img = _cut(data, *cut)
     width = max(1, round(img.width * height / img.height))
-    _check_size(width, height)
+    check_size(width, height)
     return img.resize((width, height), Image.Resampling.LANCZOS)
 
 
@@ -635,7 +656,7 @@ def _matrix(
     across = _fit_at(module, wide, quiet, width, thin)
     down = _fit_at(module, tall, quiet, height, thin)
     size = (max(width, across.start + wide * module), max(height, down.start + tall * module))
-    _check_size(*size)
+    check_size(*size)
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
     row_px = spec.row_modules * module
@@ -706,7 +727,7 @@ def _barcode(
     module, left = fit.module, fit.start
     top = round(BAR_TOP_MM * scale)
     bars_h = max(1, round(BAR_HEIGHT_MM * scale))
-    _check_size(max(width, left + module * len(pattern)), height)
+    check_size(max(width, left + module * len(pattern)), height)
     mask = Image.new("L", (max(width, left + module * len(pattern)), height), 0)
     draw = ImageDraw.Draw(mask)
     guards = EAN_LAYOUTS[spec.layout][0] if spec.layout in EAN_LAYOUTS else ()
@@ -792,6 +813,7 @@ def render_code(
     square (or as wide as width, if less), a barcode or PDF417 height pixels
     high and as wide as its design (or width pixels). What is wrong with
     it: code_problems(). `steps`: see _matrix()."""
+    check_text(element.data, lines=False)  # within limits, as it is filled in
     symbol = codes.encode(element)
     spec = codes.SPECS[element.symbology]
     if spec.layout in ("matrix", "stacked"):
@@ -809,7 +831,7 @@ def _draw_symbol(path: str, rotation: int, color: str, mono: bool, size: int) ->
     import cairo
 
     path_segments = segments(path)  # PathError: a damaged file
-    _check_size(size, size)
+    check_size(size, size)
     surface = cairo.ImageSurface(cairo.FORMAT_A8, size, size)
     ctx = cairo.Context(surface)
     ctx.translate(size / 2, size / 2)
@@ -860,12 +882,14 @@ def render_page(
     from tavletta.shipping import source
 
     if width is not None:
-        _check_size(width, height)
+        check_size(width, height)
     crop = (element.crop[0], element.crop[1], element.crop[2], element.crop[3])
     box = (width, height)
     args = (element.data, element.page, crop, element.rotation, box, element.fit)
     if not mono:
         return source.draw(*args).convert("RGBA")
+    if _LIMITS.get():  # nothing kept between renders (see source.draw)
+        return _mono_page(element, args).convert("RGBA")
     # kept: the preview renders again on every change of the label
     return source.cached(("mono", *args), lambda: _mono_page(element, args)).convert("RGBA")
 
@@ -991,7 +1015,7 @@ def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
     drawn = redraw(max(1, width), max(1, height)) if redraw is not None else None
     if drawn is not None:
         return drawn
-    _check_size(max(1, width), max(1, height))
+    check_size(max(1, width), max(1, height))
     return part.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
 
 
@@ -1078,10 +1102,9 @@ def _parts(
     dpi: float,
     warnings,
     room: int | None,
-    inks: Inks | bool,
+    inks: Inks,
     steps: tuple[int, int] = (1, 1),
 ) -> list:
-    inks = _as_inks(inks)
     _source_budget(label)
     parts: list = []  # images, and texts drawn later (_LaterText)
     used = 0
@@ -1174,16 +1197,14 @@ def _check_budget(used: int, what: str) -> None:
 
 def _source_budget(label: Label) -> None:
     """Within limits: the image files of a label together (each counted
-    once) may not unpack to more than the image budget; checked from their
-    headers before any is decoded."""
+    once, and once more if it is also a page: decoded apart) may not unpack
+    to more than the image budget; checked from their headers before any is
+    decoded. A PDF page is drawn in a process of its own (shipping.source)."""
     limits = _LIMITS.get()
     if limits is None:
         return
-    files = {e.data for e in label.elements if isinstance(e, ImageElement) and e.data}
-    if label.background_image and label.background_image.data:
-        files.add(label.background_image.data)
     total = 0
-    for data in files:
+    for data in _image_files(label):
         try:
             width, height = _per_render("size", data, lambda data=data: image_size(data))
         except Exception:  # noqa: BLE001 - an unreadable file becomes its warning later
@@ -1191,6 +1212,22 @@ def _source_budget(label: Label) -> None:
         total += width * height
         if total > limits.image_pixels:
             raise RenderTooLarge("%d pixels of image files" % total)
+
+
+def _image_files(label: Label) -> list[str]:
+    """The image files of a label decoded within limits: those of images
+    and the background, each once, then those of image pages (not PDFs)."""
+    from tavletta.shipping import source
+
+    files = {e.data for e in label.elements if isinstance(e, ImageElement) and e.data}
+    if label.background_image and label.background_image.data:
+        files.add(label.background_image.data)
+    pages = {
+        e.data
+        for e in label.elements
+        if isinstance(e, PageElement) and e.data and not source.starts_as_pdf(e.data)
+    }
+    return [*files, *pages]
 
 
 def check_label(length: int, height: int, dpi: float) -> None:
@@ -1201,7 +1238,7 @@ def check_label(length: int, height: int, dpi: float) -> None:
         return
     if limits.max_length_mm is not None and px_to_mm(length, dpi) > limits.max_length_mm + 1:
         raise RenderTooLarge("%.0f mm" % px_to_mm(length, dpi))
-    _check_size(length, height)
+    check_size(length, height)
 
 
 def _content_width(parts: list[Image.Image], gaps: list[int]) -> int:
@@ -1220,17 +1257,12 @@ def _smaller(
     element: Element,
     part: Image.Image,
     scale: float,
-    inks: Inks | bool,
+    inks: Inks,
     steps: tuple[int, int] = (1, 1),
 ) -> Image.Image:
     """A part reduced to fit a label of fixed length (see _at_size)."""
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
-    return _at_size(element, part, size, _as_inks(inks), steps)
-
-
-def _as_inks(inks: Inks | bool) -> Inks:
-    """Inks, also from mono as a bool (as these helpers took it before)."""
-    return inks if isinstance(inks, Inks) else Inks(bool(inks))
+    return _at_size(element, part, size, inks, steps)
 
 
 def _at_size(
@@ -1276,11 +1308,10 @@ def _fit_length(
     dpi: float,
     warnings,
     min_length_mm: float,
-    inks: Inks | bool,
+    inks: Inks,
     steps: tuple[int, int] = (1, 1),
 ):
     """Label length, the (possibly scaled) parts and the gaps between them."""
-    inks = _as_inks(inks)
     min_len = max(1, math.ceil(min_length_mm / 25.4 * dpi))
     gaps = _gaps(label, f, dpi)
     content_w = _content_width(parts, gaps)
@@ -1303,7 +1334,7 @@ def _fit_length(
 def _canvas(label: Label, size: tuple[int, int], warnings) -> Image.Image:
     """The background in colour: its colour, its image covering it (where
     the image is transparent, the colour shows)."""
-    _check_size(*size)
+    check_size(*size)
     img = Image.new("RGB", size, _color(label.background, "#ffffff"))
     if label.background_image and label.background_image.data:
         try:
@@ -1347,8 +1378,10 @@ def background_brightness(label: Label) -> float:
     lies under it (_local_inks)."""
     colour = _color(label.background, "#ffffff")
     if label.background_image and label.background_image.data:
+        # within limits not kept: the cache would hold the client's files
+        measure = _image_brightness if _LIMITS.get() else _image_brightness_cached
         try:
-            return _image_brightness(label.background_image.data, colour)
+            return measure(label.background_image.data, colour)
         except RenderTooLarge:
             raise
         except Exception:  # noqa: BLE001 - render() warns about it
@@ -1356,13 +1389,15 @@ def background_brightness(label: Label) -> float:
     return imagefx.luma(colour)
 
 
-@lru_cache(maxsize=4)
 def _image_brightness(data: str, colour: tuple[int, int, int]) -> float:
     image = _decoded(data)
     small = image.reduce(16) if min(image.size) >= 64 else image
     flat = Image.new("RGBA", small.size, (*colour, 255))
     flat.alpha_composite(small)
     return imagefx.luma(ImageStat.Stat(flat.convert("RGB")).mean)  # type: ignore[arg-type]
+
+
+_image_brightness_cached = lru_cache(maxsize=4)(_image_brightness)
 
 
 def _local_inks(area: Image.Image, mask: Image.Image | None, inks: Inks) -> Inks:
