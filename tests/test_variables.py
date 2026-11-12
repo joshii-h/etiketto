@@ -72,8 +72,8 @@ def test_dates_on_a_fixed_clock(template, expected):
 
 
 def test_leap_day_plus_a_year():
-    assert shift(datetime(2028, 2, 29), "+1y") == datetime(2029, 2, 28)
-    assert shift(datetime(2028, 2, 29), "+4y") == datetime(2032, 2, 29)
+    assert shift(datetime(2028, 2, 29), "+1y").replace(tzinfo=None) == datetime(2029, 2, 28)
+    assert shift(datetime(2028, 2, 29), "+4y").replace(tzinfo=None) == datetime(2032, 2, 29)
 
 
 def test_default_formats_follow_the_locale():
@@ -300,3 +300,77 @@ def test_store_counter_changes_only_the_counter(tmp_path):
     path.write_text("[]")
     with pytest.raises(LabelError):
         Label.store_counter(path, 1)
+
+
+# --- review fixes ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "template, fragments",
+    [
+        ("Lot {=lot", ["{=lot"]),
+        ("{={=date:%Y}}", ["{="]),
+        ("{=date:%Y} and {=", ["{="]),
+        ("a {=b c", ["{=b"]),
+    ],
+)
+def test_variables_not_closed_are_reported(template, fragments):
+    result, unknown = expand(template, values())
+    assert unknown == fragments
+    label = Label(elements=[TextElement(text=template)])
+    _label, warnings = expand_label(label, values())
+    assert {w.key for w in warnings} == {"unclosed_variable"}
+
+
+def test_escaped_braces_are_not_unclosed():
+    assert expand("{{=date", values()) == ("{=date", [])
+    assert expand("{{={=copy}}}", values()) == ("{=1}", [])
+
+
+def test_a_date_format_that_gives_nothing_is_not_a_variable():
+    assert resolve("date:%Y", values()) == "2026"
+    assert resolve("date:", values()) == ""  # an empty format asks for nothing
+    assert resolve("date:%Ez", values()) is None  # glibc: an unknown format, empty
+    assert names("{=date:%Ez}") == set()
+
+
+@pytest.fixture
+def zurich(monkeypatch):
+    """The system's time zone: Zurich, summer time from 29 March 2026 2:00."""
+    import time
+
+    monkeypatch.setenv("TZ", "Europe/Zurich")
+    time.tzset()
+    yield
+    monkeypatch.undo()
+    time.tzset()
+
+
+def test_hours_across_the_change_to_summer_time(zurich):
+    night = datetime(2026, 3, 29, 1, 30)
+    later = shift(night, "+1h")
+    assert later.strftime("%H:%M %z") == "03:30 +0200"  # 2:30 does not exist that night
+    assert shift(night, "+1d").strftime("%d. %H:%M %z") == "30. 01:30 +0200"
+    assert shift(datetime(2026, 3, 28, 12), "+1d").strftime("%H:%M") == "12:00"
+    assert shift(datetime(2026, 3, 29, 3, 30), "-1h").strftime("%H:%M %z") == "01:30 +0100"
+    assert resolve("time+2h:%H:%M %Z", Values(night)) == "04:30 CEST"
+    assert resolve("date:%z", Values(datetime(2026, 1, 1))) == "+0100"
+
+
+def test_a_given_offset_is_kept():
+    from datetime import timedelta, timezone
+
+    moment = datetime(2026, 3, 29, 1, 30, tzinfo=timezone(timedelta(hours=-5)))
+    assert shift(moment, "+1h+1d").strftime("%d %H:%M %z") == "30 02:30 -0500"
+
+
+def test_names_in_any_language():
+    assert names("{=Größe} {=数量} {=_x1}") == {"Größe", "数量", "_x1"}
+    assert expand("{=Größe}", values(custom={"Größe": "XL"})) == ("XL", [])
+    assert names("{=1a}") == set()
+
+
+def test_invalid_uses_are_not_counted_as_names():
+    assert names("{=counter+1d} {=date:%Y} {=lot:x} {=lot+1d} {=id:0}") == {"date"}
+    assert not uses_counter(Label(elements=[TextElement(text="{=counter:abc}")]))
+    assert names("{=copy:0000}") == {"copy"}

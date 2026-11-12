@@ -11,7 +11,12 @@
     {=copy}, {=copies}   number of this copy and of all copies in the job
     {=uuid}              a random UUID (version 4)
     {=id}, {=id:12}      a short random ID (Crockford base 32), 8 characters
-    {=NAME}              any other name: a value given on the command line
+    {=NAME}              any other name (letters of any language, digits,
+                         "_"): a value given on the command line
+
+Dates and times are in the system's time zone: "+1d" keeps the time of day
+(also across a change to or from summer time), "+2h" counts real hours;
+%z and %Z give the offset and the zone of that moment.
 
 All variables of one label have the same values: a counter, an ID or a UUID
 used twice (text and QR code) shows the same value on that label; the next
@@ -44,7 +49,7 @@ import re
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 from etiketto.model import CodeElement, Element, Label, TextElement
 from etiketto.render import RenderWarning
@@ -52,12 +57,12 @@ from etiketto.render import RenderWarning
 # "{{" and "}}" are literal braces; "{=spec}" is a variable, "{spec}" a column
 _TOKEN = re.compile(r"\{\{|\}\}|\{(=?)([^{}]*)\}")
 # name, offsets ("+30d-1w"), format after the first colon (may contain colons)
-_SPEC = re.compile(r"\s*([A-Za-z_]\w*)\s*((?:[+-]\s*\d+\s*[A-Za-z]+\s*)*)(?::(.*))?\Z", re.DOTALL)
+_SPEC = re.compile(r"\s*([^\W\d]\w*)\s*((?:[+-]\s*\d+\s*[A-Za-z]+\s*)*)(?::(.*))?\Z", re.DOTALL)
 _OFFSET = re.compile(r"([+-])\s*(\d+)\s*([A-Za-z]+)")
 
 DATE_FORMAT = "%x"  # the date as the system language writes it
 TIME_FORMAT = "%X"
-_TIMEDELTA_UNITS = {"d": "days", "w": "weeks", "h": "hours"}
+_WALL_UNITS = {"d": "days", "w": "weeks"}  # calendar days: the time of day stays
 ID_LENGTH = 8
 MAX_ID_LENGTH = 64
 MAX_DIGITS = 30  # leading zeros: "{=counter:0001}" is 4 digits wide
@@ -117,18 +122,31 @@ def _add_months(moment: datetime, months: int) -> datetime:
     return moment.replace(year=year, month=month + 1, day=day)
 
 
+def _aware(wall: datetime, zone: tzinfo | None) -> datetime:
+    """A wall clock time in `zone`, or in the system's zone (None)."""
+    return wall.replace(tzinfo=zone) if zone else wall.astimezone()
+
+
 def shift(moment: datetime, offsets: str) -> datetime:
-    """Apply "+30d", "-1w", "+1m", "+1y", "+2h" (in this order of writing)."""
+    """Apply "+30d", "-1w", "+1m", "+1y", "+2h" (in this order of writing).
+    Days, weeks, months and years move the calendar date and keep the time
+    of day; hours are real hours, across a change to or from summer time.
+    The result knows its time zone (the system's, if `moment` has none)."""
+    zone = moment.tzinfo
+    wall = moment.replace(tzinfo=None)
     for sign, amount, unit in _OFFSET.findall(offsets):
         n = int(amount) * (-1 if sign == "-" else 1)
         unit = unit.lower()
         if unit in ("m", "y"):
-            moment = _add_months(moment, n * (12 if unit == "y" else 1))
-        elif unit in _TIMEDELTA_UNITS:
-            moment += timedelta(**{_TIMEDELTA_UNITS[unit]: n})
+            wall = _add_months(wall, n * (12 if unit == "y" else 1))
+        elif unit in _WALL_UNITS:
+            wall += timedelta(**{_WALL_UNITS[unit]: n})
+        elif unit == "h":
+            later = _aware(wall, zone) + timedelta(hours=n)
+            wall = later.astimezone(zone).replace(tzinfo=None)
         else:
             raise ValueError("unknown unit %r" % unit)
-    return moment
+    return _aware(wall, zone)
 
 
 def _plain(offsets: str, fmt: str | None) -> None:
@@ -154,7 +172,10 @@ def _number(value: int, offsets: str, fmt: str | None) -> str:
 
 
 def _moment(values: Values, offsets: str, fmt: str | None, default: str) -> str:
-    return shift(values.now, offsets).strftime(default if fmt is None else fmt)
+    text = shift(values.now, offsets).strftime(default if fmt is None else fmt)
+    if not text and fmt and fmt.strip():  # a format the C library does not know
+        raise ValueError("empty date for %r" % fmt)
+    return text
 
 
 def _short_id(values: Values, offsets: str, fmt: str | None) -> str:
@@ -206,13 +227,24 @@ def resolve(spec: str, values: Values) -> str | None:
         if handler is None:
             return _custom(values, name, offsets, fmt)
         return handler(values, offsets, fmt)
-    except (ValueError, OverflowError):  # bad offset, format or width; a year past 9999
-        return None
+    except (ValueError, OverflowError, OSError):  # bad offset, format or width; a year
+        return None  # past 9999 (OSError: a moment the C library cannot convert)
 
 
 def variable_name(spec: str) -> str | None:
+    """The name of a valid variable: one that could be filled in (a custom
+    name takes neither offset nor format); None for anything else."""
     match = _SPEC.match(spec)
-    return match.group(1) if match else None
+    if not match:
+        return None
+    name, offsets, fmt = match.groups()
+    if name not in _HANDLERS:
+        return name if not offsets and fmt is None else None
+    return name if resolve(spec, _PROBE) is not None else None
+
+
+# a valid date format gives text on any day; random bytes are not needed
+_PROBE = Values(datetime(2000, 1, 1, 12), random=lambda n: bytes(n))
 
 
 # --- texts ------------------------------------------------------------------
@@ -243,7 +275,27 @@ def expand(
             return whole
         return value
 
-    return _TOKEN.sub(replace_token, text), unknown
+    result = _TOKEN.sub(replace_token, text)
+    return result, unknown + _unclosed(text)
+
+
+def _unclosed(text: str) -> list[str]:
+    """ "{=" outside any placeholder: one not closed ("{=date"), or one with a
+    brace inside ("{={=date}}"). The text stays as it is; the label shows it."""
+    found = []
+    position = 0
+    for match in [*_TOKEN.finditer(text), None]:
+        end = match.start() if match else len(text)
+        gap = text[position:end]
+        start = gap.find("{=")
+        while start >= 0:
+            found.append(_FRAGMENT.match(gap, start).group(0))  # type: ignore[union-attr]
+            start = gap.find("{=", start + 2)
+        position = match.end() if match else end
+    return found
+
+
+_FRAGMENT = re.compile(r"\{=[^{}\s]{0,20}")
 
 
 def names(text: str) -> set[str]:
@@ -252,7 +304,7 @@ def names(text: str) -> set[str]:
         return set()
     found = set()
     for match in _TOKEN.finditer(text):
-        if match.group(1):
+        if match.group(1):  # only valid uses: "{=counter+1d}" is no counter
             name = variable_name(match.group(2))
             if name:
                 found.add(name)
@@ -303,7 +355,12 @@ def expand_label(label: Label, values: Values) -> tuple[Label, list[RenderWarnin
         if content is not None and "{=" in content:
             content, unknown = expand(content, values)
             warnings += [
-                RenderWarning("unknown_variable", {"n": index, "name": u}) for u in unknown
+                # a placeholder ends with "}", a variable not closed does not
+                RenderWarning(
+                    "unknown_variable" if u.endswith("}") else "unclosed_variable",
+                    {"n": index, "name": u},
+                )
+                for u in unknown
             ]
             element = _with_content(element, content)
         elements.append(element)

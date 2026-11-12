@@ -98,11 +98,14 @@ def test_the_same_values_in_check_images_and_listing():
     job = make_job("{=uuid}", 2)
     first = job.expanded(1)[0].elements[0].text
     assert job.check() == []
-    images = list(job.images())
-    assert [copy for copy, _image in images] == [1, 2]
-    listed = [label.elements[0].text for _copy, label in job.labels()]
+    listed = []
+    for _copy, label in job.labels():  # the dry run: one label, its listing and image
+        listed.append(label.elements[0].text)
+        job.image(label)
     assert listed[0] == first and texts(job.backend.prepared) == listed
     assert listed[0] != listed[1]
+    assert [copy for copy, _image in job.images()] == [1, 2]
+    assert texts(job.backend.prepared)[2] == first  # the first label keeps its values
 
 
 def test_check_reports_unknown_variables_and_render_problems():
@@ -141,3 +144,86 @@ def test_values_default_to_now():
     job = Job(Recording(), label, PrintOptions(copies=2))
     assert job.values.counter == 3 and job.values.copies == 2
     assert abs((job.values.now - datetime.now()).total_seconds()) < 60
+
+
+class PartlyPrinted(Recording):
+    """Fails with the copies it printed before the problem, as the system
+    printer reports them (PrinterError.params printed/copies)."""
+
+    def __init__(self, printed, with_params=True):
+        super().__init__()
+        self.printed = printed
+        self.with_params = with_params
+
+    def print_label(self, image, host, options, progress=None):
+        self.calls += 1
+        if self.calls == self.fail_copy:
+            error = PaperJam("jam")
+            if self.with_params:
+                error.params.update(printed=self.printed, copies=options.copies)
+            raise error
+        return
+
+
+def test_copies_a_backend_printed_before_failing_count():
+    job = make_job("{=counter}", 5, PartlyPrinted(3))
+    job.label.elements[0].text = "{=date}"  # the printer makes the copies
+    job.backend.fail_copy = 1
+    with pytest.raises(PaperJam) as e:
+        job.run("h")
+    assert job.printed == 3
+    assert e.value.params == {"printed": 3, "copies": 5}
+
+
+def test_a_failure_after_some_copies_reports_them_all():
+    job = make_job("{=counter}", 4, PartlyPrinted(0))
+    job.backend.fail_copy = 3
+    with pytest.raises(PaperJam) as e:
+        job.run("h")
+    assert job.printed == 2 and job.next_counter() == 3
+    assert e.value.params == {"printed": 2, "copies": 4}
+    # a backend that does not report it: the copies sent before still count
+    job = make_job("{=counter}", 4, PartlyPrinted(0, with_params=False))
+    job.backend.fail_copy = 3
+    with pytest.raises(PaperJam) as e:
+        job.run("h")
+    assert e.value.params == {"printed": 2, "copies": 4}
+    # nothing printed: nothing added
+    job = make_job("{=counter}", 4, PartlyPrinted(0, with_params=False))
+    job.backend.fail_copy = 1
+    with pytest.raises(PaperJam) as e:
+        job.run("h")
+    assert e.value.params == {} and job.printed == 0
+
+
+@pytest.mark.parametrize("printed", [99, -1, True, "2"])
+def test_odd_printed_counts_are_kept_in_bounds(printed):
+    job = make_job("{=date}", 3, PartlyPrinted(printed))
+    job.backend.fail_copy = 1
+    with pytest.raises(PaperJam):
+        job.run("h")
+    assert job.printed == (3 if printed == 99 else 0)
+
+
+def test_interrupted_while_sending_the_label_counts_as_printed():
+    """The printer may have it: a number skipped, not one printed twice."""
+
+    class Interrupted(Recording):
+        def print_label(self, image, host, options, progress=None):
+            self.calls += 1
+            if self.calls == 2:
+                raise KeyboardInterrupt
+            return
+
+    job = make_job("{=counter}", 3, Interrupted())
+    with pytest.raises(KeyboardInterrupt):
+        job.run("h")
+    assert job.printed == 2 and job.next_counter() == 3
+
+
+def test_only_the_first_label_is_kept():
+    job = make_job("{=uuid}", 3)
+    first = job.expanded(1)
+    assert job.expanded(1) is first
+    assert job.expanded(2)[0].elements[0].text != job.expanded(2)[0].elements[0].text
+    assert job.renders == 3

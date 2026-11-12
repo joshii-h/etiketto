@@ -141,7 +141,7 @@ def test_arguments_are_parsed():
     )
     assert args.file == Path("x.etiketto")
     assert (args.printer, args.host, args.copies) == ("cab", "EOS2.local", 3)
-    assert args.assignments == [("title", "Hello=World"), ("lot", "A1")]
+    assert args.assignments == [("title", "Hello=World", False), ("lot", "A1", False)]
     assert (args.counter_start, args.dry_run, args.output) == (17, True, "-")
     help_text = cli.parser().format_help()
     assert "list-printers" in help_text
@@ -468,3 +468,243 @@ def test_print_options_from_the_app(mono, label_file, monkeypatch):
     assert run("print", path, "--host", "h") == 0
     options = mono.jobs[-1][2]
     assert (options.cut, options.mode) == ("full", "standard")
+
+
+# --- review fixes --------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("flag", ["--help", "-h"])
+def test_the_application_help_names_the_commands(flag, capsys):
+    assert cli.main([flag]) == 0
+    out = capsys.readouterr().out
+    assert "print" in out and "list-printers" in out
+    assert "Without a command the application starts" in out
+
+
+def interrupt_at(mono, monkeypatch, copy, how):
+    real = Recording.print_label
+    calls = []
+
+    def send(image, host, options, progress=None):
+        calls.append(1)
+        if len(calls) == copy:
+            how()
+        return real(mono, image, host, options, progress)
+
+    monkeypatch.setattr(mono, "print_label", send)
+
+
+def test_ctrl_c_while_printing_saves_the_counter(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="{=counter}"), counter_next=1)
+
+    def ctrl_c():
+        raise KeyboardInterrupt
+
+    interrupt_at(mono, monkeypatch, 3, ctrl_c)
+    assert run("print", path, "--host", "h", "--copies", "5") == cli.EXIT_INTERRUPTED == 130
+    assert err(capsys) == "etiketto: Interrupted\n"  # no traceback
+    assert Label.load(path).counter_next == 4  # two printed, the third maybe
+
+
+def test_sigterm_while_printing_saves_the_counter(mono, label_file, monkeypatch, capsys):
+    import os
+    import signal
+
+    path = label_file(TextElement(text="{=counter}"), counter_next=1)
+    interrupt_at(mono, monkeypatch, 2, lambda: os.kill(os.getpid(), signal.SIGTERM))
+    before = signal.getsignal(signal.SIGTERM)
+    assert run("print", path, "--host", "h", "--copies", "5") == cli.EXIT_INTERRUPTED
+    assert err(capsys) == "etiketto: Interrupted\n"
+    assert Label.load(path).counter_next == 3
+    assert signal.getsignal(signal.SIGTERM) is before  # handler given back
+
+
+def test_signals_wait_until_the_counter_is_saved(mono, label_file, monkeypatch, capsys):
+    import os
+    import signal
+
+    path = label_file(TextElement(text="{=counter}"), counter_next=1)
+    real = Label.store_counter
+
+    def store(p, counter):
+        os.kill(os.getpid(), signal.SIGINT)  # Ctrl+C while saving: waits
+        real(p, counter)
+
+    monkeypatch.setattr(Label, "store_counter", staticmethod(store))
+    assert run("print", path, "--host", "h", "--copies", "2") == cli.EXIT_INTERRUPTED
+    assert Label.load(path).counter_next == 3
+
+
+def test_ctrl_c_before_printing(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="x"))
+
+    def ctrl_c(*_args, **_kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(mono, "discover", ctrl_c)
+    assert run("print", path) == cli.EXIT_INTERRUPTED
+    assert err(capsys) == "etiketto: Interrupted\n"
+
+
+def test_the_label_file_is_locked_while_printing(mono, label_file, monkeypatch, capsys):
+    import fcntl
+    import os
+
+    path = label_file(TextElement(text="{=counter}"))
+    held = []
+
+    def check(image, host, options, progress=None):
+        fd = os.open(path, os.O_RDONLY)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            held.append(False)
+        except BlockingIOError:
+            held.append(True)
+        finally:
+            os.close(fd)
+
+    monkeypatch.setattr(mono, "print_label", check)
+    assert run("print", path, "--host", "h") == 0
+    assert held == [True]
+
+
+def test_waiting_for_another_print(mono, label_file, monkeypatch, capsys):
+    from etiketto import model
+
+    path = label_file(TextElement(text="x"))
+    real = model.fcntl.flock
+    calls = []
+
+    def busy_once(fd, operation):
+        calls.append(operation)
+        if len(calls) == 1:
+            raise BlockingIOError
+        real(fd, operation)
+
+    monkeypatch.setattr(model.fcntl, "flock", busy_once)
+    assert run("print", path, "--host", "h") == 0
+    assert err(capsys) == "etiketto: Waiting for another print of label.etiketto to finish…\n"
+
+
+def test_nothing_is_printed_if_the_counter_cannot_be_saved(mono, label_file, tmp_path, capsys):
+    path = label_file(TextElement(text="{=counter}"))
+    path.chmod(0o444)
+    try:
+        assert run("print", path, "--host", "h") == cli.EXIT_COUNTER
+    finally:
+        path.chmod(0o644)
+    assert err(capsys) == (
+        "etiketto: Cannot save label.etiketto: no permission to write there – nothing was "
+        "printed: the next counter value could not be saved\n"
+    )
+    assert mono.jobs == []
+    plain = label_file(TextElement(text="no counter"))
+    plain.chmod(0o444)
+    try:
+        assert run("print", plain, "--host", "h") == 0  # nothing to save
+    finally:
+        plain.chmod(0o644)
+
+
+def test_set_literal_and_set_order(mono, label_file):
+    path = label_file(TextElement(text="old", name="title"), TextElement(text="x", name="note"))
+    assert (
+        run(
+            "print",
+            path,
+            "--host",
+            "h",
+            "--set",
+            "lot=7",  # only used in the new title: set after all element texts
+            "--set",
+            "title=Lot {=lot}",
+            "--set-literal",
+            "note={=date} {x}",
+        )
+        == 0
+    )
+    assert contents(mono) == [["Lot 7", "{=date} {x}"]]
+
+
+def test_set_literal_value_of_a_variable_is_as_given(mono, label_file):
+    path = label_file(TextElement(text="{=lot}"))
+    assert run("print", path, "--host", "h", "--set-literal", "lot={a}") == 0
+    assert contents(mono) == [["{a}"]]
+
+
+def test_an_unclosed_variable_is_refused(mono, label_file, capsys):
+    path = label_file(TextElement(text="Lot {=lot"))
+    assert run("print", path, "--host", "h") == cli.EXIT_LABEL
+    assert err(capsys) == (
+        "etiketto: Element 1: the variable {=lot… is not closed – end it with }\n"
+    )
+
+
+def test_a_dry_run_renders_one_label_without_output(mono, label_file, capsys):
+    path = label_file(TextElement(text="{=counter}\tx"))
+    assert run("print", path, "--copies", "3", "--dry-run") == 0
+    assert len(mono.prepared) == 1  # the first, to find what would fail
+    assert capsys.readouterr().out == "1\t1 x\n2\t2 x\n3\t3 x\n"  # the tab is no column
+
+
+def test_output_must_be_png(mono, label_file, tmp_path, capsys):
+    path = label_file(TextElement(text="x"))
+    assert run("print", path, "--dry-run", "--output", tmp_path / "o.jpg") == cli.EXIT_USAGE
+    assert err(capsys) == "etiketto: --output writes PNG images: give a name ending in .png\n"
+    assert run("print", path, "--dry-run", "--output", tmp_path / "o.PNG") == 0
+
+
+def test_a_broken_pipe_is_no_traceback(mono, label_file, monkeypatch, capsys):
+    path = label_file(TextElement(text="x"))
+
+    class Closed(io.StringIO):
+        buffer = None
+
+        def write(self, _text):
+            raise BrokenPipeError
+
+    monkeypatch.setattr(sys, "stdout", Closed())
+    assert run("print", path, "--dry-run") == cli.EXIT_FILE
+    assert err(capsys) == "etiketto: Cannot write the output\n"
+
+    class ClosedBuffer(io.BytesIO):
+        def write(self, _data):
+            raise BrokenPipeError
+
+    monkeypatch.setattr(sys, "stdout", SimpleNamespace(buffer=ClosedBuffer()))
+    assert run("print", path, "--dry-run", "--output", "-") == cli.EXIT_FILE
+
+
+def test_a_full_disk_on_stdout(tmp_path):
+    path = tmp_path / "plain.etiketto"
+    Label(tape_mm=25, elements=[TextElement(text="x")]).save(path)
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "XDG_CONFIG_HOME": str(tmp_path)}
+    with open("/dev/full", "w") as full:
+        done = subprocess.run(  # nosec B603 - our own interpreter and module
+            [sys.executable, "-m", "etiketto.cli", "print", str(path), "--dry-run"],
+            env=env,
+            stdout=full,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=Path(__file__).resolve().parent.parent,
+            check=False,
+        )
+    assert done.returncode == cli.EXIT_FILE
+    assert done.stderr == "etiketto: Cannot write the output\n"
+
+
+def test_a_folder_has_a_name_in_messages(mono, tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert run("print", ".", "--dry-run") == cli.EXIT_FILE
+    assert err(capsys) == "etiketto: Cannot open .\n"
+
+
+def test_list_printers_keeps_its_columns(mono, capsys, monkeypatch):
+    from etiketto import backends
+
+    for backend in backends.backends():
+        if backend is not mono:
+            monkeypatch.setattr(backend, "discover", lambda timeout=3.0: [])
+    mono.found = [FoundPrinter("Tab\tName", "a.local", "192.0.2.1")]
+    assert run("list-printers") == 0
+    assert capsys.readouterr().out == "fake-mono\ta.local\tTab Name\n"

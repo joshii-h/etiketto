@@ -99,6 +99,14 @@ the next print uses.
 To print a brace, double it: `{{=date}}` prints `{=date}`. Texts without
 variables print exactly as typed.
 
+Dates and times are in the computer's time zone. `+1d` keeps the time of
+day, also when summer time starts or ends; `+2h` counts real hours. `%z`
+and `%Z` give the offset and the name of the time zone.
+
+A label with variables or a counter needs this version of Etiketto or a
+newer one: older versions refuse to open it instead of printing `{=date}`
+as it is.
+
 ## Command line { #command-line }
 
 `etiketto print` prints a saved label without opening a window, also on a
@@ -120,17 +128,24 @@ etiketto --version
 - `--set NAME=VALUE` replaces the text of the element with that
   [[ui:Name for the command line]] (in the element's settings), or fills in
   a variable of your own: `{=lot}` in the label, `--set lot=A12` when
-  printing. `--set date=2026-12-31` prints with another date.
-- With a counter the next number is saved in the label file after printing.
+  printing; a name may use letters of any language. Variables in a new
+  text are filled in; `--set-literal NAME=VALUE` takes the value as it is.
+  `--set date=2026-12-31` prints with another date.
+- With a counter the next number is saved in the label file after printing,
+  also when the printer fails half-way or the print is stopped with Ctrl+C.
+  If the file cannot be written, nothing is printed. The label file is
+  locked while printing: a second `etiketto print` of the same file waits.
+  The window reads the saved number again before printing and saving.
 - `--dry-run` only checks and renders: it lists the texts of each label;
-  `--output file.png` saves the images as the printer would get them
+  `--output file.png` saves the PNG images as the printer would get them
   (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to
   standard output).
 
 Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong
 arguments, 3 label file cannot be read or output not written, 4 the label
-cannot be printed (empty, unknown variable), 5 printed, but the counter
-could not be saved.
+cannot be printed (empty, unknown or unclosed variable), 5 the counter
+cannot be saved (nothing printed; or printed, but saving failed),
+130 interrupted.
 
 In the Flatpak the label file has to be handed over with
 `--file-forwarding`; write images to standard output:
@@ -139,3 +154,9 @@ In the Flatpak the label file has to be handed over with
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print @@ label.etiketto @@
 flatpak run --file-forwarding xyz.joshuahirsig.Etiketto print --dry-run --output - @@ label.etiketto @@ > preview.png
 ```
+
+A file handed over this way is reached through the document portal. The
+next counter value is written there like any save, but the portal may not
+support locking the file: two prints of the same file at the same moment
+are then not kept apart. If the portal refuses to write, nothing is
+printed (exit code 5).

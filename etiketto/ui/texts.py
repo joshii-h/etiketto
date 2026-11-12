@@ -95,6 +95,9 @@ def warning_text(warning: RenderWarning) -> str:
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
         "background_unreadable": _("The background image cannot be read"),
         "unknown_variable": _("Element %(n)d: %(name)s is not a known variable"),
+        "unclosed_variable": _(
+            "Element %(n)d: the variable %(name)s… is not closed – end it with }"
+        ),
     }
     return texts.get(warning.key, warning.key) % warning.params
 

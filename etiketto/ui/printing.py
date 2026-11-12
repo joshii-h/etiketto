@@ -116,14 +116,26 @@ class PrintFlow:
 
     def choices(self) -> dict:
         """Copies, cut and mode for the print dialog, from the last print."""
+        self._plan_copies(1)
         return {"copies": 1, "cut": self._cut(), "mode": self.mode}
+
+    def _plan_copies(self, copies: int) -> None:
+        """{=copies} in the preview: as many as the dialog would print."""
+        changed = self.window.planned_copies != copies
+        self.window.planned_copies = copies
+        if changed:
+            self.window.schedule_render()
+
+    def _set_copies(self, choices: dict, copies: int) -> None:
+        choices.update(copies=copies)
+        self._plan_copies(copies)
 
     def _rows(self, choices: dict) -> list[Gtk.Widget]:
         """Only what the printer can do: no cut row for printers without a
         cutter, no mode row with a single mode, colour correction if supported."""
         caps = self.window.backend.capabilities
         rows: list[Gtk.Widget] = [
-            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: choices.update(copies=int(v)))
+            spin_row(_("Copies"), 1, 1, 99, 1, 0, lambda v: self._set_copies(choices, int(v)))
         ]
         if caps.cut_modes:
             cuts = [(key, name) for key, name in CUT_MODES if key in caps.cut_modes]
@@ -193,6 +205,7 @@ class PrintFlow:
         window.present_dialog(dialog)
 
     def _on_response(self, result: str, choices: dict) -> None:
+        self._plan_copies(1)  # the preview shows a single label again
         if result != "print":
             return
         window = self.window
@@ -217,6 +230,7 @@ class PrintFlow:
         if not host:
             window.toast(_("No printer yet – search for one or enter its address"))
             return
+        window.sync_counter()  # the command line may have printed from the file
         job = Job(
             window.backend,
             copy.deepcopy(window.label),

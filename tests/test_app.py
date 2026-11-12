@@ -27,7 +27,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from etiketto import app  # noqa: E402
+from etiketto import app, model  # noqa: E402
 from etiketto.backends.base import (  # noqa: E402
     BadCassette,
     CassetteInfo,
@@ -2259,3 +2259,55 @@ def test_a_label_opened_while_printing_keeps_its_counter(ready, gui_env):
     ready.set_label(other, None)
     assert pump(lambda: not ready.print_flow.busy)
     assert ready.label.counter_next == 50
+
+
+def test_printing_goes_on_from_a_counter_the_command_line_moved_on(ready, gui_env, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 5
+    ready.files.write(path)
+    Label.store_counter(path, 20)  # `etiketto print` printed 5 to 19 meanwhile
+    ready.print_flow.start(PrintOptions(copies=2))
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 22
+    ready.files.write(path)
+    assert Label.load(path).counter_next == 22
+
+
+def test_a_counter_set_back_on_purpose_stays(ready, gui_env, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    ready.label.elements[0].text = "{=counter}"
+    ready.label.counter_next = 50
+    ready.files.write(path)
+    ready.set_counter_next(1)  # the file did not change: the window's value counts
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert ready.label.counter_next == 2
+    ready.files.write(path)
+    assert Label.load(path).counter_next == 2
+
+
+def test_saving_keeps_a_counter_the_command_line_moved_on(window, tmp_path):
+    path = tmp_path / "serial.etiketto"
+    window.label.elements[0].text = "{=counter}"
+    window.files.write(path)
+    Label.store_counter(path, 9)
+    window.change(margin_mm=3.0)
+    window.files.write(path)
+    assert Label.load(path).counter_next == 9 and window.label.counter_next == 9
+    other = tmp_path / "copy.etiketto"
+    Label.store_counter(path, 30)
+    window.files.write(other)  # another file: nothing to go on from
+    assert Label.load(other).counter_next == 9
+    window.set_counter_next(10**20)
+    assert window.label.counter_next == model.MAX_COUNTER
+
+
+def test_the_preview_counts_the_copies_of_the_print_dialog(ready):
+    ready.label.elements[0].text = "{=copy}/{=copies}"
+    ready.print_flow.on_print()
+    spin = one(ready.last_dialog, Adw.SpinRow, title="Copies")
+    spin.set_value(4)
+    assert ready.planned_copies == 4 and ready.preview_values().copies == 4
+    respond(ready.last_dialog, "cancel")
+    assert ready.planned_copies == 1

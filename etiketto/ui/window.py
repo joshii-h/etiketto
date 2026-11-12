@@ -18,7 +18,7 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend  # noqa: E402
-from etiketto.model import CodeElement, Label, TextElement  # noqa: E402
+from etiketto.model import MAX_COUNTER, CodeElement, Label, TextElement  # noqa: E402
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.ui.elements import ElementsGroup  # noqa: E402
 from etiketto.ui.files import Files  # noqa: E402
@@ -53,6 +53,11 @@ class Window(Adw.ApplicationWindow):
         self._groups: list[Gtk.Widget] = []
         # random variables ({=uuid}, {=id}) keep their preview value while editing
         self._preview_random = os.urandom(64)
+        # {=copies} in the preview: the number in the print dialog while it is open
+        self.planned_copies = 1
+        # counter_next as saved in self.path when it was opened or saved: a
+        # different value there means the command line printed meanwhile
+        self.saved_counter: int | None = None
 
         # the controllers come first: the layout and the sidebar use them
         self.printer = Printer(self)
@@ -214,8 +219,24 @@ class Window(Adw.ApplicationWindow):
 
     def set_counter_next(self, value: int) -> None:
         """After printing: the counter of the next label, a change of the document."""
-        self.label.counter_next = value
+        self.label.counter_next = min(value, MAX_COUNTER)
         self.mark_changed()
+
+    def sync_counter(self) -> None:
+        """Before printing and saving: if the file's counter moved on since it
+        was opened or saved (`etiketto print` printed from it), go on from
+        there; numbers already printed are not printed again. The larger
+        value wins: a counter set back here on purpose stays as it is as
+        long as the file did not change. The window does not lock the file
+        (see cli.py); printing from both at the same moment is not covered."""
+        if self.path is None:
+            return
+        saved = Label.saved_counter(self.path)
+        if saved is None or saved == self.saved_counter:
+            return
+        self.saved_counter = saved
+        if saved > self.label.counter_next:
+            self.set_counter_next(saved)
 
     def _structure_changed(self) -> None:
         """A change the sidebar has to show with other rows."""
@@ -249,6 +270,7 @@ class Window(Adw.ApplicationWindow):
         if printer_changed:  # a file or template for the other printer model
             self.printer.info = None
         self.path = path
+        self.saved_counter = label.counter_next if path else None
         self.dirty = False
         self._geometries = {}
         self.expand_index = -1
@@ -281,7 +303,10 @@ class Window(Adw.ApplicationWindow):
     def preview_values(self) -> Values:
         """The variables as the next print fills them in: now, the next counter."""
         return Values.for_label(
-            self.label, datetime.now(), random=lambda n: self._preview_random[:n]
+            self.label,
+            datetime.now(),
+            self.planned_copies,
+            random=lambda n: self._preview_random[:n],
         )
 
     def schedule_render(self) -> None:
