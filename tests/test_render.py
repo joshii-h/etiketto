@@ -692,3 +692,105 @@ def test_a_file_that_fails_only_when_drawn(make_label):
     cut = buffer.getvalue()[: len(buffer.getvalue()) // 2]  # header fine, data cut off
     rendered = render(make_label(elements=[ImageElement(data=_file(cut))]))
     assert [w.key for w in rendered.warnings] == ["image_unreadable"]
+
+
+# --- the fourth review ------------------------------------------------------------------
+
+
+def _image_file(fmt: str, orientation: int) -> str:
+    buffer = io.BytesIO()
+    exif = Image.Exif()
+    exif[0x0112] = orientation
+    Image.new("RGB", (40, 10), "red").save(buffer, fmt, exif=exif)
+    return _file(buffer.getvalue())
+
+
+@pytest.mark.parametrize("fmt", ["JPEG", "PNG", "WEBP", "TIFF"])
+@pytest.mark.parametrize("orientation", range(1, 9))
+def test_header_size_matches_the_decoded_image(fmt, orientation):
+    data = _image_file(fmt, orientation)
+    assert render_module._header_size(data) == render_module._decode(data).size
+
+
+def test_header_size_decodes_nothing(monkeypatch):
+    data = _image_file("PNG", 6)
+    loads = []
+    real = Image.Image.load
+    monkeypatch.setattr(Image.Image, "load", lambda self: loads.append(1) or real(self))
+    render_module._header_size(data)
+    assert loads == []
+
+
+def test_header_sizes_are_kept_by_hash_and_few():
+    cache = render_module._SizeCache(size=2)
+    files = [_image_file("PNG", 1), _image_file("JPEG", 1), _image_file("WEBP", 1)]
+    for data in files:
+        assert cache.get(data) == (40, 10)
+    assert len(cache._entries) == 2
+    assert all(isinstance(k, bytes) and len(k) == 16 for k in cache._entries)
+
+
+def test_no_warning_filter_for_bombs(png_b64, monkeypatch):
+    import warnings
+
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 150)
+    before = list(warnings.filters)
+    with warnings.catch_warnings(record=True), pytest.raises(Image.DecompressionBombError):
+        render_module._decode(png_b64((20, 10), "blue"))
+    assert warnings.filters == before
+
+
+def test_rgba_images_are_not_converted_again(monkeypatch):
+    buffer = io.BytesIO()
+    Image.new("RGBA", (8, 4), (1, 2, 3, 4)).save(buffer, "PNG")
+    converted = []
+    real = Image.Image.convert
+    monkeypatch.setattr(
+        Image.Image, "convert", lambda self, *a, **k: converted.append(a) or real(self, *a, **k)
+    )
+    assert render_module._decode(_file(buffer.getvalue())).mode == "RGBA"
+    assert converted == []
+
+
+def test_fitted_images_are_cached(make_label, png_b64, monkeypatch):
+    label = make_label(
+        elements=[ImageElement(data=png_b64((200, 10), "red"))], auto_length=False, length_mm=20
+    )
+    render_module._fitted_cached.cache_clear()
+    render(label)
+    fitted = []
+    real = render_module._fit_image
+    monkeypatch.setattr(render_module, "_fit_image", lambda *a: fitted.append(a) or real(*a))
+    render(label)  # the window renders again: nothing resized again
+    assert fitted == []
+
+
+def test_codes_count_and_are_made_once(make_label, monkeypatch):
+    made = []
+    real = render_module._make_code_image
+    monkeypatch.setattr(render_module, "_make_code_image", lambda *a: made.append(a) or real(*a))
+    same = [CodeElement(data="https://example.org")] * 5
+    with render_module.limited(10**9):
+        render(make_label(elements=same))
+    assert len(made) == 1
+    many = [CodeElement(data="CODE-%03d" % n, symbology="code128") for n in range(40)]
+    with render_module.limited(200_000), pytest.raises(render_module.RenderTooLarge):
+        render(make_label(elements=many))
+
+
+def test_barcode_digits_are_drawn_as_text(make_label, monkeypatch):
+    texts = []
+    real = render_module._text_block
+    monkeypatch.setattr(
+        render_module, "_text_block", lambda e, size: texts.append(e.text) or real(e, size)
+    )
+    render(make_label(elements=[CodeElement(data="4006381333931", symbology="ean13")]))
+    assert "4006381333931" in texts
+
+
+def test_warm_up_draws_a_text():
+    render_module.warm_up()
+
+
+def test_warning_keys_are_documented():
+    assert "code128_long" in render_module.RenderWarning.__doc__

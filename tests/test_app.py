@@ -781,6 +781,17 @@ def test_print_guards(ready):
     assert ready.get_visible_dialog() is None
 
 
+def test_print_refuses_a_code_128_too_long(ready):
+    from etiketto.render import CODE128_MAX
+
+    long_code = CodeElement(data="A" * (CODE128_MAX + 1), symbology="code128")
+    ready.set_label(Label(tape_mm=25, elements=[long_code]), None)
+    render_now(ready)
+    ready.print_flow.on_print()
+    assert "Code 128" in toast_titles(ready)[-1]
+    assert ready.get_visible_dialog() is None
+
+
 def test_print_background_only_is_not_empty(ready, tmp_path):
     ready.set_label(
         Label(

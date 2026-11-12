@@ -494,6 +494,7 @@ REFUSED = frozenset(
         "element_failed",
         "image_unreadable",
         "background_unreadable",
+        "code128_long",  # wider than any label; refused for serial labels too
     }
 )
 

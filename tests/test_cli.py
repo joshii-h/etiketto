@@ -963,3 +963,12 @@ def test_serial_stop_names_the_copies_of_the_row_printed(
         " Copies of row 2 already printed: 1.\n"
     )
     assert Label.load(path).counter_next == 4
+
+
+def test_print_refuses_a_code_128_too_long(mono, label_file, capsys):
+    from etiketto.render import CODE128_MAX
+
+    path = label_file(CodeElement(data="A" * (CODE128_MAX + 1), symbology="code128"))
+    assert run("print", path, "--host", "mono.local") == cli.EXIT_LABEL
+    assert "Code 128" in err(capsys)
+    assert mono.jobs == []

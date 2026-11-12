@@ -41,6 +41,7 @@ from etiketto.ui.texts import (
     printer_error_text,
     series_stop_text,
     stage_text,
+    warning_text,
 )
 from etiketto.ui.widgets import combo_row, list_dialog, spin_row
 from etiketto.variables import Values
@@ -49,6 +50,9 @@ if TYPE_CHECKING:
     from etiketto.ui.window import Window
 
 ROWS_LISTED = 20  # rows named in a message; more are "…"
+
+
+REFUSED_CODES = frozenset({"code128_long"})
 
 
 class PrintFlow:
@@ -81,10 +85,7 @@ class PrintFlow:
         window = self.window
         if self.busy or not window.rendered:
             return
-        if not window.label.elements and not window.label.background_image:
-            window.toast(_("The label is empty"))
-            return
-        if problem := self._data_problem():
+        if problem := self._refusal():
             window.toast(problem)
             return
         if tape := window.printer.other_tape():
@@ -93,6 +94,19 @@ class PrintFlow:
             self._wrong_labels_dialog(pitch)
         else:
             self.dialog()
+
+    def _refusal(self) -> str | None:
+        """Why the label cannot be printed at all, if it cannot."""
+        window = self.window
+        if not window.label.elements and not window.label.background_image:
+            return _("The label is empty")
+        if problem := self._data_problem():
+            return problem
+        # a code no scanner could read, refused as for serial labels, the
+        # command line and the print server
+        assert window.rendered is not None
+        refused = [w for w in window.rendered.warnings if w.key in REFUSED_CODES]
+        return warning_text(refused[0]) if refused else None
 
     def _data_problem(self) -> str | None:
         """Why a linked data file cannot be printed from: a label with its
