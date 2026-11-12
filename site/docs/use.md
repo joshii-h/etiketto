@@ -113,8 +113,11 @@ Each element has [[ui:Position]]:
 - Text, codes, symbols, lines and borders print with sharp edges: text is
   drawn without smoothed edges, every part is converted on its own.
 - Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]]
-  uses a threshold for drawings and logos and dithering for photos;
+  keeps drawings and logos in one or two tones sharp, prints drawings in
+  several flat tones as even patterns and dithers photos;
   [[ui:Threshold]] sets which grey still prints black.
+- Colour emoji in a text get a line around their shapes, so light parts
+  stay visible.
 - Colours print black, or white if they are lighter than what lies behind
   them (the background colour or image, or a text's box); an element over
   a light and a dark part takes the colour that shows on most of it.

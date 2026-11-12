@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:11+0100\n"
+"POT-Creation-Date: 2026-11-12 14:45+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2465,13 +2465,24 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 msgid ""
-"Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]] uses a "
-"threshold for drawings and logos and dithering for photos; [[ui:Threshold]] "
-"sets which grey still prints black."
+"Images: [[ui:Method]] under [[ui:Black and white]]. [[ui:Automatic]] keeps "
+"drawings and logos in one or two tones sharp, prints drawings in several "
+"flat tones as even patterns and dithers photos; [[ui:Threshold]] sets which "
+"grey still prints black."
 msgstr ""
-"Bilder: [[ui:Method]] unter [[ui:Black and white]]. [[ui:Automatic]] nimmt "
-"für Zeichnungen und Logos einen Schwellwert und rastert Fotos; "
+"Bilder: [[ui:Method]] unter [[ui:Black and white]]. [[ui:Automatic]] hält "
+"Zeichnungen und Logos in einem oder zwei Tönen scharf, druckt Zeichnungen in"
+" mehreren flachen Tönen als gleichmässige Muster und rastert Fotos; "
 "[[ui:Threshold]] legt fest, welches Grau noch schwarz gedruckt wird."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"Colour emoji in a text get a line around their shapes, so light parts stay "
+"visible."
+msgstr ""
+"Farbige Emoji in einem Text erhalten eine Linie um ihre Formen, damit helle "
+"Teile sichtbar bleiben."
 
 #. type: Bullet: '- '
 #: docs/use.md
