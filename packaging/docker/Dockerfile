@@ -15,7 +15,7 @@ RUN apt-get update \
         python3 python3-venv python3-gi python3-gi-cairo gir1.2-pango-1.0 gettext git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
-COPY pyproject.toml setup.py MANIFEST.in README.md LICENSE ./
+COPY pyproject.toml setup.py MANIFEST.in README.md LICENSE THIRD_PARTY_NOTICES.md ./
 COPY tavletta ./tavletta
 COPY data ./data
 COPY po ./po
@@ -25,6 +25,13 @@ RUN python3 -m venv --system-site-packages /opt/tavletta \
     && /opt/tavletta/bin/tavletta --version
 
 FROM debian:${DEBIAN}
+# Security fixes newer than the base image (the release workflow builds
+# without cache, so they are current). Poppler draws the PDF pages of shipping
+# labels (tavletta serve --allow-pdf-pages): about 35 MB with its libraries.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends gir1.2-poppler-0.18 \
+    && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 python3-gi python3-gi-cairo gir1.2-pango-1.0 fontconfig fonts-dejavu-core \
@@ -32,6 +39,8 @@ RUN apt-get update \
     && useradd --system --uid 10001 --home-dir /data --create-home tavletta \
     && install -d -o tavletta -g tavletta -m 0755 /labels /config
 COPY --from=build /opt/tavletta /opt/tavletta
+# the licence and the notices of what Tavletta bundles
+COPY --from=build /src/LICENSE /src/THIRD_PARTY_NOTICES.md /usr/share/doc/tavletta/
 # Mount the labels at /labels and printers.toml, tokens.toml (and, if
 # wanted, tavletta/settings.json of the app) at /config. Both are plain
 # folders, no volumes: Compose (or docker run -v) says what goes there, and
