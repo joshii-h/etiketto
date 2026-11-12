@@ -2,11 +2,15 @@
 #
 #   mkdir -p config labels
 #   cp printers.example.toml config/printers.toml   # name your printers
-#   docker compose build
+#   docker compose pull
 #   docker run --rm --user "$(id -u)" -v ./config:/config --entrypoint tavletta \
-#       tavletta-server token new shipping-pc --role print \
+#       ghcr.io/joshii-h/tavletta:1.1 token new shipping-pc --role print \
 #       --tokens /config/tokens.toml --printers /config/printers.toml
 #   docker compose up -d
+#
+# The image is the published one (ghcr.io/joshii-h/tavletta, amd64 and
+# arm64); 1.1 follows the bug fix releases of 1.1. To build it from this
+# checkout instead, add compose.build.yaml (-f compose.yaml -f compose.build.yaml).
 #
 # `token new` shows the token once and keeps only its hash in tokens.toml.
 #
@@ -20,10 +24,7 @@
 
 services:
   tavletta:
-    build:
-      context: ../..
-      dockerfile: packaging/docker/Dockerfile
-    image: tavletta-server
+    image: ghcr.io/joshii-h/tavletta:1.1
     restart: unless-stopped
     # the owner of config/ and labels/ on the host: the container reads
     # tokens.toml (mode 600) and saves counters into the label files as that
