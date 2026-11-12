@@ -43,7 +43,7 @@ tavletta serve --labels-dir ~/Labels
   ```toml
   [printers.inventory]
   backend = "cab"
-  host = "printer04.example.com"
+  host = "printer.example.com"
 
   [printers.inventory.settings]
   method = "transfer"
@@ -110,12 +110,13 @@ tavletta serve --labels-dir ~/Labels
 ```sh
 curl -H "Authorization: Bearer $(cat ~/.config/tavletta/token)" \
      -H 'Content-Type: application/json' \
-     -d '{"label": "shelf", "set": {"title": "Flour"}, "copies": 2}' \
+     -d '{"label": "jar", "set": {"title": "Flour"}, "copies": 2}' \
      http://127.0.0.1:8790/api/v1/print
 ```
 
 - `set` fills in elements by their name and variables such as `{=lot}`,
-  as on the command line.
+  as on the command line: here the label `jar` from the labels folder,
+  with a text element named `title`.
 - Serial labels: `"data_rows": [{"Name": "Tea"}, {"Name": "Rice"}]`, or
   `"data_file"` with a table in the labels folder.
 - One label from another program, for example an inventory: the fields

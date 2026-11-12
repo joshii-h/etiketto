@@ -1441,7 +1441,7 @@ msgstr ""
 msgid ""
 "  [printers.inventory]\n"
 "  backend = \"cab\"\n"
-"  host = \"printer04.example.com\"\n"
+"  host = \"printer.example.com\"\n"
 "\n"
 "  [printers.inventory.settings]\n"
 "  method = \"transfer\"\n"
@@ -1610,14 +1610,14 @@ msgstr ""
 msgid ""
 "curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "     -H 'Content-Type: application/json' \\\n"
-"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     -d '{\"label\": \"jar\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
 "     http://127.0.0.1:8790/api/v1/print\n"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "`set` fills in elements by their name and variables such as `{=lot}`, as on the command line."
+msgid "`set` fills in elements by their name and variables such as `{=lot}`, as on the command line: here the label `jar` from the labels folder, with a text element named `title`."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1954,13 +1954,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a slightly different pattern."
+msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a different pattern, some with more and smaller modules."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Labels made with earlier versions: QR codes come out up to about a third smaller (their blank margin is now inside the element), barcodes slightly wider."
+msgid "Labels made with earlier versions: QR codes come out a quarter to a third narrower, about half the area (44 to 56 % less), as their blank margin is now inside the element. On narrow tape, where each module is a whole number of printer dots, up to 60 % narrower. Barcodes come out slightly wider."
 msgstr ""
 
 #. type: Title ##
