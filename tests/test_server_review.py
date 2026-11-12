@@ -193,7 +193,7 @@ def test_address_patterns_match_addresses(monkeypatch):
     assert host_allowed("192.0.2.5", ("192.0.2.*",))
     assert host_allowed("192.0.2.5", ("192.0.2.0/24",))
     assert not host_allowed("192.0.2.evil.example", ("192.0.2.*",))
-    assert not host_allowed("192.168.130.5", ("192.0.2.0/24",))
+    assert not host_allowed("192.0.3.5", ("192.0.2.0/24",))
     assert host_allowed("2001:db8::5", ("2001:db8::/32",))
     assert host_allowed("cab.local", ("*.local",))
     assert not host_allowed("192.168.1.5", ("*",)) or host_allowed("192.168.1.5", ("*",))

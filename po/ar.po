@@ -10,34 +10,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5);\n"
 
-#: tavletta/app.py:143 tavletta/ui/styles.py:183
+#: tavletta/app.py:147 tavletta/ui/styles.py:183
 msgid "Box and frame"
 msgstr "المربع والإطار"
 
-#: tavletta/app.py:217 tavletta/cli.py:170
+#: tavletta/app.py:221 tavletta/cli.py:170
 msgid "Design and print labels"
 msgstr "صمّم الملصقات واطبعها"
 
-#: tavletta/app.py:220
+#: tavletta/app.py:224
 msgid ""
 "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
 "tav-LET-ta."
 msgstr "Tavletta كلمة رومانشية تعني لوحًا صغيرًا (من tavla، أي لوح أو طاولة). تُلفظ tav-LET-ta."
 
 #. translators: replace with your name to be credited in the About dialog
-#: tavletta/app.py:226
+#: tavletta/app.py:230
 msgid "translator-credits"
 msgstr "Tavletta contributors"
 
-#: tavletta/app.py:234
+#: tavletta/app.py:238
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "أفكار للمتغيرات (العدّاد والتاريخ وUUID)، دون شيفرة"
 
-#: tavletta/app.py:237
+#: tavletta/app.py:241
 msgid "Protocol knowledge"
 msgstr "المعرفة بالبروتوكولات"
 
-#: tavletta/app.py:242
+#: tavletta/app.py:246
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "
@@ -3013,7 +3013,7 @@ msgstr "يتطلب هذا الملصق إصدارًا أحدث من Tavletta"
 
 #: tavletta/ui/texts.py:648
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s ليس ملصق Tavletta"
 
 #: tavletta/ui/texts.py:649 tavletta/ui/texts.py:669

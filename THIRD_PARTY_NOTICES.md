@@ -85,7 +85,8 @@ Google's Material Icons (Apache-2.0). Notice and license text:
 ### Zint (BSD-3-Clause)
 
 libzint 2.15.0 (<https://zint.org.uk>), Copyright (C) 2009-2025 Robin
-Stuart and contributors, BSD-3-Clause, encodes most code types. It comes
+Stuart and contributors, BSD-3-Clause, encodes most code types, and QR
+codes with a chosen error correction. It comes
 inside zint-bindings; its license text is in
 [`build-aux/flatpak/LICENSE.zint`](build-aux/flatpak/LICENSE.zint) (in the
 source distribution too), and the Flatpak installs it as
@@ -99,7 +100,8 @@ Flatpak bundles its wheel.
 
 ### segno (BSD-3-Clause)
 
-QR codes (<https://github.com/heuer/segno>), Copyright (c) 2016-2025 Lars
+QR codes without a chosen error correction, and with one where Zint is
+missing (<https://github.com/heuer/segno>), Copyright (c) 2016-2025 Lars
 Heuer, BSD-3-Clause; a dependency, bundled in the Flatpak.
 
 ### python-barcode (MIT)
@@ -107,6 +109,15 @@ Heuer, BSD-3-Clause; a dependency, bundled in the Flatpak.
 Code 128 and EAN-13 (<https://github.com/WhyNotHugo/python-barcode>),
 Copyright (c) 2010-2013 Thorsten Weimann, (c) 2017-2023 Hugo Osvaldo
 Barrera et al., MIT license; a dependency, bundled in the Flatpak.
+
+python-barcode's package also contains the font DejaVu Sans Mono
+(`barcode/fonts/DejaVuSansMono.ttf`, <https://dejavu-fonts.github.io>),
+which its own image writers use. Tavletta takes only the bar pattern and
+never uses that font; the Flatpak removes it. Where python-barcode is
+installed with pip (install.sh, the Docker image) the font comes along:
+Copyright (c) 2003 by Bitstream, Inc., Bitstream Vera Fonts license;
+DejaVu's changes are in the public domain. The license text is at
+<https://dejavu-fonts.github.io/License.html>.
 
 ### Pillow (MIT-CMU)
 

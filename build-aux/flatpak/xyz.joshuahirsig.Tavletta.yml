@@ -99,6 +99,9 @@ modules:
       # the 0.16.1 wheel also ships its docs/ and tests/ as top-level packages
       - /lib/python3*/site-packages/docs
       - /lib/python3*/site-packages/tests
+      # its writers' font (DejaVu Sans Mono): Tavletta takes the bar pattern
+      # only and draws it itself, never with python-barcode's writers
+      - /lib/python3*/site-packages/barcode/fonts
     sources:
       - type: file
         url: https://files.pythonhosted.org/packages/b2/34/810885dca784b02e5ad0f71ced9c06ba5e9d33a6493bc886f7470ce82a39/python_barcode-0.16.1-py3-none-any.whl
@@ -108,7 +111,8 @@ modules:
           name: python-barcode
           packagetype: bdist_wheel
 
-  # all symbologies but QR, Code 128 and EAN-13: libzint 2.15.0 (BSD-3-Clause)
+  # all symbologies but Code 128 and EAN-13, and QR codes only with a chosen
+  # error correction (without one: segno): libzint 2.15.0 (BSD-3-Clause)
   # in its Python binding (Apache-2.0). One extension module, no other
   # dependencies; the wheel's Python tag must match the runtime's Python
   # (GNOME 51: 3.14). Zint's BSD notice goes along with the binary.

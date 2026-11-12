@@ -7,16 +7,68 @@
 #                                       (default: en and every site/po/<lang>.po)
 #   ONLY="main print" tools/screenshots.sh …   only these images
 #
-# Window size: niri (local desktop) or xdotool (X11, e.g. xvfb-run in CI).
+# The app runs on a D-Bus session of its own (dbus-run-session), never on the
+# desktop's: there another running Tavletta would take the files. Its
+# windows go to a headless display of their own, so nothing appears on the
+# desktop: a virtual KWin (kwin_wayland --virtual), else gtk4-broadwayd; the
+# app sizes its window itself. SHOTS_ON_DESKTOP=1 uses the current display
+# instead: niri or xdotool (X11, e.g. xvfb-run in CI) set the window size.
 # Needs ImageMagick and gettext. PYTHON defaults to .venv/bin/python.
 set -eu
 cd "$(dirname "$0")/.."
 PYTHON="${PYTHON:-.venv/bin/python}"
 LIST=tools/screenshots.list
+if [ -z "${TAVLETTA_SHOTS_SESSION:-}" ]; then
+    export TAVLETTA_SHOTS_SESSION=1
+    if command -v dbus-run-session >/dev/null; then
+        exec dbus-run-session -- "$0" "$@"
+    fi
+    echo "warning: no dbus-run-session, the app uses the current D-Bus session" >&2
+fi
 CONF="$(mktemp -d)"
-trap 'rm -rf "$CONF"' EXIT
-mkdir -p "$CONF/tavletta"
+HEADLESS=""
+cleanup() {
+    [ -z "$HEADLESS" ] || kill "$HEADLESS" 2>/dev/null || true
+    rm -rf "$CONF"
+}
+trap cleanup EXIT
+mkdir -p "$CONF/tavletta" "$CONF/compositor"
 echo '{"host": "VC-500W.local", "printers": {"cab": {"host": "EOS2.local"}}}' > "$CONF/tavletta/settings.json"
+
+wait_socket() { # path
+    for _ in $(seq 100); do
+        [ -S "$1" ] && return 0
+        sleep 0.1
+    done
+    echo "error: the headless display did not start ($1)" >&2
+    exit 1
+}
+
+if [ "${SHOTS_ON_DESKTOP:-0}" != 1 ]; then
+    run="${XDG_RUNTIME_DIR:-/tmp}"
+    if command -v kwin_wayland >/dev/null; then
+        sock="tavletta-shots-$$"
+        # its own configuration: KWin writes the virtual outputs there
+        XDG_CONFIG_HOME="$CONF/compositor" kwin_wayland --virtual --no-lockscreen --no-global-shortcuts \
+            --width 1280 --height 900 --socket "$sock" >/dev/null 2>&1 &
+        HEADLESS=$!
+        wait_socket "$run/$sock"
+        unset DISPLAY NIRI_SOCKET
+        export WAYLAND_DISPLAY="$sock" GDK_BACKEND=wayland
+    elif command -v gtk4-broadwayd >/dev/null; then
+        n=$(( $$ % 1000 + 100 ))
+        while [ -e "$run/broadway$((n + 1)).socket" ]; do n=$((n + 1)); done
+        gtk4-broadwayd ":$n" >/dev/null 2>&1 &
+        HEADLESS=$!
+        wait_socket "$run/broadway$((n + 1)).socket"
+        unset WAYLAND_DISPLAY DISPLAY NIRI_SOCKET
+        export GDK_BACKEND=broadway BROADWAY_DISPLAY=":$n"
+    elif [ -n "${WAYLAND_DISPLAY:-}" ]; then
+        echo "error: no kwin_wayland or gtk4-broadwayd for a headless display;" >&2
+        echo "SHOTS_ON_DESKTOP=1 takes the screenshots on the desktop" >&2
+        exit 1
+    fi
+fi
 
 # ImageMagick 7 is `magick`, ImageMagick 6 (some distributions) `convert`
 if command -v magick >/dev/null; then IM=magick; IDENTIFY="magick identify"; else IM=convert; IDENTIFY=identify; fi
@@ -58,12 +110,17 @@ print(w[-1]["id"] if w else "")')
 
 shoot() { # output example state language scheme
     out="$1"
-    XDG_CONFIG_HOME="$CONF" ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME="$5" LANGUAGE="$4" \
-    TAVLETTA_SCREENSHOT="$out.raw.png" TAVLETTA_SCREENSHOT_STATE="$3" TAVLETTA_SCREENSHOT_DELAY=6000 \
-        "$PYTHON" -m tavletta.app "docs/examples/$2.tavletta" </dev/null >/dev/null 2>&1 &
-    pid=$!
-    size_window "$pid"
-    wait "$pid" || true
+    # a snapshot taken while the window is between two frames comes out
+    # empty (the app then saves nothing): try again
+    for _ in 1 2 3; do
+        XDG_CONFIG_HOME="$CONF" ADW_DISABLE_PORTAL=1 ADW_DEBUG_COLOR_SCHEME="$5" LANGUAGE="$4" \
+        TAVLETTA_SCREENSHOT="$out.raw.png" TAVLETTA_SCREENSHOT_STATE="$3" TAVLETTA_SCREENSHOT_DELAY=6000 \
+            "$PYTHON" -m tavletta.app "docs/examples/$2.tavletta" </dev/null >/dev/null 2>&1 &
+        pid=$!
+        size_window "$pid"
+        wait "$pid" || true
+        [ -f "$out.raw.png" ] && break
+    done
     [ -f "$out.raw.png" ] || { echo "error: no screenshot $out" >&2; return 1; }
     # rounded corners (12 px) and a soft shadow, as in GNOME
     size=$($IDENTIFY -format '%wx%h' "$out.raw.png")

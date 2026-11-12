@@ -24,7 +24,7 @@ body:
     id: version
     attributes:
       label: Tavletta version and installation
-      placeholder: e.g. 1.0.0, Flatpak
+      placeholder: as shown in About Tavletta, and Flatpak or install.sh
     validations:
       required: true
   - type: input

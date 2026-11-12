@@ -120,7 +120,7 @@ def test_options_of_the_free_layout_are_a_feature_in_the_flow_too():
 
 
 def test_older_versions_refuse_the_free_layout():
-    """What an Tavletta without the feature does with such a file: refuse it
+    """What a Tavletta without the feature does with such a file: refuse it
     as one of a newer version, never print it one element after another."""
     data = cab_label(TextElement()).to_dict()
     data["features"].append("free_layout_2")
@@ -351,11 +351,11 @@ def test_error_correction_as_chosen():
 
 
 def test_the_modules_of_cablabels_qr_code():
-    """ECC L, the mask ISO/IEC 18004 chooses (7 for "100001", as cablabel
-    and the printer draw it; segno's own choice would be mask 0)."""
-    symbol = codes.encode(CodeElement(data="100001", error_correction="L"))
+    """ECC L, the mask ISO/IEC 18004 chooses, as cablabel and the printer
+    draw it (7 for "100002"; segno's own choice would be mask 0)."""
+    symbol = codes.encode(CodeElement(data="100002", error_correction="L"))
     assert symbol.rows[8][:9] == "110100110"  # the format information of L, mask 7
-    standard = codes.encode(CodeElement(data="100001"))
+    standard = codes.encode(CodeElement(data="100002"))
     assert standard.rows != symbol.rows  # files of earlier versions: unchanged
 
 
@@ -394,7 +394,7 @@ def test_the_counter_fills_text_and_code():
         CodeElement(data="{=counter}", error_correction="L", module_mm=0.67, x_mm=23.49),
         counter_next=100001,
     )
-    for copy, number in ((1, "100001"), (2, "202582")):
+    for copy, number in ((1, "100001"), (2, "100002")):
         values = Values.for_label(label, now=_now(), copies=2).for_copy(copy)
         filled, warnings = expand_label(label, values)
         assert not warnings

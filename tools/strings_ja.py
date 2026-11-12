@@ -147,7 +147,7 @@ TRANSLATIONS = {
     "Cleaning…": "クリーニング中…",
     "Swipe the printer's panel to cut the label": "プリンターのパネルをスワイプしてラベルをカットしてください",
     "This label needs a newer version of Tavletta": "このラベルには新しいバージョンの Tavletta が必要です",
-    "%s is not an Tavletta label": "%s は Tavletta のラベルではありません",
+    "%s is not a Tavletta label": "%s は Tavletta のラベルではありません",
     "The file is damaged: %s": "ファイルが壊れています: %s",
     "Cannot save %s: no permission to write there": "%s を保存できません: 書き込み権限がありません",
     "Cannot save %s: the disk is full": "%s を保存できません: ディスクがいっぱいです",

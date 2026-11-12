@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tavletta-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 16:52+0100\n"
+"POT-Creation-Date: 2026-11-12 17:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,6 +15,1418 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "Connecting an inventory tool"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "A walkthrough for the developers of a program that prints labels through the print server, here an inventory tool that prints asset labels: one label, a series of labels in one request, following the job, printing again after a jam, and handling errors. Every request is described in the [API reference](api.md); setting up the server in [Server installation](server-install.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "The setup { #setup }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "The examples use these names; yours will differ:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The server: `https://labels.example.com/api/v1`, reached through the company's reverse proxy."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The label `asset-tag.tavletta` in the labels folder, designed in the Tavletta app, with a QR code and a text that both contain the placeholder `{AssetNumber}`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The printer `it-cab` of `printers.toml`: a cab label printer with thermal transfer (`method = \"transfer\"`), printing turned by 180 degrees (`upside_down = true`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "An access token with the role `print`, limited to `it-cab`, made by the server's administrator:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"  tavletta token new inventory-tool --role print --printer it-cab \\\n"
+"      --tokens tokens.toml --printers printers.toml\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "Keep the token in the tool's secret store (configuration encrypted, a vault), not in the code. In the shell examples:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"TAVLETTA=https://labels.example.com/api/v1\n"
+"TOKEN=tav_3f9c0a1b2c4d_Xq2…\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "1. What the label needs { #describe }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid "curl -H \"Authorization: Bearer $TOKEN\" \"$TAVLETTA/labels/asset-tag\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "The answer lists the label's `columns` (here `[\"AssetNumber\"]`): every data row needs these keys. A placeholder without a value in the row refuses the print with 422 `label_unprintable` (\"No such column\"), so a label never prints a half-empty text."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "2. Preview { #preview }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "A preview prints nothing and returns the label as a PNG image, for example to show it in the tool before printing:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"data_rows\": [{\"AssetNumber\": \"100001\"}]}' \\\n"
+"     -o preview.png \"$TAVLETTA/preview\"\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "With `\"format\": \"json\"` the answer is JSON with the image in base64 and the `warnings` (for example `font_missing`, `barcode_narrow`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "`\"view\": \"printer\"` shows the image as the printer gets it (turned)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "A preview needs only the role `preview`."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "3. Print one label { #one }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"data_rows\": [{\"AssetNumber\": \"100001\"}], \"wait\": 30}' \\\n"
+"     \"$TAVLETTA/print\"\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The server checks the request, queues a job for the printer and answers with the job. With `\"wait\": 30` it waits up to 30 seconds for the job: 200 with `\"state\": \"done\"` once printed, else 202 with the job still `queued` or `printing`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The answer's `Location` header and the job's `id` lead to `GET /api/v1/jobs/{id}`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "Each printer prints one job after the other; jobs of different printers run side by side."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "4. A series in one request { #series }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "Twenty asset labels are one request with twenty data rows, not twenty requests: they print as one job, in order, and a problem stops the job at a known row."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"wait\": 60,\n"
+"          \"data_rows\": [{\"AssetNumber\": \"100001\"}, {\"AssetNumber\": \"100002\"},\n"
+"                        {\"AssetNumber\": \"100003\"}, {\"AssetNumber\": \"100020\"}]}' \\\n"
+"     \"$TAVLETTA/print\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "The recommended pattern: **the tool owns the numbers.** The tool takes the next free asset numbers from its own database, saves them with the assets, and sends them as data rows. The label never counts by itself, so a second server, a restored backup or a reprint can never hand out a number twice."
+msgstr ""
+
+#. type: Title ###
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "The alternative: the label's counter { #counter }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "A label with the variable `{=counter}` (for example `{=counter:000000}` for six digits) counts by itself. The tool can still say where to start:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag-counter\", \"printer\": \"it-cab\",\n"
+"          \"counter_start\": 100001, \"copies\": 20, \"no_save_counter\": true}' \\\n"
+"     \"$TAVLETTA/print\"\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "`counter_start` is the first number; the counter goes up with every label and copy: 100001 to 100020."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "`no_save_counter`: the server does not save the next number into the label file. Without it, the label file keeps the next number (100021), and the next print without `counter_start` goes on from there."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "Use this only when the numbers do not need to be in the tool's database before printing."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "5. Follow the job { #job }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid "curl -H \"Authorization: Bearer $TOKEN\" \"$TAVLETTA/jobs/$JOB\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid ""
+"| `state` | Meaning |\n"
+"|---|---|\n"
+"| `queued` | waits for the printer |\n"
+"| `waiting` | waits for the label file (another job is saving its counter) |\n"
+"| `printing` | is printing; `printed` of `total` labels are out |\n"
+"| `done` | all labels printed |\n"
+"| `failed` | stopped: `error` says why, `rows_printed` how far it came |\n"
+"| `canceled` | canceled |\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "Ask every one or two seconds while the state is not final; the server keeps finished jobs for 24 hours."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "A `print` token sees its own jobs only; another token's job is \"not found\"."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "6. After a jam: print the rest { #reprint }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "When the printer runs out of labels or jams, the job fails, for example:"
+msgstr ""
+
+#. type: Fenced code block (json)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"{\"state\": \"failed\", \"printed\": 13, \"total\": 20, \"rows_printed\": 13,\n"
+" \"error\": {\"code\": \"printer_out_of_labels\",\n"
+"           \"message\": \"… Printing stopped at row 14. To continue, print again from row 14.\"}}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "Once the printer is ready, send the same request again with `rows`, the rows still missing:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"rows\": \"14-20\",\n"
+"          \"data_rows\": [{\"AssetNumber\": \"100001\"}, {\"AssetNumber\": \"100020\"}]}' \\\n"
+"     \"$TAVLETTA/print\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "`rows` counts the data rows from 1: `\"14-20\"`, `\"14-\"` (to the last), `\"5\"`. Send the same data rows as before, so row 14 is the same asset.  A label that was half printed when the printer stopped belongs to the row that failed and is printed again."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "7. Cancel { #cancel }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api-guide.md
+#, no-wrap
+msgid "curl -X DELETE -H \"Authorization: Bearer $TOKEN\" \"$TAVLETTA/jobs/$JOB\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "A queued job is canceled at once; a printing one stops after the label being printed. 409 `job_finished` if it had finished already."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "8. Retries and errors { #errors }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "`POST /print` is not idempotent: a request sent twice prints twice. So:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "**Retry automatically** only answers that were refused before a job was made: 503 `busy` and 429 `queue_full`, after a pause that grows (1, 2, 4, 8 s)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "**Do not retry automatically** when the connection broke or timed out after the request was sent: the job may exist and print. Show the operator what happened, let them check the printer, then print the missing labels with `rows`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "**Fix the request** for other 4xx answers; the code says what is wrong:"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid ""
+"| Code | What the tool does |\n"
+"|---|---|\n"
+"| `unauthorized` (401) | Token wrong, expired or revoked: ask the administrator for a new one. |\n"
+"| `forbidden` (403) | The token's role is too low. |\n"
+"| `printer_not_found`, `label_not_found` (404) | Name typed wrong, or the token may not use that printer. |\n"
+"| `invalid_field`, `unknown_field` (400) | A bug in the tool: the message names the field. |\n"
+"| `too_many_copies` (400), `too_many_labels` (413) | Split the series into several jobs. |\n"
+"| `label_unprintable` (422) | The data does not fit the label (a missing column, a code that cannot hold the value): show the message. |\n"
+"| `busy` (503), `queue_full` (429) | Retry after a pause. |\n"
+"| `printer_<code>` in a failed job | Show the message to the operator; continue with `rows` once fixed. |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "The message (`error.message`) is in the language of `Accept-Language` and meant for people: show it, but decide by the code."
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "Example: Python { #python }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "With the `requests` package:"
+msgstr ""
+
+#. type: Fenced code block (python)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"import os\n"
+"import time\n"
+"\n"
+"import requests\n"
+"\n"
+"BASE = os.environ.get(\"TAVLETTA\", \"https://labels.example.com/api/v1\")\n"
+"TOKEN = os.environ[\"TAVLETTA_TOKEN\"]  # from the secret store, never in the code\n"
+"FINAL = {\"done\", \"failed\", \"canceled\"}\n"
+"\n"
+"\n"
+"class LabelError(Exception):\n"
+"    def __init__(self, status, code, message):\n"
+"        super().__init__(\"%s %s: %s\" % (status, code, message))\n"
+"        self.status, self.code = status, code\n"
+"\n"
+"\n"
+"session = requests.Session()\n"
+"session.headers.update({\"Authorization\": \"Bearer \" + TOKEN, \"Accept-Language\": \"de-CH\"})\n"
+"\n"
+"\n"
+"def call(method, path, **kwargs):\n"
+"    response = session.request(method, BASE + path, timeout=330, **kwargs)\n"
+"    if response.status_code >= 400:\n"
+"        try:\n"
+"            error = response.json()[\"error\"]\n"
+"        except (ValueError, KeyError):  # not from Tavletta, e.g. the proxy\n"
+"            error = {\"code\": \"http_%d\" % response.status_code, \"message\": response.text}\n"
+"        raise LabelError(response.status_code, error[\"code\"], error[\"message\"])\n"
+"    return response\n"
+"\n"
+"\n"
+"def print_assets(numbers, printer=\"it-cab\", rows=None):\n"
+"    \"\"\"One label per asset number, in one job; returns the finished job.\"\"\"\n"
+"    body = {\n"
+"        \"label\": \"asset-tag\",\n"
+"        \"printer\": printer,\n"
+"        \"data_rows\": [{\"AssetNumber\": str(n)} for n in numbers],\n"
+"        \"wait\": 30,\n"
+"    }\n"
+"    if rows:\n"
+"        body[\"rows\"] = rows  # e.g. \"14-20\": only these rows\n"
+"    for attempt in range(5):\n"
+"        try:\n"
+"            job = call(\"POST\", \"/print\", json=body).json()\n"
+"            break\n"
+"        except LabelError as e:\n"
+"            # refused before it was queued: nothing printed, safe to retry\n"
+"            if e.code not in (\"busy\", \"queue_full\") or attempt == 4:\n"
+"                raise\n"
+"            time.sleep(2**attempt)\n"
+"    while job[\"state\"] not in FINAL:  # still printing after \"wait\"\n"
+"        time.sleep(2)\n"
+"        job = call(\"GET\", \"/jobs/\" + job[\"id\"]).json()\n"
+"    return job\n"
+"\n"
+"\n"
+"def preview(number, path=\"preview.png\"):\n"
+"    body = {\"label\": \"asset-tag\", \"data_rows\": [{\"AssetNumber\": str(number)}]}\n"
+"    with open(path, \"wb\") as file:\n"
+"        file.write(call(\"POST\", \"/preview\", json=body).content)\n"
+"\n"
+"\n"
+"if __name__ == \"__main__\":\n"
+"    preview(100001)\n"
+"    numbers = range(100001, 100021)  # 20 labels\n"
+"    job = print_assets(numbers)\n"
+"    if job[\"state\"] == \"failed\":\n"
+"        print(\"Stopped:\", job[\"error\"][\"message\"])\n"
+"        # rows_printed rows are done: print the rest once the printer is fixed\n"
+"        rest = \"%d-%d\" % (job[\"rows_printed\"] + 1, len(numbers))\n"
+"        print(\"To continue:\", rest)\n"
+"    else:\n"
+"        print(job[\"state\"], job[\"printed\"], \"of\", job[\"total\"])\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/api-guide.md
+#, markdown-text, no-wrap
+msgid "Example: C# and .NET { #csharp }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api-guide.md
+#, markdown-text
+msgid "With `HttpClient` and `System.Net.Http.Json` (.NET 8 or newer), as a console program; in an application, register one `HttpClient` (for example with `IHttpClientFactory`) and reuse it."
+msgstr ""
+
+#. type: Fenced code block (csharp)
+#: docs/api-guide.md
+#, no-wrap
+msgid ""
+"using System.Net;\n"
+"using System.Net.Http.Headers;\n"
+"using System.Net.Http.Json;\n"
+"using System.Text;\n"
+"using System.Text.Json;\n"
+"using System.Text.Json.Serialization;\n"
+"\n"
+"var baseUrl = Environment.GetEnvironmentVariable(\"TAVLETTA\") ?? \"https://labels.example.com/api/v1\";\n"
+"var token = Environment.GetEnvironmentVariable(\"TAVLETTA_TOKEN\")!; // from the secret store\n"
+"\n"
+"using var http = new HttpClient { BaseAddress = new Uri(baseUrl.TrimEnd('/') + \"/\"), Timeout = TimeSpan.FromSeconds(330) };\n"
+"http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(\"Bearer\", token);\n"
+"http.DefaultRequestHeaders.AcceptLanguage.ParseAdd(\"de-CH\");\n"
+"var labels = new LabelClient(http);\n"
+"\n"
+"var numbers = Enumerable.Range(100001, 20).Select(n => n.ToString()).ToList();\n"
+"var job = await labels.PrintAssetsAsync(numbers, \"it-cab\");\n"
+"Console.WriteLine(job.State == \"failed\"\n"
+"    ? $\"Stopped: {job.Error?.Message} To continue: rows {job.RowsPrinted + 1}-{numbers.Count}\"\n"
+"    : $\"{job.State}: {job.Printed} of {job.Total}\");\n"
+"\n"
+"public record ApiError(string Code, string Message);\n"
+"public record ErrorBody(ApiError Error);\n"
+"public record Job(\n"
+"    string Id, string State, int Printed, int Total,\n"
+"    [property: JsonPropertyName(\"rows_printed\")] int RowsPrinted, ApiError? Error);\n"
+"\n"
+"public class LabelException(HttpStatusCode status, string code, string message) : Exception(message)\n"
+"{\n"
+"    public HttpStatusCode Status { get; } = status;\n"
+"    public string Code { get; } = code;\n"
+"}\n"
+"\n"
+"public class LabelClient(HttpClient http)\n"
+"{\n"
+"    static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);\n"
+"\n"
+"    public async Task<Job> PrintAssetsAsync(IList<string> assetNumbers, string printer, string? rows = null)\n"
+"    {\n"
+"        var body = new Dictionary<string, object>\n"
+"        {\n"
+"            [\"label\"] = \"asset-tag\",\n"
+"            [\"printer\"] = printer,\n"
+"            [\"data_rows\"] = assetNumbers.Select(n => new Dictionary<string, string> { [\"AssetNumber\"] = n }),\n"
+"            [\"wait\"] = 30,\n"
+"        };\n"
+"        if (rows != null) body[\"rows\"] = rows; // e.g. \"14-20\"\n"
+"        Job job;\n"
+"        for (var attempt = 0; ; attempt++)\n"
+"        {\n"
+"            try { job = await SendAsync<Job>(HttpMethod.Post, \"print\", body); break; }\n"
+"            catch (LabelException e) when (e.Code is \"busy\" or \"queue_full\" && attempt < 4)\n"
+"            {\n"
+"                await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt))); // nothing was printed\n"
+"            }\n"
+"        }\n"
+"        while (job.State is \"queued\" or \"waiting\" or \"printing\")\n"
+"        {\n"
+"            await Task.Delay(2000);\n"
+"            job = await SendAsync<Job>(HttpMethod.Get, $\"jobs/{job.Id}\");\n"
+"        }\n"
+"        return job;\n"
+"    }\n"
+"\n"
+"    public Task<Job> CancelAsync(string jobId) => SendAsync<Job>(HttpMethod.Delete, $\"jobs/{jobId}\");\n"
+"\n"
+"    async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null)\n"
+"    {\n"
+"        using var request = new HttpRequestMessage(method, path);\n"
+"        // as a string: the server needs a Content-Length (JsonContent would send it chunked)\n"
+"        if (body != null)\n"
+"            request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, \"application/json\");\n"
+"        using var response = await http.SendAsync(request);\n"
+"        if (!response.IsSuccessStatusCode)\n"
+"        {\n"
+"            ErrorBody? error = null;\n"
+"            try { error = await response.Content.ReadFromJsonAsync<ErrorBody>(Json); } catch (JsonException) { }\n"
+"            throw new LabelException(response.StatusCode,\n"
+"                error?.Error.Code ?? $\"http_{(int)response.StatusCode}\",\n"
+"                error?.Error.Message ?? response.ReasonPhrase ?? \"\");\n"
+"        }\n"
+"        return (await response.Content.ReadFromJsonAsync<T>(Json))!;\n"
+"    }\n"
+"}\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The base address ends with `/` and the paths have none at the start (`\"print\"`, `\"jobs/…\"`): `HttpClient` then keeps `/api/v1`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api-guide.md
+#, markdown-text
+msgid "The body goes as a `StringContent`: the server needs a `Content-Length`, and `JsonContent.Create` would send the body in chunks without one (411 `length_required`)."
+msgstr ""
+
+#. type: Title #
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "API reference"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "The REST API of the print server (`tavletta serve`), for programs that print labels: every request with its role, fields, answers and error codes. A walkthrough for an inventory tool, with code in Python and C#, is [Connecting an inventory tool](api-guide.md); installing the server is [Server installation](server-install.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "This page is made from the OpenAPI 3.1 description of the server (`tools/openapi_docs.py`). Programs and code generators read the same description: `docs/openapi.yaml` in the source, or `GET /api/v1/openapi.json` from a running server."
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Basics { #basics }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Address: `http://<server>:8790/api/v1`, or the HTTPS address of the reverse proxy. The examples use `$TAVLETTA` for it and `$TOKEN` for the access token:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"  TAVLETTA=https://labels.example.com/api/v1\n"
+"  TOKEN=tav_0123456789ab_...\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "JSON in and out (UTF-8). Requests with a body need `Content-Type: application/json` and a `Content-Length`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Every request but `GET /api/v1/health` needs the header `Authorization: Bearer <token>`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Messages come in the language of `Accept-Language` (e.g. `de-CH`), English by default. Codes never change with the language: programs check the code, people read the message."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Unknown fields are refused (`unknown_field`): a typo never prints something else than meant."
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Roles { #roles }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Each access token has a role (`tokens.toml`, made with `tavletta token new`). A role may do what the roles above it may."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Role | May |\n"
+"|---|---|\n"
+"| `preview` | list printers and labels, describe labels, previews, printer state, this description |\n"
+"| `print` | as `preview`, and print; see and cancel its own jobs |\n"
+"| `admin` | as `print`, and see and cancel every job |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "A token can be limited to some printers of `printers.toml`: the others are then \"not found\" (404 `printer_not_found`) for it."
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Errors { #errors }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Every error is JSON with a stable code and a message for people:"
+msgstr ""
+
+#. type: Fenced code block (json)
+#: docs/api.md
+#, no-wrap
+msgid "{\"error\": {\"code\": \"label_not_found\", \"message\": \"No such label: asset-tag.tavletta\"}}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Code | Meaning |\n"
+"|---|---|---|\n"
+"| 400 | `bad_request` | The request cannot be read (e.g. a body that ends early). |\n"
+"| 400 | `not_json` | The body is no valid JSON (415 with another Content-Type). |\n"
+"| 400 | `invalid_field` | A field has a wrong type or value; the message names it. |\n"
+"| 400 | `unknown_field` | A field the request does not have (a typo): nothing is done. |\n"
+"| 400 | `no_label` | Give either label or label_content. |\n"
+"| 400 | `data_conflict` | Give data_rows or data_file, not both. |\n"
+"| 400 | `no_rows` | rows selects no data row. |\n"
+"| 400 | `no_data` | sheet without a data file. |\n"
+"| 400 | `no_printer` | Several printers and no default: name one in printer. |\n"
+"| 400 | `no_host` | No printer address (without `printers.toml`). |\n"
+"| 400 | `host_given` | host with `printers.toml`: choose the printer by name. |\n"
+"| 400 | `too_many_copies` | More copies than the printer's max_copies. |\n"
+"| 401 | `unauthorized` | Token missing, wrong, expired or revoked. |\n"
+"| 403 | `forbidden` | The token's role is too low (e.g. preview printing). |\n"
+"| 403 | `host_not_allowed` | The printer address is not allowed (`--allow-printer`). |\n"
+"| 403 | `origin_not_allowed` | A web page of an origin not allowed (`--allow-origin`). |\n"
+"| 403 | `header_required` | No token on the server: send X-Tavletta-Request. |\n"
+"| 404 | `not_found` | No such path. |\n"
+"| 404 | `label_not_found` | No such label file in the labels folder. |\n"
+"| 404 | `data_not_found` | No such data file in the labels folder. |\n"
+"| 404 | `printer_not_found` | No such printer, or one the token may not use. |\n"
+"| 404 | `job_not_found` | No such job (another token's, or older than 24 hours). |\n"
+"| 405 | `method_not_allowed` | Not a method of this path. |\n"
+"| 408 | `timeout` | The request took longer than 30 s to send. |\n"
+"| 409 | `job_finished` | The job has finished: nothing to cancel. |\n"
+"| 409 | `counter_not_saved` | The label file is not writable: nothing was printed. |\n"
+"| 411 | `length_required` | No Content-Length (chunked bodies are not accepted). |\n"
+"| 413 | `too_large` | Body over `--max-body`, or too many data rows, columns or cells. |\n"
+"| 413 | `too_many_labels` | Copies times rows over `--max-labels` (10000 by default). |\n"
+"| 413 | `label_too_large` | The label is too large to render (elements, text, pixels). |\n"
+"| 415 | `not_json` | Send Content-Type: application/json. |\n"
+"| 421 | `wrong_host` | A loopback server asked for another host name. |\n"
+"| 422 | `file_problem` | The label file cannot be opened. |\n"
+"| 422 | `label_not_label` | The file is no Tavletta label. |\n"
+"| 422 | `label_newer` | The label needs a newer Tavletta: update the server. |\n"
+"| 422 | `label_damaged` | The label file is damaged. |\n"
+"| 422 | `label_unprintable` | It would print wrongly: a missing column, a bad code, … |\n"
+"| 422 | `data_outside` | The label's data file lies outside the labels folder. |\n"
+"| 422 | `data_problem` | The data file cannot be read, or has no such sheet. |\n"
+"| 422 | `prepare_failed` | The label cannot be prepared for the printer. |\n"
+"| 429 | `too_many_requests` | Ten wrong tokens from this address: wait a minute. |\n"
+"| 429 | `queue_full` | Too many jobs waiting: retry later. |\n"
+"| 500 | `internal` | An error of the server; it is logged. |\n"
+"| 502 | `printer_<code>` | The printer is unreachable or reports a problem. |\n"
+"| 503 | `busy` | All request or render slots taken: retry after a moment. |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`printer_<code>`: the printer's problem, one of `generic`, `not_found`, `timeout`, `stalled`, `port_closed`, `busy`, `paused`, `cover_open`, `head_open`, `jam`, `media_jam`, `out_of_labels`, `out_of_paper`, `label_not_found`, `wrong_media`, `paper_size`, `page_too_large`, `too_long`, `too_wide`, `code_too_large`, `ribbon`, `ribbon_out`, `ribbon_direct`, `no_cassette`, `bad_cassette`, `supplies`, `format`, `resolution`, `queue_paused`, `job_held`, `job_canceled`, `usb_not_found`, `usb_permission`, `serial_permission`, `battery`, `overheat`, `unsupported_model`, `unknown_model`, `editor_lite`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "A job that fails tells why in its `error`, with these codes:"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Code | Meaning |\n"
+"|---|---|\n"
+"| `printer_<code>` | The printer is unreachable or reports a problem (jam, out of labels…). |\n"
+"| `counter_not_saved` | Printed, but the next counter value could not be saved. |\n"
+"| `label_locked` | Another print held the label file too long. |\n"
+"| `prepare_failed` | The label could not be prepared for the printer. |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Limits { #limits }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| What | Limit |\n"
+"|---|---|\n"
+"| Request body | 4 MB (`--max-body`) |\n"
+"| Data rows, columns, cells | 100 000, 1000, 2 000 000 |\n"
+"| One value or cell | 100 000 characters |\n"
+"| Copies | 9999, or the printer's `max_copies` |\n"
+"| Labels in one job (copies times rows) | 10 000 (`--max-labels`) |\n"
+"| Elements of a label | 200, of them 50 images and codes; 5000 characters and 100 lines a text |\n"
+"| Jobs waiting or printing | 100 in all, 20 per named token |\n"
+"| Finished jobs kept | 24 hours, at most 1000 |\n"
+"| `wait` | 300 seconds |\n"
+"| Requests at once | 32, 8 per client address |\n"
+"| Wrong tokens | 10 a minute per address, then 429 for a minute |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Requests { #requests }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Besides the answers listed with each request, every request can get the general errors of the table above: 401, 403, 405, 408, 421, 429 (`too_many_requests`), 500 and 503, and one with a body 411, 413 (`too_large`) and 415."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Request | Role | What |\n"
+"|---|---|---|\n"
+"| [`GET /api/v1/health`](#get-health) | none | Is the server running; no token needed (for health checks) |\n"
+"| [`GET /api/v1/openapi.json`](#get-openapi-json) | `preview` | This description (OpenAPI 3.1); a token of any role |\n"
+"| [`GET /api/v1/printers`](#get-printers) | `preview` | The printers of `printers.toml` the token may use, with their state; without it the printer models, the address set for each and the printers found (`--discover`) |\n"
+"| [`GET /api/v1/printers/{id}/status`](#get-printers-id-status) | `preview` | Ask a printer for its state: media, problems, resolution |\n"
+"| [`GET /api/v1/labels`](#get-labels) | `preview` | The label files in the labels folder and its subfolders |\n"
+"| [`GET /api/v1/labels/{name}`](#get-labels-name) | `preview` | What a label can be filled in with: elements, variables, data columns, size, counter |\n"
+"| [`POST /api/v1/preview`](#post-preview) | `preview` | The label filled in, as an image; nothing is printed |\n"
+"| [`POST /api/v1/print`](#post-print) | `print` | Print: the request is checked, then queued; each printer prints one job at a time |\n"
+"| [`GET /api/v1/jobs/{id}`](#get-jobs-id) | `print` | State of a print job (a print token: its own jobs; admin: all). Kept 24 hours after it finished |\n"
+"| [`DELETE /api/v1/jobs/{id}`](#delete-jobs-id) | `print` | Cancel a job: at once while it waits, after the current label while it prints |\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/health` { #get-health }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Is the server running; no token needed (for health checks)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Role: none (no token)"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | Running |  |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid "curl \"$TAVLETTA/health\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/openapi.json` { #get-openapi-json }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "This description (OpenAPI 3.1); a token of any role."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Role: `preview`"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | OpenAPI |  |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/openapi.json\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/printers` { #get-printers }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "The printers of `printers.toml` the token may use, with their state; without it the printer models, the address set for each and the printers found (`--discover`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Parameter | In | Meaning |\n"
+"|---|---|---|\n"
+"| `X-Tavletta-Request` | header | Needed (any value) when the server has no token: a web page cannot send it, so it cannot make the server contact printers. |\n"
+"| `discover` | query | Without `printers.toml` and with `--discover`: search. default `true` |\n"
+"| `status` | query | Ask each printer of `printers.toml` for its state (remembered for 5 s). default `true` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | Printers |  |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/printers\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/printers/{id}/status` { #get-printers-id-status }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Ask a printer for its state: media, problems, resolution."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Parameter | In | Meaning |\n"
+"|---|---|---|\n"
+"| `X-Tavletta-Request` | header | Needed (any value) when the server has no token: a web page cannot send it, so it cannot make the server contact printers. |\n"
+"| `id` | path | Printer name (`printers.toml`) or printer model id. |\n"
+"| `host` | query | Only without `printers.toml`; needs the role print. |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | State |  |\n"
+"| 400 | No address, or host given with `printers.toml` | `no_host`, `host_given`, `invalid_field` |\n"
+"| 404 | Unknown printer, or one the token may not use | `printer_not_found` |\n"
+"| 502 | The printer cannot be reached or reports a problem | `printer_<code>` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/printers/it-cab/status\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/labels` { #get-labels }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "The label files in the labels folder and its subfolders."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | Labels |  |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/labels\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/labels/{name}` { #get-labels-name }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "What a label can be filled in with: elements, variables, data columns, size, counter."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Parameter | In | Meaning |\n"
+"|---|---|---|\n"
+"| `name` | path | May contain slashes for subfolders; '`.tavletta`' may be left out. |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | Label |  |\n"
+"| 400 | Not a name inside the labels folder | `invalid_field` |\n"
+"| 404 | No such label | `label_not_found` |\n"
+"| 422 | The file is no label or damaged | `file_problem`, `label_not_label`, `label_newer`, `label_damaged` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/labels/asset-tag\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`POST /api/v1/preview` { #post-preview }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "The label filled in, as an image; nothing is printed."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Body fields:"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `label` | string | Name of a label file in the labels folder (see GET /labels), subfolders with '/'; '`.tavletta`' may be left out. Either label or label_content. |\n"
+"| `label_content` | object | Or the label itself, as the JSON of a `.tavletta` file, checked like a file that is opened. Its data file is ignored (send data_rows instead), its counter never saved. |\n"
+"| `printer` | string | With `printers.toml` on the server: the printer's name (default: the default printer the token may use, or the only one). Without it: a printer model id, if not the label's own (the label is fitted as in the app). |\n"
+"| `set` | object | Element name or variable name -> value, as `--set` on the command line; variables in a value are filled in; 'date' sets the moment `{=date}` and `{=time}` start from (ISO 8601). At most 1000 entries. |\n"
+"| `set_literal` | object | Like set, but braces in a value are text, not variables. |\n"
+"| `counter_start` | integer | The `{=counter}` of the first label; it goes up by the label's step with every label, copy and row. 0 to 999999999999999 |\n"
+"| `data_rows` | array of object | Serial labels: one label per row, column name -> value; the label's `{Column}` placeholders take the values. Numbers are taken as text, null as an empty cell. At most 100000 rows, 1000 columns, 2000000 cells, 100000 characters a value. |\n"
+"| `data_file` | string | Or a CSV, TSV, ODS or XLSX file in the labels folder. Without data_rows and data_file, the label's own data file is used if it lies beside the label in the labels folder. |\n"
+"| `sheet` | string | Sheet of the data file, the first by default. |\n"
+"| `row` | integer | Data row to show, from 1. 1 to 100000; default `1` |\n"
+"| `format` | `\"png\"` \\| `\"json\"` | 'json': width, height, warnings and the PNG in base64. default `\"png\"` |\n"
+"| `view` | `\"preview\"` \\| `\"printer\"` | 'printer': the image as the printer gets it (turned, in its colours). default `\"preview\"` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | PNG, or JSON with format=json. Warning codes also in the header X-Tavletta-Warnings (comma-separated). |  |\n"
+"| 400 | Invalid request | `bad_request`, `invalid_field`, `unknown_field`, `no_label`, `data_conflict`, `not_json`, `no_rows`, `no_data`, `no_printer`, `too_many_copies` |\n"
+"| 404 | No such label, printer or data file | `label_not_found`, `printer_not_found`, `data_not_found` |\n"
+"| 413 | Too large: body, data rows or the label to render | `too_large`, `label_too_large` |\n"
+"| 422 | The label or its data cannot be used | `file_problem`, `label_not_label`, `label_newer`, `label_damaged`, `label_unprintable`, `data_outside`, `data_problem`, `prepare_failed` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"data_rows\": [{\"AssetNumber\": \"100001\"}], \"format\": \"png\"}' \\\n"
+"     -o preview.png \\\n"
+"     \"$TAVLETTA/preview\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`POST /api/v1/print` { #post-print }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Print: the request is checked, then queued; each printer prints one job at a time."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/api.md
+#, markdown-text
+msgid "Role: `print`"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `label` | string | Name of a label file in the labels folder (see GET /labels), subfolders with '/'; '`.tavletta`' may be left out. Either label or label_content. |\n"
+"| `label_content` | object | Or the label itself, as the JSON of a `.tavletta` file, checked like a file that is opened. Its data file is ignored (send data_rows instead), its counter never saved. |\n"
+"| `printer` | string | With `printers.toml` on the server: the printer's name (default: the default printer the token may use, or the only one). Without it: a printer model id, if not the label's own (the label is fitted as in the app). |\n"
+"| `set` | object | Element name or variable name -> value, as `--set` on the command line; variables in a value are filled in; 'date' sets the moment `{=date}` and `{=time}` start from (ISO 8601). At most 1000 entries. |\n"
+"| `set_literal` | object | Like set, but braces in a value are text, not variables. |\n"
+"| `counter_start` | integer | The `{=counter}` of the first label; it goes up by the label's step with every label, copy and row. 0 to 999999999999999 |\n"
+"| `data_rows` | array of object | Serial labels: one label per row, column name -> value; the label's `{Column}` placeholders take the values. Numbers are taken as text, null as an empty cell. At most 100000 rows, 1000 columns, 2000000 cells, 100000 characters a value. |\n"
+"| `data_file` | string | Or a CSV, TSV, ODS or XLSX file in the labels folder. Without data_rows and data_file, the label's own data file is used if it lies beside the label in the labels folder. |\n"
+"| `sheet` | string | Sheet of the data file, the first by default. |\n"
+"| `host` | string | Printer address, only without `printers.toml` (default: the one set in the app, else with `--discover` the only printer found). Refused (host_given) with `printers.toml`. |\n"
+"| `copies` | integer | Copies of each label (each row); at most the printer's max_copies. Copies times rows: at most `--max-labels` (10000 by default). 1 to 9999; default `1` |\n"
+"| `rows` | string | The data rows to print, from 1: '3-10', '5', '7-' (to the last) or '-4'. To print again from where a job stopped. |\n"
+"| `no_save_counter` | boolean | Do not save the next `{=counter}` value into the label file. default `false` |\n"
+"| `wait` | number | Seconds to wait for the job to finish before answering: 200 if it did, else 202. 0 to 300.0; default `0` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | The job finished within 'wait' |  |\n"
+"| 202 | Queued or printing; follow it at Location |  |\n"
+"| 400 | Invalid request | `bad_request`, `invalid_field`, `unknown_field`, `no_label`, `data_conflict`, `not_json`, `no_rows`, `no_data`, `no_printer`, `no_host`, `host_given`, `too_many_copies` |\n"
+"| 404 | No such label, printer or data file, or a printer the token may not use | `label_not_found`, `printer_not_found`, `data_not_found` |\n"
+"| 409 | The label file is not writable: the next counter value could not be saved, nothing was printed | `counter_not_saved` |\n"
+"| 413 | Too large: body, data rows, labels in one job or the label to render | `too_large`, `too_many_labels`, `label_too_large` |\n"
+"| 422 | The label would print wrongly | `file_problem`, `label_not_label`, `label_newer`, `label_damaged`, `label_unprintable`, `data_outside`, `data_problem` |\n"
+"| 429 | Too many wrong tokens, or too many jobs waiting (100 in all, 20 per named token) | `too_many_requests`, `queue_full` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     -H 'Content-Type: application/json' \\\n"
+"     -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"data_rows\": [{\"AssetNumber\": \"100001\"}], \"wait\": 30}' \\\n"
+"     \"$TAVLETTA/print\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`GET /api/v1/jobs/{id}` { #get-jobs-id }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "State of a print job (a print token: its own jobs; admin: all). Kept 24 hours after it finished."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Parameter | In | Meaning |\n"
+"|---|---|---|\n"
+"| `id` | path | The id of POST /print. |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 200 | Job |  |\n"
+"| 404 | No such job | `job_not_found` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     \"$TAVLETTA/jobs/$JOB\"\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "`DELETE /api/v1/jobs/{id}` { #delete-jobs-id }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Cancel a job: at once while it waits, after the current label while it prints."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Status | Answer | Codes |\n"
+"|---|---|---|\n"
+"| 202 | Canceled, or stopping after the current label |  |\n"
+"| 404 | No such job | `job_not_found` |\n"
+"| 409 | Already finished | `job_finished` |\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"curl -H \"Authorization: Bearer $TOKEN\" \\\n"
+"     -X DELETE \\\n"
+"     \"$TAVLETTA/jobs/$JOB\"\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Answers { #answers }"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Job { #job }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `id` | string | Random, 16 characters. |\n"
+"| `state` | `\"queued\"` \\| `\"waiting\"` \\| `\"printing\"` \\| `\"done\"` \\| `\"failed\"` \\| `\"canceled\"` | waiting: its turn came, another job holds the label file (its counter). done, failed and canceled are final. |\n"
+"| `printer` | string | Printer model id. |\n"
+"| `printer_name` | string or null | Its name in `printers.toml`. |\n"
+"| `host` | string | The printer's address. |\n"
+"| `owner` | string or null | Name of the token. |\n"
+"| `label` | string or null | Name in the labels folder; null for label_content. |\n"
+"| `printed` | integer | Labels printed so far. |\n"
+"| `total` | integer | Labels to print: copies x rows. |\n"
+"| `rows_printed` | integer | Data rows printed in full: after a failure, print again with rows set to the next one (rows_printed + first row). |\n"
+"| `cancel_requested` | boolean | DELETE was sent. |\n"
+"| `error` | null or Warning | Why it failed: `printer_<code>`, counter_not_saved, label_locked or prepare_failed. |\n"
+"| `remark` | string or null | A note of the printer, for people. |\n"
+"| `warnings` | array of Warning | Found when it was checked; it printed anyway. |\n"
+"| `created` | string | UTC. |\n"
+"| `started` | string or null |  |\n"
+"| `finished` | string or null |  |\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Label { #label }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `name` | string |  |\n"
+"| `printer` | object | Model id and name. |\n"
+"| `size` | object | Tape, length, orientation, mm. |\n"
+"| `elements` | array of object |  |\n"
+"| `variables` | array of string | Variables of your own, `{=lot}`: filled in with 'set'. |\n"
+"| `builtin_variables` | array of string |  |\n"
+"| `columns` | array of string | Placeholders `{Column}`: the keys of data_rows. |\n"
+"| `data_file` | string or null |  |\n"
+"| `data_file_unusable` | boolean |  |\n"
+"| `data_sheet` | string or null |  |\n"
+"| `counter` | object | used (the label has `{=counter}`), next, step. |\n"
+"| `features` | array of string |  |\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "NamedPrinter { #namedprinter }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "A printer of printers.toml."
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `name` | string | What requests name in 'printer'. |\n"
+"| `printer` | string | Printer model id. |\n"
+"| `model` | string | Printer model, for people. |\n"
+"| `host` | string |  |\n"
+"| `description` | string or null |  |\n"
+"| `location` | string or null |  |\n"
+"| `media` | string or null |  |\n"
+"| `default` | boolean |  |\n"
+"| `max_copies` | integer |  |\n"
+"| `status` | object or null | The state (as PrinterStatus), or state UNREACHABLE with an error; null with status=false. |\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "PrinterStatus { #printerstatus }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `printer` | string |  |\n"
+"| `host` | string |  |\n"
+"| `name` | string | Its name in `printers.toml`. |\n"
+"| `model` | string |  |\n"
+"| `state` | string |  |\n"
+"| `error` | null or Warning |  |\n"
+"| `dpi` | number |  |\n"
+"| `firmware` | string or null |  |\n"
+"| `modes` | array of string |  |\n"
+"| `media` | object | What is loaded, as far as the printer tells: tape_mm, remaining_mm, total_mm, pitch_mm, cassette. |\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid "Preview { #preview }"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text, no-wrap
+msgid ""
+"| Field | Type | Meaning |\n"
+"|---|---|---|\n"
+"| `width` | integer |  |\n"
+"| `height` | integer |  |\n"
+"| `warnings` | array of Warning |  |\n"
+"| `png` | string |  |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/api.md
+#, markdown-text
+msgid "Example of a job:"
+msgstr ""
+
+#. type: Fenced code block (json)
+#: docs/api.md
+#, no-wrap
+msgid ""
+"{\n"
+"  \"id\": \"HxIwYqXuV4qYRBM7\",\n"
+"  \"state\": \"done\",\n"
+"  \"printer\": \"cab\",\n"
+"  \"printer_name\": \"it-cab\",\n"
+"  \"host\": \"cab-it.example.com\",\n"
+"  \"owner\": \"inventory-tool\",\n"
+"  \"label\": \"asset-tag.tavletta\",\n"
+"  \"printed\": 20,\n"
+"  \"total\": 20,\n"
+"  \"rows_printed\": 20,\n"
+"  \"cancel_requested\": false,\n"
+"  \"error\": null,\n"
+"  \"remark\": null,\n"
+"  \"warnings\": [],\n"
+"  \"created\": \"2026-11-12T15:34:45+00:00\",\n"
+"  \"started\": \"2026-11-12T15:34:45+00:00\",\n"
+"  \"finished\": \"2026-11-12T15:35:04+00:00\"\n"
+"}\n"
+msgstr ""
 
 #. type: Title #
 #: docs/contribute.md
@@ -1345,6 +2757,941 @@ msgid "`tavletta print shelf.tavletta --data items.csv --rows 3-10` prints rows 
 msgstr ""
 
 #. type: Title #
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Server installation"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "This guide sets up the print server (`tavletta serve`) on a Linux server for a company: other programs, for example an inventory tool, print labels through it over the network. What the server does and how programs use it: [Print server](server.md) and [API reference](api.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Overview { #overview }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "One small service: a REST API (and MCP for AI assistants) on port 8790.  It renders the labels itself and sends them to the printers over the network; no desktop, no browser, no database."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The printers it may use are named in `printers.toml`; no other address can be printed on."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Every program or device gets its own access token with a role (`tokens.toml`); the file keeps only a fingerprint (hash) of each token."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The labels are `.tavletta` files in a labels folder, designed in the Tavletta app and copied there."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "It listens on `127.0.0.1` only. Other computers reach it through a reverse proxy with HTTPS (Traefik, nginx, Caddy)."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Requirements { #requirements }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "A Linux server on x86-64 (a virtual machine is enough)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Either Docker Engine with the Compose plugin (option A, recommended), or Python 3.11 or newer with PyGObject, Pango and Cairo from the distribution (option B)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Resources: 1 CPU core, 1 GB RAM reserved (the server usually uses 50–150 MB; a large label is limited to 40 megapixels), 500 MB of disk for the image or the installation, plus the labels."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Network from the server to the printers:"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid ""
+"  | Printer | Port |\n"
+"  |---|---|\n"
+"  | cab, Brother QL, ZPL, EPL2, TSPL, ESC/POS, DYMO and others printing \"raw\" | TCP 9100 |\n"
+"  | Office printers and CUPS queues (IPP) | TCP 631 |\n"
+"  | Brother VC-500W | TCP 9100 |\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Only for finding printers automatically (mDNS) or USB printers: the host's network (option A with `compose.host.yaml`) or a native installation."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Fonts: every font the labels use must be installed on the server (see [Fonts](#fonts))."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Option A: Docker Compose { #docker }"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "1. Get Tavletta and build the image { #docker-build }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo git clone https://git.joshuahirsig.xyz/joshii/tavletta.git /opt/tavletta\n"
+"cd /opt/tavletta\n"
+"sudo git checkout v1.1.0      # the release to run: git tag lists them\n"
+"cd packaging/docker\n"
+"sudo docker compose build\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The image (about 200 MB) contains Tavletta, Python, Pango and Cairo, the fonts DejaVu, Source Sans 3, Liberation (metrics of Arial, Times New Roman and Courier New) and Carlito (metrics of Calibri). It runs as an unprivileged user, read-only, without capabilities."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "2. Folders { #docker-folders }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Everything that belongs to your installation lives in three folders next to `compose.yaml` (git ignores them):"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"/opt/tavletta/packaging/docker/\n"
+"├── compose.yaml\n"
+"├── config/          printers.toml, tokens.toml\n"
+"├── labels/          the label files (.tavletta) and their data files\n"
+"└── fonts/           fonts of your own (.ttf, .otf), may stay empty\n"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo mkdir -p config labels fonts\n"
+"sudo chown -R 1000:1000 config labels fonts\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The container runs as user 1000 (set `TAVLETTA_UID` and `TAVLETTA_GID` for another one): it reads `config/` and saves counters into the label files of `labels/`."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "3. Printers: printers.toml { #printers }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "`config/printers.toml` names every printer programs may use. An example with a cab printer for asset labels (thermal transfer, printed turned by 180 degrees), a Brother QL at the reception and an office printer over IPP:"
+msgstr ""
+
+#. type: Fenced code block (toml)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"[printers.it-cab]\n"
+"backend = \"cab\"                          # cab EOS, SQUIX, MACH\n"
+"host = \"cab-it.example.com\"              # name or IP address of the printer\n"
+"description = \"Asset labels\"\n"
+"location = \"IT store room\"\n"
+"media = \"57 x 32 mm polyester, resin ribbon\"\n"
+"default = true                           # used when a request names no printer\n"
+"max_copies = 50\n"
+"\n"
+"[printers.it-cab.settings]\n"
+"method = \"transfer\"                      # thermal transfer with ribbon (direct: without)\n"
+"upside_down = true                       # printed turned by 180 degrees\n"
+"\n"
+"[printers.reception-ql]\n"
+"backend = \"brother_ql\"                   # Brother QL-700, QL-8xx, QL-1100 …\n"
+"host = \"192.0.2.21\"\n"
+"description = \"Visitor and sample labels\"\n"
+"location = \"Reception\"\n"
+"media = \"DK-22205, 62 mm continuous\"\n"
+"max_copies = 20\n"
+"cut = \"full\"\n"
+"\n"
+"[printers.reception-ql.settings]\n"
+"quality = \"high\"\n"
+"\n"
+"[printers.office]\n"
+"backend = \"system\"                       # any IPP printer or CUPS queue\n"
+"host = \"ipp://office-printer.example.com/ipp/print\"\n"
+"description = \"Label sheets, A4\"\n"
+"max_copies = 10\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`backend` is the printer model: `cab`, `brother_ql`, `brother_ql_diecut`, `ptouch`, `vc500w`, `zpl`, `epl`, `tspl`, `escpos`, `dymo`, `niimbot`, `system` (`tavletta list-printers` shows them)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`host` is the printer's name or IP address; for `system` an IPP address. Give printers a fixed address (DHCP reservation or DNS name)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The settings of a model are those of the app's printer settings; the full list is in [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "A mistake stops the server with the file, the key and the problem, for example `printers.toml: printers.it-cab.settings.method: expected one of: printer, transfer, direct`. Changes need a restart."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "4. Access tokens: tokens.toml { #tokens }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Create one token per program or device. The token is shown once; the file keeps only its hash."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo docker run --rm --user 1000:1000 -v ./config:/config --entrypoint tavletta \\\n"
+"    tavletta-server token new inventory-tool --role print --printer it-cab \\\n"
+"    --description \"Inventory tool\" \\\n"
+"    --tokens /config/tokens.toml --printers /config/printers.toml\n"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"tav_3f9c0a1b2c4d_Xq2…\n"
+"tavletta: The token is shown only this once; /config/tokens.toml keeps only its hash.\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Give the token to the program's administrator over a safe channel (a password manager), never by e-mail."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Roles: `preview` (look only), `print` (also print, see its own jobs), `admin` (see and cancel every job). Give programs `print`, monitoring `preview`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`--printer` (repeatable) limits the token to these printers; `--expires 2027-12-31` to a date."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Always pass `--printers`: once a token is limited to printers, the file can only be checked with the printer list."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "New tokens work at once, without a restart. To revoke one, delete its entry from `config/tokens.toml`."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "5. Labels { #labels }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Design the labels in the Tavletta app and copy the `.tavletta` files into `labels/` (subfolders are allowed). Programs name them without the ending: `labels/inventory/asset-tag.tavletta` is `\"label\": \"inventory/asset-tag\"`."
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo cp asset-tag.tavletta labels/\n"
+"sudo chown 1000:1000 labels/asset-tag.tavletta\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "6. Start { #docker-start }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo docker compose up -d\n"
+"sudo docker compose ps\n"
+"curl http://127.0.0.1:8790/api/v1/health\n"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/server-install.md
+#, no-wrap
+msgid "{\"status\": \"ok\", \"version\": \"1.1.0\"}\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The container restarts by itself after a crash or a reboot."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Set the time zone of `{=date}` and `{=time}` on labels with `TAVLETTA_TZ=Europe/Zurich` in a file `.env` next to `compose.yaml` (UTC by default)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Check the token and the printers:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"  TOKEN=tav_3f9c0a1b2c4d_Xq2…\n"
+"  curl -H \"Authorization: Bearer $TOKEN\" http://127.0.0.1:8790/api/v1/printers\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid ""
+"  Each printer is listed with its state; `UNREACHABLE` with a message if\n"
+"  the server cannot reach it.\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Host network: mDNS and USB { #docker-host }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "To find printers on the network by mDNS, to print on CUPS queues of the host or on USB printers, start with the override `compose.host.yaml`:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid "sudo docker compose -f compose.yaml -f compose.host.yaml up -d\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid ""
+"The container then shares the host's network and listens on\n"
+"`127.0.0.1:8790` of the host. CUPS queues of the host are\n"
+"`ipp://localhost:631/printers/<queue>` in `printers.toml`.\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Logs { #docker-logs }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid "sudo docker compose logs -f\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Each request is logged with the client's address, the token's name, the path and the status; each job with its label, printer and outcome. Tokens and label contents are never logged."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Updating { #docker-update }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"cd /opt/tavletta\n"
+"sudo git fetch --tags\n"
+"sudo git checkout v1.2.0         # the new release\n"
+"cd packaging/docker\n"
+"sudo docker compose build --pull\n"
+"sudo docker compose up -d\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Read the release notes first. Waiting jobs are canceled when the server stops; a label being printed is finished. `config/`, `labels/` and `fonts/` are kept."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Backup { #docker-backup }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Back up the three folders: `config/` (the printer list, the token hashes), `labels/` (the labels and their counters: the next number of each label with `{=counter}` is saved in its file) and `fonts/`. The image can be built again at any time."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Uninstalling { #docker-uninstall }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"cd /opt/tavletta/packaging/docker\n"
+"sudo docker compose down\n"
+"sudo docker image rm tavletta-server\n"
+"sudo rm -r /opt/tavletta     # also deletes config, labels and fonts\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Option B: native with systemd { #native }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "For a server without Docker. Tested on Debian 13, Ubuntu 24.04 and Fedora 44. The installation needs internet access (Python packages from PyPI, one from GitHub)."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "1. System packages { #native-packages }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Debian, Ubuntu:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo apt install python3 python3-venv python3-gi python3-gi-cairo gir1.2-pango-1.0 \\\n"
+"    gettext git fontconfig fonts-dejavu-core\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Fedora:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid "sudo dnf install python3 python3-gobject gobject-introspection pango gettext git-core\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "No GTK is needed. `gettext` and `git` are needed only while installing."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "2. Install Tavletta { #native-install }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Into its own Python environment in `/opt/tavletta`, which uses the system's PyGObject:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo python3 -m venv --system-site-packages /opt/tavletta\n"
+"sudo /opt/tavletta/bin/pip install \"git+https://git.joshuahirsig.xyz/joshii/tavletta.git@v1.1.0\"\n"
+"/opt/tavletta/bin/tavletta --version\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "3. Service user and folders { #native-user }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo useradd --system --home-dir /var/lib/tavletta --create-home \\\n"
+"    --shell /usr/sbin/nologin tavletta\n"
+"sudo install -d -o tavletta -g tavletta -m 0750 /etc/tavletta /var/lib/tavletta/labels\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid ""
+"| Path | Content | Owner, mode |\n"
+"|---|---|---|\n"
+"| `/etc/tavletta/printers.toml` | the printers ([as above](#printers)) | `tavletta`, 600 |\n"
+"| `/etc/tavletta/tokens.toml` | the token hashes | `tavletta`, 600 |\n"
+"| `/var/lib/tavletta/labels/` | the label files | `tavletta`, 750 |\n"
+"| `/usr/local/share/fonts/` | fonts of your own | `root`, readable by all |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Create the tokens as the service user, so the file belongs to it:"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo -u tavletta /opt/tavletta/bin/tavletta token new inventory-tool --role print \\\n"
+"    --printer it-cab --tokens /etc/tavletta/tokens.toml --printers /etc/tavletta/printers.toml\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The server refuses a `tokens.toml` that every user may change, and warns about one that others may read."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "4. The service { #native-service }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "`packaging/systemd/tavletta-server.service` runs the server as `tavletta`, sandboxed (read-only system, no home folders, no capabilities, 1 GB memory):"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/\n"
+"sudo systemctl daemon-reload\n"
+"sudo systemctl enable --now tavletta-server\n"
+"systemctl status tavletta-server\n"
+"curl http://127.0.0.1:8790/api/v1/health\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`sudo systemctl reload tavletta-server` reads `tokens.toml` again (SIGHUP); it is also read again whenever it changes."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`sudo systemctl restart tavletta-server` after changing `printers.toml` or installing fonts."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Logs: `journalctl -u tavletta-server -f`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The time zone is the server's (`timedatectl`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "For a single user on a desktop there is the user service `packaging/systemd/tavletta.service` instead."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Updating { #native-update }"
+msgstr ""
+
+#. type: Fenced code block (sh)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"sudo /opt/tavletta/bin/pip install --upgrade \"git+https://git.joshuahirsig.xyz/joshii/tavletta.git@v1.2.0\"\n"
+"sudo cp packaging/systemd/tavletta-server.service /etc/systemd/system/   # of the new release\n"
+"sudo systemctl daemon-reload\n"
+"sudo systemctl restart tavletta-server\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Back up `/etc/tavletta`, `/var/lib/tavletta/labels` and your fonts."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Reverse proxy and HTTPS { #proxy }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The server speaks plain HTTP on `127.0.0.1`. Other computers reach it through a reverse proxy that adds HTTPS. Give the server the proxy's address with `--trusted-proxy`, so the log and the limits per client see the real client, not the proxy."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Traefik (Docker) { #traefik }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Traefik and Tavletta in one Docker network, Traefik with a fixed address. In `compose.yaml`, remove `ports:` (the server is then reached only through Traefik) and add:"
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"services:\n"
+"  tavletta:\n"
+"    # ... as in compose.yaml, without ports:\n"
+"    networks: [proxy]\n"
+"    command:\n"
+"      - \"--mcp\"\n"
+"      - \"--printers\"\n"
+"      - \"/config/printers.toml\"\n"
+"      - \"--tokens\"\n"
+"      - \"/config/tokens.toml\"\n"
+"      - \"--trusted-proxy\"\n"
+"      - \"172.30.0.10/32\"          # Traefik's address in the network\n"
+"    labels:\n"
+"      - \"traefik.enable=true\"\n"
+"      - \"traefik.http.routers.tavletta.rule=Host(`labels.example.com`)\"\n"
+"      - \"traefik.http.routers.tavletta.entrypoints=websecure\"\n"
+"      - \"traefik.http.routers.tavletta.tls.certresolver=letsencrypt\"\n"
+"      - \"traefik.http.services.tavletta.loadbalancer.server.port=8790\"\n"
+"\n"
+"networks:\n"
+"  proxy:\n"
+"    external: true                # Traefik's network, Traefik at 172.30.0.10\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "nginx { #nginx }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The server on `127.0.0.1` answers only requests for a local host name (against DNS rebinding): nginx must not pass on the public name. Its default (`127.0.0.1:8790`) is right; do not add `proxy_set_header Host $host`."
+msgstr ""
+
+#. type: Fenced code block (nginx)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"server {\n"
+"    listen 443 ssl;\n"
+"    server_name labels.example.com;\n"
+"    ssl_certificate     /etc/ssl/certs/labels.example.com.pem;\n"
+"    ssl_certificate_key /etc/ssl/private/labels.example.com.key;\n"
+"\n"
+"    client_max_body_size 4m;           # as the server's --max-body\n"
+"    location / {\n"
+"        proxy_pass http://127.0.0.1:8790;\n"
+"        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n"
+"        proxy_read_timeout 330s;       # print requests may wait up to 300 s\n"
+"    }\n"
+"}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Start the server with `--trusted-proxy 127.0.0.1/32` (append it to `ExecStart` in the service, or to `command:` in `compose.yaml`)."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Caddy { #caddy }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Caddy passes on the public host name by default; set it to the server's own:"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/server-install.md
+#, no-wrap
+msgid ""
+"labels.example.com {\n"
+"    reverse_proxy 127.0.0.1:8790 {\n"
+"        header_up Host {upstream_hostport}\n"
+"    }\n"
+"}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "Caddy gets a certificate by itself. Start the server with `--trusted-proxy 127.0.0.1/32`."
+msgstr ""
+
+#. type: Title ###
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Firewall { #firewall }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Open only the proxy's port 443, and only for the networks that need it (the inventory tool's server, the clients' VLAN)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Port 8790 stays closed: the server listens on `127.0.0.1` (Docker publishes it on `127.0.0.1` only)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Outgoing from the server to the printers: TCP 9100 and 631."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Never make the server reachable from the internet."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Fonts { #fonts }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "A label is drawn with the fonts of the computer that prints it. A text in a font the server does not have is drawn in another one; the preview and the print job then warn with `font_missing` (for example `Element 2: the font Source Sans 3 is not installed – another font is used`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Docker: the image has DejaVu, Source Sans 3, Liberation and Carlito.  Copy other fonts (`.ttf`, `.otf`, e.g. the corporate font) into `fonts/` and restart: `sudo docker compose restart`. More Debian font packages: `sudo docker compose build --build-arg FONTS=\"fonts-dejavu-core fonts-adobe-sourcesans3 fonts-liberation fonts-crosextra-carlito fonts-noto-core\"`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Native: install the distribution's font packages (Debian, Ubuntu: `fonts-adobe-sourcesans3`; Fedora: `adobe-source-sans-pro-fonts`) or copy the font files to `/usr/local/share/fonts/`, then `sudo fc-cache -f` and restart the service."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Check what the server has: `fc-list : family` (in the container: `sudo docker compose exec tavletta fc-list : family`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Fonts may need a license for use on a server; Source Sans 3, Liberation, Carlito, DejaVu and Noto are free."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Security checklist { #security }"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "One token per program or device, with the smallest role (`print` for programs, `preview` for monitoring) and limited to its printers (`--printer`); an expiry date for temporary ones."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Tokens kept in a password manager; `tokens.toml` mode 600."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`printers.toml` in use: programs can print only on these printers."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`max_copies` per printer set to what is sensible."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "The server reachable only through the HTTPS proxy, only from the networks that need it; never from the internet."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "`--trusted-proxy` set to the proxy's own address, nothing wider."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Updates: watch the releases and update within weeks; the image also brings Debian's security updates when it is built again (`docker compose build --pull`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server-install.md
+#, markdown-text
+msgid "Backup of `config/` (or `/etc/tavletta`) and the labels."
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text
+msgid "The details of every protection (limits, rate limit, file access, web pages): [docs/server.md](https://git.joshuahirsig.xyz/joshii/tavletta/src/branch/main/docs/server.md#security)."
+msgstr ""
+
+#. type: Title ##
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid "Troubleshooting { #troubleshooting }"
+msgstr ""
+
+#. type: Plain text
+#: docs/server-install.md
+#, markdown-text, no-wrap
+msgid ""
+"| Symptom | Cause and remedy |\n"
+"|---|---|\n"
+"| A printer is `UNREACHABLE` (`printer_timeout`, `printer_not_found`) | The server cannot reach it: test from the server with `nc -vz <printer> 9100` (631 for IPP); check the address, the firewall, that the printer is on. In Docker the container must reach the printer's network. |\n"
+"| `401 unauthorized` | Token missing, mistyped, expired or removed from `tokens.toml`. The header is `Authorization: Bearer <token>`. |\n"
+"| `429 too_many_requests` | Ten wrong tokens from this address within a minute: fix the token, wait a minute. |\n"
+"| `429 queue_full` | 100 jobs (20 per token) are waiting: the printer is slow or stopped; check it, retry later. |\n"
+"| `503 busy` | All request or render slots are taken for a moment: retry after a second or two. |\n"
+"| `404 printer_not_found` | Not in `printers.toml`, or the token may not use it (`--printer`). |\n"
+"| `413 label_too_large` | The label has too many elements, too long texts or renders larger than 40 megapixels: simplify it or use fewer data rows per request. |\n"
+"| `421 wrong_host` | A reverse proxy passes the public host name to a server on `127.0.0.1`: see [nginx](#nginx) and [Caddy](#caddy). |\n"
+"| `font_missing` in the warnings, text looks wrong | The font is not installed on the server: see [Fonts](#fonts). |\n"
+"| `409 counter_not_saved` | The label file is not writable for the server's user: `chown` it to the user (Docker: 1000, native: `tavletta`). |\n"
+"| Date or time on labels off by an hour or two | The container runs on UTC: set `TAVLETTA_TZ=Europe/Zurich` in `.env`, then `docker compose up -d`. |\n"
+"| The server does not start | `docker compose logs` or `journalctl -u tavletta-server`: a mistake in `printers.toml` or `tokens.toml` is named with its key. |\n"
+"| Permission denied on the folders (Fedora, RHEL with SELinux and Podman) | Add `:Z` to the volumes in `compose.yaml`. |\n"
+msgstr ""
+
+#. type: Title #
 #: docs/server.md
 #, markdown-text, no-wrap
 msgid "Print server"
@@ -1354,6 +3701,24 @@ msgstr ""
 #: docs/server.md
 #, markdown-text
 msgid "Other programs and AI assistants can print labels through Tavletta without opening the window: `tavletta serve` offers a web interface for programs (REST API), `tavletta mcp` connects AI assistants such as Claude."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Setting up the server for a company, with Docker or systemd, HTTPS and fonts: [Server installation](server-install.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "Every request and error code: [API reference](api.md)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "A walkthrough for programs, with code in Python and C#: [Connecting an inventory tool](api-guide.md)."
 msgstr ""
 
 #. type: Title ##
@@ -1441,7 +3806,7 @@ msgstr ""
 msgid ""
 "  [printers.inventory]\n"
 "  backend = \"cab\"\n"
-"  host = \"printer04.example.com\"\n"
+"  host = \"cab-it.example.com\"\n"
 "\n"
 "  [printers.inventory.settings]\n"
 "  method = \"transfer\"\n"
@@ -1565,7 +3930,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "The description of all requests: `http://127.0.0.1:8790/api/v1/openapi.json`."
+msgid "The description of all requests: the [API reference](api.md), and for programs `http://127.0.0.1:8790/api/v1/openapi.json` (OpenAPI 3.1, with any valid token)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1610,7 +3975,7 @@ msgstr ""
 msgid ""
 "curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "     -H 'Content-Type: application/json' \\\n"
-"     -d '{\"label\": \"shelf\", \"set\": {\"title\": \"Flour\"}, \"copies\": 2}' \\\n"
+"     -d '{\"label\": \"serial\", \"data_rows\": [{\"Code\": \"B-07-1\", \"Name\": \"Tea\", \"Shelf\": \"B-07\", \"Box\": \"1\"}], \"copies\": 2}' \\\n"
 "     http://127.0.0.1:8790/api/v1/print\n"
 msgstr ""
 
@@ -1623,7 +3988,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "Serial labels: `\"data_rows\": [{\"Name\": \"Tea\"}, {\"Name\": \"Rice\"}]`, or `\"data_file\"` with a table in the labels folder."
+msgid "Serial labels: `\"data_rows\"`, one object per label with every column the label uses (`[{\"Name\": \"Tea\", …}, {\"Name\": \"Rice\", …}]`), or `\"data_file\"` with a table in the labels folder."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1638,9 +4003,15 @@ msgstr ""
 msgid ""
 "  curl -H \"Authorization: Bearer $(cat ~/.config/tavletta/token)\" \\\n"
 "       -H 'Content-Type: application/json' \\\n"
-"       -d '{\"label\": \"inventory\", \"printer\": \"inventory\", \"copies\": 1,\n"
-"            \"data_rows\": [{\"Inventarnummer\": \"100001\"}]}' \\\n"
+"       -d '{\"label\": \"asset-tag\", \"printer\": \"it-cab\", \"copies\": 1,\n"
+"            \"data_rows\": [{\"AssetNumber\": \"100001\"}]}' \\\n"
 "       http://127.0.0.1:8790/api/v1/print\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/server.md
+#, markdown-text
+msgid "The whole walkthrough, with series, retries and code in Python and C#: [Connecting an inventory tool](api-guide.md)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1714,19 +4085,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "As a service of your user: `packaging/systemd/tavletta.service` (instructions in the file)."
+msgid "On a server for a company: [Server installation](server-install.md), with Docker Compose (`packaging/docker/compose.yaml`) or as a system service (`packaging/systemd/tavletta-server.service`)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/server.md
 #, markdown-text
-msgid "As a container: `packaging/docker/compose.yaml`, for printers in the network, with `printers.toml` and `tokens.toml` in the folder `config`."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/server.md
-#, markdown-text
-msgid "To find printers on the network, or for USB, add `compose.host.yaml`: `docker compose -f compose.yaml -f compose.host.yaml up -d`."
+msgid "As a service of your user on a desktop: `packaging/systemd/tavletta.service` (instructions in the file)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -2012,13 +4377,13 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a slightly different pattern."
+msgid "QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now marked as UTF-8, so scanners read them correctly. Labels made with earlier versions print such a QR code with a different pattern, some with more and smaller modules."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "Labels made with earlier versions: QR codes come out up to about a third smaller (their blank margin is now inside the element), barcodes slightly wider."
+msgid "Labels made with earlier versions: QR codes come out a quarter to a third narrower, about half the area (44 to 56 % less), as their blank margin is now inside the element. On narrow tape, where each module is a whole number of printer dots, up to 60 % narrower. Barcodes come out slightly wider."
 msgstr ""
 
 #. type: Title ##

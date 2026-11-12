@@ -10,34 +10,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: tavletta/app.py:143 tavletta/ui/styles.py:183
+#: tavletta/app.py:147 tavletta/ui/styles.py:183
 msgid "Box and frame"
 msgstr "方框與外框"
 
-#: tavletta/app.py:217 tavletta/cli.py:170
+#: tavletta/app.py:221 tavletta/cli.py:170
 msgid "Design and print labels"
 msgstr "設計並列印標籤"
 
-#: tavletta/app.py:220
+#: tavletta/app.py:224
 msgid ""
 "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
 "tav-LET-ta."
 msgstr "Tavletta 在羅曼什語中意為「小板子」（源自 tavla，板、桌）。讀作 tav-LET-ta。"
 
 #. translators: replace with your name to be credited in the About dialog
-#: tavletta/app.py:226
+#: tavletta/app.py:230
 msgid "translator-credits"
 msgstr "Tavletta contributors"
 
-#: tavletta/app.py:234
+#: tavletta/app.py:238
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "變數（計數器、日期、UUID）的構想，不含其程式碼"
 
-#: tavletta/app.py:237
+#: tavletta/app.py:241
 msgid "Protocol knowledge"
 msgstr "協定知識"
 
-#: tavletta/app.py:242
+#: tavletta/app.py:246
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "
@@ -3013,7 +3013,7 @@ msgstr "此標籤需要較新版本的 Tavletta"
 
 #: tavletta/ui/texts.py:648
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s 不是 Tavletta 標籤"
 
 #: tavletta/ui/texts.py:649 tavletta/ui/texts.py:669

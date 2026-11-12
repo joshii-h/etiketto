@@ -10,34 +10,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: tavletta/app.py:143 tavletta/ui/styles.py:183
+#: tavletta/app.py:147 tavletta/ui/styles.py:183
 msgid "Box and frame"
 msgstr "बॉक्स और फ़्रेम"
 
-#: tavletta/app.py:217 tavletta/cli.py:170
+#: tavletta/app.py:221 tavletta/cli.py:170
 msgid "Design and print labels"
 msgstr "लेबल डिज़ाइन और प्रिंट करें"
 
-#: tavletta/app.py:220
+#: tavletta/app.py:224
 msgid ""
 "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced "
 "tav-LET-ta."
 msgstr "Tavletta रोमांश भाषा में छोटी तख़्ती को कहते हैं (tavla, यानी तख़्ता/मेज़ से)। उच्चारण: tav-LET-ta।"
 
 #. translators: replace with your name to be credited in the About dialog
-#: tavletta/app.py:226
+#: tavletta/app.py:230
 msgid "translator-credits"
 msgstr "Tavletta contributors"
 
-#: tavletta/app.py:234
+#: tavletta/app.py:238
 msgid "Ideas for the variables (counter, date, UUID), no code"
 msgstr "वेरिएबल के लिए विचार (काउंटर, तारीख़, UUID), कोई कोड नहीं"
 
-#: tavletta/app.py:237
+#: tavletta/app.py:241
 msgid "Protocol knowledge"
 msgstr "प्रोटोकॉल की जानकारी"
 
-#: tavletta/app.py:242
+#: tavletta/app.py:246
 #, python-format
 msgid ""
 "From %(projects)s and the manufacturers' manuals, written anew without their "
@@ -3013,7 +3013,7 @@ msgstr "इस लेबल के लिए Tavletta का नया संस
 
 #: tavletta/ui/texts.py:648
 #, python-format
-msgid "%s is not an Tavletta label"
+msgid "%s is not a Tavletta label"
 msgstr "%s कोई Tavletta लेबल नहीं है"
 
 #: tavletta/ui/texts.py:649 tavletta/ui/texts.py:669

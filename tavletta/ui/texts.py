@@ -645,7 +645,7 @@ def label_error_text(error: LabelError, name: str) -> str:
     if error.code == "newer":
         return _("This label needs a newer version of Tavletta")
     if error.code == "not_label":
-        return _("%s is not an Tavletta label") % name
+        return _("%s is not a Tavletta label") % name
     return _("The file is damaged: %s") % name
 
 

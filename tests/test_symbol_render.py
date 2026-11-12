@@ -187,7 +187,7 @@ def test_symbol_fields_are_checked():
 
 
 def test_versions_without_symbols_refuse_them_as_newer(monkeypatch):
-    """What an Tavletta from before the symbol library does with such a
+    """What a Tavletta from before the symbol library does with such a
     file: the unknown kind of element makes it "newer", nothing is dropped."""
     data = Label(tape_mm=25, elements=[printer_symbol()]).to_dict()
     monkeypatch.delitem(model.ELEMENT_TYPES, "symbol")

@@ -44,9 +44,12 @@ Elements are placed one after another along the label. Order them with
   code larger. A code that does not fit at all is not printed.
 - QR codes with characters beyond plain ASCII (umlauts, °, £ …) are now
   marked as UTF-8, so scanners read them correctly. Labels made with
-  earlier versions print such a QR code with a slightly different pattern.
-- Labels made with earlier versions: QR codes come out up to about a
-  third smaller (their blank margin is now inside the element), barcodes
+  earlier versions print such a QR code with a different pattern, some
+  with more and smaller modules.
+- Labels made with earlier versions: QR codes come out a quarter to a
+  third narrower, about half the area (44 to 56 % less), as their blank
+  margin is now inside the element. On narrow tape, where each module is
+  a whole number of printer dots, up to 60 % narrower. Barcodes come out
   slightly wider.
 
 ## Text style { #text-style }

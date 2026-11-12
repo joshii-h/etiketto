@@ -85,7 +85,7 @@ def test_address_like_cups_and_found_again(sysfs):
     sysfs("lp3", "MFG:cab;MDL:EOS2/300;SN:A 1/2;")
     printer = usb.printers()[0]
     assert printer.address == "usb://cab/EOS2%2F300?serial=A%201%2F2"
-    assert usb.is_usb(printer.address) and not usb.is_usb("printer04.local")
+    assert usb.is_usb(printer.address) and not usb.is_usb("cab-eos2.local")
     assert usb.find(printer.address) == printer
     assert usb.find("usb://cab/EOS2%2F300") == printer  # without serial: any of the model
     without = usb.UsbPrinter(Path("/dev/usb/lp0"), "Dymo", "LabelWriter 450")

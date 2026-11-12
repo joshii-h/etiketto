@@ -423,6 +423,7 @@ Copyright (C) 2009-2025 Robin Stuart and contributors, BSD-3-Clause) through
 Apache-2.0); Tavletta takes Zint's modules and draws them itself. The
 Flatpak ships Zint's license as `share/licenses/xyz.joshuahirsig.Tavletta/python3-zint-bindings/LICENSE.zint`.
 QR codes come from [segno](https://github.com/heuer/segno) (BSD-3-Clause),
+or from Zint when an error correction level is chosen;
 Code 128 and EAN-13 from
 [python-barcode](https://github.com/WhyNotHugo/python-barcode) (MIT).
 Images are handled by [Pillow](https://python-pillow.org) (Secret Labs AB,

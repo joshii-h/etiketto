@@ -147,7 +147,7 @@ TRANSLATIONS = {
     "Cleaning…": "Rengör…",
     "Swipe the printer's panel to cut the label": "Dra över skrivarens panel för att skära av etiketten",
     "This label needs a newer version of Tavletta": "Den här etiketten kräver en nyare version av Tavletta",
-    "%s is not an Tavletta label": "%s är inte en Tavletta-etikett",
+    "%s is not a Tavletta label": "%s är inte en Tavletta-etikett",
     "The file is damaged: %s": "Filen är skadad: %s",
     "Cannot save %s: no permission to write there": "Kan inte spara %s: behörighet saknas för att skriva där",
     "Cannot save %s: the disk is full": "Kan inte spara %s: disken är full",

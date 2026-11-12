@@ -147,7 +147,7 @@ TRANSLATIONS = {
     "Cleaning…": "Đang làm sạch…",
     "Swipe the printer's panel to cut the label": "Vuốt trên bảng điều khiển của máy in để cắt nhãn",
     "This label needs a newer version of Tavletta": "Nhãn này cần phiên bản Tavletta mới hơn",
-    "%s is not an Tavletta label": "%s không phải là nhãn Tavletta",
+    "%s is not a Tavletta label": "%s không phải là nhãn Tavletta",
     "The file is damaged: %s": "Tệp bị hỏng: %s",
     "Cannot save %s: no permission to write there": "Không thể lưu %s: không có quyền ghi vào đó",
     "Cannot save %s: the disk is full": "Không thể lưu %s: đĩa đã đầy",

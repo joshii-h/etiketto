@@ -147,7 +147,7 @@ TRANSLATIONS = {
     "Cleaning…": "Puhastamine…",
     "Swipe the printer's panel to cut the label": "Sildi lõikamiseks libista printeri paneelil",
     "This label needs a newer version of Tavletta": "See silt vajab Tavletta uuemat versiooni",
-    "%s is not an Tavletta label": "%s pole Tavletta silt",
+    "%s is not a Tavletta label": "%s pole Tavletta silt",
     "The file is damaged: %s": "Fail on rikutud: %s",
     "Cannot save %s: no permission to write there": "Ei saa salvestada: %s – sinna kirjutamise õigus puudub",
     "Cannot save %s: the disk is full": "Ei saa salvestada: %s – ketas on täis",

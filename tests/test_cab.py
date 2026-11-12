@@ -301,8 +301,8 @@ def test_capabilities(backend):
 
 
 def test_query(backend, printer):
-    info = backend.query("printer04.local")
-    assert printer.calls == [("printer04.local", 9100)]
+    info = backend.query("cab-eos2.local")
+    assert printer.calls == [("cab-eos2.local", 9100)]
     assert printer.device.requests == [b"\x1bs", b"qv\r\n", b"\x1bl"]
     assert (info.model, info.firmware, info.state, info.error) == (
         "EOS2/300",
@@ -318,14 +318,14 @@ def test_query(backend, printer):
 
 def test_query_reports_printer_problems(backend, printer):
     printer.device.error = "P"
-    info = backend.query("printer04.local")
+    info = backend.query("cab-eos2.local")
     assert (info.state, info.error) == ("ERROR", "out_of_labels")
 
 
 def test_query_learns_the_resolution(backend, printer):
     printer.device.version = "5.40 (MACH 4S/200)"
     printer.device.sync = "N0000"
-    info = backend.query("printer04.local")
+    info = backend.query("cab-eos2.local")
     assert info.pitch_mm is None
     assert backend.dots_per_mm == 8.0
     assert backend.raster(25, PrintOptions()).dpi == pytest.approx(203.2)
@@ -372,7 +372,7 @@ def test_print(backend, printer):
     image = backend.prepare(_label(50, 25), PrintOptions())
     events = []
     result = backend.print_label(
-        image, "printer04.local", PrintOptions(copies=3, gap_mm=2), events.append
+        image, "cab-eos2.local", PrintOptions(copies=3, gap_mm=2), events.append
     )
     assert result is None
     (job,) = printer.device.jobs
@@ -383,7 +383,7 @@ def test_print(backend, printer):
     assert all(s == cab.POLL_INTERVAL for s in printer.sleeps)
     # on USB a print waits longer than a status query for the device
     assert printer.waits == [usb.PRINT_WAIT]
-    backend.query("printer04.local")
+    backend.query("cab-eos2.local")
     assert printer.waits[-1] == usb.BUSY_WAIT
 
 
@@ -603,7 +603,7 @@ def test_real_connect_resolves_through_mdns(monkeypatch):
     monkeypatch.setattr(
         socket, "create_connection", lambda address, timeout: seen.append((address, timeout))
     )
-    REAL_CONNECT("printer04.local", 9100)
+    REAL_CONNECT("cab-eos2.local", 9100)
     assert seen == [(("192.0.2.21", 9100), cab.SOCKET_TIMEOUT)]
 
 
@@ -612,7 +612,7 @@ def test_real_connect_resolves_through_mdns(monkeypatch):
 
 def test_discover(backend, monkeypatch):
     calls = []
-    found = [FoundPrinter("cab EOS2/300 (aa:bb:cc)", "printer04.local", "192.0.2.21")]
+    found = [FoundPrinter("cab EOS2/300 (aa:bb:cc)", "cab-eos2.local", "192.0.2.21")]
 
     def browse(service_type, match, timeout):
         calls.append((service_type, timeout))
@@ -630,7 +630,7 @@ class TestContract(BackendContract):
 
     @pytest.fixture
     def harness(self, printer, monkeypatch):
-        found = [FoundPrinter("cab EOS2/300 (aa:bb:cc)", "printer04.local", "192.0.2.21")]
+        found = [FoundPrinter("cab EOS2/300 (aa:bb:cc)", "cab-eos2.local", "192.0.2.21")]
         monkeypatch.setattr(mdns, "browse", lambda service_type, match, timeout: found)
 
         def fail():
@@ -791,12 +791,12 @@ def test_parse_setup_of_a_tree_nested_too_deep():
 
 
 def test_query_reports_the_print_method_set_on_the_printer(backend, printer):
-    assert backend.query("printer04.local").print_method == ""  # no web interface
+    assert backend.query("cab-eos2.local").print_method == ""  # no web interface
     printer.device.setup = _setup()
-    assert backend.query("printer04.local").print_method == "direct"
+    assert backend.query("cab-eos2.local").print_method == "direct"
     printer.device.setup = _setup(transfer="On")
-    assert backend.query("printer04.local").print_method == "transfer"
-    assert printer.device.web == ["printer04.local"] * 3
+    assert backend.query("cab-eos2.local").print_method == "transfer"
+    assert printer.device.web == ["cab-eos2.local"] * 3
 
 
 @pytest.mark.parametrize(

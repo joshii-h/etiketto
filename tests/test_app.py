@@ -1004,7 +1004,7 @@ def test_open_broken_file(window, tmp_path):
     window.files.open_file(tmp_path / "new.tavletta")
     window.files.open_file(tmp_path / "missing.tavletta")
     assert toast_titles(window) == [
-        "bad.tavletta is not an Tavletta label",
+        "bad.tavletta is not a Tavletta label",
         "The file is damaged: wide.tavletta",
         "This label needs a newer version of Tavletta",
         "Cannot open missing.tavletta",
@@ -1443,7 +1443,7 @@ def test_label_and_save_error_texts():
     from tavletta.model import LabelError
 
     assert texts.label_error_text(LabelError("not_label", "x"), "a.tavletta") == (
-        "a.tavletta is not an Tavletta label"
+        "a.tavletta is not a Tavletta label"
     )
     assert texts.label_error_text(LabelError("newer", "x"), "a.tavletta") == (
         "This label needs a newer version of Tavletta"
@@ -1908,7 +1908,7 @@ def cab_env(gui_env, monkeypatch):
         backend,
         "discover",
         lambda timeout=3.0: [
-            FoundPrinter("cab EOS2/300 (aa:bb:cc)", "printer04.local", "192.0.2.21")
+            FoundPrinter("cab EOS2/300 (aa:bb:cc)", "cab-eos2.local", "192.0.2.21")
         ],
     )
     return env
@@ -1938,7 +1938,7 @@ def test_cab_printer(cab_window, cab_env):
     assert win.label.printer == "cab" and win.dirty
     assert win.label.media_size() == (50, 25)
     assert win.label.orientation == "across" and not win.label.auto_length
-    assert Settings.load().data["printers"]["cab"]["host"] == "printer04.local"
+    assert Settings.load().data["printers"]["cab"]["host"] == "cab-eos2.local"
     assert win.printer.row.get_title() == "cab EOS2/300"
     assert win.printer.row.get_subtitle() == "Ready · a label every 28.0 mm"
     size = one(win.sidebar, Adw.ComboRow, title="Label size")
@@ -2012,7 +2012,7 @@ def test_cab_print(cab_window, cab_env):
     dialog.emit("response", "print")
     assert pump(lambda: not win.print_flow.busy)
     image, host, options = cab_env.prints[0]
-    assert host == "printer04.local" and options.gap_mm == 3
+    assert host == "cab-eos2.local" and options.gap_mm == 3
     assert image.size == (600, 300)  # printer orientation, 12 dots per mm
     assert toast_titles(win)[-1] == "Printed"
 
