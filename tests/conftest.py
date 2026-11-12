@@ -1,8 +1,8 @@
 """Shared fixtures: images, labels, a fake VC-500W and a GTK window.
 
-The printer is never contacted: vc500w._connect is always replaced, either by
-a refusal (autouse) or by FakeVC500W, which answers the protocol like the
-device does. The GUI tests replace the backend's query/print/discover.
+The printer is never contacted: vc500w._connect (cab._connect, raw._connect)
+is always replaced, either by a refusal (autouse) or by FakeVC500W, which
+answers the protocol like the device does. The GUI tests replace the backend's query/print/discover.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import cab, get_backend, usb, vc500w
+from etiketto.backends import cab, get_backend, raw, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -64,6 +64,9 @@ def _no_network(monkeypatch):
 
     monkeypatch.setattr(vc500w, "_connect", refuse)
     monkeypatch.setattr(cab, "_connect", refuse)
+    monkeypatch.setattr(raw, "_connect", refuse)  # ZPL, EPL2, TSPL, ESC/POS, DYMO
+    # nor search the real network for them (mDNS)
+    monkeypatch.setattr(raw, "_browse", lambda *_args, **_kwargs: [])
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
 

@@ -202,6 +202,7 @@ class PrintFlow:
                 color=settings.color_adjust,
                 data_format=settings.data_format,
                 gap_mm=window.label.gap_mm,
+                settings=settings.backend_settings(),
             )
         )
 

@@ -58,6 +58,12 @@ class UsbPrinter:
     manufacturer: str
     model: str
     serial: str = ""
+    command_set: str = ""  # the printer languages, e.g. "ZPL" or "EPL,ZPL"
+
+    @property
+    def commands(self) -> tuple[str, ...]:
+        """The command set as a list in capitals: ("EPL", "ZPL")."""
+        return tuple(c.strip().upper() for c in self.command_set.split(",") if c.strip())
 
     @property
     def address(self) -> str:
@@ -100,6 +106,7 @@ def printers() -> list[UsbPrinter]:
                 fields.get("MANUFACTURER", ""),
                 fields.get("MODEL", ""),
                 serial,
+                fields.get("COMMAND SET", ""),
             )
         )
     return found

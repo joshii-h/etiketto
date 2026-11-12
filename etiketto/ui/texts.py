@@ -32,6 +32,25 @@ COLOR_ADJUST_ROWS = [
 ]
 ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
 ORIENTATIONS = [("across", _("Across the roll")), ("along", _("Along the roll"))]
+# a backend's own printer settings (Capabilities.settings): titles by key
+SETTING_TITLES = {
+    "dpi": _("Resolution"),
+    "media": _("Label sensor"),
+    "finish": _("After printing"),
+    "darkness": _("Darkness"),
+    "speed": _("Speed"),
+}
+# their values by protocol name; resolutions are shown as "203 dpi"
+CHOICE_NAMES = {
+    "auto": _("As reported by the printer"),
+    "printer": _("As set on the printer"),
+    "gap": _("Gap between labels"),
+    "mark": _("Black mark"),
+    "continuous": _("Continuous media"),
+    "tear": _("Tear off"),
+    "peel": _("Peel off"),
+    "cut": _("Cut off"),
+}
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
@@ -48,6 +67,28 @@ def image_from_path(path) -> ImageElement:
         return ImageElement.from_file(path)
     except Exception as e:  # noqa: BLE001 - PIL raises many kinds
         raise ValueError(_("Not an image: %s") % Path(path).name) from e
+
+
+def setting_title(key: str) -> str:
+    return SETTING_TITLES.get(key, key)
+
+
+def choice_name(value: str) -> str:
+    if value in CHOICE_NAMES:
+        return CHOICE_NAMES[value]
+    return "%s dpi" % value if value.isdigit() else value
+
+
+def level_name(key: str, value: int | None) -> str:
+    """A step of a Level setting; None keeps the printer's own setting."""
+    if value is None:
+        return CHOICE_NAMES["printer"]
+    if key == "darkness":
+        return _("%d %%") % value
+    if key == "speed":
+        # translators: print speed in inches per second, as label printers state it
+        return _("%d in/s") % value
+    return str(value)
 
 
 def element_title(element) -> str:
@@ -77,7 +118,10 @@ def element_icon(element) -> str:
 
 def backend_name(backend) -> str:
     """The name of a printer model in the list; brand names stay as they are."""
-    names = {"system": _("System printer (CUPS, IPP)")}
+    names = {
+        "system": _("System printer (CUPS, IPP)"),
+        "escpos": _("Receipt printer (ESC/POS)"),
+    }
     return names.get(backend.id, backend.name)
 
 

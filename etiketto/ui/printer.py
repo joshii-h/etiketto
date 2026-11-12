@@ -13,14 +13,17 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from etiketto.backends import backends  # noqa: E402
-from etiketto.backends.base import PrinterInfo  # noqa: E402
+from etiketto.backends.base import Choice, PrinterInfo, Setting  # noqa: E402
 from etiketto.ui.i18n import _, isolate, month_year  # noqa: E402
 from etiketto.ui.texts import (  # noqa: E402
     CONNECTION_ERRORS,
     backend_name,
     cassette_age_hint,
+    choice_name,
     code_text,
+    level_name,
     printer_error_text,
+    setting_title,
 )
 from etiketto.ui.widgets import (  # noqa: E402
     combo_row,
@@ -70,6 +73,8 @@ class Printer:
         self._host_row.set_show_apply_button(True)
         self._host_row.connect("apply", self._on_host_apply)
         group.add(self._host_row)
+        for setting in window.backend.capabilities.settings:
+            group.add(self._setting_row(setting))
 
         group.add(
             length_row(
@@ -106,6 +111,29 @@ class Printer:
         return combo_row(
             _("Printer model"), items, self.window.backend.id, self.window.set_backend
         )
+
+    def _setting_row(self, setting: Setting) -> Adw.ComboRow:
+        """A row for one of the backend's own settings, kept in settings.json."""
+        key, stored = setting.key, self.window.printer_settings.get(setting.key)
+        if isinstance(setting, Choice):
+            items = [(value, choice_name(value)) for value in setting.choices]
+            current = setting.value(stored)
+            return combo_row(
+                setting_title(key), items, current, lambda v: self._on_setting(key, v)
+            )
+        level = setting.value(stored)
+        steps = [("", level_name(key, None))]
+        steps += [(str(v), level_name(key, v)) for v in setting.steps()]
+        return combo_row(
+            setting_title(key),
+            steps,
+            "" if level is None else str(level),
+            lambda v: self._on_setting(key, int(v) if v else None),
+        )
+
+    def _on_setting(self, key: str, value) -> None:
+        # a printer setting, not part of the label: no dirty flag
+        self.window.printer_settings.update(**{key: value})
 
     def _add_status_rows(self, group: Adw.PreferencesGroup) -> None:
         self.row = Adw.ActionRow(title=_("Searching…"))
@@ -313,9 +341,12 @@ class Printer:
 
     def _summary(self, info: PrinterInfo) -> str:
         unit = self.window.unit
+        caps = self.window.backend.capabilities
         if info.error:
             return code_text(info.error, unit)
-        if not self.window.backend.capabilities.continuous:
+        if info.state == "UNKNOWN":
+            return _("Reachable · the printer reports no status")
+        if not caps.continuous or not caps.cassettes:
             if info.state == "BUSY":
                 return _("Printing")
             if info.pitch_mm:
@@ -383,7 +414,10 @@ class Printer:
         info = self.info
         if not info:
             return None
-        if self.window.backend.capabilities.continuous:
+        caps = self.window.backend.capabilities
+        if caps.continuous and not caps.cassettes:
+            media = "%d mm paper" % self.window.label.tape_mm
+        elif caps.continuous:
             media = "%s cassette" % ("%d mm" % info.tape_mm if info.tape_mm else "no")
         else:
             media = "label every %s mm" % ("%g" % info.pitch_mm if info.pitch_mm else "?")

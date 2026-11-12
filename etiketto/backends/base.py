@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import socket
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import KW_ONLY, dataclass, field
 from datetime import date
@@ -47,6 +47,43 @@ class LabelSize:
 
 
 @dataclass(frozen=True)
+class Choice:
+    """A printer setting chosen from a list of protocol values, e.g. the
+    label sensor ("gap", "mark", "continuous"); the first is the default.
+    The interface names the key and the values (ui/texts.py)."""
+
+    key: str  # in settings.json (printers.<id>) and PrintOptions.settings
+    choices: tuple[str, ...]
+
+    def value(self, raw: object) -> str:
+        """A stored value; anything else (missing, junk) is the default."""
+        return raw if isinstance(raw, str) and raw in self.choices else self.choices[0]
+
+
+@dataclass(frozen=True)
+class Level:
+    """A printer setting in steps, e.g. darkness in per cent. None, the
+    default, keeps what is set on the printer."""
+
+    key: str
+    lower: int
+    upper: int
+    step: int = 1
+
+    def value(self, raw: object) -> int | None:
+        """A stored value, clamped to the range; junk is None."""
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)) or raw != raw:
+            return None
+        return int(max(self.lower, min(self.upper, round(raw))))
+
+    def steps(self) -> range:
+        return range(self.lower, self.upper + 1, self.step)
+
+
+Setting = Choice | Level
+
+
+@dataclass(frozen=True)
 class Capabilities:
     tape_widths_mm: tuple[int, ...]  # endless tape; empty for die-cut printers
     dpi: float  # resolution across the tape the preview is rendered at
@@ -66,6 +103,11 @@ class Capabilities:
     data_formats: tuple[str, ...] = ("jpeg",)  # the first one is the default
     min_length_mm: float = 0.0  # shorter labels are extended to this length
     max_length_mm: float | None = None  # longer labels are refused (LabelTooLong)
+    # continuous only: the tape comes in cassettes the printer recognises
+    # (else the paper width is the user's choice and nothing is "inserted")
+    cassettes: bool = True
+    # printer settings the interface offers in the printer group
+    settings: tuple[Setting, ...] = ()
 
     def too_long(self, length_mm: float) -> bool:
         return self.max_length_mm is not None and length_mm > self.max_length_mm + LIMIT_SLACK_MM
@@ -115,7 +157,7 @@ class PrinterInfo:
     tape_mm: int | None  # nominal cassette width, None = no cassette
     remaining_mm: int | None
     total_mm: int | None
-    state: str
+    state: str  # IDLE, BUSY, PAUSED, ERROR; UNKNOWN: reachable, but no status answer
     _: KW_ONLY  # the optional fields by name only: safe to add or remove some
     error: str = ""  # PrinterError code of a problem the printer reports; "" = none
     modes: tuple[PrintMode, ...] = ()  # reported by the printer; empty = unknown
@@ -167,6 +209,8 @@ class PrintOptions:
     color: ColorAdjust = field(default_factory=ColorAdjust)
     data_format: str = "rawrgb"  # backends fall back to their own default
     gap_mm: float = 3.0  # die-cut labels: the gap to the next label (Label.gap_mm)
+    # values of Capabilities.settings by key; read them with Backend.setting()
+    settings: Mapping[str, object] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -407,6 +451,14 @@ class Backend(ABC):
     def display_name(self, info: PrinterInfo | None) -> str:
         """The connected printer's name for the interface; the model family by default."""
         return self.name
+
+    def setting(self, options: PrintOptions, key: str) -> str | int | None:
+        """The value of one of capabilities.settings for a job: what the
+        options carry if valid, else the default. KeyError for other keys."""
+        for setting in self.capabilities.settings:
+            if setting.key == key:
+                return setting.value(options.settings.get(key))
+        raise KeyError(key)
 
     def modes(self, info: PrinterInfo | None) -> tuple[PrintMode, ...]:
         """Print modes of the connected printer, else the documented ones."""

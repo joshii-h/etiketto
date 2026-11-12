@@ -37,12 +37,16 @@ def _load() -> None:
         return
     _loaded = True
     from etiketto.backends.cab import Cab
+    from etiketto.backends.dymo import Dymo
+    from etiketto.backends.epl import Epl
+    from etiketto.backends.escpos import EscPos
     from etiketto.backends.system import SystemPrinter
+    from etiketto.backends.tspl import Tspl
     from etiketto.backends.vc500w import VC500W
+    from etiketto.backends.zpl import Zpl
 
-    register(VC500W())
-    register(Cab())
-    register(SystemPrinter())
+    for backend in (VC500W(), Cab(), SystemPrinter(), Zpl(), Epl(), Tspl(), EscPos(), Dymo()):
+        register(backend)
     for entry in entry_points(group=ENTRY_POINT_GROUP):
         try:
             obj = entry.load()

@@ -106,6 +106,12 @@ class PrinterSettings:
     def color_adjust(self) -> ColorAdjust:
         return ColorAdjust.from_dict(self.get("color_adjust"))
 
+    def backend_settings(self) -> dict[str, object]:
+        """The values of the backend's own settings (Capabilities.settings)
+        for PrintOptions.settings; the backend checks them."""
+        keys = [setting.key for setting in self.backend.capabilities.settings]
+        return {key: self.get(key) for key in keys if self.get(key) is not None}
+
     @property
     def data_format(self) -> str:
         """The backend's default format (rawrgb for the VC-500W) unless

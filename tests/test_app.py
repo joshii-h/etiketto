@@ -2151,3 +2151,109 @@ def test_a_printer_that_stopped_taking_data_needs_attention():
     assert text.startswith("The printer stopped taking data.")
     assert text != texts.code_text("timeout", MILLIMETRES)  # not "does not answer"
     assert "stalled" not in texts.CONNECTION_ERRORS  # reachable: "Printer needs attention"
+
+
+# --- raw label printers: their own settings --------------------------------------------------
+
+
+@pytest.fixture
+def raw_env(gui_env, monkeypatch):
+    """ZPL and ESC/POS with faked query/print/discover."""
+    from etiketto.backends import get_backend
+
+    env = SimpleNamespace(
+        info=PrinterInfo("ZD621-203dpi", None, None, None, "IDLE", firmware="V93"),
+        prints=[],
+        queries=[],
+    )
+    for backend_id in ("zpl", "escpos", "epl"):
+        backend = get_backend(backend_id)
+
+        def print_label(image, host, options, progress=None):
+            env.prints.append((image, host, options))
+            progress(Progress(1, options.copies))
+
+        def query(host, backend_id=backend_id):
+            env.queries.append((backend_id, host))
+            return env.info
+
+        monkeypatch.setattr(backend, "query", query)
+        monkeypatch.setattr(backend, "print_label", print_label)
+        monkeypatch.setattr(backend, "discover", lambda timeout=3.0: [])
+    return env
+
+
+def _raw_window(make_window, backend_id):
+    win = make_window(
+        {"printers": {"zpl": {"host": "zebra.local"}, "escpos": {"host": "pos.local"}}}
+    )
+    win.set_backend(backend_id)
+    assert pump(lambda: win.printer.info is not None)
+    return win
+
+
+def test_raw_printer_settings_rows(make_window, raw_env):
+    win = _raw_window(make_window, "zpl")
+    resolution = one(win.sidebar, Adw.ComboRow, title="Resolution")
+    assert _items(resolution) == ["As reported by the printer", "203 dpi", "300 dpi", "600 dpi"]
+    sensor = one(win.sidebar, Adw.ComboRow, title="Label sensor")
+    assert _items(sensor) == ["Gap between labels", "Black mark", "Continuous media"]
+    finish = one(win.sidebar, Adw.ComboRow, title="After printing")
+    assert _items(finish) == ["As set on the printer", "Tear off", "Peel off", "Cut off"]
+    darkness = one(win.sidebar, Adw.ComboRow, title="Darkness")
+    assert _items(darkness)[:3] == ["As set on the printer", "0 %", "10 %"]
+    speed = one(win.sidebar, Adw.ComboRow, title="Speed")
+    assert _items(speed)[1] == "1 in/s" and len(_items(speed)) == 13
+    sensor.set_selected(1)
+    darkness.set_selected(6)  # 50 %
+    stored = Settings.load().data["printers"]["zpl"]
+    assert stored["media"] == "mark" and stored["darkness"] == 50
+    darkness.set_selected(0)
+    assert Settings.load().data["printers"]["zpl"]["darkness"] is None
+    # the print takes them along
+    darkness.set_selected(3)
+    win.print_flow.on_print()
+    win.last_dialog.emit("response", "print")
+    assert pump(lambda: not win.print_flow.busy)
+    options = raw_env.prints[0][2]
+    assert options.settings == {"media": "mark", "darkness": 20}
+
+
+def test_raw_printer_settings_are_shown_as_stored(make_window, raw_env):
+    win = make_window(
+        {"printers": {"zpl": {"host": "zebra.local", "dpi": "300", "speed": 4, "media": 7}}}
+    )
+    win.set_backend("zpl")
+    assert _selected(one(win.sidebar, Adw.ComboRow, title="Resolution")) == "300 dpi"
+    assert _selected(one(win.sidebar, Adw.ComboRow, title="Speed")) == "4 in/s"
+    assert _selected(one(win.sidebar, Adw.ComboRow, title="Label sensor")) == "Gap between labels"
+    win.set_backend("vc500w")
+    assert not find(win.sidebar, Adw.ComboRow, title="Resolution")
+
+
+def test_a_printer_without_status(make_window, raw_env):
+    raw_env.info = PrinterInfo("", None, None, None, "UNKNOWN")
+    win = _raw_window(make_window, "zpl")
+    assert win.printer.row.get_title() == "Zebra ZPL"
+    assert win.printer.row.get_subtitle() == "Reachable · the printer reports no status"
+
+
+def test_receipt_printers_have_paper_not_cassettes(make_window, raw_env):
+    raw_env.info = PrinterInfo("", None, None, None, "IDLE")
+    win = _raw_window(make_window, "escpos")
+    assert win.printer.row.get_subtitle() == "Ready"
+    assert _items(one(win.sidebar, Adw.ComboRow, title="Tape width")) == ["58 mm", "80 mm"]
+    assert win.printer.description() == "ESC/POS, 58 mm paper, IDLE"
+    model = one(win.sidebar, Adw.ComboRow, title="Printer model")
+    assert "Receipt printer (ESC/POS)" in _items(model)
+    win.print_flow.on_print()
+    box = win.last_dialog.get_extra_child()
+    assert box.get_row_at_index(1).get_title() == "Cut"
+
+
+def test_setting_names():
+    assert texts.choice_name("203") == "203 dpi"
+    assert texts.choice_name("odd") == "odd"
+    assert texts.setting_title("odd") == "odd"
+    assert texts.level_name("odd", 3) == "3"
+    assert texts.level_name("darkness", None) == "As set on the printer"
