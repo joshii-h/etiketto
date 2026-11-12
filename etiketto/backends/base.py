@@ -336,6 +336,9 @@ class PrintResult:
     # the job waits in the printer's queue: it prints when its turn comes,
     # nothing went wrong (yet)
     queued: bool = False
+    # the job was sent, but the printer did not confirm that it printed it
+    # (it may still have): no "Printed"
+    unconfirmed: bool = False
     # why the mode differs: "roll" = the loaded roll needs it; "" = the
     # printer does not have the requested mode
     reason: str = ""

@@ -1601,6 +1601,13 @@ def test_a_queued_job_is_reported_as_sent(ready, gui_env):
     assert toast_titles(ready) == ["Sent to the printer – it prints when its turn comes"]
 
 
+def test_a_job_the_printer_did_not_confirm_is_reported_as_sent(ready, gui_env):
+    gui_env.print_result = PrintResult(unconfirmed=True)
+    ready.print_flow.start(PrintOptions())
+    assert pump(lambda: not ready.print_flow.busy)
+    assert toast_titles(ready) == ["Sent to the printer – it did not confirm printing"]
+
+
 def test_bw_mode_shows_a_grey_preview(make_window, gui_env):
     from PIL import Image
 

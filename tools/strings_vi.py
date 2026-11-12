@@ -523,4 +523,5 @@ TRANSLATIONS = {
     "Protocol knowledge": "Kiến thức về giao thức",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Từ %(projects)s và tài liệu hướng dẫn của nhà sản xuất, viết lại mà không dùng mã của họ; xem THIRD_PARTY_NOTICES.md",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Trang quá lớn để tạo ở độ phân giải mà máy in nhận. Hãy chọn khổ giấy nhỏ hơn hoặc in trên máy in nhận PDF.",
+    "Sent to the printer – it did not confirm printing": "Đã gửi đến máy in – máy in không xác nhận đã in",
 }

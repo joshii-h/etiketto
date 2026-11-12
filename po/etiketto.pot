@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 10:47+0100\n"
+"POT-Creation-Date: 2026-11-12 10:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -144,7 +144,7 @@ msgid "Unknown printer model: %s"
 msgstr ""
 
 #: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:530
+#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:532
 #, python-format
 msgid "Cannot open %s"
 msgstr ""
@@ -190,7 +190,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr ""
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:564
+#: etiketto/cli.py:529 etiketto/ui/texts.py:566
 #, python-format
 msgid "Cannot save %s"
 msgstr ""
@@ -2109,109 +2109,113 @@ msgstr ""
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr ""
 
-#: etiketto/ui/texts.py:486
+#: etiketto/ui/texts.py:484
+msgid "Sent to the printer – it did not confirm printing"
+msgstr ""
+
+#: etiketto/ui/texts.py:488
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr ""
 
-#: etiketto/ui/texts.py:490
+#: etiketto/ui/texts.py:492
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr ""
 
-#: etiketto/ui/texts.py:500
+#: etiketto/ui/texts.py:502
 msgid "Warming up…"
 msgstr ""
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:503
 msgid "Cooling down…"
 msgstr ""
 
-#: etiketto/ui/texts.py:502
+#: etiketto/ui/texts.py:504
 msgid "Cleaning…"
 msgstr ""
 
-#: etiketto/ui/texts.py:503
+#: etiketto/ui/texts.py:505
 msgid "Swipe the printer's panel to cut the label"
 msgstr ""
 
-#: etiketto/ui/texts.py:505
+#: etiketto/ui/texts.py:507
 msgid "Out of paper – load paper to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:506
+#: etiketto/ui/texts.py:508
 msgid "Cover open – close it to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:507
+#: etiketto/ui/texts.py:509
 msgid "Paper jammed – remove it to continue"
 msgstr ""
 
-#: etiketto/ui/texts.py:518
+#: etiketto/ui/texts.py:520
 msgid "This label needs a newer version of Etiketto"
 msgstr ""
 
-#: etiketto/ui/texts.py:520
+#: etiketto/ui/texts.py:522
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr ""
 
-#: etiketto/ui/texts.py:521 etiketto/ui/texts.py:541
+#: etiketto/ui/texts.py:523 etiketto/ui/texts.py:543
 #, python-format
 msgid "The file is damaged: %s"
 msgstr ""
 
-#: etiketto/ui/texts.py:528
+#: etiketto/ui/texts.py:530
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr ""
 
-#: etiketto/ui/texts.py:532
+#: etiketto/ui/texts.py:534
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr ""
 
-#: etiketto/ui/texts.py:534
+#: etiketto/ui/texts.py:536
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr ""
 
-#: etiketto/ui/texts.py:536
+#: etiketto/ui/texts.py:538
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr ""
 
-#: etiketto/ui/texts.py:539
+#: etiketto/ui/texts.py:541
 #, python-format
 msgid "%s contains no data."
 msgstr ""
 
-#: etiketto/ui/texts.py:547
+#: etiketto/ui/texts.py:549
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr ""
 
-#: etiketto/ui/texts.py:551
+#: etiketto/ui/texts.py:553
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr ""
 
-#: etiketto/ui/texts.py:561
+#: etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr ""
 
-#: etiketto/ui/texts.py:563
+#: etiketto/ui/texts.py:565
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr ""
 
-#: etiketto/ui/texts.py:573
+#: etiketto/ui/texts.py:575
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

@@ -480,6 +480,8 @@ def printed_remark(options: PrintOptions | None, result: PrintResult | None) -> 
     """What to tell about a print job that did not fail; None: just printed."""
     if result and result.queued:  # other jobs first: not printed yet, nothing wrong
         return _("Sent to the printer – it prints when its turn comes")
+    if result and result.unconfirmed:  # it may have printed: no "Printed", no error
+        return _("Sent to the printer – it did not confirm printing")
     if not (options and result and result.mode and result.mode != options.mode):
         return None
     if result.reason == "roll":

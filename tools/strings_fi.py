@@ -523,4 +523,5 @@ TRANSLATIONS = {
     "Protocol knowledge": "Protokollatieto",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Lähteistä %(projects)s ja valmistajien käyttöoppaista, kirjoitettu uudelleen ilman niiden koodia; katso THIRD_PARTY_NOTICES.md",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Sivu on liian suuri tehtäväksi tulostimen hyväksymällä tarkkuudella. Valitse pienempi paperikoko tai tulosta tulostimella, joka hyväksyy PDF:n.",
+    "Sent to the printer – it did not confirm printing": "Lähetetty tulostimelle – se ei vahvistanut tulostusta",
 }

@@ -311,3 +311,8 @@ def test_a_printer_with_another_resolution_gets_the_label_rendered_again():
     job.run("zebra.local")
     assert texts(job.backend.prepared) == ["2026", "2026"]
     assert job.printed == 1 and job.options.host == "zebra.local"
+
+
+def test_unconfirmed_copies_are_merged():
+    assert merge_results([None, PrintResult(unconfirmed=True)]) == PrintResult(unconfirmed=True)
+    assert merge_results([None, None]) is None

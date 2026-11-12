@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:47+0100\n"
+"PO-Revision-Date: 2026-11-12 10:49+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: et\n"
 "Language: et\n"
@@ -137,7 +137,7 @@ msgid "Unknown printer model: %s"
 msgstr "Tundmatu printeri mudel: %s"
 
 #: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:530
+#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:532
 #, python-format
 msgid "Cannot open %s"
 msgstr "Ei saa avada: %s"
@@ -183,7 +183,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Leiti mitu printerit – vali üks valikuga --host (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:564
+#: etiketto/cli.py:529 etiketto/ui/texts.py:566
 #, python-format
 msgid "Cannot save %s"
 msgstr "Ei saa salvestada: %s"
@@ -2102,109 +2102,113 @@ msgstr "Prinditud"
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Saadetud printerile – prinditakse, kui selle järg kätte jõuab"
 
-#: etiketto/ui/texts.py:486
+#: etiketto/ui/texts.py:484
+msgid "Sent to the printer – it did not confirm printing"
+msgstr "Saadetud printerisse – printer ei kinnitanud printimist"
+
+#: etiketto/ui/texts.py:488
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Prinditi režiimiga „%(used)s“, sest sisestatud rull nõuab seda"
 
-#: etiketto/ui/texts.py:490
+#: etiketto/ui/texts.py:492
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Värvirežiim „%(wanted)s“ pole selles printeris saadaval, prinditi režiimiga „%(used)s“"
 
-#: etiketto/ui/texts.py:500
+#: etiketto/ui/texts.py:502
 msgid "Warming up…"
 msgstr "Soojenemine…"
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:503
 msgid "Cooling down…"
 msgstr "Jahtumine…"
 
-#: etiketto/ui/texts.py:502
+#: etiketto/ui/texts.py:504
 msgid "Cleaning…"
 msgstr "Puhastamine…"
 
-#: etiketto/ui/texts.py:503
+#: etiketto/ui/texts.py:505
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Sildi lõikamiseks libista printeri paneelil"
 
-#: etiketto/ui/texts.py:505
+#: etiketto/ui/texts.py:507
 msgid "Out of paper – load paper to continue"
 msgstr "Paber on otsas – jätkamiseks pane paberit juurde"
 
-#: etiketto/ui/texts.py:506
+#: etiketto/ui/texts.py:508
 msgid "Cover open – close it to continue"
 msgstr "Kaas on lahti – jätkamiseks sulge see"
 
-#: etiketto/ui/texts.py:507
+#: etiketto/ui/texts.py:509
 msgid "Paper jammed – remove it to continue"
 msgstr "Paber on kinni jäänud – jätkamiseks eemalda see"
 
-#: etiketto/ui/texts.py:518
+#: etiketto/ui/texts.py:520
 msgid "This label needs a newer version of Etiketto"
 msgstr "See silt vajab Etiketto uuemat versiooni"
 
-#: etiketto/ui/texts.py:520
+#: etiketto/ui/texts.py:522
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s pole Etiketto silt"
 
-#: etiketto/ui/texts.py:521 etiketto/ui/texts.py:541
+#: etiketto/ui/texts.py:523 etiketto/ui/texts.py:543
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Fail on rikutud: %s"
 
-#: etiketto/ui/texts.py:528
+#: etiketto/ui/texts.py:530
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Andmefaili %s enam pole. Vali see uuesti või eemalda."
 
-#: etiketto/ui/texts.py:532
+#: etiketto/ui/texts.py:534
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "Failis %(file)s pole lehte nimega %(sheet)s"
 
-#: etiketto/ui/texts.py:534
+#: etiketto/ui/texts.py:536
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s ei ole tabel. Kasuta CSV-, ODS- või XLSX-faili."
 
-#: etiketto/ui/texts.py:536
+#: etiketto/ui/texts.py:538
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s on seeriasiltide jaoks liiga suur. Jaga see väiksemateks failideks või eemalda read ja veerud, mida pole vaja."
 
-#: etiketto/ui/texts.py:539
+#: etiketto/ui/texts.py:541
 #, python-format
 msgid "%s contains no data."
 msgstr "%s ei sisalda andmeid."
 
-#: etiketto/ui/texts.py:547
+#: etiketto/ui/texts.py:549
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Printimine peatus real %(row)d. Jätkamiseks prindi uuesti alates reast %(row)d."
 
-#: etiketto/ui/texts.py:551
+#: etiketto/ui/texts.py:553
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Rea %(row)d juba prinditud koopiad: %(copies)d."
 
-#: etiketto/ui/texts.py:561
+#: etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Ei saa salvestada: %s – sinna kirjutamise õigus puudub"
 
-#: etiketto/ui/texts.py:563
+#: etiketto/ui/texts.py:565
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Ei saa salvestada: %s – ketas on täis"
 
-#: etiketto/ui/texts.py:573
+#: etiketto/ui/texts.py:575
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

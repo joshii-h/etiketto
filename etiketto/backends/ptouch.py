@@ -1095,7 +1095,7 @@ class PTouch(Backend):
             confirmed = s.send_job(model, pieces, timeout, progress, waits, not usb.is_usb(host))
         if model.documented and not confirmed:
             # sent, but the printer did not say it printed: no "Printed"
-            return PrintResult(queued=True)
+            return PrintResult(unconfirmed=True)
         return None
 
 

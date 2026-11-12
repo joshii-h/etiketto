@@ -1016,7 +1016,7 @@ def test_silent_printer_on_the_network_gets_the_job(fake):
     result = backend.print_label(image, "ptouch.local", PrintOptions(copies=3), events.append)
     assert len(fake.printer.pages) == 3 and [e.copy for e in events] == [1, 2, 3]
     # sent, not reported printed: the interface says so instead of "Printed"
-    assert result == ptouch.PrintResult(queued=True)
+    assert result == ptouch.PrintResult(unconfirmed=True)
 
 
 @pytest.mark.parametrize("close_after, printed", [(1, None), (2, 1), (3, 2)])

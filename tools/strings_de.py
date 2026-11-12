@@ -523,4 +523,5 @@ TRANSLATIONS = {
     "Protocol knowledge": "Protokollwissen",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Aus %(projects)s und den Handbüchern der Hersteller, neu geschrieben ohne deren Code; siehe THIRD_PARTY_NOTICES.md",
     "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Die Seite ist zu gross, um sie in der Auflösung zu erstellen, die der Drucker annimmt. Ein kleineres Papierformat wählen oder auf einem Drucker drucken, der PDF annimmt.",
+    "Sent to the printer – it did not confirm printing": "An den Drucker gesendet – er hat das Drucken nicht bestätigt",
 }

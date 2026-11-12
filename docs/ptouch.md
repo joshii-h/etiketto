@@ -44,8 +44,9 @@ untested, from one of the projects, or contradicting between the sources,
     (`PT-P900W.local`) or the DNS-SD name of that address; only without
     any of these from the tape width (36 mm: PT-P900 series). [assumed]
   - it comes, but no page is reported: after the page's time the rest of
-    the job is sent without waiting; the interface then says the job was
-    sent, not that it was printed (also when no status came at all).
+    the job is sent without waiting; the interface then says "Sent to the
+    printer – it did not confirm printing", not "Printed" (also when no
+    status came at all; `PrintResult.unconfirmed`).
     [assumed]
   - the printer closes the connection while Etiketto waits for a page: an
     error, with the number of labels reported printed so far; nothing more
