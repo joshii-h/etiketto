@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Hata düzeltme",
     "How much of the code may be damaged and still be read": "Kodun ne kadarının hasarlı olup yine de okunabileceği",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "%(n)d. öğe etiketin kenarını aşıyor ve orada kesiliyor – taşıyın veya küçültün",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "bu ayara sahip bir termal yazıcının yazdırma yöntemi: printer (yazıcıda ayarlandığı gibi), transfer (ribonlu) veya direct (doğrudan termal, ribonsuz); varsayılan olarak uygulamada seçilen, --printer-defaults ile de",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "bu ayara sahip bir termal yazıcının yazdırma yöntemi: printer (yazıcıda ayarlandığı gibi), transfer (ribonlu) veya direct (doğrudan termal, ribonsuz); varsayılan olarak uygulamada seçilen, --printer-defaults ile yazıcıda ayarlanan",
     "--print-method: this printer model has no print method setting: %s": "--print-method: bu yazıcı modelinin yazdırma yöntemi ayarı yok: %s",
     "Print method set on the printer": "Yazıcıda ayarlanan yazdırma yöntemi",
     "Print method": "Yazdırma yöntemi",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Bu belirteç dosyada zaten %s adıyla var",
     "The label is too large: at most %d images and codes": "Etiket çok büyük: en fazla %d görsel ve kod",
     "Not a valid printer address pattern: %s": "Geçerli bir yazıcı adresi kalıbı değil: %s",
-    "A chosen token must not look like a made one (etk_…)": "Seçilen belirteç, oluşturulmuş bir belirtece benzememelidir (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Seçilen belirteç, oluşturulmuş bir belirtece benzememelidir (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta, Romanşça'da küçük bir tablet anlamına gelir (tavla, yani tahta/levha sözcüğünden). Okunuşu: tav-LET-ta.",
 }

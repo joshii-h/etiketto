@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Koreksi kesalahan",
     "How much of the code may be damaged and still be read": "Seberapa banyak kode boleh rusak dan masih terbaca",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Elemen %(n)d melewati tepi label dan terpotong di sana – pindahkan atau perkecil",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "metode cetak printer termal yang memiliki pengaturan ini: printer (sesuai pengaturan printer), transfer (dengan pita) atau direct (termal langsung, tanpa pita); secara bawaan metode yang dipilih di aplikasi, juga dengan --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "metode cetak printer termal yang memiliki pengaturan ini: printer (sesuai pengaturan printer), transfer (dengan pita) atau direct (termal langsung, tanpa pita); secara bawaan metode yang dipilih di aplikasi, dengan --printer-defaults metode yang diatur di printer",
     "--print-method: this printer model has no print method setting: %s": "--print-method: model printer ini tidak memiliki pengaturan metode cetak: %s",
     "Print method set on the printer": "Metode cetak yang diatur pada printer",
     "Print method": "Metode cetak",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Token ini sudah ada di berkas, sebagai %s",
     "The label is too large: at most %d images and codes": "Label terlalu besar: maksimal %d gambar dan kode",
     "Not a valid printer address pattern: %s": "Bukan pola alamat pencetak yang valid: %s",
-    "A chosen token must not look like a made one (etk_…)": "Token yang dipilih tidak boleh terlihat seperti token yang dibuat (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Token yang dipilih tidak boleh terlihat seperti token yang dibuat (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta adalah bahasa Romansh untuk papan kecil (dari tavla, papan/meja). Dibaca tav-LET-ta.",
 }

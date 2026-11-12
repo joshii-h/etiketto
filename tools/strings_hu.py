@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Hibajavítás",
     "How much of the code may be damaged and still be read": "A kód mekkora része sérülhet úgy, hogy még olvasható legyen",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "A(z) %(n)d. elem túlnyúlik a címke szélén, és ott levágódik – mozgassa el vagy kicsinyítse",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "a beállítással rendelkező hőnyomtató nyomtatási módja: printer (ahogy a nyomtatón be van állítva), transfer (festékszalaggal) vagy direct (direkt termál, festékszalag nélkül); alapértelmezés szerint az alkalmazásban választott, --printer-defaults mellett is",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "a beállítással rendelkező hőnyomtató nyomtatási módja: printer (ahogy a nyomtatón be van állítva), transfer (festékszalaggal) vagy direct (direkt termál, festékszalag nélkül); alapértelmezés szerint az alkalmazásban választott, --printer-defaults mellett a nyomtatón beállított",
     "--print-method: this printer model has no print method setting: %s": "--print-method: ennek a nyomtatótípusnak nincs nyomtatási mód beállítása: %s",
     "Print method set on the printer": "A nyomtatón beállított nyomtatási mód",
     "Print method": "Nyomtatási mód",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Ez a token már szerepel a fájlban, %s néven",
     "The label is too large: at most %d images and codes": "A címke túl nagy: legfeljebb %d kép és kód",
     "Not a valid printer address pattern: %s": "Érvénytelen nyomtatócím-minta: %s",
-    "A chosen token must not look like a made one (etk_…)": "A választott token nem hasonlíthat egy létrehozottra (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "A választott token nem hasonlíthat egy létrehozottra (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "A Tavletta rétorománul kis táblát jelent (a tavla, tábla/deszka szóból). Kiejtése: tav-LET-ta.",
 }

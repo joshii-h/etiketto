@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Corrección de errores",
     "How much of the code may be damaged and still be read": "Cuánto del código puede estar dañado y aún leerse",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "El elemento %(n)d sobrepasa el borde de la etiqueta y se corta allí – muévelo o hazlo más pequeño",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "método de impresión de una impresora térmica que tenga este ajuste: printer (según la configuración de la impresora), transfer (con cinta) o direct (térmica directa, sin cinta); por defecto el elegido en la aplicación, también con --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "método de impresión de una impresora térmica que tenga este ajuste: printer (según la configuración de la impresora), transfer (con cinta) o direct (térmica directa, sin cinta); por defecto el elegido en la aplicación; con --printer-defaults, el configurado en la impresora",
     "--print-method: this printer model has no print method setting: %s": "--print-method: este modelo de impresora no tiene ajuste de método de impresión: %s",
     "Print method set on the printer": "Método de impresión configurado en la impresora",
     "Print method": "Método de impresión",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Este token ya está en el archivo, como %s",
     "The label is too large: at most %d images and codes": "La etiqueta es demasiado grande: como máximo %d imágenes y códigos",
     "Not a valid printer address pattern: %s": "No es un patrón de dirección de impresora válido: %s",
-    "A chosen token must not look like a made one (etk_…)": "Un token elegido no debe parecerse a uno generado (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Un token elegido no debe parecerse a uno generado (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta significa «tablilla» en romanche (de tavla, tabla). Se pronuncia tav-LET-ta.",
 }

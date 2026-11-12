@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "تصحيح الأخطاء",
     "How much of the code may be damaged and still be read": "مقدار ما يمكن أن يتلف من الرمز مع بقائه مقروءًا",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "العنصر %(n)d يتجاوز حافة الملصق ويُقص هناك – انقله أو صغّره",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "طريقة الطباعة لطابعة حرارية تملك هذا الإعداد: printer (كما هو مضبوط في الطابعة) أو transfer (مع شريط الحبر) أو direct (حرارية مباشرة، بلا شريط)؛ افتراضيًا الطريقة المختارة في التطبيق، حتى مع --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "طريقة الطباعة لطابعة حرارية تملك هذا الإعداد: printer (كما هو مضبوط في الطابعة) أو transfer (مع شريط الحبر) أو direct (حرارية مباشرة، بلا شريط)؛ افتراضيًا الطريقة المختارة في التطبيق، ومع --printer-defaults الطريقة المضبوطة في الطابعة",
     "--print-method: this printer model has no print method setting: %s": "--print-method: لا يملك طراز الطابعة هذا إعدادًا لطريقة الطباعة: %s",
     "Print method set on the printer": "طريقة الطباعة المضبوطة على الطابعة",
     "Print method": "طريقة الطباعة",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "هذا الرمز موجود في الملف بالفعل باسم %s",
     "The label is too large: at most %d images and codes": "الملصق كبير جدًا: الحد الأقصى %d من الصور والرموز",
     "Not a valid printer address pattern: %s": "ليس نمطًا صالحًا لعنوان الطابعة: %s",
-    "A chosen token must not look like a made one (etk_…)": "يجب ألا يبدو الرمز المختار مثل رمز مُنشأ (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "يجب ألا يبدو الرمز المختار مثل رمز مُنشأ (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta كلمة رومانشية تعني لوحًا صغيرًا (من tavla، أي لوح أو طاولة). تُلفظ tav-LET-ta.",
 }

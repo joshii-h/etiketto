@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Veaparandus",
     "How much of the code may be damaged and still be read": "Kui suur osa koodist võib olla kahjustatud ja ikka loetav",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d ulatub üle sildi serva ja lõigatakse seal ära – nihuta seda või muuda see väiksemaks",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "termoprinteri prindimeetod, kui printeril on see seadistus: printer (nagu printeris seadistatud), transfer (värvilindiga) või direct (otsetermo, ilma värvilindita); vaikimisi rakenduses valitud meetod, ka koos --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "termoprinteri prindimeetod, kui printeril on see seadistus: printer (nagu printeris seadistatud), transfer (värvilindiga) või direct (otsetermo, ilma värvilindita); vaikimisi rakenduses valitud meetod, koos --printer-defaults printeris seadistatud meetod",
     "--print-method: this printer model has no print method setting: %s": "--print-method: sellel printerimudelil pole prindimeetodi seadistust: %s",
     "Print method set on the printer": "Printeris seatud prindimeetod",
     "Print method": "Prindimeetod",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "See pääsuluba on failis juba olemas nimega %s",
     "The label is too large: at most %d images and codes": "Silt on liiga suur: kuni %d pilti ja koodi",
     "Not a valid printer address pattern: %s": "Pole kehtiv printeri aadressi muster: %s",
-    "A chosen token must not look like a made one (etk_…)": "Valitud pääsuluba ei tohi välja näha nagu loodud pääsuluba (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Valitud pääsuluba ei tohi välja näha nagu loodud pääsuluba (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta tähendab romanši keeles väikest tahvlit (sõnast tavla, tahvel/laud). Hääldus: tav-LET-ta.",
 }

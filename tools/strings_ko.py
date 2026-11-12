@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "오류 정정",
     "How much of the code may be damaged and still be read": "코드가 얼마나 손상되어도 읽을 수 있는지",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "요소 %(n)d이(가) 라벨 가장자리를 넘어 그곳에서 잘립니다 – 옮기거나 작게 하세요",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "이 설정이 있는 감열 프린터의 인쇄 방식: printer(프린터에 설정된 대로), transfer(리본 사용) 또는 direct(직접 감열, 리본 없음). 기본값은 앱에서 선택한 방식이며 --printer-defaults를 써도 같습니다",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "이 설정이 있는 감열 프린터의 인쇄 방식: printer(프린터에 설정된 대로), transfer(리본 사용) 또는 direct(직접 감열, 리본 없음). 기본값은 앱에서 선택한 방식이며 --printer-defaults를 쓰면 프린터에 설정된 방식입니다",
     "--print-method: this printer model has no print method setting: %s": "--print-method: 이 프린터 모델에는 인쇄 방식 설정이 없습니다: %s",
     "Print method set on the printer": "프린터에 설정된 인쇄 방식",
     "Print method": "인쇄 방식",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "이 토큰은 이미 파일에 %s(으)로 있습니다",
     "The label is too large: at most %d images and codes": "라벨이 너무 큽니다: 이미지와 코드는 최대 %d개까지 가능합니다",
     "Not a valid printer address pattern: %s": "유효하지 않은 프린터 주소 패턴: %s",
-    "A chosen token must not look like a made one (etk_…)": "직접 정한 토큰은 생성된 토큰처럼 보이면 안 됩니다 (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "직접 정한 토큰은 생성된 토큰처럼 보이면 안 됩니다 (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta는 로망슈어로 작은 판을 뜻합니다(tavla, 판·탁자에서 유래). 발음은 tav-LET-ta입니다.",
 }

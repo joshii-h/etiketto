@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Felkorrigering",
     "How much of the code may be damaged and still be read": "Hur mycket av koden som får vara skadat och ändå kunna läsas",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d sträcker sig utanför etikettens kant och klipps av där – flytta det eller gör det mindre",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "utskriftsmetod för en termoskrivare som har inställningen: printer (som inställt på skrivaren), transfer (med färgband) eller direct (direkttermisk, utan färgband); som standard den som valts i appen, även med --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "utskriftsmetod för en termoskrivare som har inställningen: printer (som inställt på skrivaren), transfer (med färgband) eller direct (direkttermisk, utan färgband); som standard den som valts i appen, med --printer-defaults den som är inställd på skrivaren",
     "--print-method: this printer model has no print method setting: %s": "--print-method: den här skrivarmodellen har ingen inställning för utskriftsmetod: %s",
     "Print method set on the printer": "Utskriftsmetod inställd på skrivaren",
     "Print method": "Utskriftsmetod",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Denna token finns redan i filen, som %s",
     "The label is too large: at most %d images and codes": "Etiketten är för stor: högst %d bilder och koder",
     "Not a valid printer address pattern: %s": "Inte ett giltigt mönster för skrivaradress: %s",
-    "A chosen token must not look like a made one (etk_…)": "En vald token får inte se ut som en skapad (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "En vald token får inte se ut som en skapad (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta är rätoromanska för en liten tavla (av tavla, tavla/bräde). Uttalas tav-LET-ta.",
 }

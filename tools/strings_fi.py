@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Virheenkorjaus",
     "How much of the code may be damaged and still be read": "Kuinka suuri osa koodista saa olla vahingoittunut ja silti luettavissa",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Elementti %(n)d ulottuu tarran reunan yli ja leikkautuu siinä pois – siirrä sitä tai pienennä sitä",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "lämpötulostimen tulostustapa, jos tulostimessa on tämä asetus: printer (tulostimen asetusten mukaan), transfer (värinauhalla) tai direct (suoralämpö, ilman värinauhaa); oletuksena sovelluksessa valittu, myös valitsimella --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "lämpötulostimen tulostustapa, jos tulostimessa on tämä asetus: printer (tulostimen asetusten mukaan), transfer (värinauhalla) tai direct (suoralämpö, ilman värinauhaa); oletuksena sovelluksessa valittu, valitsimella --printer-defaults tulostimeen asetettu",
     "--print-method: this printer model has no print method setting: %s": "--print-method: tässä tulostinmallissa ei ole tulostustavan asetusta: %s",
     "Print method set on the printer": "Tulostimeen asetettu tulostustapa",
     "Print method": "Tulostustapa",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Tämä pääsytunnus on jo tiedostossa nimellä %s",
     "The label is too large: at most %d images and codes": "Tarra on liian suuri: enintään %d kuvaa ja koodia",
     "Not a valid printer address pattern: %s": "Ei kelvollinen tulostimen osoitteen malli: %s",
-    "A chosen token must not look like a made one (etk_…)": "Valittu pääsytunnus ei saa näyttää luodulta (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Valittu pääsytunnus ei saa näyttää luodulta (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta on retoromaaniaa ja tarkoittaa pientä taulua (sanasta tavla, taulu/lauta). Lausutaan tav-LET-ta.",
 }

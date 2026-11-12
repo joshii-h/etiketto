@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Корекція помилок",
     "How much of the code may be damaged and still be read": "Яка частина коду може бути пошкоджена, щоб він усе ще читався",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Елемент %(n)d виходить за край етикетки і там обрізається – посуньте його або зменште",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "спосіб друку термопринтера, який має це налаштування: printer (як налаштовано на принтері), transfer (зі стрічкою) або direct (прямий термодрук, без стрічки); за замовчуванням вибраний у застосунку, також із --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "спосіб друку термопринтера, який має це налаштування: printer (як налаштовано на принтері), transfer (зі стрічкою) або direct (прямий термодрук, без стрічки); за замовчуванням вибраний у застосунку, із --printer-defaults — налаштований на принтері",
     "--print-method: this printer model has no print method setting: %s": "--print-method: ця модель принтера не має налаштування способу друку: %s",
     "Print method set on the printer": "Спосіб друку, заданий на принтері",
     "Print method": "Спосіб друку",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Цей токен уже є у файлі під назвою %s",
     "The label is too large: at most %d images and codes": "Етикетка завелика: щонайбільше %d зображень і кодів",
     "Not a valid printer address pattern: %s": "Неприпустимий шаблон адреси принтера: %s",
-    "A chosen token must not look like a made one (etk_…)": "Вибраний токен не має бути схожим на створений (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Вибраний токен не має бути схожим на створений (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta ретороманською означає «дощечка» (від tavla — дошка, стіл). Вимовляється tav-LET-ta.",
 }

@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "การแก้ไขข้อผิดพลาด",
     "How much of the code may be damaged and still be read": "โค้ดเสียหายได้มากเท่าใดแล้วยังอ่านได้",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "องค์ประกอบ %(n)d ล้ำขอบฉลากและถูกตัดออกตรงนั้น – ย้ายหรือทำให้เล็กลง",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "วิธีพิมพ์ของเครื่องพิมพ์ความร้อนที่มีการตั้งค่านี้: printer (ตามที่ตั้งไว้ในเครื่องพิมพ์), transfer (ใช้ริบบอน) หรือ direct (ความร้อนโดยตรง ไม่ใช้ริบบอน) ค่าเริ่มต้นคือวิธีที่เลือกไว้ในแอป แม้ใช้ --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "วิธีพิมพ์ของเครื่องพิมพ์ความร้อนที่มีการตั้งค่านี้: printer (ตามที่ตั้งไว้ในเครื่องพิมพ์), transfer (ใช้ริบบอน) หรือ direct (ความร้อนโดยตรง ไม่ใช้ริบบอน) ค่าเริ่มต้นคือวิธีที่เลือกไว้ในแอป เมื่อใช้ --printer-defaults จะเป็นวิธีที่ตั้งไว้ในเครื่องพิมพ์",
     "--print-method: this printer model has no print method setting: %s": "--print-method: เครื่องพิมพ์รุ่นนี้ไม่มีการตั้งค่าวิธีพิมพ์: %s",
     "Print method set on the printer": "วิธีพิมพ์ที่ตั้งไว้บนเครื่องพิมพ์",
     "Print method": "วิธีพิมพ์",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "โทเค็นนี้มีอยู่ในไฟล์แล้วในชื่อ %s",
     "The label is too large: at most %d images and codes": "ฉลากมีขนาดใหญ่เกินไป: รูปภาพและโค้ดรวมกันไม่เกิน %d รายการ",
     "Not a valid printer address pattern: %s": "ไม่ใช่รูปแบบที่อยู่เครื่องพิมพ์ที่ถูกต้อง: %s",
-    "A chosen token must not look like a made one (etk_…)": "โทเค็นที่เลือกเองต้องไม่มีรูปแบบเหมือนโทเค็นที่สร้างขึ้น (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "โทเค็นที่เลือกเองต้องไม่มีรูปแบบเหมือนโทเค็นที่สร้างขึ้น (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta เป็นภาษาโรมานช์ แปลว่าแผ่นกระดานเล็ก ๆ (มาจาก tavla แผ่นกระดาน/โต๊ะ) อ่านว่า tav-LET-ta",
 }

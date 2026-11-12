@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Foutcorrectie",
     "How much of the code may be damaged and still be read": "Hoeveel van de code beschadigd mag zijn en toch gelezen wordt",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Element %(n)d steekt buiten de rand van het etiket en wordt daar afgesneden – verplaats het of maak het kleiner",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "printmethode van een thermische printer die deze instelling heeft: printer (zoals ingesteld op de printer), transfer (met lint) of direct (direct thermisch, zonder lint); standaard de in de app gekozen methode, ook met --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "printmethode van een thermische printer die deze instelling heeft: printer (zoals ingesteld op de printer), transfer (met lint) of direct (direct thermisch, zonder lint); standaard de in de app gekozen methode, met --printer-defaults de op de printer ingestelde",
     "--print-method: this printer model has no print method setting: %s": "--print-method: dit printermodel heeft geen instelling voor de printmethode: %s",
     "Print method set on the printer": "Op de printer ingestelde printmethode",
     "Print method": "Printmethode",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Dit token staat al in het bestand, als %s",
     "The label is too large: at most %d images and codes": "Het etiket is te groot: maximaal %d afbeeldingen en codes",
     "Not a valid printer address pattern: %s": "Geen geldig printeradrespatroon: %s",
-    "A chosen token must not look like a made one (etk_…)": "Een gekozen token mag niet op een aangemaakt token lijken (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Een gekozen token mag niet op een aangemaakt token lijken (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta is Reto-Romaans voor een klein tafeltje of plankje (van tavla, tafel/plank). Uitspraak: tav-LET-ta.",
 }

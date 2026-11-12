@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "誤り訂正",
     "How much of the code may be damaged and still be read": "コードのどれだけが損傷しても読み取れるか",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "要素 %(n)d がラベルの端からはみ出し、そこで切れます – 移動するか小さくしてください",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "この設定があるサーマルプリンターの印刷方式: printer（プリンターの設定どおり）、transfer（リボンを使う）、direct（ダイレクトサーマル、リボンなし）。既定はアプリで選んだ方式で、--printer-defaults でも同じです",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "この設定があるサーマルプリンターの印刷方式: printer（プリンターの設定どおり）、transfer（リボンを使う）、direct（ダイレクトサーマル、リボンなし）。既定はアプリで選んだ方式で、--printer-defaults ではプリンターに設定された方式です",
     "--print-method: this printer model has no print method setting: %s": "--print-method: このプリンター機種には印刷方式の設定がありません: %s",
     "Print method set on the printer": "プリンターで設定した印刷方式",
     "Print method": "印刷方式",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "このトークンはすでに %s としてファイルにあります",
     "The label is too large: at most %d images and codes": "ラベルが大きすぎます: 画像とコードは最大 %d 個です",
     "Not a valid printer address pattern: %s": "有効なプリンターアドレスのパターンではありません: %s",
-    "A chosen token must not look like a made one (etk_…)": "自分で決めたトークンは、生成されたトークンのような形にはできません (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "自分で決めたトークンは、生成されたトークンのような形にはできません (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta はロマンシュ語で「小さな板」の意味です（tavla「板」から）。発音は tav-LET-ta。",
 }

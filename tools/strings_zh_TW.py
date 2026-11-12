@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "錯誤修正",
     "How much of the code may be damaged and still be read": "條碼可損壞多少仍能被讀取",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "元素 %(n)d 超出標籤邊緣，會在那裡被裁掉 – 請移動它或將它縮小",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "具備此設定之感熱印表機的列印方式：printer（依印表機上的設定）、transfer（使用碳帶）或 direct（感熱直印，不用碳帶）；預設為應用程式中選擇的方式，使用 --printer-defaults 時亦同",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "具備此設定之感熱印表機的列印方式：printer（依印表機上的設定）、transfer（使用碳帶）或 direct（感熱直印，不用碳帶）；預設為應用程式中選擇的方式，使用 --printer-defaults 時為印表機上設定的方式",
     "--print-method: this printer model has no print method setting: %s": "--print-method：此印表機型號沒有列印方式設定：%s",
     "Print method set on the printer": "印表機上設定的列印方式",
     "Print method": "列印方式",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "此權杖已在檔案中，名稱為 %s",
     "The label is too large: at most %d images and codes": "標籤過大：影像和 QR 碼／條碼最多 %d 個",
     "Not a valid printer address pattern: %s": "不是有效的印表機位址模式：%s",
-    "A chosen token must not look like a made one (etk_…)": "自選權杖不得看起來像產生的權杖（etk_…）",
+    "A chosen token must not look like a made one (tav_…)": "自選權杖不得看起來像產生的權杖（tav_…）",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta 在羅曼什語中意為「小板子」（源自 tavla，板、桌）。讀作 tav-LET-ta。",
 }

@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "त्रुटि सुधार",
     "How much of the code may be damaged and still be read": "कोड का कितना हिस्सा खराब होने पर भी पढ़ा जा सकता है",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "तत्व %(n)d लेबल के किनारे से बाहर जाता है और वहाँ कट जाता है – इसे खिसकाएँ या छोटा करें",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "इस सेटिंग वाले थर्मल प्रिंटर की प्रिंट विधि: printer (जैसा प्रिंटर पर सेट है), transfer (रिबन के साथ) या direct (डायरेक्ट थर्मल, बिना रिबन); डिफ़ॉल्ट रूप से ऐप में चुनी गई विधि, --printer-defaults के साथ भी",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "इस सेटिंग वाले थर्मल प्रिंटर की प्रिंट विधि: printer (जैसा प्रिंटर पर सेट है), transfer (रिबन के साथ) या direct (डायरेक्ट थर्मल, बिना रिबन); डिफ़ॉल्ट रूप से ऐप में चुनी गई विधि, --printer-defaults के साथ प्रिंटर पर सेट की गई विधि",
     "--print-method: this printer model has no print method setting: %s": "--print-method: इस प्रिंटर मॉडल में प्रिंट विधि की सेटिंग नहीं है: %s",
     "Print method set on the printer": "प्रिंटर पर सेट प्रिंट विधि",
     "Print method": "प्रिंट विधि",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "यह टोकन फ़ाइल में पहले से %s के रूप में मौजूद है",
     "The label is too large: at most %d images and codes": "लेबल बहुत बड़ा है: अधिकतम %d चित्र और कोड",
     "Not a valid printer address pattern: %s": "मान्य प्रिंटर पता पैटर्न नहीं है: %s",
-    "A chosen token must not look like a made one (etk_…)": "चुना गया टोकन बनाए गए टोकन जैसा नहीं दिखना चाहिए (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "चुना गया टोकन बनाए गए टोकन जैसा नहीं दिखना चाहिए (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta रोमांश भाषा में छोटी तख़्ती को कहते हैं (tavla, यानी तख़्ता/मेज़ से)। उच्चारण: tav-LET-ta।",
 }

@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Correction d’erreurs",
     "How much of the code may be damaged and still be read": "La part du code qui peut être abîmée tout en restant lisible",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "L’élément %(n)d dépasse le bord de l’étiquette et y est coupé – déplacez-le ou réduisez-le",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "mode d’impression d’une imprimante thermique qui a ce réglage : printer (comme réglé sur l’imprimante), transfer (avec ruban) ou direct (thermique direct, sans ruban) ; par défaut celui choisi dans l’application, même avec --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "mode d’impression d’une imprimante thermique qui a ce réglage : printer (comme réglé sur l’imprimante), transfer (avec ruban) ou direct (thermique direct, sans ruban) ; par défaut celui choisi dans l’application ; avec --printer-defaults, celui réglé sur l’imprimante",
     "--print-method: this printer model has no print method setting: %s": "--print-method : ce modèle d’imprimante n’a pas de réglage de mode d’impression : %s",
     "Print method set on the printer": "Mode d’impression réglé sur l’imprimante",
     "Print method": "Mode d’impression",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Ce jeton figure déjà dans le fichier, sous le nom %s",
     "The label is too large: at most %d images and codes": "L’étiquette est trop grande\xa0: %d images et codes au maximum",
     "Not a valid printer address pattern: %s": "Motif d’adresse d’imprimante non valide\xa0: %s",
-    "A chosen token must not look like a made one (etk_…)": "Un jeton choisi ne doit pas ressembler à un jeton généré (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Un jeton choisi ne doit pas ressembler à un jeton généré (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta signifie « petite tablette » en romanche (de tavla, table, planche). Prononcé tav-LET-ta.",
 }

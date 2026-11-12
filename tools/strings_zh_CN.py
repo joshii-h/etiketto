@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "纠错",
     "How much of the code may be damaged and still be read": "代码可损坏多少仍能被读取",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "元素 %(n)d 超出标签边缘，会在那里被裁掉 – 请移动它或将它缩小",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "带此设置的热敏打印机的打印方式：printer（按打印机上的设置）、transfer（使用碳带）或 direct（热敏直打，无碳带）；默认为应用中选择的方式，使用 --printer-defaults 时也是如此",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "带此设置的热敏打印机的打印方式：printer（按打印机上的设置）、transfer（使用碳带）或 direct（热敏直打，无碳带）；默认为应用中选择的方式，使用 --printer-defaults 时为打印机上设置的方式",
     "--print-method: this printer model has no print method setting: %s": "--print-method：此打印机型号没有打印方式设置：%s",
     "Print method set on the printer": "打印机上设置的打印方式",
     "Print method": "打印方式",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "此令牌已在文件中，名为 %s",
     "The label is too large: at most %d images and codes": "标签过大：图像和二维码／条形码最多 %d 个",
     "Not a valid printer address pattern: %s": "不是有效的打印机地址模式：%s",
-    "A chosen token must not look like a made one (etk_…)": "自选令牌不得看起来像生成的令牌（etk_…）",
+    "A chosen token must not look like a made one (tav_…)": "自选令牌不得看起来像生成的令牌（tav_…）",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta 在罗曼什语中意为“小板子”（源自 tavla，板、桌）。读作 tav-LET-ta。",
 }

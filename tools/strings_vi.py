@@ -668,7 +668,7 @@ TRANSLATIONS = {
     "Error correction": "Sửa lỗi",
     "How much of the code may be damaged and still be read": "Bao nhiêu phần của mã có thể bị hỏng mà vẫn đọc được",
     "Element %(n)d reaches beyond the edge of the label and is cut off there – move it or make it smaller": "Phần tử %(n)d vượt ra ngoài mép nhãn và bị cắt ở đó – hãy di chuyển hoặc thu nhỏ nó",
-    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, also with --printer-defaults": "phương thức in của máy in nhiệt có cài đặt này: printer (theo cài đặt trên máy in), transfer (dùng ruy băng) hoặc direct (in nhiệt trực tiếp, không ruy băng); mặc định là phương thức đã chọn trong ứng dụng, kể cả với --printer-defaults",
+    "print method of a thermal printer that has the setting: printer (as set on the printer), transfer (with a ribbon) or direct (thermal direct, no ribbon); by default the one chosen in the app, with --printer-defaults the one set on the printer": "phương thức in của máy in nhiệt có cài đặt này: printer (theo cài đặt trên máy in), transfer (dùng ruy băng) hoặc direct (in nhiệt trực tiếp, không ruy băng); mặc định là phương thức đã chọn trong ứng dụng, với --printer-defaults là phương thức đặt trên máy in",
     "--print-method: this printer model has no print method setting: %s": "--print-method: mẫu máy in này không có cài đặt phương thức in: %s",
     "Print method set on the printer": "Phương thức in đặt trên máy in",
     "Print method": "Phương thức in",
@@ -789,6 +789,6 @@ TRANSLATIONS = {
     "This token is in the file already, as %s": "Mã truy cập này đã có trong tệp, với tên %s",
     "The label is too large: at most %d images and codes": "Nhãn quá lớn: tối đa %d hình ảnh và mã",
     "Not a valid printer address pattern: %s": "Không phải mẫu địa chỉ máy in hợp lệ: %s",
-    "A chosen token must not look like a made one (etk_…)": "Mã truy cập tự chọn không được trông giống mã được tạo (etk_…)",
+    "A chosen token must not look like a made one (tav_…)": "Mã truy cập tự chọn không được trông giống mã được tạo (tav_…)",
     "Tavletta is Romansh for a small tablet (from tavla, table/board). Pronounced tav-LET-ta.": "Tavletta trong tiếng Romansh nghĩa là tấm bảng nhỏ (từ tavla, bảng/tấm ván). Đọc là tav-LET-ta.",
 }
