@@ -24,7 +24,7 @@ from hypothesis import strategies as st
 from PIL import Image
 
 from etiketto.backends import brother_ql as ql
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     CoverOpen,
     FoundPrinter,
@@ -1362,7 +1362,7 @@ class Pipe:
 def test_send_in_pieces():
     pipe = Pipe(read=True)
     data = bytes(range(256)) * 2000
-    ql.send_chunked(pipe.ours, data, stall=5)
+    ql._Session(pipe.ours, False).send(data)
     pipe.ours.shutdown(socket.SHUT_WR)
     for _ in range(200):
         if len(pipe.got) == len(data):
@@ -1377,14 +1377,14 @@ def test_a_printer_with_a_full_buffer_stalls():
     from etiketto.backends.base import PrinterStalled
 
     with pytest.raises(PrinterStalled):
-        ql.send_chunked(pipe.ours, bytes(10_000_000), stall=0.2)
+        net.send_all(pipe.ours, bytes(10_000_000), 0.2, ql.MIN_RATE)
     pipe.close()
 
 
 def test_sessions_on_tcp_send_in_pieces(monkeypatch):
     sent = []
     pipe = Pipe(read=True)
-    monkeypatch.setattr(ql, "send_chunked", lambda link, data: sent.append(len(data)))
+    monkeypatch.setattr(net, "send_all", lambda link, data, timeout, rate: sent.append(len(data)))
     ql._Session(pipe.ours, False).send(b"job")
     assert sent == [3]
     pipe.close()

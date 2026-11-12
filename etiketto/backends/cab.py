@@ -33,7 +33,6 @@ from etiketto.backends.base import (
     PrinterBusy,
     PrinterError,
     PrinterInfo,
-    PrinterNotFound,
     PrinterPaused,
     PrinterTimeout,
     PrintMode,
@@ -43,8 +42,7 @@ from etiketto.backends.base import (
     Raster,
     RibbonError,
     check_width,
-    error_text,
-    network_error,
+    map_error,
     open_session,
     report_progress,
 )
@@ -225,23 +223,9 @@ def build_job(image: Image.Image, dots_per_mm: float, gap_mm: float, copies: int
 
 
 def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
-    """TCP to port 9100, or the printer's USB device: the same JScript.
-    `wait`: on USB, how long to wait while another session uses it."""
-    if usb.is_usb(host):
-        return usb.connect(host, SOCKET_TIMEOUT, wait)
-    return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
-
-
-def map_error(error: Exception) -> PrinterError:
-    mapped = network_error(error)
-    if mapped:
-        return mapped
-    text = error_text(error)
-    # mdns.resolve_host() fails with "cannot resolve", any other OSError means
-    # the network is unreachable
-    if isinstance(error, OSError) or "resolve" in text.lower():
-        return PrinterNotFound(text)
-    return PrinterError(text)
+    """TCP to the printer's port, or its USB device: the same language
+    (net.connect). Replaced in tests."""
+    return net.connect(host, port, SOCKET_TIMEOUT, wait, MIN_RATE)
 
 
 class _Session:

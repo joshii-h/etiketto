@@ -23,6 +23,7 @@ import termios
 import time
 from dataclasses import dataclass
 
+from etiketto.backends import mdns, usb
 from etiketto.backends.base import PrinterStalled
 
 CHUNK = 65536
@@ -158,3 +159,15 @@ def finish(sock: socket.socket, timeout: float) -> None:
         state.heard(_listen(sock), _clock())
         if state.done(unsent(sock), _clock()):
             return
+
+
+def connect(host: str, port: int, timeout: float, wait: float, min_rate: float):
+    """A printer that speaks the same language on TCP and USB: its USB
+    device file (usb.Connection; `wait`: how long while another session
+    uses it) with `min_rate` like send_all() on TCP, or a TCP connection to
+    `port` of the resolved host (an mDNS name too)."""
+    if usb.is_usb(host):
+        connection = usb.connect(host, timeout, wait)
+        connection.min_rate = min_rate
+        return connection
+    return socket.create_connection((mdns.resolve_host(host), port), timeout)

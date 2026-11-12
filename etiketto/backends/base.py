@@ -562,6 +562,20 @@ def network_error(error: Exception) -> PrinterError | None:
     return None
 
 
+def map_error(error: Exception) -> PrinterError:
+    """An error of a network or USB printer session as a PrinterError:
+    network_error()'s mapping, else a name that cannot be resolved
+    (mdns.resolve_host) or any other OSError is a printer that cannot be
+    reached, anything else a generic problem."""
+    mapped = network_error(error)
+    if mapped:
+        return mapped
+    text = error_text(error)
+    if isinstance(error, OSError) or "resolve" in text.lower():
+        return PrinterNotFound(text)
+    return PrinterError(text)
+
+
 @contextmanager
 def open_session(connect, wrap, map_error) -> Iterator:
     """Connect, hand out wrap(connection), close it again; every exception on

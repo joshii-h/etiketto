@@ -36,7 +36,6 @@ from etiketto.backends.base import (
     PrinterBusy,
     PrinterError,
     PrinterInfo,
-    PrinterNotFound,
     PrinterTimeout,
     PrintMode,
     PrintOptions,
@@ -47,8 +46,7 @@ from etiketto.backends.base import (
     WrongMedia,
     check_length,
     check_width,
-    error_text,
-    network_error,
+    map_error,
     open_session,
     report_progress,
 )
@@ -570,30 +568,9 @@ def build_job(job: Job) -> bytes:
 
 
 def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
-    """TCP to port 9100, or the printer's USB device: the same raster
-    language. `wait`: on USB, how long to wait while another session uses it."""
-    if usb.is_usb(host):
-        return usb.connect(host, SOCKET_TIMEOUT, wait)
-    return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
-
-
-def send_chunked(link, data: bytes, stall: float = SOCKET_TIMEOUT) -> None:
-    """All of data to a socket: a printer whose buffer is full takes nothing
-    for a while, so the timeout restarts with each bit of progress
-    (net.send_all; socket.sendall's timeout covers the whole call).
-    PrinterStalled once the printer took nothing for `stall` seconds.
-    usb.Connection.sendall does the same on USB."""
-    net.send_all(link, data, stall, MIN_RATE)
-
-
-def map_error(error: Exception) -> PrinterError:
-    mapped = network_error(error)
-    if mapped:
-        return mapped
-    text = error_text(error)
-    if isinstance(error, OSError) or "resolve" in text.lower():
-        return PrinterNotFound(text)
-    return PrinterError(text)
+    """TCP to the printer's port, or its USB device: the same language
+    (net.connect). Replaced in tests."""
+    return net.connect(host, port, SOCKET_TIMEOUT, wait, MIN_RATE)
 
 
 class _Session:
@@ -609,7 +586,9 @@ class _Session:
 
     def send(self, data: bytes) -> None:
         if isinstance(self.link, socket.socket):
-            send_chunked(self.link, data)
+            # the timeout restarts with each bit of progress (a printer whose
+            # buffer is full takes nothing for a while)
+            net.send_all(self.link, data, SOCKET_TIMEOUT, MIN_RATE)
         else:  # usb.Connection has its own progress-based timeout
             self.link.sendall(data)
 

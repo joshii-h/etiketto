@@ -271,3 +271,25 @@ def test_every_continuous_backend_says_what_its_tape_comes_as():
     assert get_backend("escpos").capabilities.media == "paper"
     assert get_backend("brother_ql").capabilities.media == "roll"
     assert get_backend("vc500w").capabilities.media == "cassette"
+
+
+def test_one_map_error_and_one_connect_for_the_tcp_and_usb_printers(monkeypatch):
+    """raw, cab, QL and P-touch share base.map_error and net.connect; on
+    USB the connection gets the backend's minimum rate like TCP."""
+    from etiketto.backends import base, brother_ql, cab, net, ptouch, raw, usb
+
+    assert raw.map_error is cab.map_error is brother_ql.map_error is ptouch.map_error
+    assert raw.map_error is base.map_error
+    assert type(base.map_error(OSError("unreachable"))) is base.PrinterNotFound
+    assert type(base.map_error(ValueError("cannot resolve x"))) is base.PrinterNotFound
+    assert type(base.map_error(ValueError("odd"))) is base.PrinterError
+
+    class Connection:
+        min_rate = usb.MIN_RATE
+
+    made = []
+    monkeypatch.setattr(
+        usb, "connect", lambda host, timeout, wait: made.append(host) or Connection()
+    )
+    link = net.connect("usb://Brother/QL-820NWB", 9100, 10.0, 5.0, brother_ql.MIN_RATE)
+    assert made and link.min_rate == brother_ql.MIN_RATE

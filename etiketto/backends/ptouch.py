@@ -40,7 +40,6 @@ from etiketto.backends.base import (
     PrinterBusy,
     PrinterError,
     PrinterInfo,
-    PrinterNotFound,
     PrinterTimeout,
     PrintMode,
     PrintOptions,
@@ -52,8 +51,7 @@ from etiketto.backends.base import (
     UsbNotFound,
     check_codes,
     check_length,
-    error_text,
-    network_error,
+    map_error,
     open_session,
     report_progress,
 )
@@ -716,26 +714,16 @@ class _TcpLink:
 
 
 def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
-    """The USB device file, or TCP port 9100: the same commands."""
-    if usb.is_usb(host):
-        try:
-            return usb.connect(host, SOCKET_TIMEOUT, wait)
-        except UsbNotFound as e:
-            lite = editor_lite_plugged()
-            if lite:
-                raise EditorLite("%s in Editor Lite mode: %s" % (lite.name, e)) from e
-            raise
-    return _TcpLink(socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT))
-
-
-def map_error(error: Exception) -> PrinterError:
-    mapped = network_error(error)
-    if mapped:
-        return mapped
-    text = error_text(error)
-    if isinstance(error, OSError) or "resolve" in text.lower():
-        return PrinterNotFound(text)
-    return PrinterError(text)
+    """The USB device file, or TCP port 9100: the same commands
+    (net.connect); a P-touch in Editor Lite mode is named as such."""
+    try:
+        link = net.connect(host, port, SOCKET_TIMEOUT, wait, usb.MIN_RATE)
+    except UsbNotFound as e:
+        lite = editor_lite_plugged()
+        if lite:
+            raise EditorLite("%s in Editor Lite mode: %s" % (lite.name, e)) from e
+        raise
+    return _TcpLink(link) if isinstance(link, socket.socket) else link
 
 
 class ConnectionClosed(PrinterTimeout):

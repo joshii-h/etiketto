@@ -10,6 +10,7 @@ import threading
 import time
 import tty
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -556,7 +557,9 @@ def test_cab_prints_with_the_longer_wait(device, sysfs, monkeypatch):
     sysfs("lp0", "MFG:cab;MDL:EOS2/300;")
     waits = []
     monkeypatch.setattr(cab, "_connect", REAL_CAB_CONNECT)
-    monkeypatch.setattr(usb, "connect", lambda host, timeout, wait=None: waits.append(wait) or 1)
+    monkeypatch.setattr(
+        usb, "connect", lambda host, timeout, wait=None: waits.append(wait) or SimpleNamespace()
+    )
     cab._connect("usb://cab/EOS2%2F300", 9100)
     cab._connect("usb://cab/EOS2%2F300", 9100, usb.PRINT_WAIT)
     assert waits == [usb.BUSY_WAIT, usb.PRINT_WAIT]
@@ -568,11 +571,13 @@ def test_cab_prints_with_the_longer_wait(device, sysfs, monkeypatch):
 def test_cab_uses_usb_for_usb_addresses(monkeypatch):
     monkeypatch.setattr(cab, "_connect", REAL_CAB_CONNECT)  # not the test guard
     calls = []
+    connection = SimpleNamespace()
     monkeypatch.setattr(
-        usb, "connect", lambda host, timeout, wait=None: calls.append((host, wait)) or "usb"
+        usb, "connect", lambda host, timeout, wait=None: calls.append((host, wait)) or connection
     )
-    assert cab._connect("usb://cab/EOS2%2F300", 9100) == "usb"
+    assert cab._connect("usb://cab/EOS2%2F300", 9100) is connection
     assert calls == [("usb://cab/EOS2%2F300", usb.BUSY_WAIT)]
+    assert connection.min_rate == cab.MIN_RATE  # as on TCP
 
 
 def test_cab_drops_a_stale_answer_on_usb(device, sysfs, monkeypatch, tmp_path):
