@@ -168,7 +168,8 @@ inserted:
   third with more than 255 black pixels wraps to one byte, as in
   niimbluelib.
 - B21 and B21 L2B send a check line `86 [row u16, 01]` after rows 199,
-  399, … and wait for its answer `D3` before the next rows.
+  399, … and wait for its answer `D3` before the next rows (a `C6` "reset
+  timeout" may come first and is dropped).
 - Rows get no answer.
 - Example: `5555 83 0e 007e 000400 01 0027 0028 0029 002a fa aaaa` is row
   126 with black pixels 39 to 42.
@@ -204,27 +205,38 @@ label type first).
 
 | Sequence | Models | Start | Per label | Done when |
 |---|---|---|---|---|
-| B1 | B1, B21 C2B, D101, D110 M (except protocol 4) | `01` 7 bytes: copies u16, 0, 0, 0, 0, colour 0 | `03`, `13` 6 bytes (rows, columns, copies), rows, `E3` | status polled |
+| B1 | B1, B21 C2B, D101, D110 M (except protocol 4); B3S P and B4 on any protocol | `01` 7 bytes: copies u16, 0, 0, 0, 0, colour 0 | `03`, `13` 6 bytes (rows, columns, copies), rows, `E3` | status polled |
 | D110 | D110, B21S, D11 on protocol 1 or 2 | `01` `[1]` | `20`, `03`, `13` 4 bytes (rows, columns), `15` copies, rows, `E3` | status polled |
-| Old D11 | D11, D11S | `01` `[1]` | `20`, `03`, `13` 2 bytes (rows), `15` copies, rows, `E3` | the printer sends `E0` with the number of each label printed |
+| Old D11 | D11S, D11 (except protocol 1 and 2) | `01` `[1]` | `20`, `03`, `13` 2 bytes (rows), `15` copies, rows, `E3` | the printer sends `E0` with the number of each label printed |
 | B21 | B21 | `01` `[1]` | per copy: `03`, `13` 4 bytes, rows with check lines, `E3` | `F3` polled until it answers `01` |
-| B21 L2B | B21 L2B | `01` `[1]` | per copy: `03` repeated until it answers `01` (5 tries, 0.5 s apart), `13` 4 bytes, rows with check lines, `E3` | `E3` repeated until it answers `01` (20 tries, 0.5 s apart) |
+| B21 L2B | B21 L2B | `01` `[1]` | per copy: `03` repeated until it answers `01` (5 tries; 0.5 s after a refusal, at once after a timeout of 1 s or an error answer), `13` 4 bytes, rows with check lines, `E3` | `E3` repeated the same way until it answers `01` (20 tries) |
 | H1S | H1S | `01` 2 bytes: copies | `03`, `13` 9 bytes (rows, columns, copies, cut height 0, cut type 0), rows, `E3` | status polled |
-| Protocol 4 | B1 PRO, B21 PRO, D11 H, D110 M on protocol 4 | `01` 9 bytes: copies u16, 0, 0, 0, 0, colour 0, speed 1, flag 0 | no page start: `A3` without waiting, `13` 13 bytes (rows, columns, copies, cut height 0, cut type 0, 0, send all 0, part height 0), rows, `E3` | status polled; after `F3` a heartbeat `DC 01` without waiting |
+| Protocol 4 | B1 PRO, B21 PRO, D11 H, D110 M on protocol 4, B1 SE and the others without a sequence of their own on protocol 4 and up | `01` 9 bytes: copies u16, 0, 0, 0, 0, colour 0, speed 1, flag 0 | no page start: `A3` without waiting, `13` 13 bytes (rows, columns, copies, cut height 0, cut type 0, 0, send all 0, part height 0), rows, `E3` | status polled; after `F3` a heartbeat `DC 01` without waiting |
 
+- B3S P and B4 take the B1 sequence whatever protocol they report: tried
+  on hardware by Thermalith (`KnownPrinterFacts.VerifiedTasks`). [spec]
 - Models without a sequence of their own in niimbluelib (B1 SE, B203, B3,
-  B31, B32, B3S, B3S P, B4, B18) take the protocol 4 sequence from protocol
-  4 on, else the B1 sequence, as Thermalith does (hardware-checked there
-  for B3S P and B4). [spec, the B1 fallback from Thermalith]
+  B31, B32, B3S, B18) take the protocol 4 sequence from protocol 4 on,
+  else the B1 sequence, as Thermalith does. [spec, the B1 fallback from
+  Thermalith]
+- Protocol 4: the status request after the print start and the heartbeat
+  after the print end are sent without waiting because the B21 PRO drops
+  the first packet after each; the test printer does the same. [spec]
+- Only the D11 switches to the D110 sequence on protocol 1 and 2; the D11S
+  always takes the old D11 sequence. [spec]
 - Status polled: `A3` every 0.3 s until the page count reaches the copies
   and the last label is printed to 100 % and fed out to 100 % (protocol 4:
   printed only, its feed progress may stay below 100). [spec: Thermalith;
-  niimbluelib only checks the page count]
+  niimbluelib only checks the page count] The first answer may still be
+  the last job's: a finished status counts once the job was seen
+  unfinished, or when the next poll says the same. [assumed]
 - Then `F3`. After a good print an answer to `F3` that comes late or not at
-  all is not an error. [spec: Thermalith treats it the same]
+  all is not an error. [assumed: Etiketto's choice, as the labels are out;
+  niimbluelib and Thermalith (after 2 s) fail then]
 - Timeouts: 1 s per answer, 5 s per status poll and between two `E0`, 10 s
   for the answer after the rows of a page and for a check line; a job fails
-  when the status did not change for 60 s. [spec, the last one assumed]
+  when the status did not change for 60 s. The B21's `F3` answers carry no
+  progress: there a job may take 60 s per label. [spec, the 60 s assumed]
 - Copies: up to 65535 per job; Etiketto reports each label as it comes
   out. A job that fails says how many labels were already printed.
 - After a failure Etiketto sends Cancel (`DA`). [assumed]

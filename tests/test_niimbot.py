@@ -332,11 +332,14 @@ def test_model_table():
         ("D11", 2, "d110"),
         ("D11", 3, "d11"),
         ("D11S", 0, "d11"),
+        ("D11S", 1, "d11"),  # only the D11 switches
         ("D110 M", 0, "b1"),
         ("D110 M", 4, "v4"),
         ("D110 M", 5, "b1"),  # exactly 4, as niimbluelib
-        ("B4", 0, "b1"),  # no sequence of its own
-        ("B4", 4, "v4"),
+        ("B4", 4, "b1"),  # tried on hardware with the B1 sequence (Thermalith)
+        ("B3S P", 4, "b1"),
+        ("B1 SE", 0, "b1"),  # no sequence of its own
+        ("B1 SE", 4, "v4"),
         ("B1", 5, "b1"),
         ("H1S", 0, "h1s"),
         ("B21 L2B", 0, "b21_l2b"),
@@ -457,6 +460,21 @@ def test_device_path_needs_a_device(tmp_path, monkeypatch):
     with pytest.raises(UsbNotFound, match="not a device"):
         serialport.device_path("ttyACM5")
     assert serialport.device_path("ttyACM6") == tmp_path / "ttyACM6"  # not plugged in
+
+
+def test_device_path_follows_a_stable_name(tmp_path, monkeypatch):
+    monkeypatch.setattr(serialport, "DEV", tmp_path)
+    monkeypatch.setattr(serialport.stat, "S_ISCHR", lambda mode: True)  # a file stands in
+    (tmp_path / "ttyACM0").write_text("")
+    by_id = tmp_path / "serial" / "by-id"
+    by_id.mkdir(parents=True)
+    link = by_id / "usb-NIIMBOT_B1-if00"
+    link.symlink_to("../../ttyACM0")
+    assert serialport.device_path(str(link)) == link
+    (tmp_path / "pts").mkdir()
+    (by_id / "elsewhere").symlink_to("../../pts")  # a link to no USB serial port
+    with pytest.raises(UsbNotFound):
+        serialport.device_path(str(by_id / "elsewhere"))
 
 
 def test_the_tests_never_open_a_real_serial_port():
@@ -610,7 +628,9 @@ class FakeNiimbot:
     as niimbluelib and Thermalith describe it; records every packet.
 
     - Connect is only answered with the 03 prefix in front.
-    - Protocol 4 printers do not answer a page start.
+    - Protocol 4 printers drop the first packet after a print start and
+      after a print end (niimbluelib: the B21 PRO does).
+    - A check line is answered with 0xC6, then 0xD3.
     - Heartbeats are answered with the printer's state, never with an error.
     - Each label takes two status polls: printing (50 %), then done.
     - An old D11 (a page size of rows only) sends the number of each
@@ -646,6 +666,8 @@ class FakeNiimbot:
         self.queued = 0  # labels sent
         self.printed = 0
         self.halfway = False  # the current label is half printed
+        self.dropping = False  # the next packet gets lost
+        self.stale = None  # the first status answer, left over from a last job
         self._stop = threading.Event()
         self._reader = Reader()
         self._thread = threading.Thread(target=self._run, daemon=True)
@@ -697,8 +719,10 @@ class FakeNiimbot:
         command = packet.command
         if command in niimbot.ROWS or command in self.silent:
             return
-        if command == niimbot.PAGE_START and self.v4:
+        if self.dropping:
+            self.dropping = False
             return
+        self.dropping = self.v4 and command in (niimbot.PRINT_START, niimbot.PRINT_END)
         code = self.errors.get(command, self.error)
         if code and command != niimbot.HEARTBEAT:
             self._answer(niimbot.ERROR, bytes([code]))
@@ -768,7 +792,15 @@ class FakeNiimbot:
                 self._answer(niimbot.PAGE_INDEX, niimbot.u16(n))
             self.printed = self.queued
 
+    def _on_86(self, data):
+        self._answer(0xC6)
+        self._answer(0xD3)
+
     def _on_a3(self, data):
+        if self.stale is not None:
+            self._answer(0xB3, self.stale)
+            self.stale = None
+            return
         if self.halfway:
             self.halfway = False
         elif self.printed < self.queued:
@@ -1003,6 +1035,29 @@ def test_print_on_a_b21_l2b(fake):
     assert fake.printed == 2
 
 
+def test_a_b21_l2b_tries_again_after_timeouts_and_errors(fake, monkeypatch):
+    fake.model_id = 769
+    answers = iter([None, 9, 0])  # silent, "busy", then accepted
+
+    def page_start(data):
+        what = next(answers, 0)
+        if what == 9:
+            fake._answer(niimbot.ERROR, b"\x09")
+        elif what == 0:
+            fake._answer(0x04)
+
+    monkeypatch.setattr(fake, "_on_03", page_start)
+    Niimbot().print_label(_image(384, 100), "printer", PrintOptions())
+    assert fake.commands().count(niimbot.PAGE_START) == 3 and fake.printed == 1
+
+
+def test_a_b21_l2b_that_stays_busy(fake, monkeypatch):
+    fake.model_id = 769
+    monkeypatch.setattr(fake, "_on_03", lambda data: fake._answer(niimbot.ERROR, b"\x09"))
+    with pytest.raises(PrinterBusy, match="error 9"):
+        Niimbot().print_label(_image(384, 100), "printer", PrintOptions())
+
+
 def test_a_b21_l2b_that_keeps_refusing(fake):
     fake.model_id = 769
     fake.refused_starts = 10
@@ -1017,6 +1072,21 @@ def test_print_on_an_h1s(fake):
     assert fake.sent(0x01) == [b"\x00\x02"]
     assert fake.sent(0x13) == [niimbot.u16(200) + niimbot.u16(96) + b"\x00\x02" + bytes(3)]
     assert fake.printed == 2
+
+
+def test_a_stale_status_does_not_end_a_job(fake):
+    fake.stale = niimbot.u16(1) + bytes([100, 100, 0, 0, 0, 0, 0, 0])  # the last job's
+    Niimbot().print_label(_image(), "printer", PrintOptions())
+    assert fake.printed == 1
+    assert fake.commands().count(niimbot.PRINT_STATUS) == 3  # stale, printing, done
+
+
+def test_a_finished_status_counts_on_the_second_poll(fake, monkeypatch):
+    done = niimbot.u16(1) + bytes([100, 100, 0, 0, 0, 0, 0, 0])
+    # a fast printer: the label is out before the first poll
+    monkeypatch.setattr(fake, "_on_a3", lambda data: fake._answer(0xB3, done))
+    Niimbot().print_label(_image(), "printer", PrintOptions())
+    assert fake.commands().count(niimbot.PRINT_STATUS) == 2
 
 
 def test_print_on_a_b1_pro_with_protocol_4(fake):

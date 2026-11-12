@@ -212,8 +212,9 @@ MODELS = (
     Model("B31", (5632,), DPI_203, 600, GBT, D5, "", 77),
     Model("B32", (2049,), DPI_300, 851, GT, Density(1, 15, 10), "", 75),
     Model("B3S", (256, 260, 262), DPI_203, 576, GBCT, D5, "", 75),
-    Model("B3S P", (272,), DPI_203, 576, GBCT, D5, "", 75),
-    Model("B4", (6656,), DPI_203, 832, GBT, D5, "", 108),
+    # B3S P and B4: the B1 sequence on any protocol, tried on hardware (Thermalith)
+    Model("B3S P", (272,), DPI_203, 576, GBCT, D5, "b1", 75),
+    Model("B4", (6656,), DPI_203, 832, GBT, D5, "b1", 108),
     Model("D11", (512,), DPI_203, 96, GT, D3, "d11", 15),
     Model("D11S", (514,), DPI_203, 96, GT, D3, "d11", 15),
     Model("D11 H", (528,), DPI_300, 142, GT, D5, "v4", 15),
@@ -246,10 +247,11 @@ LABEL_SIZES = (
 
 def task_for(model: Model, protocol: int) -> str:
     """The command sequence for a model and protocol version, as niimbluelib
-    picks it: the D11 speaks the D110 sequence on protocol 1 and 2, the D110 M
+    picks it: the D11 (not the D11S) speaks the D110 sequence on protocol 1
+    and 2, the D110 M
     the protocol 4 one on protocol 4; a model without a sequence of its own
     takes protocol 4 from version 4 on, else the B1 one (as Thermalith)."""
-    if model.task == "d11" and protocol in (1, 2):
+    if model.name == "D11" and protocol in (1, 2):
         return "d110"
     if model.name == "D110 M" and protocol == 4:
         return "v4"
@@ -708,13 +710,24 @@ def _rows(s: Session, job: Job) -> None:
 
 
 def _until_true(s: Session, command: int, tries: int) -> None:
-    """Repeat a request until the printer answers 1 (B21 L2B)."""
-    for _ in range(tries - 1):
-        if s.request(command, timeout=PAGE_TIMEOUT).data[:1] == b"\x01":
-            return
+    """Repeat a request until the printer answers 1 (B21 L2B), like
+    niimbluelib's doUntilTrue: a refusal waits RETRY_INTERVAL, a timeout or
+    an error answer is tried again at once; the last problem is raised."""
+    problem: PrinterError = PrinterBusy("the printer refused 0x%02X %d times" % (command, tries))
+    for _ in range(tries):
+        try:
+            if s.request(command).data[:1] == b"\x01":
+                return
+        except (PrinterTimeout, NotSupported) as e:
+            problem = e
+            continue
+        except PrinterError as e:
+            if "reported" not in e.params:
+                raise
+            problem = e
+            continue
         _sleep(RETRY_INTERVAL)
-    if s.request(command, timeout=PAGE_TIMEOUT).data[:1] != b"\x01":
-        raise PrinterBusy("the printer refused 0x%02X %d times" % (command, tries))
+    raise problem
 
 
 def _page(s: Session, job: Job, copies: int) -> None:
@@ -752,6 +765,7 @@ def _wait_pages(s: Session, total: int, progress: ProgressCallback | None, feed:
     may never report that). The timeout restarts with every change."""
     done = 0
     last = None
+    unfinished = False  # seen the job not yet done, so "done" is not a stale status
     deadline = time.monotonic() + PRINT_TIMEOUT
     try:
         while True:
@@ -761,8 +775,12 @@ def _wait_pages(s: Session, total: int, progress: ProgressCallback | None, feed:
                 report_progress(progress, min(total, done + 1), total)
             if status.error and status.error not in NON_FATAL:
                 raise error_for(status.error)
-            if _finished(status, total, feed):
+            finished = _finished(status, total, feed)
+            # the first status may still be the last job's: done counts once
+            # the job was seen unfinished, or on the second poll
+            if finished and (unfinished or last == status):
                 return
+            unfinished = unfinished or not finished
             if status != last:
                 last, deadline = status, time.monotonic() + PRINT_TIMEOUT
             elif time.monotonic() > deadline:
@@ -788,12 +806,15 @@ def _wait_page_index(s: Session, total: int, progress: ProgressCallback | None) 
         raise _with_count(e, done, total) from None
 
 
-def _wait_print_end(s: Session) -> None:
-    """B21 (protocol 1): asked to end, the printer says 1 once it is done."""
-    deadline = time.monotonic() + PRINT_TIMEOUT
+def _wait_print_end(s: Session, copies: int) -> None:
+    """B21 (protocol 1): asked to end, the printer says 1 once it is done.
+    Its answer has no progress to restart a timeout with, so the job may
+    take PRINT_TIMEOUT per label."""
+    limit = PRINT_TIMEOUT * copies
+    deadline = time.monotonic() + limit
     while s.request(PRINT_END, timeout=STATUS_TIMEOUT).data[:1] != b"\x01":
         if time.monotonic() > deadline:
-            raise PrinterTimeout("the printer did not finish within %g s" % PRINT_TIMEOUT)
+            raise PrinterTimeout("the printer did not finish within %g s" % limit)
         _sleep(POLL_INTERVAL)
 
 
@@ -811,7 +832,7 @@ def run_job(s: Session, job: Job, progress: ProgressCallback | None) -> None:
             report_progress(progress, n, job.copies)
             _page(s, job, 1)
         if job.task == "b21":
-            _wait_print_end(s)
+            _wait_print_end(s, job.copies)
             return
         _until_true(s, PAGE_END, PAGE_END_TRIES)
         _end(s)
