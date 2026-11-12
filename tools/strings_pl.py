@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Bez polecenia uruchamia się aplikacja; podane pliki etykiet otwierają się w niej.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "tekst elementu NAME lub wartość zmiennej {=NAME}; zmienne w tekście są wypełniane; można powtarzać",
     "like --set, but the value is used as it is: braces are no variables": "jak --set, ale wartość jest używana bez zmian: nawiasy klamrowe nie są zmiennymi",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "z --dry-run: zapisuje obrazy jako PNG tak, jak otrzymałaby je drukarka (- dla stdout: tylko pierwszy)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "z --dry-run: zapisuje każdą etykietę jako PNG tak, jak eksportuje ją okno, najwyżej 600 dpi (- dla stdout: tylko pierwszą)",
     "Cannot write the output": "Nie można zapisać wyjścia",
     "--output writes PNG images: give a name ending in .png": "--output zapisuje obrazy PNG: podaj nazwę kończącą się na .png",
     "nothing was printed: the next counter value could not be saved": "nic nie wydrukowano: następnej wartości licznika nie dałoby się zapisać",

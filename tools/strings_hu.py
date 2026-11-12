@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Parancs nélkül az alkalmazás indul el; a megadott címkefájlok abban nyílnak meg.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "a NAME elem szövege, vagy a {=NAME} változó értéke; a szövegben lévő változók kitöltődnek; ismételhető",
     "like --set, but the value is used as it is: braces are no variables": "mint a --set, de az érték változatlanul kerül felhasználásra: a kapcsos zárójelek nem változók",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "--dry-run esetén: a képek mentése PNG-ként úgy, ahogy a nyomtató kapná (- a szabványos kimenethez: csak az első)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "--dry-run esetén: minden címke mentése PNG-ként úgy, ahogy az ablak exportálja, legfeljebb 600 dpi (- a szabványos kimenethez: csak az első)",
     "Cannot write the output": "A kimenet nem írható",
     "--output writes PNG images: give a name ending in .png": "a --output PNG-képeket ír: .png végű nevet adjon meg",
     "nothing was printed: the next counter value could not be saved": "semmi sem lett kinyomtatva: a számláló következő értéke nem lenne menthető",

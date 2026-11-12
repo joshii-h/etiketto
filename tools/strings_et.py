@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Ilma käsuta käivitub rakendus; antud sildifailid avatakse selles.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "elemendi NAME tekst või muutuja {=NAME} väärtus; tekstis olevad muutujad täidetakse; korratav",
     "like --set, but the value is used as it is: braces are no variables": "nagu --set, kuid väärtust kasutatakse muutmata kujul: loogelised sulud ei ole muutujad",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "koos --dry-run: salvestab pildid PNG-na sellisena, nagu printer need saaks (- stdout jaoks: ainult esimene)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "koos --dry-run: salvestab iga sildi PNG-na nii, nagu aken selle ekspordib, kuni 600 dpi (- stdout jaoks: ainult esimene)",
     "Cannot write the output": "Väljundit ei saa kirjutada",
     "--output writes PNG images: give a name ending in .png": "--output kirjutab PNG-pilte: anna nimi, mis lõpeb laiendiga .png",
     "nothing was printed: the next counter value could not be saved": "midagi ei prinditud: järgmist loenduri väärtust ei saaks salvestada",

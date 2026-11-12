@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Tanpa perintah, aplikasi dimulai; berkas label yang diberikan dibuka di dalamnya.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "teks elemen NAME, atau nilai variabel {=NAME}; variabel dalam teks diisi; dapat diulang",
     "like --set, but the value is used as it is: braces are no variables": "seperti --set, tetapi nilai dipakai apa adanya: kurung kurawal bukan variabel",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "dengan --dry-run: simpan gambar sebagai PNG seperti yang akan diterima pencetak (- untuk stdout: hanya yang pertama)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "dengan --dry-run: simpan setiap label sebagai PNG seperti yang diekspor jendela, paling tinggi 600 dpi (- untuk stdout: hanya yang pertama)",
     "Cannot write the output": "Tidak dapat menulis keluaran",
     "--output writes PNG images: give a name ending in .png": "--output menulis gambar PNG: berikan nama yang berakhiran .png",
     "nothing was printed: the next counter value could not be saved": "tidak ada yang dicetak: nilai penghitung berikutnya tidak akan dapat disimpan",

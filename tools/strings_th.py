@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "หากไม่มีคำสั่ง แอปจะเริ่มทำงาน และเปิดไฟล์ฉลากที่ระบุในแอป",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "ข้อความขององค์ประกอบ NAME หรือค่าของตัวแปร {=NAME} ตัวแปรในข้อความจะถูกเติมค่า ใช้ซ้ำได้",
     "like --set, but the value is used as it is: braces are no variables": "เหมือน --set แต่ใช้ค่าตามที่ระบุ: วงเล็บปีกกาไม่ใช่ตัวแปร",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "เมื่อใช้ --dry-run: บันทึกภาพเป็น PNG ตามที่เครื่องพิมพ์จะได้รับ (- สำหรับ stdout: เฉพาะภาพแรก)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "เมื่อใช้ --dry-run: บันทึกแต่ละฉลากเป็น PNG แบบที่หน้าต่างส่งออก สูงสุด 600 dpi (- สำหรับ stdout: เฉพาะฉลากแรก)",
     "Cannot write the output": "เขียนเอาต์พุตไม่ได้",
     "--output writes PNG images: give a name ending in .png": "--output เขียนภาพ PNG: ระบุชื่อที่ลงท้ายด้วย .png",
     "nothing was printed: the next counter value could not be saved": "ไม่ได้พิมพ์อะไรเลย: บันทึกค่าตัวนับถัดไปไม่ได้",

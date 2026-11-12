@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Utan kommando startar appen; angivna etikettfiler öppnas i den.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "text i elementet NAME, eller värdet för variabeln {=NAME}; variabler i en text fylls i; kan upprepas",
     "like --set, but the value is used as it is: braces are no variables": "som --set, men värdet används som det är: klammerparenteser är inga variabler",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "med --dry-run: spara bilderna som PNG så som skrivaren skulle få dem (- för stdout: bara den första)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "med --dry-run: spara varje etikett som PNG så som fönstret exporterar den, högst 600 dpi (- för stdout: bara den första)",
     "Cannot write the output": "Det går inte att skriva utdata",
     "--output writes PNG images: give a name ending in .png": "--output skriver PNG-bilder: ange ett namn som slutar på .png",
     "nothing was printed: the next counter value could not be saved": "inget skrevs ut: nästa räknarvärde skulle inte kunna sparas",

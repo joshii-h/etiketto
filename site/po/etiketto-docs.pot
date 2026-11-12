@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 14:14+0100\n"
+"POT-Creation-Date: 2026-11-12 14:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1906,7 +1906,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
-msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves each label as [[ui:Export PNG…]] does: as printed, on the whole tape, at most 600 dpi like the preview, with its resolution (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output)."
+msgid "`--dry-run` only checks and renders: it lists the texts of each label; `--output file.png` saves each label as [[ui:Export PNG…]] does: as printed, on the whole tape, at most 600 dpi like the preview (a large page coarser), with its resolution (`file-1.png`, `file-2.png` … if they differ; `-` writes the first to standard output). The first label is also drawn as the printer would get it. With `--output` every label is drawn, and a code that does not fit stops the dry run (exit code 4); without it the labels after the first are not drawn: their columns and codes are checked, not whether a code fits."
 msgstr ""
 
 #. type: Plain text

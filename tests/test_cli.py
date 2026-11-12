@@ -1260,3 +1260,20 @@ def test_dry_run_output_of_a_page_printer_is_capped_as_the_window(tmp_path, monk
     with Image.open(out) as png:
         assert round(png.info["dpi"][0]) == PREVIEW_MAX_DPI
         assert png.width == round(100 / 25.4 * PREVIEW_MAX_DPI)
+
+
+def test_a_dry_run_output_stops_at_a_row_whose_code_does_not_fit(mono, tmp_path, capsys):
+    """Each label --output saves is checked like a print: a row whose QR
+    code does not fit the tape stops the dry run (exit 4, the printer's
+    message), no PNG of a code cut off. Without --output only the first
+    label is drawn (documented): the rows' codes are checked to be makeable."""
+    rows = tmp_path / "rows.csv"
+    rows.write_text("data\nA1\nB2\n" + "x" * 600 + "\n", encoding="utf-8")
+    path = tmp_path / "label.etiketto"
+    code = CodeElement(data="{data}", symbology="qr")
+    Label(printer="fake-mono", tape_mm=12, elements=[code]).save(path)
+    out = tmp_path / "o.png"
+    assert run("print", path, "--data", rows, "--dry-run", "--output", out) == cli.EXIT_LABEL
+    assert err(capsys).startswith("etiketto: A code does not fit")
+    assert sorted(p.name for p in tmp_path.glob("o-*.png")) == ["o-1.png", "o-2.png"]
+    assert run("print", path, "--data", rows, "--dry-run") == cli.EXIT_OK

@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Без команди запускається застосунок; вказані файли етикеток відкриваються в ньому.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "текст елемента NAME або значення змінної {=NAME}; змінні в тексті підставляються; можна повторювати",
     "like --set, but the value is used as it is: braces are no variables": "як --set, але значення використовується як є: фігурні дужки не є змінними",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "з --dry-run: зберігає зображення у PNG в такому вигляді, в якому їх отримав би принтер (- для stdout: лише перше)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "з --dry-run: зберігає кожну етикетку у PNG так, як її експортує вікно, щонайбільше 600 dpi (- для stdout: лише першу)",
     "Cannot write the output": "Не вдається записати вивід",
     "--output writes PNG images: give a name ending in .png": "--output записує зображення PNG: вкажіть назву із закінченням .png",
     "nothing was printed: the next counter value could not be saved": "нічого не надруковано: наступне значення лічильника не вдалося б зберегти",

@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Komut olmadan uygulama başlar; verilen etiket dosyaları onda açılır.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "NAME öğesinin metni veya {=NAME} değişkeninin değeri; metindeki değişkenler doldurulur; tekrarlanabilir",
     "like --set, but the value is used as it is: braces are no variables": "--set gibi, ancak değer olduğu gibi kullanılır: süslü parantezler değişken değildir",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "--dry-run ile: görüntüleri yazıcının alacağı biçimde PNG olarak kaydeder (- stdout için: yalnızca ilki)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "--dry-run ile: her etiketi pencerenin dışa aktardığı biçimde, en fazla 600 dpi olarak PNG kaydeder (- stdout için: yalnızca ilki)",
     "Cannot write the output": "Çıktı yazılamıyor",
     "--output writes PNG images: give a name ending in .png": "--output PNG görüntüleri yazar: .png ile biten bir ad verin",
     "nothing was printed: the next counter value could not be saved": "hiçbir şey yazdırılmadı: sonraki sayaç değeri kaydedilemeyecekti",

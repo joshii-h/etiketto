@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "명령 없이 실행하면 앱이 시작되고, 지정한 라벨 파일이 앱에서 열립니다.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "요소 NAME의 텍스트 또는 변수 {=NAME}의 값, 텍스트 안의 변수는 채워짐, 여러 번 지정 가능",
     "like --set, but the value is used as it is: braces are no variables": "--set과 같지만 값을 그대로 사용: 중괄호는 변수가 아님",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "--dry-run과 함께: 프린터가 받을 그대로 이미지를 PNG로 저장 (- 는 표준 출력: 첫 번째만)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "--dry-run과 함께: 창에서 내보내는 그대로 각 라벨을 PNG로 저장, 최대 600 dpi (- 는 표준 출력: 첫 번째만)",
     "Cannot write the output": "출력을 쓸 수 없습니다",
     "--output writes PNG images: give a name ending in .png": "--output은 PNG 이미지를 씁니다: .png로 끝나는 이름을 지정하세요",
     "nothing was printed: the next counter value could not be saved": "아무것도 인쇄되지 않았습니다: 다음 카운터 값을 저장할 수 없습니다",

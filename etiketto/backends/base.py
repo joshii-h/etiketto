@@ -677,11 +677,15 @@ class Backend(ABC):
         return dpi
 
     def label_dpi(
-        self, label: Label, options: PrintOptions, max_dpi: float | None = None
+        self,
+        label: Label,
+        options: PrintOptions,
+        max_dpi: float | None = None,
+        max_pixels: float | None = None,
     ) -> float:
         """The resolution this label is rendered at (render_dpi()); a backend
-        whose pages can be too large for the resolution (a page printer)
-        lowers it for the preview, when `max_dpi` is given."""
+        whose pages can be large (a page printer) lowers it until the page
+        takes at most `max_pixels` (the preview's budget, see job.py)."""
         return self.render_dpi(label.tape_mm, options, max_dpi)
 
     def label_raster(self, label: Label, options: PrintOptions) -> Raster:

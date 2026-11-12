@@ -231,10 +231,14 @@ the chosen positions.
 `--data` prints serial labels: one for each row of a CSV, ODS or XLSX file
 (by default the label's own data file, if it lies beside it), `--sheet`
 and `--rows 3-10` choose which; the counter goes on from row to row.
-`--dry-run` lists the texts of every label and with `--output` saves
-each label as the window's export does: as printed, on the whole tape,
-at most 600 dpi like the preview, with its resolution in the PNG (`-`:
-the first on standard output).
+`--dry-run` lists the texts of every label and draws the first as the
+printer would get it; with `--output` it saves each label as the
+window's export does: as printed, on the whole tape, at most 600 dpi
+like the preview (a large page coarser), with its resolution in the PNG
+(`-`: the first on standard output). Every label it saves is checked
+too: a code that does not fit stops it (exit 4); without `--output` the
+labels after the first are not drawn, so only the rows' columns and
+codes are checked.
 The label file is locked while printing, so two prints of one file never
 share a number; the window reads the saved counter again before printing
 and saving. The counter is saved also after a printer error, Ctrl+C,

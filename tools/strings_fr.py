@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Sans commande, l’application démarre ; les fichiers d’étiquette indiqués s’y ouvrent.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "texte de l’élément NAME, ou valeur de la variable {=NAME} ; les variables d’un texte sont remplies ; répétable",
     "like --set, but the value is used as it is: braces are no variables": "comme --set, mais la valeur est prise telle quelle : les accolades ne sont pas des variables",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "avec --dry-run : enregistre les images en PNG telles que l’imprimante les recevrait (- pour la sortie standard : la première seulement)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "avec --dry-run : enregistre chaque étiquette en PNG comme la fenêtre l’exporte, 600 dpi au plus (- pour la sortie standard : la première seulement)",
     "Cannot write the output": "Impossible d’écrire la sortie",
     "--output writes PNG images: give a name ending in .png": "--output écrit des images PNG : indiquez un nom se terminant par .png",
     "nothing was printed: the next counter value could not be saved": "rien n’a été imprimé : la prochaine valeur du compteur ne pourrait pas être enregistrée",

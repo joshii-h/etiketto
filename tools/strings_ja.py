@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "コマンドなしではアプリが起動し、指定したラベルファイルがそこで開きます。",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "要素 NAME のテキスト、または変数 {=NAME} の値。テキスト内の変数は埋め込まれます。複数回指定できます",
     "like --set, but the value is used as it is: braces are no variables": "--set と同じですが、値をそのまま使います: 波括弧は変数になりません",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "--dry-run 指定時: プリンターに送られるとおりの画像を PNG で保存する (- で標準出力: 最初の 1 枚のみ)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "--dry-run 指定時: ウィンドウのエクスポートと同じく各ラベルを PNG で保存する (最大 600 dpi、- で標準出力: 最初の 1 枚のみ)",
     "Cannot write the output": "出力を書き込めません",
     "--output writes PNG images: give a name ending in .png": "--output は PNG 画像を書き込みます: .png で終わる名前を指定してください",
     "nothing was printed: the next counter value could not be saved": "何も印刷されていません: 次のカウンター値を保存できないためです",

@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Ilman komentoa sovellus käynnistyy; annetut tarratiedostot avataan siinä.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "elementin NAME teksti tai muuttujan {=NAME} arvo; tekstin muuttujat täytetään; voi toistaa",
     "like --set, but the value is used as it is: braces are no variables": "kuten --set, mutta arvoa käytetään sellaisenaan: aaltosulkeet eivät ole muuttujia",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "valitsimen --dry-run kanssa: tallentaa kuvat PNG-muodossa sellaisina kuin tulostin ne saisi (- stdout: vain ensimmäinen)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "valitsimen --dry-run kanssa: tallentaa jokaisen tarran PNG-muodossa niin kuin ikkuna sen vie, enintään 600 dpi (- stdout: vain ensimmäinen)",
     "Cannot write the output": "Tulostetta ei voi kirjoittaa",
     "--output writes PNG images: give a name ending in .png": "--output kirjoittaa PNG-kuvia: anna nimi, joka päättyy .png",
     "nothing was printed: the next counter value could not be saved": "mitään ei tulostettu: seuraavaa laskurin arvoa ei voitaisi tallentaa",

@@ -245,7 +245,7 @@ def parser() -> argparse.ArgumentParser:
         "--output",
         metavar="PNG",
         help=_(
-            "with --dry-run: save the images as the printer would get them, as PNG"
+            "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi"
             " (- for stdout: the first only)"
         ),
     )

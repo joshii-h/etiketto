@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "不帶指令時會啟動應用程式；指定的標籤檔案會在其中開啟。",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "元素 NAME 的文字，或變數 {=NAME} 的值；文字中的變數會被填入；可重複使用",
     "like --set, but the value is used as it is: braces are no variables": "同 --set，但值按原樣使用：大括號不視為變數",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "搭配 --dry-run：依印表機收到的樣子將影像儲存為 PNG（- 表示標準輸出：僅第一張）",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "搭配 --dry-run：依視窗匯出的樣子將每張標籤儲存為 PNG，最高 600 dpi（- 表示標準輸出：僅第一張）",
     "Cannot write the output": "無法寫入輸出",
     "--output writes PNG images: give a name ending in .png": "--output 會寫入 PNG 影像：請提供以 .png 結尾的名稱",
     "nothing was printed: the next counter value could not be saved": "未列印任何內容：下一個計數器值無法儲存",

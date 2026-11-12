@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "बिना कमांड के ऐप्लिकेशन शुरू होता है; दी गई लेबल फ़ाइलें उसमें खुलती हैं।",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "तत्व NAME का पाठ, या चर {=NAME} का मान; पाठ के चर भरे जाते हैं; दोहराया जा सकता है",
     "like --set, but the value is used as it is: braces are no variables": "--set की तरह, पर मान जैसा है वैसा ही उपयोग होता है: कोष्ठक चर नहीं हैं",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "--dry-run के साथ: चित्रों को PNG के रूप में वैसे सहेजें जैसे प्रिंटर को मिलेंगे (- stdout के लिए: केवल पहला)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "--dry-run के साथ: हर लेबल को PNG के रूप में वैसे सहेजें जैसे विंडो उसे निर्यात करती है, अधिकतम 600 dpi (- stdout के लिए: केवल पहला)",
     "Cannot write the output": "आउटपुट लिखा नहीं जा सकता",
     "--output writes PNG images: give a name ending in .png": "--output PNG चित्र लिखता है: .png पर समाप्त होने वाला नाम दें",
     "nothing was printed: the next counter value could not be saved": "कुछ भी प्रिंट नहीं हुआ: अगला काउंटर मान सहेजा नहीं जा सकता",

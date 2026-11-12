@@ -286,9 +286,13 @@ etiketto --version
   print before the first label. See [Serial labels](serial.md).
 - `--dry-run` only checks and renders: it lists the texts of each label;
   `--output file.png` saves each label as [[ui:Export PNG…]] does: as
-  printed, on the whole tape, at most 600 dpi like the preview, with its
-  resolution (`file-1.png`, `file-2.png` … if they differ; `-` writes the
-  first to standard output).
+  printed, on the whole tape, at most 600 dpi like the preview (a large
+  page coarser), with its resolution (`file-1.png`, `file-2.png` … if
+  they differ; `-` writes the first to standard output). The first label
+  is also drawn as the printer would get it. With `--output` every label
+  is drawn, and a code that does not fit stops the dry run (exit code 4);
+  without it the labels after the first are not drawn: their columns and
+  codes are checked, not whether a code fits.
 
 Exit codes: 0 printed, 1 printer problem or no printer found, 2 wrong
 arguments, 3 label file cannot be read, still locked by another print or

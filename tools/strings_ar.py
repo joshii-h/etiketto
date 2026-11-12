@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "بدون أمر يبدأ التطبيق؛ وتُفتح فيه ملفات الملصقات المحددة.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "نص العنصر NAME، أو قيمة المتغير {=NAME}؛ تُملأ المتغيرات في النص؛ يمكن تكراره",
     "like --set, but the value is used as it is: braces are no variables": "مثل --set، لكن تُستخدم القيمة كما هي: الأقواس المعقوفة ليست متغيرات",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "مع --dry-run: حفظ الصور بصيغة PNG كما ستستلمها الطابعة (- لـ stdout: الأولى فقط)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "مع --dry-run: حفظ كل ملصق بصيغة PNG كما تصدّره النافذة، بدقة 600 نقطة في البوصة على الأكثر (- لـ stdout: الأول فقط)",
     "Cannot write the output": "تتعذر كتابة المخرجات",
     "--output writes PNG images: give a name ending in .png": "يكتب --output صور PNG: أعطِ اسمًا ينتهي بـ .png",
     "nothing was printed: the next counter value could not be saved": "لم يُطبع شيء: تعذّر حفظ قيمة العدّاد التالية",

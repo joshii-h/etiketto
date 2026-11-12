@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Không có lệnh thì ứng dụng khởi động; các tệp nhãn được chỉ định sẽ mở trong đó.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "văn bản của phần tử NAME, hoặc giá trị của biến {=NAME}; các biến trong văn bản được điền vào; có thể lặp lại",
     "like --set, but the value is used as it is: braces are no variables": "như --set, nhưng giá trị được dùng nguyên văn: dấu ngoặc nhọn không phải là biến",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "với --dry-run: lưu các ảnh dạng PNG đúng như máy in sẽ nhận (- cho stdout: chỉ ảnh đầu tiên)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "với --dry-run: lưu mỗi nhãn dạng PNG như cửa sổ xuất ra, tối đa 600 dpi (- cho stdout: chỉ nhãn đầu tiên)",
     "Cannot write the output": "Không thể ghi đầu ra",
     "--output writes PNG images: give a name ending in .png": "--output ghi ảnh PNG: hãy đặt tên kết thúc bằng .png",
     "nothing was printed: the next counter value could not be saved": "không có gì được in: giá trị bộ đếm tiếp theo sẽ không lưu được",

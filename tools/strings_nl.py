@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Zonder opdracht start de app; opgegeven etiketbestanden worden erin geopend.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "tekst van het element NAME, of waarde van de variabele {=NAME}; variabelen in een tekst worden ingevuld; herhaalbaar",
     "like --set, but the value is used as it is: braces are no variables": "zoals --set, maar de waarde wordt ongewijzigd gebruikt: accolades zijn geen variabelen",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "met --dry-run: de afbeeldingen als PNG opslaan zoals de printer ze zou krijgen (- voor stdout: alleen de eerste)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "met --dry-run: elk etiket als PNG opslaan zoals het venster het exporteert, hoogstens 600 dpi (- voor stdout: alleen het eerste)",
     "Cannot write the output": "Kan de uitvoer niet schrijven",
     "--output writes PNG images: give a name ending in .png": "--output schrijft PNG-afbeeldingen: geef een naam die eindigt op .png",
     "nothing was printed: the next counter value could not be saved": "er is niets afgedrukt: de volgende tellerwaarde zou niet kunnen worden opgeslagen",

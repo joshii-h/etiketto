@@ -383,7 +383,7 @@ TRANSLATIONS = {
     "Without a command the application starts; label files given open in it.": "Senza comando si avvia l’applicazione; i file di etichetta indicati vi vengono aperti.",
     "text of the element NAME, or value of the variable {=NAME}; variables in a text are filled in; repeatable": "testo dell’elemento NAME, o valore della variabile {=NAME}; le variabili in un testo vengono compilate; ripetibile",
     "like --set, but the value is used as it is: braces are no variables": "come --set, ma il valore è usato così com’è: le parentesi graffe non sono variabili",
-    "with --dry-run: save the images as the printer would get them, as PNG (- for stdout: the first only)": "con --dry-run: salva le immagini in PNG come le riceverebbe la stampante (- per stdout: solo la prima)",
+    "with --dry-run: save each label as PNG as the window exports it, at most 600 dpi (- for stdout: the first only)": "con --dry-run: salva ogni etichetta in PNG come la esporta la finestra, al massimo 600 dpi (- per stdout: solo la prima)",
     "Cannot write the output": "Impossibile scrivere l’output",
     "--output writes PNG images: give a name ending in .png": "--output scrive immagini PNG: indica un nome che termina con .png",
     "nothing was printed: the next counter value could not be saved": "non è stato stampato nulla: il prossimo valore del contatore non potrebbe essere salvato",
@@ -521,5 +521,5 @@ TRANSLATIONS = {
     "print density\x04Default": "Predefinita",
     "Ideas for the variables (counter, date, UUID), no code": "Idee per le variabili (contatore, data, UUID), nessun codice",
     "Waiting for the printer's answer…": "In attesa della risposta della stampante…",
-    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "stampa con i valori predefiniti del modello di stampante invece di taglio, colori, qualità, extra (stampa a catena, alta risoluzione, avanzamento del nastro), impostazioni e contorni dei fogli di etichette scelti per ultimi nell’app; indirizzo e margine di sicurezza restano",
+    "print with the printer model's defaults instead of the cut, colours, quality, extras (chain printing, high resolution, tape feed), printer settings and label sheet outlines last chosen in the app; the address and the safety margin stay": "stampa con i valori predefiniti del modello di stampante invece di taglio, colori, qualità, extra (stampa a catena, alta risoluzione, avanzamento del nastro), impostazioni della stampante e contorni dei fogli di etichette scelti per ultimi nell’app; indirizzo e margine di sicurezza restano",
 }
