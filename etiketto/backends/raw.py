@@ -347,8 +347,10 @@ class RawBackend(Backend):
         if not self.has_setting("dpi"):
             return self.capabilities.dpi
         choice = self.setting(options, "dpi")
-        if choice == "auto":
-            return self.reported.get(options.host) or DPI[self.default_dpi]
+        if choice == "auto":  # as the printer reported: this job's answer, or before
+            info = options.info
+            reported = info.dpi if info and info.dpi else self.reported.get(options.host)
+            return reported or DPI[self.default_dpi]
         return DPI.get(str(choice), DPI[self.default_dpi])
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:

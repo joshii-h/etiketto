@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import copy
 import errno
 import locale
 import os
@@ -882,29 +883,42 @@ def ask_printer(
 ) -> PrinterInfo | None:
     """What the printer reports, for backends whose render depends on it
     (Backend.query_before_render); None if they do not, or the printer does
-    not answer within `wait` seconds (the print then says what is wrong).
-    A question still running then is given `finish` seconds more to end
-    (and the user is told), so that no second session meets it; after that
-    it is left to end by itself (the backend's timeouts end it; the print's
-    own session waits for a busy USB printer). Its late answer is not used
-    here, but what the query stores in the backend (the resolution a raw
-    printer reported) is there for the print's render."""
+    not answer within `wait` seconds and the extra `finish` seconds a
+    question still running gets (the user is told; an answer then is
+    used); after that it is left to end by itself (the backend's timeouts
+    end it; the print's own session waits for a busy USB printer). What it
+    stores in the backend later (a raw printer's resolution) counts for
+    the print's render. With finish 0 (a dry run) it asks a copy of the
+    backend, so a late answer changes nothing."""
     if not backend.query_before_render:
         return None
     answer: list[PrinterInfo] = []
+    # a question that may be left behind (finish 0: a dry run) asks through
+    # a copy of the backend: what it stores when it answers late cannot
+    # change the resolution between the check and the images
+    asking = backend if finish > 0 else _isolated(backend)
 
     def query() -> None:
         with contextlib.suppress(Exception):
-            answer.append(backend.query(host))
+            answer.append(asking.query(host))
 
     thread = threading.Thread(target=query, name="etiketto-query", daemon=True)
     thread.start()
     thread.join(wait)
-    answered = answer[0] if answer else None
     if thread.is_alive() and finish > 0:
         _say(_("Waiting for the printer's answer…"))
         thread.join(finish)
-    return answered
+    return answer[0] if answer else None  # also one that came in the extra time
+
+
+def _isolated(backend: Backend) -> Backend:
+    """A copy of the backend whose caches (the resolutions a raw printer
+    reported, the model last asked) are its own."""
+    twin = copy.copy(backend)
+    for name, value in vars(backend).items():
+        if isinstance(value, (dict, list, set)):
+            setattr(twin, name, copy.copy(value))
+    return twin
 
 
 # --- list-printers ----------------------------------------------------------

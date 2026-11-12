@@ -347,14 +347,16 @@ class Cab(Backend):
         )
 
     def raster(self, tape_mm: float, options: PrintOptions) -> Raster:
-        return Raster(dpi_for(self.dots_per_mm))
+        info = options.info  # this job's answer, else the printer as last asked
+        return Raster(info.dpi if info and info.dpi else dpi_for(self.dots_per_mm))
 
     def prepare(
         self, label: Label, options: PrintOptions, safe_mm: float = DEFAULT_SAFE_MM
     ) -> Image.Image:
         """In printer orientation: x across the print head, y along the feed.
         The resolution it was made for travels with the image (info)."""
-        dots = self.dots_per_mm
+        # what it is rendered at (12 dots/mm, not 11.999… from 304.8 dpi)
+        dots = round(self.raster(label.tape_mm, options).dpi / 25.4, 6)
         image = super().prepare(replace(label, auto_length=False), options, safe_mm)
         if label.orientation == "along":
             image = image.rotate(-90, expand=True)

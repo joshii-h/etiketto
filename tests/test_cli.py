@@ -1013,9 +1013,9 @@ def test_the_printer_is_asked_before_rendering_where_it_matters(mono, label_file
     assert cli.ask_printer(mono, "h") is None
 
 
-def test_a_late_answer_is_not_used_but_given_time_to_end(mono, monkeypatch, capsys):
-    """After `wait` the answer is not used; the question still running gets
-    `finish` seconds to end (the user is told), then it is left behind."""
+def test_an_answer_in_the_extra_time_is_used_a_later_one_is_left(mono, monkeypatch, capsys):
+    """A question still running after `wait` gets `finish` seconds more
+    (the user is told; an answer then is used), then it is left behind."""
     import threading
 
     monkeypatch.setattr(mono, "query_before_render", True, raising=False)
@@ -1025,8 +1025,8 @@ def test_a_late_answer_is_not_used_but_given_time_to_end(mono, monkeypatch, caps
         mono, "query", lambda host: (release.wait(5), done.append(host), mono.info)[2]
     )
     threading.Timer(0.2, release.set).start()
-    assert cli.ask_printer(mono, "h", wait=0.05) is None  # too late: not used
-    assert done == ["h"]  # but it ended before the print
+    assert cli.ask_printer(mono, "h", wait=0.05) is mono.info  # in the extra time: used
+    assert done == ["h"]  # and it ended before the print
     assert "Waiting for the printer's answer" in capsys.readouterr().err
     release.clear()
     done.clear()
@@ -1106,11 +1106,15 @@ def test_the_command_line_prints_with_the_extras_last_chosen(tmp_path, monkeypat
 def test_a_dry_run_asks_the_printer_too(mono, label_file, monkeypatch, capsys):
     path = label_file(TextElement(text="x"))
     monkeypatch.setattr(mono, "query_before_render", True, raising=False)
+    checked = []
+    real = cli._check
+    monkeypatch.setattr(cli, "_check", lambda job: checked.append(job.options.info) or real(job))
     assert run("print", path, "--dry-run", "--host", "h") == 0
-    assert mono.queries == ["h"]
+    assert checked == [mono.info]  # asked (through a copy of the backend)
     assert run("print", path, "--dry-run", "--host", "h", "--no-query") == 0
     assert run("print", path, "--dry-run") == 0  # no printer known: nothing to ask
-    assert mono.queries == ["h"]
+    assert checked == [mono.info, None, None]
+    assert mono.queries == []  # the real backend's caches are untouched
 
 
 def test_a_dry_run_waits_briefly_and_never_blocks(mono, label_file, monkeypatch):
@@ -1123,3 +1127,20 @@ def test_a_dry_run_waits_briefly_and_never_blocks(mono, label_file, monkeypatch)
     assert run("print", path, "--dry-run", "--host", "h") == 0
     assert run("print", path, "--host", "h") == 0
     assert asked == [(cli.DRY_RUN_WAIT, 0.0), (cli.QUERY_WAIT, cli.QUERY_FINISH)]
+
+
+def test_a_dry_runs_late_answer_changes_nothing(monkeypatch):
+    """A dry run asks a copy of the backend: what a late answer stores (a
+    raw printer's resolution) does not reach the backend that renders."""
+    from etiketto.backends import get_backend
+
+    zpl = get_backend("zpl")
+    monkeypatch.setattr(zpl, "reported", {})
+
+    def query(self, host):
+        self.reported[host] = 600.0
+        return
+
+    monkeypatch.setattr(type(zpl), "query", query)
+    cli.ask_printer(zpl, "zebra.local", wait=1.0, finish=0.0)
+    assert zpl.reported == {}

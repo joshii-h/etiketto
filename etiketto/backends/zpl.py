@@ -358,6 +358,7 @@ class Zpl(RawBackend):
             state(status is not None, error, bool(status and status.busy)),
             error=error.code if error else "",
             firmware=identity.firmware,
+            dpi=DPI[identity.dpi] if identity.dpi else None,
         )
 
     def problem(self, s: Session) -> PrinterError | None:
