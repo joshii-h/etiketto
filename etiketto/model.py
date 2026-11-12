@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import copy
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -19,7 +20,8 @@ MAX_GAP_MM = 50.0
 # json documentation advises a limit for data from untrusted sources)
 MAX_FILE_BYTES = 200 * 1024 * 1024
 # what a printer model decides about a label: kept per model when switching
-GEOMETRY_FIELDS = ("tape_mm", "auto_length", "length_mm", "orientation", "gap_mm")
+GEOMETRY_FIELDS = ("tape_mm", "auto_length", "length_mm", "orientation", "gap_mm", "sheet")
+MAX_SHEET_POSITIONS = 10000  # far more than any sheet has
 
 
 class LabelError(ValueError):
@@ -73,6 +75,39 @@ class CodeElement:
 
 
 Element = TextElement | ImageElement | CodeElement
+
+
+@dataclass
+class SheetChoice:
+    """Page printers: the label printed on a label sheet (see etiketto.sheets)."""
+
+    id: str = ""  # Sheet.id: "Avery L7160"
+    # positions to fill on the first sheet (0-based, row by row); the
+    # sheets after it are filled completely
+    positions: list[int] = field(default_factory=list)
+    # the content turned by a quarter: designed on the label lying on its side
+    rotated: bool = False
+
+    @classmethod
+    def from_dict(cls, data) -> SheetChoice | None:
+        """None: no sheet (also files without one)."""
+        if data is None:
+            return None
+        if not isinstance(data, dict):
+            raise _damaged("sheet must be an object")
+        choice = cls(**_known_fields(cls, data))
+        choice.id = _str(choice.id, "sheet id")
+        positions = choice.positions
+        if not isinstance(positions, list) or not all(
+            isinstance(p, int) and not isinstance(p, bool) for p in positions
+        ):
+            raise _damaged("sheet positions must be a list of numbers")
+        choice.positions = sorted({p for p in positions if 0 <= p < MAX_SHEET_POSITIONS})
+        if not isinstance(choice.rotated, bool):  # bool("false") would be True
+            raise _damaged("sheet rotated must be true or false")
+        return choice
+
+
 ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement}
 
 
@@ -98,6 +133,9 @@ class Label:
     # runs across the roll (along the print head) or along it like on tape
     gap_mm: float = 3.0
     orientation: Literal["across", "along"] = "along"
+    # page printers only: printed on a label sheet instead of one page of
+    # the label's size; None: a page of its own
+    sheet: SheetChoice | None = None
 
     # --- die-cut labels ----------------------------------------------------
 
@@ -150,7 +188,25 @@ class Label:
         return label
 
     def geometry(self) -> dict:
-        return {name: getattr(self, name) for name in GEOMETRY_FIELDS}
+        return {name: copy.deepcopy(getattr(self, name)) for name in GEOMETRY_FIELDS}
+
+    def sheet_size(self) -> tuple[float, float] | None:
+        """The size the label sheet gives the label (turned if rotated), or
+        None without a sheet this version knows."""
+        from etiketto.sheets import find
+
+        found = find(self.sheet.id) if self.sheet else None
+        if not found or not self.sheet:
+            return None
+        if self.sheet.rotated:
+            return found.height, found.width
+        return found.width, found.height
+
+    def use_sheet_size(self) -> None:
+        """The label takes the size of its sheet's labels."""
+        size = self.sheet_size()
+        if size:
+            self.set_media_size(*size)
 
     def switch_printer(self, printer: str, geometry: dict | None = None) -> None:
         """Move the label to another printer model. `geometry` is what it had
@@ -161,7 +217,7 @@ class Label:
         self.printer = printer
         if geometry:
             for name, value in geometry.items():
-                setattr(self, name, value)
+                setattr(self, name, copy.deepcopy(value))
         elif caps.continuous:
             if not was_continuous:  # the content runs along the tape again
                 self.orientation = "along"
@@ -169,6 +225,8 @@ class Label:
             self.tape_mm = caps.nearest_tape(self.tape_mm)  # 50, not 50.0
         elif was_continuous:
             self.use_default_size(caps)
+        if not caps.pages:
+            self.sheet = None  # sheets are pages
         self._page_upright(caps)
 
     def _page_upright(self, caps) -> None:
@@ -201,8 +259,10 @@ class Label:
             raise _damaged("elements must be a list")
         elements = [_element_from_dict(item) for item in items]
         background_image = data.pop("background_image", None)
-        label = cls(**_known_fields(cls, data, frozenset({"elements", "background_image"})))
+        sheet = data.pop("sheet", None)
+        label = cls(**_known_fields(cls, data))
         label.elements = elements
+        label.sheet = SheetChoice.from_dict(sheet)
         if background_image:
             if not isinstance(background_image, dict):
                 raise _damaged("background_image must be an object")
@@ -235,6 +295,9 @@ class Label:
             width, height = self.media_size()
             self.set_media_size(min(width, caps.max_width_mm), height)
         self._page_upright(caps)  # a file saved that way by hand or an older version
+        if not caps.pages:
+            self.sheet = None
+        self.use_sheet_size()  # an unknown sheet (newer templates): the size as saved
         self.margin_mm = _clamp(self.margin_mm, 0, 20, "margin_mm")
         self.edge_mm = _clamp(self.edge_mm, 0, 10, "edge_mm")
         self.border_mm = _clamp(self.border_mm, 0, 5, "border_mm")
@@ -276,8 +339,8 @@ def _capabilities(printer: str):
         raise LabelError("newer", "unknown printer %r" % printer) from None
 
 
-def _known_fields(cls, data: dict, skip: frozenset[str] = frozenset()) -> dict:
-    return {k: v for k, v in data.items() if k in cls.__dataclass_fields__ and k not in skip}
+def _known_fields(cls, data: dict) -> dict:
+    return {k: v for k, v in data.items() if k in cls.__dataclass_fields__}
 
 
 def _clamp(value, lower: float, upper: float, name: str) -> float:

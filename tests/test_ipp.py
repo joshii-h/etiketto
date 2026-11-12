@@ -193,6 +193,7 @@ def fake_printer(monkeypatch):
         printer.close()
 
 
+@pytest.mark.real_ipp
 def test_send_posts_ipp_and_decodes_the_answer(fake_printer):
     printer = fake_printer(
         response(groups=[(ipp.PRINTER_GROUP, [ipp.Attribute(ipp.ENUM, "printer-state", [3])])])
@@ -207,6 +208,7 @@ def test_send_posts_ipp_and_decodes_the_answer(fake_printer):
     assert headers["Host"] == "xn--bro-drucker-thb.local:%d" % printer.port
 
 
+@pytest.mark.real_ipp
 def test_send_refuses_http_errors_and_huge_answers(fake_printer, monkeypatch):
     printer = fake_printer(b"Forbidden", status=403)
     with pytest.raises(ipp.IppError, match="HTTP 403"):
@@ -226,6 +228,7 @@ def test_host_header():
         ipp._header_host("a..b")
 
 
+@pytest.mark.real_ipp
 def test_ipps_trusts_the_printers_own_certificate(monkeypatch):
     # printers come with self-signed certificates, as CUPS knows
     made = {}

@@ -2,13 +2,19 @@
 
 The printer is never contacted: vc500w._connect is always replaced, either by
 a refusal (autouse) or by FakeVC500W, which answers the protocol like the
-device does. The GUI tests replace the backend's query/print/discover.
+device does. IPP (ipp.send: CUPS on this computer, network printers) and
+Avahi (the system D-Bus) are refused too, unless a test brings its own fake
+(or is marked real_ipp: a server on 127.0.0.1). A refusal is recorded and
+fails the test at its end, also when it happened in a background thread,
+where an exception is lost. The GUI tests replace query/print/discover of
+every backend.
 """
 
 from __future__ import annotations
 
 import base64
 import io
+import threading
 import time
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +22,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image, ImageChops
 
-from etiketto.backends import cab, get_backend, usb, vc500w
+from etiketto.backends import backends, cab, get_backend, ipp, mdns, usb, vc500w
 from etiketto.backends.base import PrinterInfo, Progress
 from etiketto.model import Label
 
@@ -56,16 +62,32 @@ def ink_bbox(image: Image.Image, background) -> tuple[int, int, int, int] | None
 
 
 @pytest.fixture(autouse=True)
-def _no_network(monkeypatch):
-    """Safety net: no test may open a real connection to the printer."""
+def _no_network(request, monkeypatch):
+    """Safety net: no test may reach a real printer, CUPS or Avahi."""
+    violations: list[str] = []
 
-    def refuse(*_args, **_kwargs):
-        raise AssertionError("network access to the printer in a test")
+    def refusal(what: str):
+        def refuse(*args, **_kwargs):
+            violations.append("%s %r" % (what, args[:1]))
+            if what == "D-Bus":
+                from gi.repository import GLib
 
-    monkeypatch.setattr(vc500w, "_connect", refuse)
-    monkeypatch.setattr(cab, "_connect", refuse)
+                raise GLib.Error("system D-Bus (Avahi) in a test")
+            if what == "IPP":
+                raise ipp.IppError("IPP in a test")
+            raise AssertionError("network access to the printer in a test")
+
+        return refuse
+
+    monkeypatch.setattr(vc500w, "_connect", refusal("printer"))
+    monkeypatch.setattr(cab, "_connect", refusal("printer"))
     # nor see the USB printers of the machine the tests run on
     monkeypatch.setattr(usb, "SYSFS", Path("/nonexistent/usbmisc"))
+    monkeypatch.setattr(mdns.Gio, "bus_get_sync", refusal("D-Bus"))
+    if request.node.get_closest_marker("real_ipp") is None:
+        monkeypatch.setattr(ipp, "send", refusal("IPP"))
+    yield
+    assert not violations, "network access in a test: %s" % ", ".join(violations)
 
 
 # --- fake VC-500W on the protocol level ------------------------------------
@@ -306,10 +328,11 @@ def gui_env(monkeypatch, tmp_path):
         env.discovers += 1
         return list(env.found)
 
-    monkeypatch.setattr(backend, "query", query)
-    monkeypatch.setattr(backend, "print_label", print_label)
-    monkeypatch.setattr(backend, "discover", discover)
-    monkeypatch.setattr(backend, "configured_host", lambda: env.configured)
+    for each in backends():  # never the real printers: CUPS, Avahi, the network
+        monkeypatch.setattr(each, "query", query)
+        monkeypatch.setattr(each, "print_label", print_label)
+        monkeypatch.setattr(each, "discover", discover)
+        monkeypatch.setattr(each, "configured_host", lambda: env.configured)
     monkeypatch.setattr(config, "CONFIG_DIR", tmp_path / "config")
     monkeypatch.setattr(config, "SETTINGS_FILE", tmp_path / "config" / "settings.json")
     monkeypatch.setattr(config, "TEMPLATE_DIR", tmp_path / "templates")
@@ -339,6 +362,11 @@ def make_window(gtk_app, gui_env):
         return win
 
     yield factory
+    for win in windows:
+        win.printer._next_generation()  # answers still on their way are outdated
+    for thread in threading.enumerate():  # the searches and queries end with the test
+        if thread.name in ("etiketto-discover", "etiketto-query"):
+            thread.join(timeout=5)
     for win in windows:
         win.dirty = False
         win.print_flow.busy = False

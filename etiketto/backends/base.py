@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import socket
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
-from dataclasses import KW_ONLY, dataclass, field
+from dataclasses import KW_ONLY, dataclass, field, replace
 from datetime import date
 from typing import Literal
 
@@ -109,6 +109,33 @@ class CassetteInfo:
     printable_mm: float | None = None
 
 
+@dataclass(frozen=True)
+class Margins:
+    """What a page printer cannot print on at the paper's edges, in mm; for
+    one paper size (width, height in mm), or for any if size_mm is None."""
+
+    top: float
+    right: float
+    bottom: float
+    left: float
+    size_mm: tuple[float, float] | None = None
+
+    def sides(self) -> tuple[float, float, float, float]:
+        return self.top, self.right, self.bottom, self.left
+
+
+def margins_for(
+    margins: Sequence[Margins], paper_mm: tuple[float, float], tolerance_mm: float = 1.0
+) -> Margins | None:
+    """The margins for this paper: the first entry of its size, else the
+    first for any size, else None (unknown)."""
+    for entry in margins:
+        size = entry.size_mm
+        if size and all(abs(a - b) <= tolerance_mm for a, b in zip(size, paper_mm, strict=True)):
+            return entry
+    return next((entry for entry in margins if entry.size_mm is None), None)
+
+
 @dataclass
 class PrinterInfo:
     model: str
@@ -122,6 +149,8 @@ class PrinterInfo:
     firmware: str = ""
     cassette: CassetteInfo | None = None
     pitch_mm: float | None = None  # die-cut: measured distance from label to label
+    # page printers: unprintable margins, the paper loaded first; empty = unknown
+    margins: tuple[Margins, ...] = ()
 
 
 # --- a print job ------------------------------------------------------------
@@ -454,3 +483,20 @@ class Backend(ABC):
     ) -> PrintResult | None:
         """Print an image made by prepare(); raises PrinterError. Returns a
         PrintResult if something differed from the request (or None)."""
+
+    def print_pages(
+        self,
+        pages: Sequence[Image.Image],
+        host: str,
+        options: PrintOptions,
+        progress: ProgressCallback | None = None,
+    ) -> PrintResult | None:
+        """Page printers (Capabilities.pages): several pages, such as label
+        sheets, each page an image of the paper's size (info["size_mm"]).
+        Here one print_label() per page; a backend that can send them in
+        one job overrides it."""
+        result = None
+        for n, page in enumerate(pages, 1):
+            report_progress(progress, n, len(pages))
+            result = self.print_label(page, host, replace(options, copies=1)) or result
+        return result

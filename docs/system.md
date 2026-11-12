@@ -63,13 +63,30 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   paper, so the job is canceled with the paper size message; an ignored
   `copies` means it prints one, the others follow as below. [spec]
 - `Print-Job` with one page in the label's exact size: PDF if the printer
-  or CUPS takes it (Pillow's JPEG inside at quality 95 without chroma
-  subsampling, so that small text stays sharp), else PWG Raster, which
-  every IPP Everywhere printer must take (8-bit sRGB or sGray, at 300 dpi
-  or the next resolution the printer lists), else JPEG. `media-col`
+  or CUPS takes it, else PWG Raster, which every IPP Everywhere printer
+  must take, else JPEG (quality 95 without chroma subsampling). `media-col`
   carries the size, `print-scaling=none` (if supported) keeps it at 100 %,
   `copies` is the number of labels, `requesting-user-name` the login
   name. [spec]
+- Image quality: shipping labels, barcodes and small text must arrive as
+  rendered, without grey edges a thermal printer would dither. The PDF
+  embeds each page without loss (`FlateDecode`): 1 bit per pixel when the
+  page is only black and white, 8-bit `DeviceGray` when it is grey, else
+  8-bit `DeviceRGB`; the page exactly the size in millimetres (A4 is
+  595.276 × 841.89 pt), the image at 300 dpi. A mostly white page stays
+  small: a black-and-white 4 × 6 inch label is about 2 kB, an A4 page
+  filled with large text (grey edges: 8 bits) 40 to 80 kB, where JPEG at
+  quality 95 made 300 to 370 kB, with grey noise around every edge. PWG Raster (8-bit sRGB or sGray) is
+  made at 300 dpi or the next resolution the printer lists, and the label
+  (or the label sheet's pages) is rendered again at that resolution
+  instead of resized, so a 203 dpi printer gets 812 × 1218 pixels for
+  4 × 6 inches, sharp. Only a page that cannot be rendered again is
+  resized: pixel by pixel (nearest neighbour) for a whole multiple such as
+  600 dpi, smoothly otherwise. [confirmed with ippeveprinter: a black and
+  white 4 × 6 inch label (QR code) arrives with 0 grey pixels as PDF (1-bit
+  image, 1.9 kB; Ghostscript renders it at 203, 300 and 600 dpi without a
+  grey pixel) and as PWG Raster at 203, 300 and 600 dpi (812 × 1218,
+  1200 × 1800, 2400 × 3600 pixels, 2.3 to 3 kB)]
 - Copies: if the upper bound of `copies-supported` is below the number of
   labels, PWG Raster carries the page several times in one job
   (`TotalPageCount`), at most 10 pages per job (the document is made in
@@ -152,12 +169,74 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   and warns if it changes); the risk is someone in the same network
   pretending to be the printer and reading the label. [confirmed]
 - Checked with `ippeveprinter` (CUPS's simulated IPP Everywhere printer),
-  directly and through a CUPS queue. Through CUPS an A4 label arrives as a
-  595.276 × 841.89 pt PDF page (CUPS's filters write the exact A4 size);
-  sent directly it is Pillow's PDF, 595.2 × 841.92 pt (2480 × 3508 px at
-  300 dpi). An HP LaserJet Pro 4002 accepted the same
+  directly and through a CUPS queue. An A4 label arrives as a
+  595.276 × 841.89 pt PDF page, directly and through CUPS (2480 × 3508 px
+  at 300 dpi inside). An HP LaserJet Pro 4002 accepted the same
   job with `Validate-Job` (nothing printed). The PWG Raster pages convert
   with CUPS's own `pwgtopdf`. [confirmed]
+
+## Label sheets
+
+Several labels on one sheet of paper (A4, US Letter, others), placed as
+the gLabels template database says (`etiketto/sheets`, see below).
+
+- Each page is composed at 300 dpi (PWG Raster: at the printer's
+  resolution, the labels rendered at it too): the paper's size from the template,
+  every label at its exact position (rounded to the pixel, 0.08 mm), round
+  labels, ellipses and CDs clipped to their shape (rectangles are printed to
+  their edges). Each position gets its own label image from a source
+  (`label_at(n)` for the n-th label of the job), so a mail merge can give
+  every position another row; printing copies is the source that always
+  returns the same label.
+- The positions to fill: the chosen ones on the first sheet (partly used
+  sheets), every position on the sheets after it. Up to 999 labels a job.
+- The pages go in `Print-Job`s of up to 10 pages each, every page once (no
+  `copies`): a PDF with a page each, or PWG Raster with `TotalPageCount`
+  set; 23 sheets are jobs of 10, 10 and 3 pages. Pages are composed one at
+  a time while the document is written: a job holds one page image at a
+  time, plus the encoded pages of that job (at most 10, as for copies
+  above). A printer that only takes JPEG gets one job per page. The jobs
+  take part in everything above: `Validate-Job` once before the first,
+  a busy printer asked again with the same document, the jobs sent and not
+  over canceled when a step fails; the message then counts sheets
+  ("Sheets already printed: 10 of 23."). Progress counts pages
+  (`job-impressions-completed`). [spec] [confirmed with ippeveprinter:
+  Avery L7160 with outlines, two pages, every label within a pixel of the
+  template]
+- Unprintable margins: `Get-Printer-Attributes` asks for
+  `media-col-ready` (the paper loaded) and `media-col-database` (each with
+  its `media-size` and `media-*-margin`, in hundredths of mm), and for the
+  `media-*-margin-supported` lists. The entry for the sheet's paper size
+  counts (loaded paper first); else the smallest margin the printer
+  supports for any paper, without 0 (borderless, only when asked for).
+  Borderless entries (all margins 0) are skipped. Etiketto never asks for
+  other margins, it warns: if the content of a label (the label inset by
+  the safety margin) reaches into the margin, the status line says which
+  positions, and printing asks first. [spec] [confirmed with ippeveprinter:
+  A4 3.4 mm left and right, 6.35 mm top and bottom]
+- Outlines (for a test on plain paper): 0.2 mm grey lines just inside each
+  label, the shape of the label (corner radius, ellipse, CD with hole).
+
+### The template database
+
+`etiketto/sheets/templates.json` is converted from gLabels' template files
+(`templates/*-templates.xml`, MIT license, Copyright (C) 2001-2026 Jaye
+Evins; license in `etiketto/sheets/LICENSE.glabels`) by
+`tools/glabels_templates.py`: lengths in mm (also written with an
+exponent, `3.93386e-16pt`), aliases (`equiv`) resolved, paper sizes from
+`paper-sizes.xml`, 1750 sheets from 35 files. Some files use the XML
+namespace `http://glabels.org/xmlns/3.0/`, most none: namespaces are
+dropped when a file is read. The converter lists the templates and the
+sheets kept per file, and stops at a file without any template (a change
+in the format would otherwise drop sheets without a word). Left out (of
+1797 templates, 654 of them aliases, in the version converted): 23 rolls
+(`size="roll"`), 9 templates whose labels lie off the page (typing errors
+in the database) and 1 with labels smaller than 5 mm; free-form labels
+(`Label-path`) and templates with more than one kind of label would be
+left out too (none at present). An alias goes with its template, and is
+skipped if its template is missing or the part number is taken already
+(14). gLabels gives a CD's hole as a radius; business-card CDs (a disc cut
+off at the sides) keep the disc's diameter.
 
 ## Problems the printer reports
 
@@ -180,6 +259,12 @@ error (RFC 8011 5.4.12). Keywords ending in `-low` (`toner-low`,
 
 ## Not done yet
 
-- The unprintable margin the printer reports (`media-col-ready`) is not
-  used for the safety margin yet; the documentation suggests 5 mm.
-- Label sheets (several labels on one page) come with label sheet support.
+- The unprintable margin the printer reports only warns on label sheets;
+  it does not set the safety margin of a single label (the documentation
+  suggests 5 mm).
+- Label sheets: the margins are matched to the paper size as it is, not
+  to a page the printer turns to portrait; a mail merge (a different label
+  at every position) is prepared in the page composer, not in the
+  interface yet.
+- Sheet templates of gLabels with labels of several kinds on one sheet, and
+  free-form labels, are not supported.

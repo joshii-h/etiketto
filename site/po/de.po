@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 22:47+0100\n"
+"POT-Creation-Date: 2026-11-11 23:03+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -794,11 +794,22 @@ msgstr "[[ui:Label size]]: das Papierformat oder [[ui:Custom size]]."
 #. type: Bullet: '- '
 #: docs/printer.md
 msgid ""
+"[[ui:Print on]] [[ui:Label sheet]]: several labels on a sheet of self-"
+"adhesive labels, see [Label sheets](sheets.md)."
+msgstr ""
+"[[ui:Print on]] [[ui:Label sheet]]: mehrere Etiketten auf einem Bogen "
+"selbstklebender Etiketten, siehe [Etikettenbögen](sheets.md)."
+
+#. type: Bullet: '- '
+#: docs/printer.md
+msgid ""
 "Most office printers cannot print the outer 4 to 5 mm of a page: set the "
-"[[ui:Safety margin]] to 5 mm."
+"[[ui:Safety margin]] to 5 mm. On label sheets Etiketto warns when a label "
+"reaches into what the printer reports."
 msgstr ""
 "Die meisten Bürodrucker können die äussersten 4 bis 5 mm einer Seite nicht "
-"bedrucken: den [[ui:Safety margin]] auf 5 mm stellen."
+"bedrucken: den [[ui:Safety margin]] auf 5 mm stellen. Auf Etikettenbögen "
+"warnt Etiketto, wenn ein Etikett in den Rand reicht, den der Drucker meldet."
 
 #. type: Title ###
 #: docs/printer.md
@@ -880,6 +891,166 @@ msgstr ""
 "Etwas anderes? [[ui:Report a problem…]] im Hauptmenü (auch bei "
 "Fehlermeldungen angeboten) öffnet im Browser ein vorausgefülltes Issue mit "
 "Version, System und Drucker. Vor dem Absenden ist alles sichtbar."
+
+#. type: Title #
+#: docs/sheets.md
+#, no-wrap
+msgid "Label sheets { #sheets }"
+msgstr "Etikettenbögen { #sheets }"
+
+#. type: Plain text
+#: docs/sheets.md
+msgid ""
+"With the [[ui:System printer (CUPS, IPP)]], an office printer prints on "
+"sheets of self-adhesive labels: A4 or US Letter pages with a grid of labels, "
+"as Avery, Zweckform, Herma and many others sell them. Etiketto knows more "
+"than 1700 of these sheets, from the template collection of gLabels."
+msgstr ""
+"Mit dem [[ui:System printer (CUPS, IPP)]] druckt ein Bürodrucker auf Bögen "
+"mit selbstklebenden Etiketten: A4- oder US-Letter-Seiten mit einem Raster "
+"von Etiketten, wie sie Avery, Zweckform, Herma und viele andere verkaufen. "
+"Etiketto kennt über 1700 solcher Bögen, aus der Vorlagensammlung von gLabels."
+
+#. type: Title ##
+#: docs/sheets.md
+#, no-wrap
+msgid "Choose the sheet { #choose }"
+msgstr "Bogen wählen { #choose }"
+
+#. type: Bullet: '1. '
+#: docs/sheets.md
+msgid "[[ui:Printer model]]: [[ui:System printer (CUPS, IPP)]]."
+msgstr "[[ui:Printer model]]: [[ui:System printer (CUPS, IPP)]]."
+
+#. type: Bullet: '2. '
+#: docs/sheets.md
+msgid "[[ui:Print on]]: [[ui:Label sheet]]. The list of sheets opens."
+msgstr "[[ui:Print on]]: [[ui:Label sheet]]. Die Liste der Bögen öffnet sich."
+
+#. type: Bullet: '3. '
+#: docs/sheets.md
+msgid ""
+"Search by brand and part number as printed on the package (\"Avery L7160\", "
+"\"Zweckform 3475\"), or by the size of one label in millimetres (\"70x37\", "
+"either way round). The paper size narrows the list down."
+msgstr ""
+"Nach Marke und Artikelnummer suchen, wie sie auf der Packung stehen (\"Avery "
+"L7160\", \"Zweckform 3475\"), oder nach der Grösse eines Etiketts in "
+"Millimetern (\"70x37\", in beiden Richtungen). Das Papierformat schränkt die "
+"Liste ein."
+
+#. type: Bullet: '4. '
+#: docs/sheets.md
+msgid "The picture shows the sheet; [[ui:Use sheet]] takes it."
+msgstr "Das Bild zeigt den Bogen; [[ui:Use sheet]] übernimmt ihn."
+
+#. type: Plain text
+#: docs/sheets.md
+msgid ""
+"The label now has the size of the sheet's labels. Round labels and CDs are "
+"designed as a rectangle, and printed only inside their shape; the preview "
+"shows them that way."
+msgstr ""
+"Das Etikett hat jetzt die Grösse der Etiketten des Bogens. Runde Etiketten "
+"und CDs werden als Rechteck gestaltet und nur innerhalb ihrer Form bedruckt; "
+"die Vorschau zeigt sie so."
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"[[ui:Turn the content]]: for labels read from the side, such as folder "
+"spines: the label is designed lying on its side and turned onto the sheet."
+msgstr ""
+"[[ui:Turn the content]]: für Etiketten, die von der Seite gelesen werden, "
+"etwa Ordnerrücken: Das Etikett wird liegend gestaltet und gedreht auf den "
+"Bogen gesetzt."
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"[[ui:Print on]]: [[ui:Single label]] prints the label as a page of its own "
+"again; choosing [[ui:Label sheet]] again brings back the last sheet."
+msgstr ""
+"[[ui:Print on]]: [[ui:Single label]] druckt das Etikett wieder als eigene "
+"Seite; wer danach wieder [[ui:Label sheet]] wählt, erhält den letzten Bogen "
+"zurück."
+
+#. type: Title ##
+#: docs/sheets.md
+#, no-wrap
+msgid "Partly used sheets { #positions }"
+msgstr "Angebrochene Bögen { #positions }"
+
+#. type: Plain text
+#: docs/sheets.md
+msgid ""
+"[[ui:Positions]] shows the sheet. Click a label to leave it out (it is "
+"already used) or to print on it again, or set [[ui:Start at position]]: the "
+"labels are counted row by row from the top left. This only applies to the "
+"first sheet; further sheets are filled completely. The sheet and the "
+"positions are saved with the label."
+msgstr ""
+"[[ui:Positions]] zeigt den Bogen. Ein Etikett anklicken, um es auszulassen "
+"(es ist schon verbraucht) oder wieder zu bedrucken, oder [[ui:Start at "
+"position]] setzen: Die Etiketten werden Zeile für Zeile von oben links "
+"gezählt. Das gilt nur für den ersten Bogen; weitere Bögen werden ganz "
+"gefüllt. Bogen und Positionen werden mit dem Etikett gespeichert."
+
+#. type: Title ##
+#: docs/sheets.md
+#, no-wrap
+msgid "Print { #print }"
+msgstr "Drucken { #print }"
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"[[ui:Labels]]: how many labels to print. At first as many as positions are "
+"chosen; more fill further sheets. The dialog shows how many sheets that "
+"takes."
+msgstr ""
+"[[ui:Labels]]: wie viele Etiketten gedruckt werden. Zuerst so viele, wie "
+"Positionen gewählt sind; mehr füllen weitere Bögen. Der Dialog zeigt, wie "
+"viele Bögen das braucht."
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"[[ui:Print outlines]]: prints the outline of every label. Print a test page "
+"on plain paper first and hold it against a label sheet in front of a light: "
+"if the content sits inside the outlines, the sheet fits."
+msgstr ""
+"[[ui:Print outlines]]: druckt den Umriss jedes Etiketts. Zuerst eine "
+"Testseite auf normales Papier drucken und vor einer Lampe auf einen "
+"Etikettenbogen legen: Liegt der Inhalt innerhalb der Umrisse, passt der "
+"Bogen."
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"Office printers cannot print near the paper's edges. Etiketto asks the "
+"printer for that margin and warns if the content of a label (inside the "
+"[[ui:Safety margin]]) reaches into it. Leave those positions out, or "
+"increase the [[ui:Safety margin]]."
+msgstr ""
+"Bürodrucker können nahe am Papierrand nicht drucken. Etiketto fragt den "
+"Drucker nach diesem Rand und warnt, wenn der Inhalt eines Etiketts "
+"(trotz [[ui:Safety margin]]) hineinreicht. Diese Positionen "
+"auslassen oder den [[ui:Safety margin]] vergrössern."
+
+#. type: Bullet: '- '
+#: docs/sheets.md
+msgid ""
+"The paper size comes from the sheet; turn off \"fit to page\" in the "
+"printer's setup, otherwise the printer may scale the sheet."
+msgstr ""
+"Das Papierformat kommt vom Bogen; in der Druckereinrichtung \"An Seite "
+"anpassen\" ausschalten, sonst skaliert der Drucker den Bogen womöglich."
+
+#. type: Plain text
+#: docs/sheets.md
+msgid "The sheet templates come from gLabels (© Jaye Evins, MIT license)."
+msgstr "Die Bogenvorlagen stammen von gLabels (© Jaye Evins, MIT-Lizenz)."
 
 #. type: Title #
 #: docs/use.md

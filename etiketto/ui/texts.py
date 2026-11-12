@@ -32,6 +32,8 @@ COLOR_ADJUST_ROWS = [
 ]
 ALIGNS = [("start", _("Start")), ("center", _("Centre")), ("end", _("End"))]
 ORIENTATIONS = [("across", _("Across the roll")), ("along", _("Along the roll"))]
+# page printers: the label as a page of its own, or on a label sheet
+PRINT_ON = [("page", _("Single label")), ("sheet", _("Label sheet"))]
 # errors that mean the printer cannot be reached at all; others need attention
 CONNECTION_ERRORS = ("not_found", "usb_not_found", "timeout", "port_closed")
 TEXT_ALIGNS = [("left", _("Left")), ("center", _("Centre")), ("right", _("Right"))]
@@ -104,11 +106,12 @@ def printer_error_text(error: Exception, unit: Unit) -> str:
         return code_text("generic", unit)
     text = code_text(error.code, unit, float(error.params.get("max_mm", 0)))
     printed = error.params.get("printed")
-    if printed:  # some of the copies came out before the problem
-        text += " " + _("Labels already printed: %(n)d of %(total)d.") % {
-            "n": printed,
-            "total": error.params.get("copies", printed),
-        }
+    if printed:  # some of the copies (or sheets) came out before the problem
+        if error.params.get("pages"):
+            done = _("Sheets already printed: %(n)d of %(total)d.")
+        else:
+            done = _("Labels already printed: %(n)d of %(total)d.")
+        text += " " + done % {"n": printed, "total": error.params.get("copies", printed)}
     if error.params.get("queue_canceled"):  # sent behind other jobs, not printed yet
         text += " " + _("The labels still waiting in the queue were canceled.")
     return text

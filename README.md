@@ -20,7 +20,7 @@ User documentation (English, German): <https://etiketto.joshuahirsig.xyz>
 |---|---|---|---|
 | Brother VC-500W (ColAura) | Colour on ZINK tape cassettes, 9 to 50 mm wide, any length | Detects the cassette, remaining tape and the cassette's age; vivid, normal or black-and-white colours; full, half or no cut; colour adjustment | Brother's native protocol on TCP port 9100 or USB ([docs/vc500w.md](docs/vc500w.md)) |
 | cab EOS2, EOS5, SQUIX 4, MACH 4S | Black on die-cut labels up to 105.6 mm wide, 203, 300 or 600 dpi, thermal direct or transfer | Reads the resolution and the measured label distance and warns if the roll does not match; cancels a job stopped by a problem | JScript on TCP port 9100 or USB ([docs/cab.md](docs/cab.md)) |
-| System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size; explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
+| System printer (CUPS, IPP) | Paper or labels in any size the printer takes: office printers, printers set up in CUPS (USB too), IPP Everywhere printers on the network | Lists the CUPS queues and the IPP printers on the network; prints the label as one page at exactly its size, or on label sheets (A4, US Letter, over 1700 sheets); explains paper, toner and cover problems | IPP to CUPS on this computer or straight to the printer ([docs/system.md](docs/system.md)) |
 
 Connections: network (LAN or Wi-Fi) for all of them; USB too, through the
 kernel's printer driver: cab printers and the VC-500W are found on USB by
@@ -58,6 +58,9 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
 - Finds the printer on the network by itself and shows its state
 - Endless tape: as long as the content, or a fixed length
 - Die-cut labels: common or custom sizes, content across or along the roll
+- Label sheets on office printers: over 1700 sheets (Avery, Zweckform,
+  Herma …) found by part number or size, start at any position on a partly
+  used sheet, outlines for a test print; warns about the printer's margins
 - Text with any installed font, bold/italic, colour, multiple lines, size
   fitted to the label or fixed in pt; emoji and font fallback via Pango
 - Images and photos, background colour, background image, border
@@ -166,9 +169,15 @@ Printing on cab printers follows cab's public
 [JScript Programming Manual](https://www.cab.de/en/programming); no
 reverse engineering and no cab code are involved.
 
+The label sheet templates come from the template database of
+[gLabels](https://github.com/j-evins/glabels-qt) by Jaye Evins, MIT license,
+Copyright (C) 2001-2026 Jaye Evins
+([`etiketto/sheets/LICENSE.glabels`](etiketto/sheets/LICENSE.glabels)).
+
 ## License
 
-AGPL-3.0-or-later, like labelprinter which it builds on. Not affiliated with
+AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
+templates (`etiketto/sheets/templates.json`) are MIT licensed, see Credits. Not affiliated with
 Brother Industries or cab Produkttechnik GmbH & Co. KG; "Brother",
 "ColAura", "VC-500W", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
 owners.
