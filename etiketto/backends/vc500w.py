@@ -356,7 +356,9 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
         return _UsbLink(usb.connect(host, STANDARD_TIMEOUT, wait))
     from labelprinter.connection import Connection
 
-    # labelprinter opens an IPv4 socket
+    # labelprinter opens an IPv4 socket. TODO: its send_file() is one
+    # sendall() under PRINT_TIMEOUT; net.send_all (progress-based timeout)
+    # would need a change in labelprinter or a link of our own like _UsbLink
     return Connection(mdns.resolve_host(host, socket.AF_INET), port, PRINT_TIMEOUT)
 
 

@@ -21,7 +21,7 @@ from dataclasses import dataclass, replace
 
 from PIL import Image
 
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     Capabilities,
@@ -52,9 +52,10 @@ from etiketto.model import Label
 from etiketto.render import DEFAULT_SAFE_MM
 
 DEFAULT_PORT = 9100
-# seconds for connecting and for each answer; on USB also without progress
-# while sending a job (see usb.Connection.sendall)
+# seconds for connecting and for each answer; also without progress while
+# sending a job (net.send_all, usb.Connection.sendall)
 SOCKET_TIMEOUT = 10.0
+MIN_RATE = 8_000  # bytes a second: a job that trickles in slower counts as stalled
 PRINT_TIMEOUT = 180.0  # seconds without progress while waiting or printing
 POLL_INTERVAL = 0.5  # the manual: status requests not more often than every 0.5 s
 START_GRACE = 3.0  # a job that never shows up as running counts as done after this
@@ -272,7 +273,12 @@ class _Session:
         return parse_version(self._read())
 
     def send(self, job: bytes) -> None:
-        self.sock.sendall(job)
+        """The job; on TCP the timeout restarts with each bit of progress
+        (net.send_all), usb.Connection.sendall does the same on USB."""
+        if isinstance(self.sock, socket.socket):
+            net.send_all(self.sock, job, SOCKET_TIMEOUT, MIN_RATE)
+        else:
+            self.sock.sendall(job)
 
     def cancel(self) -> None:
         """ESC c: drop the running job, so that "try again" does not print

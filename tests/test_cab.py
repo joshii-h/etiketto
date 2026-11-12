@@ -8,13 +8,14 @@ import base64
 import io
 import re
 import socket
+import threading
 from types import SimpleNamespace
 
 import pytest
 from backend_contract import BackendContract
 from PIL import Image
 
-from etiketto.backends import cab, mdns, usb
+from etiketto.backends import cab, mdns, net, usb
 from etiketto.backends.base import (
     FoundPrinter,
     HeadOpen,
@@ -611,3 +612,33 @@ class TestContract(BackendContract):
             printer.device.error = "E"
 
         return SimpleNamespace(backend=Cab(), fail=fail, printed=printer.device.printed)
+
+
+def test_a_job_on_tcp_goes_through_net_send_all(monkeypatch):
+    """A job larger than the socket buffer arrives whole; the timeout counts
+    from the last progress (net.send_all), not for the whole job."""
+    calls = []
+    real = net.send_all
+    monkeypatch.setattr(
+        net,
+        "send_all",
+        lambda sock, data, timeout, rate: (
+            calls.append(len(data)) or real(sock, data, timeout, rate)
+        ),
+    )
+    ours, theirs = socket.socketpair()
+    got = bytearray()
+
+    def drain():
+        while chunk := theirs.recv(65536):
+            got.extend(chunk)
+
+    reader = threading.Thread(target=drain)
+    reader.start()
+    job = bytes(range(256)) * 4000
+    cab._Session(ours).send(job)
+    ours.shutdown(socket.SHUT_WR)
+    reader.join(5)
+    ours.close()
+    theirs.close()
+    assert calls == [len(job)] and bytes(got) == job

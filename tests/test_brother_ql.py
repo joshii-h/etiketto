@@ -1362,7 +1362,7 @@ class Pipe:
 def test_send_in_pieces():
     pipe = Pipe(read=True)
     data = bytes(range(256)) * 2000
-    ql.send_chunked(pipe.ours, data, stall=5, chunk=1000)
+    ql.send_chunked(pipe.ours, data, stall=5)
     pipe.ours.shutdown(socket.SHUT_WR)
     for _ in range(200):
         if len(pipe.got) == len(data):

@@ -684,7 +684,12 @@ _browse = mdns.browse  # replaced in tests: they never search the network
 class _TcpLink:
     """A socket used like usb.Connection: sendall() fails only when the
     printer takes no data for the timeout (it stops reading while it prints
-    a page), a silent printer raises PrinterTimeout."""
+    a page), a silent printer raises PrinterTimeout.
+
+    TODO: send through net.send_all like the raw and QL backends; it caps
+    the whole job at timeout + size / min_rate, and a P-touch takes data
+    only at printing pace (a few kB/s): needs a min_rate from the model's
+    speed (MIN_SPEED_MM_S) first."""
 
     def __init__(self, sock: socket.socket):
         self.sock = sock

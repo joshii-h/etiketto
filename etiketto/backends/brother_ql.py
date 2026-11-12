@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlsplit
 
 from PIL import Image, ImageChops
 
-from etiketto.backends import mdns, usb
+from etiketto.backends import mdns, net, usb
 from etiketto.backends.base import (
     Backend,
     Capabilities,
@@ -37,7 +37,6 @@ from etiketto.backends.base import (
     PrinterError,
     PrinterInfo,
     PrinterNotFound,
-    PrinterStalled,
     PrinterTimeout,
     PrintMode,
     PrintOptions,
@@ -72,7 +71,9 @@ STATUS_HEAD = b"\x80\x20\x42"  # print head mark, size, Brother
 STATUS_REQUEST = ESC + b"iS"
 # NULs clear a half-received command; no ESC @ here, it would stop a print
 QUERY = b"\x00" * 400 + STATUS_REQUEST
-CHUNK = 16384  # sent at a time on TCP; the stall timeout restarts with each
+# a QL takes a job on TCP at printing pace (90 bytes a line, hundreds of
+# lines a second); a job that trickles in far slower counts as stalled
+MIN_RATE = 4_000
 
 # status type (byte 18) and phase (byte 19)
 REPLY, COMPLETED, ERROR_OCCURRED, TURNED_OFF = 0x00, 0x01, 0x02, 0x04
@@ -576,19 +577,13 @@ def _connect(host: str, port: int, wait: float = usb.BUSY_WAIT):
     return socket.create_connection((mdns.resolve_host(host), port), SOCKET_TIMEOUT)
 
 
-def send_chunked(link, data: bytes, stall: float = SOCKET_TIMEOUT, chunk: int = CHUNK) -> None:
-    """All of data to a socket, a piece at a time: a printer whose buffer
-    is full takes nothing for a while, so the timeout is for each piece
-    (socket.sendall's timeout covers the whole call). PrinterStalled once
-    the printer took nothing for `stall` seconds. usb.Connection.sendall
-    does the same on USB."""
-    link.settimeout(stall)
-    view = memoryview(data)
-    for start in range(0, len(view), chunk):
-        try:
-            link.sendall(view[start : start + chunk])
-        except TimeoutError as e:
-            raise PrinterStalled("printer took no data for %g s" % stall) from e
+def send_chunked(link, data: bytes, stall: float = SOCKET_TIMEOUT) -> None:
+    """All of data to a socket: a printer whose buffer is full takes nothing
+    for a while, so the timeout restarts with each bit of progress
+    (net.send_all; socket.sendall's timeout covers the whole call).
+    PrinterStalled once the printer took nothing for `stall` seconds.
+    usb.Connection.sendall does the same on USB."""
+    net.send_all(link, data, stall, MIN_RATE)
 
 
 def map_error(error: Exception) -> PrinterError:
