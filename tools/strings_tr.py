@@ -522,4 +522,5 @@ TRANSLATIONS = {
     "Label type": "Etiket türü",
     "Protocol knowledge": "Protokol bilgisi",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "%(projects)s ve üreticilerin kılavuzlarından, onların kodu kullanılmadan yeniden yazıldı; bkz. THIRD_PARTY_NOTICES.md",
+    "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Sayfa, yazıcının kabul ettiği çözünürlükte oluşturulamayacak kadar büyük. Daha küçük bir kâğıt boyutu seçin veya PDF kabul eden bir yazıcıda yazdırın.",
 }

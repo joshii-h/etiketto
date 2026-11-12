@@ -35,6 +35,7 @@ from etiketto.backends.base import (
     MediaJam,
     NoFormat,
     OutOfPaper,
+    PageTooLarge,
     PrinterBusy,
     PrinterError,
     PrinterInfo,
@@ -421,6 +422,9 @@ def _media(width: int, height: int) -> ipp.Attribute:
 PDF, PWG_RASTER, URF, JPEG = "application/pdf", "image/pwg-raster", "image/urf", "image/jpeg"
 RASTERS = (PWG_RASTER, URF)  # copies as pages, at the printer's resolution
 MIN_DPI, MAX_DPI = 100, 1200  # raster resolutions taken from a printer
+# a raster page at the printer's resolution larger than this is refused
+# (PageTooLarge): A4 fits up to about 700 dpi
+MAX_PAGE_PIXELS = 50_000_000
 
 
 def document_format(attrs: dict) -> str:
@@ -536,11 +540,17 @@ def _urf_mode(attrs: dict) -> str | None:
     SRGB24, else W8, which every AirPrint printer must take (also one that
     lists no colour space)."""
     keywords = _urf_keywords(attrs)
-    if "SRGB24" in keywords:
+    if _urf_lists(keywords, "SRGB24"):
         return "RGB"
-    if "W8" in keywords or not any(k.startswith(URF_COLOURS) for k in keywords):
+    if _urf_lists(keywords, "W8") or not any(k.startswith(URF_COLOURS) for k in keywords):
         return "L"
     return None
+
+
+def _urf_lists(keywords: list[str], name: str) -> bool:
+    """Whether urf-supported lists a colour space, also with more bit
+    depths after it: W8-16, SRGB24-48."""
+    return any(k == name or k.startswith(name + "-") for k in keywords)
 
 
 def _number(text: str) -> int | None:
@@ -737,7 +747,9 @@ class SystemPrinter(Backend):
         mime = document_format(attrs)  # NoFormat before anything is sent
         dpi = DPI
         if mime in RASTERS:
-            pages = _at_resolution(pages, _raster_format(attrs, mime)[1])
+            raster_dpi = _raster_format(attrs, mime)[1]
+            check_page_size(pages[0], raster_dpi)  # before rendering it
+            pages = _at_resolution(pages, raster_dpi)
         elif mime == PDF:
             again = _at_resolution(pages, pdf_resolution(attrs))
             if again is not pages:  # else the pages stay at 300 dpi
@@ -746,6 +758,21 @@ class SystemPrinter(Backend):
         if turned:
             pages = _Turned(pages)
         return _Jobs(uri, attrs, _Pages(pages, width, height, dpi), copies, progress).run()
+
+
+def check_page_size(page: Image.Image, dpi: int) -> None:
+    """PageTooLarge if a page of this size at dpi would take more than
+    MAX_PAGE_PIXELS: a printer that takes Apple Raster at 1200 dpi only
+    would need an A4 page of 140 megapixels (over 400 MB) in memory."""
+    width_mm, height_mm = page.info.get("size_mm") or (
+        page.width / DPI * 25.4,
+        page.height / DPI * 25.4,
+    )
+    pixels = (width_mm / 25.4 * dpi) * (height_mm / 25.4 * dpi)
+    if pixels > MAX_PAGE_PIXELS:
+        raise PageTooLarge(
+            "%.0f x %.0f mm at %d dpi: %.0f megapixels" % (width_mm, height_mm, dpi, pixels / 1e6)
+        )
 
 
 def _at_resolution(pages: Sequence[Image.Image], dpi: int) -> Sequence[Image.Image]:

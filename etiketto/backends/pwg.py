@@ -122,12 +122,13 @@ def encode_pages(images: Iterable[Image.Image], dpi: int, total: int) -> bytes:
 def join(documents: Iterable[bytes]) -> bytes:
     """One document of the pages of several one-page documents (the same
     one again for copies: compressed once), TotalPageCount set to all."""
-    pages = [document[len(SYNC) :] for document in documents]
+    documents = list(documents)
     out = bytearray(SYNC)
-    for page in pages:
-        head = bytearray(page[:HEADER_SIZE])
-        struct.pack_into(">I", head, 452, len(pages))
-        out += head + page[HEADER_SIZE:]
+    for document in documents:  # each page copied once, into the result
+        view = memoryview(document)
+        head = len(out)
+        out += view[len(SYNC) :]
+        struct.pack_into(">I", out, head + 452, len(documents))
     return bytes(out)
 
 

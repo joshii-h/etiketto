@@ -522,4 +522,5 @@ TRANSLATIONS = {
     "Label type": "Jenis label",
     "Protocol knowledge": "Pengetahuan protokol",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Daripada %(projects)s dan manual pengeluar, ditulis semula tanpa kod mereka; lihat THIRD_PARTY_NOTICES.md",
+    "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Halaman terlalu besar untuk dibuat pada resolusi yang diterima pencetak. Pilih saiz kertas yang lebih kecil, atau cetak pada pencetak yang menerima PDF.",
 }

@@ -54,9 +54,13 @@ def encode(images: Iterable[Image.Image], dpi: int, total: int) -> bytes:
 def join(documents: Iterable[bytes]) -> bytes:
     """One document of the pages of several documents (the same one again
     for copies: compressed once), the page count set to all."""
-    parts = [document[len(SYNC) :] for document in documents]
-    count = sum(struct.unpack_from(">I", part)[0] for part in parts)
-    return SYNC + struct.pack(">I", count) + b"".join(part[4:] for part in parts)
+    documents = list(documents)
+    count = sum(struct.unpack_from(">I", document, len(SYNC))[0] for document in documents)
+    out = bytearray(SYNC + struct.pack(">I", count))
+    start = len(SYNC) + 4
+    for document in documents:  # each body copied once, into the result
+        out += memoryview(document)[start:]
+    return bytes(out)
 
 
 def decode(data: bytes) -> list[Image.Image]:

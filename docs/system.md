@@ -150,6 +150,12 @@ CUPS classes are addressed as CUPS lists them (`/classes/<name>`).
   image, 1.9 kB; Ghostscript renders it at 203, 300 and 600 dpi without a
   grey pixel) and as PWG Raster at 203, 300 and 600 dpi (812 × 1218,
   1200 × 1800, 2400 × 3600 pixels, 2.3 to 3 kB)]
+- `urf-supported` colour spaces with more bit depths (`W8-16`,
+  `SRGB24-48`) count as `W8` and `SRGB24`. A page that would need more than
+  50 megapixels at the only resolutions the printer lists (an A4 page at
+  1200 dpi: 140 megapixels, over 400 MB in memory) is refused before it is
+  rendered ("The page is too large …"); a 4 × 6 inch label at 1200 dpi
+  (28 megapixels) prints.
 - Copies: if the upper bound of `copies-supported` is below the number of
   labels, PWG Raster and Apple Raster carry the page several times in one
   job (`TotalPageCount`, the URF page count): the page is compressed once

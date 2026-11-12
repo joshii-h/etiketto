@@ -522,4 +522,5 @@ TRANSLATIONS = {
     "Label type": "ชนิดฉลาก",
     "Protocol knowledge": "ความรู้ด้านโพรโทคอล",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "จาก %(projects)s และคู่มือของผู้ผลิต เขียนขึ้นใหม่โดยไม่ใช้โค้ดของโครงการเหล่านั้น ดู THIRD_PARTY_NOTICES.md",
+    "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "หน้านี้ใหญ่เกินกว่าจะสร้างที่ความละเอียดที่เครื่องพิมพ์รับได้ เลือกขนาดกระดาษที่เล็กลง หรือพิมพ์ด้วยเครื่องพิมพ์ที่รับ PDF",
 }

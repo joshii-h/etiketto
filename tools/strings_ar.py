@@ -522,4 +522,5 @@ TRANSLATIONS = {
     "Label type": "نوع الملصقات",
     "Protocol knowledge": "المعرفة بالبروتوكولات",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "من %(projects)s ومن أدلة الشركات المصنّعة، مكتوبة من جديد دون شيفرتها؛ انظر THIRD_PARTY_NOTICES.md",
+    "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "الصفحة أكبر من أن تُنشأ بالدقة التي تقبلها الطابعة. اختر حجم ورق أصغر، أو اطبع على طابعة تقبل PDF.",
 }

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:39+0100\n"
+"PO-Revision-Date: 2026-11-12 10:47+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -137,7 +137,7 @@ msgid "Unknown printer model: %s"
 msgstr "अज्ञात प्रिंटर मॉडल: %s"
 
 #: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:526
+#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:530
 #, python-format
 msgid "Cannot open %s"
 msgstr "%s खोला नहीं जा सकता"
@@ -183,7 +183,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "कई प्रिंटर मिले – --host से एक चुनें (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:560
+#: etiketto/cli.py:529 etiketto/ui/texts.py:564
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
@@ -2071,134 +2071,140 @@ msgstr "Etiketto को प्रिंटर का USB पोर्ट इस�
 
 #: etiketto/ui/texts.py:452
 msgid ""
+"The page is too large to make at the resolution the printer takes. Choose a "
+"smaller paper size, or print on a printer that takes PDF."
+msgstr "प्रिंटर जिस रिज़ॉल्यूशन को स्वीकार करता है, उस पर यह पेज बनाने के लिए बहुत बड़ा है। छोटा काग़ज़ आकार चुनें, या ऐसे प्रिंटर पर प्रिंट करें जो PDF स्वीकार करता हो।"
+
+#: etiketto/ui/texts.py:456
+msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "इस प्रिंटर के रिज़ॉल्यूशन पर कोड लेबल पर नहीं समाता और कट जाएगा। लेबल बड़ा करें या कोड की सामग्री छोटी करें।"
 
-#: etiketto/ui/texts.py:456
+#: etiketto/ui/texts.py:460
 msgid ""
 "Etiketto is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Etiketto को प्रिंटर का सीरियल पोर्ट इस्तेमाल करने की अनुमति नहीं है। अपने उपयोगकर्ता को समूह “dialout” में जोड़ें (sudo usermod -aG dialout $USER; Arch Linux पर समूह का नाम “uucp” है), फिर लॉग आउट करके दोबारा लॉग इन करें।"
 
-#: etiketto/ui/texts.py:461
+#: etiketto/ui/texts.py:465
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "प्रिंटर ने एक समस्या बताई। उसे बंद करके फिर चालू करें, फिर एक बार और प्रयास करें।"
 
-#: etiketto/ui/texts.py:472
+#: etiketto/ui/texts.py:476
 msgid "Printed"
 msgstr "प्रिंट हो गया"
 
-#: etiketto/ui/texts.py:478
+#: etiketto/ui/texts.py:482
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "प्रिंटर को भेज दिया गया – बारी आने पर प्रिंट होगा"
 
-#: etiketto/ui/texts.py:482
+#: etiketto/ui/texts.py:486
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "“%(used)s” से प्रिंट किया गया, क्योंकि लगाए गए रोल को इसकी ज़रूरत है"
 
-#: etiketto/ui/texts.py:486
+#: etiketto/ui/texts.py:490
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "रंग मोड “%(wanted)s” इस प्रिंटर पर उपलब्ध नहीं है, “%(used)s” से प्रिंट किया गया"
 
-#: etiketto/ui/texts.py:496
+#: etiketto/ui/texts.py:500
 msgid "Warming up…"
 msgstr "गर्म हो रहा है…"
 
-#: etiketto/ui/texts.py:497
+#: etiketto/ui/texts.py:501
 msgid "Cooling down…"
 msgstr "ठंडा हो रहा है…"
 
-#: etiketto/ui/texts.py:498
+#: etiketto/ui/texts.py:502
 msgid "Cleaning…"
 msgstr "सफ़ाई हो रही है…"
 
-#: etiketto/ui/texts.py:499
+#: etiketto/ui/texts.py:503
 msgid "Swipe the printer's panel to cut the label"
 msgstr "लेबल काटने के लिए प्रिंटर के पैनल पर स्वाइप करें"
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:505
 msgid "Out of paper – load paper to continue"
 msgstr "कागज़ खत्म – जारी रखने के लिए कागज़ डालें"
 
-#: etiketto/ui/texts.py:502
+#: etiketto/ui/texts.py:506
 msgid "Cover open – close it to continue"
 msgstr "ढक्कन खुला है – जारी रखने के लिए उसे बंद करें"
 
-#: etiketto/ui/texts.py:503
+#: etiketto/ui/texts.py:507
 msgid "Paper jammed – remove it to continue"
 msgstr "कागज़ फँस गया – जारी रखने के लिए उसे निकालें"
 
-#: etiketto/ui/texts.py:514
+#: etiketto/ui/texts.py:518
 msgid "This label needs a newer version of Etiketto"
 msgstr "इस लेबल के लिए Etiketto का नया संस्करण चाहिए"
 
-#: etiketto/ui/texts.py:516
+#: etiketto/ui/texts.py:520
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s कोई Etiketto लेबल नहीं है"
 
-#: etiketto/ui/texts.py:517 etiketto/ui/texts.py:537
+#: etiketto/ui/texts.py:521 etiketto/ui/texts.py:541
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
 
-#: etiketto/ui/texts.py:524
+#: etiketto/ui/texts.py:528
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "डेटा फ़ाइल %s अब मौजूद नहीं है। उसे फिर से चुनें या हटाएँ।"
 
-#: etiketto/ui/texts.py:528
+#: etiketto/ui/texts.py:532
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s में %(sheet)s नाम की कोई शीट नहीं है"
 
-#: etiketto/ui/texts.py:530
+#: etiketto/ui/texts.py:534
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s तालिका नहीं है। CSV, ODS या XLSX फ़ाइल इस्तेमाल करें।"
 
-#: etiketto/ui/texts.py:532
+#: etiketto/ui/texts.py:536
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s सीरियल लेबल के लिए बहुत बड़ी है। इसे छोटी फ़ाइलों में बाँटें या अनावश्यक पंक्तियाँ और स्तंभ हटाएँ।"
 
-#: etiketto/ui/texts.py:535
+#: etiketto/ui/texts.py:539
 #, python-format
 msgid "%s contains no data."
 msgstr "%s में कोई डेटा नहीं है।"
 
-#: etiketto/ui/texts.py:543
+#: etiketto/ui/texts.py:547
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "प्रिंटिंग पंक्ति %(row)d पर रुक गई। जारी रखने के लिए पंक्ति %(row)d से फिर से प्रिंट करें।"
 
-#: etiketto/ui/texts.py:547
+#: etiketto/ui/texts.py:551
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "पंक्ति %(row)d की पहले से प्रिंट हुई प्रतियाँ: %(copies)d।"
 
-#: etiketto/ui/texts.py:557
+#: etiketto/ui/texts.py:561
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है"
 
-#: etiketto/ui/texts.py:559
+#: etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है"
 
-#: etiketto/ui/texts.py:569
+#: etiketto/ui/texts.py:573
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "

@@ -448,6 +448,10 @@ def code_text(code: str, unit: Unit, max_mm: float = 0.0) -> str:
             "Etiketto is not allowed to use the printer's USB port. Add your user to the "
             "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
         ),
+        "page_too_large": _(
+            "The page is too large to make at the resolution the printer takes. Choose a "
+            "smaller paper size, or print on a printer that takes PDF."
+        ),
         "code_too_large": _(
             "A code does not fit on the label at this printer's resolution and would be cut "
             "off. Make the label larger or the code's content shorter."

@@ -522,4 +522,5 @@ TRANSLATIONS = {
     "Label type": "Rodzaj etykiet",
     "Protocol knowledge": "Wiedza o protokołach",
     "From %(projects)s and the manufacturers' manuals, written anew without their code; see THIRD_PARTY_NOTICES.md": "Z %(projects)s oraz instrukcji producentów, napisane od nowa bez ich kodu; zob. THIRD_PARTY_NOTICES.md",
+    "The page is too large to make at the resolution the printer takes. Choose a smaller paper size, or print on a printer that takes PDF.": "Strona jest zbyt duża, aby ją utworzyć w rozdzielczości obsługiwanej przez drukarkę. Wybierz mniejszy format papieru lub drukuj na drukarce, która przyjmuje PDF.",
 }

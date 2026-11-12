@@ -475,6 +475,9 @@ HP_URF = (  # an HP LaserJet Pro 4002
         (["w8", " RS203 ", "RSx", "RS6e2", "RS\u0666\u0660\u0660", "RS-"], "L", [203], False),
         (["W8", "CP0", "CP", "CPx", "CP-1", "CP\u0661"], "L", [], False),  # CP strictly
         (["V1.5", "DEVW8"], None, [], False),
+        (["W8-16", "SRGB24-48", "RS300"], "RGB", [300], False),  # more bit depths listed
+        (["W8-16", "RS600"], "L", [600], False),
+        (["SRGB240", "DEVW8"], None, [], False),  # not SRGB24
     ],
 )
 def test_urf_supported(keywords, mode, dpis, copies):
@@ -2127,3 +2130,45 @@ def test_a_counter_job_counts_the_labels_sent_before_the_failure(fake):
     assert printer_error_text(info.value, unit_for("mm")).endswith(
         "Labels already printed: 1 of 3."
     )
+
+
+def test_a_page_too_large_for_the_only_resolution_is_refused():
+    """A printer that takes Apple Raster at 1200 dpi only: an A4 page would
+    need 140 megapixels; refused before it is rendered, a label is fine."""
+    from etiketto.backends.base import PageTooLarge
+    from etiketto.ui.texts import code_text
+    from etiketto.units import MILLIMETRES
+
+    assert system._resolution([1200]) == 1200
+    a4 = Image.new("RGB", (10, 10))
+    a4.info["size_mm"] = (210, 297)
+    with pytest.raises(PageTooLarge) as raised:
+        system.check_page_size(a4, 1200)
+    assert "1200 dpi" in str(raised.value)
+    system.check_page_size(a4, 600)
+    label = Image.new("RGB", (10, 10))
+    label.info["size_mm"] = (62, 29)
+    system.check_page_size(label, 1200)
+    plain = Image.new("RGB", (2480, 3508))  # A4 at 300 dpi, no size in info
+    with pytest.raises(PageTooLarge):
+        system.check_page_size(plain, 1200)
+    assert code_text("page_too_large", MILLIMETRES).startswith("The page is too large")
+
+
+def test_a_printer_that_takes_apple_raster_at_1200_dpi_only(fake):
+    """A 4 x 6 in label prints at 1200 dpi (28 megapixels); an A4 page would
+    not fit in memory: refused, nothing sent."""
+    from etiketto.backends.base import PageTooLarge
+
+    fake.formats, fake.sizes, fake.urf = ["image/urf"], [], ["W8", "RS1200"]
+    backend = get_backend("system")
+    backend.print_label(
+        backend.prepare(_shipping_label(), PrintOptions()), "x.local", PrintOptions()
+    )
+    (page,) = urf.decode(fake.documents[0][1])
+    assert page.size == (px(101.6, 1200), px(152.4, 1200))
+    a4 = Label(printer="system", orientation="across", auto_length=False)
+    a4.set_media_size(210, 297)
+    with pytest.raises(PageTooLarge):
+        backend.print_label(backend.prepare(a4, PrintOptions()), "x.local", PrintOptions())
+    assert len(fake.documents) == 1

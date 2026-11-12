@@ -507,6 +507,13 @@ class UsbPermission(PrinterError):
     code = "usb_permission"
 
 
+class PageTooLarge(PrinterError):
+    """A page too large to make at the only resolutions the printer takes
+    (more pixels than fit in memory)."""
+
+    code = "page_too_large"
+
+
 class CodeTooLarge(PrinterError):
     """A code does not fit in its space at the printer's resolution, not
     even at one dot per module: it would be cut off."""

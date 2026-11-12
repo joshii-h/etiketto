@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 10:39+0100\n"
+"PO-Revision-Date: 2026-11-12 10:47+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: nl\n"
 "Language: nl\n"
@@ -137,7 +137,7 @@ msgid "Unknown printer model: %s"
 msgstr "Onbekend printermodel: %s"
 
 #: etiketto/cli.py:265 etiketto/ui/files.py:89 etiketto/ui/files.py:142
-#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:526
+#: etiketto/ui/texts.py:241 etiketto/ui/texts.py:530
 #, python-format
 msgid "Cannot open %s"
 msgstr "Kan %s niet openen"
@@ -183,7 +183,7 @@ msgid ""
 "Several printers found – choose one with --host (etiketto list-printers)"
 msgstr "Meerdere printers gevonden – kies er een met --host (etiketto list-printers)"
 
-#: etiketto/cli.py:529 etiketto/ui/texts.py:560
+#: etiketto/cli.py:529 etiketto/ui/texts.py:564
 #, python-format
 msgid "Cannot save %s"
 msgstr "Kan %s niet opslaan"
@@ -2071,134 +2071,140 @@ msgstr "Etiketto mag de USB-poort van de printer niet gebruiken. Voeg je gebruik
 
 #: etiketto/ui/texts.py:452
 msgid ""
+"The page is too large to make at the resolution the printer takes. Choose a "
+"smaller paper size, or print on a printer that takes PDF."
+msgstr "De pagina is te groot om te maken in de resolutie die de printer aanneemt. Kies een kleiner papierformaat of druk af op een printer die PDF aanneemt."
+
+#: etiketto/ui/texts.py:456
+msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Een code past bij de resolutie van deze printer niet op het etiket en zou worden afgesneden. Maak het etiket groter of de inhoud van de code korter."
 
-#: etiketto/ui/texts.py:456
+#: etiketto/ui/texts.py:460
 msgid ""
 "Etiketto is not allowed to use the printer's serial port. Add your user to "
 "the group “dialout” (sudo usermod -aG dialout $USER; on Arch Linux the group "
 "is “uucp”), then log out and in again."
 msgstr "Etiketto mag de seriële poort van de printer niet gebruiken. Voeg je gebruiker toe aan de groep „dialout” (sudo usermod -aG dialout $USER; op Arch Linux heet de groep „uucp”) en meld je daarna af en weer aan."
 
-#: etiketto/ui/texts.py:461
+#: etiketto/ui/texts.py:465
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "De printer meldt een probleem. Zet hem uit en weer aan en probeer het daarna nog eens."
 
-#: etiketto/ui/texts.py:472
+#: etiketto/ui/texts.py:476
 msgid "Printed"
 msgstr "Afgedrukt"
 
-#: etiketto/ui/texts.py:478
+#: etiketto/ui/texts.py:482
 msgid "Sent to the printer – it prints when its turn comes"
 msgstr "Naar de printer gestuurd – wordt afgedrukt zodra het aan de beurt is"
 
-#: etiketto/ui/texts.py:482
+#: etiketto/ui/texts.py:486
 #, python-format
 msgid "Printed with “%(used)s”, as the loaded roll needs it"
 msgstr "Afgedrukt met ‘%(used)s’, omdat de geplaatste rol dat nodig heeft"
 
-#: etiketto/ui/texts.py:486
+#: etiketto/ui/texts.py:490
 #, python-format
 msgid ""
 "Colour mode “%(wanted)s” is not available on this printer, printed with "
 "“%(used)s”"
 msgstr "Kleurmodus ‘%(wanted)s’ is niet beschikbaar op deze printer, afgedrukt met ‘%(used)s’"
 
-#: etiketto/ui/texts.py:496
+#: etiketto/ui/texts.py:500
 msgid "Warming up…"
 msgstr "Opwarmen…"
 
-#: etiketto/ui/texts.py:497
+#: etiketto/ui/texts.py:501
 msgid "Cooling down…"
 msgstr "Afkoelen…"
 
-#: etiketto/ui/texts.py:498
+#: etiketto/ui/texts.py:502
 msgid "Cleaning…"
 msgstr "Reinigen…"
 
-#: etiketto/ui/texts.py:499
+#: etiketto/ui/texts.py:503
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Veeg over het paneel van de printer om het etiket af te snijden"
 
-#: etiketto/ui/texts.py:501
+#: etiketto/ui/texts.py:505
 msgid "Out of paper – load paper to continue"
 msgstr "Papier op – plaats papier om verder te gaan"
 
-#: etiketto/ui/texts.py:502
+#: etiketto/ui/texts.py:506
 msgid "Cover open – close it to continue"
 msgstr "Klep open – sluit hem om verder te gaan"
 
-#: etiketto/ui/texts.py:503
+#: etiketto/ui/texts.py:507
 msgid "Paper jammed – remove it to continue"
 msgstr "Papier vastgelopen – verwijder het om verder te gaan"
 
-#: etiketto/ui/texts.py:514
+#: etiketto/ui/texts.py:518
 msgid "This label needs a newer version of Etiketto"
 msgstr "Dit etiket vereist een nieuwere versie van Etiketto"
 
-#: etiketto/ui/texts.py:516
+#: etiketto/ui/texts.py:520
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s is geen Etiketto-etiket"
 
-#: etiketto/ui/texts.py:517 etiketto/ui/texts.py:537
+#: etiketto/ui/texts.py:521 etiketto/ui/texts.py:541
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Het bestand is beschadigd: %s"
 
-#: etiketto/ui/texts.py:524
+#: etiketto/ui/texts.py:528
 #, python-format
 msgid "The data file %s is not there any more. Choose it again or remove it."
 msgstr "Het gegevensbestand %s is er niet meer. Kies het opnieuw of verwijder het."
 
-#: etiketto/ui/texts.py:528
+#: etiketto/ui/texts.py:532
 #, python-format
 msgid "%(file)s has no sheet named %(sheet)s"
 msgstr "%(file)s heeft geen blad met de naam %(sheet)s"
 
-#: etiketto/ui/texts.py:530
+#: etiketto/ui/texts.py:534
 #, python-format
 msgid "%s is not a table. Use a CSV, ODS or XLSX file."
 msgstr "%s is geen tabel. Gebruik een CSV-, ODS- of XLSX-bestand."
 
-#: etiketto/ui/texts.py:532
+#: etiketto/ui/texts.py:536
 #, python-format
 msgid ""
 "%s is too large for serial labels. Split it into smaller files or remove "
 "rows and columns that are not needed."
 msgstr "%s is te groot voor serie-etiketten. Splits het in kleinere bestanden of verwijder rijen en kolommen die niet nodig zijn."
 
-#: etiketto/ui/texts.py:535
+#: etiketto/ui/texts.py:539
 #, python-format
 msgid "%s contains no data."
 msgstr "%s bevat geen gegevens."
 
-#: etiketto/ui/texts.py:543
+#: etiketto/ui/texts.py:547
 #, python-format
 msgid ""
 "Printing stopped at row %(row)d. To continue, print again from row %(row)d."
 msgstr "Het afdrukken is gestopt bij rij %(row)d. Druk opnieuw af vanaf rij %(row)d om verder te gaan."
 
-#: etiketto/ui/texts.py:547
+#: etiketto/ui/texts.py:551
 #, python-format
 msgid "Copies of row %(row)d already printed: %(copies)d."
 msgstr "Al afgedrukte exemplaren van rij %(row)d: %(copies)d."
 
-#: etiketto/ui/texts.py:557
+#: etiketto/ui/texts.py:561
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "Kan %s niet opslaan: geen schrijfrechten"
 
-#: etiketto/ui/texts.py:559
+#: etiketto/ui/texts.py:563
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "Kan %s niet opslaan: de schijf is vol"
 
-#: etiketto/ui/texts.py:569
+#: etiketto/ui/texts.py:573
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
