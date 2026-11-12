@@ -1,7 +1,7 @@
 # Etiketto
 
-Label designer for the Linux desktop. Design labels with text, images and
-codes, see them exactly as they will be printed, and print them over the
+Label designer for the Linux desktop. Design labels with text, images,
+symbols and codes, see them exactly as they will be printed, and print them over the
 network on endless tape or on die-cut labels. Etiketto talks to each
 printer in its own language, finds it on the network and explains printer
 problems in plain words.
@@ -74,11 +74,16 @@ The labels shown are in [`docs/examples`](docs/examples); open them with Etikett
   over 8 MB: then JPEG); the VC-500W prints its vivid and colour modes at
   another number of lines per inch along the tape, so there the label is
   resampled along the tape
+- Symbol library: over 7000 pictograms (Material Design Icons) found by
+  name, alias or category (in English, as the icon set names them),
+  recently used ones at hand; drawn as vectors at the printer's resolution,
+  in colour, or on black-and-white label printers in black or white with
+  sharp edges
 - Live preview at print resolution: what you see is what is printed
 - Millimetres or inches, chosen from the system language
 - Printer problems explained in plain words, with what to do;
   *Report a problem* prepares an issue with all the details
-- Save labels as `.etiketto` files (images embedded) and reuse them as templates
+- Save labels as `.etiketto` files (images and symbols embedded) and reuse them as templates
 - Drag and drop images or `.etiketto` files onto the window
 - Export as PNG
 
@@ -129,8 +134,8 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder \
 
 ## How labels are laid out
 
-Elements (text, image, code) are placed one after another along the label,
-each filling the label's height unless a text has a fixed size.
+Elements (text, image, symbol, code) are placed one after another along the label,
+each filling the label's height unless a text or symbol has a fixed size.
 
 - **Endless tape**: the label is either exactly as long as its content plus
   the spacing (*Automatic length*) or has a fixed length; the content is
@@ -199,10 +204,21 @@ The label sheet templates come from the template database of
 Copyright (C) 2001-2026 Jaye Evins
 ([`etiketto/sheets/LICENSE.glabels`](etiketto/sheets/LICENSE.glabels)).
 
+The symbols are the icons of
+[Material Design Icons](https://pictogrammers.com/library/mdi/) 7.4.47 by
+[Pictogrammers](https://pictogrammers.com) (Austin Andrews and contributors),
+Apache License 2.0
+([`etiketto/symbols/LICENSE.mdi`](etiketto/symbols/LICENSE.mdi)); some are
+based on Google's Material Icons (Apache-2.0). The "Brand / Logo" category
+and further icons showing brands or trademarks are left out
+([`tools/mdi_symbols.py`](tools/mdi_symbols.py)). Etiketto draws the icons
+with its own SVG path parser.
+
 ## License
 
 AGPL-3.0-or-later, like labelprinter which it builds on; the label sheet
-templates (`etiketto/sheets/templates.json`) are MIT licensed, see Credits. Not affiliated with
+templates (`etiketto/sheets/templates.json`) are MIT licensed, the symbols
+(`etiketto/symbols/mdi.json.gz`) Apache-2.0 licensed, see Credits. Not affiliated with
 Brother Industries or cab Produkttechnik GmbH & Co. KG; "Brother",
 "ColAura", "VC-500W", "cab", "EOS", "SQUIX" and "MACH" are trademarks of their
 owners.

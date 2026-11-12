@@ -211,9 +211,9 @@ version 1 and opens everywhere. A new feature adds a name to
 
 TODO at integration: the branches `variables-cli` and `mail-merge` bring the
 same `features` list (`"serial"`, `"variables"`). When they meet this one,
-keep a single `FORMAT_VERSION = 2`, `FEATURES = {"barcodes", "serial",
-"variables"}` and one `Label.features()` that lists all three; the tests for
-each feature stay.
+keep a single `FORMAT_VERSION = 2`, `FEATURES = {"barcodes", "symbols",
+"serial", "variables"}` and one `Label.features()` that lists all of them;
+the tests for each feature stay.
 
 ## Codes
 
@@ -254,6 +254,50 @@ A sheet that is missing or wrong belongs in gLabels, so that both projects
 profit; fixes to the converter belong here. Sheet ids (`"Avery L7160"`, brand
 and part number) are stored in `.etiketto` files: do not rename them.
 
+## Symbols
+
+The symbols (`etiketto/symbols/mdi.json.gz`) are converted from a release of
+[Material Design Icons](https://github.com/Templarian/MaterialDesign-SVG)
+(Apache-2.0, Pictogrammers). To update them, download the release from npm
+and run the converter on it:
+
+```sh
+mkdir /tmp/mdi && cd /tmp/mdi
+curl -LO https://registry.npmjs.org/@mdi/svg/-/svg-7.4.47.tgz  # the new version
+tar -xzf svg-7.4.47.tgz
+cd - && python3 -I tools/mdi_symbols.py /tmp/mdi/package
+```
+
+It keeps name, path data, categories and aliases of every icon, without the
+deprecated ones, without the category "Brand / Logo" and without further
+icons showing brands, trademarks or designs from games and films
+(`DENIED` in the converter: e.g. raspberry-pi, nintendo-*, pokeball,
+ghost, one-up, death-star, firewire, minidisc, file-word); aliases naming a brand ("lego", "apple",
+"twitter-retweet", see `BRAND_WORDS`) are dropped, the icon stays. When
+updating, scan the new names and aliases for brands and extend both lists.
+Kept on purpose: marks of technical standards that label a port or a
+feature (bluetooth, usb, nfc, hdmi, cast, contactless payment), as a label
+on a device needs them, and the key symbols apple-keyboard-* (command,
+option, shift are standard key symbols in Unicode, not a logo). It stops if the release's license text is no longer the
+one in `etiketto/symbols/LICENSE.mdi`: then check the new license and update
+that file by hand. Update the version in the README credits and
+`LICENSE.mdi`, check the number of icons it reports and run the tests
+(`tests/test_symbols.py` counts the icons and checks that every path
+parses). The output depends only on the release (sorted, no timestamp).
+
+A label stores a symbol by its name and a copy of its path data
+(`name`, `path`, `size_mm`, `rotation`, `color`); the copy is what is
+drawn, so a label looks the same with an icon set where the symbol was
+changed, renamed or removed, and the name is what the chooser shows.
+Icon names are therefore not renamed by Etiketto, but upstream may; a label
+with a symbol that is no longer in the set still prints.
+
+A label with a symbol is written as format version 2 with
+`"features": ["symbols"]`. Older Etiketto versions refuse it as "needs a
+newer version": those with format version 2 by the unknown feature, the
+ones before by the unknown element kind `symbol` (see
+`model.ELEMENT_TYPES`).
+
 ## Code style
 
 - Formatting and linting with ruff, configuration in `pyproject.toml`.
@@ -291,6 +335,9 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
 (`ko`), Japanese (`ja`) and Chinese (Traditional: `zh_TW`, also built as
 `zh_HK` from the same strings; Simplified: `zh_CN`).
 
+- Symbol names, aliases and categories stay English, as Material Design
+  Icons names them, and the symbol search is in English: do not translate
+  them (there are over 7000, and a label file stores the name).
 - Wrap every user-facing string in `_()`. Use named placeholders
   (`%(width)d`) so translators can reorder them.
 - After changing strings:
@@ -298,7 +345,7 @@ Thai (`th`), Vietnamese (`vi`), Indonesian (`id`), Malay (`ms`), Korean
   ```sh
   xgettext --language=Python --keyword=_ --keyword=pgettext:1c,2 --add-comments=translators: --from-code=UTF-8 \
       --package-name=etiketto -o po/etiketto.pot etiketto/*.py etiketto/ui/*.py \
-      etiketto/backends/*.py etiketto/sheets/*.py
+      etiketto/backends/*.py etiketto/sheets/*.py etiketto/symbols/*.py
   ```
 
   then add the translations to `tools/strings_<lang>.py` and run

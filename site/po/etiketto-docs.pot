@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 09:42+0100\n"
+"POT-Creation-Date: 2026-11-12 09:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -782,6 +782,12 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/use.md
 #, markdown-text
+msgid "**Symbol**: a pictogram from the symbol library, see below."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
 msgid "**Code**: [[ui:Type]] offers 2D codes (QR code, Data Matrix, PDF417, Aztec), linear barcodes (Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A, UPC-E, ITF-14) and GS1 codes (GS1-128, GS1 DataMatrix). Below the type it says what the type is for and what it accepts."
 msgstr ""
 
@@ -849,6 +855,42 @@ msgstr ""
 #: docs/use.md
 #, markdown-text
 msgid "Labels made with earlier versions: QR codes come out up to about a third smaller (their blank margin is now inside the element), barcodes slightly wider."
+msgstr ""
+
+#. type: Title ##
+#: docs/use.md
+#, markdown-text, no-wrap
+msgid "Symbols"
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as arrows, warnings, recycling, tools, food or weather, from Material Design Icons. Search by name, for example \"arrow\" or \"recycle\". The names and categories come from the icon set and are English, so the search is in English too. The list next to the search shows one category; [[ui:Recently used]] shows the symbols chosen last. The \"Brand / Logo\" category and further icons showing brands or trademarks are left out."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Size]] 0 fills the label height, otherwise the symbol has this height."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "[[ui:Rotation]]: a quarter turn at a time, clockwise."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/use.md
+#, markdown-text
+msgid "The colour is printed on colour and office printers. Black-and-white label printers print symbols in black, or in white if the colour is light, with sharp edges."
+msgstr ""
+
+#. type: Plain text
+#: docs/use.md
+#, markdown-text
+msgid "The label file keeps the outline of each symbol, so a label looks the same in later versions. Older versions of Etiketto cannot open labels with symbols and say that the label needs a newer version."
 msgstr ""
 
 #. type: Title ##

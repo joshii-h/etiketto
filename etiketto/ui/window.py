@@ -16,7 +16,7 @@ from PIL import Image  # noqa: E402
 from etiketto import report  # noqa: E402
 from etiketto.backends import get_backend  # noqa: E402
 from etiketto.backends.base import Backend, margins_for  # noqa: E402
-from etiketto.model import CodeElement, Label, SheetChoice, TextElement  # noqa: E402
+from etiketto.model import CodeElement, Label, SheetChoice, SymbolElement, TextElement  # noqa: E402
 from etiketto.render import Rendered, render  # noqa: E402
 from etiketto.sheets import Sheet, find  # noqa: E402
 from etiketto.sheets.layout import clip_preview, first_positions, in_margins  # noqa: E402
@@ -29,6 +29,7 @@ from etiketto.ui.printer import Printer  # noqa: E402
 from etiketto.ui.printing import PrintFlow  # noqa: E402
 from etiketto.ui.settings import PrinterSettings, Settings  # noqa: E402
 from etiketto.ui.sheets import PositionsDialog, SheetChooser, margins_note  # noqa: E402
+from etiketto.ui.symbols import SymbolChooser  # noqa: E402
 from etiketto.ui.texts import error_details, image_from_path, warning_text  # noqa: E402
 from etiketto.units import Unit, unit_for  # noqa: E402
 
@@ -215,6 +216,13 @@ class Window(Adw.ApplicationWindow):
         self.expand_index = len(self.label.elements) - 1
         self._structure_changed()
 
+    def choose_symbol(self) -> None:
+        """Pick a symbol from the library and add it."""
+        SymbolChooser(
+            self,
+            lambda symbol: self.add_element(SymbolElement(name=symbol.name, path=symbol.path)),
+        ).present()
+
     def move_element(self, index: int, target: int) -> None:
         items = self.label.elements
         items[index], items[target] = items[target], items[index]
@@ -353,6 +361,7 @@ class Window(Adw.ApplicationWindow):
             dpi=self.print_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
+            mono=backend.capabilities.color_model == "mono",
         )
         image = backend.preview(rendered.image, self.print_flow.mode)
         sheet = self.sheet
@@ -491,6 +500,7 @@ class Window(Adw.ApplicationWindow):
             "add-text": lambda *_a: self.add_element(TextElement(text=_("Text"))),
             "add-image": lambda *_a: self.files.choose_image(self.add_element),
             "add-code": lambda *_a: self.add_element(CodeElement()),
+            "add-symbol": lambda *_a: self.choose_symbol(),
         }
         for name, callback in actions.items():
             action = Gio.SimpleAction.new(name, None)

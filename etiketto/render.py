@@ -12,7 +12,7 @@ import io
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from functools import lru_cache
+from functools import lru_cache, partial
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -20,7 +20,15 @@ from PIL import Image, ImageColor, ImageDraw, ImageOps
 
 from etiketto import codes
 from etiketto.codes import CodeError
-from etiketto.model import CodeElement, Element, ImageElement, Label, TextElement
+from etiketto.model import (
+    CodeElement,
+    Element,
+    ImageElement,
+    Label,
+    SymbolElement,
+    TextElement,
+)
+from etiketto.symbols import VIEW_BOX, find, segments, trace
 
 # Resolution of the vivid print mode (labelprinter: 317 lpi)
 PRINT_DPI = 317
@@ -34,14 +42,24 @@ DEFAULT_SAFE_MM = 1.5
 
 class RenderWarning(NamedTuple):
     """A problem with the label; the interface turns key and params into a
-    translated message (keys: image_unreadable, element_failed, no_room,
-    fixed_too_short, background_unreadable; codes that cannot be encoded:
-    see etiketto.codes.CodeError; codes that may not scan or do not fit:
-    code_thin, code_quiet, code_too_big)."""
+    translated message (keys: image_unreadable, symbol_unknown,
+    element_failed, no_room, fixed_too_short, background_unreadable; codes
+    that cannot be encoded: see etiketto.codes.CodeError; codes that may not
+    scan or do not fit: code_thin, code_quiet, code_too_big)."""
 
     key: str
     # read-only: a NamedTuple default is one object shared by all warnings
     params: Mapping[str, object] = MappingProxyType({})
+
+
+class ElementError(ValueError):
+    """An element that cannot be drawn; key is its RenderWarning (a code
+    that cannot be encoded raises etiketto.codes.CodeError instead)."""
+
+    def __init__(self, key: str, **params):
+        super().__init__(key)
+        self.key = key
+        self.params = params
 
 
 @dataclass
@@ -434,12 +452,75 @@ def render_code(element: CodeElement, height: int, width: int | None = None) -> 
     return img
 
 
-def render_element(element: Element, height: int, dpi: float) -> Image.Image:
+def _draw_symbol(path: str, rotation: int, color: str, mono: bool, size: int) -> Image.Image:
+    """The path filled in a square of size pixels, turned clockwise by
+    rotation degrees. mono: no grey edges (a threshold instead of the
+    dithering a mono printer gets), so the outline stays crisp."""
+    import cairo
+
+    path_segments = segments(path)  # PathError: a damaged file
+    surface = cairo.ImageSurface(cairo.FORMAT_A8, size, size)
+    ctx = cairo.Context(surface)
+    ctx.translate(size / 2, size / 2)
+    ctx.rotate(math.radians(rotation))
+    ctx.scale(size / VIEW_BOX, size / VIEW_BOX)
+    ctx.translate(-VIEW_BOX / 2, -VIEW_BOX / 2)
+    trace(ctx, path_segments)
+    ctx.fill()
+    surface.flush()
+    alpha = Image.frombuffer(
+        "L", (size, size), bytes(surface.get_data()), "raw", "L", surface.get_stride(), 1
+    )
+    if mono:
+        alpha = alpha.point(lambda v: 255 if v >= 128 else 0)
+    img = Image.new("RGBA", (size, size), (*_color(color), 0))
+    img.putalpha(alpha)
+    return img
+
+
+def _mono_ink(color: str) -> str:
+    """What a black-and-white printer makes of a colour: white for light
+    colours (a white symbol on a dark background stays visible), else black."""
+    r, g, b = _color(color)
+    return "#ffffff" if (r * 299 + g * 587 + b * 114) / 1000 >= 128 else "#000000"
+
+
+def render_symbol(
+    element: SymbolElement, height: int, dpi: float, mono: bool = False
+) -> Image.Image:
+    """The symbol as a square: its size, at most the height. The path saved
+    with the label is drawn; without one the name is looked up."""
+    path = element.path
+    if not path:
+        found = find(element.name)
+        if found is None:
+            raise ElementError("symbol_unknown")
+        path = found.path
+    size = height if element.size_mm <= 0 else min(height, mm_to_px(element.size_mm, dpi))
+    color = _mono_ink(element.color) if mono else element.color
+    draw = partial(_draw_symbol, path, element.rotation, color, mono)
+    img = draw(size)
+    # scaled down to fit a fixed length: drawn again, as sharp as before
+    img.info["redraw"] = draw
+    return img
+
+
+def render_element(element: Element, height: int, dpi: float, mono: bool = False) -> Image.Image:
     if isinstance(element, TextElement):
         return render_text(element, height, dpi)
     if isinstance(element, ImageElement):
         return render_image(element, height)
+    if isinstance(element, SymbolElement):
+        return render_symbol(element, height, dpi, mono)
     return render_code(element, height)
+
+
+def _resize(part: Image.Image, width: int, height: int) -> Image.Image:
+    """A part in another size: drawn again if it can be (symbols), else resampled."""
+    redraw = part.info.get("redraw")
+    if redraw is not None:
+        return redraw(max(1, height))
+    return part.resize((max(1, width), max(1, height)), Image.Resampling.LANCZOS)
 
 
 def _placeholder(height: int) -> Image.Image:
@@ -486,42 +567,39 @@ def _frame(label: Label, dpi: float, safe_mm: float, tape_px, bleed_px, warnings
 
 
 def _element_warning(element: Element, index: int, error: Exception) -> RenderWarning:
-    if isinstance(error, CodeError):
+    if isinstance(error, (CodeError, ElementError)):
         return RenderWarning(error.key, {"n": index, **error.params})
     if isinstance(element, ImageElement):
         return RenderWarning("image_unreadable", {"n": index})
     return RenderWarning("element_failed", {"n": index})
 
 
-def _parts(label: Label, f: _Frame, dpi: float, warnings) -> list[Image.Image]:
+def _parts(label: Label, f: _Frame, dpi: float, warnings, mono: bool) -> list[Image.Image]:
     parts = []
     for index, element in enumerate(label.elements, 1):
         try:
-            part = render_element(element, f.inner, dpi)
+            part = render_element(element, f.inner, dpi, mono)
         except Exception as e:  # noqa: BLE001 - show any element error, keep going
             warnings.append(_element_warning(element, index, e))
             part = _placeholder(f.inner)
         if part.height > f.inner and not isinstance(element, CodeElement):
             # fixed-size text taller than the tape (a code too large for it
             # stays as it is: it cannot be printed, see code_too_big)
-            part = part.resize(
-                (max(1, round(part.width * f.inner / part.height)), f.inner),
-                Image.Resampling.LANCZOS,
-            )
+            part = _resize(part, round(part.width * f.inner / part.height), f.inner)
         parts.append(part)
     return parts
 
 
 def _smaller(element: Element, part: Image.Image, scale: float) -> Image.Image:
-    """The part scaled down; a code drawn again at the smaller size, so its
-    modules stay whole pixels."""
+    """The part scaled down; a code (or a symbol) drawn again at the smaller
+    size, so its modules stay whole pixels (its outline stays sharp)."""
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
     if isinstance(element, CodeElement):
         try:
             return render_code(element, size[1], size[0])
         except Exception:  # noqa: BLE001 - the placeholder of a code that failed
             pass
-    return part.resize(size, Image.Resampling.LANCZOS)
+    return _resize(part, *size)
 
 
 def _content_width(parts: list[Image.Image], gap: int) -> int:
@@ -590,13 +668,16 @@ def render(
     tape_px: int | None = None,
     bleed_px: int = 0,
     min_length_mm: float = 0.0,
+    mono: bool = False,
 ) -> Rendered:
     """tape_px overrides the tape height from the nominal width; bleed_px adds
     background beyond both tape edges (the content keeps its place);
-    min_length_mm is the printer's shortest label (Capabilities.min_length_mm)."""
+    min_length_mm is the printer's shortest label (Capabilities.min_length_mm);
+    mono: for a black-and-white printer (symbols black or white, without
+    grey edges)."""
     warnings: list[RenderWarning] = []
     f = _frame(label, dpi, safe_mm, tape_px, bleed_px, warnings)
-    parts = _parts(label, f, dpi, warnings)
+    parts = _parts(label, f, dpi, warnings, mono)
     length, parts, gap, overflow = _fit_length(label, parts, f, dpi, warnings, min_length_mm)
     warnings += [
         RenderWarning(key, {"n": index})

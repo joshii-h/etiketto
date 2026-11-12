@@ -477,6 +477,7 @@ class Backend(ABC):
             tape_px=raster.tape_px,
             bleed_px=raster.bleed_px,
             min_length_mm=self.capabilities.min_length_mm,
+            mono=self.capabilities.color_model == "mono",
         )
         check_codes(rendered.warnings)  # before anything is sent
         image = rendered.image

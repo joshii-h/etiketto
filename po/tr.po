@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 09:52+0100\n"
+"PO-Revision-Date: 2026-11-12 09:54+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: tr\n"
 "Language: tr\n"
@@ -19,88 +19,112 @@ msgstr "Etiket tasarla ve yazdır"
 msgid "translator-credits"
 msgstr "Etiketto contributors"
 
-#: etiketto/ui/elements.py:41
+#: etiketto/ui/elements.py:44
 msgid "Content"
 msgstr "İçerik"
 
-#: etiketto/ui/elements.py:42
+#: etiketto/ui/elements.py:45
 msgid "Elements are placed one after another along the tape"
 msgstr "Ögeler şerit boyunca art arda yerleştirilir"
 
-#: etiketto/ui/elements.py:49
+#: etiketto/ui/elements.py:52
 msgid "No content yet"
 msgstr "Henüz içerik yok"
 
-#: etiketto/ui/elements.py:49
-msgid "Add text, an image or a code"
-msgstr "Metin, görüntü veya kod ekleyin"
+#: etiketto/ui/elements.py:52
+msgid "Add text, an image, a symbol or a code"
+msgstr "Metin, görüntü, sembol veya kod ekleyin"
 
-#: etiketto/ui/elements.py:58 etiketto/ui/texts.py:103
-#: etiketto/ui/window.py:491
+#: etiketto/ui/elements.py:61 etiketto/ui/texts.py:105
+#: etiketto/ui/window.py:500
 msgid "Text"
 msgstr "Metin"
 
-#: etiketto/ui/elements.py:59
+#: etiketto/ui/elements.py:62
 msgid "Image…"
 msgstr "Görüntü…"
 
-#: etiketto/ui/elements.py:60
+#: etiketto/ui/elements.py:63
+msgid "Symbol…"
+msgstr "Sembol…"
+
+#: etiketto/ui/elements.py:64
 msgid "QR code / barcode"
 msgstr "QR kodu / barkod"
 
-#: etiketto/ui/elements.py:62
+#: etiketto/ui/elements.py:66
 msgid "Add"
 msgstr "Ekle"
 
-#: etiketto/ui/elements.py:96 etiketto/ui/label_group.py:127
+#: etiketto/ui/elements.py:105 etiketto/ui/label_group.py:127
 msgid "Remove"
 msgstr "Kaldır"
 
-#: etiketto/ui/elements.py:99
+#: etiketto/ui/elements.py:108
 msgid "Move down"
 msgstr "Geriye taşı"
 
-#: etiketto/ui/elements.py:100
+#: etiketto/ui/elements.py:109
 msgid "Move up"
 msgstr "Öne taşı"
 
-#: etiketto/ui/elements.py:111
+#: etiketto/ui/elements.py:120 etiketto/ui/elements.py:213
 msgid "Size"
 msgstr "Boyut"
 
-#: etiketto/ui/elements.py:118
+#: etiketto/ui/elements.py:127
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = şerit yüksekliğini doldur"
 
-#: etiketto/ui/elements.py:123
+#: etiketto/ui/elements.py:132
 msgid "Line alignment"
 msgstr "Satır hizalama"
 
-#: etiketto/ui/elements.py:147
+#: etiketto/ui/elements.py:156
 msgid "Font"
 msgstr "Yazı tipi"
 
-#: etiketto/ui/elements.py:169
+#: etiketto/ui/elements.py:178
 msgid "Image file"
 msgstr "Görüntü dosyası"
 
-#: etiketto/ui/elements.py:170 etiketto/ui/label_group.py:115
+#: etiketto/ui/elements.py:179 etiketto/ui/elements.py:196
+#: etiketto/ui/label_group.py:115
 msgid "None"
 msgstr "Yok"
 
-#: etiketto/ui/elements.py:171
+#: etiketto/ui/elements.py:180 etiketto/ui/elements.py:197
 msgid "Choose…"
 msgstr "Seç…"
 
-#: etiketto/ui/elements.py:186
+#: etiketto/ui/elements.py:194 etiketto/ui/texts.py:109
+msgid "Symbol"
+msgstr "Sembol"
+
+#: etiketto/ui/elements.py:219
+#, python-format
+msgid "%(unit)s, 0 = fill tape height"
+msgstr "%(unit)s, 0 = şerit yüksekliğini doldur"
+
+#: etiketto/ui/elements.py:224
+msgid ""
+"Black-and-white printers print symbols in black, or in white if the colour "
+"is light"
+msgstr "Siyah beyaz yazıcılar sembolleri siyah, renk açıksa beyaz basar"
+
+#: etiketto/ui/elements.py:231
+msgid "Rotation"
+msgstr "Döndürme"
+
+#: etiketto/ui/elements.py:243
 msgid "Type"
 msgstr "Tür"
 
-#: etiketto/ui/elements.py:189
+#: etiketto/ui/elements.py:246
 msgid "Content (link, text, number)"
 msgstr "İçerik (bağlantı, metin, numara)"
 
-#: etiketto/ui/elements.py:193
+#: etiketto/ui/elements.py:250
 msgid "Colour"
 msgstr "Renk"
 
@@ -130,7 +154,7 @@ msgstr "%s açılamıyor"
 msgid "Open label"
 msgstr "Etiket aç"
 
-#: etiketto/ui/files.py:85 etiketto/ui/files.py:119 etiketto/ui/texts.py:91
+#: etiketto/ui/files.py:85 etiketto/ui/files.py:119 etiketto/ui/texts.py:93
 msgid "Only local files can be used"
 msgstr "Yalnızca yerel dosyalar kullanılabilir"
 
@@ -142,7 +166,7 @@ msgstr "etiket"
 msgid "Save label"
 msgstr "Etiketi kaydet"
 
-#: etiketto/ui/files.py:142 etiketto/ui/window.py:120
+#: etiketto/ui/files.py:142 etiketto/ui/window.py:121
 msgid "Save as template…"
 msgstr "Şablon olarak kaydet…"
 
@@ -155,7 +179,7 @@ msgstr "Kaydedildi: %s"
 msgid "Export PNG"
 msgstr "PNG olarak dışa aktar"
 
-#: etiketto/ui/files.py:178 etiketto/ui/window.py:409
+#: etiketto/ui/files.py:178 etiketto/ui/window.py:418
 msgid "The preview cannot be drawn"
 msgstr "Önizleme çizilemiyor"
 
@@ -168,7 +192,7 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "Henüz şablon yok – “Şablon olarak kaydet…” seçeneğini kullanın"
 
 #: etiketto/ui/files.py:217 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:43
+#: etiketto/ui/window.py:44
 msgid "Label"
 msgstr "Etiket"
 
@@ -457,7 +481,7 @@ msgstr "Yazıcı seçin"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:260
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:425
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:434
 msgid "Cancel"
 msgstr "İptal"
 
@@ -630,7 +654,7 @@ msgid "Print label"
 msgstr "Etiketi yazdır"
 
 #: etiketto/ui/printing.py:261 etiketto/ui/printing.py:393
-#: etiketto/ui/window.py:109
+#: etiketto/ui/window.py:110
 msgid "Print"
 msgstr "Yazdır"
 
@@ -690,7 +714,7 @@ msgstr "Yazdırma başarısız"
 msgid "Details"
 msgstr "Ayrıntılar"
 
-#: etiketto/ui/printing.py:422 etiketto/ui/window.py:445
+#: etiketto/ui/printing.py:422 etiketto/ui/window.py:454
 msgid "Report"
 msgstr "Bildir"
 
@@ -770,6 +794,30 @@ msgstr "Uygula"
 #, python-format
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "%s numaralı etiketler yazıcının yazdıramadığı kenar boşluğuna taşıyor"
+
+#: etiketto/ui/symbols.py:74
+msgid "Symbols"
+msgstr "Semboller"
+
+#: etiketto/ui/symbols.py:76
+msgid "Use symbol"
+msgstr "Sembolü kullan"
+
+#: etiketto/ui/symbols.py:97
+msgid "Search in English, e.g. arrow or recycle"
+msgstr "İngilizce arayın, ör. arrow veya recycle"
+
+#: etiketto/ui/symbols.py:102
+msgid "All symbols"
+msgstr "Tüm semboller"
+
+#: etiketto/ui/symbols.py:102
+msgid "Recently used"
+msgstr "Son kullanılanlar"
+
+#: etiketto/ui/symbols.py:123
+msgid "No symbol found"
+msgstr "Sembol bulunamadı"
 
 #: etiketto/ui/texts.py:20
 msgid "Full cut"
@@ -915,485 +963,490 @@ msgid ""
 "it)"
 msgstr "Bir sevkiyat kolisinin GTIN'inin 13 rakamı, denetim basamağı eklenir (veya onunla birlikte 14)"
 
-#: etiketto/ui/texts.py:97
+#: etiketto/ui/texts.py:99
 #, python-format
 msgid "Not an image: %s"
 msgstr "Görüntü değil: %s"
 
-#: etiketto/ui/texts.py:105
+#: etiketto/ui/texts.py:107
 msgid "Image"
 msgstr "Görüntü"
 
-#: etiketto/ui/texts.py:127
+#: etiketto/ui/texts.py:133
 msgid "System printer (CUPS, IPP)"
 msgstr "Sistem yazıcısı (CUPS, IPP)"
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:139
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "Öge %(n)d: kod boş"
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:140
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "Öge %(n)d: EAN-13 tam olarak 12 rakam gerektirir"
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:141
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "Öge %(n)d: EAN-13 denetim basamağı yanlış"
 
-#: etiketto/ui/texts.py:137
+#: etiketto/ui/texts.py:143
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "Öge %(n)d: Code 128 yalnızca Latin harfleri, rakamlar ve noktalama işaretleri kabul eder"
 
-#: etiketto/ui/texts.py:139
+#: etiketto/ui/texts.py:145
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "Öge %(n)d: EAN-8 7 rakam veya denetim basamağıyla 8 rakam gerektirir"
 
-#: etiketto/ui/texts.py:140
+#: etiketto/ui/texts.py:146
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "Öge %(n)d: UPC-A 11 rakam veya denetim basamağıyla 12 rakam gerektirir"
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:148
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "Öge %(n)d: UPC-E 0 veya 1 ile başlayan 7 rakam ya da denetim basamağıyla 8 rakam gerektirir"
 
-#: etiketto/ui/texts.py:144
+#: etiketto/ui/texts.py:150
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "Öge %(n)d: ITF-14 13 rakam veya denetim basamağıyla 14 rakam gerektirir"
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:151
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "Öge %(n)d: denetim basamağı yanlış"
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:153
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "Öge %(n)d: Code 39 yalnızca büyük harfler, rakamlar, boşluklar ve - . $ / + %% kabul eder"
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:156
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "Öge %(n)d: Code 93 yalnızca Latin harfleri, rakamlar ve noktalama işaretleri kabul eder"
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:159
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "Öge %(n)d: GS1 verileri yalnızca Latin harfleri, rakamlar ve noktalama işaretleri kabul eder"
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:162
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "Öge %(n)d: GS1 verileri, her birinin ardından değeri gelen, parantez içindeki uygulama tanımlayıcılarından oluşmalıdır, ör. (01)09501101530003(10)AB12"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:165
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "Öge %(n)d: (%(ai)s) bir GS1 uygulama tanımlayıcısı değil"
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:167
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "Öge %(n)d: uygulama tanımlayıcısı (%(ai)s) değerinin uzunluğu yanlış"
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:170
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "Öge %(n)d: uygulama tanımlayıcısı (%(ai)s) denetim basamağı yanlış"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:173
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "Öge %(n)d: uygulama tanımlayıcısı (%(ai)s) değeri geçersiz: izin vermediği bir tarih, sayı veya karakter"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:177
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "Öge %(n)d: hiçbir UPC-A numarası bu UPC-E rakamlarına kısalmıyor – rakamları denetleyin veya UPC-A kullanın"
 
-#: etiketto/ui/texts.py:175
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "Öge %(n)d: Full ASCII'ye ayarlı tarayıcılar büyük harften önceki $, /, + veya %% işaretini başka bir karakter olarak okur"
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:184
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "Öge %(n)d: içerik bu kod türü için çok uzun"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:185
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "Öge %(n)d: içerik bu kod türünde kodlanamıyor"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "Öge %(n)d: bu kod türü, yüklü olmayan Zint kitaplığını (zint-bindings) gerektirir"
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "Öge %(n)d: görüntü okunamıyor"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:191
+#, python-format
+msgid "Element %(n)d: this symbol is not in the symbol library"
+msgstr "Öge %(n)d: bu sembol sembol kitaplığında yok"
+
+#: etiketto/ui/texts.py:192
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "Öge %(n)d çizilemiyor"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:193
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "Güvenlik payı, kenarlık ve kenar aralığı yer bırakmıyor – bunları azaltın"
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:194
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "Sabit uzunluk aralıktan kısa – uzunluğu artırın"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:195
 msgid "The background image cannot be read"
 msgstr "Arka plan görüntüsü okunamıyor"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:197
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "Öge %(n)d: kodun modülleri yalnızca bir yazıcı noktası genişliğinde ve taranamayabilir – kodu büyütün"
 
-#: etiketto/ui/texts.py:194
+#: etiketto/ui/texts.py:201
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "Öge %(n)d: kodun çevresinde gereken boşluk sığmıyor – kodu büyütün"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "Öge %(n)d: kod, modül başına bir yazıcı noktasıyla bile kendi alanına sığmıyor – etiketi büyütün veya içeriği kısaltın"
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:220
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "Zaten yazdırılan sayfalar: %(total)d sayfadan %(n)d."
 
-#: etiketto/ui/texts.py:215
+#: etiketto/ui/texts.py:222
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "Zaten yazdırılan etiketler: %(total)d etiketten %(n)d."
 
-#: etiketto/ui/texts.py:219
+#: etiketto/ui/texts.py:226
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "Kuyrukta hâlâ bekleyen sayfalar iptal edildi."
 
-#: etiketto/ui/texts.py:221
+#: etiketto/ui/texts.py:228
 msgid "The labels still waiting in the queue were canceled."
 msgstr "Kuyrukta hâlâ bekleyen etiketler iptal edildi."
 
-#: etiketto/ui/texts.py:230
+#: etiketto/ui/texts.py:237
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "Yazıcı bulunamıyor. Açık ve aynı ağda olduğunu denetleyin ya da IP adresini girin."
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:241
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "Yazıcı USB üzerinden bulunamıyor. Kabloyu ve yazıcının açık ve uyanık olduğunu denetleyin, ardından yeniden arayın."
 
-#: etiketto/ui/texts.py:237
+#: etiketto/ui/texts.py:244
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "Yazıcı yanıt vermiyor. Açık ve uyanık olduğunu denetleyin."
 
-#: etiketto/ui/texts.py:239
+#: etiketto/ui/texts.py:246
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "Yazıcı veri almayı bıraktı. Etiketin bitmesi veya kapağın açık olması gibi bir sorun gösterip göstermediğini kontrol edin, ardından yeniden deneyin."
 
-#: etiketto/ui/texts.py:243
+#: etiketto/ui/texts.py:250
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "Yazıcı bağlantıyı reddediyor. Kapatıp yeniden açın. Web arayüzünde “Port 9100” seçeneği varsa etkinleştirin."
 
-#: etiketto/ui/texts.py:246
+#: etiketto/ui/texts.py:253
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "Kaset takılı değil. Bir kaset takıp yeniden deneyin."
 
-#: etiketto/ui/texts.py:247
+#: etiketto/ui/texts.py:254
 msgid "The printer's cover is open. Close it and try again."
 msgstr "Yazıcının kapağı açık. Kapatıp yeniden deneyin."
 
-#: etiketto/ui/texts.py:248
+#: etiketto/ui/texts.py:255
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "Etiket sıkıştı. Kapağı açın, etiketi çıkarın ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:249
+#: etiketto/ui/texts.py:256
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "Kaset tanınmıyor. Yeniden takın ya da başka bir kaset deneyin."
 
-#: etiketto/ui/texts.py:250
+#: etiketto/ui/texts.py:257
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "Yazıcı meşgul. Biraz bekleyip yeniden deneyin."
 
-#: etiketto/ui/texts.py:251
+#: etiketto/ui/texts.py:258
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "Etiket bu yazıcı için çok uzun: en fazla %(max)s."
 
-#: etiketto/ui/texts.py:252
+#: etiketto/ui/texts.py:259
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "Etiket bu yazıcı için çok geniş: en fazla %(max)s."
 
-#: etiketto/ui/texts.py:253
+#: etiketto/ui/texts.py:260
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "Yazıcının etiketi bitti. Yeni bir rulo takın ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:254
+#: etiketto/ui/texts.py:261
 msgid "The print head is open. Close it and try again."
 msgstr "Yazdırma kafası açık. Kapatın ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:256
+#: etiketto/ui/texts.py:263
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "Yazıcı sonraki etiketi bulamıyor. Etiketlerin doğru takıldığını ve etiket sensöründen geçtiğini kontrol edin."
 
-#: etiketto/ui/texts.py:260
+#: etiketto/ui/texts.py:267
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "Ribonda bir sorun var. Doğru takıldığını ve yazıcıda ayarlanan yazdırma yöntemine uygun olduğunu kontrol edin."
 
-#: etiketto/ui/texts.py:263
+#: etiketto/ui/texts.py:270
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "Yazıcı duraklatıldı. Ekranından devam ettirin ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:264
+#: etiketto/ui/texts.py:271
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "Yazıcının kağıdı bitti. Kağıt yükleyip yeniden deneyin."
 
-#: etiketto/ui/texts.py:266
+#: etiketto/ui/texts.py:273
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "Kağıt sıkıştı. Yazıcının ekranında gösterildiği gibi çıkarıp yeniden deneyin."
 
-#: etiketto/ui/texts.py:268
+#: etiketto/ui/texts.py:275
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "Yazıcının toneri veya mürekkebi bitti. Değiştirip yeniden deneyin."
 
-#: etiketto/ui/texts.py:269
+#: etiketto/ui/texts.py:276
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "Yazıcı bu boyutu yazdıramıyor. Yazıcının sunduğu bir kağıt boyutu seçin."
 
-#: etiketto/ui/texts.py:271
+#: etiketto/ui/texts.py:278
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "Yazıcı, Etiketto'nun gönderebildiği biçimlerin (PDF, PWG Raster, JPEG) hiçbirini kabul etmiyor."
 
-#: etiketto/ui/texts.py:274
+#: etiketto/ui/texts.py:281
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "Yazıcının kuyruğu duraklatıldı. Sistemin yazıcı ayarlarından devam ettirin ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:278
+#: etiketto/ui/texts.py:285
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "Yazdırma işi kuyrukta bekletildi, örneğin serbest bırakılana veya bir parola girilene kadar. Sistemin yazıcı ayarlarında kuyruğu kontrol edin ve yeniden deneyin."
 
-#: etiketto/ui/texts.py:282
+#: etiketto/ui/texts.py:289
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "Yazdırma işi yazıcıda veya kuyrukta iptal edildi."
 
-#: etiketto/ui/texts.py:284
+#: etiketto/ui/texts.py:291
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Etiketto yazıcının USB bağlantı noktasını kullanma iznine sahip değil. Kullanıcınızı “lp” grubuna ekleyin (sudo usermod -aG lp $USER), ardından oturumu kapatıp yeniden açın."
 
-#: etiketto/ui/texts.py:288
+#: etiketto/ui/texts.py:295
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "Bu yazıcının çözünürlüğünde kod etikete sığmıyor ve kesilir. Etiketi büyütün veya kodun içeriğini kısaltın."
 
-#: etiketto/ui/texts.py:292
+#: etiketto/ui/texts.py:299
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "Yazıcı bir sorun bildirdi. Kapatıp yeniden açın, ardından bir kez daha deneyin."
 
-#: etiketto/ui/texts.py:304
+#: etiketto/ui/texts.py:311
 msgid "Warming up…"
 msgstr "Isınıyor…"
 
-#: etiketto/ui/texts.py:305
+#: etiketto/ui/texts.py:312
 msgid "Cooling down…"
 msgstr "Soğuyor…"
 
-#: etiketto/ui/texts.py:306
+#: etiketto/ui/texts.py:313
 msgid "Cleaning…"
 msgstr "Temizleniyor…"
 
-#: etiketto/ui/texts.py:307
+#: etiketto/ui/texts.py:314
 msgid "Swipe the printer's panel to cut the label"
 msgstr "Etiketi kesmek için yazıcının paneli üzerinde kaydırın"
 
-#: etiketto/ui/texts.py:309
+#: etiketto/ui/texts.py:316
 msgid "Out of paper – load paper to continue"
 msgstr "Kağıt bitti – devam etmek için kağıt yükleyin"
 
-#: etiketto/ui/texts.py:310
+#: etiketto/ui/texts.py:317
 msgid "Cover open – close it to continue"
 msgstr "Kapak açık – devam etmek için kapatın"
 
-#: etiketto/ui/texts.py:311
+#: etiketto/ui/texts.py:318
 msgid "Paper jammed – remove it to continue"
 msgstr "Kağıt sıkıştı – devam etmek için çıkarın"
 
-#: etiketto/ui/texts.py:322
+#: etiketto/ui/texts.py:329
 msgid "This label needs a newer version of Etiketto"
 msgstr "Bu etiket için Etiketto'nun daha yeni bir sürümü gerekiyor"
 
-#: etiketto/ui/texts.py:324
+#: etiketto/ui/texts.py:331
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s bir Etiketto etiketi değil"
 
-#: etiketto/ui/texts.py:325
+#: etiketto/ui/texts.py:332
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "Dosya bozuk: %s"
 
-#: etiketto/ui/texts.py:331
+#: etiketto/ui/texts.py:338
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s kaydedilemiyor: oraya yazma izni yok"
 
-#: etiketto/ui/texts.py:333
+#: etiketto/ui/texts.py:340
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s kaydedilemiyor: disk dolu"
 
-#: etiketto/ui/texts.py:334
+#: etiketto/ui/texts.py:341
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s kaydedilemiyor"
 
-#: etiketto/ui/texts.py:343
+#: etiketto/ui/texts.py:350
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "Bu kasetin üretim tarihi büyük olasılıkla: %(month)s %(year)d. Eski ZINK kağıdı daha soluk renkler basar."
 
-#: etiketto/ui/window.py:88
+#: etiketto/ui/window.py:89
 msgid "Open"
 msgstr "Aç"
 
-#: etiketto/ui/window.py:95
+#: etiketto/ui/window.py:96
 msgid "Templates"
 msgstr "Şablonlar"
 
-#: etiketto/ui/window.py:101
+#: etiketto/ui/window.py:102
 msgid "Save"
 msgstr "Kaydet"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "New label"
 msgstr "Yeni etiket"
 
-#: etiketto/ui/window.py:119
+#: etiketto/ui/window.py:120
 msgid "Save as…"
 msgstr "Farklı kaydet…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Export PNG…"
 msgstr "PNG olarak dışa aktar…"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Help"
 msgstr "Yardım"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "Report a problem…"
 msgstr "Sorun bildir…"
 
-#: etiketto/ui/window.py:124
+#: etiketto/ui/window.py:125
 msgid "About Etiketto"
 msgstr "Etiketto Hakkında"
 
-#: etiketto/ui/window.py:332
+#: etiketto/ui/window.py:340
 msgid "Unsaved label"
 msgstr "Kaydedilmemiş etiket"
 
-#: etiketto/ui/window.py:385
+#: etiketto/ui/window.py:394
 msgid "content scaled down to fit"
 msgstr "içerik sığması için küçültüldü"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:396
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "Bu yazıcı için çok uzun: en fazla %s"
 
-#: etiketto/ui/window.py:392
+#: etiketto/ui/window.py:401
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "Bu yazıcı için çok geniş: en fazla %s"
 
-#: etiketto/ui/window.py:397
+#: etiketto/ui/window.py:406
 #, python-format
 msgid "Problem: %s"
 msgstr "Sorun: %s"
 
-#: etiketto/ui/window.py:472
+#: etiketto/ui/window.py:481
 msgid "The browser cannot be opened"
 msgstr "Tarayıcı açılamıyor"
 
-#: etiketto/ui/window.py:474
+#: etiketto/ui/window.py:483
 msgid "Copy link"
 msgstr "Bağlantıyı kopyala"
 
-#: etiketto/ui/window.py:518
+#: etiketto/ui/window.py:528
 msgid "Only local files can be dropped"
 msgstr "Yalnızca yerel dosyalar bırakılabilir"
 
-#: etiketto/ui/window.py:533
+#: etiketto/ui/window.py:543
 msgid "Please wait until printing has finished"
 msgstr "Lütfen yazdırma bitene kadar bekleyin"

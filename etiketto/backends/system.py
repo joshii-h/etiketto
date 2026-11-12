@@ -688,7 +688,11 @@ class SystemPrinter(Backend):
     ) -> Image.Image:
         label = replace(label, auto_length=False)
         rendered = render(
-            label, dpi=dpi, safe_mm=safe_mm, min_length_mm=self.capabilities.min_length_mm
+            label,
+            dpi=dpi,
+            safe_mm=safe_mm,
+            min_length_mm=self.capabilities.min_length_mm,
+            mono=self.capabilities.color_model == "mono",
         )
         check_codes(rendered.warnings)  # at the resolution it is printed at
         image = rendered.image

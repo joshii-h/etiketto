@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-11 23:03+0100\n"
+"POT-Creation-Date: 2026-11-12 09:55+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1095,6 +1095,11 @@ msgstr "**Bild**: Fotos und Grafiken; Ziehen und Ablegen geht auch."
 
 #. type: Bullet: '- '
 #: docs/use.md
+msgid "**Symbol**: a pictogram from the symbol library, see below."
+msgstr "**Symbol**: ein Piktogramm aus der Symbolbibliothek, siehe unten."
+
+#. type: Bullet: '- '
+#: docs/use.md
 msgid ""
 "**Code**: [[ui:Type]] offers 2D codes (QR code, Data Matrix, PDF417, Aztec), "
 "linear barcodes (Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A, UPC-E, "
@@ -1225,6 +1230,67 @@ msgid ""
 msgstr ""
 "Etiketten aus früheren Versionen: QR-Codes werden bis zu etwa einem Drittel "
 "kleiner (ihr leerer Rand liegt jetzt im Element), Strichcodes etwas breiter."
+
+#. type: Title ##
+#: docs/use.md
+#, no-wrap
+msgid "Symbols"
+msgstr "Symbole"
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"[[ui:Symbol…]] opens the symbol library: over 7000 pictograms such as "
+"arrows, warnings, recycling, tools, food or weather, from Material Design "
+"Icons. Search by name, for example \"arrow\" or \"recycle\". The names and "
+"categories come from the icon set and are English, so the search is in "
+"English too. The list next to the search shows one category; [[ui:Recently "
+"used]] shows the symbols chosen last. The \"Brand / Logo\" category and "
+"further icons showing brands or trademarks are left out."
+msgstr ""
+"[[ui:Symbol…]] öffnet die Symbolbibliothek: über 7000 Piktogramme wie "
+"Pfeile, Warnzeichen, Recycling, Werkzeuge, Essen oder Wetter, aus Material "
+"Design Icons. Gesucht wird nach dem Namen, zum Beispiel „arrow“ oder "
+"„recycle“. Namen und Kategorien stammen aus dem Icon-Set und sind englisch, "
+"darum wird auch auf Englisch gesucht. Die Liste neben der Suche zeigt eine "
+"Kategorie; [[ui:Recently used]] zeigt die zuletzt gewählten Symbole. Die "
+"Kategorie „Brand / Logo“ und weitere Symbole, die Marken zeigen, sind nicht "
+"dabei."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"[[ui:Size]] 0 fills the label height, otherwise the symbol has this height."
+msgstr ""
+"[[ui:Size]] 0 füllt die Etikettenhöhe, sonst hat das Symbol diese Höhe."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid "[[ui:Rotation]]: a quarter turn at a time, clockwise."
+msgstr "[[ui:Rotation]]: jeweils eine Vierteldrehung, im Uhrzeigersinn."
+
+#. type: Bullet: '- '
+#: docs/use.md
+msgid ""
+"The colour is printed on colour and office printers. Black-and-white label "
+"printers print symbols in black, or in white if the colour is light, with "
+"sharp edges."
+msgstr ""
+"Die Farbe wird auf Farb- und Bürodruckern gedruckt. Schwarzweisse "
+"Etikettendrucker drucken Symbole schwarz, oder weiss, wenn die Farbe hell "
+"ist, mit scharfen Kanten."
+
+#. type: Plain text
+#: docs/use.md
+msgid ""
+"The label file keeps the outline of each symbol, so a label looks the same "
+"in later versions. Older versions of Etiketto cannot open labels with "
+"symbols and say that the label needs a newer version."
+msgstr ""
+"Die Etikettendatei enthält den Umriss jedes Symbols, darum sieht ein Etikett "
+"auch in späteren Versionen gleich aus. Ältere Versionen von Etiketto können "
+"Etiketten mit Symbolen nicht öffnen und melden, dass das Etikett eine neuere "
+"Version braucht."
 
 #. type: Title ##
 #: docs/use.md

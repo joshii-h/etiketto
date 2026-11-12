@@ -16,8 +16,9 @@ from typing import Literal
 # add a name to FEATURES, not a version.
 FORMAT_VERSION = 2
 # "barcodes": a code of a symbology added after version 1 (BARCODES); version
-# 1 readers would call the file damaged
-FEATURES = frozenset({"barcodes"})
+# 1 readers would call the file damaged; "symbols": a symbol element
+# (SymbolElement; earlier readers also refuse the unknown element kind)
+FEATURES = frozenset({"barcodes", "symbols"})
 
 DEFAULT_PRINTER = "vc500w"
 MIN_TAPE_LENGTH_MM = 15.0  # endless tape: the shortest fixed length a file may have
@@ -101,7 +102,28 @@ class CodeElement:
     kind: Literal["code"] = "code"
 
 
-Element = TextElement | ImageElement | CodeElement
+ROTATIONS = (0, 90, 180, 270)
+MAX_SYMBOL_PATH = 100_000  # etiketto.symbols.path.MAX_PATH_CHARS
+MAX_SYMBOL_NAME = 100  # the longest icon name has 41 characters
+
+
+@dataclass
+class SymbolElement:
+    """A symbol of the symbol library (etiketto.symbols), drawn as a vector
+    path at the printer's resolution. The file keeps the name, for the
+    chooser, and a copy of the path, which is what is drawn: the label looks
+    the same with an icon set where the symbol was changed, renamed or
+    removed (the same reason images are embedded)."""
+
+    name: str = ""  # "printer-outline"
+    path: str = ""  # SVG path data in the 24 × 24 square; empty: look up name
+    size_mm: float = 0.0  # 0 = the content height
+    rotation: int = 0  # clockwise, a quarter turn at a time
+    color: str = "#000000"  # black on black-and-white printers
+    kind: Literal["symbol"] = "symbol"
+
+
+Element = TextElement | ImageElement | CodeElement | SymbolElement
 
 
 @dataclass
@@ -135,7 +157,14 @@ class SheetChoice:
         return choice
 
 
-ELEMENT_TYPES = {"text": TextElement, "image": ImageElement, "code": CodeElement}
+# an Etiketto that does not know a kind refuses the file as "newer": symbols
+# need no format version or feature of their own
+ELEMENT_TYPES = {
+    "text": TextElement,
+    "image": ImageElement,
+    "code": CodeElement,
+    "symbol": SymbolElement,
+}
 
 
 @dataclass
@@ -267,7 +296,12 @@ class Label:
     def features(self) -> list[str]:
         """What the label uses that older versions cannot print (FEATURES)."""
         codes = [e for e in self.elements if isinstance(e, CodeElement)]
-        return ["barcodes"] if any(e.symbology in BARCODES for e in codes) else []
+        found = []
+        if any(e.symbology in BARCODES for e in codes):
+            found.append("barcodes")
+        if any(isinstance(e, SymbolElement) for e in self.elements):
+            found.append("symbols")
+        return found
 
     def to_dict(self) -> dict:
         data = asdict(self)
@@ -421,6 +455,8 @@ def _element_from_dict(item) -> Element:
     elif isinstance(element, ImageElement):
         element.data = _str(element.data, "image data")
         element.name = _str(element.name, "image name")
+    elif isinstance(element, SymbolElement):
+        _validate_symbol(element)
     else:
         element.data = _str(element.data, "code data")
         element.color = _str(element.color, "color")
@@ -428,3 +464,18 @@ def _element_from_dict(item) -> Element:
         if element.symbology not in SYMBOLOGIES:  # a symbology added later
             raise LabelError("newer", "unknown symbology %r" % element.symbology)
     return element
+
+
+def _validate_symbol(element: SymbolElement) -> None:
+    element.name = _str(element.name, "symbol name")
+    if len(element.name) > MAX_SYMBOL_NAME:
+        raise _damaged("symbol name too long")
+    element.path = _str(element.path, "symbol path")
+    if len(element.path) > MAX_SYMBOL_PATH:
+        raise _damaged("symbol path too long")
+    element.color = _str(element.color, "color")
+    element.size_mm = _clamp(element.size_mm, 0, MAX_SIZE_MM, "size_mm")
+    rotation = element.rotation
+    if isinstance(rotation, bool) or rotation not in ROTATIONS:
+        raise _damaged("invalid rotation %r" % (rotation,))
+    element.rotation = ROTATIONS[ROTATIONS.index(rotation)]  # 90, not 90.0

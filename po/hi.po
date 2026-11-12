@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto\n"
-"PO-Revision-Date: 2026-11-12 09:52+0100\n"
+"PO-Revision-Date: 2026-11-12 09:54+0100\n"
 "Last-Translator: Etiketto contributors\n"
 "Language-Team: hi\n"
 "Language: hi\n"
@@ -19,88 +19,112 @@ msgstr "लेबल डिज़ाइन और प्रिंट करे�
 msgid "translator-credits"
 msgstr "Etiketto contributors"
 
-#: etiketto/ui/elements.py:41
+#: etiketto/ui/elements.py:44
 msgid "Content"
 msgstr "सामग्री"
 
-#: etiketto/ui/elements.py:42
+#: etiketto/ui/elements.py:45
 msgid "Elements are placed one after another along the tape"
 msgstr "तत्व टेप पर एक के बाद एक रखे जाते हैं"
 
-#: etiketto/ui/elements.py:49
+#: etiketto/ui/elements.py:52
 msgid "No content yet"
 msgstr "अभी कोई सामग्री नहीं"
 
-#: etiketto/ui/elements.py:49
-msgid "Add text, an image or a code"
-msgstr "पाठ, छवि या कोड जोड़ें"
+#: etiketto/ui/elements.py:52
+msgid "Add text, an image, a symbol or a code"
+msgstr "पाठ, छवि, प्रतीक या कोड जोड़ें"
 
-#: etiketto/ui/elements.py:58 etiketto/ui/texts.py:103
-#: etiketto/ui/window.py:491
+#: etiketto/ui/elements.py:61 etiketto/ui/texts.py:105
+#: etiketto/ui/window.py:500
 msgid "Text"
 msgstr "पाठ"
 
-#: etiketto/ui/elements.py:59
+#: etiketto/ui/elements.py:62
 msgid "Image…"
 msgstr "छवि…"
 
-#: etiketto/ui/elements.py:60
+#: etiketto/ui/elements.py:63
+msgid "Symbol…"
+msgstr "प्रतीक…"
+
+#: etiketto/ui/elements.py:64
 msgid "QR code / barcode"
 msgstr "QR कोड / बारकोड"
 
-#: etiketto/ui/elements.py:62
+#: etiketto/ui/elements.py:66
 msgid "Add"
 msgstr "जोड़ें"
 
-#: etiketto/ui/elements.py:96 etiketto/ui/label_group.py:127
+#: etiketto/ui/elements.py:105 etiketto/ui/label_group.py:127
 msgid "Remove"
 msgstr "हटाएँ"
 
-#: etiketto/ui/elements.py:99
+#: etiketto/ui/elements.py:108
 msgid "Move down"
 msgstr "पीछे ले जाएँ"
 
-#: etiketto/ui/elements.py:100
+#: etiketto/ui/elements.py:109
 msgid "Move up"
 msgstr "आगे ले जाएँ"
 
-#: etiketto/ui/elements.py:111
+#: etiketto/ui/elements.py:120 etiketto/ui/elements.py:213
 msgid "Size"
 msgstr "आकार"
 
-#: etiketto/ui/elements.py:118
+#: etiketto/ui/elements.py:127
 msgid "pt, 0 = fill tape height"
 msgstr "pt, 0 = टेप की पूरी ऊँचाई"
 
-#: etiketto/ui/elements.py:123
+#: etiketto/ui/elements.py:132
 msgid "Line alignment"
 msgstr "पंक्ति संरेखण"
 
-#: etiketto/ui/elements.py:147
+#: etiketto/ui/elements.py:156
 msgid "Font"
 msgstr "फ़ॉन्ट"
 
-#: etiketto/ui/elements.py:169
+#: etiketto/ui/elements.py:178
 msgid "Image file"
 msgstr "छवि फ़ाइल"
 
-#: etiketto/ui/elements.py:170 etiketto/ui/label_group.py:115
+#: etiketto/ui/elements.py:179 etiketto/ui/elements.py:196
+#: etiketto/ui/label_group.py:115
 msgid "None"
 msgstr "कोई नहीं"
 
-#: etiketto/ui/elements.py:171
+#: etiketto/ui/elements.py:180 etiketto/ui/elements.py:197
 msgid "Choose…"
 msgstr "चुनें…"
 
-#: etiketto/ui/elements.py:186
+#: etiketto/ui/elements.py:194 etiketto/ui/texts.py:109
+msgid "Symbol"
+msgstr "प्रतीक"
+
+#: etiketto/ui/elements.py:219
+#, python-format
+msgid "%(unit)s, 0 = fill tape height"
+msgstr "%(unit)s, 0 = टेप की पूरी ऊँचाई"
+
+#: etiketto/ui/elements.py:224
+msgid ""
+"Black-and-white printers print symbols in black, or in white if the colour "
+"is light"
+msgstr "श्वेत-श्याम प्रिंटर प्रतीकों को काले रंग में छापते हैं, या हल्का रंग होने पर सफ़ेद में"
+
+#: etiketto/ui/elements.py:231
+msgid "Rotation"
+msgstr "घुमाव"
+
+#: etiketto/ui/elements.py:243
 msgid "Type"
 msgstr "प्रकार"
 
-#: etiketto/ui/elements.py:189
+#: etiketto/ui/elements.py:246
 msgid "Content (link, text, number)"
 msgstr "सामग्री (लिंक, पाठ, संख्या)"
 
-#: etiketto/ui/elements.py:193
+#: etiketto/ui/elements.py:250
 msgid "Colour"
 msgstr "रंग"
 
@@ -130,7 +154,7 @@ msgstr "%s खोला नहीं जा सकता"
 msgid "Open label"
 msgstr "लेबल खोलें"
 
-#: etiketto/ui/files.py:85 etiketto/ui/files.py:119 etiketto/ui/texts.py:91
+#: etiketto/ui/files.py:85 etiketto/ui/files.py:119 etiketto/ui/texts.py:93
 msgid "Only local files can be used"
 msgstr "केवल स्थानीय फ़ाइलें इस्तेमाल की जा सकती हैं"
 
@@ -142,7 +166,7 @@ msgstr "लेबल"
 msgid "Save label"
 msgstr "लेबल सहेजें"
 
-#: etiketto/ui/files.py:142 etiketto/ui/window.py:120
+#: etiketto/ui/files.py:142 etiketto/ui/window.py:121
 msgid "Save as template…"
 msgstr "टेम्पलेट के रूप में सहेजें…"
 
@@ -155,7 +179,7 @@ msgstr "%s सहेजा गया"
 msgid "Export PNG"
 msgstr "PNG में निर्यात करें"
 
-#: etiketto/ui/files.py:178 etiketto/ui/window.py:409
+#: etiketto/ui/files.py:178 etiketto/ui/window.py:418
 msgid "The preview cannot be drawn"
 msgstr "पूर्वावलोकन नहीं बनाया जा सकता"
 
@@ -168,7 +192,7 @@ msgid "No templates yet – use “Save as template…”"
 msgstr "अभी कोई टेम्पलेट नहीं – “टेम्पलेट के रूप में सहेजें…” इस्तेमाल करें"
 
 #: etiketto/ui/files.py:217 etiketto/ui/label_group.py:50
-#: etiketto/ui/window.py:43
+#: etiketto/ui/window.py:44
 msgid "Label"
 msgstr "लेबल"
 
@@ -457,7 +481,7 @@ msgstr "प्रिंटर चुनें"
 
 #: etiketto/ui/printer.py:195 etiketto/ui/printing.py:260
 #: etiketto/ui/sheets.py:206 etiketto/ui/sheets.py:365
-#: etiketto/ui/window.py:425
+#: etiketto/ui/symbols.py:79 etiketto/ui/window.py:434
 msgid "Cancel"
 msgstr "रद्द करें"
 
@@ -630,7 +654,7 @@ msgid "Print label"
 msgstr "लेबल प्रिंट करें"
 
 #: etiketto/ui/printing.py:261 etiketto/ui/printing.py:393
-#: etiketto/ui/window.py:109
+#: etiketto/ui/window.py:110
 msgid "Print"
 msgstr "प्रिंट करें"
 
@@ -690,7 +714,7 @@ msgstr "प्रिंट विफल"
 msgid "Details"
 msgstr "विवरण"
 
-#: etiketto/ui/printing.py:422 etiketto/ui/window.py:445
+#: etiketto/ui/printing.py:422 etiketto/ui/window.py:454
 msgid "Report"
 msgstr "रिपोर्ट करें"
 
@@ -770,6 +794,30 @@ msgstr "लागू करें"
 #, python-format
 msgid "Labels %s reach into the margin the printer cannot print on"
 msgstr "लेबल %s उस हाशिये में जाते हैं जिस पर प्रिंटर प्रिंट नहीं कर सकता"
+
+#: etiketto/ui/symbols.py:74
+msgid "Symbols"
+msgstr "प्रतीक"
+
+#: etiketto/ui/symbols.py:76
+msgid "Use symbol"
+msgstr "प्रतीक इस्तेमाल करें"
+
+#: etiketto/ui/symbols.py:97
+msgid "Search in English, e.g. arrow or recycle"
+msgstr "अंग्रेज़ी में खोजें, जैसे arrow या recycle"
+
+#: etiketto/ui/symbols.py:102
+msgid "All symbols"
+msgstr "सभी प्रतीक"
+
+#: etiketto/ui/symbols.py:102
+msgid "Recently used"
+msgstr "हाल में इस्तेमाल किए गए"
+
+#: etiketto/ui/symbols.py:123
+msgid "No symbol found"
+msgstr "कोई प्रतीक नहीं मिला"
 
 #: etiketto/ui/texts.py:20
 msgid "Full cut"
@@ -915,485 +963,490 @@ msgid ""
 "it)"
 msgstr "शिपिंग कार्टन के GTIN के 13 अंक, चेक अंक जोड़ा जाता है (या उसके साथ 14)"
 
-#: etiketto/ui/texts.py:97
+#: etiketto/ui/texts.py:99
 #, python-format
 msgid "Not an image: %s"
 msgstr "छवि नहीं है: %s"
 
-#: etiketto/ui/texts.py:105
+#: etiketto/ui/texts.py:107
 msgid "Image"
 msgstr "छवि"
 
-#: etiketto/ui/texts.py:127
+#: etiketto/ui/texts.py:133
 msgid "System printer (CUPS, IPP)"
 msgstr "सिस्टम प्रिंटर (CUPS, IPP)"
 
-#: etiketto/ui/texts.py:133
+#: etiketto/ui/texts.py:139
 #, python-format
 msgid "Element %(n)d: the code is empty"
 msgstr "तत्व %(n)d: कोड खाली है"
 
-#: etiketto/ui/texts.py:134
+#: etiketto/ui/texts.py:140
 #, python-format
 msgid "Element %(n)d: EAN-13 needs exactly 12 digits"
 msgstr "तत्व %(n)d: EAN-13 के लिए ठीक 12 अंक चाहिए"
 
-#: etiketto/ui/texts.py:135
+#: etiketto/ui/texts.py:141
 #, python-format
 msgid "Element %(n)d: the EAN-13 check digit is wrong"
 msgstr "तत्व %(n)d: EAN-13 का चेक अंक गलत है"
 
-#: etiketto/ui/texts.py:137
+#: etiketto/ui/texts.py:143
 #, python-format
 msgid ""
 "Element %(n)d: Code 128 only accepts Latin letters, digits and punctuation"
 msgstr "तत्व %(n)d: Code 128 केवल लैटिन अक्षर, अंक और विराम चिह्न स्वीकार करता है"
 
-#: etiketto/ui/texts.py:139
+#: etiketto/ui/texts.py:145
 #, python-format
 msgid "Element %(n)d: EAN-8 needs 7 digits, or 8 with the check digit"
 msgstr "तत्व %(n)d: EAN-8 के लिए 7 अंक चाहिए, या चेक अंक सहित 8"
 
-#: etiketto/ui/texts.py:140
+#: etiketto/ui/texts.py:146
 #, python-format
 msgid "Element %(n)d: UPC-A needs 11 digits, or 12 with the check digit"
 msgstr "तत्व %(n)d: UPC-A के लिए 11 अंक चाहिए, या चेक अंक सहित 12"
 
-#: etiketto/ui/texts.py:142
+#: etiketto/ui/texts.py:148
 #, python-format
 msgid ""
 "Element %(n)d: UPC-E needs 7 digits starting with 0 or 1, or 8 with the "
 "check digit"
 msgstr "तत्व %(n)d: UPC-E के लिए 0 या 1 से शुरू होने वाले 7 अंक चाहिए, या चेक अंक सहित 8"
 
-#: etiketto/ui/texts.py:144
+#: etiketto/ui/texts.py:150
 #, python-format
 msgid "Element %(n)d: ITF-14 needs 13 digits, or 14 with the check digit"
 msgstr "तत्व %(n)d: ITF-14 के लिए 13 अंक चाहिए, या चेक अंक सहित 14"
 
-#: etiketto/ui/texts.py:145
+#: etiketto/ui/texts.py:151
 #, python-format
 msgid "Element %(n)d: the check digit is wrong"
 msgstr "तत्व %(n)d: चेक अंक गलत है"
 
-#: etiketto/ui/texts.py:147
+#: etiketto/ui/texts.py:153
 #, python-format
 msgid ""
 "Element %(n)d: Code 39 only accepts capital letters, digits, spaces and - . "
 "$ / + %%"
 msgstr "तत्व %(n)d: Code 39 केवल बड़े अक्षर, अंक, स्पेस और - . $ / + %% स्वीकार करता है"
 
-#: etiketto/ui/texts.py:150
+#: etiketto/ui/texts.py:156
 #, python-format
 msgid ""
 "Element %(n)d: Code 93 only accepts Latin letters, digits and punctuation"
 msgstr "तत्व %(n)d: Code 93 केवल लैटिन अक्षर, अंक और विराम चिह्न स्वीकार करता है"
 
-#: etiketto/ui/texts.py:153
+#: etiketto/ui/texts.py:159
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data only accepts Latin letters, digits and punctuation"
 msgstr "तत्व %(n)d: GS1 डेटा केवल लैटिन अक्षर, अंक और विराम चिह्न स्वीकार करता है"
 
-#: etiketto/ui/texts.py:156
+#: etiketto/ui/texts.py:162
 #, python-format
 msgid ""
 "Element %(n)d: GS1 data must be application identifiers in brackets, each "
 "followed by its value, e.g. (01)09501101530003(10)AB12"
 msgstr "तत्व %(n)d: GS1 डेटा कोष्ठक में एप्लिकेशन आइडेंटिफ़ायर होने चाहिए, हर एक के बाद उसका मान, जैसे (01)09501101530003(10)AB12"
 
-#: etiketto/ui/texts.py:159
+#: etiketto/ui/texts.py:165
 #, python-format
 msgid "Element %(n)d: (%(ai)s) is not a GS1 application identifier"
 msgstr "तत्व %(n)d: (%(ai)s) कोई GS1 एप्लिकेशन आइडेंटिफ़ायर नहीं है"
 
-#: etiketto/ui/texts.py:161
+#: etiketto/ui/texts.py:167
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) has the wrong "
 "length"
 msgstr "तत्व %(n)d: एप्लिकेशन आइडेंटिफ़ायर (%(ai)s) के मान की लंबाई गलत है"
 
-#: etiketto/ui/texts.py:164
+#: etiketto/ui/texts.py:170
 #, python-format
 msgid ""
 "Element %(n)d: the check digit of application identifier (%(ai)s) is wrong"
 msgstr "तत्व %(n)d: एप्लिकेशन आइडेंटिफ़ायर (%(ai)s) का चेक अंक गलत है"
 
-#: etiketto/ui/texts.py:167
+#: etiketto/ui/texts.py:173
 #, python-format
 msgid ""
 "Element %(n)d: the value of application identifier (%(ai)s) is not valid: a "
 "date, number or character it does not allow"
 msgstr "तत्व %(n)d: एप्लिकेशन आइडेंटिफ़ायर (%(ai)s) का मान मान्य नहीं है: ऐसी तारीख, संख्या या वर्ण जिसकी यह अनुमति नहीं देता"
 
-#: etiketto/ui/texts.py:171
+#: etiketto/ui/texts.py:177
 #, python-format
 msgid ""
 "Element %(n)d: no UPC-A number shortens to these UPC-E digits – check them "
 "or use UPC-A"
 msgstr "तत्व %(n)d: कोई UPC-A संख्या इन UPC-E अंकों में छोटी नहीं होती – इन्हें जाँचें या UPC-A का उपयोग करें"
 
-#: etiketto/ui/texts.py:175
+#: etiketto/ui/texts.py:181
 #, python-format
 msgid ""
 "Element %(n)d: scanners set to Full ASCII read a $, /, + or %% before a "
 "capital letter as another character"
 msgstr "तत्व %(n)d: Full ASCII पर सेट स्कैनर बड़े अक्षर से पहले $, /, + या %% को किसी दूसरे वर्ण के रूप में पढ़ते हैं"
 
-#: etiketto/ui/texts.py:178
+#: etiketto/ui/texts.py:184
 #, python-format
 msgid "Element %(n)d: the content is too long for this type of code"
 msgstr "तत्व %(n)d: इस प्रकार के कोड के लिए सामग्री बहुत लंबी है"
 
-#: etiketto/ui/texts.py:179
+#: etiketto/ui/texts.py:185
 #, python-format
 msgid "Element %(n)d: the content cannot be encoded in this type of code"
 msgstr "तत्व %(n)d: सामग्री को इस प्रकार के कोड में एन्कोड नहीं किया जा सकता"
 
-#: etiketto/ui/texts.py:181
+#: etiketto/ui/texts.py:187
 #, python-format
 msgid ""
 "Element %(n)d: this type of code needs the Zint library (zint-bindings), "
 "which is not installed"
 msgstr "तत्व %(n)d: इस प्रकार के कोड के लिए Zint लाइब्रेरी (zint-bindings) चाहिए, जो इंस्टॉल नहीं है"
 
-#: etiketto/ui/texts.py:184
+#: etiketto/ui/texts.py:190
 #, python-format
 msgid "Element %(n)d: the image cannot be read"
 msgstr "तत्व %(n)d: छवि पढ़ी नहीं जा सकती"
 
-#: etiketto/ui/texts.py:185
+#: etiketto/ui/texts.py:191
+#, python-format
+msgid "Element %(n)d: this symbol is not in the symbol library"
+msgstr "तत्व %(n)d: यह प्रतीक प्रतीक लाइब्रेरी में नहीं है"
+
+#: etiketto/ui/texts.py:192
 #, python-format
 msgid "Element %(n)d cannot be drawn"
 msgstr "तत्व %(n)d नहीं बनाया जा सकता"
 
-#: etiketto/ui/texts.py:186
+#: etiketto/ui/texts.py:193
 msgid "Safety margin, border and edge spacing leave no room – reduce them"
 msgstr "सुरक्षा हाशिया, बॉर्डर और किनारे का अंतराल कोई जगह नहीं छोड़ते – इन्हें कम करें"
 
-#: etiketto/ui/texts.py:187
+#: etiketto/ui/texts.py:194
 msgid "The fixed length is shorter than the spacing – increase it"
 msgstr "निश्चित लंबाई अंतराल से छोटी है – इसे बढ़ाएँ"
 
-#: etiketto/ui/texts.py:188
+#: etiketto/ui/texts.py:195
 msgid "The background image cannot be read"
 msgstr "पृष्ठभूमि छवि पढ़ी नहीं जा सकती"
 
-#: etiketto/ui/texts.py:190
+#: etiketto/ui/texts.py:197
 #, python-format
 msgid ""
 "Element %(n)d: the code's modules are only one printer dot wide and may not "
 "scan – make the code larger"
 msgstr "तत्व %(n)d: कोड के मॉड्यूल केवल एक प्रिंट बिंदु चौड़े हैं और शायद स्कैन न हों – कोड बड़ा करें"
 
-#: etiketto/ui/texts.py:194
+#: etiketto/ui/texts.py:201
 #, python-format
 msgid ""
 "Element %(n)d: the blank space the code needs around it does not fit – make "
 "the code larger"
 msgstr "तत्व %(n)d: कोड के चारों ओर ज़रूरी खाली जगह नहीं समाती – कोड बड़ा करें"
 
-#: etiketto/ui/texts.py:198
+#: etiketto/ui/texts.py:205
 #, python-format
 msgid ""
 "Element %(n)d: the code does not fit in its space, even at one printer dot "
 "per module – make the label larger or the content shorter"
 msgstr "तत्व %(n)d: प्रति मॉड्यूल एक प्रिंट बिंदु पर भी कोड अपनी जगह में नहीं समाता – लेबल बड़ा करें या सामग्री छोटी करें"
 
-#: etiketto/ui/texts.py:213
+#: etiketto/ui/texts.py:220
 #, python-format
 msgid "Sheets already printed: %(n)d of %(total)d."
 msgstr "पहले ही प्रिंट हो चुकी शीटें: %(total)d में से %(n)d।"
 
-#: etiketto/ui/texts.py:215
+#: etiketto/ui/texts.py:222
 #, python-format
 msgid "Labels already printed: %(n)d of %(total)d."
 msgstr "पहले ही प्रिंट हो चुके लेबल: %(total)d में से %(n)d।"
 
-#: etiketto/ui/texts.py:219
+#: etiketto/ui/texts.py:226
 msgid "The sheets still waiting in the queue were canceled."
 msgstr "कतार में अभी भी प्रतीक्षा कर रही शीटें रद्द कर दी गईं।"
 
-#: etiketto/ui/texts.py:221
+#: etiketto/ui/texts.py:228
 msgid "The labels still waiting in the queue were canceled."
 msgstr "कतार में अभी भी प्रतीक्षा कर रहे लेबल रद्द कर दिए गए।"
 
-#: etiketto/ui/texts.py:230
+#: etiketto/ui/texts.py:237
 msgid ""
 "The printer cannot be found. Check that it is switched on and in the same "
 "network, or enter its IP address."
 msgstr "प्रिंटर नहीं मिला। जाँचें कि वह चालू है और उसी नेटवर्क में है, या उसका IP पता दर्ज करें।"
 
-#: etiketto/ui/texts.py:234
+#: etiketto/ui/texts.py:241
 msgid ""
 "The printer cannot be found on USB. Check the cable and that the printer is "
 "switched on and awake, then search again."
 msgstr "USB पर प्रिंटर नहीं मिल रहा। केबल जाँचें और देखें कि प्रिंटर चालू है और स्लीप मोड में नहीं है, फिर दोबारा खोजें।"
 
-#: etiketto/ui/texts.py:237
+#: etiketto/ui/texts.py:244
 msgid "The printer does not answer. Check that it is switched on and awake."
 msgstr "प्रिंटर जवाब नहीं दे रहा। जाँचें कि वह चालू है और स्लीप मोड में नहीं है।"
 
-#: etiketto/ui/texts.py:239
+#: etiketto/ui/texts.py:246
 msgid ""
 "The printer stopped taking data. Check whether it shows a problem, such as "
 "no labels or an open cover, then try again."
 msgstr "प्रिंटर ने डेटा लेना बंद कर दिया है। जाँचें कि क्या वह कोई समस्या दिखा रहा है, जैसे लेबल खत्म होना या कवर खुला होना, फिर दोबारा प्रयास करें।"
 
-#: etiketto/ui/texts.py:243
+#: etiketto/ui/texts.py:250
 msgid ""
 "The printer refuses the connection. Switch it off and on again. If its web "
 "interface offers a “Port 9100” option, turn it on."
 msgstr "प्रिंटर कनेक्शन अस्वीकार कर रहा है। उसे बंद करके फिर चालू करें। यदि उसके वेब इंटरफ़ेस में “Port 9100” विकल्प है, तो उसे चालू करें।"
 
-#: etiketto/ui/texts.py:246
+#: etiketto/ui/texts.py:253
 msgid "No cassette is inserted. Insert one and try again."
 msgstr "कोई कैसेट नहीं लगी है। कैसेट लगाएँ और फिर से प्रयास करें।"
 
-#: etiketto/ui/texts.py:247
+#: etiketto/ui/texts.py:254
 msgid "The printer's cover is open. Close it and try again."
 msgstr "प्रिंटर का ढक्कन खुला है। उसे बंद करें और फिर से प्रयास करें।"
 
-#: etiketto/ui/texts.py:248
+#: etiketto/ui/texts.py:255
 msgid "The label is jammed. Open the cover, remove it and try again."
 msgstr "लेबल अटक गया है। ढक्कन खोलें, लेबल निकालें और फिर से प्रयास करें।"
 
-#: etiketto/ui/texts.py:249
+#: etiketto/ui/texts.py:256
 msgid "The cassette is not recognised. Insert it again or try another one."
 msgstr "कैसेट पहचानी नहीं गई। उसे फिर से लगाएँ या कोई दूसरी कैसेट आज़माएँ।"
 
-#: etiketto/ui/texts.py:250
+#: etiketto/ui/texts.py:257
 msgid "The printer is busy. Wait a moment and try again."
 msgstr "प्रिंटर व्यस्त है। थोड़ा रुकें और फिर से प्रयास करें।"
 
-#: etiketto/ui/texts.py:251
+#: etiketto/ui/texts.py:258
 #, python-format
 msgid "The label is too long for this printer: at most %(max)s."
 msgstr "लेबल इस प्रिंटर के लिए बहुत लंबा है: अधिकतम %(max)s।"
 
-#: etiketto/ui/texts.py:252
+#: etiketto/ui/texts.py:259
 #, python-format
 msgid "The label is too wide for this printer: at most %(max)s."
 msgstr "यह लेबल इस प्रिंटर के लिए बहुत चौड़ा है: अधिकतम %(max)s।"
 
-#: etiketto/ui/texts.py:253
+#: etiketto/ui/texts.py:260
 msgid "The printer is out of labels. Load a new roll and try again."
 msgstr "प्रिंटर में लेबल खत्म हो गए हैं। नया रोल लगाएँ और फिर कोशिश करें।"
 
-#: etiketto/ui/texts.py:254
+#: etiketto/ui/texts.py:261
 msgid "The print head is open. Close it and try again."
 msgstr "प्रिंट हेड खुला है। उसे बंद करें और फिर कोशिश करें।"
 
-#: etiketto/ui/texts.py:256
+#: etiketto/ui/texts.py:263
 msgid ""
 "The printer cannot find the next label. Check that the labels are loaded "
 "correctly and run through the label sensor."
 msgstr "प्रिंटर को अगला लेबल नहीं मिल रहा। जाँचें कि लेबल सही ढंग से लगे हैं और लेबल सेंसर से होकर गुज़रते हैं।"
 
-#: etiketto/ui/texts.py:260
+#: etiketto/ui/texts.py:267
 msgid ""
 "There is a problem with the ribbon. Check that it is inserted correctly and "
 "matches the print method set on the printer."
 msgstr "रिबन में समस्या है। जाँचें कि वह सही ढंग से लगा है और प्रिंटर पर सेट प्रिंट विधि से मेल खाता है।"
 
-#: etiketto/ui/texts.py:263
+#: etiketto/ui/texts.py:270
 msgid "The printer is paused. Resume it on its display and try again."
 msgstr "प्रिंटर रुका हुआ है। उसकी डिस्प्ले पर फिर से शुरू करें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:264
+#: etiketto/ui/texts.py:271
 msgid "The printer is out of paper. Load paper and try again."
 msgstr "प्रिंटर में कागज़ खत्म हो गया है। कागज़ डालें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:266
+#: etiketto/ui/texts.py:273
 msgid ""
 "The paper is jammed. Remove it as the printer's display shows and try again."
 msgstr "कागज़ फँस गया है। प्रिंटर की डिस्प्ले पर दिखाए अनुसार उसे निकालें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:268
+#: etiketto/ui/texts.py:275
 msgid "The printer is out of toner or ink. Replace it and try again."
 msgstr "प्रिंटर में टोनर या स्याही खत्म हो गई है। उसे बदलें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:269
+#: etiketto/ui/texts.py:276
 msgid "The printer cannot print this size. Choose a paper size it offers."
 msgstr "प्रिंटर इस आकार में प्रिंट नहीं कर सकता। प्रिंटर द्वारा समर्थित कागज़ का आकार चुनें।"
 
-#: etiketto/ui/texts.py:271
+#: etiketto/ui/texts.py:278
 msgid ""
 "The printer takes none of the formats Etiketto can send (PDF, PWG Raster, "
 "JPEG)."
 msgstr "प्रिंटर Etiketto द्वारा भेजे जा सकने वाले किसी भी फ़ॉर्मैट (PDF, PWG Raster, JPEG) को स्वीकार नहीं करता।"
 
-#: etiketto/ui/texts.py:274
+#: etiketto/ui/texts.py:281
 msgid ""
 "The printer's queue is paused. Resume it in the system's printer settings "
 "and try again."
 msgstr "प्रिंटर की कतार रुकी हुई है। सिस्टम की प्रिंटर सेटिंग में उसे फिर से शुरू करें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:278
+#: etiketto/ui/texts.py:285
 msgid ""
 "The print job was held in the queue, for example until it is released or a "
 "password is entered. Check the queue in the system's printer settings and "
 "try again."
 msgstr "प्रिंट जॉब कतार में रोक दिया गया, उदाहरण के लिए जब तक उसे जारी न किया जाए या पासवर्ड न डाला जाए। सिस्टम की प्रिंटर सेटिंग में कतार जाँचें और दोबारा कोशिश करें।"
 
-#: etiketto/ui/texts.py:282
+#: etiketto/ui/texts.py:289
 msgid "The print job was canceled at the printer or in the queue."
 msgstr "प्रिंट जॉब प्रिंटर पर या कतार में रद्द कर दिया गया।"
 
-#: etiketto/ui/texts.py:284
+#: etiketto/ui/texts.py:291
 msgid ""
 "Etiketto is not allowed to use the printer's USB port. Add your user to the "
 "group “lp” (sudo usermod -aG lp $USER), then log out and in again."
 msgstr "Etiketto को प्रिंटर का USB पोर्ट इस्तेमाल करने की अनुमति नहीं है। अपने उपयोगकर्ता को समूह “lp” में जोड़ें (sudo usermod -aG lp $USER), फिर लॉग आउट करके दोबारा लॉग इन करें।"
 
-#: etiketto/ui/texts.py:288
+#: etiketto/ui/texts.py:295
 msgid ""
 "A code does not fit on the label at this printer's resolution and would be "
 "cut off. Make the label larger or the code's content shorter."
 msgstr "इस प्रिंटर के रिज़ॉल्यूशन पर कोड लेबल पर नहीं समाता और कट जाएगा। लेबल बड़ा करें या कोड की सामग्री छोटी करें।"
 
-#: etiketto/ui/texts.py:292
+#: etiketto/ui/texts.py:299
 msgid ""
 "The printer reported a problem. Switch it off and on again, then try once "
 "more."
 msgstr "प्रिंटर ने एक समस्या बताई। उसे बंद करके फिर चालू करें, फिर एक बार और प्रयास करें।"
 
-#: etiketto/ui/texts.py:304
+#: etiketto/ui/texts.py:311
 msgid "Warming up…"
 msgstr "गर्म हो रहा है…"
 
-#: etiketto/ui/texts.py:305
+#: etiketto/ui/texts.py:312
 msgid "Cooling down…"
 msgstr "ठंडा हो रहा है…"
 
-#: etiketto/ui/texts.py:306
+#: etiketto/ui/texts.py:313
 msgid "Cleaning…"
 msgstr "सफ़ाई हो रही है…"
 
-#: etiketto/ui/texts.py:307
+#: etiketto/ui/texts.py:314
 msgid "Swipe the printer's panel to cut the label"
 msgstr "लेबल काटने के लिए प्रिंटर के पैनल पर स्वाइप करें"
 
-#: etiketto/ui/texts.py:309
+#: etiketto/ui/texts.py:316
 msgid "Out of paper – load paper to continue"
 msgstr "कागज़ खत्म – जारी रखने के लिए कागज़ डालें"
 
-#: etiketto/ui/texts.py:310
+#: etiketto/ui/texts.py:317
 msgid "Cover open – close it to continue"
 msgstr "ढक्कन खुला है – जारी रखने के लिए उसे बंद करें"
 
-#: etiketto/ui/texts.py:311
+#: etiketto/ui/texts.py:318
 msgid "Paper jammed – remove it to continue"
 msgstr "कागज़ फँस गया – जारी रखने के लिए उसे निकालें"
 
-#: etiketto/ui/texts.py:322
+#: etiketto/ui/texts.py:329
 msgid "This label needs a newer version of Etiketto"
 msgstr "इस लेबल के लिए Etiketto का नया संस्करण चाहिए"
 
-#: etiketto/ui/texts.py:324
+#: etiketto/ui/texts.py:331
 #, python-format
 msgid "%s is not an Etiketto label"
 msgstr "%s कोई Etiketto लेबल नहीं है"
 
-#: etiketto/ui/texts.py:325
+#: etiketto/ui/texts.py:332
 #, python-format
 msgid "The file is damaged: %s"
 msgstr "फ़ाइल खराब है: %s"
 
-#: etiketto/ui/texts.py:331
+#: etiketto/ui/texts.py:338
 #, python-format
 msgid "Cannot save %s: no permission to write there"
 msgstr "%s सहेजा नहीं जा सकता: वहाँ लिखने की अनुमति नहीं है"
 
-#: etiketto/ui/texts.py:333
+#: etiketto/ui/texts.py:340
 #, python-format
 msgid "Cannot save %s: the disk is full"
 msgstr "%s सहेजा नहीं जा सकता: डिस्क भरी हुई है"
 
-#: etiketto/ui/texts.py:334
+#: etiketto/ui/texts.py:341
 #, python-format
 msgid "Cannot save %s"
 msgstr "%s सहेजा नहीं जा सकता"
 
-#: etiketto/ui/texts.py:343
+#: etiketto/ui/texts.py:350
 #, python-format
 msgid ""
 "This cassette seems to be from %(month)s %(year)d. Old ZINK paper prints "
 "paler colours."
 msgstr "यह कैसेट शायद %(month)s %(year)d की है। पुराना ZINK कागज़ फीके रंग छापता है।"
 
-#: etiketto/ui/window.py:88
+#: etiketto/ui/window.py:89
 msgid "Open"
 msgstr "खोलें"
 
-#: etiketto/ui/window.py:95
+#: etiketto/ui/window.py:96
 msgid "Templates"
 msgstr "टेम्पलेट"
 
-#: etiketto/ui/window.py:101
+#: etiketto/ui/window.py:102
 msgid "Save"
 msgstr "सहेजें"
 
-#: etiketto/ui/window.py:118
+#: etiketto/ui/window.py:119
 msgid "New label"
 msgstr "नया लेबल"
 
-#: etiketto/ui/window.py:119
+#: etiketto/ui/window.py:120
 msgid "Save as…"
 msgstr "ऐसे सहेजें…"
 
-#: etiketto/ui/window.py:121
+#: etiketto/ui/window.py:122
 msgid "Export PNG…"
 msgstr "PNG में निर्यात करें…"
 
-#: etiketto/ui/window.py:122
+#: etiketto/ui/window.py:123
 msgid "Help"
 msgstr "सहायता"
 
-#: etiketto/ui/window.py:123
+#: etiketto/ui/window.py:124
 msgid "Report a problem…"
 msgstr "समस्या की रिपोर्ट करें…"
 
-#: etiketto/ui/window.py:124
+#: etiketto/ui/window.py:125
 msgid "About Etiketto"
 msgstr "Etiketto के बारे में"
 
-#: etiketto/ui/window.py:332
+#: etiketto/ui/window.py:340
 msgid "Unsaved label"
 msgstr "बिना सहेजा लेबल"
 
-#: etiketto/ui/window.py:385
+#: etiketto/ui/window.py:394
 msgid "content scaled down to fit"
 msgstr "फ़िट करने के लिए सामग्री छोटी की गई"
 
-#: etiketto/ui/window.py:387
+#: etiketto/ui/window.py:396
 #, python-format
 msgid "Too long for this printer: at most %s"
 msgstr "इस प्रिंटर के लिए बहुत लंबा: अधिकतम %s"
 
-#: etiketto/ui/window.py:392
+#: etiketto/ui/window.py:401
 #, python-format
 msgid "Too wide for this printer: at most %s"
 msgstr "इस प्रिंटर के लिए बहुत चौड़ा: अधिकतम %s"
 
-#: etiketto/ui/window.py:397
+#: etiketto/ui/window.py:406
 #, python-format
 msgid "Problem: %s"
 msgstr "समस्या: %s"
 
-#: etiketto/ui/window.py:472
+#: etiketto/ui/window.py:481
 msgid "The browser cannot be opened"
 msgstr "ब्राउज़र खोला नहीं जा सकता"
 
-#: etiketto/ui/window.py:474
+#: etiketto/ui/window.py:483
 msgid "Copy link"
 msgstr "लिंक कॉपी करें"
 
-#: etiketto/ui/window.py:518
+#: etiketto/ui/window.py:528
 msgid "Only local files can be dropped"
 msgstr "केवल स्थानीय फ़ाइलें छोड़ी जा सकती हैं"
 
-#: etiketto/ui/window.py:533
+#: etiketto/ui/window.py:543
 msgid "Please wait until printing has finished"
 msgstr "कृपया प्रिंटिंग पूरी होने तक प्रतीक्षा करें"

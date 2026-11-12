@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 
 from etiketto.backends.base import PrinterError, PrinterInfo
-from etiketto.model import ImageElement, LabelError, TextElement
+from etiketto.model import ImageElement, LabelError, SymbolElement, TextElement
 from etiketto.render import RenderWarning
 from etiketto.ui.i18n import _, isolate, month_name
 from etiketto.units import Unit
@@ -83,6 +83,8 @@ SYMBOLOGY_HELP = {
     "gs1_128": _GS1_HELP,
     "gs1_datamatrix": _GS1_HELP,
 }
+# symbols, turned clockwise
+ROTATIONS = [(0, "0°"), (90, "90°"), (180, "180°"), (270, "270°")]
 
 
 def image_from_path(path) -> ImageElement:
@@ -103,6 +105,8 @@ def element_title(element) -> str:
         return first[:40] or _("Text")
     if isinstance(element, ImageElement):
         return element.name or _("Image")
+    if isinstance(element, SymbolElement):  # icon names are English, as in the icon set
+        return isolate(element.name) if element.name else _("Symbol")
     return (
         dict(SYMBOLOGIES).get(element.symbology, element.symbology)
         + ": "
@@ -115,6 +119,8 @@ def element_icon(element) -> str:
         return "format-text-bold-symbolic"
     if isinstance(element, ImageElement):
         return "image-x-generic-symbolic"
+    if isinstance(element, SymbolElement):
+        return "starred-symbolic"
     return "view-grid-symbolic"
 
 
@@ -182,6 +188,7 @@ def warning_text(warning: RenderWarning) -> str:
             "not installed"
         ),
         "image_unreadable": _("Element %(n)d: the image cannot be read"),
+        "symbol_unknown": _("Element %(n)d: this symbol is not in the symbol library"),
         "element_failed": _("Element %(n)d cannot be drawn"),
         "no_room": _("Safety margin, border and edge spacing leave no room – reduce them"),
         "fixed_too_short": _("The fixed length is shorter than the spacing – increase it"),
