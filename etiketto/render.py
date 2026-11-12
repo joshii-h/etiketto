@@ -67,7 +67,7 @@ class ElementError(ValueError):
 @dataclass
 class Rendered:
     image: Image.Image  # label space, RGB
-    length_mm: float
+    length_mm: float  # a fixed length: the label's, not the rounded pixels
     warnings: list[RenderWarning] = field(default_factory=list)
     overflow: bool = False  # content was scaled down to fit a fixed length
 
@@ -862,6 +862,9 @@ def render(
     length, parts, gap, overflow = _fit_length(
         label, parts, f, dpi, warnings, min_length_mm, mono, steps
     )
+    # a fixed length is the user's, though rounded to whole pixels (pairs):
+    # 20.1 mm stays 20.1 mm in the status line and the print dialog
+    user_length = not label.auto_length and length == mm_to_px(label.length_mm, dpi)
     length += -length % along_step  # whole pixel pairs, also once the label is turned
     warnings += [
         RenderWarning(key, {"n": index})
@@ -872,7 +875,8 @@ def render(
     img = _background(label, (length, f.tape + 2 * f.bleed), warnings)
     _place(img, label, parts, gap, f, steps)
     _draw_border(img, label, f)
-    return Rendered(img, px_to_mm(length, dpi), warnings, overflow)
+    length_mm = label.length_mm if user_length else px_to_mm(length, dpi)
+    return Rendered(img, length_mm, warnings, overflow)
 
 
 def whole_tape(image: Image.Image, tape: int) -> Image.Image:

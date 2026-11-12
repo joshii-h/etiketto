@@ -1538,3 +1538,26 @@ def test_high_quality_keeps_2d_code_modules_whole_on_the_300_dpi_head(backend_id
     for high_res in (True, False):
         histogram = ql._resolution(fitted, 2, high_res).convert("L").histogram()
         assert sum(histogram[1:255]) == 0, high_res
+
+
+@pytest.mark.parametrize("length", [20.1, 33.3, 50.0])
+def test_a_fixed_length_in_high_quality_is_the_users(length):
+    """High quality renders whole pixel pairs along the label (20.1 mm:
+    475 px, made 476 = 20.15 mm): the status line and the print dialog
+    still say the length the user set, not one rounded up to 20.2 mm."""
+    backend = BrotherQL()
+    label = _continuous(62, auto_length=False, length_mm=length)
+    for quality in ("", "high"):
+        rendered = backend.render_label(label, PrintOptions(quality=quality))
+        assert rendered.length_mm == length, quality
+    high = backend.render_label(label, PrintOptions(quality="high"))
+    assert high.image.width % 2 == 0  # the pixel pairs are still whole
+
+
+def test_a_fixed_length_raised_to_the_shortest_label_says_so():
+    """Shorter than the printer's shortest label: the length printed."""
+    backend = BrotherQL()
+    label = _continuous(62, auto_length=False, length_mm=5)
+    rendered = backend.render_label(label, PrintOptions(quality="high"))
+    assert rendered.length_mm == pytest.approx(ql.MIN_LENGTH_MM, abs=0.1)
+    assert rendered.length_mm > 5
