@@ -63,6 +63,9 @@ class Window(Adw.ApplicationWindow):
         self._geometries: dict[str, dict] = {}  # label size per printer model
         self._last_sheet: SheetChoice | None = None  # back to it after a single label
         self.rendered: Rendered | None = None
+        # the resolution the preview was last rendered at (print_dpi()):
+        # its code warnings hold for that one
+        self.rendered_dpi: float | None = None
         self.expand_index = -1
         self.last_dialog = None
         self._render_source = 0
@@ -444,6 +447,10 @@ class Window(Adw.ApplicationWindow):
 
     # --- preview -------------------------------------------------------------------
 
+    def _render_dpi(self) -> float:
+        self.rendered_dpi = self.print_dpi()
+        return self.rendered_dpi
+
     def print_dpi(self) -> float:
         """The resolution the label is printed at: the printer's own if it
         said (a page printer at 203 dpi), else the one the printer settings
@@ -466,7 +473,7 @@ class Window(Adw.ApplicationWindow):
         label, warnings = expand_label(self.label, self.preview_values(), self.data.row)
         rendered = render(
             label,
-            dpi=self.print_dpi(),
+            dpi=self._render_dpi(),
             safe_mm=self.printer_settings.safe_mm,
             min_length_mm=backend.capabilities.min_length_mm,
             mono=backend.capabilities.color_model == "mono",

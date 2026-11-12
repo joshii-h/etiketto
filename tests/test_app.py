@@ -3754,3 +3754,23 @@ def test_third_party_notices_name_everything_the_about_dialog_credits():
     for source in app.PROTOCOL_SOURCES:
         assert "**%s**" % source in notices, source
     assert "labelburg" in notices
+
+
+def test_the_preview_follows_a_resolution_the_printer_reports_later(
+    make_window, raw_env, monkeypatch
+):
+    """A ZPL printer set to "as reported": the preview (and its code
+    warnings) is first at the default resolution; once the printer has
+    reported 300 dpi it is rendered again at that one."""
+    from etiketto.backends import get_backend
+
+    backend = get_backend("zpl")
+    monkeypatch.setattr(backend, "reported", {})
+    win = _raw_window(make_window, "zpl")
+    render_now(win)
+    assert win.rendered_dpi == pytest.approx(8 * 25.4)
+    backend.reported["zebra.local"] = 12 * 25.4  # the query found out
+    win.printer.found(raw_env.info)
+    assert pump(lambda: win.rendered_dpi == pytest.approx(12 * 25.4))
+    win.printer.found(raw_env.info)  # nothing new: no render
+    assert win._render_source == 0
