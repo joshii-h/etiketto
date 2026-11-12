@@ -168,6 +168,8 @@ chosen page is kept.
 
 Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it
 along, otherwise install it from your distribution (see the README).
+Older versions of Etiketto refuse to open labels with a shipping label and
+say that the label needs a newer version.
 
 Most shipping label rolls are direct thermal labels: they need no ribbon,
 but the print fades in heat and sunlight within months. That is fine for

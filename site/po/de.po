@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:45+0100\n"
+"POT-Creation-Date: 2026-11-12 13:05+0100\n"
 "PO-Revision-Date: 2026-11-05 14:51+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -151,11 +151,11 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 msgid ""
-"Finds the printer in the network, reads what is loaded and explains printer "
-"problems in plain words"
+"Finds the printer in the network and on USB, reads what is loaded and "
+"explains printer problems in plain words"
 msgstr ""
-"Findet den Drucker im Netzwerk, liest aus, was eingelegt ist, und erklärt "
-"Druckerprobleme in Klartext"
+"Findet den Drucker im Netzwerk und an USB, liest aus, was eingelegt ist, und"
+" erklärt Druckerprobleme in Klartext"
 
 #. type: Bullet: '- '
 #: docs/index.md
@@ -2107,6 +2107,17 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sheets.md
+msgid ""
+"Older versions of Etiketto refuse to open labels for a label sheet and say "
+"that the label needs a newer version, instead of printing them as a single "
+"page."
+msgstr ""
+"Ältere Versionen von Etiketto öffnen Etiketten für einen Etikettenbogen "
+"nicht und sagen, dass das Etikett eine neuere Version braucht, statt sie als "
+"einzelne Seite zu drucken."
+
+#. type: Plain text
+#: docs/sheets.md
 msgid "The sheet templates come from gLabels (© Jaye Evins, MIT license)."
 msgstr "Die Bogenvorlagen stammen von gLabels (© Jaye Evins, MIT-Lizenz)."
 
@@ -2649,11 +2660,14 @@ msgstr ""
 #: docs/use.md
 msgid ""
 "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, "
-"otherwise install it from your distribution (see the README)."
+"otherwise install it from your distribution (see the README).  Older "
+"versions of Etiketto refuse to open labels with a shipping label and say "
+"that the label needs a newer version."
 msgstr ""
 "Zum Öffnen von PDF-Dateien braucht es Poppler (poppler-glib); das Flatpak "
 "bringt es mit, sonst aus der eigenen Distribution installieren (siehe "
-"README)."
+"README). Ältere Versionen von Etiketto öffnen Etiketten mit einem "
+"Versandetikett nicht und sagen, dass das Etikett eine neuere Version braucht."
 
 #. type: Plain text
 #: docs/use.md

@@ -35,8 +35,8 @@ kernel's printer driver: cab printers, Brother QL and P-touch printers, the
 VC-500W and the ZPL, EPL2, TSPL, ESC/POS and DYMO printers are found on USB
 by themselves, and the system printer reaches every printer CUPS has, USB
 included. On USB, the VC-500W and cab printers have not been tried on a
-printer yet; the Brother QL, P-touch, ZPL, EPL2, TSPL, ESC/POS and DYMO
-backends have not been tried on any printer at all, they follow the
+printer yet; the Brother QL, P-touch, NIIMBOT, ZPL, EPL2, TSPL, ESC/POS
+and DYMO backends have not been tried on any printer at all, they follow the
 documented protocols. Your user needs to be in the group `lp`
 (`sudo usermod -aG lp $USER`, then log in again). The Flatpak has
 `--device=all` for this: `/dev/usb/lp*` is not covered by `--device=usb`.

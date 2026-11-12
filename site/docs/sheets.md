@@ -48,4 +48,8 @@ positions are saved with the label.
 - The paper size comes from the sheet; turn off "fit to page" in the
   printer's setup, otherwise the printer may scale the sheet.
 
+Older versions of Etiketto refuse to open labels for a label sheet and say
+that the label needs a newer version, instead of printing them as a single
+page.
+
 The sheet templates come from gLabels (© Jaye Evins, MIT license).

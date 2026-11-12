@@ -16,7 +16,7 @@ in its own language.
   file; variables such as date and counter, and a command line
 - [Label sheets](sheets.md) on office printers, and shipping labels from a
   carrier's PDF
-- Finds the printer in the network, reads what is loaded and explains
+- Finds the printer in the network and on USB, reads what is loaded and explains
   printer problems in plain words
 - 27 languages, follows the light or dark mode of the desktop
 

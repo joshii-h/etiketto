@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: etiketto-docs VERSION\n"
-"POT-Creation-Date: 2026-11-12 12:45+0100\n"
+"POT-Creation-Date: 2026-11-12 13:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -103,7 +103,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/index.md
 #, markdown-text
-msgid "Finds the printer in the network, reads what is loaded and explains printer problems in plain words"
+msgid "Finds the printer in the network and on USB, reads what is loaded and explains printer problems in plain words"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -1407,6 +1407,12 @@ msgstr ""
 #. type: Plain text
 #: docs/sheets.md
 #, markdown-text
+msgid "Older versions of Etiketto refuse to open labels for a label sheet and say that the label needs a newer version, instead of printing them as a single page."
+msgstr ""
+
+#. type: Plain text
+#: docs/sheets.md
+#, markdown-text
 msgid "The sheet templates come from gLabels (© Jaye Evins, MIT license)."
 msgstr ""
 
@@ -1737,7 +1743,7 @@ msgstr ""
 #. type: Plain text
 #: docs/use.md
 #, markdown-text
-msgid "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, otherwise install it from your distribution (see the README)."
+msgid "Opening PDF files needs Poppler (poppler-glib); the Flatpak brings it along, otherwise install it from your distribution (see the README).  Older versions of Etiketto refuse to open labels with a shipping label and say that the label needs a newer version."
 msgstr ""
 
 #. type: Plain text
