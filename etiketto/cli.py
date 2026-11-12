@@ -699,17 +699,15 @@ def _data(args, label: Label) -> tuple[list[dict[str, str]], list[int]]:
         if args.sheet or args.rows:
             raise CliError(_("--sheet and --rows need a data file (--data)"), EXIT_USAGE)
         return [], []
-    sheet = args.sheet or (label.data_sheet if args.data is None else "")
+    own = label.data_file and Path(label.data_file).resolve() == path.resolve()
+    # the label's sheet goes with its own data file, also given with --data
+    sheet = args.sheet or (label.data_sheet if own else "")
     try:
         book = read_book(path, sheet)
     except (OSError, MergeError) as e:
         raise CliError(data_error_text(e, _name(path)), EXIT_FILE) from None
-    if args.sheet and book.sheet != args.sheet:
-        raise CliError(
-            _("%(file)s has no sheet named %(sheet)s")
-            % {"file": _name(path), "sheet": args.sheet},
-            EXIT_USAGE,
-        )
+    if sheet and book.sheet != sheet:  # never another sheet than the one asked for
+        raise CliError(data_error_text(MergeError("no_sheet", sheet), _name(path)), EXIT_USAGE)
     rows = book.table.rows
     first, last = args.rows or (1, ALL_ROWS)
     indexes = list(row_span(first, last, len(rows)))

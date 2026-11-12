@@ -235,6 +235,8 @@ def data_error_text(error: Exception, name: str) -> str:
         return _("The data file %s is not there any more. Choose it again or remove it.") % name
     if not isinstance(error, MergeError):
         return _("Cannot open %s") % name
+    if error.code == "no_sheet":  # the detail is the sheet's name
+        return _("%(file)s has no sheet named %(sheet)s") % {"file": name, "sheet": str(error)}
     texts = {
         "not_table": _("%s is not a table. Use a CSV, ODS or XLSX file."),
         "too_large": _(

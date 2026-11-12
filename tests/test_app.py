@@ -3036,3 +3036,23 @@ def test_preview_fills_row_and_variables_in_one_pass(window, tmp_path):
     window.label.counter_next = 3
     attach(window, path)
     assert window.data.current_label().elements[0].text == "{=counter} 3 {x}"
+
+
+def test_a_saved_sheet_that_is_gone_is_not_replaced(ready, tmp_path):
+    ready.label.elements[0].text = "{Name}"
+    ready.data.attach(make_book(tmp_path))
+    assert loaded(ready)
+    ready.label.data_sheet = "August"  # renamed in the spreadsheet since
+    ready.data.load()
+    assert loaded(ready)
+    assert ready.data.state == "failed" and not ready.data.active
+    assert toast_titles(ready)[-1] == "book.ods has no sheet named August"
+    ready.print_flow.on_print()
+    assert toast_titles(ready)[-1] == "book.ods has no sheet named August"
+    sheet = one(ready._groups[-1], Adw.ComboRow, title="Sheet")
+    assert sheet.get_selected() == 2  # "August", after "Mai" and "Juni"
+    sheet.set_selected(2)  # the same: nothing to read
+    assert ready.data.state == "failed"
+    sheet.set_selected(0)  # the first one, chosen on purpose
+    assert loaded(ready) and ready.data.state == "ready"
+    assert ready.label.data_sheet == "Mai" and preview_text(ready) == "Anna"

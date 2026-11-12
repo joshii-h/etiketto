@@ -920,8 +920,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/serial.md
-msgid "Several sheets: choose one under [[ui:Sheet]]."
-msgstr "Mehrere Tabellenblätter: eines unter [[ui:Sheet]] wählen."
+msgid ""
+"Several sheets: choose one under [[ui:Sheet]]. If the sheet saved with the "
+"label is no longer there, nothing is printed until another one is chosen."
+msgstr ""
+"Mehrere Blätter: unter [[ui:Sheet]] eines wählen. Gibt es das mit dem "
+"Etikett gespeicherte Blatt nicht mehr, wird nichts gedruckt, bis ein anderes "
+"gewählt ist."
 
 #. type: Bullet: '- '
 #: docs/serial.md

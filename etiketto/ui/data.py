@@ -133,7 +133,7 @@ class DataSource:
         self.window.data_changed()
 
     def choose_sheet(self, name: str) -> None:
-        if self.book is None or name == self.book.sheet:
+        if self.book is None or name == self.window.label.data_sheet:
             return
         self.window.label.data_sheet = name
         self.cursor = Cursor()
@@ -220,11 +220,24 @@ class DataSource:
         threading.Thread(target=work, name="etiketto-data", daemon=True).start()
 
     def _loaded(self, generation: int, book: Book) -> bool:
-        if generation == self._generation:
-            self.book, self.state = book, "ready"
-            self.cursor = Cursor(len(book.table.rows), self.cursor.index)
+        if generation != self._generation:
+            return False
+        wanted = self.window.label.data_sheet
+        if wanted and book.sheet != wanted:
+            # renamed or deleted since the label was saved: never print
+            # another sheet instead; the sheet row offers those there are
+            self._failed(generation, MergeError("no_sheet", wanted))
+            self.book = book
             self.window.data_changed()
+            return False
+        self.book, self.state = book, "ready"
+        self.cursor = Cursor(len(book.table.rows), self.cursor.index)
+        self.window.data_changed()
         return False
+
+    @property
+    def sheet_missing(self) -> bool:
+        return isinstance(self.error, MergeError) and self.error.code == "no_sheet"
 
     def _failed(self, generation: int, error: Exception) -> bool:
         if generation != self._generation:
@@ -279,7 +292,7 @@ class DataGroup(Adw.PreferencesGroup):
             self.add(empty)
             return
         self.add(self._file_row(data))
-        if data.book and len(data.book.sheets) > 1:
+        if data.book and (len(data.book.sheets) > 1 or data.sheet_missing):
             self.add(self._sheet_row(data.book))
         if data.columns:
             columns = data.columns[:COLUMNS_SHOWN] + (
@@ -312,10 +325,16 @@ class DataGroup(Adw.PreferencesGroup):
         return row
 
     def _sheet_row(self, book: Book) -> Adw.ComboRow:
-        sheets = book.sheets
+        data = self.window.data
+        sheets = list(book.sheets)
+        # a saved sheet that is gone stays selected (the file row says it is
+        # missing): choosing any of the others, the first one too, reads it
+        current = self.window.label.data_sheet if data.sheet_missing else book.sheet
+        if current not in sheets:
+            sheets.append(current)
         row = Adw.ComboRow(title=_("Sheet"), model=Gtk.StringList.new(sheets))
-        row.set_selected(sheets.index(book.sheet))
-        row.set_sensitive(self.window.data.state != "loading")
+        row.set_selected(sheets.index(current))
+        row.set_sensitive(data.state != "loading")
         row.connect(
             "notify::selected",
             lambda r, _p: self.window.data.choose_sheet(sheets[r.get_selected()]),

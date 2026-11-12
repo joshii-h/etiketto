@@ -913,3 +913,25 @@ def test_serial_label_with_its_own_data_file(mono, label_file, rows_csv, tmp_pat
     assert "outside its folder" in err(capsys)
     assert run("print", elsewhere, "--dry-run", "--data", rows_csv, "--rows", "2") == 0
     assert capsys.readouterr().out == "2\t1\tWashers\n"
+
+
+def test_serial_sheets(mono, label_file, tmp_path, capsys):
+    from test_merge import make_ods, ods_table, row, text
+
+    book = make_ods(
+        tmp_path,
+        ods_table("Mai", row(text("Name")), row(text("Anna"))),
+        ods_table("Juni", row(text("Name")), row(text("Cleo"))),
+        name="book.ods",
+    )
+    path = label_file(TextElement(text="{Name}"), data_file=str(book), data_sheet="Juni")
+    assert run("print", path, "--dry-run") == 0
+    assert capsys.readouterr().out == "1\t1\tCleo\n"
+    # the label's own data file given with --data keeps the label's sheet
+    assert run("print", path, "--dry-run", "--data", book) == 0
+    assert capsys.readouterr().out == "1\t1\tCleo\n"
+    assert run("print", path, "--dry-run", "--data", book, "--sheet", "Mai") == 0
+    assert capsys.readouterr().out == "1\t1\tAnna\n"
+    path = label_file(TextElement(text="{Name}"), data_file=str(book), data_sheet="August")
+    assert run("print", path, "--dry-run") == cli.EXIT_USAGE
+    assert err(capsys) == "etiketto: book.ods has no sheet named August\n"

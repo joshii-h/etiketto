@@ -21,7 +21,9 @@ printed label shows the values of its row.
   format, such as a currency, are left out. Dates in the East Asian
   built-in formats come out as numbers.
 - Empty rows are left out. The hidden cells of merged cells are empty.
-- Several sheets: choose one under [[ui:Sheet]].
+- Several sheets: choose one under [[ui:Sheet]]. If the sheet saved with
+  the label is no longer there, nothing is printed until another one is
+  chosen.
 - [[ui:Read again]] after the file was changed in the spreadsheet program.
 - Up to 100 000 rows, 1000 columns, 2 000 000 cells (rows times
   columns, without the row of column names) and 50 MB.

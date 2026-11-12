@@ -662,7 +662,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/serial.md
 #, markdown-text
-msgid "Several sheets: choose one under [[ui:Sheet]]."
+msgid "Several sheets: choose one under [[ui:Sheet]]. If the sheet saved with the label is no longer there, nothing is printed until another one is chosen."
 msgstr ""
 
 #. type: Bullet: '- '

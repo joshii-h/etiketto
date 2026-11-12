@@ -17,7 +17,8 @@ class MergeError(ValueError):
     """A file that cannot be used as data for serial labels. code:
     "not_table" (no CSV, ODS or XLSX file, or no such sheet), "damaged" (one
     of them, but broken), "too_large" (over a limit in limits.py), "empty"
-    (no filled cell) or "cancelled" (cancel was set); the message is English detail for bug reports, the
+    (no filled cell), "cancelled" (cancel was set) or "no_sheet" (a sheet
+    asked for by name is not there; the message is its name); the message is English detail for bug reports, the
     interface shows its own translated text."""
 
     def __init__(self, code: str, detail: str):
